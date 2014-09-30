@@ -1,6 +1,9 @@
 
 [repo]
-name = ngc 
+name = ngcc
+url = https://lc.llnl.gov/stash/scm/ngcc/ngcc.git
+httpsbase =https://lc.llnl.gov/stash/scm/
+sshbase = ssh://git@cz-stash.llnl.gov:7999/
 
 [patch]
 tagprefix = bundled
@@ -74,7 +77,7 @@ emailsubject = NGC: <public> updated to <version>
 [project]
 stashurl = https://lc.llnl.gov/stash
 verifyssl = True
-name = ngc 
+name = ngcc
 
 [versioning]
 file = VERSION
