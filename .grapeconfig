@@ -1,5 +1,3 @@
-[git]
-executable = /usr/local/git/bin/git
 
 [repo]
 name = ngcc
