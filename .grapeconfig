@@ -2,7 +2,7 @@
 [repo]
 name = ngcc
 url = https://lc.llnl.gov/stash/scm/ngcc/ngcc.git
-httpsbase = https://lc.llnl.gov/stash/scm/
+httpsbase =https://lc.llnl.gov/stash/scm/
 sshbase = ssh://git@cz-stash.llnl.gov:7999/
 
 [patch]
