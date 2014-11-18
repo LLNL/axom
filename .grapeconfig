@@ -89,6 +89,6 @@ prefix = v
 
 [subtree-catch]
 prefix = libs/catch
-remote = https://github.com/philsquared/Catch.git
-topicprefixmappings = ?:master
+remote = ssh://git@cz-stash.llnl.gov:7999/ngcc/catch.git
+topicprefixmappings = ?:asctoolkit
 
