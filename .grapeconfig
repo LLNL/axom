@@ -1,7 +1,7 @@
 
 [repo]
-name = ngcc
-url = https://lc.llnl.gov/stash/scm/ngcc/ngcc.git
+name = ASCToolkit 
+url = https://lc.llnl.gov/stash/scm/ngcc/asctoolkit.git
 httpsbase =https://lc.llnl.gov/stash/scm/
 sshbase = ssh://git@cz-stash.llnl.gov:7999/
 
@@ -77,7 +77,7 @@ emailsubject = NGC: <public> updated to <version>
 [project]
 stashurl = https://lc.llnl.gov/stash
 verifyssl = True
-name = ngcc
+name = ngcc  
 
 [versioning]
 file = VERSION
