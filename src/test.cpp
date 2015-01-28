@@ -34,10 +34,10 @@ int approach1()
   //********************************************************************************************************************
 
   // Create DataStore
-  DataStore::CreateDataStore("myDS1");
+  DataStoreNS::CreateDataStore("myDS1");
 
   // get reference to a data store object.
-  DataStore::DataGroup* const myDS1 = DataStore::GetDataStore("myDS1");
+  DataStoreNS::DataStore* const myDS1 = DataStoreNS::GetDataStore("myDS1");
 
 
   //********************************************************************************************************************
@@ -49,13 +49,13 @@ int approach1()
   myDS1->CreateDataGroup("group1");
 
   // get reference to the group
-  DataStore::DataGroup* const group1 = myDS1->GetDataGroup("group1");
+  DataStoreNS::DataGroup* const group1 = myDS1->GetDataGroup("group1");
 
   // use top level datastore group to create group, and assign to local reference
-  DataStore::DataGroup* const group2 = myDS1->CreateDataGroup("group2");
+  DataStoreNS::DataGroup* const group2 = myDS1->CreateDataGroup("group2");
 
   // use group to create group, and assign to local reference
-  DataStore::DataGroup* const group1a = group1->CreateDataGroup("group1a");
+  DataStoreNS::DataGroup* const group1a = group1->CreateDataGroup("group1a");
 
 
   //********************************************************************************************************************
@@ -66,22 +66,22 @@ int approach1()
   group1->CreateDataObject("data1");
 
   // get reference to blank DataObject
-  DataStore::DataObject* const dataObj1 = group1->GetDataObject("data1");
+  DataStoreNS::DataObject* const dataObj1 = group1->GetDataObject("data1");
 
   // specify size of dataObject
-  dataObj1->SetDataShape( DataStore::DataShape() );
+  dataObj1->SetDataShape( DataStoreNS::DataShape() );
 
   // allocate data
   dataObj1->Allocate();
 
   // do all that stuff in one line
-  DataStore::DataObject* const dataObj2 = group1->CreateDataObject("data2")->SetDataShape(DataStore::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj2 = group1->CreateDataObject("data2")->SetDataShape(DataStoreNS::DataShape())->Allocate();
 
   // again
-  DataStore::DataObject* const dataObj3 = group1a->CreateDataObject("data3")->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj4 = group1a->CreateDataObject("data4")->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj5 = group2->CreateDataObject("data5")->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj6 = group2->CreateDataObject("data6")->SetDataShape(DataStore::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj3 = group1a->CreateDataObject("data3")->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj4 = group1a->CreateDataObject("data4")->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj5 = group2->CreateDataObject("data5")->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj6 = group2->CreateDataObject("data6")->SetDataShape(DataStoreNS::DataShape())->Allocate();
 
 
   // create regular c++ object and insert into datastore
@@ -93,23 +93,23 @@ int approach1()
   //********************************************************************************************************************
 
   // use DataObject to get data
-  auto * const data1 = dataObj1->GetData<DataStore::int32*>();
-  auto * const data2 = dataObj2->GetData<DataStore::real64*>();
+  auto * const data1 = dataObj1->GetData<DataStoreNS::int32*>();
+  auto * const data2 = dataObj2->GetData<DataStoreNS::real64*>();
 
   // assuming we didn't want to have a DataObject* const, and didn't want to have to get a DataObject* const at all.
-  auto * const data3 = group1a->GetDataObject("data3")->GetData<DataStore::int32*>();
+  auto * const data3 = group1a->GetDataObject("data3")->GetData<DataStoreNS::int32*>();
   // - or, really what you might want is:
-  auto * const data4 = group1a->GetData<DataStore::real64*>("data4");
+  auto * const data4 = group1a->GetData<DataStoreNS::real64*>("data4");
 
   // a pointer is great, but what about the shape?
-  DataStore::DataShape dataDesc5 = group2->GetDataObject("data5")->GetDataShape();
-  auto * const data5 = DataStore::rtTypes::CastPtr<DataStore::int32*>(dataDesc5.m_dataPtr);
+  DataStoreNS::DataShape dataDesc5 = group2->GetDataObject("data5")->GetDataShape();
+  auto * const data5 = DataStoreNS::rtTypes::CastPtr<DataStoreNS::int32*>(dataDesc5.m_dataPtr);
   const int ndims5 = dataDesc5.m_numDimensions;
   std::size_t* const dims5 = dataDesc5.m_dimensions;
 
   // -again, you might want to cut out the middle man
-  DataStore::DataShape dataDesc6 = group2->GetDataShape("data6");
-  auto * const data6 = DataStore::rtTypes::CastPtr<DataStore::int32*>(dataDesc6.m_dataPtr);
+  DataStoreNS::DataShape dataDesc6 = group2->GetDataShape("data6");
+  auto * const data6 = DataStoreNS::rtTypes::CastPtr<DataStoreNS::int32*>(dataDesc6.m_dataPtr);
   const int ndims6 = dataDesc6.m_numDimensions;
   std::size_t* const dims6 = dataDesc6.m_dimensions;
 
@@ -122,7 +122,7 @@ int approach1()
 
 
 
-
+/*
 // All DataObjects are owned at the top level, and attributes are used to create groupings.
 int approach2()
 {
@@ -131,10 +131,10 @@ int approach2()
   //********************************************************************************************************************
 
   // Create DataStore
-  DataStore::CreateDataStore("myDS1");
+  DataStoreNS::CreateDataStore("myDS1");
 
   // get reference to a data store object.
-  DataStore::DataGroup* const myDS1 = DataStore::GetDataStore("myDS1");
+  DataStoreNS::DataStore* const myDS1 = DataStoreNS::GetDataStore("myDS1");
 
 
   //********************************************************************************************************************
@@ -150,25 +150,25 @@ int approach2()
   myDS1->CreateDataObject("data1");
 
   // get reference to blank DataObject
-  DataStore::DataObject* const dataObj1 = myDS1->GetDataObject("data1");
+  DataStoreNS::DataObject* const dataObj1 = myDS1->GetDataObject("data1");
 
   // specify attribute "group1"
-  dataObj1->SetAttribute( DataStore::Attribute("group1") );
+  dataObj1->SetAttribute( DataStoreNS::Attribute("group1") );
 
   // specify size of dataObject
-  dataObj1->SetDataShape( DataStore::DataShape() );
+  dataObj1->SetDataShape( DataStoreNS::DataShape() );
 
   // allocate data
   dataObj1->Allocate();
 
   // do all that stuff in one line
-  DataStore::DataObject* const dataObj2 = myDS1->CreateDataObject("data2")->SetAttribute( DataStore::Attribute("group1") )->SetDataShape(DataStore::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj2 = myDS1->CreateDataObject("data2")->SetAttribute( DataStoreNS::Attribute("group1") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
 
   // again
-  DataStore::DataObject* const dataObj3 = myDS1->CreateDataObject("data3")->SetAttribute( DataStore::Attribute("group1a") )->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj4 = myDS1->CreateDataObject("data4")->SetAttribute( DataStore::Attribute("group1a") )->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj5 = myDS1->CreateDataObject("data5")->SetAttribute( DataStore::Attribute("group2") )->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj6 = myDS1->CreateDataObject("data6")->SetAttribute( DataStore::Attribute("group2") )->SetDataShape(DataStore::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj3 = myDS1->CreateDataObject("data3")->SetAttribute( DataStoreNS::Attribute("group1a") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj4 = myDS1->CreateDataObject("data4")->SetAttribute( DataStoreNS::Attribute("group1a") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj5 = myDS1->CreateDataObject("data5")->SetAttribute( DataStoreNS::Attribute("group2") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj6 = myDS1->CreateDataObject("data6")->SetAttribute( DataStoreNS::Attribute("group2") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
 
   // create regular c++ object and insert into datastore
   AnyOldClass myClass;
@@ -179,29 +179,29 @@ int approach2()
   //********************************************************************************************************************
 
   // Get groups based on attributes
-  DataStore::DataGroup* const group1 = myDS1->GetDataGroup( DataStore::Attribute("group1") );
-  DataStore::DataGroup* const group1a = myDS1->GetDataGroup( DataStore::Attribute("group1a") );
-  DataStore::DataGroup* const group2 = myDS1->GetDataGroup( DataStore::Attribute("group2") );
+  DataStoreNS::DataGroup* const group1 = myDS1->GetDataGroup( DataStoreNS::Attribute("group1") );
+  DataStoreNS::DataGroup* const group1a = myDS1->GetDataGroup( DataStoreNS::Attribute("group1a") );
+  DataStoreNS::DataGroup* const group2 = myDS1->GetDataGroup( DataStoreNS::Attribute("group2") );
 
 
   // use DataObject to get data
-  auto * const data1 = dataObj1->GetData<DataStore::int32*>();
-  auto * const data2 = dataObj2->GetData<DataStore::real64*>();
+  auto * const data1 = dataObj1->GetData<DataStoreNS::int32*>();
+  auto * const data2 = dataObj2->GetData<DataStoreNS::real64*>();
 
   // assuming we didn't want to have a DataObject* const, and didn't want to have to get a DataObject* const at all.
-  auto * const data3 = group1a->GetDataObject("data3")->GetData<DataStore::int32*>();
+  auto * const data3 = group1a->GetDataObject("data3")->GetData<DataStoreNS::int32*>();
   // - or, really what you might want is:
-  auto * const data4 = group1a->GetData<DataStore::real64*>("data4");
+  auto * const data4 = group1a->GetData<DataStoreNS::real64*>("data4");
 
   // a pointer is great, but what about the shape?
-  DataStore::DataShape dataDesc5 = group2->GetDataObject("data5")->GetDataShape();
-  auto * const data5 = DataStore::rtTypes::CastPtr<DataStore::int32*>(dataDesc5.m_dataPtr);
+  DataStoreNS::DataShape dataDesc5 = group2->GetDataObject("data5")->GetDataShape();
+  auto * const data5 = DataStoreNS::rtTypes::CastPtr<DataStoreNS::int32*>(dataDesc5.m_dataPtr);
   const int ndims5 = dataDesc5.m_numDimensions;
   std::size_t* const dims5 = dataDesc5.m_dimensions;
 
   // -again, you might want to cut out the middle man
-  DataStore::DataShape dataDesc6 = group2->GetDataShape("data6");
-  auto * const data6 = DataStore::rtTypes::CastPtr<DataStore::int32*>(dataDesc5.m_dataPtr);
+  DataStoreNS::DataShape dataDesc6 = group2->GetDataShape("data6");
+  auto * const data6 = DataStoreNS::rtTypes::CastPtr<DataStoreNS::int32*>(dataDesc5.m_dataPtr);
   const int ndims6 = dataDesc6.m_numDimensions;
   std::size_t* const dims6 = dataDesc6.m_dimensions;
 
@@ -212,7 +212,6 @@ int approach2()
   return 0;
 }
 
-
 // same as approach2, but with detached interface.
 int approach3()
 {
@@ -221,7 +220,7 @@ int approach3()
   //********************************************************************************************************************
 
   // Create DataStore
-  DataStore::DataGroup* myDS1 = DataStore::CreateDataStore("myDS1");
+  DataStoreNS::DataStore* myDS1 = DataStoreNS::CreateDataStore("myDS1");
 
 
   //********************************************************************************************************************
@@ -234,60 +233,60 @@ int approach3()
   //********************************************************************************************************************
 
   // create blank DataObject
-  DataStore::CreateDataObject(myDS1, "data1");
+  DataStoreNS::CreateDataObject(myDS1, "data1");
 
   // get reference to blank DataObject
-  DataStore::DataObject* const dataObj1 = DataStore::GetDataObject(myDS1,"data1");
+  DataStoreNS::DataObject* const dataObj1 = DataStoreNS::GetDataObject(myDS1,"data1");
 
   // specify attribute "group1"
-  DataStore::SetAttribute( dataObj1, DataStore::Attribute("group1") );
+  DataStoreNS::SetAttribute( dataObj1, DataStoreNS::Attribute("group1") );
 
   // specify size of dataObject
-  DataStore::SetDataShape( dataObj1, DataStore::DataShape() );
+  DataStoreNS::SetDataShape( dataObj1, DataStoreNS::DataShape() );
 
   // allocate data
-  DataStore::Allocate(dataObj1);
+  DataStoreNS::Allocate(dataObj1);
 
   // do all that stuff in one line
-  DataStore::DataObject* const dataObj2 = DataStore::CreateDataObject(myDS1,"data2");
-  DataStore::SetAttribute( dataObj2, DataStore::Attribute("group1") );
-  DataStore::SetDataShape( dataObj2, DataStore::DataShape());
-  DataStore::Allocate(dataObj2);
+  DataStoreNS::DataObject* const dataObj2 = DataStoreNS::CreateDataObject(myDS1,"data2");
+  DataStoreNS::SetAttribute( dataObj2, DataStoreNS::Attribute("group1") );
+  DataStoreNS::SetDataShape( dataObj2, DataStoreNS::DataShape());
+  DataStoreNS::Allocate(dataObj2);
 
   // combo detached and member
-  DataStore::DataObject* const dataObj3 = DataStore::CreateDataObject(myDS1,"data3")->SetAttribute( DataStore::Attribute("group1a") )->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj4 = DataStore::CreateDataObject(myDS1,"data4")->SetAttribute( DataStore::Attribute("group1a") )->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj5 = DataStore::CreateDataObject(myDS1,"data5")->SetAttribute( DataStore::Attribute("group2") )->SetDataShape(DataStore::DataShape())->Allocate();
-  DataStore::DataObject* const dataObj6 = DataStore::CreateDataObject(myDS1,"data6")->SetAttribute( DataStore::Attribute("group2") )->SetDataShape(DataStore::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj3 = DataStoreNS::CreateDataObject(myDS1,"data3")->SetAttribute( DataStoreNS::Attribute("group1a") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj4 = DataStoreNS::CreateDataObject(myDS1,"data4")->SetAttribute( DataStoreNS::Attribute("group1a") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj5 = DataStoreNS::CreateDataObject(myDS1,"data5")->SetAttribute( DataStoreNS::Attribute("group2") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
+  DataStoreNS::DataObject* const dataObj6 = DataStoreNS::CreateDataObject(myDS1,"data6")->SetAttribute( DataStoreNS::Attribute("group2") )->SetDataShape(DataStoreNS::DataShape())->Allocate();
 
   //********************************************************************************************************************
   // ***** ACCESS DATA *****
   //********************************************************************************************************************
 
   // Get groups based on attributes
-  DataStore::DataGroup* const group1 =  DataStore::GetDataGroup( myDS1, DataStore::Attribute("group1") );
-  DataStore::DataGroup* const group1a = DataStore::GetDataGroup( myDS1, DataStore::Attribute("group1a") );
-  DataStore::DataGroup* const group2 =  DataStore::GetDataGroup( myDS1, DataStore::Attribute("group2") );
+  DataStoreNS::DataGroup* const group1 =  DataStoreNS::GetDataGroup( myDS1, DataStoreNS::Attribute("group1") );
+  DataStoreNS::DataGroup* const group1a = DataStoreNS::GetDataGroup( myDS1, DataStoreNS::Attribute("group1a") );
+  DataStoreNS::DataGroup* const group2 =  DataStoreNS::GetDataGroup( myDS1, DataStoreNS::Attribute("group2") );
 
 
   // use DataObject to get data
-  auto * const data1 = DataStore::GetData<DataStore::int32*>(dataObj1);
-  auto * const data2 = DataStore::GetData<DataStore::real64*>(dataObj2);
+  auto * const data1 = DataStoreNS::GetData<DataStoreNS::int32*>(dataObj1);
+  auto * const data2 = DataStoreNS::GetData<DataStoreNS::real64*>(dataObj2);
 
   // assuming we didn't want to have a DataObject* const, and didn't want to have to get a DataObject* const at all.
-  auto * const data3 = DataStore::GetData<DataStore::int32*>(dataObj3);
+  auto * const data3 = DataStoreNS::GetData<DataStoreNS::int32*>(dataObj3);
   // - or, really what you might want is:
-  auto * const data4 = DataStore::GetData<DataStore::real64*>(dataObj4);
+  auto * const data4 = DataStoreNS::GetData<DataStoreNS::real64*>(dataObj4);
 
   // a pointer is great, but what about the shape?
-  DataStore::DataShape dataDesc5 = *(DataStore::GetDataShape(group2));
-  auto * const data5 = DataStore::rtTypes::CastPtr<DataStore::int32*>(dataDesc5.m_dataPtr);
+  DataStoreNS::DataShape dataDesc5 = *(DataStoreNS::GetDataShape(group2));
+  auto * const data5 = DataStoreNS::rtTypes::CastPtr<DataStoreNS::int32*>(dataDesc5.m_dataPtr);
   const int ndims5 = dataDesc5.m_numDimensions;
   std::size_t* const dims5 = dataDesc5.m_dimensions;
 
   // -again, you might want to cut out the middle man
-  DataStore::DataShape dataDesc6 = group2->GetDataShape("data6");
-  auto * const data6 = DataStore::rtTypes::CastPtr<DataStore::int32*>(dataDesc5.m_dataPtr);
+  DataStoreNS::DataShape dataDesc6 = group2->GetDataShape("data6");
+  auto * const data6 = DataStoreNS::rtTypes::CastPtr<DataStoreNS::int32*>(dataDesc5.m_dataPtr);
   const int ndims6 = dataDesc6.m_numDimensions;
   std::size_t* const dims6 = dataDesc6.m_dimensions;
 
@@ -296,6 +295,7 @@ int approach3()
 
   return 0;
 }
+*/
 
 
 #if 0
@@ -303,11 +303,11 @@ int approach3()
 
 int usecases1()
 {
-  using DataStore::DataGroup;
-  using DataStore::DataObject;
-  using DataStore::DataShape;
-  using DataStore::real64;
-  using DataStore::Attribute;
+  using DataStoreNS::DataGroup;
+  using DataStoreNS::DataObject;
+  using DataStoreNS::DataShape;
+  using DataStoreNS::real64;
+  using DataStoreNS::Attribute;
 //  using namespace DataStore;
 
 #define ALT_DEF 0
@@ -335,10 +335,10 @@ int usecases1()
 
 
   // use the interface to create a data store object
-  DataStore::CreateDataStore("/myDS1");
+  DataStoreNS::CreateDataStore("/myDS1");
 
   // get reference to a data store object.
-  DataStore::DataGroup* const myDS1 = DataStore::GetDataStore("/myDS1");
+  DataStoreNS::DataGroup* const myDS1 = DataStoreNS::GetDataStore("/myDS1");
 
 
 
@@ -350,11 +350,11 @@ int usecases1()
 
 
   // using DataStore interface
-  DataStore::CreateDataObject(myDS1,"dataObject1");
+  DataStoreNS::CreateDataObject(myDS1,"dataObject1");
 
 
   // using DataStore Object
-  myDS1.CreateDataObject("dataObject1").SetDataShape( DataStore::DataShape() ).Allocate();
+  myDS1.CreateDataObject("dataObject1").SetDataShape( DataStoreNS::DataShape() ).Allocate();
   // maybe creation without indication of what is stored is not useful. Discuss later.
   myDS1.CreateDataObject("dataObject1");
 
@@ -363,7 +363,7 @@ int usecases1()
 //  myDS1.CreateDataObject("dataObject1");
 
   // and apply data description as well
-  myDS1.CreateDataObject("dataObject1", DataStore::DataShape() );
+  myDS1.CreateDataObject("dataObject1", DataStoreNS::DataShape() );
 
 
 
@@ -373,14 +373,14 @@ int usecases1()
   //********************************************************************************************************************
 
   // use detached interface function to create group
-  DataStore::CreateDataGroup("/myDS1","myGroup");
+  DataStoreNS::CreateDataGroup("/myDS1","myGroup");
 //  DataStore::CreateDataGroup(myDS1,"myGroup");
 
   // use top level datastore group to create group
   myDS1.CreateDataGroup("myGroup");
 
   // get access to the group
-  DataStore::DataGroup* const myGroup = myDS1.GetDataGroup("myGroup");
+  DataStoreNS::DataGroup* const myGroup = myDS1.GetDataGroup("myGroup");
 
   // don't to this sort of thing
   //DataStore::DataGroup* const myGroup1 = myDS1.GetDataObject<DataGroup>("myGroup");
@@ -393,13 +393,13 @@ int usecases1()
   //********************************************************************************************************************
 
   // through data store object
-  DataStore::DataObject* const dataObj1 = myDS1.GetDataObject("dataObject1");
+  DataStoreNS::DataObject* const dataObj1 = myDS1.GetDataObject("dataObject1");
 
-  DataStore::DataObject* const dataObj1 = myDS1.GetDataGroup("myGroup").GetDataObject("dataObject1");
+  DataStoreNS::DataObject* const dataObj1 = myDS1.GetDataGroup("myGroup").GetDataObject("dataObject1");
 
   // through interface
-  DataStore::DataObject* const dataObj1a = DataStore::DataQuery1("/myDS1/dataObject1");
-  DataStore::DataObject* const dataObj1a = DataStore::DataQuery1(myDS1, "/Group/dataObject1");
+  DataStoreNS::DataObject* const dataObj1a = DataStoreNS::DataQuery1("/myDS1/dataObject1");
+  DataStoreNS::DataObject* const dataObj1a = DataStoreNS::DataQuery1(myDS1, "/Group/dataObject1");
 
 
 
@@ -410,9 +410,9 @@ int usecases1()
 
   // set attribute
 
-  DataStore::AttachAttribute("myDS1", Attribute());
+  DataStoreNS::AttachAttribute("myDS1", Attribute());
 
-  DataStore::AttachAttribute("myGroup", Attribute());
+  DataStoreNS::AttachAttribute("myGroup", Attribute());
 
   myDS1.SetAttribute("dump", true, 1);
 
@@ -435,26 +435,26 @@ int usecases1()
 
 
   // apply data descriptor through object
-  dataObj1.SetDataShape(DataStore::DataShape());
+  dataObj1.SetDataShape(DataStoreNS::DataShape());
 
   // apply data descriptor to group, and propagate to data objects...and sub groups???
-  myGroup.SetDataShape(DataStore::DataShape());
+  myGroup.SetDataShape(DataStoreNS::DataShape());
 
 
 
   // ***** allocate data on DS managed object *****
   dataObj1.Allocate();
-  dataObj1.Allocate( DataStore::DataShape() );
+  dataObj1.Allocate( DataStoreNS::DataShape() );
 
   // should we allow for chaining commands...thus you have to return a reference to the object for every set function.
-  myDS1.CreateDataObject("dataObject2").SetDataShape(DataStore::DataShape()).Allocate();
+  myDS1.CreateDataObject("dataObject2").SetDataShape(DataStoreNS::DataShape()).Allocate();
 
 
 
 
   // if the caller wants to own the data
-  std::vector<DataStore::real64> myData1(50);
-  DataStore::real64* myData2 = new DataStore::real64[50];
+  std::vector<DataStoreNS::real64> myData1(50);
+  DataStoreNS::real64* myData2 = new DataStoreNS::real64[50];
 
 
   // this should create the DataObject implicitly
@@ -465,10 +465,10 @@ int usecases1()
   myDS1.insert( "mydata1", myData1 );
 
   // Or we can insert through the Interface
-  DataStore::insert( "/myDS1/mydata1", myData1 );
+  DataStoreNS::insert( "/myDS1/mydata1", myData1 );
 
   // insert some local managed data from raw pointer
-  DataStore::insert( "/myDS1/mydata2", myData2, DataStore::DataShape() );
+  DataStoreNS::insert( "/myDS1/mydata2", myData2, DataStoreNS::DataShape() );
 
 
 
@@ -507,9 +507,9 @@ int usecases1()
   myGroup.delete("mydata1a");
 
   // Remove from a group and keep a reference to the node.
-  DataStore::Node* const ref = myGroup.remove("mydata1a");
+  DataStoreNS::Node* const ref = myGroup.remove("mydata1a");
   // The datastore no longer owns the node, it now belongs to the caller.
-  unique_ptr<DataStore::Node> ptr = myGroup.remove("mydata1a");
+  unique_ptr<DataStoreNS::Node> ptr = myGroup.remove("mydata1a");
 
   int i = node.GetIndex("mydata1a");
 
@@ -539,16 +539,16 @@ int usecases2()
 #if ALT_DEF == 1
   // explicitly initialize the library
   // creates the root directory, /, which is identical to any other Group
-  DataStore::InitLibrary();
+  DataStoreNS::InitLibrary();
 
   // create directory directly below root
-  DataStore::CreateDirectory("/myDS1");
+  DataStoreNS::CreateDirectory("/myDS1");
 
   // get reference to a data store object.
-  DataStore::DataDirectory* const myDS1 = DataStore::GetDirectory("/myDS1");
+  DataStoreNS::DataDirectory* const myDS1 = DataStoreNS::GetDirectory("/myDS1");
 
-  DataStore::DataDirectory* const root = DataStore::GetDirectory("/");
-  DataStore::DataDirectory* const myDS1 = root.GetDirectory("myDS1");
+  DataStoreNS::DataDirectory* const root = DataStoreNS::GetDirectory("/");
+  DataStoreNS::DataDirectory* const myDS1 = root.GetDirectory("myDS1");
 
   
 
@@ -562,7 +562,7 @@ int usecases2()
   // Looking up nodes ends up calling __getattr__ in Python
 
   PythonStore::Directory *dir =  new PythonStore::Directory;
-  DataStore::Group* const py = root.CreateNode("/python").SetObject(dir);
+  DataStoreNS::Group* const py = root.CreateNode("/python").SetObject(dir);
 
   root['sys'];     // references Python's sys module (assuming it was imported)
 
@@ -571,12 +571,12 @@ int usecases2()
 
   //********************************************************************************************************************
   // explicitly finalize the library
-  DataStore::FinLibrary();
+  DataStoreNS::FinLibrary();
 
 
-  myDS1.CreateNode("dataObject2").SetObject(DataStore::DataShape());
-  myDS1.CreateNode("fcnObject1").SetObject(DataStore::FunctionDescriptor());
-  myDS1.CreateNode("type:typeObject1").SetObject(DataStore::TypeDescriptor());
+  myDS1.CreateNode("dataObject2").SetObject(DataStoreNS::DataShape());
+  myDS1.CreateNode("fcnObject1").SetObject(DataStoreNS::FunctionDescriptor());
+  myDS1.CreateNode("type:typeObject1").SetObject(DataStoreNS::TypeDescriptor());
 
 
   // Allow users to extend functionality by creating their own scope
@@ -593,26 +593,26 @@ int usecases2()
   // but cannot be accessed by name.
 
   // Return an index object
-  DataStore::DataIndex* index = DataStore::AttrServer(root, "dump");
+  DataStoreNS::DataIndex* index = DataStoreNS::AttrServer(root, "dump");
 
   // Append to existing index object
-  DataStore::DataIndex *index = new DataStore::DataIndex;
-  DataStore::AttrServer(dir1, "dump", index);
-  DataStore::AttrServer(dir2, "dump", index);
+  DataStoreNS::DataIndex *index = new DataStoreNS::DataIndex;
+  DataStoreNS::AttrServer(dir1, "dump", index);
+  DataStoreNS::AttrServer(dir2, "dump", index);
 
 
   // call actor instead of create index
-  DataStore::AttrServer("/dir1", "dump", actor);
+  DataStoreNS::AttrServer("/dir1", "dump", actor);
 
   // call selector to decided which notes to use, return index
-  DataStore::AttrServer(dir1, selector);
+  DataStoreNS::AttrServer(dir1, selector);
 
   // call selector to decided which notes to use, call actor for selected nodes
-  DataStore::AttrServer(dir1, selector, actor);
+  DataStoreNS::AttrServer(dir1, selector, actor);
 
   // query its location in the tree
-  DataStore::Node* const root = node.GetRoot();
-  DataStore::Node* const parent = node.GetParent();
+  DataStoreNS::Node* const root = node.GetRoot();
+  DataStoreNS::Node* const parent = node.GetParent();
 
   // Return "/dir1/dir2/node"
   string path = node.GetPath()

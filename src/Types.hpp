@@ -12,7 +12,7 @@
 /**
  *
  */
-namespace DataStore
+namespace DataStoreNS
 {
 typedef short int int16;
 typedef unsigned short int uint16;
@@ -243,6 +243,24 @@ struct DataShape
 
   }
 
+  DataShape& operator=( const DataShape& source )
+  {
+    m_dataPtr = nullptr;
+    m_numDimensions = source.m_numDimensions ;
+    m_dataStride = source.m_dataStride;
+
+    if( m_dimensions!=nullptr )
+    {
+      delete[] m_dimensions;
+    }
+    m_dimensions = new std::size_t[m_numDimensions];
+
+    for( int i=0 ; i<m_numDimensions ; ++i )
+    {
+      m_dimensions[i] = source.m_dimensions[i];
+    }
+
+  }
 
   ~DataShape()
   {

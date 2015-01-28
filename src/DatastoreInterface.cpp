@@ -10,22 +10,22 @@
 
 #include "DatastoreInterface.hpp"
 
-namespace DataStore
+namespace DataStoreNS
 {
 
 namespace
 {
-  std::unordered_map<std::string,DataGroup> DataStores;
+  std::unordered_map<std::string,DataStore> DataStores;
 }
 
 
-DataGroup* CreateDataStore( const std::string& name )
+DataStore* CreateDataStore( const std::string& name )
 {
-  DataStores.insert(std::make_pair( name,DataGroup(name, std::string(), nullptr ) ) );
+  DataStores.insert(std::make_pair( name,DataStore() ) );
   return GetDataStore(name);
 }
 
-DataGroup* GetDataStore( const std::string& name )
+DataStore* GetDataStore( const std::string& name )
 {
   return &(DataStores.at(name));
 }

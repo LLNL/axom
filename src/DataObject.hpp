@@ -8,15 +8,17 @@
 #ifndef DATASET_HPP_
 #define DATASET_HPP_
 
+#include<map>
 #include<unordered_map>
 #include "Attributes.hpp"
 #include<vector>
 #include<typeindex>
 
-namespace DataStore
+namespace DataStoreNS
 {
 
 class DataGroup;
+class DataStore;
 
 /**
  * \class DataObject
@@ -52,8 +54,7 @@ public:
    * \brief constructor
    */
   DataObject( const std::string& name,
-              const std::string& path,
-              DataGroup* const parent );
+              const DataGroup* const parent );
 
   /**
    * @param source
@@ -66,7 +67,7 @@ public:
    * @param source
    * \brief default move constructor
    */
-  DataObject( const DataObject&& source );
+  DataObject( DataObject&& source );
 
   /**
    * \brief default destructor
@@ -133,17 +134,23 @@ public:
    * @param name the attribute name
    * @return the attribute value
    */
+  /*
   const Attribute& GetAttribute( const std::string& name ) const
   {
     return m_attributes.at(name);
   }
+  */
 
   /**
    * @param newAttribute the attribute that is to be added
    * @return *this
    */
-  DataObject* SetAttribute( const Attribute& newAttribute );
+//  DataObject* SetAttribute( const Attribute& newAttribute );
 
+  std::map< std::string, DataGroup* >& GetGroups()
+  {
+    return m_groups;
+  }
 
 
 
@@ -153,7 +160,7 @@ public:
    * @return m_dataShape
    */
   const DataShape& GetDataShape() const
-  { return *m_dataShape; }
+  { return m_dataShape; }
 
   /**
    *
@@ -163,7 +170,7 @@ public:
   virtual DataObject* SetDataShape( const DataShape& dataShape )
   {
     // check to see what conditions m_dataDescriptor can be set.
-    m_dataShape = new DataShape(dataShape);
+    m_dataShape = dataShape;
     m_data = dataShape.m_dataPtr;
     return this;
   }
@@ -204,27 +211,22 @@ public:
   virtual DataObject* SetLength( const std::size_t newsize );
 
   std::size_t length()
-  { return m_dataShape->m_dimensions[0]; }
+  { return m_dataShape.m_dimensions[0]; }
 
   /**
    *
    * @return m_name
    */
   std::string& Name()  {return m_name;}
-  std::string Name() const {return m_name;}
+  const std::string& Name() const {return m_name;}
 
-  /**
-   *
-   * @return m_path
-   */
-  std::string& Path() {return m_path;}
 
   /**
    *
    * @param attributeKey
    * @return
    */
-  bool HasAttribute( const std::string& attributeKey ) const;
+  bool HasAttribute( const std::string& attributeKey ) const {}
 
   /**
    *
@@ -244,7 +246,7 @@ public:
   { return static_cast<TYPE>(m_data); }
 
 
-  DataGroup* GetParent()
+  const DataGroup* GetParent() const
   { return m_parent; }
 
   ///@}
@@ -264,31 +266,28 @@ public:
 
 private:
   /// pointer to DataGroup that "owns" this DataObject
-  DataGroup* const m_parent;
-
-  /// DataGroup class stores a vector of DataObject. m_index is the index of this DataObject in the vector.
-  std::size_t m_index;
+  const DataGroup* m_parent;
 
   /// unique name of this DataObject
   std::string m_name;
 
-  /// full "path" of this DataObject
-  std::string m_path;
-
-
   /// hash table of attributes keyed by the attribute name.
-  std::unordered_map<std::string,Attribute> m_attributes;
+//  std::unordered_map<std::string,Attribute> m_attributes;
 
   /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataObjects m_data are equivalent to this->m_data.
   void* m_data;
 
   /// a complete description of the data, assuming one exists. Mainly for simple data arrays, and potentially
   /// pod structure.
-  DataShape* m_dataShape;
+  DataShape m_dataShape;
 
   ///
   //  std::type_index m_dataType;
   rtTypes::TypeID m_dataType;
+
+  /// list of groups/attributes that hold pointers to "this"
+  std::map< std::string, DataGroup* > m_groups;
+
 
   /// use a vector to allocate data until we implement an appropriate allocator interface.
   std::vector<char> m_memblob;

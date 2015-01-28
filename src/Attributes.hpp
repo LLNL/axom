@@ -11,7 +11,7 @@
 #include "Types.hpp"
 
 
-namespace DataStore
+namespace DataStoreNS
 {
 
 /**

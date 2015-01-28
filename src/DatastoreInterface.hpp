@@ -18,10 +18,11 @@
 #include "Types.hpp"
 #include "Attributes.hpp"
 #include "DataGroup.hpp"
+#include "DataStore.hpp"
 
 
 
-namespace DataStore
+namespace DataStoreNS
 {
 
 /// placeholder for the datatypes
@@ -79,8 +80,8 @@ private:
  */
 
 
-  DataGroup* CreateDataStore( const std::string& name ) ;
-  DataGroup* GetDataStore( const std::string& name );
+  DataStore* CreateDataStore( const std::string& name ) ;
+  DataStore* GetDataStore( const std::string& name );
   void DeleteDataStore( const std::string& name );
 
 
@@ -138,15 +139,15 @@ private:
    *
    */
   ///@{
-  DataObject& SetAttribute( DataObject* const dataObject, const Attribute& att );
+  inline DataObject& SetAttribute( DataObject* const dataObject, const Attribute& att ){}
   DataObject& SetAttribute( const std::string& pathAndName, const Attribute& att );
 
 
   ///@}
 
-  DataObject* SetDataShape( DataObject* const dataObject, const DataShape& shape );
+  inline DataObject* SetDataShape( DataObject* const dataObject, const DataShape& shape ) {}
 
-  DataShape* GetDataShape( DataObject* const obj );
+  inline DataShape* GetDataShape( DataObject* const obj ) {}
 
   /**
    *
@@ -156,7 +157,7 @@ private:
    */
   ///@{
 
-  DataGroup* GetDataGroup( const DataGroup* group, const Attribute& attribute );
+  inline DataGroup* GetDataGroup( const DataGroup* group, const Attribute& attribute ) {}
   inline DataObject* GetDataObject( DataGroup* const dg, const std::string name ){}
 
   template< typename TYPE >

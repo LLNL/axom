@@ -33,15 +33,15 @@
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
-using DataStore::DataObject;
-using DataStore::DataGroup;
+using DataStoreNS::DataObject;
+using DataStoreNS::DataGroup;
 
 /**************************************************************************
  * Subroutine:  GetUserInput
  * Purpose   :  Ask for control and output information
  *************************************************************************/
 
-void GetUserInput(DataStore::DataGroup* const problem)
+void GetUserInput(DataStoreNS::DataGroup* const problem)
 {
   /**********************************/
   /* Get mesh info, and create mesh */
@@ -146,8 +146,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* create element and face classes */
 
-  DataGroup* const elem = prob->CreateDataGroup("elem")->SetDataShape( DataStore::DataShape(numElems));
-  DataGroup* const face = prob->CreateDataGroup("face")->SetDataShape( DataStore::DataShape(numFaces));;
+  DataGroup* const elem = prob->CreateDataGroup("elem")->SetDataShape( DataStoreNS::DataShape(numElems));
+  DataGroup* const face = prob->CreateDataGroup("face")->SetDataShape( DataStoreNS::DataShape(numFaces));;
 
   /* set up some important views */
 
@@ -165,7 +165,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* (shocktube element numbers are one through numElems-1 inclusive) */
 //  tube->indexSet()->shift(1);
   std::size_t numTubeElems = (numElems - 2);
-  DataGroup* const tube = elem->CreateDataGroup("tube")->SetDataShape(DataStore::DataShape(numTubeElems));
+  DataGroup* const tube = elem->CreateDataGroup("tube")->SetDataShape(DataStoreNS::DataShape(numTubeElems));
   int* const mapToElems = tube->CreateDataObject("mapToElems")
                               ->SetType<int>()
                               ->Allocate()->GetData<int*>();
@@ -179,7 +179,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* Each face connects to two elements */
 //  Relation &faceToElem = *face->relationCreate("faceToElem", 2);
   std::size_t dims[2] = { numFaces, 2 };
-  DataStore::DataShape desc(2, dims);
+  DataStoreNS::DataShape desc(2, dims);
 
   auto * const faceToElem = face->CreateDataObject("faceToElem")
                                 ->SetDataShape(desc)
@@ -195,7 +195,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
   dims[0] = numElems;
-  DataStore::DataShape desc2(2, dims);
+  DataStoreNS::DataShape desc2(2, dims);
   auto * const elemToFace = tube->CreateDataObject("elemToFace")->SetType<int>()->SetDataShape(desc2)->Allocate()->GetData<int*>();
 
   for (i = 0; i < numElems; ++i)
@@ -235,7 +235,7 @@ void InitializeShockTube(DataGroup * const prob)
 
   /* Fill left half with high pressure, right half with low pressure */
   int startTube = 0;
-  int endTube = elem->length();
+  int endTube = elem->GetDataShape().m_dimensions[0];
   int midTube = endTube / 2;
 
   /* Non-dimensionalized reference values */
@@ -303,7 +303,7 @@ void ComputeFaceInfo(DataGroup * const problem)
   double * const F0 = face->GetData<double*>("F0");
   double * const F1 = face->GetData<double*>("F1");
   double * const F2 = face->GetData<double*>("F2");
-  int numFaces = face->length();
+  int numFaces = face->GetDataShape().m_dimensions[0];
 
   DataGroup* const elem = problem->GetDataGroup("elem");
   double *mass = elem->GetData<double*>("mass");
@@ -399,7 +399,7 @@ void UpdateElemInfo(DataGroup * const problem)
   auto * const elemToFace = tube->GetDataObject("elemToFace")->GetData<int*>();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
-  int numTubeElems = tube->length();
+  int numTubeElems = tube->GetDataShape().m_dimensions[0];
 
 //  int *is = tube->map();
   int* const is = tube->GetDataObject("mapToElems")->GetData<int*>();
@@ -474,11 +474,11 @@ void DumpUltra( const DataGroup * const prob)
      const int length = obj->length();
      if( length <= 1 )
      {
-       if( obj->GetType() == DataStore::rtTypes::TypeID::int32_id )
+       if( obj->GetType() == DataStoreNS::rtTypes::TypeID::int32_id )
        {
          fprintf(fp, "# %s = %d\n", obj->Name().c_str(), *(obj->GetData<int*>())) ;
        }
-       else if( obj->GetType() == DataStore::rtTypes::TypeID::real64_id )
+       else if( obj->GetType() == DataStoreNS::rtTypes::TypeID::real64_id )
        {
          fprintf(fp, "# %s = %f\n", obj->Name().c_str(), *(obj->GetData<double*>())) ;
        }
@@ -490,14 +490,14 @@ void DumpUltra( const DataGroup * const prob)
    {
      const int length = obj->length();
      fprintf(fp, "# %s\n", obj->Name().c_str() ) ;
-     if( obj->GetType() == DataStore::rtTypes::TypeID::int32_id )
+     if( obj->GetType() == DataStoreNS::rtTypes::TypeID::int32_id )
      {
        int const * const data = obj->GetData<int*>();
        for ( int i=0; i<length; ++i)
           fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
        fprintf(fp, "\n") ;
      }
-     else if( obj->GetType() == DataStore::rtTypes::TypeID::real64_id )
+     else if( obj->GetType() == DataStoreNS::rtTypes::TypeID::real64_id )
      {
        double const * const data = obj->GetData<double*>();
        for ( int i=0; i<length; ++i)
@@ -524,7 +524,8 @@ int main(void)
   /* adding a communication subroutine in the main loop, */
   /* and calling MPI_Finalize() at the end of main() */
 
-  DataStore::DataGroup* const problem = DataStore::CreateDataStore("problem");
+  DataStoreNS::DataStore* const dataStore = DataStoreNS::CreateDataStore("ds");
+  DataStoreNS::DataGroup* const problem = dataStore->CreateDataGroup("problem");
 
   GetUserInput(problem);
   CreateShockTubeMesh(problem);

@@ -14,7 +14,7 @@
 #include <vector>
 #include "Types.hpp"
 
-namespace DataStore
+namespace DataStoreNS
 {
 
 
@@ -24,14 +24,19 @@ namespace DataStore
  *
  * \brief class to access (and potentially own) collections of DataObjects
  */
-class DataGroup : public DataObject
+class DataGroup
 {
+public:
   // change to regular pointer for now.
   typedef std::vector< DataObject* > dataArrayType;
   typedef std::unordered_map<std::string, sizet> lookupType;
 
 
 private:
+  DataGroup* m_parent;
+
+  DataStore* m_dataStore;
+
   /// array of dataObject*
   dataArrayType m_DataObjects;
 
@@ -40,8 +45,13 @@ private:
 
   std::unordered_map<std::string, DataGroup* > m_childGroups;
 
+  std::string m_name;
+
+  DataShape m_dataShape;
+
 
 public:
+
   /**
    * @name Constructor, Destructor, Assignment, Move, Copy
    */
@@ -58,7 +68,8 @@ public:
    */
   DataGroup( const std::string& name,
              const std::string& path,
-             DataGroup* const parent );
+             DataGroup* const parent,
+             DataStore* const dataStore );
 
   /*!
    * @param source
@@ -70,7 +81,7 @@ public:
    * @param source
    * \brief default move constructor
    */
-  DataGroup( const DataGroup&& source );
+  DataGroup( DataGroup&& source );
 
   /*!
    * \brief default destructor
@@ -105,6 +116,11 @@ public:
   ///@{
 
   DataObject* CreateDataObject( const std::string& name );
+  DataObject* DetachDataObject( const std::string& name );
+
+  void RemoveDataObject( const std::string& name, const bool removeFromDataStore );
+
+  void ReleaseDataObject( const std::string& name );
 
   DataGroup* CreateDataGroup( const std::string& name );
 
@@ -138,15 +154,19 @@ public:
     return (*(GetData<T*>( name )));
   }
 */
+  std::string& Name()  {return m_name;}
+  const std::string& Name() const {return m_name;}
+
 
   /*!
    *
    * @param dataDescriptor
    * @return
    */
-  virtual DataGroup* SetDataShape( const DataShape& dataShape ) override final
+  DataGroup* SetDataShape( const DataShape& dataShape )
   {
-    return static_cast<DataGroup*>(DataObject::SetDataShape(dataShape));
+    m_dataShape = dataShape;
+    return this;
   }
 
 
@@ -194,7 +214,11 @@ public:
     return m_DataObjects[ lookup ]->GetData<DATATYPE>();
   }
 
-  using DataObject::GetDataShape;
+  const DataShape& GetDataShape() const
+  {
+    return m_dataShape;
+  }
+
   const DataShape& GetDataShape( const std::string& name ) const
   {
     return GetDataObject(name)->GetDataShape();
@@ -206,8 +230,6 @@ public:
   {
     return m_DataObjectLookup.at(name);
   }
-
-
 
 };
 
