@@ -1,0 +1,15 @@
+#
+# DataStore module
+#
+
+name:    dstest
+docs:    Datastore test functions
+
+cfile:   dstestmodule.cpp
+cheader: dstestmodule.h
+cprefix: DSTST
+#cerrorobj: No
+
+functions:
+  - name: call_python_function
+    docs: call a Python funtion via C

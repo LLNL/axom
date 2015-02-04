@@ -1,0 +1,55 @@
+#
+# Makefile.lt
+#
+
+#PACT = /usr/apps/pactnew
+PACT = /home/taylor16/pact/gitiron/dev/gnu
+
+
+DS_SRC = ../..  # Datastore source
+VPATH = ../..:..
+
+LIBOBJS = \
+	DataObject.o \
+	DataGroup.o \
+	DatastoreInterface.o \
+	c-datastore.o
+
+DUMPOBJS = \
+	dumpfile.o
+
+
+CLIBS =  -L. -lds -lstdc++
+CXXLIBS = -L. -lds -ldsdump -L$(PACT)/lib -lpdb -lpml -lscore
+
+CFLAGS = -O0 -g3 -std=c99 -I$(DS_SRC)
+CXXFLAGS = -O0 -g3 -std=c++11 -Wall -Wextra -Wshadow -pedantic -Woverloaded-virtual -Wno-unused-variable -Wno-unused-parameter -Wno-return-type -I.. -I$(DS_SRC) -I$(PACT)/include -fpermissive
+# -Wabi
+
+testdump.x : testdump.cpp libds.a libdsdump.a
+
+test1.x : test1.cpp libds.a
+
+test1c.x : test1c.c libds.a
+
+libds.a : $(LIBOBJS)
+	ar -rsc $@ $?
+
+libdsdump.a : $(DUMPOBJS)
+	ar -rsc $@ $?
+
+#DataGroup.o : $(DS_SRC)/DataGroup.cpp
+%.o : %.cpp
+	$(CXX) $(CXXFLAGS) $< -c -o $@
+
+%.x : %.c
+	$(CC) $(CFLAGS) -I$(DS_SRC) $< $(CLIBS) -o $@
+
+%.x : %.cpp
+	$(CXX) $(CXXFLAGS) -I$(DS_SRC) $< $(CXXLIBS) -o $@
+
+clean : 
+	rm -f *~ test*.x libds.a $(LIBOBJS) libdsdump.a $(DUMPOBJS) abc
+
+.PHONY : clean
+
