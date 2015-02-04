@@ -24,7 +24,7 @@ public:
     //    ~DataFunctionCompiled() {};
 
 
-    void AddArgument() override;
+    //    void AddArgument() override;
     void Call() override;
 
 private:

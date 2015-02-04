@@ -31,7 +31,7 @@ public:
 	Py_DECREF(m_fcn);
     };
 
-    void AddArgument() override;
+    //    void AddArgument() override;
     void Call() override;
 
 private:
