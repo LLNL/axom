@@ -139,3 +139,24 @@ if("${isSystemDir}" STREQUAL "-1")
    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
+################################
+#  macros
+################################
+
+##------------------------------------------------------------------------------
+## - Given a library target nane and a list of sources, this macros builds
+##   a static or shared library according to a user-supplied BUILD_SHARED_LIBS
+##   option.
+##
+## make_library(libtarget srcs)
+##------------------------------------------------------------------------------
+macro(make_library libtarget srcs)
+
+   if( BUILD_SHARED_LIBS )
+      add_library(${libtarget} SHARED ${srcs})
+   else()
+      add_library(${libtarget} STATIC ${srcs})
+   endif()
+
+endmacro(make_library)
+
