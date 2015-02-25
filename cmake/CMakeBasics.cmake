@@ -97,8 +97,9 @@ mark_as_advanced(
 # enable creation of compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(ENABLE_WARNINGS "Enable Compiler warnings." OFF)
+if(ENABLE_WARNINGS)
 
-macro(ENABLE_WARNINGS)
     # set the warning levels we want to abide by
     if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
         add_definitions(/W2)
@@ -109,7 +110,8 @@ macro(ENABLE_WARNINGS)
             add_definitions(-Wall -Wextra)
         endif()
     endif()
-endmacro()
+
+endif()
 
 ################################
 # RPath Settings
