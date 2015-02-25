@@ -97,6 +97,13 @@ mark_as_advanced(
 # enable creation of compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+## Enable ENABLE C++ 11 features
+option(ENABLE_CXX11 "Enables C++11 features" ON)
+if (ENABLE_CXX11)
+  # define a macro so the code can ifdef accordingly.
+  add_definitions("-DUSECXX11")
+endif()
+
 ## Choose static or shared libraries.
 option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 
@@ -152,10 +159,15 @@ endif()
 ##------------------------------------------------------------------------------
 macro(make_library libtarget srcs)
 
-   if( BUILD_SHARED_LIBS )
+   if ( BUILD_SHARED_LIBS )
       add_library(${libtarget} SHARED ${srcs})
    else()
       add_library(${libtarget} STATIC ${srcs})
+   endif()
+
+   if ( ENABLE_CXX11 )
+      ## Note, this requires cmake 3.1 and above
+      set_property(TARGET ${libtarget} PROPERTY CXX_STANDARD 11)
    endif()
 
 endmacro(make_library)
