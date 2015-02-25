@@ -97,6 +97,9 @@ mark_as_advanced(
 # enable creation of compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+## Choose static or shared libraries.
+option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
+
 option(ENABLE_WARNINGS "Enable Compiler warnings." OFF)
 if(ENABLE_WARNINGS)
 
