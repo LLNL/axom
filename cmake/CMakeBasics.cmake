@@ -43,6 +43,54 @@
 ###############################################################################
 
 ################################
+# Standard Build Layout
+################################
+
+##
+## Defines the layout of the build directory. Namely,
+## it indicates the location where the various header files should go,
+## where to store libraries (static or shared), the location of the
+## bin directory for all executables and the location for fortran moudules.
+##
+
+## Set the path where all the header will be stored
+ set(HEADER_INCLUDES_DIRECTORY
+     ${PROJECT_BINARY_DIR}/include
+     CACHE PATH
+     "Directory where all headers will go in the build tree"
+     )
+ include_directories(${HEADER_INCLUDES_DIRECTORY})
+
+ ## Set the path where all the libraries will be stored
+ set(LIBRARY_OUTPUT_PATH
+     ${PROJECT_BINARY_DIR}/libs
+     CACHE PATH
+     "Directory where compiled libraries will go in the build tree"
+     )
+
+ ## Set the path where all the executables will go
+ set(EXECUTABLE_OUTPUT_PATH
+     ${PROJECT_BINARY_DIR}/bin
+     CACHE PATH
+     "Directory where executables will go in the build tree"
+     )
+
+ ## Set the Fortran module directory
+ set(CMAKE_Fortran_MODULE_DIRECTORY
+     ${PROJECT_BINARY_DIR}/FortranModules
+     CACHE PATH
+     "Directory where all Fortran modules will go in the build tree"
+     )
+
+## Mark as advanced
+mark_as_advanced(
+     LIBRARY_OUTPUT_PATH
+     EXECUTABLE_OUTPUT_PATH
+     CMAKE_Fortran_MODULE_DIRECTORY
+     )
+
+
+################################
 # Standard CMake Options
 ################################
 
