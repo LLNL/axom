@@ -1,14 +1,34 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
-SET(CMAKE_CXX_COMPILER  /usr/apps/gnu/4.9.0/bin/g++)
-#SET(CMAKE_CXX_COMPILER  /usr/local/bin/g++4.9.2)
+################################
+# Datastore
+################################
 
-project(test)
+project(Datastore)
 
-add_executable( ds_test src/DataStore.cpp  src/DataGroup.cpp  src/DataObject.cpp src/DatastoreInterface.cpp src/Examples/ShockTube.cc src/test.cpp)
+################################
+# Prevent in-source builds
+################################
+include(cmake/PreventInSourceBuilds.cmake)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g3 -std=c++11 -Wall -Wabi -Wextra -Wshadow -pedantic  -Woverloaded-virtual  -Wno-unused-variable")
-SET(CMAKE_VERBOSE_MAKEFILE)
-include_directories(src)
+################################
+# Set some standard cmake opts
+################################
+include(cmake/CMakeBasics.cmake)
 
-install(TARGETS ds_test DESTINATION bin)
+################################
+# Add the datastore lib
+################################
+# add datastore include dirs so units tests have access to the headers
+add_subdirectory(datastore)
+
+################################
+# Add docs
+################################
+add_subdirectory(docs)
+
+################################
+# Create CMake importable
+# exports for all of our targets
+################################
+#install(EXPORT datastore DESTINATION lib/cmake)
