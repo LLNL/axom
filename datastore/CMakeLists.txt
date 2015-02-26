@@ -2,7 +2,6 @@
 # Specify all headers
 #
 set(datastore_headers
-    ${PROJECT_SOURCE_DIR}/datastore/datastore.h
     ${PROJECT_SOURCE_DIR}/datastore/Attributes.hpp
     ${PROJECT_SOURCE_DIR}/datastore/DataGroup.hpp
     ${PROJECT_SOURCE_DIR}/datastore/DataObject.hpp
@@ -10,15 +9,16 @@ set(datastore_headers
     ${PROJECT_SOURCE_DIR}/datastore/DatastoreInterface.hpp
     ${PROJECT_SOURCE_DIR}/datastore/Types.hpp
     ${PROJECT_SOURCE_DIR}/datastore/Utilities.hpp
+    ${PROJECT_SOURCE_DIR}/datastore/datastore.h
     )
 
 #
-# Specify all sources
+# Specify all sourcess
 #
 set(datastore_sources
-    ${PROJECT_SOURCE_DIR}/datastore/DataStore.cpp
     ${PROJECT_SOURCE_DIR}/datastore/DataGroup.cpp
     ${PROJECT_SOURCE_DIR}/datastore/DataObject.cpp
+    ${PROJECT_SOURCE_DIR}/datastore/DataStore.cpps
     ${PROJECT_SOURCE_DIR}/datastore/DatastoreInterface.cpp
     )
 
