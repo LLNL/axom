@@ -17,9 +17,13 @@ include(cmake/PreventInSourceBuilds.cmake)
 include(cmake/CMakeBasics.cmake)
 
 ################################
+# Setup 3rd Party Libs
+################################
+include(cmake/Setup3rdParty.cmake)
+
+################################
 # Add the datastore lib
 ################################
-# add datastore include dirs so units tests have access to the headers
 add_subdirectory(datastore)
 
 ################################
