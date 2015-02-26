@@ -32,6 +32,11 @@ add_subdirectory(datastore)
 add_subdirectory(docs)
 
 ################################
+# Add tests
+################################
+add_subdirectory(tests)
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################
