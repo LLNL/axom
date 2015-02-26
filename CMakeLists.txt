@@ -34,10 +34,16 @@ add_subdirectory(docs)
 ################################
 # Add tests
 ################################
-add_subdirectory(tests)
+#add_subdirectory(tests)
+
+################################
+# install targets from build
+################################s
+#install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION bin)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
 
 ################################
 # Create CMake importable
 # exports for all of our targets
 ################################
-#install(EXPORT datastore DESTINATION lib/cmake)
+install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
