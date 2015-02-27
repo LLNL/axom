@@ -26,7 +26,7 @@ public:
     virtual ~DataFunction() {};
 
 
-    virtual void AddArgument();
+    virtual void AddArgument() = 0;
     virtual void Call() = 0;
 };
 

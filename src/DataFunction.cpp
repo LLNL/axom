@@ -1,24 +1,21 @@
 /*
- * DataFunction.hpp
+ * DataFunctionCompiled.hpp
  */
 
-#include "DataFunction.hpp"
+#include "DataFunctionCompiled.hpp"
 
 namespace DataStore
 {
 
-void DataFunction::AddArgument()
+void DataFunctionCompiled::AddArgument()
 {
     return;
 }
 
 
-#if 0
-// Call is specific to subclass: Compiled, Python, ...
-void DataFunction::Call()
+void DataFunctionCompiled::Call()
 {
     return;
 }
-#endif
 
 }

@@ -7,12 +7,11 @@
 namespace DataStore
 {
 
-#if 0
 void DataFunctionPython::AddArgument()
 {
     return;
 }
-#endif
+
 
 void DataFunctionPython::Call()
 {

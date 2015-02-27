@@ -24,7 +24,6 @@ LIBOBJS = \
 	DataObject.o \
 	DataGroup.o \
 	DatastoreInterface.o \
-	DataFunction.o \
 	DataFunctionCompiled.o \
 	c-datastore.o
 
@@ -32,8 +31,8 @@ PYOBJS = \
 	dsmodule.o \
 	DataFunctionPython.o
 
-CLIBS =  -lstdc++
-CXXLIBS = $(PYLIBS)
+CLIBS =  -L. -lds -lstdc++
+CXXLIBS = -L. -lds $(PYLIBS)
 
 CFLAGS = -fPIC -O0 -g3 -std=c99 -I$(DS_SRC)
 CXXFLAGS = -fPIC -O0 -g3 -std=c++11 -Wall -Wextra -Wshadow -pedantic -Woverloaded-virtual -Wno-unused-variable -Wno-unused-parameter -Wno-return-type -I. -I.. -I$(DS_SRC) -I$(PythonInc) -I$(NumPyInc) -fpermissive
@@ -52,7 +51,6 @@ libpyds.a : $(PYOBJS)
 datastore.so : $(LIBOBJS) $(PYOBJS)
 	$(CXX) -shared -o $@ $^
 
-# load LIBOBJS directly into executable instead of library to avoid share object issues for now.
 sim.x : $(LIBOBJS) $(PYOBJS) dstestmodule.o
 
 ../dsmodule.cpp : ../ds.yaml
