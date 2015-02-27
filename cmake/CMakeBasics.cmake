@@ -203,6 +203,37 @@ macro(make_executable)
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
+## - Builds and adds a test which employs the Catch unit testing framework.
+##
+## add_catch_test( TEST_SOURCE testX.cxx DEPENDS_ON dep1 dep2... )
+##------------------------------------------------------------------------------
+macro(add_catch_test)
+
+   set(options)
+   set(singleValueArgs TEST_SOURCE)
+   set(multiValueArgs DEPENDS_ON)
+
+   ## parse the arguments to the macro
+   cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+   get_filename_component(test_name ${arg_TEST_SOURCE} NAME_WE)
+   add_executable( ${test_name} ${arg_TEST_SOURCE} )
+   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+
+    if ( ENABLE_CXX11 )
+      ## Note, this requires cmake 3.1 and above
+      set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
+    endif()
+
+    add_test( NAME ${test_name}
+              COMMAND ${test_name}
+              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+              )
+
+endmacro(add_catch_test)
+
+##------------------------------------------------------------------------------
 ## - Adds a custom "copy_headers" target to copy the given list of headers to
 ##   the supplied destination directory.
 ##
