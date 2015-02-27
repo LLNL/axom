@@ -56,7 +56,7 @@ prepublishcmds =
 prepublishdir = .
 postpublishcmds = 
 postpublishdir = .
-tickversion = False
+tickversion = True 
 usestash = True
 deletetopic = True
 updatelog = UPDATE_LOG
@@ -69,13 +69,13 @@ emailsendto = hornung1@llnl.gov, robinson96@llnl.gov
 emailsubject = DataStore: <public> updated to <version>
 
 [project]
-stashURL = https://lc.llnl.gov/stash
-verifyssl = False
+
+verifyssl = True
 name = DataStore 
 
 [versioning]
 file = VERSION
-updatetag = False
+updatetag = True
 branchslotmappings = ?:3 master:2
 branchsuffixmappings = ?:
 branchtagsuffixmappings = ?:
