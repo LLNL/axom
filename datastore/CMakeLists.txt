@@ -18,7 +18,7 @@ set(datastore_headers
 set(datastore_sources
     ${PROJECT_SOURCE_DIR}/datastore/DataGroup.cpp
     ${PROJECT_SOURCE_DIR}/datastore/DataObject.cpp
-    ${PROJECT_SOURCE_DIR}/datastore/DataStore.cpps
+    ${PROJECT_SOURCE_DIR}/datastore/DataStore.cpp
     ${PROJECT_SOURCE_DIR}/datastore/DatastoreInterface.cpp
     )
 
