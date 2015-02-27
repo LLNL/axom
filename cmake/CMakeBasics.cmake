@@ -94,9 +94,6 @@ mark_as_advanced(
 # Standard CMake Options
 ################################
 
-# enable creation of compile_commands.json
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 ## Enable ENABLE C++ 11 features
 option(ENABLE_CXX11 "Enables C++11 features" ON)
 if (ENABLE_CXX11)
