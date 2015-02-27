@@ -32,6 +32,11 @@ add_subdirectory(datastore)
 add_subdirectory(docs)
 
 ################################
+# Add examples
+################################
+add_subdirectory(examples)
+
+################################
 # Add tests
 ################################
 #add_subdirectory(tests)
@@ -39,7 +44,7 @@ add_subdirectory(docs)
 ################################
 # install targets from build
 ################################s
-#install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION bin)
+install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
 install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
 
 ################################

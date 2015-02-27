@@ -173,6 +173,32 @@ macro(make_library libtarget srcs)
 endmacro(make_library)
 
 ##------------------------------------------------------------------------------
+## - Make executable
+##
+## make_executable( EXECUTABLE_SOURCE source DEPENDS_ON dep1 dep2...)
+##------------------------------------------------------------------------------
+macro(make_executable)
+
+   set(options)
+   set(singleValueArgs EXECUTABLE_SOURCE)
+   set(multiValueArgs DEPENDS_ON)
+
+   ## parse the arugments to the macro
+   cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
+    add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
+    target_link_libraries( ${exe_name} "${arg_DEPENDS_ON}" )
+
+    if ( ENABLE_CXX11 )
+      ## Note, this requires cmake 3.1 and above
+      set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
+    endif()
+
+endmacro(make_executable)
+
+##------------------------------------------------------------------------------
 ## - Adds a custom "copy_headers" target to copy the given list of headers to
 ##   the supplied destination directory.
 ##
