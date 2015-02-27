@@ -93,6 +93,13 @@ mark_as_advanced(
 ################################
 # Standard CMake Options
 ################################
+option(BUILD_TESTING "Builds unit tests" ON)
+if (BUILD_TESTING)
+
+  include_directories(${PROJECT_SOURCE_DIR}/TPL/catch/single_include)
+  enable_testing()
+
+endif()
 
 ## Enable ENABLE C++ 11 features
 option(ENABLE_CXX11 "Enables C++11 features" ON)

@@ -39,7 +39,9 @@ add_subdirectory(examples)
 ################################
 # Add tests
 ################################
-#add_subdirectory(tests)
+if (BUILD_TESTING)
+#   add_subdirectory(tests)
+endif()
 
 ################################
 # install targets from build
