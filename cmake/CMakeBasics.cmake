@@ -172,3 +172,29 @@ macro(make_library libtarget srcs)
 
 endmacro(make_library)
 
+##------------------------------------------------------------------------------
+## - Adds a custom "copy_headers" target to copy the given list of headers to
+##   the supplied destination directory.
+##
+## copy_headers_copy( hdrs dest )
+##------------------------------------------------------------------------------
+macro(copy_headers_target hdrs dest)
+
+add_custom_target(copy_headers
+     COMMAND ${CMAKE_COMMAND}
+             -DHEADER_INCLUDES_DIRECTORY=${dest}
+             -DLIBHEADERS="${hdrs}"
+             -P ${PROJECT_SOURCE_DIR}/cmake/copy_headers.cmake
+
+     DEPENDS
+        ${hdrs}
+
+     WORKING_DIRECTORY
+        ${PROJECT_SOURCE_DIR}
+
+     COMMENT
+        "copy headers"
+     )
+
+endmacro(copy_headers_target)
+
