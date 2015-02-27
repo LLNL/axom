@@ -40,7 +40,7 @@ add_subdirectory(examples)
 # Add tests
 ################################
 if (BUILD_TESTING)
-#   add_subdirectory(tests)
+   add_subdirectory(tests)
 endif()
 
 ################################
