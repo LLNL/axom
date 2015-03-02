@@ -84,3 +84,10 @@ branchsuffixmappings = ?:
 branchtagsuffixmappings = ?:
 prefix = v
 
+[subtrees]
+names = conduit
+
+[subtree-conduit]
+prefix = components/conduit
+remote = ../conduit.git
+topicprefixmappings = ?:asctoolkit
