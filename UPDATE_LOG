@@ -1,0 +1,26 @@
+MAIN CODE REVISION HISTORY:
+
+==========================================================================
+
+
+Tue Nov 18 13:58:46 2014 Peter B. Robinson
+v0.0.1
+
+SUMMARY: Adds catch as our unit testing framework by using a squashed subtree. 
+DEVELOPER: Peter Robinson
+REVIEWERS: Chris White, George Zagaris
+
+Details: 
+Sets up template repo with a working cmake file and a dummy class that is unit tested using catch. 
+.grapeconfig has been updated to reflect new repo location, added necessary files such that grape publish works. 
+Pull Request: https://lc.llnl.gov/stash/projects/NGCC/repos/asctoolkit/pull-requests/2/overview
+
+
+Tue Nov 18 13:54:43 2014 Peter B. Robinson
+v0.0.1
+
+Proposed addition of the Catch unit testing framework by using a squashed subtree
+
+
+==========================================================================
+

@@ -1,6 +1,9 @@
 
 [repo]
-name = ngc 
+name = ASCToolkit 
+url = https://lc.llnl.gov/stash/scm/ngcc/asctoolkit.git
+httpsbase =https://lc.llnl.gov/stash/scm/
+sshbase = ssh://git@cz-stash.llnl.gov:7999/
 
 [patch]
 tagprefix = bundled
@@ -34,7 +37,7 @@ required = src
 
 [subtrees]
 mergepolicy = noSquash
-names = 
+names = catch
 pushonpublish = True
 
 [workspace]
@@ -59,7 +62,7 @@ prepublishcmds =
 prepublishdir = .
 postpublishcmds = 
 postpublishdir = .
-tickversion = True 
+tickversion = True
 usestash = True
 deletetopic = True
 updatelog = UPDATE_LOG
@@ -74,7 +77,7 @@ emailsubject = NGC: <public> updated to <version>
 [project]
 stashurl = https://lc.llnl.gov/stash
 verifyssl = True
-name = ngc 
+name = ngcc  
 
 [versioning]
 file = VERSION
@@ -87,7 +90,13 @@ prefix = v
 [subtrees]
 names = conduit
 
+[subtree-catch]
+prefix = libs/catch
+remote = ssh://git@cz-stash.llnl.gov:7999/ngcc/catch.git
+topicprefixmappings = ?:asctoolkit
+
 [subtree-conduit]
 prefix = components/conduit
 remote = ../conduit.git
 topicprefixmappings = ?:asctoolkit
+

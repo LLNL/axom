@@ -18,6 +18,12 @@ option(BUILD_STATIC_EXEC "Build executable linked against static libraries" ON)
 option(ENABLE_FORTRAN90 "Build using Fortran 90 components" ON)
 option(ENABLE_SUBPROJECT_FOO "Build optional subproject Foo" ON)
 
+#enable C++11
+set(CXX_FLAGS ${CXX_FLAGS} "-std=c++11")
+
+
+
+
 #Force atleast static if user turns off both
 if(NOT BUILD_STATIC_LIBS AND NOT BUILD_SHARED_LIBS)
   message("Both static and shared libaries were disabled."
@@ -141,13 +147,13 @@ endif(BUILD_STATIC_EXEC)
 #------------------------------------------------------------------------------
 # Testing
 #------------------------------------------------------------------------------
-#if(BUILD_STATIC_LIBS)
-# enable_testing()
-#  add_executable(templatetest TEMPLATE_testdriver.c TEMPLATE_port.c)
+if(BUILD_STATIC_LIBS)
+ enable_testing()
+ add_executable(templatetest ${TEST_SOURCES})
 #  add_dependencies(templatetest hdf5)
-#  set_target_properties(templatetest PROPERTIES COMPILE_FLAGS -DUSE_DEFAULT_TEMPLATE_PORT)
+set_target_properties(templatetest PROPERTIES COMPILE_FLAGS -std=c++11 -lstdc++)
 #  target_link_libraries(templatetest template_static)
-#endif(BUILD_STATIC_LIBS)
+endif(BUILD_STATIC_LIBS)
 
 #------------------------------------------------------------------------------
 # Install files
