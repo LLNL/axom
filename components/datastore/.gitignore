@@ -1,0 +1,6 @@
+.cproject
+.project
+.settings
+build/
+dox/
+vista_stuff/
