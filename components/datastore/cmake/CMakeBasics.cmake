@@ -63,7 +63,7 @@
 
  ## Set the path where all the libraries will be stored
  set(LIBRARY_OUTPUT_PATH
-     ${PROJECT_BINARY_DIR}/libs
+     ${PROJECT_BINARY_DIR}/lib
      CACHE PATH
      "Directory where compiled libraries will go in the build tree"
      )
@@ -77,7 +77,7 @@
 
  ## Set the Fortran module directory
  set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/FortranModules
+     ${PROJECT_BINARY_DIR}/lib
      CACHE PATH
      "Directory where all Fortran modules will go in the build tree"
      )
