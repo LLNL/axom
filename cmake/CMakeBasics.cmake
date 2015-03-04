@@ -55,7 +55,7 @@
 
 ## Set the path where all the header will be stored
  set(HEADER_INCLUDES_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}
+     ${PROJECT_BINARY_DIR}/include/
      CACHE PATH
      "Directory where all headers will go in the build tree"
      )
