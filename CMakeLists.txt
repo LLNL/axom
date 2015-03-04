@@ -1,47 +1,37 @@
 cmake_minimum_required(VERSION 3.1)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 ################################
-# Datastore
+# ASCTK ToolKit
 ################################
 
-project(Datastore)
+project(asctk)
 
 ################################
 # Prevent in-source builds
 ################################
-include(cmake/PreventInSourceBuilds.cmake)
+include(PreventInSourceBuilds)
 
 ################################
 # Set some standard cmake opts
 ################################
-include(cmake/CMakeBasics.cmake)
+include(CMakeBasics)
 
 ################################
 # Setup 3rd Party Libs
 ################################
-include(cmake/Setup3rdParty.cmake)
+include(Setup3rdParty)
 
 ################################
 # Add the datastore lib
 ################################
-add_subdirectory(datastore)
+add_subdirectory(components)
 
 ################################
 # Add docs
 ################################
-add_subdirectory(docs)
-
-################################
-# Add examples
-################################
-add_subdirectory(examples)
-
-################################
-# Add tests
-################################
-if (BUILD_TESTING)
-   add_subdirectory(tests)
-endif()
+#add_subdirectory(docs)
 
 ################################
 # install targets from build
