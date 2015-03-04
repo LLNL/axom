@@ -38,9 +38,3 @@ add_subdirectory(components)
 ################################s
 install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
 install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
-
-################################
-# Create CMake importable
-# exports for all of our targets
-################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
