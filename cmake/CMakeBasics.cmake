@@ -55,7 +55,7 @@
 
 ## Set the path where all the header will be stored
  set(HEADER_INCLUDES_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}
+     ${PROJECT_BINARY_DIR}/include/
      CACHE PATH
      "Directory where all headers will go in the build tree"
      )
@@ -154,6 +154,34 @@ endif()
 #  macros
 ################################
 
+
+##------------------------------------------------------------------------------
+## - Adds a component to the build given the component's name and default state
+##   (ON/OFF). This macro also adds an "option" so that the user can control
+##   which components to build.
+##------------------------------------------------------------------------------
+macro(add_component)
+
+   set(options)
+   set(singleValueArgs COMPONENT_NAME DEFAULT_STATE )
+   set(multiValueArgs)
+
+   ## parse the arugments to the macro
+   cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+   ## adds an option so that the user can control whether to build this
+   ## component.
+   option( ENABLE_${arg_COMPONENT_NAME}
+           "Enables ${arg_component_name}"
+           ${arg_DEFAULT_STATE})
+
+    if ( ENABLE_${arg_COMPONENT_NAME} )
+        add_subdirectory( ${arg_COMPONENT_NAME} )
+    endif()
+
+endmacro(add_component)
+
 ##------------------------------------------------------------------------------
 ## - Given a library target nane and a list of sources, this macros builds
 ##   a static or shared library according to a user-supplied BUILD_SHARED_LIBS
@@ -245,7 +273,7 @@ add_custom_target(copy_headers
      COMMAND ${CMAKE_COMMAND}
              -DHEADER_INCLUDES_DIRECTORY=${dest}
              -DLIBHEADERS="${hdrs}"
-             -P ${PROJECT_SOURCE_DIR}/cmake/copy_headers.cmake
+             -P ${CMAKE_MODULE_PATH}/copy_headers.cmake
 
      DEPENDS
         ${hdrs}

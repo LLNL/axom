@@ -22,8 +22,8 @@
 
 //#include "Vista.h"
 //#include "View.h"
-#include "DatastoreInterface.hpp"
-#include "Types.hpp"
+#include "datastore/DatastoreInterface.hpp"
+#include "datastore/Types.hpp"
 
 #include <stdio.h>
 #include <math.h>
