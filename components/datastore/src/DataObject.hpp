@@ -8,11 +8,10 @@
 #ifndef DATASET_HPP_
 #define DATASET_HPP_
 
-#include<map>
-#include<unordered_map>
-#include "Attributes.hpp"
-#include<vector>
-#include<typeindex>
+#include <map>
+#include <set>
+#include <vector>
+#include "Types.hpp"
 
 namespace DataStoreNS
 {
@@ -38,118 +37,146 @@ class DataStore;
 class DataObject
 {
 public:
+  /// brief container of DataGroup pointers.
+  typedef std::set< DataGroup* > GroupContainerType;
 
-  /**
-   * @name Constructor, Destructor, Assignment, Move, Copy
-   */
-  ///@{
+private:
 
-  /// non-callable default constructor
-  DataObject() = delete;
 
-  /**
+  /// universal identification - unique within a DataStore
+  IDType m_uid;
+
+  /// a string that describes what is in the DataObject
+  std::string m_stringDescriptor;
+
+  /// container of groups that contain this DataObject
+  GroupContainerType m_GroupSet;
+
+  /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataObjects m_data are equivalent to this->m_data.
+  void* m_data;
+
+  /// a complete description of the data, assuming one exists. Mainly for simple data arrays, and potentially
+  /// pod structure.
+  DataShape m_dataShape;
+
+  ///
+  rtTypes::TypeID m_dataType;
+
+  /// use a vector to allocate data until we implement an appropriate allocator interface.
+  std::vector<char> m_memblob;
+
+public:
+  /// sample attribute, would need a more generic system
+  bool m_dump;
+
+  /*!
    *
-   * @param name name of the object
-   * @param path path
-   * \brief constructor
+   * @param uid
+   * @param m_stringDescriptor
    */
-  DataObject( const std::string& name,
-              const DataGroup* const parent );
+  DataObject( const IDType uid,
+              const std::string& m_stringDescriptor );
 
-  /**
+  /*!
+   *
+   * @param uid
+   */
+  DataObject( const IDType uid );
+
+  /*!
+   *
    * @param source
-   * \brief default copy constructor
    */
-  DataObject( const DataObject& source );
+  DataObject(const DataObject& source );
 
 
-  /**
-   * @param source
-   * \brief default move constructor
+  /*!
+   * destructor
    */
-  DataObject( DataObject&& source );
+  ~DataObject();
 
-  /**
-   * \brief default destructor
+  /*!
+   * \brief Return the univeral id for this DataObject.
    */
-  virtual ~DataObject();
+  IDType GetUID() { return m_uid; }
 
-  /**
-   *
-   * @param rhs the DataObject to be copied
-   * @return *this
-   * \brief copy assignment
+  /*!
+   * @param grp Pointer to DataGroup to associate with this DataObject.
+   * \brief Associate a DataGroup with this DataObject.
    */
-  DataObject& operator=( const DataObject& rhs );
+  void AttachGroup( DataGroup *grp ) { m_GroupSet.insert(grp); }
 
-  /**
-   *
-   * @param rhs the DataObject to be moved into *this
-   * @return *this
-   * \brief move assignment
+  /*!
+   * @param grp Pointer to DataGroup to disassociate with this DataObject.
+   * \brief Disassociate a DataGroup with this DataObject.
    */
-  DataObject& operator=( const DataObject&& rhs );
+  void DetachGroup( DataGroup *grp ) { m_GroupSet.erase(grp); }
 
-  ///@}
-
-
-
-
-
-  /**
-   *
-   * @name creation, allocation, insertion
-   *
+  /*!
+   * @param grp Pointer to DataGroup to test for membership.
+   * \brief return true is grp is attached.
    */
-  ///@{
+  bool IsAttachedGroup( DataGroup *grp )
+  {
+    GroupContainerType::iterator it = m_GroupSet.find(grp);
+    if (it == m_GroupSet.end())
+      return false;
+    else
+      return true;
+  }
 
-  /**
-   *
-   * @return
+  /*!
+   * \brief Return DataGroups attached to this DataObject.
    */
-  virtual DataObject* Allocate();
+  GroupContainerType *GetDataGroups() { return &m_GroupSet; }
 
   /**
    *
-   * @param pathandName
-   * @param data
+   * @return casted pointer to m_data
+   * \brief there is a lot more that has to happen to ensure that the cast is legal
    */
   template< typename TYPE >
-  void insert( const std::string& pathandName, TYPE& data )
-  {}
+#if CPP11
+  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
+#else
+  TYPE
+#endif
+  GetData()
+  { return static_cast<TYPE>(m_data); }
 
-
-  ///@}
-
+  template< typename TYPE >
+#if CPP11
+  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
+#else
+  const TYPE
+#endif
+  GetData() const
+  { return static_cast<const TYPE>(m_data); }
 
 
 
 
   /**
-   * @name access functions
+   * @name members that will be deprecated by conduit
    */
   ///@{
 
-  /**
-   * @param name the attribute name
-   * @return the attribute value
-   */
-  /*
-  const Attribute& GetAttribute( const std::string& name ) const
+  rtTypes::TypeID GetType() const
   {
-    return m_attributes.at(name);
+    return m_dataType;
   }
-  */
 
-  /**
-   * @param newAttribute the attribute that is to be added
-   * @return *this
-   */
-//  DataObject* SetAttribute( const Attribute& newAttribute );
-
-  std::map< std::string, DataGroup* >& GetGroups()
+  DataObject* SetType( const rtTypes::TypeID type )
   {
-    return m_groups;
+    m_dataType = type;
+    return this;
+  }
+
+  template< typename T >
+  DataObject* SetType()
+  {
+    m_dataType = rtTypes::GetTypeID<T>();
+    return this;
   }
 
 
@@ -175,122 +202,19 @@ public:
     return this;
   }
 
+
+
   /**
-   * @param ptr
+   *
    * @return
    */
-  template< typename T >
-  typename std::enable_if<std::is_pointer<T>::value,DataObject*>::type SetDataPointer( T const ptr )
-  {
-    m_data = static_cast<void*>(ptr);
-    return this;
-  }
+  DataObject* Allocate();
 
+  DataObject* SetLength(const std::size_t newsize);
 
-  rtTypes::TypeID GetType() const
-  {
-    return m_dataType;
-  }
-
-  DataObject* SetType( const rtTypes::TypeID type )
-  {
-    m_dataType = type;
-    return this;
-  }
-
-  template< typename T >
-  DataObject* SetType()
-  {
-    m_dataType = rtTypes::GetTypeID<T>();
-    return this;
-  }
-
-
-
-
-  virtual DataObject* SetLength( const std::size_t newsize );
-
-  std::size_t length()
-  { return m_dataShape.m_dimensions[0]; }
-
-  /**
-   *
-   * @return m_name
-   */
-  std::string& Name()  {return m_name;}
-  const std::string& Name() const {return m_name;}
-
-
-  /**
-   *
-   * @param attributeKey
-   * @return
-   */
-  bool HasAttribute( const std::string& attributeKey ) const {}
-
-  /**
-   *
-   * @param attributeKey
-   * @return
-   */
-  bool DeleteAttribute( const std::string& attributeKey );
-
-
-  /**
-   *
-   * @return casted pointer to m_data
-   * \brief there is a lot more that has to happen to ensure that the cast is legal
-   */
-  template< typename TYPE >
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type GetData()
-  { return static_cast<TYPE>(m_data); }
-
-
-  const DataGroup* GetParent() const
-  { return m_parent; }
 
   ///@}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-private:
-  /// pointer to DataGroup that "owns" this DataObject
-  const DataGroup* m_parent;
-
-  /// unique name of this DataObject
-  std::string m_name;
-
-  /// hash table of attributes keyed by the attribute name.
-//  std::unordered_map<std::string,Attribute> m_attributes;
-
-  /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataObjects m_data are equivalent to this->m_data.
-  void* m_data;
-
-  /// a complete description of the data, assuming one exists. Mainly for simple data arrays, and potentially
-  /// pod structure.
-  DataShape m_dataShape;
-
-  ///
-  //  std::type_index m_dataType;
-  rtTypes::TypeID m_dataType;
-
-  /// list of groups/attributes that hold pointers to "this"
-  std::map< std::string, DataGroup* > m_groups;
-
-
-  /// use a vector to allocate data until we implement an appropriate allocator interface.
-  std::vector<char> m_memblob;
 
 };
 

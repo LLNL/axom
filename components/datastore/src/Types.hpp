@@ -7,13 +7,20 @@
 
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
-#include <typeindex>
 #include <iostream>
 /**
  *
  */
 namespace DataStoreNS
 {
+typedef size_t IDType;
+
+#if __cplusplus <= 199711L
+#define nullptr 0
+#else
+#define CPP11
+#endif
+
 typedef short int int16;
 typedef unsigned short int uint16;
 typedef long int int32;
@@ -24,7 +31,6 @@ typedef std::size_t sizet;
 
 typedef float real32;
 typedef double real64;
-
 
 
 
@@ -40,7 +46,7 @@ namespace rtTypes
    * \enum TypeID
    * \brief enums to tag each basic type
    */
-  enum class TypeID
+  enum TypeID
   {
     int16_id, //!< int16_id
     uint16_id,//!< uint16_id
@@ -58,102 +64,19 @@ namespace rtTypes
   template< typename TYPE >
   inline TypeID GetTypeID()
   {
-    return TypeID::undefined;
+    return undefined;
   }
-  template<> inline TypeID GetTypeID<int>() { return TypeID::int32_id; }
-  template<> inline TypeID GetTypeID<int16>() { return TypeID::int16_id; }
-  template<> inline TypeID GetTypeID<uint16>() { return TypeID::uint16_id; }
-  template<> inline TypeID GetTypeID<int32>() { return TypeID::int32_id; }
-  template<> inline TypeID GetTypeID<uint32>() { return TypeID::uint32_id; }
-  template<> inline TypeID GetTypeID<int64>() { return TypeID::int64_id; }
-  template<> inline TypeID GetTypeID<uint64>() { return TypeID::uint64_id; }
-//  template<> inline TypeID GetTypeID<sizet>()  { return TypeID::sizet_id; }
+  template<> inline TypeID GetTypeID<int>() { return int32_id; }
+  template<> inline TypeID GetTypeID<int16>() { return int16_id; }
+  template<> inline TypeID GetTypeID<uint16>() { return uint16_id; }
+  template<> inline TypeID GetTypeID<int32>() { return int32_id; }
+  template<> inline TypeID GetTypeID<uint32>() { return uint32_id; }
+  template<> inline TypeID GetTypeID<int64>() { return int64_id; }
+  template<> inline TypeID GetTypeID<uint64>() { return uint64_id; }
+//  template<> inline TypeID GetTypeID<sizet>()  { return sizet_id; }
 
-  template<>  inline TypeID GetTypeID<real32>() { return TypeID::real32_id; }
-  template<> inline TypeID GetTypeID<real64>() { return TypeID::real64_id; }
-
-
-
-  template< typename TYPE >
-  inline TYPE* CastPtr( void* const ptr )
-  {
-    return static_cast<TYPE*>(ptr);
-  }
-
-
-
-
-
-  /**
-   * @tparam WRAPPER a wrapper type for the function that you want to call. WRAPPER must have member get() that calls the
-   *                 actual function that is to be called.
-   * @tparam ArgsF variadic argument typelist for the function to be called
-   * @param type[in]  what TypeID
-   * @param wrapper[in] the wrapper
-   * @param args[in/out]  the variadic arguments
-   * @return auto depends on the return type of wrapper.get()
-   *
-   * \brief This function will call
-   */
-  template< typename WRAPPER, typename...ArgsF >
-  inline auto SelectFunction( const TypeID type, WRAPPER& wrapper, ArgsF&... args ) -> decltype( wrapper.template get<double>(args...) )
-  {
-    decltype(wrapper.template get<double>(args...)) rval;
-    switch( type )
-    {
-      case( TypeID::int16_id ):
-      {
-        rval = wrapper.template get<int16>(args... );
-        break;
-      }
-      case( TypeID::uint16_id ):
-      {
-        rval = wrapper.template get<uint16>(args... );
-        break;
-      }
-      case( TypeID::int32_id ):
-      {
-        rval = wrapper.template get<int32>(args... );
-        break;
-      }
-      case( TypeID::uint32_id ):
-      {
-        rval = wrapper.template get<uint32>(args... );
-        break;
-      }
-      case( TypeID::int64_id ):
-      {
-        rval = wrapper.template get<int64>(args... );
-        break;
-      }
-      case( TypeID::uint64_id ):
-      {
-        rval = wrapper.template get<uint64>(args... );
-        break;
-      }
-      case( TypeID::sizet_id ):
-      {
-        rval = wrapper.template get<sizet>(args... );
-        break;
-      }
-      case( TypeID::real32_id ):
-      {
-        rval =  wrapper.template get<real32>(args...);
-        break;
-      }
-      case( TypeID::real64_id ):
-      {
-        rval =  wrapper.template get<real64>(args...);
-        break;
-      }
-      default:
-      {
-        throw std::exception();
-      }
-    }
-
-    return rval;
-  }
+  template<>  inline TypeID GetTypeID<real32>() { return real32_id; }
+  template<> inline TypeID GetTypeID<real64>() { return real64_id; }
 
 
   struct sizeof_wrapper
@@ -167,13 +90,63 @@ namespace rtTypes
 
   inline std::size_t sizeofType( const TypeID typeID )
   {
-    sizeof_wrapper sizeofWrapper;
-    return SelectFunction( typeID, sizeofWrapper );
+    std::size_t rval;
+    switch( typeID )
+    {
+      case( int16_id ):
+      {
+        rval = sizeof(int16);
+        break;
+      }
+      case( uint16_id ):
+      {
+        rval = sizeof(uint16);
+        break;
+      }
+      case( int32_id ):
+      {
+        rval = sizeof(int32);
+        break;
+      }
+      case( uint32_id ):
+      {
+        rval = sizeof(uint32);
+        break;
+      }
+      case( int64_id ):
+      {
+        rval = sizeof(int64);
+        break;
+      }
+      case( uint64_id ):
+      {
+        rval = sizeof(uint64);
+        break;
+      }
+      case( sizet_id ):
+      {
+        rval = sizeof(sizet);
+        break;
+      }
+      case( real32_id ):
+      {
+        rval = sizeof(real32);
+        break;
+      }
+      case( real64_id ):
+      {
+        rval = sizeof(real64);
+        break;
+      }
+      default:
+      {
+        throw std::exception();
+      }
+    }
+
+    return rval;
   }
-
-
 }
-
 
 
 
@@ -183,16 +156,16 @@ namespace rtTypes
 struct DataShape
 {
   DataShape():
-    m_dataPtr(nullptr),
+    m_dataPtr(NULL),
     m_numDimensions( 0 ),
-    m_dimensions(nullptr),
+    m_dimensions(NULL),
     m_dataStride(0)
   {}
 
   DataShape( const int& numDimensions, const std::size_t* const dimensions ):
-    m_dataPtr(nullptr),
+    m_dataPtr(NULL),
     m_numDimensions( numDimensions ),
-    m_dimensions(nullptr),
+    m_dimensions(NULL),
     m_dataStride(0)
   {
     m_dimensions = new std::size_t[m_numDimensions];
@@ -206,9 +179,9 @@ struct DataShape
   }
 
   DataShape( const int& length ):
-    m_dataPtr(nullptr),
+    m_dataPtr(NULL),
     m_numDimensions( 1 ),
-    m_dimensions(nullptr),
+    m_dimensions(NULL),
     m_dataStride(0)
   {
     m_dimensions = new std::size_t[m_numDimensions];
@@ -220,7 +193,7 @@ struct DataShape
   DataShape( const DataShape& source):
     m_dataPtr(source.m_dataPtr),
     m_numDimensions( source.m_numDimensions ),
-    m_dimensions(nullptr),
+    m_dimensions(NULL),
     m_dataStride(source.m_dataStride)
   {
     m_dimensions = new std::size_t[m_numDimensions];
@@ -230,26 +203,28 @@ struct DataShape
     }
   }
 
+  /*
   DataShape( DataShape&& source):
     m_dataPtr(std::move(source.m_dataPtr)),
     m_numDimensions( std::move(source.m_numDimensions) ),
     m_dimensions(std::move(source.m_dimensions)),
     m_dataStride(std::move(source.m_dataStride))
   {
-    source.m_dataPtr = nullptr;
+    source.m_dataPtr = NULL;
     source.m_numDimensions = 0;
-    source.m_dimensions = nullptr;
+    source.m_dimensions = NULL;
     source.m_dataStride = 0;
 
   }
+  */
 
   DataShape& operator=( const DataShape& source )
   {
-    m_dataPtr = nullptr;
+    m_dataPtr = NULL;
     m_numDimensions = source.m_numDimensions ;
     m_dataStride = source.m_dataStride;
 
-    if( m_dimensions!=nullptr )
+    if( m_dimensions!=NULL )
     {
       delete[] m_dimensions;
     }
@@ -264,7 +239,7 @@ struct DataShape
 
   ~DataShape()
   {
-    if( m_dimensions!=nullptr )
+    if( m_dimensions!=NULL )
     {
       delete[] m_dimensions;
     }

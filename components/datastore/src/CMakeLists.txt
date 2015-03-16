@@ -6,7 +6,6 @@ set(datastore_headers
     DataGroup.hpp
     DataObject.hpp
     DataStore.hpp
-    DatastoreInterface.hpp
     Types.hpp
     Utilities.hpp
     datastore.h
@@ -19,7 +18,6 @@ set(datastore_sources
     DataGroup.cpp
     DataObject.cpp
     DataStore.cpp
-    DatastoreInterface.cpp
     )
 
 

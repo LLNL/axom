@@ -10,66 +10,62 @@
 
 #include "DataObject.hpp"
 #include <memory>
-#include "Utilities.hpp"
+#include <map>
 #include <vector>
 #include "Types.hpp"
 
 namespace DataStoreNS
 {
 
-
-
 /**
  * \class DataGroup
  *
- * \brief class to access (and potentially own) collections of DataObjects
+ * \brief Class to access collections of DataObject.
+ *  The DataGroup will name each DataObject as it is added.
  */
 class DataGroup
 {
 public:
-  // change to regular pointer for now.
-  typedef std::vector< DataObject* > dataArrayType;
-  typedef std::unordered_map<std::string, sizet> lookupType;
+  /*!
+   * \brief vector of DataObject pointers.
+   */
+  typedef std::vector<DataObject*> dataArrayType;
 
+  /*!
+   * \brief map of name to index of DataObject within this DataGroup.
+   */
+  typedef std::map<std::string, IDType> lookupType;
+
+  /*!
+   * \brief map of name to DataGroup pointer.
+   */
+  typedef std::map<std::string, DataGroup*> lookupGroup;
 
 private:
-  DataGroup* m_parent;
-
-  DataStore* m_dataStore;
-
-  /// array of dataObject*
-  dataArrayType m_DataObjects;
-
-  /// hash table for index lookup by name
-  lookupType m_DataObjectLookup;
-
-  std::unordered_map<std::string, DataGroup* > m_childGroups;
-
+  DataGroup *m_parent;
+  DataStore *m_datastore;
+  dataArrayType m_DataObjects;  // DataObjects by index
+  lookupType m_DataObjectLookup;      // DataObjects name to Object pointer
+  lookupGroup m_childGroups;  // child Groups: name->Group pointer
   std::string m_name;
 
+#if 0
   DataShape m_dataShape;
-
+#endif
 
 public:
 
-  /**
-   * @name Constructor, Destructor, Assignment, Move, Copy
-   */
-  ///@{
-
-  /// non-callable default constructor
-  DataGroup() = delete;
-
   /*!
-   *
-   * @param name name of the group
-   * @param path path
-   * \brief constructor
+   * @param parent name Pointer to DataGroup which contains this Group.
+   * @param datastore Pointer to DataStore container.
+   * \brief Constructor.
    */
-  DataGroup( const std::string& name,
-             const std::string& path,
-             DataGroup* const parent,
-             DataStore* const dataStore );
+  DataGroup( DataGroup *parent, DataStore *datastore ) :
+      m_parent(parent), m_datastore(datastore)
+  {
+  }
+
+
 
   /*!
    * @param source
@@ -78,23 +74,18 @@ public:
   DataGroup( const DataGroup& source );
 
   /*!
-   * @param source
-   * \brief default move constructor
-   */
-  DataGroup( DataGroup&& source );
-
-  /*!
-   * \brief default destructor
-   */
-  virtual ~DataGroup();
-
-
-  /*!
    *
    * @param rhs the DataObject to be copied
    * @return *this
    */
   DataGroup& operator=( const DataGroup& rhs );
+
+#if CPP11
+  /*!
+   * @param source
+   * \brief default move constructor
+   */
+  DataGroup( DataGroup&& source );
 
   /*!
    *
@@ -102,62 +93,172 @@ public:
    * @return *this
    */
   DataGroup& operator=( const DataGroup&& rhs );
+#endif
 
-  ///@}
+ /*!
+  * \brief destructor
+  */
+  ~DataGroup();
 
 
 
 
-  /**
-   *
-   * @name creation, allocation, insertion
-   *
+
+
+
+
+  /*!
+   * @param name Name to check.
+   * \brief Return true if the name exists in this DataGroup.
    */
-  ///@{
+  bool HasName( const std::string& name );
 
-  DataObject* CreateDataObject( const std::string& name );
-  DataObject* DetachDataObject( const std::string& name );
+  /*!
+   * @param name Name for created DataObject.
+   * \brief Create a DataObject and add to this DataGroup.
+   */
+  DataObject *CreateDataObject( const std::string& name )
+  {
+    return AddDataObject(name, NULL);
+  }
 
-  void RemoveDataObject( const std::string& name, const bool removeFromDataStore );
+  /*!
+   * @param name Name of DataObject to add.
+   * @param obj  Pointer to an existing DataObject.
+   * \brief Add existing DataObject to this DataGroup.
+   */
+  DataObject *AddDataObject( const std::string& name, DataObject *obj );
 
-  void ReleaseDataObject( const std::string& name );
+  /*!
+   * @param name Name of DataObject to find.
+   * \brief Return pointer to DataObject.
+   */
+  DataObject *GetDataObject( const std::string& name )
+  {
+    const IDType indx = m_DataObjectLookup.at(name);
+    return m_DataObjects[indx];
+  }
+  DataObject const * GetDataObject( const std::string& name ) const
+  {
+    const IDType indx = m_DataObjectLookup.at(name);
+    return m_DataObjects[indx];
+  }
 
+  /*!
+   * @param indx Index of DataObject within this DataGroup.
+   * \brief Return pointer to DataObject.
+   */
+  DataObject *GetDataObject( const IDType indx )
+  {
+    DataObject *obj = m_DataObjects[indx];
+    if( obj == NULL )
+    {
+      // Object has been deleted and index is a hole in the table.
+      throw std::exception();
+    }
+    return obj;
+  }
+
+  /*!
+   * @param name Name of DataObject to find.
+   * \brief Return index of DataObject in this DataGroup.
+   */
+  IDType IndexDataObject( const std::string& name )
+  {
+    return m_DataObjectLookup.at(name);
+  }
+
+  /*!
+   * @param obj Name of DataObject to find.
+   * \brief Return name of DataObject in this DataGroup.
+   */
+  std::string const & NameDataObject( DataObject *obj );
+
+  /*!
+   * @param name Name of DataObject to remove.
+   * \brief Remove named DataObject from the index.
+   *   The DataObject still exists in the DataStore.
+   */
+  DataObject *RemoveDataObject( const std::string& name );
+
+  /*!
+   * @param obj Pointer to DataObject to remove.
+   * \brief Remove obj from the index.
+   *   The DataObject still exists in the DataStore.
+   */
+  DataObject *RemoveDataObject( DataObject *obj );
+
+  /*!
+   * \brief Remove all DataObjects from this DataGroup.
+   */
+  void ClearDataObjects();
+
+  /*!
+   * @param name Name of DataGroup to create.
+   * \brief Create a new DataGroup within this DataGroup.
+   */
   DataGroup* CreateDataGroup( const std::string& name );
 
-//  virtual DataGroup* Allocate() override
+  /*!
+   * @param name Name of DataGroup to find.
+   * \brief Return pointer to DataGroup.
+   */
+  DataGroup const * GetDataGroup( const std::string& name ) const
+  {
+    return m_childGroups.at(name);
+  }
 
-  ///@}
+  DataGroup * GetDataGroup( const std::string& name )
+  {
+    return m_childGroups.at(name);
+  }
 
+  /*!
+   * \brief Return number of DataObjects contained in this DataGroup.
+   */
+  size_t CountObjects()
+  {
+    return m_DataObjects.size();
+  }
 
+  /*!
+   * \brief Return number of DataGroups contained in this DataGroup.
+   */
+  size_t CountGroups()
+  {
+    return m_childGroups.size();
+  }
+
+  /*!
+   * \brief Return DataObjects contained in this DataGroup.
+   */
+  lookupType const & GetDataObjectLookup() const
+  {
+    return m_DataObjectLookup;
+  }
+
+  dataArrayType const & GetDataObjects() const
+  {
+    return m_DataObjects;
+  }
+
+  /*!
+   * \brief Return DataGroups contained in this DataGroup.
+   */
+  lookupGroup& GetDataGroups()
+  {
+    return m_childGroups;
+  }
 
 
 
 
   /**
-   * @name access functions
+   * @name members that will be deprecated by convenience layer
    */
   ///@{
 
-  /*
-  template< typename T >
-  DataObject* SetParameter( const std::string& name , const T& value );
-
-  template< typename T >
-  const T& GetParameter( const std::string& name ) const
-  {
-    return (*(GetData<T>( name )));
-  }
-
-  template< typename T >
-  T& GetParameter( const std::string& name )
-  {
-    return (*(GetData<T*>( name )));
-  }
-*/
-  std::string& Name()  {return m_name;}
-  const std::string& Name() const {return m_name;}
-
-
+  DataShape m_dataShape;
   /*!
    *
    * @param dataDescriptor
@@ -170,82 +271,17 @@ public:
   }
 
 
-  DataGroup* GetDataGroup( const std::string& name )
-  {
-    return m_childGroups.at(name);
-  }
-
-  const DataGroup* GetDataGroup( const std::string& name ) const
-  {
-    return m_childGroups.at(name);
-  }
-
-
-  DataGroup* GetDataGroup( const Attribute& Attribute );
-
-  DataObject* GetDataObject(const std::string& name )
-  {
-    const std::size_t lookup = m_DataObjectLookup.at(name);
-    return m_DataObjects[ lookup ];
-  }
-
-  DataObject const * GetDataObject(const std::string& name ) const
-  {
-    const std::size_t lookup = m_DataObjectLookup.at(name);
-    return m_DataObjects[ lookup ];
-  }
-
-  const dataArrayType GetDataObjects() const
-  {
-    return m_DataObjects;
-  }
-
-  template< typename DATATYPE >
-  typename std::enable_if<std::is_pointer<DATATYPE>::value,DATATYPE>::type GetData( const std::string& name )
-  {
-    const std::size_t lookup = m_DataObjectLookup.at(name);
-	  return m_DataObjects[ lookup ]->GetData<DATATYPE>();
-  }
-
-  template< typename DATATYPE >
-  typename std::enable_if<std::is_pointer<DATATYPE>::value,const DATATYPE>::type GetData( const std::string& name ) const
-  {
-    const std::size_t lookup = m_DataObjectLookup.at(name);
-    return m_DataObjects[ lookup ]->GetData<DATATYPE>();
-  }
-
   const DataShape& GetDataShape() const
   {
     return m_dataShape;
   }
 
-  const DataShape& GetDataShape( const std::string& name ) const
-  {
-    return GetDataObject(name)->GetDataShape();
-  }
+
 
   ///@}
 
-  std::size_t Lookup( const std::string& name )
-  {
-    return m_DataObjectLookup.at(name);
-  }
 
 };
-
-/*
-template< typename T >
-DataObject* DataGroup::SetParameter( const std::string& name , const T& value )
-{
-  DataObject* const newParam = this->CreateDataObject( name );
-  const std::size_t one = 1;
-  DataShape desc(1,&one );
-  newParam->SetType<T>();
-  newParam->SetDataShape(desc)->Allocate();
-  *(newParam->GetData<T*>()) = value;
-  return newParam;
-}
-*/
 
 } /* namespace DataStore */
 #endif /* DATAGROUP_HPP_ */

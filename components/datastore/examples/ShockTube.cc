@@ -22,11 +22,12 @@
 
 //#include "Vista.h"
 //#include "View.h"
-#include "datastore/DatastoreInterface.hpp"
-#include "datastore/Types.hpp"
+#include "../src/Types.hpp"
+#include "../src/DataStore.hpp"
 
 #include <stdio.h>
 #include <math.h>
+#include "stdlib.h"
 #define UPWIND   0
 #define DOWNWIND 1
 
@@ -139,8 +140,8 @@ void GetUserInput(DataStoreNS::DataGroup* const problem)
 void CreateShockTubeMesh(DataGroup * const prob)
 {
   int i;
-  int numElems = *(prob->GetData<int*>("numElems"));
-  int numFaces = *(prob->GetData<int*>("numFaces"));
+  int numElems = *(prob->GetDataObject("numElems")->GetData<int*>());
+  int numFaces = *(prob->GetDataObject("numFaces")->GetData<int*>());
   int inflow[1];
   int outflow[1];
 
@@ -169,7 +170,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   int* const mapToElems = tube->CreateDataObject("mapToElems")
                               ->SetType<int>()
                               ->Allocate()->GetData<int*>();
-  for (auto k = 0u; k < numTubeElems; ++k)
+  for ( unsigned int k = 0u; k < numTubeElems; ++k)
   {
     mapToElems[k] = k + 1;
   }
@@ -181,7 +182,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   std::size_t dims[2] = { numFaces, 2 };
   DataStoreNS::DataShape desc(2, dims);
 
-  auto * const faceToElem = face->CreateDataObject("faceToElem")
+  int * const faceToElem = face->CreateDataObject("faceToElem")
                                 ->SetDataShape(desc)
                                 ->SetType<int>()
                                 ->Allocate()->GetData<int*>();
@@ -196,7 +197,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
   dims[0] = numElems;
   DataStoreNS::DataShape desc2(2, dims);
-  auto * const elemToFace = tube->CreateDataObject("elemToFace")->SetType<int>()->SetDataShape(desc2)->Allocate()->GetData<int*>();
+  int * const elemToFace = tube->CreateDataObject("elemToFace")->SetType<int>()->SetDataShape(desc2)->Allocate()->GetData<int*>();
 
   for (i = 0; i < numElems; ++i)
   {
@@ -254,8 +255,8 @@ void InitializeShockTube(DataGroup * const prob)
   }
 
   /* adjust parameters for low pressure portion of tube */
-  double dratio = *(prob->GetData<double*>("densityRatio"));
-  double pratio = *(prob->GetData<double*>("pressureRatio"));
+  double dratio = *(prob->GetDataObject("densityRatio")->GetData<double*>());
+  double pratio = *(prob->GetDataObject("pressureRatio")->GetData<double*>());
 
   massInitial *= dratio;
   pressureInitial *= pratio;
@@ -273,7 +274,7 @@ void InitializeShockTube(DataGroup * const prob)
   *(prob->CreateDataObject("time")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = 0.0;
   *(prob->CreateDataObject("cycle")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = 0;
   *(prob->CreateDataObject("dx")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = (1.0 / ((double) endTube));
-  double dx = *(prob->GetData<double*>("dx"));
+  double dx = *(prob->GetDataObject("dx")->GetData<double*>());
   *(prob->CreateDataObject("dt")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = 0.4 * dx;
 
 
@@ -298,17 +299,17 @@ void ComputeFaceInfo(DataGroup * const problem)
   int i;
   DataGroup* const face = problem->GetDataGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
-  auto * const faceToElem = face->GetDataObject("faceToElem")->GetData<int*>();
+  int const * const faceToElem = face->GetDataObject("faceToElem")->GetData<int*>();
 
-  double * const F0 = face->GetData<double*>("F0");
-  double * const F1 = face->GetData<double*>("F1");
-  double * const F2 = face->GetData<double*>("F2");
+  double * const F0 = face->GetDataObject("F0")->GetData<double*>();
+  double * const F1 = face->GetDataObject("F1")->GetData<double*>();
+  double * const F2 = face->GetDataObject("F2")->GetData<double*>();
   int numFaces = face->GetDataShape().m_dimensions[0];
 
   DataGroup* const elem = problem->GetDataGroup("elem");
-  double *mass = elem->GetData<double*>("mass");
-  double *momentum = elem->GetData<double*>("momentum");
-  double *energy = elem->GetData<double*>("energy");
+  double *mass = elem->GetDataObject("mass")->GetData<double*>();
+  double *momentum = elem->GetDataObject("momentum")->GetData<double*>();
+  double *energy = elem->GetDataObject("energy")->GetData<double*>();
 
   for (i = 0; i < numFaces; ++i)
   {
@@ -389,14 +390,14 @@ void UpdateElemInfo(DataGroup * const problem)
 
   /* get the element quantities we want to update */
   DataGroup* const elem = problem->GetDataGroup("elem");
-  double * const mass = elem->GetData<double*>("mass");
-  double * const momentum = elem->GetData<double*>("momentum");
-  double * const energy = elem->GetData<double*>("energy");
-  double * const pressure = elem->GetData<double*>("pressure");
+  double * const mass = elem->GetDataObject("mass")->GetData<double*>();
+  double * const momentum = elem->GetDataObject("momentum")->GetData<double*>();
+  double * const energy = elem->GetDataObject("energy")->GetData<double*>();
+  double * const pressure = elem->GetDataObject("pressure")->GetData<double*>();
 
   /* focus on just the elements within the shock tube */
   DataGroup* const tube = elem->GetDataGroup("tube");
-  auto * const elemToFace = tube->GetDataObject("elemToFace")->GetData<int*>();
+  int * const elemToFace = tube->GetDataObject("elemToFace")->GetData<int*>();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
   int numTubeElems = tube->GetDataShape().m_dimensions[0];
@@ -412,9 +413,9 @@ void UpdateElemInfo(DataGroup * const problem)
   double *F1 = face->GetDataObject("F1")->GetData<double*>();
   double *F2 = face->GetDataObject("F2")->GetData<double*>();
 
-  double dx = *(problem->GetData<double*>("dx"));
-  double dt = *(problem->GetData<double*>("dt"));
-  double& time = *(problem->GetData<double*>("time"));
+  double dx = *(problem->GetDataObject("dx")->GetData<double*>());
+  double dt = *(problem->GetDataObject("dt")->GetData<double*>());
+  double& time = *(problem->GetDataObject("time")->GetData<double*>());
 
   for (i = 0; i < numTubeElems; ++i)
   {
@@ -452,12 +453,12 @@ void DumpUltra( const DataGroup * const prob)
 
    const DataGroup* const elem = prob->GetDataGroup("elem") ;
 
-   strcpy(fname, prob->Name().c_str() ) ;
+   strcpy(fname, "problem" ) ;
 
    /* Skip past the junk */
    for (tail=fname; isalpha(*tail); ++tail) ;
 
-   sprintf(tail, "_%04d", *(prob->GetData<int*>("cycle")) ) ;
+   sprintf(tail, "_%04d", *(prob->GetDataObject("cycle")->GetData<int*>()) ) ;
 
    if ((fp = fopen(fname, "w")) == NULL)
    {
@@ -466,44 +467,63 @@ void DumpUltra( const DataGroup * const prob)
    }
 
    fprintf(fp, "# Ultra Plot File\n") ;
-   fprintf(fp, "# Problem: %s\n", prob->Name().c_str() ) ;
+   fprintf(fp, "# Problem: %s\n", "problem" ) ;
 
 
-   for( auto obj : prob->GetDataObjects() )
+
    {
-     const int length = obj->length();
+   const DataGroup::dataArrayType& dataObjects = prob->GetDataObjects();
+   const DataGroup::lookupType& dataObjectLookup = prob->GetDataObjectLookup();
+
+   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin();
+   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin();
+
+   for(  ; obj!=dataObjects.end() ; ++obj, ++lookup )
+   {
+     const int length = (*obj)->GetDataShape().m_dimensions[0];
+     const std::string& name = lookup->first;
      if( length <= 1 )
      {
-       if( obj->GetType() == DataStoreNS::rtTypes::TypeID::int32_id )
+       if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
        {
-         fprintf(fp, "# %s = %d\n", obj->Name().c_str(), *(obj->GetData<int*>())) ;
+         fprintf(fp, "# %s = %d\n", name.c_str(), *((*obj)->GetData<int*>())) ;
        }
-       else if( obj->GetType() == DataStoreNS::rtTypes::TypeID::real64_id )
+       else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
        {
-         fprintf(fp, "# %s = %f\n", obj->Name().c_str(), *(obj->GetData<double*>())) ;
+         fprintf(fp, "# %s = %f\n", name.c_str(), *((*obj)->GetData<double*>())) ;
        }
      }
    }
+   }
 
-
-   for( auto obj : elem->GetDataObjects() )
    {
-     const int length = obj->length();
-     fprintf(fp, "# %s\n", obj->Name().c_str() ) ;
-     if( obj->GetType() == DataStoreNS::rtTypes::TypeID::int32_id )
+//   for( auto obj : elem->GetDataObjects() )
+   const DataGroup::dataArrayType& dataObjects = elem->GetDataObjects();
+   const DataGroup::lookupType& dataObjectLookup = elem->GetDataObjectLookup();
+
+   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin();
+   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin();
+
+   for(  ; obj!=dataObjects.end() ; ++obj, ++lookup )
+   {
+     const int length = (*obj)->GetDataShape().m_dimensions[0];
+     const std::string& name = lookup->first;
+     fprintf(fp, "# %s\n", name.c_str() ) ;
+     if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
      {
-       int const * const data = obj->GetData<int*>();
+       int const * const data = (*obj)->GetData<int*>();
        for ( int i=0; i<length; ++i)
           fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
        fprintf(fp, "\n") ;
      }
-     else if( obj->GetType() == DataStoreNS::rtTypes::TypeID::real64_id )
+     else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
      {
-       double const * const data = obj->GetData<double*>();
+       double const * const data = (*obj)->GetData<double*>();
        for ( int i=0; i<length; ++i)
           fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
        fprintf(fp, "\n") ;
      }
+   }
    }
 
    fclose(fp) ;
@@ -524,8 +544,10 @@ int main(void)
   /* adding a communication subroutine in the main loop, */
   /* and calling MPI_Finalize() at the end of main() */
 
-  DataStoreNS::DataStore* const dataStore = DataStoreNS::CreateDataStore("ds");
-  DataStoreNS::DataGroup* const problem = dataStore->CreateDataGroup("problem");
+  DataStoreNS::DataStore DATASTORE;
+  DataStoreNS::DataStore* const dataStore = &DATASTORE;
+  DataStoreNS::DataGroup* const rootGroup = dataStore->GetRootDataGroup();
+  DataStoreNS::DataGroup* const problem = rootGroup->CreateDataGroup("problem");
 
   GetUserInput(problem);
   CreateShockTubeMesh(problem);
@@ -533,10 +555,10 @@ int main(void)
 
 
   /* use a reference when you want to update the param directly */
-  int* const currCycle = problem->GetData<int*>("cycle");
+  int* const currCycle = problem->GetDataObject("cycle")->GetData<int*>();
 
-  int numTotalCycles = *(problem->GetData<int*>("numTotalCycles"));
-  int dumpInterval = *(problem->GetData<int*>("numCyclesPerDump"));
+  int numTotalCycles = *(problem->GetDataObject("numTotalCycles")->GetData<int*>());
+  int dumpInterval = *(problem->GetDataObject("numCyclesPerDump")->GetData<int*>());
 
   for (*currCycle = 0; *currCycle < numTotalCycles; ++(*currCycle) )
   {
