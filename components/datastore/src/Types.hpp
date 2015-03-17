@@ -15,10 +15,8 @@ namespace DataStoreNS
 {
 typedef size_t IDType;
 
-#if __cplusplus <= 199711L
+#ifndef USECXX11
 #define nullptr 0
-#else
-#define CPP11
 #endif
 
 typedef short int int16;

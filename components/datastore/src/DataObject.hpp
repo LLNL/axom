@@ -136,7 +136,7 @@ public:
    * \brief there is a lot more that has to happen to ensure that the cast is legal
    */
   template< typename TYPE >
-#if CPP11
+#ifdef USECXX11
   typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
 #else
   TYPE
@@ -145,7 +145,7 @@ public:
   { return static_cast<TYPE>(m_data); }
 
   template< typename TYPE >
-#if CPP11
+#ifdef USECXX11
   typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
 #else
   const TYPE

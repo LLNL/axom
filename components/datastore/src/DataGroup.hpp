@@ -80,7 +80,7 @@ public:
    */
   DataGroup& operator=( const DataGroup& rhs );
 
-#if CPP11
+#ifdef USECXX11
   /*!
    * @param source
    * \brief default move constructor
