@@ -6,10 +6,16 @@
  */
 
 #include "DataStore.hpp"
-#include "DataObject.hpp"
+#include "DataBuffer.hpp"
 
 namespace DataStoreNS
 {
+
+  DataStore::DataStore() :
+    m_RootGroup(nullptr, this),
+    m_DataBuffers(),
+    m_AvailableDataBuffers()
+    {};
 
   DataStore::~DataStore()
   {
@@ -36,20 +42,5 @@ namespace DataStoreNS
     return obj;
   }
 
-  void DataStore::DeleteDataBuffer( DataBuffer*& obj )
-  {
-/*
-    DataObject::GroupContainerType *gset = obj->GetDataGroups();
-    for( DataObject::GroupContainerType::iterator it = gset->begin() ;
-         it != gset->end() ; ++it )
-    {
-      DataGroup *grp = *it;
-      grp->RemoveDataView( obj );
-    }
-
-    m_AvailableDataObjects.push( obj );
-    return;
-    */
-  }
 
 } /* namespace DataStoreNS */

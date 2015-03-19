@@ -40,14 +40,12 @@ public:
 
 private:
 
-  /// Index of the dataBuffer in the DataStore
-  IDType m_uid;
+  std::string m_name;
 
-  /// pointer to the BEGINNING of the DataBuffer??
+  DataGroup* m_parentGroup;
+
+  /// pointer to the DataBuffer??
   DataBuffer* m_dataBuffer;
-
-  /// Set of groups that contain this view??? Not necessary anymore, as the group/view relationship may be 1-to-1
-  GroupContainerType m_GroupSet;
 
   /// pointer to the location in the actual data buffer that the view has access to
   void* m_viewStart;
@@ -62,68 +60,24 @@ private:
 
 public:
 
-  /*!
-   *
-   * @param uid
-   * @param m_stringDescriptor
-   */
-  DataView( const IDType uid,
-              const std::string& m_stringDescriptor );
 
-  /*!
-   *
-   * @param uid
-   */
-  DataView( const IDType uid );
+  DataView( const std::string& name,
+            DataGroup* const parentGroup,
+            DataBuffer* const dataBuffer );
 
-  /*!
-   *
-   * @param source
-   */
+  DataView( const std::string& name,
+            DataGroup* const parentGroup,
+            DataStore* const dataStore );
+
+
+  /// copy constructor
   DataView(const DataView& source );
 
 
-  /*!
-   * destructor
-   */
+  /// destructor
   ~DataView();
 
-  /*!
-   * \brief Return the univeral id for this DataView.
-   */
-  IDType GetUID() { return m_uid; }
 
-#if 0
-  /*!
-   * @param grp Pointer to DataGroup to associate with this DataView.
-   * \brief Associate a DataGroup with this DataView.
-   */
-  void AttachGroup( DataGroup *grp ) { m_GroupSet.insert(grp); }
-
-  /*!
-   * @param grp Pointer to DataGroup to disassociate with this DataView.
-   * \brief Disassociate a DataGroup with this DataView.
-   */
-  void DetachGroup( DataGroup *grp ) { m_GroupSet.erase(grp); }
-
-  /*!
-   * @param grp Pointer to DataGroup to test for membership.
-   * \brief return true is grp is attached.
-   */
-  bool IsAttachedGroup( DataGroup *grp )
-  {
-    GroupContainerType::iterator it = m_GroupSet.find(grp);
-    if (it == m_GroupSet.end())
-      return false;
-    else
-      return true;
-  }
-
-  /*!
-   * \brief Return DataGroups attached to this DataView.
-   */
-  GroupContainerType *GetDataGroups() { return &m_GroupSet; }
-#endif
   /**
    *
    * @return casted pointer to m_data

@@ -12,16 +12,20 @@ namespace DataStoreNS
 {
 
 
-DataView::DataView( const IDType uid ) :
-    m_uid(uid),
-    m_GroupSet(),
+DataView::DataView( const std::string& name,
+                    DataGroup* const parentGroup,
+                    DataBuffer* const dataBuffer ):
+    m_name(name),
+    m_parentGroup(parentGroup),
+    m_dataBuffer(dataBuffer),
     m_viewStart(nullptr),
     m_dataShape(),
     m_dataType(rtTypes::undefined)
 {}
 
-DataView::DataView( const IDType uid,
-                        const std::string& stringDescriptor ) :
+DataView::DataView( const std::string& name,
+                    DataGroup* const parentGroup,
+                    DataStore* const dataStore ) :
     m_uid(uid),
     m_GroupSet(),
     m_viewStart(nullptr),

@@ -2,7 +2,6 @@
 # Specify all headers
 #
 set(datastore_headers
-    Attributes.hpp
     DataBuffer.hpp
     DataGroup.hpp
     DataObject.hpp

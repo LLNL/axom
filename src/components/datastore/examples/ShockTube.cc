@@ -34,7 +34,7 @@
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
-using DataStoreNS::DataObject;
+using DataStoreNS::DataView;
 using DataStoreNS::DataGroup;
 
 /**************************************************************************
@@ -57,8 +57,8 @@ void GetUserInput(DataStoreNS::DataGroup* const problem)
     numElems += 2; /* add an inflow and outflow zone */
     numFaces = numElems - 1;
 
-    *(problem->CreateDataObject("numElems")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numElems;
-    *(problem->CreateDataObject("numFaces")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numFaces;
+    *(problem->CreateDataView("numElems")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numElems;
+    *(problem->CreateDataView("numFaces")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numFaces;
   }
 
   /********************/
@@ -87,8 +87,8 @@ void GetUserInput(DataStoreNS::DataGroup* const problem)
     }
 
 
-    *(problem->CreateDataObject("pressureRatio")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = pratio;
-    *(problem->CreateDataObject("densityRatio")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = dratio;
+    *(problem->CreateDataView("pressureRatio")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = pratio;
+    *(problem->CreateDataView("densityRatio")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = dratio;
 
 
   }
@@ -106,9 +106,9 @@ void GetUserInput(DataStoreNS::DataGroup* const problem)
     printf("How many cycles per Ultra dump would you like? ");
 //    scanf("%d", &numCyclesPerDump);
     numCyclesPerDump = 10;
-    *(problem->CreateDataObject("numUltraDumps")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numUltraDumps;
-    *(problem->CreateDataObject("numCyclesPerDump")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numCyclesPerDump;
-    *(problem->CreateDataObject("numTotalCycles")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numUltraDumps * numCyclesPerDump;
+    *(problem->CreateDataView("numUltraDumps")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numUltraDumps;
+    *(problem->CreateDataView("numCyclesPerDump")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numCyclesPerDump;
+    *(problem->CreateDataView("numTotalCycles")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numUltraDumps * numCyclesPerDump;
 
   }
 
@@ -140,8 +140,8 @@ void GetUserInput(DataStoreNS::DataGroup* const problem)
 void CreateShockTubeMesh(DataGroup * const prob)
 {
   int i;
-  int numElems = *(prob->GetDataObject("numElems")->GetData<int*>());
-  int numFaces = *(prob->GetDataObject("numFaces")->GetData<int*>());
+  int numElems = *(prob->GetDataView("numElems")->GetData<int*>());
+  int numFaces = *(prob->GetDataView("numFaces")->GetData<int*>());
   int inflow[1];
   int outflow[1];
 
@@ -167,7 +167,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 //  tube->indexSet()->shift(1);
   std::size_t numTubeElems = (numElems - 2);
   DataGroup* const tube = elem->CreateDataGroup("tube")->SetDataShape(DataStoreNS::DataShape(numTubeElems));
-  int* const mapToElems = tube->CreateDataObject("mapToElems")
+  int* const mapToElems = tube->CreateDataView("mapToElems")
                               ->SetType<int>()
                               ->Allocate()->GetData<int*>();
   for ( unsigned int k = 0u; k < numTubeElems; ++k)
@@ -182,7 +182,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   std::size_t dims[2] = { numFaces, 2 };
   DataStoreNS::DataShape desc(2, dims);
 
-  int * const faceToElem = face->CreateDataObject("faceToElem")
+  int * const faceToElem = face->CreateDataView("faceToElem")
                                 ->SetDataShape(desc)
                                 ->SetType<int>()
                                 ->Allocate()->GetData<int*>();
@@ -197,7 +197,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
   dims[0] = numElems;
   DataStoreNS::DataShape desc2(2, dims);
-  int * const elemToFace = tube->CreateDataObject("elemToFace")->SetType<int>()->SetDataShape(desc2)->Allocate()->GetData<int*>();
+  int * const elemToFace = tube->CreateDataView("elemToFace")->SetType<int>()->SetDataShape(desc2)->Allocate()->GetData<int*>();
 
   for (i = 0; i < numElems; ++i)
   {
@@ -222,15 +222,15 @@ void InitializeShockTube(DataGroup * const prob)
   DataGroup* const face = (prob->GetDataGroup("face"));
 
   /* Create element centered quantities */
-  double *mass = elem->CreateDataObject("mass")->SetType<double>()->Allocate()->GetData<double*>();
-  double *momentum = elem->CreateDataObject("momentum")->SetType<double>()->Allocate()->GetData<double*>();
-  double *energy = elem->CreateDataObject("energy")->SetType<double>()->Allocate()->GetData<double*>();
-  double *pressure = elem->CreateDataObject("pressure")->SetType<double>()->Allocate()->GetData<double*>();
+  double *mass = elem->CreateDataView("mass")->SetType<double>()->Allocate()->GetData<double*>();
+  double *momentum = elem->CreateDataView("momentum")->SetType<double>()->Allocate()->GetData<double*>();
+  double *energy = elem->CreateDataView("energy")->SetType<double>()->Allocate()->GetData<double*>();
+  double *pressure = elem->CreateDataView("pressure")->SetType<double>()->Allocate()->GetData<double*>();
 
   /* Create face centered quantities */
-  face->CreateDataObject("F0")->SetType<double>()->Allocate();
-  face->CreateDataObject("F1")->SetType<double>()->Allocate();
-  face->CreateDataObject("F2")->SetType<double>()->Allocate();
+  face->CreateDataView("F0")->SetType<double>()->Allocate();
+  face->CreateDataView("F1")->SetType<double>()->Allocate();
+  face->CreateDataView("F2")->SetType<double>()->Allocate();
 
 //  face->fieldCreateReal("F", 3); /* mv, mv^2+P, and v(E+P) */
 
@@ -255,8 +255,8 @@ void InitializeShockTube(DataGroup * const prob)
   }
 
   /* adjust parameters for low pressure portion of tube */
-  double dratio = *(prob->GetDataObject("densityRatio")->GetData<double*>());
-  double pratio = *(prob->GetDataObject("pressureRatio")->GetData<double*>());
+  double dratio = *(prob->GetDataView("densityRatio")->GetData<double*>());
+  double pratio = *(prob->GetDataView("pressureRatio")->GetData<double*>());
 
   massInitial *= dratio;
   pressureInitial *= pratio;
@@ -271,11 +271,11 @@ void InitializeShockTube(DataGroup * const prob)
   }
 
   /* Create needed time info */
-  *(prob->CreateDataObject("time")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = 0.0;
-  *(prob->CreateDataObject("cycle")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = 0;
-  *(prob->CreateDataObject("dx")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = (1.0 / ((double) endTube));
-  double dx = *(prob->GetDataObject("dx")->GetData<double*>());
-  *(prob->CreateDataObject("dt")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = 0.4 * dx;
+  *(prob->CreateDataView("time")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = 0.0;
+  *(prob->CreateDataView("cycle")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = 0;
+  *(prob->CreateDataView("dx")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = (1.0 / ((double) endTube));
+  double dx = *(prob->GetDataView("dx")->GetData<double*>());
+  *(prob->CreateDataView("dt")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = 0.4 * dx;
 
 
 
@@ -299,17 +299,17 @@ void ComputeFaceInfo(DataGroup * const problem)
   int i;
   DataGroup* const face = problem->GetDataGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
-  int const * const faceToElem = face->GetDataObject("faceToElem")->GetData<int*>();
+  int const * const faceToElem = face->GetDataView("faceToElem")->GetData<int*>();
 
-  double * const F0 = face->GetDataObject("F0")->GetData<double*>();
-  double * const F1 = face->GetDataObject("F1")->GetData<double*>();
-  double * const F2 = face->GetDataObject("F2")->GetData<double*>();
+  double * const F0 = face->GetDataView("F0")->GetData<double*>();
+  double * const F1 = face->GetDataView("F1")->GetData<double*>();
+  double * const F2 = face->GetDataView("F2")->GetData<double*>();
   int numFaces = face->GetDataShape().m_dimensions[0];
 
   DataGroup* const elem = problem->GetDataGroup("elem");
-  double *mass = elem->GetDataObject("mass")->GetData<double*>();
-  double *momentum = elem->GetDataObject("momentum")->GetData<double*>();
-  double *energy = elem->GetDataObject("energy")->GetData<double*>();
+  double *mass = elem->GetDataView("mass")->GetData<double*>();
+  double *momentum = elem->GetDataView("momentum")->GetData<double*>();
+  double *energy = elem->GetDataView("energy")->GetData<double*>();
 
   for (i = 0; i < numFaces; ++i)
   {
@@ -390,32 +390,32 @@ void UpdateElemInfo(DataGroup * const problem)
 
   /* get the element quantities we want to update */
   DataGroup* const elem = problem->GetDataGroup("elem");
-  double * const mass = elem->GetDataObject("mass")->GetData<double*>();
-  double * const momentum = elem->GetDataObject("momentum")->GetData<double*>();
-  double * const energy = elem->GetDataObject("energy")->GetData<double*>();
-  double * const pressure = elem->GetDataObject("pressure")->GetData<double*>();
+  double * const mass = elem->GetDataView("mass")->GetData<double*>();
+  double * const momentum = elem->GetDataView("momentum")->GetData<double*>();
+  double * const energy = elem->GetDataView("energy")->GetData<double*>();
+  double * const pressure = elem->GetDataView("pressure")->GetData<double*>();
 
   /* focus on just the elements within the shock tube */
   DataGroup* const tube = elem->GetDataGroup("tube");
-  int * const elemToFace = tube->GetDataObject("elemToFace")->GetData<int*>();
+  int * const elemToFace = tube->GetDataView("elemToFace")->GetData<int*>();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
   int numTubeElems = tube->GetDataShape().m_dimensions[0];
 
 //  int *is = tube->map();
-  int* const is = tube->GetDataObject("mapToElems")->GetData<int*>();
+  int* const is = tube->GetDataView("mapToElems")->GetData<int*>();
 
 
 
   /* The element update is calculated as the flux between faces */
   DataGroup* const face = problem->GetDataGroup("face");
-  double *F0 = face->GetDataObject("F0")->GetData<double*>();
-  double *F1 = face->GetDataObject("F1")->GetData<double*>();
-  double *F2 = face->GetDataObject("F2")->GetData<double*>();
+  double *F0 = face->GetDataView("F0")->GetData<double*>();
+  double *F1 = face->GetDataView("F1")->GetData<double*>();
+  double *F2 = face->GetDataView("F2")->GetData<double*>();
 
-  double dx = *(problem->GetDataObject("dx")->GetData<double*>());
-  double dt = *(problem->GetDataObject("dt")->GetData<double*>());
-  double& time = *(problem->GetDataObject("time")->GetData<double*>());
+  double dx = *(problem->GetDataView("dx")->GetData<double*>());
+  double dt = *(problem->GetDataView("dt")->GetData<double*>());
+  double& time = *(problem->GetDataView("time")->GetData<double*>());
 
   for (i = 0; i < numTubeElems; ++i)
   {
@@ -458,7 +458,7 @@ void DumpUltra( const DataGroup * const prob)
    /* Skip past the junk */
    for (tail=fname; isalpha(*tail); ++tail) ;
 
-   sprintf(tail, "_%04d", *(prob->GetDataObject("cycle")->GetData<int*>()) ) ;
+   sprintf(tail, "_%04d", *(prob->GetDataView("cycle")->GetData<int*>()) ) ;
 
    if ((fp = fopen(fname, "w")) == NULL)
    {
@@ -472,8 +472,8 @@ void DumpUltra( const DataGroup * const prob)
 
 
    {
-   const DataGroup::dataArrayType& dataObjects = prob->GetDataObjects();
-   const DataGroup::lookupType& dataObjectLookup = prob->GetDataObjectLookup();
+   const DataGroup::dataArrayType& dataObjects = prob->GetDataViews();
+   const DataGroup::lookupType& dataObjectLookup = prob->GetDataViewLookup();
 
    DataGroup::dataArrayType::const_iterator obj=dataObjects.begin();
    DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin();
@@ -497,9 +497,9 @@ void DumpUltra( const DataGroup * const prob)
    }
 
    {
-//   for( auto obj : elem->GetDataObjects() )
-   const DataGroup::dataArrayType& dataObjects = elem->GetDataObjects();
-   const DataGroup::lookupType& dataObjectLookup = elem->GetDataObjectLookup();
+//   for( auto obj : elem->GetDataViews() )
+   const DataGroup::dataArrayType& dataObjects = elem->GetDataViews();
+   const DataGroup::lookupType& dataObjectLookup = elem->GetDataViewLookup();
 
    DataGroup::dataArrayType::const_iterator obj=dataObjects.begin();
    DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin();
@@ -555,10 +555,10 @@ int main(void)
 
 
   /* use a reference when you want to update the param directly */
-  int* const currCycle = problem->GetDataObject("cycle")->GetData<int*>();
+  int* const currCycle = problem->GetDataView("cycle")->GetData<int*>();
 
-  int numTotalCycles = *(problem->GetDataObject("numTotalCycles")->GetData<int*>());
-  int dumpInterval = *(problem->GetDataObject("numCyclesPerDump")->GetData<int*>());
+  int numTotalCycles = *(problem->GetDataView("numTotalCycles")->GetData<int*>());
+  int dumpInterval = *(problem->GetDataView("numCyclesPerDump")->GetData<int*>());
 
   for (*currCycle = 0; *currCycle < numTotalCycles; ++(*currCycle) )
   {
