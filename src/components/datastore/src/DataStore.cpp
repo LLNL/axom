@@ -13,7 +13,7 @@ namespace DataStoreNS
 
   DataStore::~DataStore()
   {
-    for( dataObjectContainerType::iterator iter=m_DataBuffers.begin() ; iter!=m_DataBuffers.end() ; ++iter )
+    for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ; iter!=m_DataBuffers.end() ; ++iter )
     {
       delete *iter;
     }

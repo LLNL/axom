@@ -26,10 +26,9 @@ namespace DataStoreNS
 class DataStore
 {
 public:
-  /*!
-   * \brief vector of DataObject pointers.
-   */
-  typedef std::vector< DataBuffer* > dataObjectContainerType;
+
+  /// container for DataBuffers
+  typedef std::vector< DataBuffer* > dataBufferContainerType;
 
   // constructor
   // creates empty root data group and names it "/"
@@ -43,7 +42,7 @@ private:
   // container of data object pointers
   // as long as we recycle ids, this should not have many vacancies with NULL pointers
   // if it's an issue, change this to a std::map (or boost/std::unordered_map)
-  dataObjectContainerType m_DataBuffers;
+  dataBufferContainerType m_DataBuffers;
 
   // stack of unique ids that can be recycled
   std::stack< IDType > m_AvailableDataBuffers;
