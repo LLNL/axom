@@ -2,10 +2,11 @@
 # Specify all headers
 #
 set(datastore_headers
-    Attributes.hpp
+    DataBuffer.hpp
     DataGroup.hpp
     DataObject.hpp
     DataStore.hpp
+    DataView.hpp
     Types.hpp
     Utilities.hpp
     datastore.h
@@ -15,9 +16,11 @@ set(datastore_headers
 # Specify all sourcess
 #
 set(datastore_sources
+	DataBuffer.cpp
     DataGroup.cpp
     DataObject.cpp
     DataStore.cpp
+	DataView.cpp
     )
 
 

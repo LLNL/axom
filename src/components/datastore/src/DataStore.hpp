@@ -6,17 +6,17 @@
  */
 
 #ifndef DATASTORE_HPP_
-#define DATASTPRE_HPP_
+#define DATASTORE_HPP_
 
-#include "DataObject.hpp"
-#include "DataGroup.hpp"
 #include <vector>
 #include <stack>
+#include "DataGroup.hpp"
 #include "Types.hpp"
 
 namespace DataStoreNS
 {
 
+class DataBuffer;
 
 /**
  * \class DataStore
@@ -26,72 +26,77 @@ namespace DataStoreNS
 class DataStore
 {
 public:
-  /*!
-   * \brief vector of DataObject pointers.
-   */
-  typedef std::vector< DataObject* > dataObjectContainerType;
 
-  // constructor
-  // creates empty root data group and names it "/"
-  // calls reserve on data object vector to minimize later resizes
-private:
+  /// typedef for container for DataBuffers
+  typedef std::vector< DataBuffer* > dataBufferContainerType;
 
-  // use a counter to generate a new unique id
-  // may also be useful to know the number of active data objects
-  IDType m_IDCounter;
-
-  // Root data group, created automatically with datastore.
-  DataGroup m_RootGroup;
-
-  // container of data object pointers
-  // as long as we recycle ids, this should not have many vacancies with NULL pointers
-  // if it's an issue, change this to a std::map (or boost/std::unordered_map)
-  dataObjectContainerType m_DataObjects;
-
-  // stack of unique ids that can be recycled
-  std::stack< DataObject* > m_AvailableDataObjects;
-
-public:
   /*!
    * \brief Constructor.
    */
-  DataStore() :
-    m_IDCounter(0),
-    m_RootGroup(nullptr, this) {};
+  DataStore();
 
   /*!
    * \brief Destructor.
    */
   ~DataStore();
 
-  // copy constructor
-  //DataStore( const DataStore* store );
-
   /*!
-   * \brief Create an empty DataObject.
+   * \brief Create a DataBuffer.
    *    It is assigned a universal id and owned by the DataStore
    */
-  DataObject *CreateDataObject();
+  DataBuffer* CreateDataBuffer();
 
-  /*!
-   * @param obj DataObject to delete.
-   * \brief Remove a DataObject from the DataStore.
-   *   It is disassociated with all groups and returned to the free pool.
-   */
-  void DeleteDataObject( DataObject *obj);
 
   /*!
    * @param id  Universal id of the DataObject.
    * \brief Remove a DataObject from the DataStore.
    *   It is disassociated with all groups and returned to the free pool.
    */
-  void DeleteDataObject(IDType id);
+  void DeleteDataBuffer( const IDType id );
+
+  /*!
+   *
+   * @param id the index
+   * @return the DataBuffer that was at m_DataBuffer[id]
+   * \brief Remove a DataBuffer from container, and return
+   */
+  DataBuffer* DetatchDataBuffer( const IDType id );
+
 
   /*!
    * \brief Return pointer to the root DataGroup.
    */
   DataGroup* GetRootDataGroup() { return &m_RootGroup; };
 
+  /*!
+   *
+   * @param id
+   * @return
+   */
+  DataBuffer* GetDataBuffer( const IDType id ) { return m_DataBuffers[id]; }
+
+private:
+
+
+  /// Root data group, created automatically with datastore.
+  DataGroup m_RootGroup;
+
+  /// container of DataBuffers
+  dataBufferContainerType m_DataBuffers;
+
+  /// stack of unique ids that can be recycled
+  std::stack< IDType > m_AvailableDataBuffers;
+
+#ifdef USECXX11
+  DataStore( const DataStore& ) = delete;
+  DataStore( DataStore&& ) = delete;
+
+  DataStore& operator=( const DataStore& ) = delete;
+  DataStore& operator=( DataStore&& ) = delete;
+#else
+  DataStore( const DataStore& );
+  DataStore& operator=( const DataStore& );
+#endif
 };
 
 

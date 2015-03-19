@@ -8,7 +8,7 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "DataObject.hpp"
+#include "DataView.hpp"
 #include <memory>
 #include <map>
 #include <vector>
@@ -20,19 +20,19 @@ namespace DataStoreNS
 /**
  * \class DataGroup
  *
- * \brief Class to access collections of DataObject.
- *  The DataGroup will name each DataObject as it is added.
+ * \brief Class to access collections of DataView.
+ *  The DataGroup will name each DataView as it is added.
  */
 class DataGroup
 {
 public:
   /*!
-   * \brief vector of DataObject pointers.
+   * \brief vector of DataView pointers.
    */
-  typedef std::vector<DataObject*> dataArrayType;
+  typedef std::vector<DataView*> dataArrayType;
 
   /*!
-   * \brief map of name to index of DataObject within this DataGroup.
+   * \brief map of name to index of DataView within this DataGroup.
    */
   typedef std::map<std::string, IDType> lookupType;
 
@@ -44,8 +44,8 @@ public:
 private:
   DataGroup *m_parent;
   DataStore *m_datastore;
-  dataArrayType m_DataObjects;  // DataObjects by index
-  lookupType m_DataObjectLookup;      // DataObjects name to Object pointer
+  dataArrayType m_DataViews;  // DataViews by index
+  lookupType m_DataViewLookup;      // DataViews name to View pointer
   lookupGroup m_childGroups;  // child Groups: name->Group pointer
   std::string m_name;
 
@@ -75,7 +75,7 @@ public:
 
   /*!
    *
-   * @param rhs the DataObject to be copied
+   * @param rhs the DataView to be copied
    * @return *this
    */
   DataGroup& operator=( const DataGroup& rhs );
@@ -89,7 +89,7 @@ public:
 
   /*!
    *
-   * @param rhs the DataObject to be moved into *this
+   * @param rhs the DataView to be moved into *this
    * @return *this
    */
   DataGroup& operator=( const DataGroup&& rhs );
@@ -114,84 +114,72 @@ public:
   bool HasName( const std::string& name );
 
   /*!
-   * @param name Name for created DataObject.
-   * \brief Create a DataObject and add to this DataGroup.
+   * @param name Name for created DataView.
+   * \brief Create a DataView and add to this DataGroup.
    */
-  DataObject *CreateDataObject( const std::string& name )
+  DataView *CreateDataView( const std::string& name );
+
+  /*!
+   * @param name Name of DataView to add.
+   * @param obj  Pointer to an existing DataView.
+   * \brief Add existing DataView to this DataGroup.
+   */
+  DataView *AttachDataView( const std::string& name, DataView *obj );
+
+  DataView* DetatchDataView( const std::string& name );
+
+
+  /*!
+   * @param name Name of DataView to find.
+   * \brief Return pointer to DataView.
+   */
+  DataView *GetDataView( const std::string& name )
   {
-    return AddDataObject(name, NULL);
+    const IDType indx = m_DataViewLookup.at(name);
+    return m_DataViews[indx];
+  }
+  DataView const * GetDataView( const std::string& name ) const
+  {
+    const IDType indx = m_DataViewLookup.at(name);
+    return m_DataViews[indx];
   }
 
   /*!
-   * @param name Name of DataObject to add.
-   * @param obj  Pointer to an existing DataObject.
-   * \brief Add existing DataObject to this DataGroup.
+   * @param indx Index of DataView within this DataGroup.
+   * \brief Return pointer to DataView.
    */
-  DataObject *AddDataObject( const std::string& name, DataObject *obj );
-
-  /*!
-   * @param name Name of DataObject to find.
-   * \brief Return pointer to DataObject.
-   */
-  DataObject *GetDataObject( const std::string& name )
+  DataView *GetDataView( const IDType indx )
   {
-    const IDType indx = m_DataObjectLookup.at(name);
-    return m_DataObjects[indx];
-  }
-  DataObject const * GetDataObject( const std::string& name ) const
-  {
-    const IDType indx = m_DataObjectLookup.at(name);
-    return m_DataObjects[indx];
-  }
-
-  /*!
-   * @param indx Index of DataObject within this DataGroup.
-   * \brief Return pointer to DataObject.
-   */
-  DataObject *GetDataObject( const IDType indx )
-  {
-    DataObject *obj = m_DataObjects[indx];
+    DataView *obj = m_DataViews[indx];
     if( obj == NULL )
     {
-      // Object has been deleted and index is a hole in the table.
+      // View has been deleted and index is a hole in the table.
       throw std::exception();
     }
     return obj;
   }
 
   /*!
-   * @param name Name of DataObject to find.
-   * \brief Return index of DataObject in this DataGroup.
+   * @param name Name of DataView to find.
+   * \brief Return index of DataView in this DataGroup.
    */
-  IDType IndexDataObject( const std::string& name )
+  IDType IndexDataView( const std::string& name )
   {
-    return m_DataObjectLookup.at(name);
+    return m_DataViewLookup.at(name);
   }
 
   /*!
-   * @param obj Name of DataObject to find.
-   * \brief Return name of DataObject in this DataGroup.
+   * @param obj Name of DataView to find.
+   * \brief Return name of DataView in this DataGroup.
    */
-  std::string const & NameDataObject( DataObject *obj );
+  std::string const & NameDataView( DataView *obj );
 
   /*!
-   * @param name Name of DataObject to remove.
-   * \brief Remove named DataObject from the index.
-   *   The DataObject still exists in the DataStore.
+   * @param name Name of DataView to remove.
+   * \brief Remove named DataView from the index.
+   *   The DataView still exists in the DataStore.
    */
-  DataObject *RemoveDataObject( const std::string& name );
-
-  /*!
-   * @param obj Pointer to DataObject to remove.
-   * \brief Remove obj from the index.
-   *   The DataObject still exists in the DataStore.
-   */
-  DataObject *RemoveDataObject( DataObject *obj );
-
-  /*!
-   * \brief Remove all DataObjects from this DataGroup.
-   */
-  void ClearDataObjects();
+  void RemoveDataView( const std::string& name );
 
   /*!
    * @param name Name of DataGroup to create.
@@ -214,11 +202,11 @@ public:
   }
 
   /*!
-   * \brief Return number of DataObjects contained in this DataGroup.
+   * \brief Return number of DataViews contained in this DataGroup.
    */
-  size_t CountObjects()
+  size_t CountViews()
   {
-    return m_DataObjects.size();
+    return m_DataViews.size();
   }
 
   /*!
@@ -230,16 +218,16 @@ public:
   }
 
   /*!
-   * \brief Return DataObjects contained in this DataGroup.
+   * \brief Return DataViews contained in this DataGroup.
    */
-  lookupType const & GetDataObjectLookup() const
+  lookupType const & GetDataViewLookup() const
   {
-    return m_DataObjectLookup;
+    return m_DataViewLookup;
   }
 
-  dataArrayType const & GetDataObjects() const
+  dataArrayType const & GetDataViews() const
   {
-    return m_DataObjects;
+    return m_DataViews;
   }
 
   /*!

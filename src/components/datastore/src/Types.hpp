@@ -15,8 +15,14 @@ namespace DataStoreNS
 {
 typedef size_t IDType;
 
-#ifndef USECXX11
+#ifdef USECXX11
+
+#else
+
+#ifndef nullptr
 #define nullptr 0
+#endif
+
 #endif
 
 typedef short int int16;
@@ -233,6 +239,7 @@ struct DataShape
       m_dimensions[i] = source.m_dimensions[i];
     }
 
+    return *this;
   }
 
   ~DataShape()
