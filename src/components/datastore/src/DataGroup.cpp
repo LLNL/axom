@@ -23,46 +23,52 @@ namespace DataStoreNS
     return false;
   }
 
-  /*
-  DataView *DataGroup::AddDataView( const std::string& name, DataView *obj )
+
+  DataView *DataGroup::AttachDataView( const std::string& name, DataView * const obj )
   {
-    if( HasName( name ) )
+    if( HasName( name ) || obj==nullptr )
     {
       throw std::exception();
     }
-    if( obj == nullptr )
-    {
-      obj = m_datastore->CreateDataBuffer();
-    }
+
     m_DataViewLookup[name] = m_DataViews.size(); // map name to index
     m_DataViews.push_back( obj );
-    obj->AttachGroup( this );
     // XXX how does user get index? Search IndexDataView(name) or return from here?
     return obj;
   }
-*/
-  DataView *DataGroup::RemoveDataView( const std::string& name )
+
+  DataView* DataGroup::CreateDataView( const std::string& name )
   {
+    DataView* const view = new DataView( name, this, m_datastore );
+    return AttachDataView(name, NULL);
+  }
+
+
+  DataView* DataGroup::DetatchDataView( const std::string& name )
+  {
+    DataView* view = nullptr;
     DataGroup::lookupType::iterator it = m_DataViewLookup.find( name );
     if( it != m_DataViewLookup.end() )
     {
-      IDType indx = it->second;
-      DataView *obj = m_DataViews[indx];
+      IDType id = it->second;
+      view = m_DataViews[id];
       m_DataViewLookup.erase( it );
-      m_DataViews[indx] = nullptr; // XXX remove from m_DataViews
-      // XXX this makes a hole in the table, but perserved existing indexes.
+      m_DataViews[id] = nullptr;
     }
     else
     {
       throw std::exception();
     }
+
+    return view;
   }
 
-  DataView *DataGroup::RemoveDataView( DataView *obj )
+
+  void DataGroup::RemoveDataView( const std::string& name )
   {
-    std::string const & name = NameDataView( obj );
-    RemoveDataView( name );
+    delete DetatchDataView(name);
   }
+
 
   DataGroup *DataGroup::CreateDataGroup( const std::string& name )
   {
@@ -75,11 +81,6 @@ namespace DataStoreNS
     return grp;
   }
 
-  void DataGroup::ClearDataViews()
-  {
-    m_DataViews.clear();
-    m_DataViewLookup.clear();
-  }
 
   std::string const & DataGroup::NameDataView( DataView *obj )
   {

@@ -117,17 +117,17 @@ public:
    * @param name Name for created DataView.
    * \brief Create a DataView and add to this DataGroup.
    */
-  DataView *CreateDataView( const std::string& name )
-  {
-//    return AddDataView(name, NULL);
-  }
+  DataView *CreateDataView( const std::string& name );
 
   /*!
    * @param name Name of DataView to add.
    * @param obj  Pointer to an existing DataView.
    * \brief Add existing DataView to this DataGroup.
    */
-  DataView *AddDataView( const std::string& name, DataView *obj );
+  DataView *AttachDataView( const std::string& name, DataView *obj );
+
+  DataView* DetatchDataView( const std::string& name );
+
 
   /*!
    * @param name Name of DataView to find.
@@ -179,19 +179,7 @@ public:
    * \brief Remove named DataView from the index.
    *   The DataView still exists in the DataStore.
    */
-  DataView *RemoveDataView( const std::string& name );
-
-  /*!
-   * @param obj Pointer to DataView to remove.
-   * \brief Remove obj from the index.
-   *   The DataView still exists in the DataStore.
-   */
-  DataView *RemoveDataView( DataView *obj );
-
-  /*!
-   * \brief Remove all DataViews from this DataGroup.
-   */
-  void ClearDataViews();
+  void RemoveDataView( const std::string& name );
 
   /*!
    * @param name Name of DataGroup to create.

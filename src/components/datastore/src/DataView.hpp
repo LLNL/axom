@@ -24,8 +24,6 @@ class DataBuffer;
  * or passed in from the outside.
  *
  * Requirements for this class are:
- *    - one-to-one relation with data. This means that a  is the only  that refers to a specific
- *      data address.
  *    - contain pointer to the owning entity of this .
  *    - contain collection of attributes
  *    - description of shape of data (if applicable)
@@ -41,7 +39,7 @@ private:
 
   DataGroup* m_parentGroup;
 
-  /// pointer to the DataBuffer??
+  /// pointer to the DataBuffer
   DataBuffer* m_dataBuffer;
 
   /// pointer to the location in the actual data buffer that the view has access to
