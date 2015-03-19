@@ -11,41 +11,45 @@
 namespace DataStoreNS
 {
 
-
-DataStore::~DataStore()
-{
-  for (size_t i=0; i < m_DataObjects.size(); i++) {
-    delete m_DataObjects[i];
-  }
-}
-
-DataObject *DataStore::CreateDataObject()
-{
-  // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  DataObject *obj;
-  if (m_AvailableDataObjects.empty()) {
-    obj = new DataObject(m_IDCounter);
-    ++m_IDCounter;
-    m_DataObjects.push_back(obj);
-  } else {
-    obj = m_AvailableDataObjects.top();
-    m_AvailableDataObjects.pop();
+  DataStore::~DataStore()
+  {
+    for( dataObjectContainerType::iterator iter=m_DataBuffers.begin() ; iter!=m_DataBuffers.end() ; ++iter )
+    {
+      delete *iter;
+    }
   }
 
-  return obj;
-}
+  DataBuffer* DataStore::CreateDataBuffer()
+  {
+    // TODO: implement pool, look for free nodes.  Allocate in blocks.
+    IDType newIndex = m_DataBuffers.size();
+    m_DataBuffers.push_back( nullptr );
+    if( m_AvailableDataBuffers.empty() )
+    {
+      newIndex = m_AvailableDataBuffers.top();
+      m_AvailableDataBuffers.pop();
+    }
+    DataBuffer* const obj = new DataBuffer( newIndex );
 
-void DataStore::DeleteDataObject( DataObject *obj )
-{
-  DataObject::GroupContainerType *gset = obj->GetDataGroups();
-  for (DataObject::GroupContainerType::iterator it = gset->begin(); it != gset->end(); ++it) {
-    DataGroup *grp = *it;
-    grp->RemoveDataObject(obj);
+    m_DataBuffers[newIndex] = obj ;
+
+    return obj;
   }
 
-  m_AvailableDataObjects.push(obj);
-  return;
-}
+  void DataStore::DeleteDataBuffer( DataBuffer*& obj )
+  {
+/*
+    DataObject::GroupContainerType *gset = obj->GetDataGroups();
+    for( DataObject::GroupContainerType::iterator it = gset->begin() ;
+         it != gset->end() ; ++it )
+    {
+      DataGroup *grp = *it;
+      grp->RemoveDataView( obj );
+    }
 
+    m_AvailableDataObjects.push( obj );
+    return;
+    */
+  }
 
 } /* namespace DataStoreNS */
