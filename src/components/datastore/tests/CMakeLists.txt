@@ -9,6 +9,8 @@ set(catch_datastore_tests
 
 set(gtest_datastore_tests
    testGTestExample.cxx
+   datastore_smoke.cxx
+   datastore_buffer.cxx
    )
 
 
