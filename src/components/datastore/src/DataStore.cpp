@@ -30,7 +30,7 @@ namespace DataStoreNS
     // TODO: implement pool, look for free nodes.  Allocate in blocks.
     IDType newIndex = m_DataBuffers.size();
     m_DataBuffers.push_back( nullptr );
-    if( m_AvailableDataBuffers.empty() )
+    if( !m_AvailableDataBuffers.empty() )
     {
       newIndex = m_AvailableDataBuffers.top();
       m_AvailableDataBuffers.pop();

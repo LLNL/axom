@@ -2,7 +2,7 @@
 
 // do we need one include that brings all of these in?
 #include "datastore/DataStore.hpp"
-#include "datastore/DataBufferhpp"
+#include "datastore/DataBuffer.hpp"
 
 using DataStoreNS::DataStore;
 using DataStoreNS::DataBuffer;
@@ -12,11 +12,9 @@ using DataStoreNS::DataBuffer;
 TEST(datastore_smoke,create_datastore)
 {
     DataStore *ds = new DataStore();
-
-    EXPECT_TRUE( true );
-    
-    
     DataBuffer *dbuff = ds->CreateDataBuffer();
+    EXPECT_EQ(dbuff->GetUID(),1);
     
-    delete ds;
+
+//    delete ds;
 }

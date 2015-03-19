@@ -2,6 +2,8 @@
 
 #include "datastore/DataStore.hpp"
 
+#include "conduit/conduit.h"
+
 using DataStoreNS::DataStore;
 
 //------------------------------------------------------------------------------
@@ -12,3 +14,14 @@ TEST(datastore_smoke,create_datastore)
     delete ds;
     EXPECT_TRUE( true );
 }
+
+//------------------------------------------------------------------------------
+
+TEST(datastore_smoke,conduit_in_datastore_smoke)
+{
+    // make sure we are linking with conduit ok. 
+    conduit::Node n;
+    n["field"] = 100;
+    EXPECT_EQ(n["field"].to_index_t(),100);
+}
+
