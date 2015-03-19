@@ -1,20 +1,31 @@
 #
-# Specity list of tests
+# Specify list of tests
 #
 
-set(datastore_tests
-   testExample.cxx
+set(catch_datastore_tests
+   testCatchExample.cxx
+   )
+
+
+set(gtest_datastore_tests
+   testGTestExample.cxx
    )
 
 
 
 #
-# Build tests
+# Add catch based tests
 #
-foreach(test ${datastore_tests})
+foreach(test ${catch_datastore_tests})
     add_catch_test( TEST_SOURCE ${test} DEPENDS_ON datastore )
 endforeach()
 
+#
+# Add gtest based tests
+#
+foreach(test ${gtest_datastore_tests})
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON datastore )
+endforeach()
 
-## Add Google tests
-add_gtest( TEST_SOURCE testSampleGTest.cxx DEPENDS_ON datastore )
+
+
