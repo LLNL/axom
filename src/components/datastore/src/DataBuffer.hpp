@@ -67,6 +67,13 @@ public:
    */
   ~DataBuffer();
 
+
+
+  void AddDataView( DataView* dataView );
+  void RemoveDataView( DataView* dataView );
+
+  void ReconcileDataViews();
+
   /*!
    * \brief Return the universal id for this DataBuffer.
    */
@@ -75,7 +82,7 @@ public:
   /*!
    * \brief Return DataGroups attached to this DataBuffer.
    */
-  ViewContainerType *GetDataViews() { return &m_ViewSet; }
+  ViewContainerType *GetDataViews() { return &m_ViewContainer; }
 
   /**
    *
@@ -167,7 +174,7 @@ private:
   std::string m_stringDescriptor;
 
   /// container of groups that contain this DataBuffer
-  ViewContainerType m_ViewSet;
+  ViewContainerType m_ViewContainer;
 
   /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
   void* m_data;

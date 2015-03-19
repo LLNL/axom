@@ -7,6 +7,8 @@
 
 #include "DataView.hpp"
 #include "DataGroup.hpp"
+#include "DataStore.hpp"
+#include "DataBuffer.hpp"
 
 namespace DataStoreNS
 {
@@ -21,21 +23,27 @@ DataView::DataView( const std::string& name,
     m_viewStart(nullptr),
     m_dataShape(),
     m_dataType(rtTypes::undefined)
-{}
+{
+
+}
 
 DataView::DataView( const std::string& name,
                     DataGroup* const parentGroup,
                     DataStore* const dataStore ) :
-    m_uid(uid),
-    m_GroupSet(),
-    m_viewStart(nullptr),
-    m_dataShape(),
-    m_dataType(rtTypes::undefined)
-{}
+  m_name(name),
+  m_parentGroup(parentGroup),
+  m_dataBuffer(nullptr),
+  m_viewStart(nullptr),
+  m_dataShape(),
+  m_dataType(rtTypes::undefined)
+{
+  m_dataBuffer = dataStore->CreateDataBuffer();
+}
 
 DataView::DataView(const DataView& source ) :
-    m_uid(source.m_uid),
-    m_GroupSet(source.m_GroupSet),
+    m_name(source.m_name),
+    m_parentGroup(source.m_parentGroup),
+    m_dataBuffer(source.m_dataBuffer),
     m_viewStart(source.m_viewStart),
     m_dataShape(source.m_dataShape),
     m_dataType(source.m_dataType)
@@ -51,35 +59,26 @@ DataView::~DataView()
 
 DataView* DataView::Allocate()
 {
-  if ( m_dataShape.m_dimensions != nullptr && m_dataType!=rtTypes::undefined )
-  {
-    std::size_t size = 1;
-    for (int dim = 0; dim < m_dataShape.m_numDimensions; ++dim)
-    {
-      size *= m_dataShape.m_dimensions[dim];
-    }
-//    m_memblob.resize( size * rtTypes::sizeofType(m_dataType) );
-//    m_data = m_memblob.data();
-  }
-  else
-  {
-    throw std::exception();
-  }
 
+  m_dataBuffer->Allocate();
   return this;
 }
 
-DataView* DataView::SetLength(const std::size_t newsize)
+
+DataView* DataView::SetDataShape( const DataShape& dataShape )
 {
-  if (m_dataShape.m_dimensions != nullptr)
-  {
-    m_dataShape.m_dimensions[0] = newsize;
-    Allocate();
-  }
-  else
-  {
-    throw std::exception();
-  }
+  // HACK
+  m_dataBuffer->SetDataShape( dataShape );
+
+  // check to see what conditions m_dataDescriptor can be set.
+  m_dataShape = dataShape;
+  m_viewStart = dataShape.m_dataPtr;
   return this;
 }
+
+void DataView::ReconcileWithBuffer()
+{
+  m_dataShape = m_dataBuffer->GetDataShape();
+}
+
 } /* namespace Datastore */

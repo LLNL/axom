@@ -42,5 +42,19 @@ namespace DataStoreNS
     return obj;
   }
 
+  void DataStore::DeleteDataBuffer( const IDType id )
+  {
+    delete m_DataBuffers[id];
+    m_AvailableDataBuffers.push(id);
+  }
+
+  DataBuffer* DataStore::DetatchDataBuffer( const IDType id )
+  {
+    DataBuffer* const rval = m_DataBuffers[id];
+    m_DataBuffers[id] = nullptr;
+    m_AvailableDataBuffers.push(id);
+
+    return rval;
+  }
 
 } /* namespace DataStoreNS */

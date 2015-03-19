@@ -34,9 +34,6 @@ class DataBuffer;
  */
 class DataView
 {
-public:
-  /// brief container of DataGroup pointers.
-  typedef std::set< DataGroup* > GroupContainerType;
 
 private:
 
@@ -77,7 +74,14 @@ public:
   /// destructor
   ~DataView();
 
+  /**
+   *
+   * @return
+   */
+  DataView* Allocate();
 
+
+  void ReconcileWithBuffer();
   /**
    *
    * @return casted pointer to m_data
@@ -142,23 +146,11 @@ public:
    * @param dataShape
    * @return
    */
-  virtual DataView* SetDataShape( const DataShape& dataShape )
-  {
-    // check to see what conditions m_dataDescriptor can be set.
-    m_dataShape = dataShape;
-    m_viewStart = dataShape.m_dataPtr;
-    return this;
-  }
+  DataView* SetDataShape( const DataShape& dataShape );
 
 
 
-  /**
-   *
-   * @return
-   */
-  DataView* Allocate();
-
-  DataView* SetLength(const std::size_t newsize);
+//  DataView* SetLength(const std::size_t newsize);
 
 
   ///@}

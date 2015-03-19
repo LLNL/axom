@@ -9,7 +9,7 @@ namespace DataStoreNS
 DataBuffer::DataBuffer( const IDType uid ) :
     m_uid(uid),
     m_stringDescriptor(),
-    m_ViewSet(),
+    m_ViewContainer(),
     m_data(nullptr),
     m_dataShape(),
     m_dataType(rtTypes::undefined),
@@ -20,7 +20,7 @@ DataBuffer::DataBuffer( const IDType uid,
                         const std::string& stringDescriptor ) :
     m_uid(uid),
     m_stringDescriptor(stringDescriptor),
-    m_ViewSet(),
+    m_ViewContainer(),
     m_data(nullptr),
     m_dataShape(),
     m_dataType(rtTypes::undefined),
@@ -30,7 +30,7 @@ DataBuffer::DataBuffer( const IDType uid,
 DataBuffer::DataBuffer(const DataBuffer& source ) :
     m_uid(source.m_uid),
     m_stringDescriptor(source.m_stringDescriptor),
-    m_ViewSet(source.m_ViewSet),
+    m_ViewContainer(source.m_ViewContainer),
     m_data(source.m_data),
     m_dataShape(source.m_dataShape),
     m_dataType(source.m_dataType),
@@ -62,23 +62,31 @@ DataBuffer* DataBuffer::Allocate()
     throw std::exception();
   }
 
+  ReconcileDataViews();
+
   return this;
 }
 
-/*
-DataBuffer* DataBuffer::SetLength(const std::size_t newsize)
+
+
+void DataBuffer::AddDataView( DataView* dataView )
 {
-  if (m_dataShape.m_dimensions != nullptr)
-  {
-    m_dataShape.m_dimensions[0] = newsize;
-    Allocate();
-  }
-  else
-  {
-    throw std::exception();
-  }
-  return this;
+  m_ViewContainer.insert( dataView );
 }
-*/
+
+
+void DataBuffer::RemoveDataView( DataView* dataView )
+{
+  m_ViewContainer.erase( dataView );
+}
+
+void DataBuffer::ReconcileDataViews()
+{
+  for( ViewContainerType::iterator iterView=m_ViewContainer.begin() ;
+       iterView != m_ViewContainer.end() ; ++iterView )
+  {
+    (*iterView)->ReconcileWithBuffer();
+  }
+}
 
 } /* namespace Datastore */
