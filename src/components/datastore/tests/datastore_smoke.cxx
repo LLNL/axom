@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "datastore/DataStore.hpp"
+#include "datastore/datastore.h"
 
 #include "conduit/conduit.h"
 

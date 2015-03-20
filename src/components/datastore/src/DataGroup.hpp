@@ -14,259 +14,257 @@
 #include <vector>
 #include "Types.hpp"
 
+#include "conduit/conduit.h"
+
+using conduit::index_t;
+
 namespace DataStoreNS
 {
 
 /**
  * \class DataGroup
  *
- * \brief Class to access collections of DataView.
+ * \brief Class to access collections of DataViews.
  *  The DataGroup will name each DataView as it is added.
  */
 class DataGroup
 {
 public:
-  /*!
-   * \brief vector of DataView pointers.
-   */
-  typedef std::vector<DataView*> dataArrayType;
 
-  /*!
-   * \brief map of name to index of DataView within this DataGroup.
-   */
-  typedef std::map<std::string, IDType> lookupType;
+    DataGroup(const std::string &name, DataGroup *parent);
+    DataGroup(const std::string &name, DataStore *datastore);
 
-  /*!
-   * \brief map of name to DataGroup pointer.
-   */
-  typedef std::map<std::string, DataGroup*> lookupGroup;
+    /*!
+    * @param source
+    * \brief default copy constructor
+    */
+    DataGroup( const DataGroup& source );
 
-private:
-  DataGroup *m_parent;
-  DataStore *m_datastore;
-  dataArrayType m_DataViews;  // DataViews by index
-  lookupType m_DataViewLookup;      // DataViews name to View pointer
-  lookupGroup m_childGroups;  // child Groups: name->Group pointer
-  std::string m_name;
-
-#if 0
-  DataShape m_dataShape;
-#endif
-
-public:
-
-  /*!
-   * @param parent name Pointer to DataGroup which contains this Group.
-   * @param datastore Pointer to DataStore container.
-   * \brief Constructor.
-   */
-  DataGroup( DataGroup *parent, DataStore *datastore ) :
-      m_parent(parent), m_datastore(datastore)
-  {
-  }
-
-
-
-  /*!
-   * @param source
-   * \brief default copy constructor
-   */
-  DataGroup( const DataGroup& source );
-
-  /*!
-   *
-   * @param rhs the DataView to be copied
-   * @return *this
-   */
-  DataGroup& operator=( const DataGroup& rhs );
+    /*!
+    *
+    * @param rhs the DataView to be copied
+    * @return *this
+    */
+    DataGroup& operator=( const DataGroup& rhs );
 
 #ifdef USECXX11
   /*!
-   * @param source
-   * \brief default move constructor
-   */
-  DataGroup( DataGroup&& source );
+    * @param source
+    * \brief default move constructor
+    */
+    DataGroup( DataGroup&& source );
 
-  /*!
-   *
-   * @param rhs the DataView to be moved into *this
-   * @return *this
-   */
-  DataGroup& operator=( const DataGroup&& rhs );
+    /*!
+    *
+    * @param rhs the DataView to be moved into *this
+    * @return *this
+    */
+    DataGroup& operator=( const DataGroup&& rhs );
 #endif
 
- /*!
-  * \brief destructor
-  */
-  ~DataGroup();
+    /*!
+    * \brief destructor
+    */
+    ~DataGroup();
+
+    /*!
+    * @param name Name to check.
+    * \brief Return true if the name exists in this DataGroup.
+    */
+    bool HasChild( const std::string& name );
 
 
 
+    /// -----  Basic Members  ---- /// 
+
+    std::string GetName() const
+    {return m_name; }
+
+    DataGroup  *GetParent()
+    {return m_parent;}
+
+    DataGroup const *GetParent() const
+    {return m_parent;}
+
+    DataStore *GetDataStore()
+    {return m_datastore;}
+
+    DataStore const *GetDataStore() const
+    {return m_datastore;}
 
 
+    /// -----  DataView Children ---- /// 
+    bool HasView( const std::string& name );
+
+    /*!
+    * @param name Name for created DataView.
+    * \brief Create a DataView and add to this DataGroup.
+    */
+    DataView *CreateView( const std::string& name );
+    DataView *CreateView( const std::string& name, DataBuffer *buff);
+
+    /*!
+    * @param name Name of DataView to attach.
+    * @param obj  Pointer to an existing DataView.
+    * \brief Add an existing DataView to this DataGroup.
+    */
+    DataView *AttachView(DataView *view);
+
+    DataView *DetachView(const std::string &name);
+    DataView *DetachView(IDType idx);
+    DataView *DetachView(DataView *view);
+
+    void DestroyView(const std::string &name);
+    void DestroyView(IDType idx);
+    void DestroyView(DataView *view);
 
 
-
-  /*!
-   * @param name Name to check.
-   * \brief Return true if the name exists in this DataGroup.
-   */
-  bool HasName( const std::string& name );
-
-  /*!
-   * @param name Name for created DataView.
-   * \brief Create a DataView and add to this DataGroup.
-   */
-  DataView *CreateDataView( const std::string& name );
-
-  /*!
-   * @param name Name of DataView to add.
-   * @param obj  Pointer to an existing DataView.
-   * \brief Add existing DataView to this DataGroup.
-   */
-  DataView *AttachDataView( const std::string& name, DataView *obj );
-
-  DataView* DetatchDataView( const std::string& name );
-
-
-  /*!
-   * @param name Name of DataView to find.
-   * \brief Return pointer to DataView.
-   */
-  DataView *GetDataView( const std::string& name )
-  {
-    const IDType indx = m_DataViewLookup.at(name);
-    return m_DataViews[indx];
-  }
-  DataView const * GetDataView( const std::string& name ) const
-  {
-    const IDType indx = m_DataViewLookup.at(name);
-    return m_DataViews[indx];
-  }
-
-  /*!
-   * @param indx Index of DataView within this DataGroup.
-   * \brief Return pointer to DataView.
-   */
-  DataView *GetDataView( const IDType indx )
-  {
-    DataView *obj = m_DataViews[indx];
-    if( obj == NULL )
+    /*!
+    * @param name Name of DataView to find.
+    * \brief Return pointer to DataView.
+    */
+    DataView *GetView( const std::string& name )
     {
-      // View has been deleted and index is a hole in the table.
-      throw std::exception();
+    const IDType idx = m_viewsNameMap.at(name);
+    return m_views[idx];
     }
-    return obj;
-  }
 
-  /*!
-   * @param name Name of DataView to find.
-   * \brief Return index of DataView in this DataGroup.
-   */
-  IDType IndexDataView( const std::string& name )
-  {
-    return m_DataViewLookup.at(name);
-  }
+    DataView const * GetView( const std::string& name ) const
+    {
+    const IDType idx = m_viewsNameMap.at(name);
+    return m_views[idx];
+    }
 
-  /*!
-   * @param obj Name of DataView to find.
-   * \brief Return name of DataView in this DataGroup.
-   */
-  std::string const & NameDataView( DataView *obj );
+    /*!
+    * @param idx Index of DataView within this DataGroup.
+    * \brief Return pointer to DataView.
+    */
+    DataView *GetView( const IDType idx )
+    {
+      return m_views[idx];
+    }
 
-  /*!
-   * @param name Name of DataView to remove.
-   * \brief Remove named DataView from the index.
-   *   The DataView still exists in the DataStore.
-   */
-  void RemoveDataView( const std::string& name );
-
-  /*!
-   * @param name Name of DataGroup to create.
-   * \brief Create a new DataGroup within this DataGroup.
-   */
-  DataGroup* CreateDataGroup( const std::string& name );
-
-  /*!
-   * @param name Name of DataGroup to find.
-   * \brief Return pointer to DataGroup.
-   */
-  DataGroup const * GetDataGroup( const std::string& name ) const
-  {
-    return m_childGroups.at(name);
-  }
-
-  DataGroup * GetDataGroup( const std::string& name )
-  {
-    return m_childGroups.at(name);
-  }
-
-  /*!
-   * \brief Return number of DataViews contained in this DataGroup.
-   */
-  size_t CountViews()
-  {
-    return m_DataViews.size();
-  }
-
-  /*!
-   * \brief Return number of DataGroups contained in this DataGroup.
-   */
-  size_t CountGroups()
-  {
-    return m_childGroups.size();
-  }
-
-  /*!
-   * \brief Return DataViews contained in this DataGroup.
-   */
-  lookupType const & GetDataViewLookup() const
-  {
-    return m_DataViewLookup;
-  }
-
-  dataArrayType const & GetDataViews() const
-  {
-    return m_DataViews;
-  }
-
-  /*!
-   * \brief Return DataGroups contained in this DataGroup.
-   */
-  lookupGroup& GetDataGroups()
-  {
-    return m_childGroups;
-  }
+    /*!
+    * \brief Return the index of the DataView with the given name
+    */
+    IDType GetViewIndex(const std::string &name) const
+    {  
+      return m_viewsNameMap.at(name);
+    }
 
 
+    /*!
+    * \brief Return the name of the DataView at the given index
+    */
+    std::string GetViewName(IDType idx) const
+    {
+       return m_views[idx]->GetName();
+    }
+  
+    /*!
+    * \brief Return number of DataViews contained in this DataGroup.
+    */
+    size_t CountViews() const
+    {
+      return m_views.size();
+    }
+
+    /*!
+    * \brief Remove all DataViews from this DataGroup.
+    */
+    void DestroyViews();
+
+    /// -----  DataGroup Children ---- /// 
+    bool HasGroup( const std::string& name );
+  
+    /*!
+    * @param name Name of DataGroup to create.
+    * \brief Create a new DataGroup within this DataGroup.
+    */
+    DataGroup* CreateGroup( const std::string& name );
+    DataGroup *AttachGroup(DataGroup *grp);
+
+    DataGroup *DetachGroup(const std::string &name);
+    DataGroup *DetachGroup(IDType idx);
+    DataGroup *DetachGroup(DataGroup *grp);
+
+    void DestroyGroup(const std::string &name);
+    void DestroyGroup(IDType idx);
+    void DestroyGroup(DataGroup *grp);
+  
+    /*!
+    * @param name Name of DataGroup to find.
+    * \brief Return pointer to DataGroup.
+    */
+    DataGroup const * GetGroup( const std::string& name ) const
+    {
+      const IDType idx = m_viewsNameMap.at(name);
+      return m_groups[idx];
+    }
+
+    DataGroup * GetGroup( const std::string& name )
+    {
+      const IDType idx = m_viewsNameMap.at(name);
+      return m_groups[idx];
+    }
+
+    /*!
+    * @param idx Index of DataGroup to find.
+    * \brief Return pointer to DataGroup.
+    */
+    DataGroup const * GetGroup(IDType idx) const
+    {
+     return m_groups[idx];
+    }
+
+    DataGroup * GetGroup( IDType idx)
+    {
+     return m_groups[idx];
+    }
 
 
-  /**
-   * @name members that will be deprecated by convenience layer
-   */
-  ///@{
+    /*!
+    * \brief Return the index of the DataGroup with the given name
+    */
+    IDType GetGroupIndex(const std::string &name) const
+    {
+       return m_groupsNameMap.at(name);
+    }
 
-  DataShape m_dataShape;
-  /*!
-   *
-   * @param dataDescriptor
-   * @return
-   */
-  DataGroup* SetDataShape( const DataShape& dataShape )
-  {
-    m_dataShape = dataShape;
-    return this;
-  }
-
-
-  const DataShape& GetDataShape() const
-  {
-    return m_dataShape;
-  }
+    /*!
+    * \brief Return the name of the DataGroup at the given index
+    */
+    std::string GetGroupName(IDType idx) const
+    {
+      return m_views[idx]->GetName();
+    }
 
 
+    /*!
+    * \brief Return number of DataGroups contained in this DataGroup.
+    */
+    size_t CountGroups() const
+    {
+    return m_groups.size();
+    }
 
+    /*!
+    * \brief Remove all DataViews from this DataGroup.
+    */
+    void DestroyGroups();
+
+ 
   ///@}
+private:
+    std::string  m_name;
+    DataGroup   *m_parent;
+    DataStore   *m_datastore;
+
+    std::vector<DataView*>       m_views;
+    std::map<std::string,IDType> m_viewsNameMap;
+
+    std::vector<DataGroup*>      m_groups;
+    std::map<std::string,IDType> m_groupsNameMap;
 
 
 };

@@ -9,7 +9,12 @@
 #include <map>
 #include <set>
 #include <vector>
-#include "Types.hpp"
+
+#include "conduit/conduit.h"
+
+using conduit::Node;
+using conduit::Schema;
+using conduit::DataType;
 
 namespace DataStoreNS
 {
@@ -42,16 +47,12 @@ private:
   /// pointer to the DataBuffer
   DataBuffer* m_dataBuffer;
 
-  /// pointer to the location in the actual data buffer that the view has access to
-  void* m_viewStart;
+  Node   m_node;
+  Schema m_schema;
+  Node   m_desc;
 
-  /// a complete description of the data, assuming one exists. Mainly for simple data arrays, and potentially
-  /// pod structure.
-  DataShape m_dataShape;
-
-  ///
-  rtTypes::TypeID m_dataType;
-
+  // Cyrus's Note: we may still need m_viewStart, but it seems like keeping 
+  // the buffer pointer could be better
 
 public:
 
@@ -76,81 +77,38 @@ public:
    *
    * @return
    */
+  // Cyrus's Note:
+  // how should this work, will it always pass this views descriptor to the buffer?
+  // should allocate add a new buffer to the data store
   DataView* Allocate();
-
+  
+  DataView* ApplyDescriptor();
 
   void ReconcileWithBuffer();
+  
+  std::string GetName() const
+  {return m_name;}
+
+  DataView* SetDescriptor(const Schema &schema);  
+  
+  DataView* SetDescriptor(const DataType &dtype);
+  
   /**
    *
-   * @return casted pointer to m_data
-   * \brief there is a lot more that has to happen to ensure that the cast is legal
+   * @return m_schema
    */
-  template< typename TYPE >
-#ifdef USECXX11
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
-#else
-  TYPE
-#endif
-  GetData()
-  { return static_cast<TYPE>(m_viewStart); }
+  const Schema &GetDescriptor() const
+  { return m_schema; }
+  
+  
+  /// TODO: dangerous const issue needs to be resolved ??
+  Node &GetNode()
+  { return m_node; }  
+  
 
-  template< typename TYPE >
-#ifdef USECXX11
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
-#else
-  const TYPE
-#endif
-  GetData() const
-  { return static_cast<const TYPE>(m_viewStart); }
-
-
-
-
-  /**
-   * @name members that will be deprecated by conduit
-   */
-  ///@{
-
-  rtTypes::TypeID GetType() const
-  {
-    return m_dataType;
-  }
-
-  DataView* SetType( const rtTypes::TypeID type )
-  {
-    m_dataType = type;
-    return this;
-  }
-
-  template< typename T >
-  DataView* SetType()
-  {
-    m_dataType = rtTypes::GetTypeID<T>();
-    return this;
-  }
-
-
-
-
-  /**
-   *
-   * @return m_dataShape
-   */
-  const DataShape& GetDataShape() const
-  { return m_dataShape; }
-
-  /**
-   *
-   * @param dataShape
-   * @return
-   */
-  DataView* SetDataShape( const DataShape& dataShape );
-
-
-
-//  DataView* SetLength(const std::size_t newsize);
-
-
+  DataBuffer *GetBuffer()
+  { return m_dataBuffer; }  
+  
   ///@}
 
 

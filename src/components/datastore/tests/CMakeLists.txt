@@ -11,6 +11,8 @@ set(gtest_datastore_tests
    testGTestExample.cxx
    datastore_smoke.cxx
    datastore_buffer.cxx
+   datastore_view.cxx
+   datastore_group.cxx
    )
 
 

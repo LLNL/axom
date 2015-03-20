@@ -4,21 +4,19 @@
 set(datastore_headers
     DataBuffer.hpp
     DataGroup.hpp
-    DataObject.hpp
     DataStore.hpp
     DataView.hpp
-    Types.hpp
     Utilities.hpp
+    Types.hpp
     datastore.h
     )
 
 #
-# Specify all sourcess
+# Specify all sources
 #
 set(datastore_sources
 	DataBuffer.cpp
     DataGroup.cpp
-    DataObject.cpp
     DataStore.cpp
 	DataView.cpp
     )

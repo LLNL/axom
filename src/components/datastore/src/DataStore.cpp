@@ -12,20 +12,17 @@ namespace DataStoreNS
 {
 
   DataStore::DataStore() :
-    m_RootGroup(nullptr, this),
+    m_RootGroup("", this),
     m_DataBuffers(),
     m_AvailableDataBuffers()
     {};
 
   DataStore::~DataStore()
   {
-    for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ; iter!=m_DataBuffers.end() ; ++iter )
-    {
-      delete *iter;
-    }
+      DestroyBuffers();
   }
 
-  DataBuffer* DataStore::CreateDataBuffer()
+  DataBuffer* DataStore::CreateBuffer()
   {
     // TODO: implement pool, look for free nodes.  Allocate in blocks.
     IDType newIndex = m_DataBuffers.size();
@@ -42,19 +39,27 @@ namespace DataStoreNS
     return obj;
   }
 
-  void DataStore::DeleteDataBuffer( const IDType id )
+  void DataStore::DestroyBuffer( const IDType id )
   {
     delete m_DataBuffers[id];
     m_AvailableDataBuffers.push(id);
   }
 
-  DataBuffer* DataStore::DetatchDataBuffer( const IDType id )
+  DataBuffer* DataStore::DetatchBuffer( const IDType id )
   {
     DataBuffer* const rval = m_DataBuffers[id];
     m_DataBuffers[id] = nullptr;
     m_AvailableDataBuffers.push(id);
 
     return rval;
+  }
+  
+  void DataStore::DestroyBuffers()
+  {
+      for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ;                  iter!=m_DataBuffers.end() ; ++iter )
+      {
+        delete *iter;
+      }
   }
 
 } /* namespace DataStoreNS */

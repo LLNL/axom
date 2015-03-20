@@ -1,6 +1,7 @@
 
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
+#include "DataView.hpp"
 
 namespace DataStoreNS
 {
@@ -11,10 +12,12 @@ DataBuffer::DataBuffer( const IDType uid ) :
     m_stringDescriptor(),
     m_ViewContainer(),
     m_data(nullptr),
-    m_dataShape(),
-    m_dataType(rtTypes::undefined),
-    m_memblob()
-{}
+    m_memblob(),
+    m_node(),
+    m_schema()
+{
+    
+}
 
 DataBuffer::DataBuffer( const IDType uid,
                         const std::string& stringDescriptor ) :
@@ -22,19 +25,22 @@ DataBuffer::DataBuffer( const IDType uid,
     m_stringDescriptor(stringDescriptor),
     m_ViewContainer(),
     m_data(nullptr),
-    m_dataShape(),
-    m_dataType(rtTypes::undefined),
-    m_memblob()
-{}
+    m_memblob(),
+    m_node(),
+    m_schema()
+{
+      
+}
 
 DataBuffer::DataBuffer(const DataBuffer& source ) :
     m_uid(source.m_uid),
     m_stringDescriptor(source.m_stringDescriptor),
     m_ViewContainer(source.m_ViewContainer),
     m_data(source.m_data),
-    m_dataShape(source.m_dataShape),
-    m_dataType(source.m_dataType),
-    m_memblob(source.m_memblob)
+    m_memblob(source.m_memblob),
+    m_node(source.m_node),
+    m_schema(source.m_schema)
+        
 {
 }
 
@@ -47,26 +53,28 @@ DataBuffer::~DataBuffer()
 
 DataBuffer* DataBuffer::Allocate()
 {
-  if ( m_dataShape.m_dimensions != nullptr && m_dataType!=rtTypes::undefined )
-  {
-    std::size_t size = 1;
-    for (int dim = 0; dim < m_dataShape.m_numDimensions; ++dim)
+    
+    std::size_t alloc_size = m_schema.total_bytes();
+
+    if(alloc_size == 0)
     {
-      size *= m_dataShape.m_dimensions[dim];
+        // ?
+        throw std::exception();
     }
-    m_memblob.resize( size * rtTypes::sizeofType(m_dataType) );
+            
+    m_memblob.resize(alloc_size);
     m_data = m_memblob.data();
-  }
-  else
-  {
-    throw std::exception();
-  }
-
-  ReconcileDataViews();
-
-  return this;
+    
+    ReconcileDataViews();
+    return this;
 }
 
+
+DataBuffer* DataBuffer::ApplyDescriptor()
+{
+    m_node.set_external(m_schema,m_data);
+    return this;
+}
 
 
 void DataBuffer::AddDataView( DataView* dataView )
