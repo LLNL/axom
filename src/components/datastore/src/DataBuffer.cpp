@@ -90,8 +90,8 @@ DataBuffer* DataBuffer::Allocate()
 
 void DataBuffer::Print(Node &n) const
 {
-    n["DataBuffer/descriptor"] = m_schema.to_json();
-    n["DataBuffer/node"] = m_node.to_json();
+    n["DataBuffer/descriptor"].set(m_schema.to_json());
+    n["DataBuffer/node"].set(m_node.to_json());
 }
 
 void DataBuffer::Print() const

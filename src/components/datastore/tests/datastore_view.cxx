@@ -97,7 +97,7 @@ TEST(datastore_view,uint32_array_multi_view)
         EXPECT_EQ(dv_e_ptr[i] % 2,0);
         EXPECT_EQ(dv_o_ptr[i] % 2,1);
     }
-
+    ds->Print();
     delete ds;
     
 }
@@ -149,7 +149,7 @@ TEST(datastore_view,init_uint32_array_multi_view)
         EXPECT_EQ(dv_e_ptr[i] % 2,0);
         EXPECT_EQ(dv_o_ptr[i] % 2,1);
     }
-
+    ds->Print();
     delete ds;
     
 }

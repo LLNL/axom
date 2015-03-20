@@ -38,7 +38,7 @@ TEST(datastore_group,create_group)
     
     flds->GetView("u0")->GetNode().print_detailed();
     flds->GetView("f1")->GetNode().print_detailed();
-    
+    ds->Print();
     delete ds;
 }
 

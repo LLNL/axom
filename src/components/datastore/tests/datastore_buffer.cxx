@@ -22,6 +22,7 @@ TEST(datastore_buffer,create_buffers)
     
     DataBuffer *dbuff_3 = ds->CreateBuffer();
     EXPECT_EQ(dbuff_3->GetUID(),0);
+    ds->Print();
     delete ds;
 }
 
@@ -44,7 +45,8 @@ TEST(datastore_buffer,alloc_buffer_for_uint32_array)
 
     EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
               dbuff->GetDescriptor().total_bytes());
-
+  
+    ds->Print();
     delete ds;
     
 }
@@ -65,6 +67,8 @@ TEST(datastore_buffer,init_buffer_for_uint32_array)
 
     EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
               dbuff->GetDescriptor().total_bytes());
+
+    ds->Print();
     delete ds;
     
 }
