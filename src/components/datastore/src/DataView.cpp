@@ -35,7 +35,8 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_schema()
 {
-  m_dataBuffer = dataStore->CreateBuffer();
+    m_dataBuffer = dataStore->CreateBuffer();
+    m_dataBuffer->AttachView(this);
 }
 
 DataView::DataView(const DataView& source ) :
@@ -54,14 +55,22 @@ DataView::~DataView()
 }
 
 
-DataView* DataView::Allocate()
+DataView* DataView::Init(const Schema &schema)
 {
-    // this implies a push alloc?
-    m_dataBuffer->SetDescriptor(m_schema);
-    m_dataBuffer->Allocate();
-    m_dataBuffer->ApplyDescriptor();
+    SetDescriptor(schema);
+    m_dataBuffer->Init(m_schema);
+    ApplyDescriptor();
     return this;
 }
+
+DataView* DataView::Init(const DataType &dtype)
+{
+    SetDescriptor(dtype);
+    m_dataBuffer->Init(m_schema);
+    ApplyDescriptor();
+    return this;
+}
+
 
 DataView* DataView::ApplyDescriptor()
 {
@@ -86,8 +95,23 @@ DataView* DataView::SetDescriptor(const DataType &dtype)
 
 void DataView::ReconcileWithBuffer()
 {
-  m_schema.set(m_dataBuffer->GetDescriptor());
-  ApplyDescriptor();
+    /// TODO:
 }
+
+
+void DataView::Print(Node &n) const
+{
+    n["DataView/name"] = m_name;
+    n["DataView/descriptor"] = m_schema.to_json();
+}
+
+
+void DataView::Print() const
+{
+    Node n;
+    Print(n);
+    n.print();
+}
+
 
 } /* namespace Datastore */

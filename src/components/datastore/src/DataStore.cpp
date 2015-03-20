@@ -62,4 +62,22 @@ namespace DataStoreNS
       }
   }
 
+  void DataStore::Print() const
+  {
+      Node n;
+      Print(n);
+      n.print();
+  }
+
+  void DataStore::Print(Node &n) const
+  {
+      m_RootGroup.Print(n["DataStore/root/"]);
+      for( dataBufferContainerType::const_iterator iter=m_DataBuffers.begin() ;                  iter!=m_DataBuffers.end() ; ++iter )
+      {
+          Node &b = n["DataStore/buffers/"].append();
+            (*iter)->Print(b);
+      }
+  }
+
+
 } /* namespace DataStoreNS */

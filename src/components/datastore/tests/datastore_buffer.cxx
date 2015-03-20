@@ -49,3 +49,23 @@ TEST(datastore_buffer,alloc_buffer_for_uint32_array)
     
 }
 
+
+TEST(datastore_buffer,init_buffer_for_uint32_array)
+{
+    DataStore *ds = new DataStore();
+    DataBuffer *dbuff = ds->CreateBuffer();
+
+    dbuff->Init(DataType::Arrays::uint32(10));
+    uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
+    
+    for(int i=0;i<10;i++)
+        data_ptr[i] = i*i;
+
+    dbuff->GetNode().print_detailed();
+
+    EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
+              dbuff->GetDescriptor().total_bytes());
+    delete ds;
+    
+}
+

@@ -144,6 +144,16 @@ public:
       return m_views[idx];
     }
 
+
+    /*!
+    * @param idx Index of DataView within this DataGroup.
+    * \brief Return pointer to DataView.
+    */
+    DataView const *GetView( const IDType idx ) const
+    {
+      return m_views[idx];
+    }
+
     /*!
     * \brief Return the index of the DataView with the given name
     */
@@ -253,6 +263,8 @@ public:
     */
     void DestroyGroups();
 
+    void Print(Node &n) const;
+    void Print() const;
  
   ///@}
 private:

@@ -73,14 +73,9 @@ public:
   /// destructor
   ~DataView();
 
-  /**
-   *
-   * @return
-   */
-  // Cyrus's Note:
-  // how should this work, will it always pass this views descriptor to the buffer?
-  // should allocate add a new buffer to the data store
-  DataView* Allocate();
+
+  DataView* Init(const Schema &schema);
+  DataView* Init(const DataType &dtype);
   
   DataView* ApplyDescriptor();
 
@@ -109,6 +104,10 @@ public:
   DataBuffer *GetBuffer()
   { return m_dataBuffer; }  
   
+  
+  
+   void Print() const;  
+   void Print(Node &n) const;
   ///@}
 
 

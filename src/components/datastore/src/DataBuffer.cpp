@@ -51,6 +51,25 @@ DataBuffer::~DataBuffer()
 
 
 
+/// init calls set descriptor, allocate, and apply descriptor  
+DataBuffer* DataBuffer::Init(const Schema &schema)
+{
+    SetDescriptor(schema);
+    Allocate();
+    ApplyDescriptor();
+    return this;
+}
+
+DataBuffer* DataBuffer::Init(const DataType &dtype)
+{
+    SetDescriptor(dtype);
+    Allocate();
+    ApplyDescriptor();
+    return this;
+}
+
+
+
 DataBuffer* DataBuffer::Allocate()
 {
     
@@ -69,6 +88,20 @@ DataBuffer* DataBuffer::Allocate()
     return this;
 }
 
+void DataBuffer::Print(Node &n) const
+{
+    n["DataBuffer/descriptor"] = m_schema.to_json();
+    n["DataBuffer/node"] = m_node.to_json();
+}
+
+void DataBuffer::Print() const
+{
+    Node n;
+    Print(n);
+    n.print();
+}
+
+
 
 DataBuffer* DataBuffer::ApplyDescriptor()
 {
@@ -77,13 +110,13 @@ DataBuffer* DataBuffer::ApplyDescriptor()
 }
 
 
-void DataBuffer::AddDataView( DataView* dataView )
+void DataBuffer::AttachView( DataView* dataView )
 {
   m_ViewContainer.insert( dataView );
 }
 
 
-void DataBuffer::RemoveDataView( DataView* dataView )
+void DataBuffer::DetachView( DataView* dataView )
 {
   m_ViewContainer.erase( dataView );
 }

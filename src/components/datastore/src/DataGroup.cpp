@@ -219,7 +219,32 @@ namespace DataStoreNS
     void DataGroup::DestroyViews()
     {
     }
+
+    void DataGroup::Print() const
+    {
+        Node n;
+        Print(n);
+        n.print();
+    }
+
     
+    void DataGroup::Print(Node &n) const
+    {
+        n["DataGroup/name"] = m_name;
+        for(IDType i=0;i<this->CountViews();i++)
+        {
+            DataView const *view = this->GetView(i);
+            Node &v = n["DataGroup/views"].fetch(view->GetName());
+            view->Print(v);
+
+        }
+        for(IDType i=0;i<this->CountGroups();i++)
+        {
+            DataGroup const *grp =  this->GetGroup(i);
+            Node &g = n["DataGroup/groups"].fetch(grp->GetName());
+            grp->Print(g);
+        }
+    }
     
     
 

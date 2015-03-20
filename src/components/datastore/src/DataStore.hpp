@@ -79,6 +79,9 @@ public:
 
   void DestroyBuffers();
 
+  void Print() const;
+  void Print(Node &) const;
+
 private:
 
 

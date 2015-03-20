@@ -75,8 +75,8 @@ public:
 
 
 
-  void AddDataView( DataView* dataView );
-  void RemoveDataView( DataView* dataView );
+  void AttachView( DataView* dataView );
+  void DetachView( DataView* dataView );
 
   void ReconcileDataViews();
 
@@ -124,12 +124,15 @@ public:
   DataBuffer *ApplyDescriptor();
 
 
-  /**
-   *
-   * @return
-   */
   DataBuffer* Allocate();
+  
 
+/// init calls set descriptor, allocate, and apply descriptor  
+   DataBuffer* Init(const Schema &schema);
+   DataBuffer* Init(const DataType &dtype);
+
+   void Print(Node &n) const;
+   void Print() const;
   ///@}
 
 private:
