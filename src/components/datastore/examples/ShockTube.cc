@@ -49,7 +49,7 @@ void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string
                                                     ->ApplyDescriptor();
 
 
-  DataView* const view = grp->CreateView(name.c_str(), buffer);
+  DataView* const view = grp->CreateView(name.c_str(), buffer)->SetDescriptor(DataType::Scalars::int32())->ApplyDescriptor();
   *(view->GetNode().as_int32_ptr()) = value;
 
 }
@@ -63,7 +63,7 @@ void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::stri
                                                     ->ApplyDescriptor();
 
 
-  DataView* const view = grp->CreateView(name.c_str(), buffer);
+  DataView* const view = grp->CreateView(name.c_str(), buffer)->SetDescriptor(DataType::Scalars::float64())->ApplyDescriptor();
   *(view->GetNode().as_float64_ptr()) = value;
 
 }
@@ -232,12 +232,12 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each face connects to two elements */
 
-  DataBuffer* const faceToElemBuffer = elem->GetDataStore()->CreateBuffer()
+  DataBuffer* const faceToElemBuffer = face->GetDataStore()->CreateBuffer()
                                                            ->SetDescriptor(DataType::Arrays::int32(numFaces,0,8))
                                                            ->Allocate()
                                                            ->ApplyDescriptor();
 
-  int32_array faceToElem = tube->CreateView("faceToElem", faceToElemBuffer)
+  int32_array faceToElem = face->CreateView("faceToElem", faceToElemBuffer)
                                ->SetDescriptor(DataType::Arrays::int32(numFaces,0,8))
                                ->ApplyDescriptor()->GetNode().as_int32_array();
 
@@ -249,7 +249,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
-  DataBuffer* const elemToFaceBuffer = elem->GetDataStore()->CreateBuffer()
+  DataBuffer* const elemToFaceBuffer = tube->GetDataStore()->CreateBuffer()
                                                            ->SetDescriptor(DataType::Arrays::int32(numElems,0,8))
                                                            ->Allocate()
                                                            ->ApplyDescriptor();
@@ -285,54 +285,53 @@ void InitializeShockTube(DataGroup * const prob)
 
   DataBuffer* buffer = nullptr;
 
-  // needs to be set
-  int numElem;
+  int32 const numElems = prob->GetView("numElems")->GetNode().as_int32();
+  int32 const numFaces = prob->GetView("numFaces")->GetNode().as_int32();
+
   buffer = elem->GetDataStore()->CreateBuffer()
-                               ->SetDescriptor(DataType::Arrays::float64(numElem))
+                               ->SetDescriptor(DataType::Arrays::float64(numElems))
                                ->Allocate()
                                ->ApplyDescriptor();
 
 
   double *mass = elem->CreateView("mass", buffer)
-                     ->SetDescriptor(DataType::Arrays::float64(numElem))
+                     ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
 
 
   buffer = elem->GetDataStore()->CreateBuffer()
-                               ->SetDescriptor(DataType::Arrays::float64(numElem))
+                               ->SetDescriptor(DataType::Arrays::float64(numElems))
                                ->Allocate()
                                ->ApplyDescriptor();
 
   double *momentum = elem->CreateView("momentum", buffer)
-                     ->SetDescriptor(DataType::Arrays::float64(numElem))
+                     ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
 
 
   buffer = elem->GetDataStore()->CreateBuffer()
-                               ->SetDescriptor(DataType::Arrays::float64(numElem))
+                               ->SetDescriptor(DataType::Arrays::float64(numElems))
                                ->Allocate()
                                ->ApplyDescriptor();
 
   double *energy = elem->CreateView("energy", buffer)
-                     ->SetDescriptor(DataType::Arrays::float64(numElem))
+                     ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
 
 
   buffer = elem->GetDataStore()->CreateBuffer()
-                               ->SetDescriptor(DataType::Arrays::float64(numElem))
+                               ->SetDescriptor(DataType::Arrays::float64(numElems))
                                ->Allocate()
                                ->ApplyDescriptor();
 
   double *pressure = elem->CreateView("pressure", buffer)
-                     ->SetDescriptor(DataType::Arrays::float64(numElem))
+                     ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
 
-  // needs to be set
-  int numFaces;
 
   /* Create face centered quantities */
 
@@ -366,7 +365,7 @@ void InitializeShockTube(DataGroup * const prob)
 
   /* Fill left half with high pressure, right half with low pressure */
   int startTube = 0;
-  int endTube = numElem;
+  int endTube = numElems;
   int midTube = endTube / 2;
 
   /* Non-dimensionalized reference values */

@@ -208,13 +208,13 @@ public:
     */
     DataGroup const * GetGroup( const std::string& name ) const
     {
-      const IDType idx = m_viewsNameMap.at(name);
+      const IDType idx = m_groupsNameMap.at(name);
       return m_groups[idx];
     }
 
     DataGroup * GetGroup( const std::string& name )
     {
-      const IDType idx = m_viewsNameMap.at(name);
+      const IDType idx = m_groupsNameMap.at(name);
       return m_groups[idx];
     }
 
