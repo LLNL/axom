@@ -125,6 +125,9 @@ public:
     */
     DataView *GetView( const std::string& name )
     {
+//      for( std::map<std::string,IDType>::iterator iter=m_viewsNameMap.begin() ; iter!=m_viewsNameMap.end() ; ++iter )
+//      { std::cout<<iter->first<<std::endl; }
+
     const IDType idx = m_viewsNameMap.at(name);
     return m_views[idx];
     }
@@ -265,6 +268,8 @@ public:
 
     void Print(Node &n) const;
     void Print() const;
+
+    void PrintTree( const int level ) const;
  
   ///@}
 private:

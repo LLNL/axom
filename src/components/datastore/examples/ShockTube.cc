@@ -220,7 +220,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
                                        ->SetDescriptor(DataType::Arrays::int32(numTubeElems))
                                        ->ApplyDescriptor();
 
-  uint32_array mapToElems = mapToElemsView->GetNode().as_uint32_array();
+  uint32* const mapToElems = mapToElemsView->GetNode().as_uint32_ptr();
 
 
   for ( unsigned int k = 0u; k < numTubeElems; ++k)
@@ -237,9 +237,9 @@ void CreateShockTubeMesh(DataGroup * const prob)
                                                            ->Allocate()
                                                            ->ApplyDescriptor();
 
-  int32_array faceToElem = face->CreateView("faceToElem", faceToElemBuffer)
+  int32* const faceToElem = face->CreateView("faceToElem", faceToElemBuffer)
                                ->SetDescriptor(DataType::Arrays::int32(numFaces,0,8))
-                               ->ApplyDescriptor()->GetNode().as_int32_array();
+                               ->ApplyDescriptor()->GetNode().as_int32_ptr();
 
   for (i = 0; i < numFaces; ++i)
   {
@@ -254,9 +254,9 @@ void CreateShockTubeMesh(DataGroup * const prob)
                                                            ->Allocate()
                                                            ->ApplyDescriptor();
 
-  int32_array elemToFace = tube->CreateView("elemToFace", faceToElemBuffer)
+  int32* elemToFace = tube->CreateView("elemToFace", faceToElemBuffer)
                                ->SetDescriptor(DataType::Arrays::int32(numElems,0,8))
-                               ->ApplyDescriptor()->GetNode().as_int32_array();
+                               ->ApplyDescriptor()->GetNode().as_int32_ptr();
 
   for (i = 0; i < numElems; ++i)
   {
@@ -294,7 +294,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->ApplyDescriptor();
 
 
-  double *mass = elem->CreateView("mass", buffer)
+  float64* const mass = elem->CreateView("mass", buffer)
                      ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
@@ -305,7 +305,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->Allocate()
                                ->ApplyDescriptor();
 
-  double *momentum = elem->CreateView("momentum", buffer)
+  float64* const momentum = elem->CreateView("momentum", buffer)
                      ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
@@ -316,7 +316,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->Allocate()
                                ->ApplyDescriptor();
 
-  double *energy = elem->CreateView("energy", buffer)
+  float64* const energy = elem->CreateView("energy", buffer)
                      ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
@@ -327,7 +327,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->Allocate()
                                ->ApplyDescriptor();
 
-  double *pressure = elem->CreateView("pressure", buffer)
+  float64* const pressure = elem->CreateView("pressure", buffer)
                      ->SetDescriptor(DataType::Arrays::float64(numElems))
                      ->ApplyDescriptor()
                      ->GetNode().as_float64_ptr();
@@ -340,7 +340,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->Allocate()
                                ->ApplyDescriptor();
 
-  elem->CreateView("F0", buffer)
+  face->CreateView("F0", buffer)
       ->SetDescriptor(DataType::Arrays::float64(numFaces))
       ->ApplyDescriptor();
 
@@ -348,7 +348,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->SetDescriptor(DataType::Arrays::float64(numFaces))
                                ->Allocate()
                                ->ApplyDescriptor();
-  elem->CreateView("F1", buffer)
+  face->CreateView("F1", buffer)
       ->SetDescriptor(DataType::Arrays::float64(numFaces))
       ->ApplyDescriptor();
 
@@ -356,7 +356,7 @@ void InitializeShockTube(DataGroup * const prob)
                                ->SetDescriptor(DataType::Arrays::float64(numFaces))
                                ->Allocate()
                                ->ApplyDescriptor();
-  elem->CreateView("F2", buffer)
+  face->CreateView("F2", buffer)
       ->SetDescriptor(DataType::Arrays::float64(numFaces))
       ->ApplyDescriptor();
 
@@ -427,20 +427,21 @@ void InitializeShockTube(DataGroup * const prob)
 
 void ComputeFaceInfo(DataGroup * const problem)
 {
+  problem->PrintTree(0);
   int i;
   DataGroup* const face = problem->GetGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
-  int const * const faceToElem = face->GetView("faceToElem")->GetNode().as_int32_ptr();
+  int32 const* const faceToElem = face->GetView("faceToElem")->GetNode().as_int32_ptr();
 
-  double * const F0 = face->GetView("F0")->GetNode().as_float64_ptr();
-  double * const F1 = face->GetView("F1")->GetNode().as_float64_ptr();
-  double * const F2 = face->GetView("F2")->GetNode().as_float64_ptr();
+  float64* const F0 = face->GetView("F0")->GetNode().as_float64_ptr();
+  float64* const F1 = face->GetView("F1")->GetNode().as_float64_ptr();
+  float64* const F2 = face->GetView("F2")->GetNode().as_float64_ptr();
   int numFaces = face->GetView("F0")->GetNode().as_float64_array().number_of_elements();
 
   DataGroup* const elem = problem->GetGroup("elem");
-  double *mass = elem->GetView("mass")->GetNode().as_float64_ptr();
-  double *momentum = elem->GetView("momentum")->GetNode().as_float64_ptr();
-  double *energy = elem->GetView("energy")->GetNode().as_float64_ptr();
+  float64* const mass = elem->GetView("mass")->GetNode().as_float64_ptr();
+  float64* const momentum = elem->GetView("momentum")->GetNode().as_float64_ptr();
+  float64* const energy = elem->GetView("energy")->GetNode().as_float64_ptr();
 
   for (i = 0; i < numFaces; ++i)
   {
@@ -521,32 +522,32 @@ void UpdateElemInfo(DataGroup * const problem)
 
   /* get the element quantities we want to update */
   DataGroup* const elem = problem->GetGroup("elem");
-  double * const mass = elem->GetView("mass")->GetNode().as_float64_ptr();
-  double * const momentum = elem->GetView("momentum")->GetNode().as_float64_ptr();
-  double * const energy = elem->GetView("energy")->GetNode().as_float64_ptr();
-  double * const pressure = elem->GetView("pressure")->GetNode().as_float64_ptr();
+  float64 * const mass = elem->GetView("mass")->GetNode().as_float64_ptr();
+  float64 * const momentum = elem->GetView("momentum")->GetNode().as_float64_ptr();
+  float64 * const energy = elem->GetView("energy")->GetNode().as_float64_ptr();
+  float64 * const pressure = elem->GetView("pressure")->GetNode().as_float64_ptr();
 
   /* focus on just the elements within the shock tube */
   DataGroup* const tube = elem->GetGroup("tube");
-  int * const elemToFace = tube->GetView("elemToFace")->GetNode().as_int32_ptr();
+  int32 * const elemToFace = tube->GetView("elemToFace")->GetNode().as_int32_ptr();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
   int numTubeElems = tube->GetView("mapToElems")->GetNode().as_int32_array().number_of_elements();
 
 //  int *is = tube->map();
-  int* const is = tube->GetView("mapToElems")->GetNode().as_int32_ptr();
+  int32* const is = tube->GetView("mapToElems")->GetNode().as_int32_ptr();
 
 
 
   /* The element update is calculated as the flux between faces */
   DataGroup* const face = problem->GetGroup("face");
-  double *F0 = face->GetView("F0")->GetNode().as_float64_ptr();
-  double *F1 = face->GetView("F1")->GetNode().as_float64_ptr();
-  double *F2 = face->GetView("F2")->GetNode().as_float64_ptr();
+  float64 * const F0 = face->GetView("F0")->GetNode().as_float64_ptr();
+  float64 * const F1 = face->GetView("F1")->GetNode().as_float64_ptr();
+  float64 * const F2 = face->GetView("F2")->GetNode().as_float64_ptr();
 
   double dx = *(problem->GetView("dx")->GetNode().as_float64_ptr());
   double dt = *(problem->GetView("dt")->GetNode().as_float64_ptr());
-  double& time = *(problem->GetView("time")->GetNode().as_float64_ptr());
+  float64& time = *(problem->GetView("time")->GetNode().as_float64_ptr());
 
   for (i = 0; i < numTubeElems; ++i)
   {
@@ -682,8 +683,13 @@ int main(void)
   DataStoreNS::DataGroup* const problem = rootGroup->CreateGroup("problem");
 
   GetUserInput(problem);
+  problem->PrintTree(0);
+
   CreateShockTubeMesh(problem);
+  problem->PrintTree(0);
+
   InitializeShockTube(problem);
+  problem->PrintTree(0);
 
 
   /* use a reference when you want to update the param directly */

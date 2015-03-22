@@ -80,6 +80,10 @@ namespace DataStoreNS
 
         m_viewsNameMap[view->GetName()] = m_views.size(); // map name to index
         m_views.push_back( view );
+
+//        for( std::map<std::string,IDType>::iterator iter=m_viewsNameMap.begin() ; iter!=m_viewsNameMap.end() ; ++iter )
+//        { std::cout<<iter->first<<std::endl; }
+
         return view;
     }
 
@@ -247,5 +251,29 @@ namespace DataStoreNS
     }
     
     
+    void DataGroup::PrintTree( const int level ) const
+    {
+      for( int i=0 ; i<level ; ++i ) std::cout<<"    ";
+      std::cout<<"DataGroup "<<this->GetName()<<std::endl;
+
+      for( std::map<std::string,IDType>::const_iterator viewIter=m_viewsNameMap.begin() ;
+           viewIter!=m_viewsNameMap.end() ;
+           ++viewIter )
+      {
+        for( int i=0 ; i<level+1 ; ++i ) std::cout<<"    ";
+        std::cout<<"DataView "<<viewIter->first<<std::endl;
+      }
+
+
+      for( std::map<std::string,IDType>::const_iterator groupIter=m_groupsNameMap.begin() ;
+           groupIter!=m_groupsNameMap.end() ;
+           ++groupIter )
+      {
+        IDType index = groupIter->second;
+        m_groups[index]->PrintTree( level + 1 );
+      }
+
+    }
+
 
 } /* namespace DataStore */
