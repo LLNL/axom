@@ -233,12 +233,12 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* Each face connects to two elements */
 
   DataBuffer* const faceToElemBuffer = face->GetDataStore()->CreateBuffer()
-                                                           ->SetDescriptor(DataType::Arrays::int32(numFaces,0,8))
+                                                           ->SetDescriptor(DataType::Arrays::int32(2*numFaces,0,8))
                                                            ->Allocate()
                                                            ->ApplyDescriptor();
 
   int32* const faceToElem = face->CreateView("faceToElem", faceToElemBuffer)
-                               ->SetDescriptor(DataType::Arrays::int32(numFaces,0,8))
+                               ->SetDescriptor(DataType::Arrays::int32(2*numFaces,0,8))
                                ->ApplyDescriptor()->GetNode().as_int32_ptr();
 
   for (i = 0; i < numFaces; ++i)
@@ -250,12 +250,12 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
   DataBuffer* const elemToFaceBuffer = tube->GetDataStore()->CreateBuffer()
-                                                           ->SetDescriptor(DataType::Arrays::int32(numElems,0,8))
+                                                           ->SetDescriptor(DataType::Arrays::int32(2*numElems,0,8))
                                                            ->Allocate()
                                                            ->ApplyDescriptor();
 
   int32* elemToFace = tube->CreateView("elemToFace", faceToElemBuffer)
-                               ->SetDescriptor(DataType::Arrays::int32(numElems,0,8))
+                               ->SetDescriptor(DataType::Arrays::int32(2*numElems,0,8))
                                ->ApplyDescriptor()->GetNode().as_int32_ptr();
 
   for (i = 0; i < numElems; ++i)
@@ -427,7 +427,6 @@ void InitializeShockTube(DataGroup * const prob)
 
 void ComputeFaceInfo(DataGroup * const problem)
 {
-  problem->PrintTree(0);
   int i;
   DataGroup* const face = problem->GetGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
@@ -541,12 +540,12 @@ void UpdateElemInfo(DataGroup * const problem)
 
   /* The element update is calculated as the flux between faces */
   DataGroup* const face = problem->GetGroup("face");
-  float64 * const F0 = face->GetView("F0")->GetNode().as_float64_ptr();
-  float64 * const F1 = face->GetView("F1")->GetNode().as_float64_ptr();
-  float64 * const F2 = face->GetView("F2")->GetNode().as_float64_ptr();
+  float64* const F0 = face->GetView("F0")->GetNode().as_float64_ptr();
+  float64* const F1 = face->GetView("F1")->GetNode().as_float64_ptr();
+  float64* const F2 = face->GetView("F2")->GetNode().as_float64_ptr();
 
-  double dx = *(problem->GetView("dx")->GetNode().as_float64_ptr());
-  double dt = *(problem->GetView("dt")->GetNode().as_float64_ptr());
+  double const dx = *(problem->GetView("dx")->GetNode().as_float64_ptr());
+  double const dt = *(problem->GetView("dt")->GetNode().as_float64_ptr());
   float64& time = *(problem->GetView("time")->GetNode().as_float64_ptr());
 
   for (i = 0; i < numTubeElems; ++i)
@@ -575,7 +574,7 @@ void UpdateElemInfo(DataGroup * const problem)
 #include <ctype.h>
 
 
-void DumpUltra( const DataGroup * const prob)
+void DumpUltra( DataGroup * const prob)
 {
 #if 0
    FILE *fp ;
@@ -605,25 +604,25 @@ void DumpUltra( const DataGroup * const prob)
 
 
    {
-   const DataGroup::dataArrayType& dataObjects = prob->GetViews();
-   const DataGroup::lookupType& dataObjectLookup = prob->GetViewLookup();
+   const std::vector<DataView*>& dataViews = prob->GetViews();
+   const std::map<std::string,DataStoreNS::IDType>& dataObjectLookup = prob->GetViewsNameMap();
 
-   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin();
-   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin();
+   std::vector<DataView*>::const_iterator iterView=dataViews.begin();
+   std::map<std::string,DataStoreNS::IDType>::const_iterator lookup=dataObjectLookup.begin();
 
-   for(  ; obj!=dataObjects.end() ; ++obj, ++lookup )
+   for(  ; iterView!=dataViews.end() ; ++iterView, ++lookup )
    {
-     const int length = (*obj)->GetDataShape().m_dimensions[0];
+     const int length = (*iterView)->GetNode().;
      const std::string& name = lookup->first;
      if( length <= 1 )
      {
-       if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
+       if( (*iterView)->GetType() == DataStoreNS::rtTypes::int32_id )
        {
-         fprintf(fp, "# %s = %d\n", name.c_str(), *((*obj)->GetNode().as_int32_ptr())) ;
+         fprintf(fp, "# %s = %d\n", name.c_str(), *((*iterView)->GetNode().as_int32_ptr())) ;
        }
-       else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
+       else if( (*iterView)->GetType() == DataStoreNS::rtTypes::real64_id )
        {
-         fprintf(fp, "# %s = %f\n", name.c_str(), *((*obj)->GetNode().as_float64_ptr())) ;
+         fprintf(fp, "# %s = %f\n", name.c_str(), *((*iterView)->GetNode().as_float64_ptr())) ;
        }
      }
    }
@@ -683,14 +682,8 @@ int main(void)
   DataStoreNS::DataGroup* const problem = rootGroup->CreateGroup("problem");
 
   GetUserInput(problem);
-  problem->PrintTree(0);
-
   CreateShockTubeMesh(problem);
-  problem->PrintTree(0);
-
   InitializeShockTube(problem);
-  problem->PrintTree(0);
-
 
   /* use a reference when you want to update the param directly */
   int* const currCycle = problem->GetView("cycle")->GetNode().as_int32_ptr();

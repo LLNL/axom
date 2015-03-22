@@ -99,6 +99,9 @@ public:
   /// TODO: dangerous const issue needs to be resolved ??
   Node &GetNode()
   { return m_node; }  
+
+  Node const& GetNode() const
+  { return m_node; }
   
 
   DataBuffer *GetBuffer()

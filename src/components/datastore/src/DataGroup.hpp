@@ -158,6 +158,24 @@ public:
     }
 
     /*!
+     *
+     * @return
+     */
+    std::vector<DataView*>& GetViews()
+    {
+      return m_views;
+    }
+
+    /*!
+     *
+     * @return
+     */
+    std::vector<DataView*> const & GetViews() const
+    {
+      return m_views;
+    }
+
+    /*!
     * \brief Return the index of the DataView with the given name
     */
     IDType GetViewIndex(const std::string &name) const
@@ -165,6 +183,14 @@ public:
       return m_viewsNameMap.at(name);
     }
 
+    /*!
+     *
+     * @return
+     */
+    std::map<std::string,IDType> const& GetViewsNameMap() const
+    {
+      return m_viewsNameMap;
+    }
 
     /*!
     * \brief Return the name of the DataView at the given index
@@ -235,6 +261,15 @@ public:
      return m_groups[idx];
     }
 
+    /*!
+     *
+     * @return
+     */
+    std::vector<DataGroup*> const& GetGroups() const
+    {
+     return m_groups;
+    }
+
 
     /*!
     * \brief Return the index of the DataGroup with the given name
@@ -271,7 +306,6 @@ public:
 
     void PrintTree( const int level ) const;
  
-  ///@}
 private:
     std::string  m_name;
     DataGroup   *m_parent;
