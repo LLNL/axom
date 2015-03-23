@@ -41,7 +41,7 @@ using DataStoreNS::DataBuffer;
 using namespace conduit;
 
 
-void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string& name, int const value )
+void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string& name, int32 const value )
 {
   DataBuffer* const buffer = grp->GetDataStore()->CreateBuffer()
                                                     ->SetDescriptor(DataType::Scalars::int32())
@@ -55,7 +55,7 @@ void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string
 }
 
 
-void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::string& name, int const value )
+void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::string& name, float64 const value )
 {
   DataBuffer* const buffer = grp->GetDataStore()->CreateBuffer()
                                                     ->SetDescriptor(DataType::Scalars::float64())
@@ -576,7 +576,7 @@ void UpdateElemInfo(DataGroup * const problem)
 
 void DumpUltra( DataGroup * const prob)
 {
-#if 0
+#if 1
    FILE *fp ;
    char fname[100] ;
    char *tail ;
@@ -612,45 +612,47 @@ void DumpUltra( DataGroup * const prob)
 
    for(  ; iterView!=dataViews.end() ; ++iterView, ++lookup )
    {
-     const int length = (*iterView)->GetNode().;
+     DataView * const view = *iterView;
+     const int length = view->GetDescriptor().dtype().number_of_elements();
      const std::string& name = lookup->first;
      if( length <= 1 )
      {
-       if( (*iterView)->GetType() == DataStoreNS::rtTypes::int32_id )
+       if( view->GetDescriptor().dtype().id() == DataType::INT32_T )
        {
-         fprintf(fp, "# %s = %d\n", name.c_str(), *((*iterView)->GetNode().as_int32_ptr())) ;
+         fprintf(fp, "# %s = %d\n", name.c_str(), *(view->GetNode().as_int32_ptr())) ;
        }
-       else if( (*iterView)->GetType() == DataStoreNS::rtTypes::real64_id )
+       else if( view->GetDescriptor().dtype().id() == DataType::FLOAT64_T )
        {
-         fprintf(fp, "# %s = %f\n", name.c_str(), *((*iterView)->GetNode().as_float64_ptr())) ;
+         fprintf(fp, "# %s = %f\n", name.c_str(), *(view->GetNode().as_float64_ptr())) ;
        }
      }
    }
    }
 
    {
-//   for( auto obj : elem->GetViews() )
-   const DataGroup::dataArrayType& dataObjects = elem->GetViews();
-   const DataGroup::lookupType& dataObjectLookup = elem->GetViewLookup();
 
-   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin();
-   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin();
+   const std::vector<DataView*>& dataViews = elem->GetViews();
+   const std::map<std::string,DataStoreNS::IDType>& dataObjectLookup = elem->GetViewsNameMap();
 
-   for(  ; obj!=dataObjects.end() ; ++obj, ++lookup )
+   std::vector<DataView*>::const_iterator iterView=dataViews.begin();
+   std::map<std::string,DataStoreNS::IDType>::const_iterator lookup=dataObjectLookup.begin();
+
+   for(  ; iterView!=dataViews.end() ; ++iterView, ++lookup )
    {
-     const int length = (*obj)->GetDataShape().m_dimensions[0];
+     DataView * const view = *iterView;
+     const int length = view->GetDescriptor().dtype().number_of_elements();
      const std::string& name = lookup->first;
      fprintf(fp, "# %s\n", name.c_str() ) ;
-     if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
+     if( view->GetDescriptor().dtype().id() == DataType::INT32_T )
      {
-       int const * const data = (*obj)->GetNode().as_int32_ptr();
+       int32 const * const data = view->GetNode().as_int32_ptr();
        for ( int i=0; i<length; ++i)
           fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
        fprintf(fp, "\n") ;
      }
-     else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
+     else if( view->GetDescriptor().dtype().id() == DataType::FLOAT64_T )
      {
-       double const * const data = (*obj)->GetNode().as_float64_ptr();
+       float64 const * const data = view->GetNode().as_float64_ptr();
        for ( int i=0; i<length; ++i)
           fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
        fprintf(fp, "\n") ;
