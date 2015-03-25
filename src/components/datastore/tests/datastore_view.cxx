@@ -36,7 +36,7 @@ TEST(datastore_view,uint32_buffer_from_view)
     
     DataView *dv = root->CreateView("u0");
 
-    dv->Init(DataType::Arrays::uint32(10));
+    dv->Init(DataType::uint32(10));
     uint32 *data_ptr = dv->GetNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
@@ -57,7 +57,7 @@ TEST(datastore_view,uint32_array_multi_view)
     DataGroup *root = ds->GetRoot();
     DataBuffer *dbuff = ds->CreateBuffer();
 
-    dbuff->SetDescriptor(DataType::Arrays::uint32(10));
+    dbuff->SetDescriptor(DataType::uint32(10));
     dbuff->Allocate();
     dbuff->ApplyDescriptor();
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
@@ -74,10 +74,10 @@ TEST(datastore_view,uint32_array_multi_view)
     DataView *dv_e = new DataView("even",root,dbuff);
     DataView *dv_o = new DataView("odd",root,dbuff);
     
-    dv_e->SetDescriptor(DataType::Arrays::uint32(5,0,8));
+    dv_e->SetDescriptor(DataType::uint32(5,0,8));
     dv_e->ApplyDescriptor();
     
-    dv_o->SetDescriptor(DataType::Arrays::uint32(5,4,8));
+    dv_o->SetDescriptor(DataType::uint32(5,4,8));
     dv_o->ApplyDescriptor();
 
     dv_e->GetNode().print_detailed();
@@ -109,7 +109,7 @@ TEST(datastore_view,init_uint32_array_multi_view)
     DataGroup *root = ds->GetRoot();
     DataBuffer *dbuff = ds->CreateBuffer();
 
-    dbuff->Init(DataType::Arrays::uint32(10));
+    dbuff->Init(DataType::uint32(10));
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
@@ -125,11 +125,11 @@ TEST(datastore_view,init_uint32_array_multi_view)
     DataView *dv_o = new DataView("odd",root,dbuff);
     
     // uint32(num_elems, offset, stride)
-    dv_e->SetDescriptor(DataType::Arrays::uint32(5,0,8));
+    dv_e->SetDescriptor(DataType::uint32(5,0,8));
     dv_e->ApplyDescriptor();
 
     // uint32(num_elems, offset, stride)    
-    dv_o->SetDescriptor(DataType::Arrays::uint32(5,4,8));
+    dv_o->SetDescriptor(DataType::uint32(5,4,8));
     dv_o->ApplyDescriptor();
 
     dv_e->GetNode().print_detailed();
