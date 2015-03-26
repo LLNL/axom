@@ -7,101 +7,273 @@
 
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
+#include "DataView.hpp"
 
 namespace DataStoreNS
 {
+    DataGroup::DataGroup(const std::string &name,
+                         DataGroup *parent)
+    :m_name(name),
+     m_parent(parent),
+     m_datastore(parent->GetDataStore())
+    {}
 
-  bool DataGroup::HasName( const std::string& name )
-  {
-    // XXX must perform two lookups: Views and groups
-    DataGroup::lookupType::iterator it = m_DataViewLookup.find( name );
-    if( it != m_DataViewLookup.end() )
-      return true;
-    DataGroup::lookupGroup::iterator itg = m_childGroups.find( name );
-    if( itg != m_childGroups.end() )
-      return true;
-    return false;
-  }
+    DataGroup::DataGroup(const std::string &name,
+                         DataStore *datastore)
+    :m_name(name),
+     m_parent(datastore->GetRoot()),
+     m_datastore(datastore)
+    {}
 
-
-  DataView *DataGroup::AttachDataView( const std::string& name, DataView * const obj )
-  {
-    if( HasName( name ) || obj==nullptr )
+    DataGroup::~DataGroup()
     {
-      throw std::exception();
+        DestroyViews();
+        DestroyGroups();
     }
 
-    m_DataViewLookup[name] = m_DataViews.size(); // map name to index
-    m_DataViews.push_back( obj );
-    // XXX how does user get index? Search IndexDataView(name) or return from here?
-    return obj;
-  }
 
-  DataView* DataGroup::CreateDataView( const std::string& name )
-  {
-    DataView* const view = new DataView( name, this, m_datastore );
-    return AttachDataView(name, NULL);
-  }
-
-
-  DataView* DataGroup::DetatchDataView( const std::string& name )
-  {
-    DataView* view = nullptr;
-    DataGroup::lookupType::iterator it = m_DataViewLookup.find( name );
-    if( it != m_DataViewLookup.end() )
+    bool DataGroup::HasChild( const std::string& name )
     {
-      IDType id = it->second;
-      view = m_DataViews[id];
-      m_DataViewLookup.erase( it );
-      m_DataViews[id] = nullptr;
-    }
-    else
-    {
-      throw std::exception();
+        return HasView(name) || HasGroup(name);
     }
 
-    return view;
-  }
 
-
-  void DataGroup::RemoveDataView( const std::string& name )
-  {
-    delete DetatchDataView(name);
-  }
-
-
-  DataGroup *DataGroup::CreateDataGroup( const std::string& name )
-  {
-    if( HasName( name ) )
+    bool DataGroup::HasGroup( const std::string& name )
     {
-      throw std::exception();
+        std::map<std::string,IDType>::iterator itr;
+        itr = m_groupsNameMap.find( name );
+        if( itr != m_groupsNameMap.end() )
+            return true;
+        return false;
     }
-    DataGroup *grp = new DataGroup( this, this->m_datastore );
-    m_childGroups[name] = grp;
-    return grp;
-  }
 
-
-  std::string const & DataGroup::NameDataView( DataView *obj )
-  {
-    DataGroup::lookupType::iterator it;
-
-    // XXX brute force search for obj
-    for( it = m_DataViewLookup.begin(); it != m_DataViewLookup.end() ; ++it )
+    bool DataGroup::HasView( const std::string& name )
     {
-      IDType indx = it->second;
-      DataView *obj1 = m_DataViews[indx];
-      if( obj1 == obj )
+        std::map<std::string,IDType>::iterator itr;
+        itr = m_viewsNameMap.find( name );
+        if( itr != m_viewsNameMap.end() )
+            return true;
+        return false;
+    }
+    /// --- DataView Children --- ///
+
+    DataView* DataGroup::CreateView( const std::string& name )
+    {
+        DataView* const view = new DataView( name, this, m_datastore );
+        return AttachView(view);
+    }
+
+    DataView* DataGroup::CreateView( const std::string& name,
+                                     DataBuffer *buff)
+    {
+        DataView* const view = new DataView( name, this, buff );
+        return AttachView(view);
+    }
+
+
+    DataView *DataGroup::AttachView(DataView * const view)
+    {
+        if( HasChild( view->GetName()) || view==nullptr )
+        {
+          throw std::exception();
+        }
+
+        m_viewsNameMap[view->GetName()] = m_views.size(); // map name to index
+        m_views.push_back( view );
+
+//        for( std::map<std::string,IDType>::iterator iter=m_viewsNameMap.begin() ; iter!=m_viewsNameMap.end() ; ++iter )
+//        { std::cout<<iter->first<<std::endl; }
+
+        return view;
+    }
+
+
+    DataView* DataGroup::DetachView(const std::string& name )
+    {
+          DataView* view = nullptr;
+          std::map<std::string,IDType>::iterator itr;
+          itr = m_viewsNameMap.find( name );
+          if( itr != m_viewsNameMap.end() )
+          {
+                IDType idx = itr->second;
+                view = m_views[idx];
+                m_viewsNameMap.erase( itr );
+                m_views[idx] = nullptr; // remove?
+          }
+          else
+          {
+              throw std::exception();
+          }
+          return view;
+    }
+
+    DataView* DataGroup::DetachView(IDType idx)
+    {
+        DataView *view = m_views[idx];
+        std::map<std::string,IDType>::iterator itr;
+        itr = m_viewsNameMap.find(view->GetName());
+        m_viewsNameMap.erase( itr );
+        m_views[idx] = nullptr; // remove?
+        return view;
+    }
+
+
+    DataView* DataGroup::DetachView(DataView *view)
+    {
+        /// TODO !
+        return nullptr;
+    }
+
+    // remove vs destroy vs delete
+    void DataGroup::DestroyView( const std::string& name )
+    {
+        delete DetachView(name);
+    }
+
+    void DataGroup::DestroyView( IDType idx )
+    {
+        delete DetachView(idx);
+    }
+
+    void DataGroup::DestroyView( DataView *view )
+    {
+        delete DetachView(view);
+    }
+    
+    /// --- DataGroup Children --- ///
+
+    DataGroup* DataGroup::CreateGroup( const std::string& name )
+    {
+        DataGroup*  grp = new DataGroup( name, this);
+        return AttachGroup(grp);
+    }
+
+    DataGroup *DataGroup::AttachGroup(DataGroup * const grp)
+    {
+        if( HasChild( grp->GetName()) || grp==nullptr )
+        {
+          throw std::exception();
+        }
+
+        m_groupsNameMap[grp->GetName()] = m_groups.size(); // map name to index
+        m_groups.push_back( grp );
+        return grp;
+    }
+
+
+    DataGroup* DataGroup::DetachGroup(const std::string& name )
+    {
+          DataGroup* grp = nullptr;
+          std::map<std::string,IDType>::iterator itr;
+          itr = m_groupsNameMap.find( name );
+          if( itr != m_groupsNameMap.end() )
+          {
+                IDType idx = itr->second;
+                grp = m_groups[idx];
+                m_groupsNameMap.erase( itr );
+                m_groups[idx] = nullptr; // remove?
+          }
+          else
+          {
+              throw std::exception();
+          }
+          return grp;
+    }
+
+    DataGroup* DataGroup::DetachGroup(IDType idx)
+    {
+        DataGroup *grp = m_groups[idx];
+        std::map<std::string,IDType>::iterator itr;
+        itr = m_groupsNameMap.find(grp->GetName());
+        m_groupsNameMap.erase( itr );
+        m_groups[idx] = nullptr; // remove?
+        return grp;
+    }
+
+
+    DataGroup* DataGroup::DetachGroup(DataGroup *grp)
+    {
+        /// TODO !
+        return nullptr;
+    }
+
+
+    // remove vs destroy vs delete
+    void DataGroup::DestroyGroup( const std::string& name )
+    {
+        delete DetachGroup(name);
+    }
+
+    void DataGroup::DestroyGroup( IDType idx )
+    {
+        delete DetachGroup(idx);
+    }
+
+    void DataGroup::DestroyGroup( DataGroup *view )
+    {
+        delete DetachGroup(view);
+    }
+    
+    // real cleanup
+    void DataGroup::DestroyGroups()
+    {
+    }
+    
+    
+    void DataGroup::DestroyViews()
+    {
+    }
+
+    void DataGroup::Print() const
+    {
+        Node n;
+        Print(n);
+        n.print();
+    }
+
+    
+    void DataGroup::Print(Node &n) const
+    {
+        n["DataGroup/name"] = m_name;
+        for(IDType i=0;i<this->CountViews();i++)
+        {
+            DataView const *view = this->GetView(i);
+            Node &v = n["DataGroup/views"].fetch(view->GetName());
+            view->Print(v);
+
+        }
+        for(IDType i=0;i<this->CountGroups();i++)
+        {
+            DataGroup const *grp =  this->GetGroup(i);
+            Node &g = n["DataGroup/groups"].fetch(grp->GetName());
+            grp->Print(g);
+        }
+    }
+    
+    
+    void DataGroup::PrintTree( const int level ) const
+    {
+      for( int i=0 ; i<level ; ++i ) std::cout<<"    ";
+      std::cout<<"DataGroup "<<this->GetName()<<std::endl;
+
+      for( std::map<std::string,IDType>::const_iterator viewIter=m_viewsNameMap.begin() ;
+           viewIter!=m_viewsNameMap.end() ;
+           ++viewIter )
       {
-        return it->first;
+        for( int i=0 ; i<level+1 ; ++i ) std::cout<<"    ";
+        std::cout<<"DataView "<<viewIter->first<<std::endl;
       }
-    }
-    throw std::exception();
-  }
 
-  DataGroup::~DataGroup()
-  {
-    //TODO: Real Cleanup ..
-  }
+
+      for( std::map<std::string,IDType>::const_iterator groupIter=m_groupsNameMap.begin() ;
+           groupIter!=m_groupsNameMap.end() ;
+           ++groupIter )
+      {
+        IDType index = groupIter->second;
+        m_groups[index]->PrintTree( level + 1 );
+      }
+
+    }
+
 
 } /* namespace DataStore */

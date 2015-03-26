@@ -44,7 +44,7 @@ public:
    * \brief Create a DataBuffer.
    *    It is assigned a universal id and owned by the DataStore
    */
-  DataBuffer* CreateDataBuffer();
+  DataBuffer* CreateBuffer();
 
 
   /*!
@@ -52,7 +52,7 @@ public:
    * \brief Remove a DataObject from the DataStore.
    *   It is disassociated with all groups and returned to the free pool.
    */
-  void DeleteDataBuffer( const IDType id );
+  void DestroyBuffer( const IDType id );
 
   /*!
    *
@@ -60,20 +60,27 @@ public:
    * @return the DataBuffer that was at m_DataBuffer[id]
    * \brief Remove a DataBuffer from container, and return
    */
-  DataBuffer* DetatchDataBuffer( const IDType id );
+  DataBuffer* DetatchBuffer( const IDType id );
 
 
   /*!
    * \brief Return pointer to the root DataGroup.
    */
-  DataGroup* GetRootDataGroup() { return &m_RootGroup; };
+  DataGroup* GetRoot() 
+      { return &m_RootGroup; };
 
   /*!
    *
    * @param id
    * @return
    */
-  DataBuffer* GetDataBuffer( const IDType id ) { return m_DataBuffers[id]; }
+  DataBuffer* GetBuffer( const IDType id ) 
+      { return m_DataBuffers[id]; }
+
+  void DestroyBuffers();
+
+  void Print() const;
+  void Print(Node &) const;
 
 private:
 

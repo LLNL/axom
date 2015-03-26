@@ -12,25 +12,22 @@ namespace DataStoreNS
 {
 
   DataStore::DataStore() :
-    m_RootGroup(nullptr, this),
+    m_RootGroup("", this),
     m_DataBuffers(),
     m_AvailableDataBuffers()
     {};
 
   DataStore::~DataStore()
   {
-    for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ; iter!=m_DataBuffers.end() ; ++iter )
-    {
-      delete *iter;
-    }
+      DestroyBuffers();
   }
 
-  DataBuffer* DataStore::CreateDataBuffer()
+  DataBuffer* DataStore::CreateBuffer()
   {
     // TODO: implement pool, look for free nodes.  Allocate in blocks.
     IDType newIndex = m_DataBuffers.size();
     m_DataBuffers.push_back( nullptr );
-    if( m_AvailableDataBuffers.empty() )
+    if( !m_AvailableDataBuffers.empty() )
     {
       newIndex = m_AvailableDataBuffers.top();
       m_AvailableDataBuffers.pop();
@@ -42,13 +39,13 @@ namespace DataStoreNS
     return obj;
   }
 
-  void DataStore::DeleteDataBuffer( const IDType id )
+  void DataStore::DestroyBuffer( const IDType id )
   {
     delete m_DataBuffers[id];
     m_AvailableDataBuffers.push(id);
   }
 
-  DataBuffer* DataStore::DetatchDataBuffer( const IDType id )
+  DataBuffer* DataStore::DetatchBuffer( const IDType id )
   {
     DataBuffer* const rval = m_DataBuffers[id];
     m_DataBuffers[id] = nullptr;
@@ -56,5 +53,36 @@ namespace DataStoreNS
 
     return rval;
   }
+  
+  void DataStore::DestroyBuffers()
+  {
+      for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ;                  iter!=m_DataBuffers.end() ; ++iter )
+      {
+        delete *iter;
+      }
+  }
+
+  void DataStore::Print() const
+  {
+      Node n;
+      Print(n);
+      n.print();
+  }
+
+  void DataStore::Print(Node &n) const
+  {
+      m_RootGroup.Print(n["DataStore/root"]);
+      for( dataBufferContainerType::const_iterator iter=m_DataBuffers.begin() ;
+           iter!=m_DataBuffers.end() ;
+           ++iter )
+      {
+          Node &b = n["DataStore/buffers"].append();
+          if(*iter != nullptr)
+          {
+              (*iter)->Print(b);
+          }
+      }
+  }
+
 
 } /* namespace DataStoreNS */

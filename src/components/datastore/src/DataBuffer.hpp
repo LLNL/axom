@@ -11,6 +11,12 @@
 #include <vector>
 #include "Types.hpp"
 
+#include "conduit/conduit.h"
+
+using conduit::Node;
+using conduit::Schema;
+using conduit::DataType;
+
 namespace DataStoreNS
 {
 
@@ -69,8 +75,8 @@ public:
 
 
 
-  void AddDataView( DataView* dataView );
-  void RemoveDataView( DataView* dataView );
+  void AttachView( DataView* dataView );
+  void DetachView( DataView* dataView );
 
   void ReconcileDataViews();
 
@@ -84,84 +90,49 @@ public:
    */
   ViewContainerType *GetDataViews() { return &m_ViewContainer; }
 
-  /**
-   *
-   * @return casted pointer to m_data
-   * \brief there is a lot more that has to happen to ensure that the cast is legal
-   */
-  template< typename TYPE >
-#ifdef USECXX11
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
-#else
-  TYPE
-#endif
-  GetData()
-  { return static_cast<TYPE>(m_data); }
 
-  template< typename TYPE >
-#ifdef USECXX11
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
-#else
-  const TYPE
-#endif
-  GetData() const
-  { return static_cast<const TYPE>(m_data); }
+  void *GetData()
+  { return m_data;}
 
 
-
-
-  /**
-   * @name members that will be deprecated by conduit
-   */
-  ///@{
-
-  rtTypes::TypeID GetType() const
+  DataBuffer* SetDescriptor(const Schema &schema)
   {
-    return m_dataType;
-  }
-
-  DataBuffer* SetType( const rtTypes::TypeID type )
-  {
-    m_dataType = type;
+    m_schema.set(schema);
     return this;
   }
-
-  template< typename T >
-  DataBuffer* SetType()
+  
+  
+  DataBuffer* SetDescriptor(const DataType &dtype)
   {
-    m_dataType = rtTypes::GetTypeID<T>();
+    m_schema.set(dtype);
     return this;
   }
-
-
+  
+  
   /**
    *
-   * @return m_dataShape
+   * @return m_schema
    */
-  const DataShape& GetDataShape() const
-  { return m_dataShape; }
+  const Schema &GetDescriptor() const
+  { return m_schema; }
 
-  /**
-   *
-   * @param dataShape
-   * @return
-   */
-  virtual DataBuffer* SetDataShape( const DataShape& dataShape )
-  {
-    // check to see what conditions m_dataDescriptor can be set.
-    m_dataShape = dataShape;
-    m_data = dataShape.m_dataPtr;
-    return this;
-  }
+  /// TODO: dangerous const issue needs to be resolved!
+  Node &GetNode()
+  { return m_node; }  
 
 
+  DataBuffer *ApplyDescriptor();
 
-  /**
-   *
-   * @return
-   */
+
   DataBuffer* Allocate();
+  
 
+/// init calls set descriptor, allocate, and apply descriptor  
+   DataBuffer* Init(const Schema &schema);
+   DataBuffer* Init(const DataType &dtype);
+
+   void Print(Node &n) const;
+   void Print() const;
   ///@}
 
 private:
@@ -178,14 +149,12 @@ private:
 
   /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
   void* m_data;
-
-  DataShape m_dataShape;
-
-  ///
-  rtTypes::TypeID m_dataType;
-
+  
   /// use a vector to allocate data until we implement an appropriate allocator interface.
   std::vector<char> m_memblob;
+
+  Node   m_node;
+  Schema m_schema;
 
 };
 
