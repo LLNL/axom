@@ -37,83 +37,80 @@ class DataBuffer;
  */
 class DataView
 {
+public:
+    DataView( const std::string& name,
+              DataGroup* const parentGroup,
+              DataBuffer* const dataBuffer );
+
+    DataView( const std::string& name,
+              DataGroup* const parentGroup);
+
+
+    /// copy constructor
+    DataView(const DataView& source );
+    
+    /// destructor
+    ~DataView();
+
+
+    DataView* Allocate();
+    DataView* Allocate(const Schema &schema);
+    DataView* Allocate(const DataType &dtype);
+  
+    DataView* Declare(const Schema &schema);  
+    DataView* Declare(const DataType &dtype);
+  
+    DataView* Apply();
+    DataView* Apply(const Schema &schema);  
+    DataView* Apply(const DataType &dtype);
+
+  
+    /**
+     *
+     * @return m_schema
+     */
+    const Schema &GetDescriptor() const
+    { return m_schema; }
+  
+  
+    /// TODO: dangerous const issue needs to be resolved ??
+    Node &GetNode()
+    {return m_node; }  
+
+    Node const& GetNode() const
+    { return m_node; }
+  
+
+    DataBuffer *GetBuffer()
+    { return m_dataBuffer; }  
+  
+    std::string GetName() const
+    {return m_name;}
+  
+    DataGroup* GetParentGroup()
+    {return m_parentGroup;}
+  
+  
+    void Print() const;  
+    void Info(Node &n) const;
+    ///@}
 
 private:
 
-  std::string m_name;
 
-  DataGroup* m_parentGroup;
+    /// this view's name
+    std::string m_name;
 
-  /// pointer to the DataBuffer
-  DataBuffer* m_dataBuffer;
+    /// this views parent group
+    DataGroup*  m_parentGroup;
 
-  Node   m_node;
-  Schema m_schema;
-  Node   m_desc;
+    /// pointer to the DataBuffer
+    DataBuffer* m_dataBuffer;
 
-  // Cyrus's Note: we may still need m_viewStart, but it seems like keeping 
-  // the buffer pointer could be better
-
-public:
-
-
-  DataView( const std::string& name,
-            DataGroup* const parentGroup,
-            DataBuffer* const dataBuffer );
-
-  DataView( const std::string& name,
-            DataGroup* const parentGroup,
-            DataStore* const dataStore );
-
-
-  /// copy constructor
-  DataView(const DataView& source );
-
-
-  /// destructor
-  ~DataView();
-
-
-  DataView* Init(const Schema &schema);
-  DataView* Init(const DataType &dtype);
-  
-  DataView* ApplyDescriptor();
-
-  void ReconcileWithBuffer();
-  
-  std::string GetName() const
-  {return m_name;}
-
-  DataView* SetDescriptor(const Schema &schema);  
-  
-  DataView* SetDescriptor(const DataType &dtype);
-  
-  /**
-   *
-   * @return m_schema
-   */
-  const Schema &GetDescriptor() const
-  { return m_schema; }
-  
-  
-  /// TODO: dangerous const issue needs to be resolved ??
-  Node &GetNode()
-  { return m_node; }  
-
-  Node const& GetNode() const
-  { return m_node; }
-  
-
-  DataBuffer *GetBuffer()
-  { return m_dataBuffer; }  
-  
-  
-  
-   void Print() const;  
-   void Print(Node &n) const;
-  ///@}
-
-
+    /// conduit schema used as descriptor
+    Schema      m_schema;
+    /// conduit node used to access the data
+    Node        m_node;
 };
 
 

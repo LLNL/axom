@@ -59,7 +59,7 @@ namespace DataStoreNS
 
     DataView* DataGroup::CreateView( const std::string& name )
     {
-        DataView* const view = new DataView( name, this, m_datastore );
+        DataView* const view = new DataView( name, this);
         return AttachView(view);
     }
 
@@ -227,26 +227,26 @@ namespace DataStoreNS
     void DataGroup::Print() const
     {
         Node n;
-        Print(n);
+        Info(n);
         n.print();
     }
 
     
-    void DataGroup::Print(Node &n) const
+    void DataGroup::Info(Node &n) const
     {
-        n["DataGroup/name"] = m_name;
+        n["name"] = m_name;
         for(IDType i=0;i<this->CountViews();i++)
         {
             DataView const *view = this->GetView(i);
-            Node &v = n["DataGroup/views"].fetch(view->GetName());
-            view->Print(v);
+            Node &v = n["views"].fetch(view->GetName());
+            view->Info(v);
 
         }
         for(IDType i=0;i<this->CountGroups();i++)
         {
             DataGroup const *grp =  this->GetGroup(i);
-            Node &g = n["DataGroup/groups"].fetch(grp->GetName());
-            grp->Print(g);
+            Node &g = n["groups"].fetch(grp->GetName());
+            grp->Info(g);
         }
     }
     

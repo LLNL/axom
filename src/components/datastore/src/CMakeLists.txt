@@ -25,7 +25,7 @@ set(datastore_sources
 #
 # make the library
 #
-make_library(datastore "${datastore_sources}")
+make_library(datastore "${datastore_sources}" "${datastore_headers}")
 add_dependencies(datastore copy_headers)
 add_dependencies(datastore conduit)
 install(TARGETS datastore DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

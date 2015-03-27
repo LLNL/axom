@@ -16,14 +16,12 @@ TEST(datastore_group,create_group)
     DataBuffer *db0 = ds->CreateBuffer();
     DataBuffer *db1 = ds->CreateBuffer();
     
-    db0->SetDescriptor(DataType::uint64(10));
+    db0->Declare(DataType::uint64(10));
     db0->Allocate();
-    db0->ApplyDescriptor();
     uint64 *db0_ptr = db0->GetNode().as_uint64_ptr();
     
-    db1->SetDescriptor(DataType::float64(10));
+    db1->Declare(DataType::float64(10));
     db1->Allocate();
-    db1->ApplyDescriptor();
     float64 *db1_ptr = db1->GetNode().as_float64_ptr();
     
     for(int i=0;i<10;i++)

@@ -301,7 +301,7 @@ public:
     */
     void DestroyGroups();
 
-    void Print(Node &n) const;
+    void Info(Node &n) const;
     void Print() const;
 
     void PrintTree( const int level ) const;

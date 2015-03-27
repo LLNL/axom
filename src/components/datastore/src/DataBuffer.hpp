@@ -41,120 +41,120 @@ class DataView;
 class DataBuffer
 {
 public:
-  /// container of DataView pointers.
-  typedef std::set< DataView* > ViewContainerType;
 
-  /// default constructor
-  DataBuffer();
+    /// default constructor
+    DataBuffer();
 
-  /*!
-   *
-   * @param uid
-   * @param m_stringDescriptor
-   */
-  DataBuffer( const IDType uid,
-              const std::string& m_stringDescriptor );
+    /*!
+     *
+     * @param uid
+     */
+    DataBuffer( const IDType uid );
 
-  /*!
-   *
-   * @param uid
-   */
-  DataBuffer( const IDType uid );
-
-  /*!
-   *
-   * @param source
-   */
-  DataBuffer(const DataBuffer& source );
+    /*!
+     *
+     * @param source
+     */
+    DataBuffer(const DataBuffer& source );
 
 
-  /*!
-   * destructor
-   */
-  ~DataBuffer();
+    /*!
+     * destructor
+     */
+    ~DataBuffer();
+    
+    /// container of DataView pointers.
+    typedef std::set< DataView* > ViewContainerType;
+
+     /// TODO: the data store should be the only entity that can create a buffer
 
 
-
-  void AttachView( DataView* dataView );
-  void DetachView( DataView* dataView );
-
-  void ReconcileDataViews();
-
-  /*!
-   * \brief Return the universal id for this DataBuffer.
-   */
-  IDType GetUID() { return m_uid; }
-
-  /*!
-   * \brief Return DataGroups attached to this DataBuffer.
-   */
-  ViewContainerType *GetDataViews() { return &m_ViewContainer; }
+    void AttachView( DataView* dataView );
+    void DetachView( DataView* dataView );
 
 
-  void *GetData()
-  { return m_data;}
+    /*!
+     * \brief Return the universal id for this DataBuffer.
+     */
+    IDType GetUID() 
+    {
+        return m_uid;
+    }
+
+    /*!
+     * \brief Return DataViews attached to this DataBuffer.
+     */
+    ViewContainerType *GetDataViews()
+    {
+        return &m_ViewContainer;
+    }
 
 
-  DataBuffer* SetDescriptor(const Schema &schema)
-  {
-    m_schema.set(schema);
-    return this;
-  }
+    /*!
+    * \brief Return number of DataViews attached to this buffer.
+    */
+    size_t CountViews() const
+    {
+      return m_ViewContainer.size();
+    }
+    
+
+    void *GetData()
+    { return m_data;}
+
+
+    DataBuffer* Declare(const Schema &schema)
+    {
+        m_schema.set(schema);
+        return this;
+    }
   
   
-  DataBuffer* SetDescriptor(const DataType &dtype)
-  {
-    m_schema.set(dtype);
-    return this;
-  }
+    DataBuffer* Declare(const DataType &dtype)
+    {
+        m_schema.set(dtype);
+        return this;
+    }
   
   
-  /**
-   *
-   * @return m_schema
-   */
-  const Schema &GetDescriptor() const
-  { return m_schema; }
+    /**
+    *
+    * @return m_schema
+    */
+    const Schema &GetDescriptor() const
+    { return m_schema; }
 
-  /// TODO: dangerous const issue needs to be resolved!
-  Node &GetNode()
-  { return m_node; }  
-
-
-  DataBuffer *ApplyDescriptor();
+    /// TODO: dangerous const issue needs to be resolved!
+    Node &GetNode()
+    { return m_node; }  
 
 
-  DataBuffer* Allocate();
+    DataBuffer* Allocate();
   
+    DataBuffer* Allocate(const Schema &schema);
+    DataBuffer* Allocate(const DataType &dtype);
 
-/// init calls set descriptor, allocate, and apply descriptor  
-   DataBuffer* Init(const Schema &schema);
-   DataBuffer* Init(const DataType &dtype);
-
-   void Print(Node &n) const;
-   void Print() const;
+    void Info(Node &n) const;
+    void Print() const;
   ///@}
 
 private:
 
 
-  /// universal identification - unique within a DataStore
-  IDType m_uid;
+    /// universal identification - unique within a DataStore
+    IDType m_uid;
 
-  /// a string that describes what is in the DataBuffer
-  std::string m_stringDescriptor;
+    /// container of groups that contain this DataBuffer
+    ViewContainerType m_ViewContainer;
 
-  /// container of groups that contain this DataBuffer
-  ViewContainerType m_ViewContainer;
-
-  /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
-  void* m_data;
+    /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
+    void* m_data;
   
-  /// use a vector to allocate data until we implement an appropriate allocator interface.
-  std::vector<char> m_memblob;
+    /// use a vector to allocate data until we implement an appropriate allocator interface.
+    std::vector<char> m_memblob;
 
-  Node   m_node;
-  Schema m_schema;
+    Node   m_node;
+    Schema m_schema;
 
 };
 

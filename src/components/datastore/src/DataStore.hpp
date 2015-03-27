@@ -80,7 +80,7 @@ public:
   void DestroyBuffers();
 
   void Print() const;
-  void Print(Node &) const;
+  void Info(Node &) const;
 
 private:
 

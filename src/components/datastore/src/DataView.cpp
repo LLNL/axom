@@ -27,15 +27,14 @@ DataView::DataView( const std::string& name,
 }
 
 DataView::DataView( const std::string& name,
-                    DataGroup* const parentGroup,
-                    DataStore* const dataStore ) :
+                    DataGroup* const parentGroup) :
   m_name(name),
   m_parentGroup(parentGroup),
   m_dataBuffer(nullptr),
   m_node(),
   m_schema()
 {
-    m_dataBuffer = dataStore->CreateBuffer();
+    m_dataBuffer = parentGroup->GetDataStore()->CreateBuffer();
     m_dataBuffer->AttachView(this);
 }
 
@@ -55,61 +54,84 @@ DataView::~DataView()
 }
 
 
-DataView* DataView::Init(const Schema &schema)
-{
-    SetDescriptor(schema);
-    m_dataBuffer->Init(m_schema);
-    ApplyDescriptor();
-    return this;
-}
-
-DataView* DataView::Init(const DataType &dtype)
-{
-    SetDescriptor(dtype);
-    m_dataBuffer->Init(m_schema);
-    ApplyDescriptor();
-    return this;
-}
 
 
-DataView* DataView::ApplyDescriptor()
+DataView* DataView::Apply()
 {
     m_node.set_external(m_schema,m_dataBuffer->GetData());
     return this;
 }
 
+DataView* DataView::Apply(const Schema &schema)
+{
+    m_schema.set(schema);
+    Apply();
+    return this;
+}
 
-DataView* DataView::SetDescriptor(const Schema &schema)
+DataView* DataView::Apply(const DataType &dtype)
+{
+    m_schema.set(dtype);
+    Apply();
+    return this;
+}
+
+
+DataView* DataView::Declare(const Schema &schema)
 {
     m_schema.set(schema);
     return this;
 }
 
-DataView* DataView::SetDescriptor(const DataType &dtype)
+DataView* DataView::Declare(const DataType &dtype)
 {
     m_schema.set(dtype);
     return this;
 }
 
-
-
-void DataView::ReconcileWithBuffer()
+DataView* DataView::Allocate()
 {
-    /// TODO:
+    // we only force alloc if there is a 1-1 between the view and buffer
+    if(m_dataBuffer->CountViews() != 1)
+    {
+        throw std::exception();
+    }
+    
+    m_dataBuffer->Allocate(m_schema);
+    Apply();
+    return this;
+}
+
+DataView* DataView::Allocate(const Schema &schema)
+{
+    Declare(schema);
+    Allocate();
+    Apply();
+    return this;
+}
+
+DataView* DataView::Allocate(const DataType &dtype)
+{
+    
+    Declare(dtype);
+    Allocate();
+    Apply();
+    return this;
 }
 
 
-void DataView::Print(Node &n) const
-{
-    n["DataView/name"] = m_name;
-    n["DataView/descriptor"] = m_schema.to_json();
-}
 
+void DataView::Info(Node &n) const
+{
+    n["name"] = m_name;
+    n["descriptor"] = m_schema.to_json();
+    n["node"] = m_node.to_json();
+}
 
 void DataView::Print() const
 {
     Node n;
-    Print(n);
+    Info(n);
     n.print();
 }
 

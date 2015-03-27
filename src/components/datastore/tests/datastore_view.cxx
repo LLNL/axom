@@ -17,8 +17,8 @@ TEST(datastore_view,create_views)
     // 
     
     
-    DataView *dv_0 = new DataView("field0",root,ds);
-    DataView *dv_1 = new DataView("field1",root,ds);
+    DataView *dv_0 = new DataView("field0",root);
+    DataView *dv_1 = new DataView("field1",root);
 
 
     DataBuffer *db_0 = dv_0->GetBuffer();
@@ -36,7 +36,7 @@ TEST(datastore_view,uint32_buffer_from_view)
     
     DataView *dv = root->CreateView("u0");
 
-    dv->Init(DataType::uint32(10));
+    dv->Allocate(DataType::uint32(10));
     uint32 *data_ptr = dv->GetNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
@@ -57,9 +57,8 @@ TEST(datastore_view,uint32_array_multi_view)
     DataGroup *root = ds->GetRoot();
     DataBuffer *dbuff = ds->CreateBuffer();
 
-    dbuff->SetDescriptor(DataType::uint32(10));
+    dbuff->Declare(DataType::uint32(10));
     dbuff->Allocate();
-    dbuff->ApplyDescriptor();
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
@@ -74,11 +73,9 @@ TEST(datastore_view,uint32_array_multi_view)
     DataView *dv_e = new DataView("even",root,dbuff);
     DataView *dv_o = new DataView("odd",root,dbuff);
     
-    dv_e->SetDescriptor(DataType::uint32(5,0,8));
-    dv_e->ApplyDescriptor();
+    dv_e->Apply(DataType::uint32(5,0,8));
     
-    dv_o->SetDescriptor(DataType::uint32(5,4,8));
-    dv_o->ApplyDescriptor();
+    dv_o->Apply(DataType::uint32(5,4,8));
 
     dv_e->GetNode().print_detailed();
     dv_o->GetNode().print_detailed();
@@ -109,7 +106,7 @@ TEST(datastore_view,init_uint32_array_multi_view)
     DataGroup *root = ds->GetRoot();
     DataBuffer *dbuff = ds->CreateBuffer();
 
-    dbuff->Init(DataType::uint32(10));
+    dbuff->Allocate(DataType::uint32(10));
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
@@ -125,12 +122,12 @@ TEST(datastore_view,init_uint32_array_multi_view)
     DataView *dv_o = new DataView("odd",root,dbuff);
     
     // uint32(num_elems, offset, stride)
-    dv_e->SetDescriptor(DataType::uint32(5,0,8));
-    dv_e->ApplyDescriptor();
+    dv_e->Apply(DataType::uint32(5,0,8));
+
 
     // uint32(num_elems, offset, stride)    
-    dv_o->SetDescriptor(DataType::uint32(5,4,8));
-    dv_o->ApplyDescriptor();
+    dv_o->Apply(DataType::uint32(5,4,8));
+
 
     dv_e->GetNode().print_detailed();
     dv_o->GetNode().print_detailed();
