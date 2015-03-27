@@ -59,6 +59,10 @@ namespace DataStoreNS
 
     DataView* DataGroup::CreateView( const std::string& name )
     {
+        if(HasChild(name))
+        {
+            throw std::exception();
+        }
         DataView* const view = new DataView( name, this);
         return AttachView(view);
     }
@@ -66,6 +70,10 @@ namespace DataStoreNS
     DataView* DataGroup::CreateView( const std::string& name,
                                      DataBuffer *buff)
     {
+        if(HasChild(name))
+        {
+            throw std::exception();
+        }
         DataView* const view = new DataView( name, this, buff );
         return AttachView(view);
     }
@@ -92,17 +100,27 @@ namespace DataStoreNS
     {
           DataView* view = nullptr;
           std::map<std::string,IDType>::iterator itr;
+          IDType idx;
           itr = m_viewsNameMap.find( name );
           if( itr != m_viewsNameMap.end() )
           {
-                IDType idx = itr->second;
+                idx = itr->second;
                 view = m_views[idx];
                 m_viewsNameMap.erase( itr );
-                m_views[idx] = nullptr; // remove?
+                m_views.erase(m_views.begin() + idx);
           }
           else
           {
               throw std::exception();
+          }
+          
+          // any entry in m_viewsNameMap above idx needs to shift down by 1
+          for(itr = m_viewsNameMap.begin();itr!= m_viewsNameMap.end();itr++)
+          {
+              if(itr->second > idx)
+              {
+                  itr->second--;
+              }
           }
           return view;
     }
@@ -113,16 +131,19 @@ namespace DataStoreNS
         std::map<std::string,IDType>::iterator itr;
         itr = m_viewsNameMap.find(view->GetName());
         m_viewsNameMap.erase( itr );
-        m_views[idx] = nullptr; // remove?
+        m_views.erase(m_views.begin() + idx);
+        // any entry in m_viewsNameMap above idx needs to shift down by 1
+        for(itr = m_viewsNameMap.begin();itr!= m_viewsNameMap.end();itr++)
+        {
+            if(itr->second > idx)
+            {
+                itr->second--;
+            }
+        }
+
         return view;
     }
 
-
-    DataView* DataGroup::DetachView(DataView *view)
-    {
-        /// TODO !
-        return nullptr;
-    }
 
     // remove vs destroy vs delete
     void DataGroup::DestroyView( const std::string& name )
@@ -133,11 +154,6 @@ namespace DataStoreNS
     void DataGroup::DestroyView( IDType idx )
     {
         delete DetachView(idx);
-    }
-
-    void DataGroup::DestroyView( DataView *view )
-    {
-        delete DetachView(view);
     }
     
     /// --- DataGroup Children --- ///
@@ -166,9 +182,10 @@ namespace DataStoreNS
           DataGroup* grp = nullptr;
           std::map<std::string,IDType>::iterator itr;
           itr = m_groupsNameMap.find( name );
+          IDType idx;
           if( itr != m_groupsNameMap.end() )
           {
-                IDType idx = itr->second;
+                idx = itr->second;
                 grp = m_groups[idx];
                 m_groupsNameMap.erase( itr );
                 m_groups[idx] = nullptr; // remove?
@@ -176,6 +193,14 @@ namespace DataStoreNS
           else
           {
               throw std::exception();
+          }
+          // any entry in m_groupsNameMap above idx needs to shift down by 1
+          for(itr = m_groupsNameMap.begin();itr!= m_groupsNameMap.end();itr++)
+          {
+              if(itr->second > idx)
+              {
+                  itr->second--;
+              }
           }
           return grp;
     }
@@ -186,19 +211,18 @@ namespace DataStoreNS
         std::map<std::string,IDType>::iterator itr;
         itr = m_groupsNameMap.find(grp->GetName());
         m_groupsNameMap.erase( itr );
-        m_groups[idx] = nullptr; // remove?
+        // any entry in m_groupsNameMap above idx needs to shift down by 1
+        for(itr = m_groupsNameMap.begin();itr!= m_groupsNameMap.end();itr++)
+        {
+            if(itr->second > idx)
+            {
+                itr->second--;
+            }
+        }
         return grp;
     }
 
 
-    DataGroup* DataGroup::DetachGroup(DataGroup *grp)
-    {
-        /// TODO !
-        return nullptr;
-    }
-
-
-    // remove vs destroy vs delete
     void DataGroup::DestroyGroup( const std::string& name )
     {
         delete DetachGroup(name);
@@ -209,19 +233,38 @@ namespace DataStoreNS
         delete DetachGroup(idx);
     }
 
-    void DataGroup::DestroyGroup( DataGroup *view )
-    {
-        delete DetachGroup(view);
-    }
-    
     // real cleanup
     void DataGroup::DestroyGroups()
     {
+        // delete all groups
+        size_t ngroups = CountGroups();
+        
+        for(size_t i=0;i<ngroups;i++)
+        {
+            DataGroup *grp = this->GetGroup(i);
+            delete grp;
+        }
+
+        // clean up book keeping
+        m_groups.clear();
+        m_groupsNameMap.clear();
     }
     
     
     void DataGroup::DestroyViews()
     {
+        // delete all views
+        size_t nviews = CountViews();
+        
+        for(size_t i=0;i<nviews;i++)
+        {
+            DataView *view = this->GetView(i);
+            delete view;
+        }
+        // clean up book keeping
+        m_views.clear();
+        m_viewsNameMap.clear();
+        
     }
 
     void DataGroup::Print() const

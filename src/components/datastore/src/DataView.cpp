@@ -20,8 +20,8 @@ DataView::DataView( const std::string& name,
     m_name(name),
     m_parentGroup(parentGroup),
     m_dataBuffer(dataBuffer),
-    m_node(),
-    m_schema()
+    m_schema(),
+    m_node()
 {
 
 }
@@ -31,8 +31,8 @@ DataView::DataView( const std::string& name,
   m_name(name),
   m_parentGroup(parentGroup),
   m_dataBuffer(nullptr),
-  m_node(),
-  m_schema()
+  m_schema(),
+  m_node()
 {
     m_dataBuffer = parentGroup->GetDataStore()->CreateBuffer();
     m_dataBuffer->AttachView(this);
@@ -42,9 +42,10 @@ DataView::DataView(const DataView& source ) :
     m_name(source.m_name),
     m_parentGroup(source.m_parentGroup),
     m_dataBuffer(source.m_dataBuffer),
-    m_node(source.m_node),
-    m_schema(source.m_schema)
+    m_schema(source.m_schema),
+    m_node(source.m_node)
 {
+    
 }
 
 
@@ -52,8 +53,6 @@ DataView::~DataView()
 {
     
 }
-
-
 
 
 DataView* DataView::Apply()
