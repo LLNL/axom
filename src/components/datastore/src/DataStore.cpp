@@ -12,7 +12,7 @@ namespace DataStoreNS
 {
 
   DataStore::DataStore() :
-    m_RootGroup("", this),
+    m_RootGroup("/", this),
     m_DataBuffers(),
     m_AvailableDataBuffers()
     {};
