@@ -41,23 +41,7 @@ class DataView;
 class DataBuffer
 {
 public:
-
-    /// default constructor
-    DataBuffer();
-
-    /*!
-     *
-     * @param uid
-     */
-    DataBuffer( const IDType uid );
-
-    /*!
-     *
-     * @param source
-     */
-    DataBuffer(const DataBuffer& source );
-
-
+    friend class DataStore;
     /*!
      * destructor
      */
@@ -139,6 +123,20 @@ public:
   ///@}
 
 private:
+    /// default constructor
+    DataBuffer();
+
+    /*!
+     *
+     * @param uid
+     */
+    DataBuffer( const IDType uid );
+
+    /*!
+     *
+     * @param source
+     */
+    DataBuffer(const DataBuffer& source );
 
 
     /// universal identification - unique within a DataStore

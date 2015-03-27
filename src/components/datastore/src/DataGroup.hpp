@@ -30,38 +30,7 @@ namespace DataStoreNS
 class DataGroup
 {
 public:
-
-    DataGroup(const std::string &name, DataGroup *parent);
-    DataGroup(const std::string &name, DataStore *datastore);
-
-    /*!
-    * @param source
-    * \brief default copy constructor
-    */
-    DataGroup( const DataGroup& source );
-
-    /*!
-    *
-    * @param rhs the DataView to be copied
-    * @return *this
-    */
-    DataGroup& operator=( const DataGroup& rhs );
-
-#ifdef USECXX11
-  /*!
-    * @param source
-    * \brief default move constructor
-    */
-    DataGroup( DataGroup&& source );
-
-    /*!
-    *
-    * @param rhs the DataView to be moved into *this
-    * @return *this
-    */
-    DataGroup& operator=( const DataGroup&& rhs );
-#endif
-
+    friend class DataStore;
     /*!
     * \brief destructor
     */
@@ -307,6 +276,39 @@ public:
     void PrintTree( const int level ) const;
  
 private:
+    /// these are private b/c we want folks to create groups
+    /// from another group or a  datastore
+    DataGroup(const std::string &name, DataGroup *parent);
+    DataGroup(const std::string &name, DataStore *datastore);
+
+    /*!
+    * @param source
+    * \brief default copy constructor
+    */
+    DataGroup( const DataGroup& source );
+
+    /*!
+    *
+    * @param rhs the DataView to be copied
+    * @return *this
+    */
+    DataGroup& operator=( const DataGroup& rhs );
+
+#ifdef USECXX11
+  /*!
+    * @param source
+    * \brief default move constructor
+    */
+    DataGroup( DataGroup&& source );
+
+    /*!
+    *
+    * @param rhs the DataView to be moved into *this
+    * @return *this
+    */
+    DataGroup& operator=( const DataGroup&& rhs );
+#endif
+    
     std::string  m_name;
     DataGroup   *m_parent;
     DataStore   *m_datastore;
