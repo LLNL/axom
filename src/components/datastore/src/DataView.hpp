@@ -38,32 +38,28 @@ class DataBuffer;
 class DataView
 {
 public:
-    DataView( const std::string& name,
-              DataGroup* const parentGroup,
-              DataBuffer* const dataBuffer );
-
-    DataView( const std::string& name,
-              DataGroup* const parentGroup);
-
-
-    /// copy constructor
-    DataView(const DataView& source );
+    friend class DataGroup;
     
-    /// destructor
+    /// destructor is public
+    /// a user detaches a view, they need some way to destroy it
     ~DataView();
 
 
+    /// if there is a 1-1 relationship between this view and its buffer
+    /// this will force a description & an allocate on the underlying
+    /// buffer, otherwise an exception will be thrown
     DataView* Allocate();
     DataView* Allocate(const Schema &schema);
     DataView* Allocate(const DataType &dtype);
   
+    /// sets the description that will be used to view data
     DataView* Declare(const Schema &schema);  
     DataView* Declare(const DataType &dtype);
   
+    /// applies the description to buffer to init GetNode()
     DataView* Apply();
     DataView* Apply(const Schema &schema);  
     DataView* Apply(const DataType &dtype);
-
   
     /**
      *
@@ -96,6 +92,20 @@ public:
     ///@}
 
 private:
+    // These are private b/c we expect Views to only be 
+    // create from the context of a Group
+    DataView( const std::string& name,
+              DataGroup* const parentGroup,
+              DataBuffer* const dataBuffer );
+
+    DataView( const std::string& name,
+              DataGroup* const parentGroup);
+
+
+    /// copy constructor
+    /// if this is public, we could get into some bookkeeping messes
+    /// for example what do we do with the parent group pointer?
+    DataView(const DataView& source );
 
 
     /// this view's name

@@ -12,8 +12,8 @@ TEST(datastore_view,create_views)
     DataStore *ds   = new DataStore();
     DataGroup *root = ds->GetRoot();
 
-    DataView *dv_0 = new DataView("field0",root);
-    DataView *dv_1 = new DataView("field1",root);
+    DataView *dv_0 = root->CreateView("field0");
+    DataView *dv_1 = root->CreateView("field1");
 
     DataBuffer *db_0 = dv_0->GetBuffer();
     DataBuffer *db_1 = dv_1->GetBuffer();
@@ -64,8 +64,8 @@ TEST(datastore_view,uint32_array_multi_view)
               dbuff->GetDescriptor().total_bytes());
 
 
-    DataView *dv_e = new DataView("even",root,dbuff);
-    DataView *dv_o = new DataView("odd",root,dbuff);
+    DataView *dv_e = root->CreateView("even",dbuff);
+    DataView *dv_o = root->CreateView("odd",dbuff);
     
     dv_e->Apply(DataType::uint32(5,0,8));
     
@@ -112,8 +112,8 @@ TEST(datastore_view,init_uint32_array_multi_view)
               dbuff->GetDescriptor().total_bytes());
 
 
-    DataView *dv_e = new DataView("even",root,dbuff);
-    DataView *dv_o = new DataView("odd",root,dbuff);
+    DataView *dv_e = root->CreateView("even",dbuff);
+    DataView *dv_o = root->CreateView("odd",dbuff);
     
     // uint32(num_elems, offset, stride)
     dv_e->Apply(DataType::uint32(5,0,8));

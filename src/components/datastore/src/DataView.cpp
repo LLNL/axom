@@ -13,7 +13,6 @@
 namespace DataStoreNS
 {
 
-
 DataView::DataView( const std::string& name,
                     DataGroup* const parentGroup,
                     DataBuffer* const dataBuffer ):
@@ -47,6 +46,7 @@ DataView::DataView(const DataView& source ) :
 {
     
 }
+
 
 
 DataView::~DataView()
