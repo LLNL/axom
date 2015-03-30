@@ -72,8 +72,7 @@ public:
     std::string GetName() const
     {return m_name;}
   
-  
-    /// TODO: dangerous const issue needs to be resolved ??
+    /// note: in most cases, we want to use the const version of the node
     Node &GetNode()
     {return m_node; }  
 

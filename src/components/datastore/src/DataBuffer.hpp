@@ -102,10 +102,12 @@ public:
     const Schema &GetDescriptor() const
     { return m_schema; }
 
-    /// TODO: dangerous const issue needs to be resolved!
+    /// note: in most cases, we want to use the const version of the node
     Node &GetNode()
-    { return m_node; }  
+    {return m_node; }  
 
+    const Node &GetNode() const
+    { return m_node; }  
 
     DataBuffer* Allocate();
   
