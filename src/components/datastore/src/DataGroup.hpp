@@ -36,16 +36,8 @@ public:
     */
     ~DataGroup();
 
-    /*!
-    * @param name Name to check.
-    * \brief Return true if the name exists in this DataGroup.
-    */
-    bool HasChild( const std::string& name );
-
-
 
     /// -----  Basic Members  ---- /// 
-
     std::string GetName() const
     {return m_name; }
 
@@ -62,6 +54,14 @@ public:
     {return m_datastore;}
 
 
+    /*!
+    * @param name Name to check.
+    * \brief Return true if the name exists in this DataGroup.
+    */
+    
+    /// we can have child groups and views
+    bool HasChild( const std::string& name );
+
     /// -----  DataView Children ---- /// 
     bool HasView( const std::string& name );
 
@@ -72,21 +72,21 @@ public:
     DataView *CreateView( const std::string& name );
     DataView *CreateView( const std::string& name, DataBuffer *buff);
 
-    /*!
-    * @param name Name of DataView to attach.
-    * @param obj  Pointer to an existing DataView.
-    * \brief Add an existing DataView to this DataGroup.
-    */
-    DataView *AttachView(DataView *view);
 
-    DataView *DetachView(const std::string &name);
-    DataView *DetachView(IDType idx);
-    DataView *DetachView(DataView *view);
-
+    // removes a view from another group into this group
+    // returns `view`
+    DataView *MoveView(DataView *view);
+    // creates a copy of the given view for this group
+    // Recall:copying the view does not imply copying the buffer.
+    // returns the new view
+    DataView *CopyView(DataView *view);
+    
+    
     void DestroyView(const std::string &name);
     void DestroyView(IDType idx);
     void DestroyView(DataView *view);
-
+    
+    
 
     /*!
     * @param name Name of DataView to find.
@@ -94,17 +94,14 @@ public:
     */
     DataView *GetView( const std::string& name )
     {
-//      for( std::map<std::string,IDType>::iterator iter=m_viewsNameMap.begin() ; iter!=m_viewsNameMap.end() ; ++iter )
-//      { std::cout<<iter->first<<std::endl; }
-
-    const IDType idx = m_viewsNameMap.at(name);
-    return m_views[idx];
+        const IDType idx = m_viewsNameMap.at(name);
+        return m_views[idx];
     }
 
     DataView const * GetView( const std::string& name ) const
     {
-    const IDType idx = m_viewsNameMap.at(name);
-    return m_views[idx];
+        const IDType idx = m_viewsNameMap.at(name);
+        return m_views[idx];
     }
 
     /*!
@@ -113,9 +110,17 @@ public:
     */
     DataView *GetView( const IDType idx )
     {
-      return m_views[idx];
+          return m_views[idx];
     }
 
+    /*!
+     *
+     * @return
+     */
+    std::map<std::string,IDType> const& GetViewsNameMap() const
+    {
+      return m_viewsNameMap;
+    }
 
     /*!
     * @param idx Index of DataView within this DataGroup.
@@ -152,14 +157,6 @@ public:
       return m_viewsNameMap.at(name);
     }
 
-    /*!
-     *
-     * @return
-     */
-    std::map<std::string,IDType> const& GetViewsNameMap() const
-    {
-      return m_viewsNameMap;
-    }
 
     /*!
     * \brief Return the name of the DataView at the given index
@@ -190,16 +187,20 @@ public:
     * \brief Create a new DataGroup within this DataGroup.
     */
     DataGroup* CreateGroup( const std::string& name );
-    DataGroup *AttachGroup(DataGroup *grp);
+    
+    // removes a group from another group into this group
+    // returns `grp`
+    DataGroup *MoveGroup(DataGroup *grp);
+    // creates a copy of the given group into this group
+    // this will also copy all sub groups and views. 
+    // Recall:copying the views does not imply copying the buffers.
+    // returns the new group
+    DataGroup *CopyGroup(DataGroup *grp);
 
-    DataGroup *DetachGroup(const std::string &name);
-    DataGroup *DetachGroup(IDType idx);
-    DataGroup *DetachGroup(DataGroup *grp);
 
     void DestroyGroup(const std::string &name);
     void DestroyGroup(IDType idx);
-    void DestroyGroup(DataGroup *grp);
-  
+
     /*!
     * @param name Name of DataGroup to find.
     * \brief Return pointer to DataGroup.
@@ -229,16 +230,6 @@ public:
     {
      return m_groups[idx];
     }
-
-    /*!
-     *
-     * @return
-     */
-    std::vector<DataGroup*> const& GetGroups() const
-    {
-     return m_groups;
-    }
-
 
     /*!
     * \brief Return the index of the DataGroup with the given name
@@ -308,6 +299,26 @@ private:
     */
     DataGroup& operator=( const DataGroup&& rhs );
 #endif
+    
+    
+    /// Attach + Detach are private since they have scary 
+    /// bookkeeping side affects.
+    
+    /// Our use cases should be supported by:
+    ///  CreateView|Group()
+    ///  MoveView|Group()
+    ///  CopyView|Group()
+    ///  DestroyView|Group()
+ 
+    DataView *AttachView(DataView *view);
+    DataView *DetachView(const std::string &name);
+    DataView *DetachView(IDType idx);
+
+
+    DataGroup *AttachGroup(DataGroup *grp);
+    DataGroup *DetachGroup(const std::string &name);
+    DataGroup *DetachGroup(IDType idx);
+
     
     std::string  m_name;
     DataGroup   *m_parent;

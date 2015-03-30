@@ -42,6 +42,7 @@ class DataBuffer
 {
 public:
     friend class DataStore;
+    friend class DataView;
     /*!
      * destructor
      */
@@ -49,13 +50,6 @@ public:
     
     /// container of DataView pointers.
     typedef std::set< DataView* > ViewContainerType;
-
-     /// TODO: the data store should be the only entity that can create a buffer
-
-
-    void AttachView( DataView* dataView );
-    void DetachView( DataView* dataView );
-
 
     /*!
      * \brief Return the universal id for this DataBuffer.
@@ -137,6 +131,12 @@ private:
      * @param source
      */
     DataBuffer(const DataBuffer& source );
+
+     /// TODO: the data store should be the only entity that can create a buffer
+
+    void AttachView( DataView* dataView );
+    void DetachView( DataView* dataView );
+
 
 
     /// universal identification - unique within a DataStore

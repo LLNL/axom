@@ -78,6 +78,48 @@ namespace DataStoreNS
         return AttachView(view);
     }
 
+    DataView *DataGroup::MoveView(DataView *view)
+    {
+        // before we remove this from its current parent.
+        // make sure we don't have a name conflict
+        if( HasChild(view->GetName()) || view == nullptr)
+        {
+            // TODO: add info
+            throw std::exception();
+        }
+        
+        // remove this view from its current parent
+        DataGroup *curr_grp = view->GetParent();
+        
+        curr_grp->DetachView(view->GetName());
+        
+        /// finally, attach to this group
+        AttachView(view);
+        
+        return view;
+    }
+
+
+    // creates a copy of the given view for this group
+    // Recall:copying the view does not imply copying the buffer.
+    // returns the new view
+    DataView *DataGroup::CopyView(DataView *view)
+    {
+        // before we do anything, make sure we don't have a name conflict
+        if( HasChild(view->GetName()) || view == nullptr)
+        {
+            // TODO: add info
+            throw std::exception();
+        }
+        
+        DataView *res = CreateView(view->GetName(),view->GetBuffer());
+        res->Declare(view->GetDescriptor());
+        if(view->Applied())
+        {
+            res->Apply();
+        }
+        return res;
+    }
 
     DataView *DataGroup::AttachView(DataView * const view)
     {
@@ -88,10 +130,6 @@ namespace DataStoreNS
 
         m_viewsNameMap[view->GetName()] = m_views.size(); // map name to index
         m_views.push_back( view );
-
-//        for( std::map<std::string,IDType>::iterator iter=m_viewsNameMap.begin() ; iter!=m_viewsNameMap.end() ; ++iter )
-//        { std::cout<<iter->first<<std::endl; }
-
         return view;
     }
 
@@ -122,6 +160,8 @@ namespace DataStoreNS
                   itr->second--;
               }
           }
+          
+          view->m_group = nullptr;
           return view;
     }
 
@@ -140,7 +180,7 @@ namespace DataStoreNS
                 itr->second--;
             }
         }
-
+        view->m_group = nullptr;
         return view;
     }
 
@@ -162,6 +202,61 @@ namespace DataStoreNS
     {
         DataGroup*  grp = new DataGroup( name, this);
         return AttachGroup(grp);
+    }
+
+
+    DataGroup *DataGroup::MoveGroup(DataGroup *grp)
+    {
+        // before we remove this from its current parent.
+        // make sure we don't have a name conflict
+        if( HasChild(grp->GetName()) || grp == nullptr)
+        {
+            // TODO: add info
+            throw std::exception();
+        }
+        
+        // remove this grp from its current parent
+        DataGroup *curr_grp = grp->GetParent();
+        
+        curr_grp->DetachGroup(grp->GetName());
+        
+        /// finally, attach to this group
+        AttachGroup(grp);
+
+        return grp;
+    }
+
+
+    // creates a copy of the given group for this group
+    // Recall:copying the views does not imply copying the buffers.
+    // returns the new group
+    DataGroup *DataGroup::CopyGroup(DataGroup *grp)
+    {
+        // before we do anything, make sure we don't have a name conflict
+        if( HasChild(grp->GetName()) || grp == nullptr)
+        {
+            // TODO: add info
+            throw std::exception();
+        }
+        
+        
+        DataGroup *res = CreateGroup(grp->GetName());
+    
+        // copy all groups
+        size_t nchild_grps = grp->CountGroups();
+        for(size_t i=0; i < nchild_grps; i++)
+        {
+            res->CopyGroup(grp->GetGroup(i));
+        }
+
+    
+        size_t nchild_views = grp->CountViews();
+        for(size_t i=0; i < nchild_views; i++)
+        {
+            res->CopyView(grp->GetView(i));
+        }
+
+        return res;
     }
 
     DataGroup *DataGroup::AttachGroup(DataGroup * const grp)
@@ -188,7 +283,7 @@ namespace DataStoreNS
                 idx = itr->second;
                 grp = m_groups[idx];
                 m_groupsNameMap.erase( itr );
-                m_groups[idx] = nullptr; // remove?
+                m_groups.erase(m_groups.begin() + idx);
           }
           else
           {
@@ -202,6 +297,7 @@ namespace DataStoreNS
                   itr->second--;
               }
           }
+          grp->m_parent = nullptr;
           return grp;
     }
 
@@ -219,6 +315,7 @@ namespace DataStoreNS
                 itr->second--;
             }
         }
+        grp->m_parent = nullptr;
         return grp;
     }
 

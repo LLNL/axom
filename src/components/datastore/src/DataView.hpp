@@ -45,6 +45,7 @@ public:
     ~DataView();
 
 
+
     /// if there is a 1-1 relationship between this view and its buffer
     /// this will force a description & an allocate on the underlying
     /// buffer, otherwise an exception will be thrown
@@ -67,6 +68,9 @@ public:
      */
     const Schema &GetDescriptor() const
     { return m_schema; }
+
+    std::string GetName() const
+    {return m_name;}
   
   
     /// TODO: dangerous const issue needs to be resolved ??
@@ -75,18 +79,26 @@ public:
 
     Node const& GetNode() const
     { return m_node; }
-  
 
+    /// for now, we assume a dataview always has a buffer and group
+ 
     DataBuffer *GetBuffer()
-    { return m_dataBuffer; }  
-  
-    std::string GetName() const
-    {return m_name;}
-  
-    DataGroup* GetParentGroup()
-    {return m_parentGroup;}
-  
-  
+    { return m_buffer; }  
+ 
+     DataBuffer const *GetBuffer() const
+     { return m_buffer; }
+ 
+    DataGroup* GetParent()
+    {return m_group;}
+
+    DataGroup const* GetParent() const
+    {return m_group;}
+
+
+    /// TODO: Bad name?
+    bool Applied() const
+    {return m_applied;}
+
     void Print() const;  
     void Info(Node &n) const;
     ///@}
@@ -101,26 +113,33 @@ private:
     DataView( const std::string& name,
               DataGroup* const parentGroup);
 
+    DataView( const std::string& name,
+              DataStore* const datastore);
+
 
     /// copy constructor
     /// if this is public, we could get into some bookkeeping messes
     /// for example what do we do with the parent group pointer?
     DataView(const DataView& source );
 
-
     /// this view's name
     std::string m_name;
 
     /// this views parent group
-    DataGroup*  m_parentGroup;
+    DataGroup*  m_group;
 
     /// pointer to the DataBuffer
-    DataBuffer* m_dataBuffer;
+    DataBuffer* m_buffer;
 
     /// conduit schema used as descriptor
     Schema      m_schema;
+    
     /// conduit node used to access the data
     Node        m_node;
+    
+    /// used to tell if the view is fully inited 
+    /// may be a bad name
+    bool        m_applied;
 };
 
 

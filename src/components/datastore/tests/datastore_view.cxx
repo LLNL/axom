@@ -14,7 +14,8 @@ TEST(datastore_view,create_views)
 
     DataView *dv_0 = root->CreateView("field0");
     DataView *dv_1 = root->CreateView("field1");
-
+    
+    
     DataBuffer *db_0 = dv_0->GetBuffer();
     DataBuffer *db_1 = dv_1->GetBuffer();
         

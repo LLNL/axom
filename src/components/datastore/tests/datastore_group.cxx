@@ -50,63 +50,66 @@ TEST(datastore_group,group_name_collisons)
 
     delete ds;
 }
-
 //------------------------------------------------------------------------------
-TEST(datastore_group,attach_detach_views)
+TEST(datastore_group,view_copy_move)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
-    
+
     flds->CreateView("i0")->Allocate(DataType::int32());
     flds->CreateView("f0")->Allocate(DataType::float32());
     flds->CreateView("d0")->Allocate(DataType::float32());
-    
+
     (*flds->GetView("i0")->GetNode().as_int32_ptr())   = 1;
     (*flds->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;
     (*flds->GetView("d0")->GetNode().as_float64_ptr()) = 3000.0;
-    
+
     EXPECT_TRUE(flds->HasView("i0"));
     EXPECT_TRUE(flds->HasView("f0"));
     EXPECT_TRUE(flds->HasView("d0"));
-    
-    DataView *f0 = flds->DetachView("f0");
 
-    EXPECT_TRUE(flds->HasView("i0"));
-    EXPECT_FALSE(flds->HasView("f0"));
-    EXPECT_TRUE(flds->HasView("d0"));
-
-    flds->AttachView(f0);
-        
-    EXPECT_TRUE(flds->HasView("i0"));
-    EXPECT_TRUE(flds->HasView("f0"));
-    EXPECT_TRUE(flds->HasView("d0"));
-    
-    flds->CreateGroup("sub")->AttachView(flds->DetachView("d0"));
-
+    // test moving a view form flds to sub
+    flds->CreateGroup("sub")->MoveView(flds->GetView("d0"));
     flds->Print();
     EXPECT_FALSE(flds->HasView("d0"));
     EXPECT_TRUE(flds->HasGroup("sub"));
     EXPECT_TRUE(flds->GetGroup("sub")->HasView("d0"));
 
+    // check the data value
+    float64 *d0_data =  flds->GetGroup("sub")
+                            ->GetView("d0")
+                            ->GetNode().as_float64_ptr();
+    EXPECT_NEAR(d0_data[0],3000.0,1e-12);
+    
+    // test copying a view from flds top sub
+    flds->GetGroup("sub")->CopyView(flds->GetView("i0"));
+
+    flds->Print();
+    
+    EXPECT_TRUE(flds->HasView("i0"));    
+    EXPECT_TRUE(flds->GetGroup("sub")->HasView("i0"));
+
+    // we expect the actual data  pointers to be the same
+    EXPECT_EQ(flds->GetView("i0")->GetNode().data_pointer(),
+              flds->GetGroup("sub")->GetView("i0")->GetNode().data_pointer());
 
     delete ds;
 }
 
-
 //------------------------------------------------------------------------------
-TEST(datastore_group,attach_detach_groups)
+TEST(datastore_group,groups_move_copy)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
-    
+
     DataGroup *ga = flds->CreateGroup("a");
     DataGroup *gb = flds->CreateGroup("b");
     DataGroup *gc = flds->CreateGroup("c");
-    
+
     ga->CreateView("i0")->Allocate(DataType::int32());
     gb->CreateView("f0")->Allocate(DataType::float32());
     gc->CreateView("d0")->Allocate(DataType::float32());
-    
+
     (*ga->GetView("i0")->GetNode().as_int32_ptr())   = 1;
     (*gb->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;
     (*gc->GetView("d0")->GetNode().as_float64_ptr()) = 3000.0;
@@ -115,26 +118,11 @@ TEST(datastore_group,attach_detach_groups)
     EXPECT_TRUE(flds->HasGroup("a"));
     EXPECT_TRUE(flds->HasGroup("b"));
     EXPECT_TRUE(flds->HasGroup("c"));
-    
-    // detach b
-    flds->DetachGroup("b");
-    
-    // make sure b isn't a sub of flds
-    EXPECT_TRUE(flds->HasGroup("a"));
-    EXPECT_FALSE(flds->HasGroup("b"));
-    EXPECT_TRUE(flds->HasGroup("c"));
-    
-    // reattach b
-    flds->AttachGroup(gb);
-    
-    // check that all sub groups exist
-    EXPECT_TRUE(flds->HasGroup("a"));
-    EXPECT_TRUE(flds->HasGroup("b"));
-    EXPECT_TRUE(flds->HasGroup("c"));
-    
-    // detach b and add it back as a sub group of of "sub"
-    flds->DetachGroup("b");
-    flds->CreateGroup("sub")->AttachGroup(gb);
+
+    //move "b" to a child of "sub"
+    flds->CreateGroup("sub")->MoveGroup(gb);
+
+    flds->Print();
     
     EXPECT_TRUE(flds->HasGroup("a"));
     EXPECT_TRUE(flds->HasGroup("sub"));
