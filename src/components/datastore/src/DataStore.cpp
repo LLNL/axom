@@ -12,13 +12,16 @@ namespace DataStoreNS
 {
 
   DataStore::DataStore() :
-    m_RootGroup("/", this),
     m_DataBuffers(),
     m_AvailableDataBuffers()
-    {};
+    {
+        m_RootGroup = new DataGroup("/",this);
+    };
 
   DataStore::~DataStore()
   {
+      // clean up views before we destroy buffers
+      delete m_RootGroup;
       DestroyBuffers();
   }
 
@@ -58,7 +61,8 @@ namespace DataStoreNS
   
   void DataStore::DestroyBuffers()
   {
-      for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ;                  iter!=m_DataBuffers.end() ; ++iter )
+      for( std::vector<DataBuffer*>::iterator iter=m_DataBuffers.begin() ;
+           iter!=m_DataBuffers.end() ; ++iter )
       {
         delete *iter;
       }
@@ -73,8 +77,8 @@ namespace DataStoreNS
 
   void DataStore::Info(Node &n) const
   {
-      m_RootGroup.Info(n["DataStore/root"]);
-      for( dataBufferContainerType::const_iterator iter=m_DataBuffers.begin() ;
+      m_RootGroup->Info(n["DataStore/root"]);
+      for( std::vector<DataBuffer*>::const_iterator iter=m_DataBuffers.begin() ;
            iter!=m_DataBuffers.end() ;
            ++iter )
       {

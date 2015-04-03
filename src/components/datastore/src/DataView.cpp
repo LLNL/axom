@@ -46,11 +46,10 @@ DataView::DataView( const std::string& name,
 
 DataView::~DataView()
 {
-    // TODO:
-    // if(m_buffer != nullptr)
-    // {
-    //     m_buffer->DetachView(this);
-    // }
+    if(m_buffer != nullptr)
+    {
+        m_buffer->DetachView(this);
+    }
 }
 
 DataView* DataView::Apply()
