@@ -9,7 +9,7 @@ namespace DataStoreNS
 
 DataBuffer::DataBuffer( const IDType uid ) :
     m_uid(uid),
-    m_ViewContainer(),
+    m_views(),
     m_data(nullptr),
     m_memblob(),
     m_node(),
@@ -21,14 +21,13 @@ DataBuffer::DataBuffer( const IDType uid ) :
 
 DataBuffer::DataBuffer(const DataBuffer& source ) :
     m_uid(source.m_uid),
-    m_ViewContainer(source.m_ViewContainer),
+    m_views(source.m_views),
     m_data(source.m_data),
     m_memblob(source.m_memblob),
     m_node(source.m_node),
     m_schema(source.m_schema)
-        
 {
-
+// disallow?
 }
 
 
@@ -36,7 +35,6 @@ DataBuffer::~DataBuffer()
 {
 
 }
-
 
 
 /// init calls set declare, allocate
@@ -91,15 +89,21 @@ void DataBuffer::Print() const
 
 
 
-void DataBuffer::AttachView( DataView* dataView )
+void DataBuffer::AttachView( DataView* view )
 {
-  m_ViewContainer.insert( dataView );
+    m_views.push_back( view );
 }
 
 
-void DataBuffer::DetachView( DataView* dataView )
+void DataBuffer::DetachView( DataView* view )
 {
-  m_ViewContainer.erase( dataView );
+    //Find new end iterator
+    std::vector<DataView*>::iterator pos = std::remove(m_views.begin(),
+                                                       m_views.end(),
+                                                       view);
+    // check if pos is ok?
+    //Erase the "removed" elements.
+    m_views.erase(pos, m_views.end());
 }
 
 

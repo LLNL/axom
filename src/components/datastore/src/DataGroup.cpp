@@ -7,6 +7,7 @@
 
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
+#include "DataBuffer.hpp"
 #include "DataView.hpp"
 
 namespace DataStoreNS
@@ -57,15 +58,29 @@ namespace DataStoreNS
     }
     /// --- DataView Children --- ///
 
-    DataView* DataGroup::CreateView( const std::string& name )
+    DataView* DataGroup::CreateViewAndBuffer( const std::string& name )
     {
         if(HasChild(name))
         {
             throw std::exception();
         }
-        DataView* const view = new DataView( name, this);
+        DataBuffer *buff = this->GetDataStore()->CreateBuffer();
+        DataView* const view = new DataView( name, this,buff);
+        buff->AttachView(view);
         return AttachView(view);
     }
+    
+     DataView *DataGroup::CreateOpaqueView( const std::string& name,
+                                            void *opaque)
+     {
+         if(HasChild(name))
+         {
+             throw std::exception();
+         }
+         
+         DataView* const view = new DataView(name, this,opaque);
+         return AttachView(view);
+     }
 
     DataView* DataGroup::CreateView( const std::string& name,
                                      DataBuffer *buff)
@@ -195,6 +210,24 @@ namespace DataStoreNS
     {
         delete DetachView(idx);
     }
+    
+    // remove vs destroy vs delete
+    void DataGroup::DestroyViewAndBuffer( const std::string& name )
+    {
+        DataView* view = DetachView(name);
+        // there should be a better way?
+        GetDataStore()->DestroyBuffer(view->GetBuffer()->GetUID());
+        delete view;
+    }
+
+    void DataGroup::DestroyViewAndBuffer( IDType idx )
+    {
+        DataView* view = DetachView(idx);
+        // there should be a better way?
+        GetDataStore()->DestroyBuffer(view->GetBuffer()->GetUID());
+        delete view;
+    }
+    
     
     /// --- DataGroup Children --- ///
 
@@ -356,6 +389,23 @@ namespace DataStoreNS
         for(size_t i=0;i<nviews;i++)
         {
             DataView *view = this->GetView(i);
+            delete view;
+        }
+        // clean up book keeping
+        m_views.clear();
+        m_viewsNameMap.clear();
+        
+    }
+
+    void DataGroup::DestroyViewsAndBuffers()
+    {
+        // delete all views
+        size_t nviews = CountViews();
+        
+        for(size_t i=0;i<nviews;i++)
+        {
+            DataView *view = this->GetView(i);
+            GetDataStore()->DestroyBuffer(view->GetBuffer()->GetUID());
             delete view;
         }
         // clean up book keeping

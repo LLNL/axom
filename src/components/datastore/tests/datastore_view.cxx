@@ -12,8 +12,8 @@ TEST(datastore_view,create_views)
     DataStore *ds   = new DataStore();
     DataGroup *root = ds->GetRoot();
 
-    DataView *dv_0 = root->CreateView("field0");
-    DataView *dv_1 = root->CreateView("field1");
+    DataView *dv_0 = root->CreateViewAndBuffer("field0");
+    DataView *dv_1 = root->CreateViewAndBuffer("field1");
     
     
     DataBuffer *db_0 = dv_0->GetBuffer();
@@ -29,7 +29,7 @@ TEST(datastore_view,uint32_buffer_from_view)
     DataStore *ds = new DataStore();
     DataGroup *root = ds->GetRoot();
     
-    DataView *dv = root->CreateView("u0");
+    DataView *dv = root->CreateViewAndBuffer("u0");
 
     dv->Allocate(DataType::uint32(10));
     uint32 *data_ptr = dv->GetNode().as_uint32_ptr();
@@ -168,7 +168,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     // create a group to hold the "old" or data we want to copy
     DataGroup *r_old = root->CreateGroup("r_old");
     // create a view to hold the base buffer
-    DataView  *base_old = r_old->CreateView("base_data");
+    DataView  *base_old = r_old->CreateViewAndBuffer("base_data");
 
     // alloc our buffer
     // we will create 4 sub views of this array
@@ -231,7 +231,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     // create a group to hold the "old" or data we want to copy into
     DataGroup *r_new = root->CreateGroup("r_new");
     // create a view to hold the base buffer
-    DataView  *base_new = r_new->CreateView("base_data");
+    DataView  *base_new = r_new->CreateViewAndBuffer("base_data");
 
     // alloc our buffer
     // create a buffer to hold larger subarrays
@@ -298,6 +298,13 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     delete ds;
     
 }
+
+/// TODO: Add Tests for 
+/// *opaque
+/// CreateViewAndBuffer and DestroyViewAndBuffer
+/// DestroyView, checking buffer state and the state of other views
+
+
 
 
 

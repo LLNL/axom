@@ -43,16 +43,10 @@ class DataBuffer
 public:
     friend class DataStore;
     friend class DataView;
-    /*!
-     * destructor
-     */
-    ~DataBuffer();
-    
-    /// container of DataView pointers.
-    typedef std::set< DataView* > ViewContainerType;
+    friend class DataGroup;
 
     /*!
-     * \brief Return the universal id for this DataBuffer.
+     * \brief Return the universal id for this buffer.
      */
     IDType GetUID() 
     {
@@ -60,20 +54,20 @@ public:
     }
 
     /*!
-     * \brief Return DataViews attached to this DataBuffer.
+     * \brief Return a view attached to this buffer.
      */
-    ViewContainerType *GetDataViews()
+    DataView *GetView(IDType idx)
     {
-        return &m_ViewContainer;
+        return m_views[idx];
     }
 
 
     /*!
-    * \brief Return number of DataViews attached to this buffer.
+    * \brief Return number of views attached to this buffer.
     */
     size_t CountViews() const
     {
-      return m_ViewContainer.size();
+      return m_views.size();
     }
     
 
@@ -86,8 +80,7 @@ public:
         m_schema.set(schema);
         return this;
     }
-  
-  
+    
     DataBuffer* Declare(const DataType &dtype)
     {
         m_schema.set(dtype);
@@ -134,6 +127,11 @@ private:
      */
     DataBuffer(const DataBuffer& source );
 
+    /*!
+     * destructor
+     */
+    ~DataBuffer();
+
      /// TODO: the data store should be the only entity that can create a buffer
 
     void AttachView( DataView* dataView );
@@ -144,8 +142,8 @@ private:
     /// universal identification - unique within a DataStore
     IDType m_uid;
 
-    /// container of groups that contain this DataBuffer
-    ViewContainerType m_ViewContainer;
+    /// container of views that contain this DataBuffer
+    std::vector<DataView *> m_views;
 
     /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
     void* m_data;

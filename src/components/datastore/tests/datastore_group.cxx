@@ -44,8 +44,8 @@ TEST(datastore_group,group_name_collisons)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
-    flds->CreateView("a");
-    ASSERT_THROW(flds->CreateView("a"),std::exception);
+    flds->CreateViewAndBuffer("a");
+    ASSERT_THROW(flds->CreateViewAndBuffer("a"),std::exception);
     
 
     delete ds;
@@ -56,9 +56,9 @@ TEST(datastore_group,view_copy_move)
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
 
-    flds->CreateView("i0")->Allocate(DataType::int32());
-    flds->CreateView("f0")->Allocate(DataType::float32());
-    flds->CreateView("d0")->Allocate(DataType::float32());
+    flds->CreateViewAndBuffer("i0")->Allocate(DataType::int32());
+    flds->CreateViewAndBuffer("f0")->Allocate(DataType::float32());
+    flds->CreateViewAndBuffer("d0")->Allocate(DataType::float32());
 
     (*flds->GetView("i0")->GetNode().as_int32_ptr())   = 1;
     (*flds->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;
@@ -68,7 +68,7 @@ TEST(datastore_group,view_copy_move)
     EXPECT_TRUE(flds->HasView("f0"));
     EXPECT_TRUE(flds->HasView("d0"));
 
-    // test moving a view form flds to sub
+    // test moving a view form feds7 to sub
     flds->CreateGroup("sub")->MoveView(flds->GetView("d0"));
     flds->Print();
     EXPECT_FALSE(flds->HasView("d0"));
@@ -106,9 +106,9 @@ TEST(datastore_group,groups_move_copy)
     DataGroup *gb = flds->CreateGroup("b");
     DataGroup *gc = flds->CreateGroup("c");
 
-    ga->CreateView("i0")->Allocate(DataType::int32());
-    gb->CreateView("f0")->Allocate(DataType::float32());
-    gc->CreateView("d0")->Allocate(DataType::float32());
+    ga->CreateViewAndBuffer("i0")->Allocate(DataType::int32());
+    gb->CreateViewAndBuffer("f0")->Allocate(DataType::float32());
+    gc->CreateViewAndBuffer("d0")->Allocate(DataType::float32());
 
     (*ga->GetView("i0")->GetNode().as_int32_ptr())   = 1;
     (*gb->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;

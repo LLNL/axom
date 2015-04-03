@@ -31,11 +31,6 @@ class DataGroup
 {
 public:
     friend class DataStore;
-    /*!
-    * \brief destructor
-    */
-    ~DataGroup();
-
 
     /// -----  Basic Members  ---- /// 
     std::string GetName() const
@@ -69,7 +64,10 @@ public:
     * @param name Name for created DataView.
     * \brief Create a DataView and add to this DataGroup.
     */
-    DataView *CreateView( const std::string& name );
+    
+    DataView *CreateViewAndBuffer( const std::string& name );
+    DataView *CreateOpaqueView( const std::string& name, void *);
+    
     DataView *CreateView( const std::string& name, DataBuffer *buff);
 
 
@@ -82,12 +80,12 @@ public:
     DataView *CopyView(DataView *view);
     
     
+    void DestroyViewAndBuffer(const std::string &name);
+    void DestroyViewAndBuffer(IDType idx);
+    
     void DestroyView(const std::string &name);
     void DestroyView(IDType idx);
-    void DestroyView(DataView *view);
-    
-    
-
+ 
     /*!
     * @param name Name of DataView to find.
     * \brief Return pointer to DataView.
@@ -114,15 +112,6 @@ public:
     }
 
     /*!
-     *
-     * @return
-     */
-    std::map<std::string,IDType> const& GetViewsNameMap() const
-    {
-      return m_viewsNameMap;
-    }
-
-    /*!
     * @param idx Index of DataView within this DataGroup.
     * \brief Return pointer to DataView.
     */
@@ -132,31 +121,12 @@ public:
     }
 
     /*!
-     *
-     * @return
-     */
-    std::vector<DataView*>& GetViews()
-    {
-      return m_views;
-    }
-
-    /*!
-     *
-     * @return
-     */
-    std::vector<DataView*> const & GetViews() const
-    {
-      return m_views;
-    }
-
-    /*!
     * \brief Return the index of the DataView with the given name
     */
     IDType GetViewIndex(const std::string &name) const
     {  
       return m_viewsNameMap.at(name);
     }
-
 
     /*!
     * \brief Return the name of the DataView at the given index
@@ -175,13 +145,18 @@ public:
     }
 
     /*!
-    * \brief Remove all DataViews from this DataGroup.
+    * \brief Remove all view from this group.
     */
     void DestroyViews();
 
+    /*!
+    * \brief Remove all views from this group and destroy their buffers.
+    */
+    void DestroyViewsAndBuffers();
+
     /// -----  DataGroup Children ---- /// 
     bool HasGroup( const std::string& name );
-  
+
     /*!
     * @param name Name of DataGroup to create.
     * \brief Create a new DataGroup within this DataGroup.
@@ -267,6 +242,7 @@ public:
     void PrintTree( const int level ) const;
  
 private:
+
     /// these are private b/c we want folks to create groups
     /// from another group or a  datastore
     DataGroup(const std::string &name, DataGroup *parent);
@@ -299,6 +275,12 @@ private:
     */
     DataGroup& operator=( const DataGroup&& rhs );
 #endif
+    
+    
+    /*!
+    * \brief destructor
+    */
+    ~DataGroup();
     
     
     /// Attach + Detach are private since they have scary 

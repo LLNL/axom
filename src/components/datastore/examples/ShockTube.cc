@@ -566,7 +566,7 @@ void DumpUltra( DataGroup * const prob)
 
 //   VHashTraverse_t content ;
 
-   const DataGroup* const elem = prob->GetGroup("elem") ;
+   DataGroup* const elem = prob->GetGroup("elem") ;
 
    strcpy(fname, "problem" ) ;
 
@@ -585,63 +585,57 @@ void DumpUltra( DataGroup * const prob)
    fprintf(fp, "# Problem: %s\n", "problem" ) ;
 
 
-
-   {
-   const std::vector<DataView*>& dataViews = prob->GetViews();
-   const std::map<std::string,DataStoreNS::IDType>& dataObjectLookup = prob->GetViewsNameMap();
-
-   std::vector<DataView*>::const_iterator iterView=dataViews.begin();
-   std::map<std::string,DataStoreNS::IDType>::const_iterator lookup=dataObjectLookup.begin();
-
-   for(  ; iterView!=dataViews.end() ; ++iterView, ++lookup )
-   {
-     DataView * const view = *iterView;
-     const int length = view->GetDescriptor().dtype().number_of_elements();
-     const std::string& name = lookup->first;
-     if( length <= 1 )
+     for(size_t i=0;i<prob->CountViews();i++)
      {
-       if( view->GetDescriptor().dtype().id() == DataType::INT32_T )
-       {
-         fprintf(fp, "# %s = %d\n", name.c_str(), *(view->GetNode().as_int32_ptr())) ;
-       }
-       else if( view->GetDescriptor().dtype().id() == DataType::FLOAT64_T )
-       {
-         fprintf(fp, "# %s = %f\n", name.c_str(), *(view->GetNode().as_float64_ptr())) ;
-       }
-     }
-   }
+         DataView * const view = prob->GetView(i);
+         const int length = view->GetDescriptor().dtype().number_of_elements();
+         const std::string& name = view->GetName();
+         if( length <= 1 )
+         {
+             if( view->GetDescriptor().dtype().id() == DataType::INT32_T )
+             {
+                 fprintf(fp, "# %s = %d\n",
+                         name.c_str(),
+                         view->GetNode().as_int32());
+             }
+             else if( view->GetDescriptor().dtype().id() == 
+                      DataType::FLOAT64_T )
+             {
+                 fprintf(fp, "# %s = %f\n",
+                         name.c_str(),
+                         view->GetNode().as_float64());
+            }
+        }
+    }
+
+
+    for(size_t i=0;i<elem->CountViews();i++)
+    {
+         DataView * const view = elem->GetView(i);
+         const int length = view->GetDescriptor().dtype().number_of_elements();
+         const std::string& name = view->GetName();
+         fprintf(fp, "# %s\n", name.c_str() ) ;
+         
+         if( view->GetDescriptor().dtype().id() == DataType::INT32_T )
+         {
+             int32 const * const data = view->GetNode().as_int32_ptr();
+             for ( int i=0; i<length; ++i)
+             {
+                 fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
+             }
+             fprintf(fp, "\n") ;
+         }
+         else if( view->GetDescriptor().dtype().id() == DataType::FLOAT64_T )
+         {
+             float64 const * const data = view->GetNode().as_float64_ptr();
+             for ( int i=0; i<length; ++i)
+             {
+                 fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
+             }
+             fprintf(fp, "\n") ;
+         }
    }
 
-   {
-
-   const std::vector<DataView*>& dataViews = elem->GetViews();
-   const std::map<std::string,DataStoreNS::IDType>& dataObjectLookup = elem->GetViewsNameMap();
-
-   std::vector<DataView*>::const_iterator iterView=dataViews.begin();
-   std::map<std::string,DataStoreNS::IDType>::const_iterator lookup=dataObjectLookup.begin();
-
-   for(  ; iterView!=dataViews.end() ; ++iterView, ++lookup )
-   {
-     DataView * const view = *iterView;
-     const int length = view->GetDescriptor().dtype().number_of_elements();
-     const std::string& name = lookup->first;
-     fprintf(fp, "# %s\n", name.c_str() ) ;
-     if( view->GetDescriptor().dtype().id() == DataType::INT32_T )
-     {
-       int32 const * const data = view->GetNode().as_int32_ptr();
-       for ( int i=0; i<length; ++i)
-          fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
-       fprintf(fp, "\n") ;
-     }
-     else if( view->GetDescriptor().dtype().id() == DataType::FLOAT64_T )
-     {
-       float64 const * const data = view->GetNode().as_float64_ptr();
-       for ( int i=0; i<length; ++i)
-          fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
-       fprintf(fp, "\n") ;
-     }
-   }
-   }
 
    fclose(fp) ;
 #endif

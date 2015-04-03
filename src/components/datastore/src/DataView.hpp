@@ -39,11 +39,6 @@ class DataView
 {
 public:
     friend class DataGroup;
-    
-    /// destructor is public
-    /// a user detaches a view, they need some way to destroy it
-    ~DataView();
-
 
 
     /// if there is a 1-1 relationship between this view and its buffer
@@ -61,6 +56,15 @@ public:
     DataView* Apply();
     DataView* Apply(const Schema &schema);  
     DataView* Apply(const DataType &dtype);
+  
+  
+    bool   HasBuffer() const
+        { return m_buffer != nullptr;}
+
+    bool   IsOpaque() const
+        {return m_opaque;}
+    
+    void*  GetOpaque() const;
   
     /**
      *
@@ -110,16 +114,20 @@ private:
               DataBuffer* const dataBuffer );
 
     DataView( const std::string& name,
-              DataGroup* const parentGroup);
+              DataGroup* const parentGroup,
+              void *opaque);
 
-    DataView( const std::string& name,
-              DataStore* const datastore);
 
 
     /// copy constructor
     /// if this is public, we could get into some bookkeeping messes
     /// for example what do we do with the parent group pointer?
     DataView(const DataView& source );
+
+    
+    /// destructor is private
+    ~DataView();
+
 
     /// this view's name
     std::string m_name;
@@ -139,6 +147,10 @@ private:
     /// used to tell if the view is fully inited 
     /// may be a bad name
     bool        m_applied;
+    
+    /// bookkeeping for now, we should absorb this meta data into
+    /// a more general descriptor
+    bool        m_opaque;
 };
 
 

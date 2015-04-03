@@ -21,40 +21,36 @@ DataView::DataView( const std::string& name,
     m_buffer(buffer),
     m_schema(),
     m_node(),
-    m_applied(false)
+    m_applied(false),
+    m_opaque(false)
 {
 
 }
 
 DataView::DataView( const std::string& name,
-                    DataGroup* const parent) :
+                    DataGroup* const parent,
+                    void *opaque) :
   m_name(name),
   m_group(parent),
   m_buffer(nullptr),
   m_schema(),
   m_node(),
-  m_applied(false)
+  m_applied(false),
+  m_opaque(true)
 {
-    m_buffer = parent->GetDataStore()->CreateBuffer();
-    m_buffer->AttachView(this);
-}
-
-/// Note: we can't simply set the group pointer here
-DataView::DataView( const DataView& source ) :
-    m_name(source.m_name),
-    m_group(nullptr),
-    m_buffer(source.m_buffer),
-    m_schema(source.m_schema),
-    m_node(source.m_node),
-    m_applied(source.m_applied)
-{
-    throw std::exception();
+    // todo, conduit should provide a check for if uint64 is a
+    // good enough type to rep void *
+    GetNode().set((conduit::uint64)opaque);
 }
 
 
 DataView::~DataView()
 {
-    
+    // TODO:
+    // if(m_buffer != nullptr)
+    // {
+    //     m_buffer->DetachView(this);
+    // }
 }
 
 DataView* DataView::Apply()
@@ -123,6 +119,11 @@ DataView* DataView::Allocate(const DataType &dtype)
     return this;
 }
 
+void *DataView::GetOpaque() const
+{
+    // if(!m_opaque) error?
+    return (void*)(GetNode().as_uint64());
+}
 
 void DataView::Info(Node &n) const
 {
