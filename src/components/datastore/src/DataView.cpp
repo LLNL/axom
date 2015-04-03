@@ -29,7 +29,7 @@ DataView::DataView( const std::string& name,
 
 DataView::DataView( const std::string& name,
                     DataGroup* const parent,
-                    void *opaque) :
+                    void* opaque) :
   m_name(name),
   m_group(parent),
   m_buffer(nullptr),
@@ -130,6 +130,7 @@ void DataView::Info(Node &n) const
     n["descriptor"] = m_schema.to_json();
     n["node"] = m_node.to_json();
     n["applied"] = m_applied;
+    n["opaque"] = m_opaque;
 }
 
 void DataView::Print() const

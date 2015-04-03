@@ -299,12 +299,35 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     
 }
 
-/// TODO: Add Tests for 
-/// *opaque
-/// CreateViewAndBuffer and DestroyViewAndBuffer
-/// DestroyView, checking buffer state and the state of other views
+TEST(datastore_view,simple_opaque)
+{
+    // create our main data store
+    DataStore *ds = new DataStore();
+    // get access to our root data Group
+    DataGroup *root = ds->GetRoot();
+    int *src_data = new int[1];
+    
+    src_data[0] = 42;
 
-
+    void *src_ptr = (void*)src_data;
+    
+    DataView *opq_view = root->CreateOpaqueView("my_opaque",src_ptr);
+    
+    // we shouldn't have any buffers
+    EXPECT_EQ(ds->GetNumberOfBuffers(),0);
+    
+    EXPECT_TRUE(opq_view->IsOpaque());
+    
+    void *opq_ptr = opq_view->GetOpaque();
+    
+    int *out_data = (int*)opq_ptr;
+    EXPECT_EQ(opq_ptr,src_ptr);
+    EXPECT_EQ(out_data[0],42);
+    
+    ds->Print();
+    delete ds;
+    delete [] src_data;
+}
 
 
 
