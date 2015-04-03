@@ -82,6 +82,11 @@ public:
   void Print() const;
   void Info(Node &) const;
 
+  IDType GetNumberOfBuffers() const
+  {
+    return m_DataBuffers.size() - m_AvailableDataBuffers.size();
+  }
+
 private:
 
 
