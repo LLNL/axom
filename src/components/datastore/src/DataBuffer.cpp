@@ -2,6 +2,7 @@
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
 #include "DataView.hpp"
+#include <algorithm>
 
 namespace DataStoreNS
 {
