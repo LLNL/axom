@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include "Types.hpp"
 
 #include "conduit/conduit.h"
 
@@ -59,10 +60,10 @@ public:
   
   
     bool   HasBuffer() const
-        { return m_buffer != nullptr;}
+    { return m_buffer != nullptr;}
 
     bool   IsOpaque() const
-        {return m_opaque;}
+    {return m_opaque;}
     
     void*  GetOpaque() const;
   
