@@ -42,6 +42,8 @@ namespace DataStoreNS
   void DataStore::DestroyBuffer( const IDType id )
   {
     delete m_DataBuffers[id];
+    m_DataBuffers[id] = nullptr;
+    std::cout<<m_DataBuffers[id]<<std::endl;
     m_AvailableDataBuffers.push(id);
   }
 
