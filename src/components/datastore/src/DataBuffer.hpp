@@ -48,7 +48,7 @@ public:
     /*!
      * \brief Return the universal id for this buffer.
      */
-    IDType GetUID() 
+    IDType GetUID() const
     {
         return m_uid;
     }

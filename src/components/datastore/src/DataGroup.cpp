@@ -215,9 +215,12 @@ namespace DataStoreNS
     void DataGroup::DestroyViewAndBuffer( const std::string& name )
     {
         DataView* view = DetachView(name);
-        // there should be a better way?
-        GetDataStore()->DestroyBuffer(view->GetBuffer()->GetUID());
+        DataBuffer * const buffer = view->GetBuffer();
         delete view;
+
+        // there should be a better way?
+        GetDataStore()->DestroyBuffer(buffer->GetUID());
+
     }
 
     void DataGroup::DestroyViewAndBuffer( IDType idx )

@@ -58,7 +58,7 @@ TEST(datastore_group,view_copy_move)
 
     flds->CreateViewAndBuffer("i0")->Allocate(DataType::int32());
     flds->CreateViewAndBuffer("f0")->Allocate(DataType::float32());
-    flds->CreateViewAndBuffer("d0")->Allocate(DataType::float32());
+    flds->CreateViewAndBuffer("d0")->Allocate(DataType::float64());
 
     (*flds->GetView("i0")->GetNode().as_int32_ptr())   = 1;
     (*flds->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;
@@ -108,7 +108,7 @@ TEST(datastore_group,groups_move_copy)
 
     ga->CreateViewAndBuffer("i0")->Allocate(DataType::int32());
     gb->CreateViewAndBuffer("f0")->Allocate(DataType::float32());
-    gc->CreateViewAndBuffer("d0")->Allocate(DataType::float32());
+    gc->CreateViewAndBuffer("d0")->Allocate(DataType::float64());
 
     (*ga->GetView("i0")->GetNode().as_int32_ptr())   = 1;
     (*gb->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;
@@ -134,7 +134,40 @@ TEST(datastore_group,groups_move_copy)
 }
 
 
+TEST(datastore_group,create_destroy_view_and_buffer)
+{
+  DataStore * const ds = new DataStore();
+  DataGroup * const grp = ds->GetRoot()->CreateGroup("grp");
+
+  std::string const viewName1 = "viewBuffer1";
+  std::string const viewName2 = "viewBuffer2";
+
+  DataView const * const view1 = grp->CreateViewAndBuffer(viewName1);
+  DataView const * const view2 = grp->CreateViewAndBuffer(viewName2);
+
+  EXPECT_TRUE(grp->HasView(viewName1));
+  EXPECT_EQ( grp->GetView(viewName1), view1 );
+
+  EXPECT_TRUE(grp->HasView(viewName2));
+  EXPECT_EQ( grp->GetView(viewName2), view2 );
+
+  IDType const bufferId1 = view1->GetBuffer()->GetUID();
+
+  grp->DestroyViewAndBuffer(viewName1);
 
 
+  EXPECT_FALSE(grp->HasView(viewName1));
+  EXPECT_EQ(ds->GetNumberOfBuffers(),1);
 
+  DataBuffer const * const buffer1 = ds->GetBuffer(bufferId1);
+  bool buffValid = true;
+  if( buffer1 == nullptr )
+  {
+    buffValid = false;
+  }
+
+  EXPECT_FALSE(buffValid);
+
+  delete ds;
+}
 
