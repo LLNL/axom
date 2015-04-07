@@ -1,40 +1,26 @@
 /*******************************************************************************************************************************
- * An example algorithm for saving/restoring problem state data to a file, using the datastore for identifying and holding the
- * data.
+ * An example algorithm for saving problem state data to a file, using the datastore for identifying and holding the data.
  *
+ * This example uses a simple design, where a fresh 'restart' group is created before each dump.  It also assumes that a
+ * physics package wants to write out all the data it is keeping in the datastore.
+ *
+ * This example also shows how a client code that is used to C++ references can convert from the pointers returned by the
+ * datastore API.
  ******************************************************************************************************************************/
 
 #include "../src/Types.hpp"
 #include "../src/DataStore.hpp"
 #include "../src/DataBuffer.hpp"
 
-// Setup some sample physics package classes that will use the datastore.
-// This example avoids needing function registration in the datastore by having
-// the physics packages implement some stock functions from an interface class.
-class GenericPhysics
+class PhysicsPackage
 {
    public:
-      virtual void setupProblemData(DataStoreNS::DataGroup& group) = 0;
 
-      virtual void notifyPreStateDump(DataStoreNS::DataGroup& group) = 0;
-      virtual void notifyPostStateDump(DataStoreNS::DataGroup& group) = 0;
-      virtual void notifyPreStateRestore(DataStoreNS::DataGroup& group) = 0;
-      virtual void notifyPostStateRestore(DataStoreNS::DataGroup& group) = 0;
-};
+      PhysicsPackage(DataStoreNS::DataGroup& group):mDataGroup(group) {}
 
-// This algorithm performs a rather heavy weight setup and teardown of
-// it's restart data.  It creates and fully tears down all the 'restart' groups and views after a state dump, and makes them
-// fresh at the next start of a dump.
-//
-// Another version would have an application make all the groups and views, and leave them there, just clean up the data buffers
-// of temp data.  This would mean the app needs to maintain the views in the restart sub-tree if any underlying buffers are
-// changed though.
-class PhysicsA : public GenericPhysics
-{
-   public:
-      void setupProblemData(DataStoreNS::DataGroup& group)
+      void setup()
       {
-         DataStoreNS::DataGroup& subgroup = *group.CreateGroup("physicsA");
+         DataStoreNS::DataGroup& subgroup = *mDataGroup.CreateGroup("physicsB");
 
          DataStoreNS::DataView& dataview = *subgroup.CreateViewAndBuffer("variable1");
          DataStoreNS::DataBuffer& buffer = *dataview.GetBuffer();
@@ -58,7 +44,7 @@ class PhysicsA : public GenericPhysics
             data_ptr2[i] = 100-i;
          }
          
-         dataview = *subgroup.CreateViewAndBuffer("derivedVariable");
+         dataview = *subgroup.CreateViewAndBuffer("dependentVariable");
          buffer = *dataview.GetBuffer();
          buffer.Declare(DataType::float64(100));
          buffer.Allocate();
@@ -68,107 +54,42 @@ class PhysicsA : public GenericPhysics
          {
             data_ptr3[i] = data_ptr1[i] * data_ptr2[i];
          }
+
       }
 
-      void notifyPreStateDump(DataStoreNS::DataGroup& group)
+      void saveState(DataStoreNS::DataGroup& group)
       {
-         // Copy over views for persistent data to restart group
-         // Create new views/buffers of temporary data.
+         // Since the package wants to save all it's data as-is, it can just copy over it's group (with views) to the restart group.
+         // It assumes a fresh, empty restart group is provided.
+         group.CopyGroup( &mDataGroup );
       }
 
-      void notifyPostStateDump(DataStoreNS::DataGroup& group)
-      {
-         // Remove views that were copied over
-         // Clean up views/buffers of temporary data
-      }
+   private:
+      DataStoreNS::DataGroup& mDataGroup;
 
-      void notifyPreStateRestore(DataStoreNS::DataGroup& group)
-      {
-         // TBD
-      }
-
-      void notifyPostStateRestore(DataStoreNS::DataGroup& group)
-      {
-         // Check data that was read into group.
-         // Copy data into package if needed.
-         // Re-calculated derived data if needed.
-      }
 };
-
+   
 class StateFile
 {
    public:
       // Iterates over everything in provided tree and adds it to file
       void save(DataStoreNS::DataGroup& group)
       {
-         // Iterate over all groups and views and save out data to file.
-         // Only flesh out iteration code, don't care about actual I/O.
+         
+         // Iterate over all groups and views to exercise needed API calls.
+         // A real code would follow up by writing each item to file.
       }
       
-      // Adds everything from file into provided tree.
+      // Read everything from file into group.
       void restore(DataStoreNS::DataGroup& group)
       {
-         // Iterate over all groups and views in file, add them to datastore.
-         // Only flesh out code needed for iteration, don't care about actual I/O.
+         // Restore state data back into group, exercising needed API calls.
+         // A real code would read in each item from file first.
       }
 
       void close() {}
 
 };
-
-void saveState( std::vector< GenericPhysics*>& packages, DataStoreNS::DataGroup& group )
-{
-   // Create a sub-tree for restart data.
-   DataStoreNS::DataGroup& restartGroup = *group.CreateGroup("restart");
-
-   // Tell packages that we are going to perform a state dump of the restart group.  They should populate their data into
-   // the group.
-   for ( std::vector< GenericPhysics* >::iterator pIt = packages.begin(); pIt != packages.end(); ++pIt)
-   {
-      (*pIt)->notifyPreStateDump(restartGroup);
-   }
-
-   // Give group to restart component to write out data to file
-   StateFile file;
-   file.save( restartGroup );
-   file.close();
-
-   // Tell packages we have finished the state dump, they can perform cleanup of any temporary data.
-   for ( std::vector< GenericPhysics* >::iterator pIt = packages.begin(); pIt != packages.end(); ++pIt)
-   {
-      (*pIt)->notifyPostStateDump(restartGroup);
-   }
-
-   // Clean up restart tree
-   group.DestroyGroup("restart");
-}
-
-void restoreState( std::vector< GenericPhysics*>& packages, DataStoreNS::DataGroup& group )
-{
-   // Create a sub-tree for restart data.
-   DataStoreNS::DataGroup& restartGroup = *group.CreateGroup("restart");
-
-   // Tell packages that we are going to perform a state restore of the restart group.
-   for ( std::vector< GenericPhysics* >::iterator pIt = packages.begin(); pIt != packages.end(); ++pIt)
-   {
-      (*pIt)->notifyPreStateRestore(restartGroup);
-   }
-
-   // Give group to restart component to read in data from file
-   StateFile file;
-   file.restore( restartGroup );
-   file.close();
-
-   // Tell packages we have restored the state data into the datastore restart group.  They should pull out the data they
-   // need, copy data over to the main datastore tree, re-calculate any dependent derived data, etc.
-   for ( std::vector< GenericPhysics* >::iterator pIt = packages.begin(); pIt != packages.end(); ++pIt)
-   {
-      (*pIt)->notifyPostStateRestore(restartGroup);
-   }
-
-   // Clean up restart tree
-   group.DestroyGroup("restart");
-}
 
 int main(void)
 {
@@ -177,26 +98,25 @@ int main(void)
    DataStoreNS::DataStore datastore;
    DataStoreNS::DataGroup& rootGroup = *datastore.GetRoot();
 
-   // Create some physics packages that will use the datastore.
-   std::vector< GenericPhysics* > packages;
-   packages.push_back( new PhysicsA() );
+   // Create a sub-tree for restart data.
+   DataStoreNS::DataGroup& restartGroup = *rootGroup.CreateGroup("restart");
 
-   // Tell packages to populate datastore with their problem data.
-   for ( std::vector< GenericPhysics* >::iterator pIt = packages.begin(); pIt != packages.end(); ++pIt)
-   {
-      (*pIt)->setupProblemData( rootGroup );
-   }
+   // Create example physics package that will use datastore.
+   PhysicsPackage physics(rootGroup);
 
-   // Save state
-   saveState( packages, rootGroup );
+   // Tell package to populate datastore with it's problem data.
+   physics.setup();
 
-   // Restore state
-   restoreState( packages, rootGroup );
+   // Tell physics package to populate the 'restart' group with data it wants to save.
+   physics.saveState( restartGroup );
 
-   for ( std::vector< GenericPhysics* >::iterator pIt = packages.begin(); pIt != packages.end(); ++pIt)
-   {
-      delete *pIt;
-   }
+   // Give 'restart' data group to another component, responsible for writing it out to file.
+   StateFile file;
+   file.save( restartGroup );
+   file.close();
+
+   // Clean up restart tree
+   rootGroup.DestroyGroup("restart");
 
    return 0;
 }
