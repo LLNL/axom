@@ -114,7 +114,7 @@ endif()
 option(ENABLE_CXX11 "Enables C++11 features" OFF)
 if (ENABLE_CXX11)
   # define a macro so the code can ifdef accordingly.
-  add_definitions("-DUSECXX11")
+  add_definitions("-DUSE_CXX11")
 endif()
 
 ## Choose static or shared libraries.
