@@ -6,9 +6,12 @@
  */
 
 #include "DataGroup.hpp"
+
 #include "DataStore.hpp"
 #include "DataBuffer.hpp"
 #include "DataView.hpp"
+
+#include "Utilities.hpp"
 
 namespace DataStoreNS
 {
@@ -60,10 +63,8 @@ namespace DataStoreNS
 
     DataView* DataGroup::CreateViewAndBuffer( const std::string& name )
     {
-        if(HasChild(name))
-        {
-            throw std::exception();
-        }
+        ASCTK_ASSERT_MSG( HasChild(name) == false, "name == " << name );
+
         DataBuffer *buff = this->GetDataStore()->CreateBuffer();
         DataView* const view = new DataView( name, this,buff);
         buff->AttachView(view);
@@ -73,35 +74,27 @@ namespace DataStoreNS
      DataView *DataGroup::CreateOpaqueView( const std::string& name,
                                             void *opaque)
      {
-         if(HasChild(name))
-         {
-             throw std::exception();
-         }
+        ASCTK_ASSERT_MSG( HasChild(name) == false, "name == " << name );
          
-         DataView* const view = new DataView(name, this,opaque);
-         return AttachView(view);
+        DataView* const view = new DataView(name, this,opaque);
+        return AttachView(view);
      }
 
     DataView* DataGroup::CreateView( const std::string& name,
                                      DataBuffer *buff)
     {
-        if(HasChild(name))
-        {
-            throw std::exception();
-        }
+        ASCTK_ASSERT_MSG( HasChild(name) == false, "name == " << name );
+        ASCTK_ASSERT( buff != 0 );
+
         DataView* const view = new DataView( name, this, buff );
         return AttachView(view);
     }
 
     DataView *DataGroup::MoveView(DataView *view)
     {
-        // before we remove this from its current parent.
-        // make sure we don't have a name conflict
-        if( HasChild(view->GetName()) || view == nullptr)
-        {
-            // TODO: add info
-            throw std::exception();
-        }
+        ASCTK_ASSERT( view != 0 );
+        ASCTK_ASSERT_MSG( HasChild(view->GetName()) == false, \
+                          "view->GetName() == " << view->GetName() );
         
         // remove this view from its current parent
         DataGroup *curr_grp = view->GetParent();
@@ -120,12 +113,9 @@ namespace DataStoreNS
     // returns the new view
     DataView *DataGroup::CopyView(DataView *view)
     {
-        // before we do anything, make sure we don't have a name conflict
-        if( HasChild(view->GetName()) || view == nullptr)
-        {
-            // TODO: add info
-            throw std::exception();
-        }
+        ASCTK_ASSERT( view != 0 );
+        ASCTK_ASSERT_MSG( HasChild(view->GetName()) == false, \
+                          "view->GetName() == " << view->GetName() );
         
         DataView *res = CreateView(view->GetName(),view->GetBuffer());
         res->Declare(view->GetDescriptor());
@@ -138,10 +128,9 @@ namespace DataStoreNS
 
     DataView *DataGroup::AttachView(DataView * const view)
     {
-        if( HasChild( view->GetName()) || view==nullptr )
-        {
-          throw std::exception();
-        }
+        ASCTK_ASSERT( view != 0 );
+        ASCTK_ASSERT_MSG( HasChild(view->GetName()) == false, \
+                          "view->GetName() == " << view->GetName() );
 
         m_viewsNameMap[view->GetName()] = m_views.size(); // map name to index
         m_views.push_back( view );
@@ -151,33 +140,32 @@ namespace DataStoreNS
 
     DataView* DataGroup::DetachView(const std::string& name )
     {
-          DataView* view = nullptr;
-          std::map<std::string,IDType>::iterator itr;
-          IDType idx;
-          itr = m_viewsNameMap.find( name );
-          if( itr != m_viewsNameMap.end() )
-          {
-                idx = itr->second;
-                view = m_views[idx];
-                m_viewsNameMap.erase( itr );
-                m_views.erase(m_views.begin() + idx);
-          }
-          else
-          {
-              throw std::exception();
-          }
-          
+        DataView* view = nullptr;
+        std::map<std::string,IDType>::iterator itr;
+        IDType idx;
+        itr = m_viewsNameMap.find( name );
+        if ( itr == m_viewsNameMap.end() )
+        {
+           ASCTK_WARNING("No view with name " << name << " -- null return value"); 
+        }
+        else {
+           idx = itr->second;
+           view = m_views[idx];
+           m_viewsNameMap.erase( itr );
+           m_views.erase(m_views.begin() + idx);
+        
           // any entry in m_viewsNameMap above idx needs to shift down by 1
-          for(itr = m_viewsNameMap.begin();itr!= m_viewsNameMap.end();itr++)
+          for (itr = m_viewsNameMap.begin();itr!= m_viewsNameMap.end();itr++)
           {
-              if(itr->second > idx)
-              {
-                  itr->second--;
-              }
+             if(itr->second > idx)
+             {
+                itr->second--;
+             }
           }
-          
+        
           view->m_group = nullptr;
-          return view;
+       } 
+       return view;
     }
 
     DataView* DataGroup::DetachView(IDType idx)
@@ -243,13 +231,9 @@ namespace DataStoreNS
 
     DataGroup *DataGroup::MoveGroup(DataGroup *grp)
     {
-        // before we remove this from its current parent.
-        // make sure we don't have a name conflict
-        if( HasChild(grp->GetName()) || grp == nullptr)
-        {
-            // TODO: add info
-            throw std::exception();
-        }
+        ASCTK_ASSERT( grp != 0 );
+        ASCTK_ASSERT_MSG( HasChild(grp->GetName()) == false, \
+                          "grp->GetName() == " << grp->GetName() );
         
         // remove this grp from its current parent
         DataGroup *curr_grp = grp->GetParent();
@@ -268,13 +252,9 @@ namespace DataStoreNS
     // returns the new group
     DataGroup *DataGroup::CopyGroup(DataGroup *grp)
     {
-        // before we do anything, make sure we don't have a name conflict
-        if( HasChild(grp->GetName()) || grp == nullptr)
-        {
-            // TODO: add info
-            throw std::exception();
-        }
-        
+        ASCTK_ASSERT( grp != 0 );
+        ASCTK_ASSERT_MSG( HasChild(grp->GetName()) == false, \
+                          "grp->GetName() == " << grp->GetName() );
         
         DataGroup *res = CreateGroup(grp->GetName());
     
@@ -297,10 +277,9 @@ namespace DataStoreNS
 
     DataGroup *DataGroup::AttachGroup(DataGroup * const grp)
     {
-        if( HasChild( grp->GetName()) || grp==nullptr )
-        {
-          throw std::exception();
-        }
+        ASCTK_ASSERT( grp != 0 );
+        ASCTK_ASSERT_MSG( HasChild(grp->GetName()) == false, \
+                          "grp->GetName() == " << grp->GetName() );
 
         m_groupsNameMap[grp->GetName()] = m_groups.size(); // map name to index
         m_groups.push_back( grp );
@@ -310,21 +289,21 @@ namespace DataStoreNS
 
     DataGroup* DataGroup::DetachGroup(const std::string& name )
     {
-          DataGroup* grp = nullptr;
-          std::map<std::string,IDType>::iterator itr;
-          itr = m_groupsNameMap.find( name );
-          IDType idx;
-          if( itr != m_groupsNameMap.end() )
-          {
-                idx = itr->second;
-                grp = m_groups[idx];
-                m_groupsNameMap.erase( itr );
-                m_groups.erase(m_groups.begin() + idx);
-          }
-          else
-          {
-              throw std::exception();
-          }
+       DataGroup* grp = nullptr;
+       std::map<std::string,IDType>::iterator itr;
+       itr = m_groupsNameMap.find( name );
+       IDType idx;
+       if ( itr == m_groupsNameMap.end() )
+       {
+          ASCTK_WARNING("No view with name " << name << " -- null return value"); 
+       }
+       else
+       {
+          idx = itr->second;
+          grp = m_groups[idx];
+          m_groupsNameMap.erase( itr );
+          m_groups.erase(m_groups.begin() + idx);
+
           // any entry in m_groupsNameMap above idx needs to shift down by 1
           for(itr = m_groupsNameMap.begin();itr!= m_groupsNameMap.end();itr++)
           {
@@ -334,7 +313,9 @@ namespace DataStoreNS
               }
           }
           grp->m_parent = nullptr;
-          return grp;
+
+       }
+       return grp;
     }
 
     DataGroup* DataGroup::DetachGroup(IDType idx)
