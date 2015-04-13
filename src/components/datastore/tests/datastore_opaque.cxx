@@ -184,7 +184,10 @@ TEST(datastore_opaque,meshvar)
 
     }
 
-    ds->Print();
+//
+//  Print datastore contents to see what's going on.
+//
+//  ds->Print();
 
 
     //

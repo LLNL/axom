@@ -45,8 +45,8 @@ TEST(datastore_group,group_name_collisions)
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
     flds->CreateViewAndBuffer("a");
-    ASSERT_THROW(flds->CreateViewAndBuffer("a"),std::exception);
-    
+
+    EXPECT_TRUE(flds->HasChild("a"));
 
     delete ds;
 }
