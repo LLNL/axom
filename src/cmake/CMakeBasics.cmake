@@ -136,14 +136,58 @@ if(ENABLE_WARNINGS)
 
 endif()
 
-################################
-# Add define we can use when 
-# debug builds are enabled
-################################
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-    add_definitions(-DATK_DEBUG)
-endif()
 
+#############################################
+# Support extra compiler flags and defines
+#############################################
+#
+# We don't try to use this approach for CMake generators that support 
+# multiple configurations. See: CZ JIRA: ATK-45
+#
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    
+    ######################################################
+    # Add define we can use when debug builds are enabled
+    ######################################################
+    if(CMAKE_BUILD_TYPE MATCHES Debug)
+        add_definitions(-DATK_DEBUG)
+    endif()
+
+    ##########################################
+    # Support Extra Flags for the C compiler.
+    ##########################################
+    if(EXTRA_C_FLAGS)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
+    endif()
+
+    # Extra Flags for the debug builds with the C compiler.
+    if(EXTRA_C_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
+        add_compile_options("${EXTRA_C_FLAGS_DEBUG}")
+    endif()
+
+    # Extra Flags for the release builds with the C compiler.
+    if(EXTRA_C_FLAGS_RELEASE AND CMAKE_BUILD_TYPE MATCHES RELEASE)
+        add_compile_options("${EXTRA_C_FLAGS_RELEASE}")
+    endif()
+
+    #############################################
+    # Support Extra Flags for the C++ compiler.
+    #############################################
+    if(EXTRA_CXX_FLAGS)
+        add_compile_options("${EXTRA_CXX_FLAGS}")
+    endif()
+
+    # Extra Flags for the debug builds with the C++ compiler.
+    if(EXTRA_CXX_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
+        add_compile_options("${EXTRA_CXX_FLAGS_DEBUG}")
+    endif()
+
+    # Extra Flags for the release builds with the C++ compiler.
+    if(EXTRA_CXX_FLAGS_RELEASE AND CMAKE_BUILD_TYPE MATCHES RELEASE)
+        add_compile_options("${EXTRA_CXX_FLAGS_RELEASE}")
+    endif()
+
+endif()
 
 ################################
 # RPath Settings
