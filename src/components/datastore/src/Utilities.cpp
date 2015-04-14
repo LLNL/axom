@@ -14,7 +14,7 @@ namespace utilities {
 /*!
  * Routine that prints message, file, line number to std out.
  */
-void PrintMessage(
+void printMessage(
    const std::string& message,
    const std::string& filename,
    const int line)
@@ -27,12 +27,12 @@ void PrintMessage(
  * Aborts the program after printing an error message with file and
  * line number information.
  */
-void Abort(
+void processAbort(
    const std::string& message,
    const std::string& filename,
    const int line) 
 {
-   utilities::PrintMessage( message, filename, line);
+   utilities::printMessage( message, filename, line);
    std::cout << "PROGRAM TERMINATION!!!" << std::endl;
    exit(-1);   
 }
@@ -41,12 +41,12 @@ void Abort(
  * Prints a warning message with file and line number information,
  * but does not abort the program.
  */
-void Warning(
+void processWarning(
    const std::string& message,
    const std::string& filename,
    const int line)
 {
-   utilities::PrintMessage( message, filename, line);
+   utilities::printMessage( message, filename, line);
 }
 
 
