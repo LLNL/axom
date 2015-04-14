@@ -10,6 +10,8 @@
 #include "DataStore.hpp"
 #include "DataBuffer.hpp"
 
+#include "Utilities.hpp"
+
 namespace DataStoreNS
 {
 
@@ -91,10 +93,8 @@ DataView* DataView::Declare(const DataType &dtype)
 DataView* DataView::Allocate()
 {
     // we only force alloc if there is a 1-1 between the view and buffer
-    if(m_buffer->CountViews() != 1)
-    {
-        throw std::exception();
-    }
+    ASCTK_ASSERT_MSG( m_buffer->CountViews() == 1, \
+                      "Can only allocate from a view if it's the only view associated with its buffer");
     
     m_buffer->Allocate(m_schema);
     Apply();

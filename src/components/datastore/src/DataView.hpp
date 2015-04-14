@@ -44,7 +44,7 @@ public:
 
     /// if there is a 1-1 relationship between this view and its buffer
     /// this will force a description & an allocate on the underlying
-    /// buffer, otherwise an exception will be thrown
+    /// buffer, otherwise an assertion will result
     DataView* Allocate();
     DataView* Allocate(const Schema &schema);
     DataView* Allocate(const DataType &dtype);

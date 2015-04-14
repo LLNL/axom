@@ -95,6 +95,26 @@ TEST(datastore_opaque,inout)
     Extent* ext = new Extent(0, ihi_val);
 
     problem_gp->CreateOpaqueView("ext", ext);
+#if 1
+//  problem_gp->CreateViewAndBuffer("ext");
+//  problem_gp->CreateOpaqueView("ext", ext);
+//  problem_gp->CreateView("ext", 0);
+//  problem_gp->MoveView(0);
+//  problem_gp->MoveView(problem_gp->GetView("ext"));
+//  problem_gp->CopyView(0);
+//  problem_gp->CopyView(problem_gp->GetView("ext"));
+//  problem_gp->AttachView(0);
+//  problem_gp->CopyView(problem_gp->GetView("ext"));
+//  Can't do following: method is private...
+//  DataView* v = problem_gp->DetachView("ext");
+//  std::cout << "view name = " << v->GetName() << std::endl;
+//  problem_gp->DestroyView("foo");
+//  root_gp->MoveGroup(problem_gp);
+//  root_gp->CopyGroup(problem_gp);
+//  Can't do following: method is private...
+//  root_gp->DetachGroup("bar");
+//  root_gp->DestroyGroup("bar");
+#endif
 
     bool test_opaque = problem_gp->GetView("ext")->IsOpaque();
     EXPECT_EQ(test_opaque, true);
@@ -164,7 +184,10 @@ TEST(datastore_opaque,meshvar)
 
     }
 
-    ds->Print();
+//
+//  Print datastore contents to see what's going on.
+//
+//  ds->Print();
 
 
     //

@@ -15,10 +15,11 @@ set(datastore_headers
 # Specify all sources
 #
 set(datastore_sources
-	DataBuffer.cpp
+    DataBuffer.cpp
     DataGroup.cpp
     DataStore.cpp
-	DataView.cpp
+    DataView.cpp
+    Utilities.cpp
     )
 
 

@@ -4,6 +4,8 @@
 #include "DataView.hpp"
 #include <algorithm>
 
+#include "Utilities.hpp"
+
 namespace DataStoreNS
 {
 
@@ -57,15 +59,9 @@ DataBuffer* DataBuffer::Allocate(const DataType &dtype)
 
 DataBuffer* DataBuffer::Allocate()
 {
-    
     std::size_t alloc_size = m_schema.total_bytes();
 
-    if(alloc_size == 0)
-    {
-        // ?
-        throw std::exception();
-    }
-            
+    ASCTK_ASSERT_MSG(alloc_size > 0, "Attempting to allocate buffer of size 0");   
     m_memblob.resize(alloc_size);
     m_data = m_memblob.data();
     
