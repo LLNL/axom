@@ -137,6 +137,15 @@ if(ENABLE_WARNINGS)
 endif()
 
 ################################
+# Add define we can use when 
+# debug builds are enabled
+################################
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DATK_DEBUG)
+endif()
+
+
+################################
 # RPath Settings
 ################################
 
