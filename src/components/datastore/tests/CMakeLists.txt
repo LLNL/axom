@@ -13,6 +13,7 @@ set(gtest_datastore_tests
    datastore_buffer.cxx
    datastore_view.cxx
    datastore_group.cxx
+   datastore_opaque.cxx
    )
 
 

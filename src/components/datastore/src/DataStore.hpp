@@ -26,10 +26,6 @@ class DataBuffer;
 class DataStore
 {
 public:
-
-  /// typedef for container for DataBuffers
-  typedef std::vector< DataBuffer* > dataBufferContainerType;
-
   /*!
    * \brief Constructor.
    */
@@ -67,7 +63,7 @@ public:
    * \brief Return pointer to the root DataGroup.
    */
   DataGroup* GetRoot() 
-      { return &m_RootGroup; };
+      { return m_RootGroup; };
 
   /*!
    *
@@ -80,16 +76,21 @@ public:
   void DestroyBuffers();
 
   void Print() const;
-  void Print(Node &) const;
+  void Info(Node &) const;
+
+  IDType GetNumberOfBuffers() const
+  {
+    return m_DataBuffers.size() - m_AvailableDataBuffers.size();
+  }
 
 private:
 
 
   /// Root data group, created automatically with datastore.
-  DataGroup m_RootGroup;
+  DataGroup *m_RootGroup;
 
   /// container of DataBuffers
-  dataBufferContainerType m_DataBuffers;
+  std::vector<DataBuffer*> m_DataBuffers;
 
   /// stack of unique ids that can be recycled
   std::stack< IDType > m_AvailableDataBuffers;

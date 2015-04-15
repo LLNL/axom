@@ -12,13 +12,16 @@ namespace DataStoreNS
 {
 
   DataStore::DataStore() :
-    m_RootGroup("", this),
     m_DataBuffers(),
     m_AvailableDataBuffers()
-    {};
+    {
+        m_RootGroup = new DataGroup("/",this);
+    };
 
   DataStore::~DataStore()
   {
+      // clean up views before we destroy buffers
+      delete m_RootGroup;
       DestroyBuffers();
   }
 
@@ -42,6 +45,7 @@ namespace DataStoreNS
   void DataStore::DestroyBuffer( const IDType id )
   {
     delete m_DataBuffers[id];
+    m_DataBuffers[id] = nullptr;
     m_AvailableDataBuffers.push(id);
   }
 
@@ -56,7 +60,8 @@ namespace DataStoreNS
   
   void DataStore::DestroyBuffers()
   {
-      for( dataBufferContainerType::iterator iter=m_DataBuffers.begin() ;                  iter!=m_DataBuffers.end() ; ++iter )
+      for( std::vector<DataBuffer*>::iterator iter=m_DataBuffers.begin() ;
+           iter!=m_DataBuffers.end() ; ++iter )
       {
         delete *iter;
       }
@@ -65,21 +70,21 @@ namespace DataStoreNS
   void DataStore::Print() const
   {
       Node n;
-      Print(n);
+      Info(n);
       n.print();
   }
 
-  void DataStore::Print(Node &n) const
+  void DataStore::Info(Node &n) const
   {
-      m_RootGroup.Print(n["DataStore/root"]);
-      for( dataBufferContainerType::const_iterator iter=m_DataBuffers.begin() ;
+      m_RootGroup->Info(n["DataStore/root"]);
+      for( std::vector<DataBuffer*>::const_iterator iter=m_DataBuffers.begin() ;
            iter!=m_DataBuffers.end() ;
            ++iter )
       {
           Node &b = n["DataStore/buffers"].append();
           if(*iter != nullptr)
           {
-              (*iter)->Print(b);
+              (*iter)->Info(b);
           }
       }
   }

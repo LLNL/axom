@@ -4,6 +4,7 @@
 #
 set(example_sources
     ShockTube.cc
+    DumpStateFile.cc
     )
 
 #

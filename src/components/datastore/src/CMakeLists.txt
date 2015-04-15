@@ -15,17 +15,18 @@ set(datastore_headers
 # Specify all sources
 #
 set(datastore_sources
-	DataBuffer.cpp
+    DataBuffer.cpp
     DataGroup.cpp
     DataStore.cpp
-	DataView.cpp
+    DataView.cpp
+    Utilities.cpp
     )
 
 
 #
 # make the library
 #
-make_library(datastore "${datastore_sources}")
+make_library(datastore "${datastore_sources}" "${datastore_headers}")
 add_dependencies(datastore copy_headers)
 add_dependencies(datastore conduit)
 install(TARGETS datastore DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

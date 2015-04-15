@@ -32,9 +32,8 @@ TEST(datastore_buffer,alloc_buffer_for_uint32_array)
     DataStore *ds = new DataStore();
     DataBuffer *dbuff = ds->CreateBuffer();
 
-    dbuff->SetDescriptor(DataType::uint32(10));
+    dbuff->Declare(DataType::uint32(10));
     dbuff->Allocate();
-    dbuff->ApplyDescriptor();
     
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
     
@@ -57,7 +56,7 @@ TEST(datastore_buffer,init_buffer_for_uint32_array)
     DataStore *ds = new DataStore();
     DataBuffer *dbuff = ds->CreateBuffer();
 
-    dbuff->Init(DataType::uint32(10));
+    dbuff->Allocate(DataType::uint32(10));
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
