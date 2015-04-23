@@ -16,6 +16,9 @@
 
 #include "conduit/conduit.h"
 
+#include "Utilities.hpp"
+
+
 using conduit::index_t;
 
 namespace DataStoreNS
@@ -92,12 +95,17 @@ public:
     */
     DataView *GetView( const std::string& name )
     {
+        ASCTK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "GetView() tried to fetch invalid view named ");
+        // TODO: add "name" to error message, I had problems doing this with the macro
+            
         const IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
     }
 
     DataView const * GetView( const std::string& name ) const
     {
+        ASCTK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "GetView() tried to fetch invalid view named ");
+        // TODO: add "name" to error message, I had problems doing this with the macro
         const IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
     }
@@ -108,7 +116,9 @@ public:
     */
     DataView *GetView( const IDType idx )
     {
-          return m_views[idx];
+        ASCTK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "GetView() tried to fetch view at invalid index ");
+        // TODO: add "idx" to error message, I had problems doing this with the macro
+        return m_views[idx];
     }
 
     /*!
@@ -117,7 +127,9 @@ public:
     */
     DataView const *GetView( const IDType idx ) const
     {
-      return m_views[idx];
+        ASCTK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "GetView() tried to fetch view at invalid index ");
+        // TODO: add "idx" to error message, I had problems doing this with the macro
+        return m_views[idx];
     }
 
     /*!
@@ -241,6 +253,18 @@ public:
 
     void PrintTree( const int level ) const;
  
+ 
+    /// ---------------------------------------------------------------
+    ///  Save + Restore Prototypes (ATK-39)
+    /// ---------------------------------------------------------------
+    /// saves "this", associated views and buffers to a file set. 
+    void save(const std::string &obase,
+              const std::string &protocol) const;
+
+    /// restores as "this"
+    void load(const std::string &obase,
+              const std::string &protocol);
+ 
 private:
 
     /// these are private b/c we want folks to create groups
@@ -300,6 +324,23 @@ private:
     DataGroup *AttachGroup(DataGroup *grp);
     DataGroup *DetachGroup(const std::string &name);
     DataGroup *DetachGroup(IDType idx);
+
+    ///
+    /// there may be value to make these public
+    ///
+    
+    void copyToNode(Node &n) const;
+    void copyFromNode(Node &n);
+    
+    ///
+    /// these should stay private
+    ///
+    void copyToNode(Node &n,
+                    std::vector<IDType> &buffer_ids) const;
+
+    /// we could use an unordered map to track the id mapping
+    void copyFromNode(Node &n,
+                      std::map<IDType,IDType> &id_map);
 
     
     std::string  m_name;
