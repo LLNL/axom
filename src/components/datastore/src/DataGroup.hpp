@@ -52,14 +52,6 @@ public:
     {return m_datastore;}
 
 
-    /*!
-    * @param name Name to check.
-    * \brief Return true if the name exists in this DataGroup.
-    */
-    
-    /// we can have child groups and views
-    bool HasChild( const std::string& name );
-
     /// -----  DataView Children ---- /// 
     bool HasView( const std::string& name );
 

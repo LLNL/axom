@@ -38,12 +38,6 @@ namespace DataStoreNS
     }
 
 
-    bool DataGroup::HasChild( const std::string& name )
-    {
-        return HasView(name) || HasGroup(name);
-    }
-
-
     bool DataGroup::HasGroup( const std::string& name )
     {
         std::map<std::string,IDType>::iterator itr;
