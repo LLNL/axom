@@ -362,9 +362,9 @@ endmacro(add_catch_test)
 ##
 ## copy_headers_copy( hdrs dest )
 ##------------------------------------------------------------------------------
-macro(copy_headers_target hdrs dest)
+macro(copy_headers_target proj hdrs dest)
 
-add_custom_target(copy_headers
+add_custom_target(copy_headers_${proj}
      COMMAND ${CMAKE_COMMAND}
              -DHEADER_INCLUDES_DIRECTORY=${dest}
              -DLIBHEADERS="${hdrs}"

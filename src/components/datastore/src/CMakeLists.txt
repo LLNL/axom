@@ -27,12 +27,12 @@ set(datastore_sources
 # make the library
 #
 make_library(datastore "${datastore_sources}" "${datastore_headers}")
-add_dependencies(datastore copy_headers)
+add_dependencies(datastore copy_headers_datastore)
 add_dependencies(datastore conduit)
 install(TARGETS datastore DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 #
 # custom target to copy header files in the "include" folder of the build tree.
 #
-copy_headers_target( "${datastore_headers}"
+copy_headers_target( ${PROJECT_NAME} "${datastore_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
