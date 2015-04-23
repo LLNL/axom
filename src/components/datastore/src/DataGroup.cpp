@@ -65,7 +65,7 @@ namespace DataStoreNS
 
     DataView* DataGroup::CreateViewAndBuffer( const std::string& name )
     {
-        ASCTK_ASSERT_MSG( HasChild(name) == false, "name == " << name );
+        ATK_ASSERT_MSG( HasView(name) == false, "name == " << name );
 
         DataBuffer *buff = this->GetDataStore()->CreateBuffer();
         DataView* const view = new DataView( name, this,buff);
@@ -76,7 +76,7 @@ namespace DataStoreNS
      DataView *DataGroup::CreateOpaqueView( const std::string& name,
                                             void *opaque)
      {
-        ASCTK_ASSERT_MSG( HasChild(name) == false, "name == " << name );
+        ATK_ASSERT_MSG( HasView(name) == false, "name == " << name );
          
         DataView* const view = new DataView(name, this,opaque);
         return AttachView(view);
@@ -85,8 +85,8 @@ namespace DataStoreNS
     DataView* DataGroup::CreateView( const std::string& name,
                                      DataBuffer *buff)
     {
-        ASCTK_ASSERT_MSG( HasChild(name) == false, "name == " << name );
-        ASCTK_ASSERT( buff != 0 );
+        ATK_ASSERT_MSG( HasView(name) == false, "name == " << name );
+        ATK_ASSERT( buff != 0 );
 
         DataView* const view = new DataView( name, this, buff );
         return AttachView(view);
@@ -94,9 +94,9 @@ namespace DataStoreNS
 
     DataView *DataGroup::MoveView(DataView *view)
     {
-        ASCTK_ASSERT( view != 0 );
-        ASCTK_ASSERT_MSG( HasChild(view->GetName()) == false, \
-                          "view->GetName() == " << view->GetName() );
+        ATK_ASSERT( view != 0 );
+        ATK_ASSERT_MSG( HasView(view->GetName()) == false, \
+                        "view->GetName() == " << view->GetName() );
         
         // remove this view from its current parent
         DataGroup *curr_grp = view->GetParent();
@@ -115,9 +115,9 @@ namespace DataStoreNS
     // returns the new view
     DataView *DataGroup::CopyView(DataView *view)
     {
-        ASCTK_ASSERT( view != 0 );
-        ASCTK_ASSERT_MSG( HasChild(view->GetName()) == false, \
-                          "view->GetName() == " << view->GetName() );
+        ATK_ASSERT( view != 0 );
+        ATK_ASSERT_MSG( HasView(view->GetName()) == false, \
+                        "view->GetName() == " << view->GetName() );
         
         DataView *res = CreateView(view->GetName(),view->GetBuffer());
         res->Declare(view->GetDescriptor());
@@ -130,9 +130,9 @@ namespace DataStoreNS
 
     DataView *DataGroup::AttachView(DataView * const view)
     {
-        ASCTK_ASSERT( view != 0 );
-        ASCTK_ASSERT_MSG( HasChild(view->GetName()) == false, \
-                          "view->GetName() == " << view->GetName() );
+        ATK_ASSERT( view != 0 );
+        ATK_ASSERT_MSG( HasView(view->GetName()) == false, \
+                        "view->GetName() == " << view->GetName() );
 
         m_viewsNameMap[view->GetName()] = m_views.size(); // map name to index
         m_views.push_back( view );
@@ -148,7 +148,7 @@ namespace DataStoreNS
         itr = m_viewsNameMap.find( name );
         if ( itr == m_viewsNameMap.end() )
         {
-           ASCTK_WARNING("No view with name " << name << " -- null return value"); 
+           ATK_WARNING("No view with name " << name << " -- null return value"); 
         }
         else {
            idx = itr->second;
@@ -233,9 +233,9 @@ namespace DataStoreNS
 
     DataGroup *DataGroup::MoveGroup(DataGroup *grp)
     {
-        ASCTK_ASSERT( grp != 0 );
-        ASCTK_ASSERT_MSG( HasChild(grp->GetName()) == false, \
-                          "grp->GetName() == " << grp->GetName() );
+        ATK_ASSERT( grp != 0 );
+        ATK_ASSERT_MSG( HasGroup(grp->GetName()) == false, \
+                        "grp->GetName() == " << grp->GetName() );
         
         // remove this grp from its current parent
         DataGroup *curr_grp = grp->GetParent();
@@ -254,9 +254,9 @@ namespace DataStoreNS
     // returns the new group
     DataGroup *DataGroup::CopyGroup(DataGroup *grp)
     {
-        ASCTK_ASSERT( grp != 0 );
-        ASCTK_ASSERT_MSG( HasChild(grp->GetName()) == false, \
-                          "grp->GetName() == " << grp->GetName() );
+        ATK_ASSERT( grp != 0 );
+        ATK_ASSERT_MSG( HasGroup(grp->GetName()) == false, \
+                        "grp->GetName() == " << grp->GetName() );
         
         DataGroup *res = CreateGroup(grp->GetName());
     
@@ -279,9 +279,9 @@ namespace DataStoreNS
 
     DataGroup *DataGroup::AttachGroup(DataGroup * const grp)
     {
-        ASCTK_ASSERT( grp != 0 );
-        ASCTK_ASSERT_MSG( HasChild(grp->GetName()) == false, \
-                          "grp->GetName() == " << grp->GetName() );
+        ATK_ASSERT( grp != 0 );
+        ATK_ASSERT_MSG( HasGroup(grp->GetName()) == false, \
+                        "grp->GetName() == " << grp->GetName() );
 
         m_groupsNameMap[grp->GetName()] = m_groups.size(); // map name to index
         m_groups.push_back( grp );
@@ -297,7 +297,7 @@ namespace DataStoreNS
        IDType idx;
        if ( itr == m_groupsNameMap.end() )
        {
-          ASCTK_WARNING("No view with name " << name << " -- null return value"); 
+          ATK_WARNING("No view with name " << name << " -- null return value"); 
        }
        else
        {
@@ -585,7 +585,7 @@ namespace DataStoreNS
                 // get the mapped buffer id
                 if( id_map.find(buffer_id) == id_map.end() )
                 {
-                    ASCTK_ERROR("Invalid buffer id mapping.");
+                    ATK_ERROR("Invalid buffer id mapping.");
                 }
                 
                 buffer_id = id_map[buffer_id];
@@ -602,7 +602,7 @@ namespace DataStoreNS
             }
             else
             {
-                ASCTK_WARNING("DataGroup cannot restore opaque views.");
+                ATK_WARNING("DataGroup cannot restore opaque views.");
             }
         }
 

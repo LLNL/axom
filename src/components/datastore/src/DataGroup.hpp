@@ -95,7 +95,7 @@ public:
     */
     DataView *GetView( const std::string& name )
     {
-        ASCTK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "GetView() tried to fetch invalid view named ");
+        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "GetView() tried to fetch invalid view named ");
         // TODO: add "name" to error message, I had problems doing this with the macro
             
         const IDType idx = m_viewsNameMap.at(name);
@@ -104,7 +104,7 @@ public:
 
     DataView const * GetView( const std::string& name ) const
     {
-        ASCTK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "GetView() tried to fetch invalid view named ");
+        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "GetView() tried to fetch invalid view named ");
         // TODO: add "name" to error message, I had problems doing this with the macro
         const IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
@@ -116,7 +116,7 @@ public:
     */
     DataView *GetView( const IDType idx )
     {
-        ASCTK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "GetView() tried to fetch view at invalid index ");
+        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "GetView() tried to fetch view at invalid index ");
         // TODO: add "idx" to error message, I had problems doing this with the macro
         return m_views[idx];
     }
@@ -127,7 +127,7 @@ public:
     */
     DataView const *GetView( const IDType idx ) const
     {
-        ASCTK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "GetView() tried to fetch view at invalid index ");
+        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "GetView() tried to fetch view at invalid index ");
         // TODO: add "idx" to error message, I had problems doing this with the macro
         return m_views[idx];
     }

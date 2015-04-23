@@ -46,7 +46,7 @@ TEST(datastore_group,group_name_collisions)
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
     flds->CreateViewAndBuffer("a");
 
-    EXPECT_TRUE(flds->HasChild("a"));
+    EXPECT_TRUE(flds->HasView("a"));
 
     delete ds;
 }
