@@ -2,14 +2,16 @@
 # Specify all headers
 #
 set(meshapi_headers
-    hello.hpp
+    Hello.hpp
+    Set.hpp
     )
 
 #
 # Specify all sources
 #
 set(meshapi_sources
-    hello.cpp
+    Hello.cpp
+    Set.cpp
     )
 
 

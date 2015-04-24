@@ -4,6 +4,7 @@
 
 set(gtest_meshapi_tests
    testHello.cxx
+   testSet.cxx
    )
 
 

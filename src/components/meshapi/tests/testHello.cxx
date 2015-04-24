@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "meshapi/hello.hpp"
+#include "meshapi/Hello.hpp"
 //------------------------------------------------------------------------------
 
 TEST(gtest_meshapi_hello,basic_assert_example)
