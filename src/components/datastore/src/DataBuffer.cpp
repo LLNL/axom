@@ -61,7 +61,7 @@ DataBuffer* DataBuffer::Allocate()
 {
     std::size_t alloc_size = m_schema.total_bytes();
 
-    ASCTK_ASSERT_MSG(alloc_size > 0, "Attempting to allocate buffer of size 0");   
+    ATK_ASSERT_MSG(alloc_size > 0, "Attempting to allocate buffer of size 0");   
     m_memblob.resize(alloc_size);
     m_data = m_memblob.data();
     
