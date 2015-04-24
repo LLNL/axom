@@ -21,6 +21,12 @@ if (BUILD_TESTING)
 endif()
 
 ################################
+# Add docs
+################################
+add_subdirectory(docs)
+
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################

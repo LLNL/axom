@@ -24,6 +24,11 @@ include(CMakeBasics)
 include(Setup3rdParty)
 
 ################################
+# Setup toolkit docs targets
+################################
+include(SetupDocs)
+
+################################
 # Add the datastore lib
 ################################
 add_subdirectory(components)
