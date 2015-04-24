@@ -9,6 +9,7 @@
 ###############################################################################
 set(CMAKE_C_COMPILER "/usr/apps/gnu/4.7.1/bin/gcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.7.1/bin/g++" CACHE PATH "")
+set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/tools/spack/opt/chaos_5_x86_64_ib/gcc\@4.4.7/python\@2.7.8-703c7a96/bin/sphinx-build" CACHE PATH "")
 
 ###############################################################################
 # Additional Compiler Flags
