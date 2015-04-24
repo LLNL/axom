@@ -4,6 +4,7 @@
 set(meshapi_headers
     Hello.hpp
     Set.hpp
+	Utilities.hpp
     )
 
 #
