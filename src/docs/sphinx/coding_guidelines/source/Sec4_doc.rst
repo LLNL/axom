@@ -44,9 +44,9 @@ guidelines are to:
 
 4.1.7 Blank lines, indentation, and vertical alignment **should** be used in comment blocks to enhance readability, emphasize important information, etc.
 
-====================================
-4.2 General Doxygen usage guidelines
-====================================
+===================================================================
+4.2 General Doxygen usage guidelines and summary of common commands
+===================================================================
 
 The Doxygen code documentation system uses C or C++ style comment sections 
 with special markings and Doxygen-specific commands to extract documentation 
@@ -141,6 +141,68 @@ are writing code.
 
 4.2.7 Important information of a more lengthy nature (e.g., spanning multiple lines) **should** be provided for files, major data types and definitions, functions, etc. when needed. A detailed comment **must** be separated from a brief comment with a blank line.
 
+4.2.8 Summary of commonly used Doxygen commands
+
+This Section provides an overview of Doxygen commands used commonly in the CS 
+Toolkit source code documentation. Please see the Doxygen documentation cited
+in the references at the end of these guidelines for more details and 
+information about other commands that you may find useful.
+
+Note that to be processed properly, Doxygen commands **must** be preceded with 
+either "\\" or "\@" character. For brevity, we use "\\" for all commands 
+described here.
+
+   * **\\author** The "author" command (followed by a name) identifies the 
+     author of a documented item. Multiple authors may be provided with each 
+     on listed on its own line following the "author" keyword. 
+   * **\\brief** The "brief" command is used to begin a brief description of 
+     a documented item. The brief description ends at the next blank line.
+   * **\\file** The "file" command is used to document a file. Doxygen requires
+     that to document any global item (function, typedef, enum, etc.), the file
+     in which it is defined must be documents. 
+   * **\\if** and **\\endif** The "if" command, followed by a label, defines 
+     the start of a conditional documentation section. The section ends with a
+     matching "endif" command. Conditionals are typically used to 
+     enable/disable documentation sections. For example, this may be useful if
+     a project wants to provide documentation of all private class members 
+     for developer documentation, but wnats to hide private members in 
+     documentation for users. Conditional sections are disabled by default 
+     and must be explicitly enabled in the doxygen configuration file. 
+     Conditional blocks can be nested; nested sections are only enabled if 
+     all enclosing sections are. The "\\elseif" command is also available to 
+     provide more sophisticated control of conditional documentation.
+   * **\\name** The "name" command, followed by a name containing no blank 
+     spaces, is used to define a name that can be referred to elsewhere 
+     in the documentation (via a link).
+   * **\\param** The "param" command documents a function parameter/argument.
+     It is followed by the parameter name and description. The "\\param" 
+     command can be given an optional attribute to indicate usage of the 
+     function argument; possible values are "[in]", "[out]", and "[in,out]".
+   * **\\return** The "return" command is used to describe the return value 
+     of a function.
+   * **\\sa** The "sa" command (i.e., "see also") is used to refer (and 
+     provide a link to) another documented item. It is followed by the target 
+     of the reference (e.g., class/struct name, function name, documentation 
+     page, etc.).
+   * **\@{** and **\@}**  These two-character sequences begin and end a 
+     grouping of documented items. Optionally, the group can be given a name 
+     using the "name" command. Groups are useful for providing additional 
+     organization in the documentation, and also when several items can be 
+     documented with a single description (e.g., a set of simple, related 
+     functions). 
+
+   * **\\verbatim, \\endverbatim** The "verbatim/endverbatim" commands are 
+     used to start/stop a block of text that is to appear exactly as it is 
+     typed, without additional formatting, in the generated documentation.
+
+   * **-** and **-#** The "-" and "-#" symbols begin an item in a bulleted 
+     list or numbered list, respectively. In either case, the item ends at 
+     the next blank line or next item.
+
+   * **\\b** and **\\e** These symbols are used to make the next word bold or 
+     emphasized/italicized, respectively, in the generated documentation.
+   
+
 ============================
 4.3 LLNL copyright statement
 ============================
@@ -232,7 +294,7 @@ etc. must be documented in order to document any of its members.
 4.5.4 Cross-references to other items, such as relevant major types, important functions, etc., **should** be included at the end of the prologue to enhance the navigability of the Doxygen documentation. 
 
       The Doxygen command "\\sa" (for "see also") **should** appear before each
-     such cross-reference so that links are generated in the documentation.
+      such cross-reference so that links are generated in the documentation.
 
 4.5.6 Caveats or limitations about the documented type **should** be noted using the "\\warning" Doxygen command as shown above.
 
