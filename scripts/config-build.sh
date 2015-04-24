@@ -55,10 +55,32 @@ else
 fi
 
 #------------------------------------------------------------------------------
+# parse other command line arguments
+#------------------------------------------------------------------------------
+for arg in "$@"
+do
+    arg="$1"
+    echo "ARGUMENT: $arg"
+    case $arg in
+        --with-eclipse)
+        export CMAKE_ECLIPSE_GEN="Eclipse CDT4 - Unix Makefiles"
+        export CMAKE_OPTS="-G \"$CMAKE_ECLIPSE_GEN\" $CMAKE_OPTS"
+        shift
+        ;;
+        *)
+        # unknown option, skip
+        shift
+        ;;
+    esac
+
+done
+
+
+#------------------------------------------------------------------------------
 # run cmake to configure
 #------------------------------------------------------------------------------
 echo "cmake $CMAKE_OPTS ../src"
-cmake  $CMAKE_OPTS \
-       ../src 
+eval "cmake  $CMAKE_OPTS ../src"
+
 # return to the starting dir
 cd ../
