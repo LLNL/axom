@@ -108,46 +108,50 @@ scoping benefits.</div></blockquote>
 </div>
 <div class="section" id="compilation-and-portability">
 <h2>5.3 Compilation and portability<a class="headerlink" href="#compilation-and-portability" title="Permalink to this headline">¶</a></h2>
-<p>All files should contain only standard C/C++ syntax. Special constructs, such
-as GNU extensions for example, must not be used if they hinder portability.
-Excessive use of the preprocessor for conditional compilation at a fine level of
-granularity (e.g., selectively including or removing individual source lines) shou
-ld be avoided. While it may seem convenient, this practice often yields
-confusing and error-prone code. Often, it is better to refactor the code into
-separate routines. When conditional compilation is needed, the policy
-established by the team for how this is done must be followed.
-Developers should rely on compile-time and link-time errors to check for code
-correctness and invariants. Errors that occur at run-time and which depend on
-specific control flow and program state are inconvenient for users and can be
-difficult to detect and fix.
-Before committing code to the source repository, one should attempt to
-compile cleanly at the highest warning level with the main compiler(s)
-supported by the project. All warnings must be understood and must be</p>
+<p>5.3.1 All C-only files <strong>must</strong> contain only standard C99 usage. Use of standard C11 features <strong>must</strong> be agreed upon by the project team and be guarded in the code using the &#8220;USE_C11&#8221; compiler generated macro constant.</p>
 <blockquote>
-<div>eliminated (not by reducing the warning level!). Compiler warnings, while</div></blockquote>
-<p>seemingly innocuous at times, often indicate problems that do not appear until
-later or until specific run-time conditions are encountered.</p>
-<p>Memory management
-Memory should be deallocated in the same scope in which it is allocated.
-Memory should be deallocated as soon as it is no longer needed.
-Pointers should be set to null explicitly when memory is deallocated. Prior to
-the C+11 standard, the common stylistic convention was to use &#8220;0&#8221; to indicate
-a null ptr. C11 introduces the keyword &#8220;nullptr&#8221; which is actually a type and
-cannot be implicitly converted to bool, for example. While usage of &#8220;nullptr&#8221; is
-beneficial, it +must not be used until all compliers we rely on are compliant with
-the C++11 standard. See section blah…
-Data managed exclusively within C++ code must be allocated and deallocated
-using the &#8220;new&#8221; and &#8220;delete&#8221; operators. The operator &#8220;new&#8221; is type-safe,
-simpler to use, and less error-prone than the &#8220;malloc&#8221; family of C functions.
-C++ new/delete operators must never be combined with C malloc/free
-functions.
-Every C++ array deallocation statement must include &#8220;[]&#8221; (i.e., &#8220;delete[ ]&#8221;) to
-avoid memory leaks. The rule of thumb is: when &#8220;[ ]&#8221; appears in the allocation,
-then &#8220;[ ]&#8221; must appear in the corresponding deallocation statement.
-Before committing code to the source repository, one should use
-memory-checking tools to verify there are no leaks and other memory misuse.</p>
-<p>Function declarations
-Any class member function that does not change a data member of the
+<div>Changing this guideline requires full concensus of all team members.</div></blockquote>
+<p>5.3.2 All C++ files <strong>must</strong> contain only standard C++03 usage. Use of standard C++11 or C++14 features <strong>must</strong> be agreed upon by the project team. If C++11 standard features are introduced, they <strong>must</strong> be guarded in the code using the &#8220;USE_CXX11&#8221; compiler generated macro constant.</p>
+<blockquote>
+<div>Changing this guideline requires full concensus of all team members.</div></blockquote>
+<p>5.3.3 Special non-standard language constructs, such as GNU extensions, <strong>must not</strong> be used if they hinder portability.</p>
+<p>5.3.4 Excessive use of the preprocessor for conditional compilation at a fine granularity (e.g., selectively including or removing individual source lines) <strong>should</strong> be avoided.</p>
+<blockquote>
+<div>While it may seem convenient, this practice typically produces confusing
+and error-prone code. Often, it is better to refactor the code into
+separate routines or large code blocks subject to conditional compilation
+where it is obvious. The team <strong>should</strong> establish a policy policy for
+how this is done.</div></blockquote>
+<p>5.3.5 Developers <strong>should</strong> rely on compile-time and link-time errors to check for code correctness and invariants.</p>
+<blockquote>
+<div>Errors that occur at run-time and which depend on specific control flow
+and program state are inconvenient for users and can be difficult to
+detect and fix.</div></blockquote>
+<p>5.3.6 Before committing code to the source repository, developers <strong>must</strong> attempt to compile cleanly at the highest warning level with the main compiler(s) supported by the project. All warnings <strong>must</strong> be understood and eliminated if possible (not by reducing the warning level!).</p>
+<blockquote>
+<div>Compiler warnings, while seemingly innocuous at times, often indicate
+problems that do not appear until later or until specific run-time
+conditions are encountered.</div></blockquote>
+</div>
+<div class="section" id="memory-management">
+<h2>5.4 Memory management<a class="headerlink" href="#memory-management" title="Permalink to this headline">¶</a></h2>
+<p>5.4.1 Memory <strong>should</strong> be deallocated in the same scope in which it is allocated.</p>
+<p>5.4.2 Memory <strong>should</strong> be deallocated as soon as it is no longer needed.</p>
+<p>5.4.3 Pointers <strong>should</strong> be set to null explicitly when memory is deallocated. Since we have not yet moved to C++11, this <strong>must</strong> be done using &#8220;NULL&#8221;.</p>
+<p>5.4.4 Data managed exclusively within C++ code <strong>must</strong> be allocated and deallocated using the &#8220;new&#8221; and &#8220;delete&#8221; operators.</p>
+<blockquote>
+<div>The operator &#8220;new&#8221; is type-safe, simpler to use, and less error-prone
+than the &#8220;malloc&#8221; family of C functions.  C++ new/delete operators
+<strong>must not</strong> be combined with C malloc/free functions.</div></blockquote>
+<p>5.4.5 Every C++ array deallocation statement <strong>must</strong> include &#8220;[ ]&#8221; (i.e., &#8220;delete[ ]&#8221;) to avoid memory leaks.</p>
+<blockquote>
+<div>The rule of thumb is: when &#8220;[ ]&#8221; appears in the allocation, then &#8220;[ ]&#8221;
+<strong>must</strong> appear in the corresponding deallocation statement.</div></blockquote>
+<p>5.4.6 Before committing code to the source repository, one <strong>should</strong> use memory-checking tools to verify there are no leaks and other memory misuse.</p>
+</div>
+<div class="section" id="function-declarations">
+<h2>5.5 Function declarations<a class="headerlink" href="#function-declarations" title="Permalink to this headline">¶</a></h2>
+<p>Any class member function that does not change a data member of the
 associated class must be declared &#8220;const&#8221;.
 Function arguments should be ordered the same way for all routines in a
 project.
@@ -156,9 +160,8 @@ function signature. Parameters that are both input and output can make the best 
 functions when possible.
 When adding new parameters to an existing function, the existing ordering convention must be followed. Do not just stick new parameters at the
 end.</p>
-<blockquote>
-<div>Each function argument that is not a built-in type (i.e., int, double, char, etc.) sh</div></blockquote>
-<p>ould be passed either by reference or as a pointer to avoid unnecessary copies.
+<p>Each function argument that is not a built-in type (i.e., int, double, char, etc.) sh
+ould be passed either by reference or as a pointer to avoid unnecessary copies.
 Each function reference or pointer argument that is not changed by the
 function must be declared &#8220;const&#8221;.
 Variable argument lists (i.e., using ellipses &#8221;...&#8221;) should not be used. Although
@@ -413,6 +416,8 @@ precedence.</p>
 <li><a class="reference internal" href="#general-design-and-implementation-considerations">5.1 General design and implementation considerations</a></li>
 <li><a class="reference internal" href="#code-robustness">5.2 Code robustness</a></li>
 <li><a class="reference internal" href="#compilation-and-portability">5.3 Compilation and portability</a></li>
+<li><a class="reference internal" href="#memory-management">5.4 Memory management</a></li>
+<li><a class="reference internal" href="#function-declarations">5.5 Function declarations</a></li>
 </ul>
 </li>
 </ul>
