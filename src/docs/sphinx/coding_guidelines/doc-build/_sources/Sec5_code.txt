@@ -132,277 +132,468 @@ readability, correctness, portability, consistency, and robustness.
 
 5.4.6 Before committing code to the source repository, one **should** use memory-checking tools to verify there are no leaks and other memory misuse.
 
+      When merging to the *develop* or *master* branches, compilation with a 
+      variety fo compilers, testing, memory-checking, etc. will be done 
+      automatically as part of the *pull request* approval process.  The pull
+      request will not be approved until all of these tasks succeed.
+
 ===========================
 5.5 Function declarations
 ===========================
 
-Any class member function that does not change a data member of the
-associated class must be declared "const".
-Function arguments should be ordered the same way for all routines in a
-project.
-Common conventions are either to put all inputs first, then outputs, or the other way around. Input and output and outputs must not be mixed in a
-function signature. Parameters that are both input and output can make the best choice unclear. Always follow conventions consistent with related
-functions when possible.
-When adding new parameters to an existing function, the existing ordering convention must be followed. Do not just stick new parameters at the
-end.
+5.5.1 Any class member function that does not change a data member of the associated class **must** be declared "const".
 
-Each function argument that is not a built-in type (i.e., int, double, char, etc.) sh
-ould be passed either by reference or as a pointer to avoid unnecessary copies.
-Each function reference or pointer argument that is not changed by the
-function must be declared "const".
-Variable argument lists (i.e., using ellipses "...") should not be used. Although
-available in C++, they are generally considered a dangerous carryover from C.
-Variadic functions are not type-safe, they require tight coupling between caller
-and callee, and often result in undefined behavior.
-Each argument in a function declaration must be given a name that matches
-the function implementation. For example, use
-void computeSomething(int op_count,
-int mode);
-not
-void computeSomething(int,
-int);
+5.5.2 Function arguments **must** be ordered the same way for all routines in a project.
 
-Function implementations
-Each function body should be a reasonable length to be easily understood and
-viewed in a text editor. Long, complex routines should be refactored into
-smaller parts when this is reasonable to increase clarity and potentially reduce
-code redundancy by promoting code reuse and flexibility.
-Each function should have exactly one return point. Functions with multiple
-return points tend to be a source of errors when making modifications. Such
-routines can always be refactored to have a single return point by using
-temporary boolean variables and/or different control logic.
-A function may have two return points if the first return statement is associated with error checking,; e.g., when a state is reached beyond which it
-does not make sense to continue execution of the function. In this case, error checking should be performed at the start of the function body
-before other statements are reached.
-For example, the following is a reasonable use of two function return points:
-int computeSomething(int in_val)
-{
-if (in_val < 0) { return -1; }
-// ...
-return 0;
-}
+      Common conventions are either to put all input arguments first, then 
+      outputs, or the other way around. Input and output and outputs 
+      **must not** be mixed in a function signature. Parameters that are both 
+      input and output can make the best choice unclear. Conventions consistent
+      with relatd functions **must** always be followed. When adding new 
+      parameters to an existing method, the established ordering convention 
+      **must** be followed. Do not just stick new parameters at the end of
+      the argument list.
 
-"Sanity checks" should be performed on values of function arguments (e.g.,
-range checking, checking for null pointers, etc.) upon entry to a function. This
-is an excellent way to provide run-time debugging capabilities in code. We need
-a set of macros/functions for this.
+5.5.3 Each function argument that is not a built-in type (i.e., int, double, char, etc.) **should** be passed either by reference or as a pointer to avoid unnecessary copies.
 
-Inline functions
+5.5.4 Each function reference or pointer argument that is not changed by the function **must** be declared "const".
 
-Function inlining is a compile time operation; thus, inline function definitions must be seen wherever they are called (e.g., defined in a header file).
-When the compiler chooses to inline a function, its code body replaces the function call where it is used. Excessive inlining may produce
-unwanted executable code bloat. Thus, care must be used when deciding which functions to inline. It is important to note that compilers typically
-decide whether a function is inlined. Typically, compilers will not inline functions that are too long or too complex (e.g., complicated conditional
-logic).
+5.5.6 Variable argument lists (i.e., using ellipses "...") **should** be avoided. 
 
-Simple, short frequently called functions, such as accessors, should be inlined
-to enhance performance.
-An inline functions must be defined where it is declared in a header file. Often,
-a compiler will inline small, simple functions without explicit direction from the
-programmer; i.e., without using the inline keyword. To make intent clear to the
-compiler, this keyword should be used.
-Class constructors and destructors should not be inlined. The only case where
-it is reasonable to do so is when a class has no data members and it is not a
-subclass of another class. Remember that a class constructor implicitly calls
-the constructors for its base classes and initializes some or all of its data
-members, potentially calling more constructors. If a constructor is inlined, the
-construction and initialization needed for its members and bases will appear at
-every object declaration.
-Virtual functions must not be inlined due to polymorphism. For example, do not
-declare a class member function as
-virtual void foo( ) { }
+      Although this is a common practice in C code, and can be done in C++ code,
+      this is typically considered a dangerous carryover from C. Variadic 
+      functions are not type-safe and they require tight coupling between 
+      caller and callee, and can result in undefined behavior.
 
-Function and operator overloading
-Functions with the same name must differ in their argument lists and/or in their
-"const" attribute. C++ does not allow identically named functions to differ only
-in their return type since it is always the option of the caller to ignore or use the
-function return value.
-Function overloading must not be used to define functions that do conceptually
-different things. Someone reading declarations of overloaded functions should
-be able to assume (and rightfully so!) that functions with the same name do
-something very similar.
-If an overloaded virtual method in a base class is overridden in a derived class,
-all overloaded methods with the same name in the base class must be
-overridden in the derived class. This prevents unexpected behavior when
-calling such member functions. Remember that when a virtual function is
-overridden, the overloads of that function in the base class are not visible to
-the derived class.
+5.5.7 Each argument in a function declaration **must** be given a name that exactly matches the function implementation. 
 
-Operator overloading must not be used to be clever to the point of obfuscation
-and cause others to think too hard about an operation. An overloaded operator
-must preserve "natural" semantics by appealing to common conventions and
-must have meaning similar to non-overloaded operators of the same name.
-Overloading operators can be beneficial, but should not be overused or abused. Operator overloading is essentially "syntactic sugar" and an
-overloaded operator is just a function like any other function. An important benefit of overloading is that it often allows more appropriate syntax
-that more easily communicates the meaning of an operation. The resulting code can be easier to write, maintain, and understand, and it may be
-more efficient since it may allow the compiler to take advantage of longer expressions than it could otherwise.
+      For example, use::
 
-Both boolean operators "==" and "!=" _+should+_ be implemented if one of
-them is. For consistency and correctness, the "!=" operator should be
-implemented using the "==" operator implementation. For example,
-bool MyClass::operator!= (const MyClass& rhs)
-{
-return !(this == rhs);
-}
-Standard operators, such as "&&", "||", and "," (i.e., comma), must not be
-overloaded because the built-in versions are treated specially by the compiler.
-Programmers cannot implement the full semantics of these built-in operators,
-which can be confusing. For example, the order of operand evaluation cannot
-be guaranteed when overloading operators "&&" or "||". This may cause
-problems as someone may write code that assumes that evaluation order is the
-same as the built-in versions.
+         void computeSomething(int op_count, int mode);
 
-Types
-Behavior should not be selected by "switching" on the type of an object. Virtual
-functions (or templates) should be used to decide behavior, not by conditional
-logic in calling code. Doing so to customize behavior is unsafe and error-prone,
-and a clear indication of poor design and improper use of the C++ type system.
-The C++ "bool" type should be used instead of "int" to describe boolean
-true/false values.
-The C++ "string" type should be used in C++ code instead of "char*". The string
-type supports and optimizes many character string manipulation operations
-which can be error-prone and less efficient if implemented explicitly using
+      not::
 
-"char*" and standard C library functions. Note that "string" and "char*" types
-are easily interchangeable, which allows C++ string data to be used when
-interacting with C routines.
-Class type variables should be defined using direct initialization instead of
-copy initialization to avoid unwanted and spurious conversions and
-constructor calls that may be generated by some compilers. For example, use
-std::string name("Bill");
-instead of
-std::string name = "Bill";
-or
-std::string name = std::string("Bill");
+         void computeSomething(int, int);
 
-Type casting
-C-style casts must not be used in C++ code. All type conversions must be done
-explicitly using the named C++ casting operators; i.e., "static_cast",
-"const_cast", "dynamic_cast", "reinterpret_cast".
-The "static_cast" operator should not be used on pointers. The "dynamic_cast"
-operator is a more powerful and safer way to cast pointers. Exception: In
-performance critical code, dynamic cast overhead may be unacceptable (static
-casts are done at compile time and are essentially free at runtime whereas each
-dynamic cast may incur hundreds of cycles of runtime overhead). In such
-cases, other alternatives should be considered.
-The "const_cast" operator should be avoided in almost all cases. Casting away
-"const" is often a poor programming decision and can introduce errors.
-However, it may be necessary in some circumstances, such as when calling
-const-incorrect APIs.
-The "reinterpret_cast" should be avoided unless absolutely necessary. This
-operator was designed to perform a low-level reinterpretation of the bit pattern
-of an operand. This is needed only in special circumstances and circumvents
-type safety.
+=============================
+5.6 Function implementations
+=============================
 
-Templates
+5.6.1 Each function body **should** be a reasonable length to be easily understood and viewed in a text editor. Long, complex routines **should** be refactored into smaller parts when this is reasonable to increase clarity, flexibility, and the potential for code reuse.
 
-Typically, a class (or function) template should be used only when the behavior
+5.6.2 Each function **should** have exactly one return point to make control logic clear.
 
-of the class (or function) is completely independent of the type of the object to
-which it is applied. Class member templates (e.g., member functions that are
-templates of a class that is not a template) may be useful to reduce code
-redundancy.
-Generic templates that have external linkage must be defined in the header file
-where they are declared since template instantiation is a compile time
-operation. Implementations of class templates and member templates should b
-e placed in the header file after the class definition.
-Inline class methods that are templates must follow the same rules as regular
-(i.e., non-template) inline methods. See Section blah…
-Complete specializations of member templates or function templates must not
-appear in a header file. Such methods are not templates and may produce link
-errors if their definitions are seen more than once.
+      Functions with multiple return points tend to be a source of errors when 
+      modifying code. Such routines can always be refactored to have a single 
+      return point by using local scope boolean variables and/or different 
+      control logic.
 
-Conditional statements and loops
-Curly braces must be used in all conditionals, loops, etc. even when the
-content inside the braces is a "one-liner". This helps prevent coding errors and
-misinterpretation of intent. For example, use:
-if (done) { ... }
-not
-if (done) ...
+      A function **may** have two return points if the first return statement 
+      is associated with error condition check, for example. In this case, 
+      the error check **should** be performed at the start of the function body
+      before other statements are reached. For example, the following is a 
+      reasonable use of two function return points because the error condition
+      check and the return value for successful completion are clearly visible::
 
-One-liners should not be used for "if" conditionals with "else/else if" clauses.
-For example, use the following form:
-if (done) {
-id = 3;
-} else {
-id = 0;
-}
-rather than
-if (done) { id = 3; } else { id = 0; }
+         int computeSomething(int in_val)
+         {
+            if (in_val < 0) { return -1; }
 
-For clarity, the shortest block of an "if/else" statement should come first.
-Complex "if/else if" conditionals with many "else if" clauses should be avoided.
-Such statements can always be refactored using temporary boolean variables
-or "switch" statements. Doing so makes the code easier to read and
-understand and may improve performance.
-An explicit test for zero/nonzero must be used in a conditional unless the
-tested quantity is a bool or a pointer. For example, a conditional based on an
+            // ...rest of function implementation...
 
-integer value should use:
-if (num_lines != 0) {
-not
-if (num_lines) {
+            return 0;
+         }
 
-A switch statement should use curly braces for each case and use indentation
-and white space for readability. Also, each case must contain a "break"
-statement and a "default" case must be provided to catch erroneous case
-values. "Fall through" cases are confusing and error-prone. For example:
-switch (condition) {
-case ABC : {
-...
-break;
-}
-case DEF :
-case GHI : {
-...
-break;
-}
-default : {
-...
-}
-}
+5.6.3 "Sanity checks" should be performed on values of function arguments (e.g., range checking, null pointer checking, etc.) upon entry to a function. 
+
+      This is an excellent way to provide run-time debugging capabilities in 
+      code. Currently, we have a set of *assertion* macros to make syntax
+      consistent. When triggered, they can emit a failed boolean expression and
+      descriptive message that help to understand the violation. They are 
+      active or not based on the compilation mode, either debug (active) or 
+      optimized (inactive). For example::
+
+         void doSomething(int in_val, Foo* in_foo)
+         {
+            ATK_ASSERT_MSG( in_val >= 0, "in_val must be positive or zero" );
+            ATK_ASSERT( in_foo != NULL );
+
+            // ...function implementation...
+         }  
+
+======================
+5.7 Inline functions
+======================
+
+Function inlining is a compile time operation and the full definition of an 
+inline function must be seen wherever it is called. Thus, any function to be
+inlined must be implemented in a header file. 
+
+When a function is implemented in a header file, but not declared inline, a 
+compiler will choose whether or not to inline the function. Typically, 
+a compiler will not inline a function that is too long or too complex (e.g.,
+if it contains complicated conditional logic). When a compiler inlines a 
+function, it replace the function call with the body of the function. Most
+modern ccompilers do a good job of deciding when inlining is a good choice.
+
+**Important notes:**
+
+  * When a function implementation appears in a header file, every file that
+    uses that inline method will often also emit a *function version* of the 
+    method in the object file (\*.o file). This is needed to properly
+    support function pointers.
+  * When a function is explicitly declared inline, using the "inline" keyword,
+    the compiler still decides whether to inline the function. It is possible to
+    specify function attributes and compiler flags that will force a compiler to
+    inline a function. Excessive inlining can cause executable code bloat and 
+    may make debugging dificult. Thus, care must be used when deciding which 
+    functions to explicitly declare inline. 
+
+**When in doubt, don't use the "inline" keyword and let the compiler decide whether to inline a function.**
+
+5.7.1 Simple, short frequently called functions, such as accessors, **should** be implemented inline in header files in most cases.
+
+      **Exception:** Most accessors that return an object by value (i.e., not by
+      pointer or a reference) **should not** be inlined. For example::
+
+         clas MyData 
+         {
+            // ...public interface...
+         private:
+            // non-trivial private data members
+            vector<Foo> m_foovec;
+            Bar m_bar;
+         };
+
+         class MyClass
+         {
+         publis:
+            //...
+            MyData getData() { return m_mydata; } 
+
+         private:
+            MyData m_mydata;
+         }; 
+
+5.7.2 Class constructors **should not** be inlined. 
+
+      A class constructor implicitly calls the constructors for its base 
+      classes and initializes some or all of its data members, potentially 
+      calling more constructors. If a constructor is inlined, the construction 
+      and initialization needed for its members and bases will appear at every 
+      object declaration.
+
+      **Exception:** The only case where it is reasonable to inline a 
+      constructor is when it has only POD ("plain old data") mambers, is not a 
+      subclass of a base class, and does not explcitly declare a destructor. 
+      In this case, a compiler will not even generate a destructor in most 
+      cases. For example::
+
+           class MyClass
+           {
+           public:
+              MyClass() : m_data1(0), m_data2(0) { }
+
+              // No destructor declared
+
+              // ...rest of class definition...
+           private:
+              // class has only POD members
+              int m_data1; 
+              int m_data2; 
+           };
+
+5.7.3 Virtual functions **must not** be inlined due to polymorphism. 
+
+      For example, do not declare a virtual class member function as::
+
+         virtual void foo( ) { }
+
+      In most circumstances, a virtual method cannot be inlined even though it
+      would be inlined otherwise (e.g., because it is very short). A compiler
+      must do runtime dispatch on a virtual method when it doesn't know the
+      complete type at compile time.
+
+      **Exception:** It is safe to define an empty destructor inline in an
+      abstract base class with no data members. For example:: 
+
+           class MyBase
+           {
+           public:
+              virtual ~MyBase() {}
+
+              virtual void doSomething(int param1) = 0;
+
+              virtual void doSomethingElse(int param2) = 0;
+
+              // ...
+
+              // ...no data members...
+           };
+
+=======================================
+5.8 Function and operator overloading
+=======================================
+
+5.8.1 Functions with the same name **must** differ in their argument lists and/or in their "const" attribute. 
+
+      C++ does not allow identically named functions to differ only in their 
+      return type since it is always the option of the caller to ignore or use 
+      the function return value.
+
+5.8.2 Function overloading **must not** be used to define functions that do conceptually different things. 
+
+      Someone reading declarations of overloaded functions should be able to 
+      assume (and rightfully so!) that functions with the same name do 
+      something very similar.
+
+5.8.3 If an overloaded virtual method in a base class is overridden in a derived class, all overloaded methods with the same name in the base class **must** be overridden in the derived class. 
+
+      This prevents unexpected behavior when calling such member functions. 
+      Remember that when a virtual function is overridden, the overloads of 
+      that function in the base class **are not visible** to the derived class.
+
+5.8.4 Operator overloading **must not** be used to be clever to the point of obfuscation and cause others to think too hard about an operation. Specifically, an overloaded operator must preserve "natural" semantics by appealing to common conventions and **must** have meaning similar to non-overloaded operators of the same name.
+
+      Overloading operators can be beneficial, but **should not** be overused 
+      or abused. Operator overloading is essentially "syntactic sugar" and an
+      overloaded operator is just a function like any other function. An 
+      important benefit of overloading is that it often allows more 
+      appropriate syntax that more easily communicates the meaning of an 
+      operation. The resulting code can be easier to write, maintain, and 
+      understand, and it may be more efficient since it may allow the compiler
+      to take advantage of longer expressions than it could otherwise.
+
+5.8.5 Both boolean operators "==" and "!=" **should** be implemented if one of them is. 
+
+      For consistency and correctness, the "!=" operator **should** be 
+      implemented using the "==" operator implementation. For example::
+
+         bool MyClass::operator!= (const MyClass& rhs)
+         {
+            return !(this == rhs);
+         }
+
+5.8.6 Standard operators, such as "&&", "||", and "," (i.e., comma), **must not** be overloaded.
+
+      The built-in versions are treated specially by the compiler. Thus, 
+      programmers cannot implement their full semantics. This can cause
+      confusion. For example, the order of operand evaluation cannot be 
+      guaranteed when overloading operators "&&" or "||". This may cause
+      problems as someone may write code that assumes that evaluation order 
+      is the same as the built-in versions.
+
+============
+5.9 Types
+============
+
+5.9.1 Behavior **should not** be selected by "switching" on the type of an 
+object. 
+
+      Good object-oriented design uses virtual functions (or templates) to 
+      decide behavior. Using conditional logic (e.g., in calling code) to
+      decide behavior is often unsafe and error-prone, and a clear indication 
+      of poor design and improper use of the C++ type system.
+
+5.9.2 The "bool" type **should** be used in C++ code instead of "int" for boolean true/false values.
+
+5.9.3 The "string" type **should** be used in C++ code instead of "char\*". 
+
+      The string type supports and optimizes many character string manipulation
+      operations which can be error-prone and less efficient if implemented 
+      explicitly using "char\*" and standard C library functions. Note that 
+      "string" and "char\*" types are easily interchangeable, which allows C++ 
+      string data to be used when interacting with C routines.
+
+5.9.4 Class type variables **should** be defined using direct initialization instead of copy initialization to avoid unwanted and spurious type conversions and constructor calls that may be generated by compilers. 
+
+      For example, use:: 
+
+         std::string name("Bill");
+
+      instead of::
+
+         std::string name = "Bill";
+
+      or::
+
+         std::string name = std::string("Bill");
+
+===================
+5.10 Type casting
+===================
+
+5.10.1 C-style casts **must not** be used in C++ code. 
+
+      All type conversions **must** be done explicitly using the named C++ 
+      casting operators; i.e., "static_cast", "const_cast", "dynamic_cast", 
+      "reinterpret_cast".
+
+5.10.2 The choice to use the "static_cast" or "dynamic_cast" operator on pointers **must** consider the performance context of the code.
+
+       The "dynamic_cast" operator is a more powerful and safer way to cast 
+       pointers. However, in performance critical code, dynamic cast overhead 
+       may be unacceptable. Static casts are done at compile time and are 
+       essentially free at runtime whereas each dynamic cast may incur hundreds        of cycles of runtime overhead. When this choice is encountered, it may
+       be wise to consider other implementation alternatives.
+
+5.10.3 The "const_cast" operator **should** be avoided. 
+
+       Casting away "const-ness" is often a poor programming decision and can 
+       introduce errors.
+
+       **Exception:** It may be necessary in some circumstances to cast away 
+       const-ness, such as when calling const-incorrect APIs.
+
+5.10.4 The "reinterpret_cast" **must not** be used unless absolutely necessary.
+
+       This operator was designed to perform a low-level reinterpretation of 
+       the bit pattern of an operand. This is needed only in special 
+       circumstances and circumvents type safety.
+
+================
+5.11 Templates
+================
+
+5.11.1 Typically, a class (or function) template **should** be used only when the behavior of the class (or function) is completely independent of the type of the object to which it is applied. 
+
+       Note that class member templates (e.g., member functions that are 
+       templates of a class that is not a template) are often useful to 
+       reduce code redundancy.
+
+5.11.2 Generic templates that have external linkage **must** be defined in the header file where they are declared since template instantiation is a compile time operation. Thus, implementations of class templates and member templates **must** be placed in the class header file, preferably after the class definition.
+
+5.11.3 Complete specializations of member templates or function templates **must not** appear in a header file. 
+
+       Such methods **are not templates** and may produce link errors if their 
+       definitions are seen more than once.
+
+======================================
+5.12 Conditional statements and loops
+======================================
+
+5.12.1 Curly braces **must** be used in all conditionals, loops, etc. even when the content inside the braces is a "one-liner". 
+
+       This helps prevent coding errors and misinterpretation of intent. 
+       For example, use::
+
+          if (done) { ... }
+
+       not::
+
+          if (done) ...
+
+5.12.2 One-liners **may** not be used for "if" conditionals with "else/else if"  clauses when the resulting code is clear. 
+
+       For example, either of the following styles **may** be used::
+
+          if (done) {
+             id = 3;
+          } else {
+             id = 0;
+          }
+
+       or::
+
+          if (done) { id = 3; } else { id = 0; }
+
+5.12.3 For clarity, the shortest block of an "if/else" statement **should** come first.
+
+5.12.4 Complex "if/else if" conditionals with many "else if" clauses **should** be avoided.
+
+      Such statements can always be refactored using local boolean variables 
+      or "switch" statements. Doing so often makes code easier to read and 
+      understand and may improve performance.
+
+5.12.5 An explicit test for zero/nonzero **must** be used in a conditional unless the tested quantity is a bool or a pointer. 
+
+      For example, a conditional based on an integer value should use::
+
+         if (num_lines != 0) {
+
+      not::
+
+         if (num_lines) {
+
+5.12.6 A switch statement **should** use curly braces for each case and use indentation, white space, and comments for readability. Also, each case **must** contain a "break" statement and a "default" case **must** be provided to catch erroneous case values. "Fall through" cases are confusing and error-prone and so **should** be made clear in the code.
+
+      Here is an example illustrating several preferred style practices.
+
+.. code-block:: cpp
+
+         switch (condition) {
+
+            case ABC : {
+               ...
+               break;
+            }
+
+            case DEF :  // fall-through case
+            case GHI : {
+               ...
+            break;
+            }
+
+            default : {
+            ...
+            }
+
+         }
+
 This code example has the following desirable properties:
-Curly braces are used for the "switch" statement and for the individual cases.
-Each "case" statement is indented within the "switch" statement.
-Blank lines are used between different cases.
-Each case containing executable statements has a "break" statement.
-A "default" case is provided to catch erroneous case values.
 
-The "goto" statement should not be used. Only if alternatives are considered
-and determined to be less desirable, should a "goto" even be contemplated.
+   * Curly braces are used for the "switch" statement and for each case.
+   * Each "case" statement is indented within the "switch" statement.
+   * Blank lines are used between different cases.
+   * Each case containing executable statements has a "break" statement.
+   * Fall-through case is documented.
+   * A "default" case is provided to catch erroneous case values.
 
-White space
-Blank lines and indentation should be used throughout code to enhance
-readability. Examples of helpful white space include:
-Between operands and operators in arithmetic expressions.
-After reserved words, such as "while", "for", "if", "switch", etc. and before the parenthesis or curly brace that follows.
-After commas separating arguments in functions.
-After semi-colons in for-loop expressions.
-Before and after curly braces in almost all cases.
+5.12.7 The "goto" statement **should not** be used. 
 
-White space must not appear between a function name and the opening
-parenthesis to the argument list. If a function call is broken across source lines,
-the break must not be between the function name and the opening parenthesis.
-Tabs must not be used for indentation since this can be problematic for
-developers with different text editor settings.
+      Only if alternatives are considered and determined to be less desirable, 
+      should a "goto" even be contemplated.
 
-Code alignment
-Each argument in a function declaration or implementation should appear on
-its own line for clarity. The first argument may appear on the same line as the
-function name, but all arguments should be aligned vertically for clarity.
-All statements within a function body should be indented within the
-surrounding curly braces.
-The start of all source lines in the same scope should be aligned vertically,
-except for continuations of previous lines.
-If a source line is broken at a comma or semi-colon, it must be broken
-immediately after the comma or semi-colon, not before. Doing otherwise, yields
-code that is hard to read and can lead to errors.
-If a source line is broken at an arithmetic operator (i.e., , -, etc.), it +should be
-broken immediately after the operator, not before. Doing otherwise, yields code
-that is harder to read and can lead to errors.
-Parentheses should be used in non-trivial mathematical and logical
-expressions to clearly indicate structure (and intended order) of operations and
-to enhance readability. Do not assume everyone knows all rules for operator
-precedence.
+=================
+5.13 White space
+=================
 
-
+5.13.1 Blank lines and indentation **should** be used throughout code to enhance readability. 
+
+      Examples of helpful white space include:
+
+         * Between operands and operators in arithmetic expressions.
+         * After reserved words, such as "while", "for", "if", "switch", etc. 
+           and before the parenthesis or curly brace that follows.
+         * After commas separating arguments in functions.
+         * After semi-colons in for-loop expressions.
+         * Before and after curly braces in almost all cases.
+
+5.13.2 White space **must not** appear between a function name and the opening parenthesis to the argument list.  In particular, if a function call is broken across source lines, the break **must not** come between the function name and the opening parenthesis.
+
+5.13.3 Tabs **must not** be used for indentation since this can be problematic for developers with different text editor settings.
+
+======================
+5.14 Code alignment
+======================
+
+5.14.1 Each argument in a function declaration or implementation **should** appear on its own line for clarity. The first argument **may** appear on the same line as the function name. When function areguments are placed on multiple lines, they **should** be aligned vertically for clarity.
+
+5.14.2 All statements within a function body **should** be indented within the surrounding curly braces.
+
+5.14.3 The start of all source lines in the same scope **should** be aligned vertically, except for continuations of previous lines.
+
+5.14.4 If a source line is broken at a comma or semi-colon, it **must** be broken after the comma or semi-colon, not before. 
+
+      Doing otherwise, produces code that is hard to read and can lead to 
+      errors.
+
+5.14.5 If a source line is broken at an arithmetic operator (i.e., , -, etc.), it **should** be broken after the operator, not before. 
+
+      Doing otherwise, yields code that is harder to read and can lead to 
+      errors.
+
+5.14.6 Parentheses **should** be used in non-trivial mathematical and logical expressions to clearly indicate structure and intended order of operations and to enhance readability. 
+
+      Do not assume everyone who looks at the code knows all the rules for 
+      operator precedence.

@@ -148,259 +148,422 @@ than the &#8220;malloc&#8221; family of C functions.  C++ new/delete operators
 <div>The rule of thumb is: when &#8220;[ ]&#8221; appears in the allocation, then &#8220;[ ]&#8221;
 <strong>must</strong> appear in the corresponding deallocation statement.</div></blockquote>
 <p>5.4.6 Before committing code to the source repository, one <strong>should</strong> use memory-checking tools to verify there are no leaks and other memory misuse.</p>
+<blockquote>
+<div>When merging to the <em>develop</em> or <em>master</em> branches, compilation with a
+variety fo compilers, testing, memory-checking, etc. will be done
+automatically as part of the <em>pull request</em> approval process.  The pull
+request will not be approved until all of these tasks succeed.</div></blockquote>
 </div>
 <div class="section" id="function-declarations">
 <h2>5.5 Function declarations<a class="headerlink" href="#function-declarations" title="Permalink to this headline">¶</a></h2>
-<p>Any class member function that does not change a data member of the
-associated class must be declared &#8220;const&#8221;.
-Function arguments should be ordered the same way for all routines in a
-project.
-Common conventions are either to put all inputs first, then outputs, or the other way around. Input and output and outputs must not be mixed in a
-function signature. Parameters that are both input and output can make the best choice unclear. Always follow conventions consistent with related
-functions when possible.
-When adding new parameters to an existing function, the existing ordering convention must be followed. Do not just stick new parameters at the
-end.</p>
-<p>Each function argument that is not a built-in type (i.e., int, double, char, etc.) sh
-ould be passed either by reference or as a pointer to avoid unnecessary copies.
-Each function reference or pointer argument that is not changed by the
-function must be declared &#8220;const&#8221;.
-Variable argument lists (i.e., using ellipses &#8221;...&#8221;) should not be used. Although
-available in C++, they are generally considered a dangerous carryover from C.
-Variadic functions are not type-safe, they require tight coupling between caller
-and callee, and often result in undefined behavior.
-Each argument in a function declaration must be given a name that matches
-the function implementation. For example, use
-void computeSomething(int op_count,
-int mode);
-not
-void computeSomething(int,
-int);</p>
-<p>Function implementations
-Each function body should be a reasonable length to be easily understood and
-viewed in a text editor. Long, complex routines should be refactored into
-smaller parts when this is reasonable to increase clarity and potentially reduce
-code redundancy by promoting code reuse and flexibility.
-Each function should have exactly one return point. Functions with multiple
-return points tend to be a source of errors when making modifications. Such
-routines can always be refactored to have a single return point by using
-temporary boolean variables and/or different control logic.
-A function may have two return points if the first return statement is associated with error checking,; e.g., when a state is reached beyond which it
-does not make sense to continue execution of the function. In this case, error checking should be performed at the start of the function body
-before other statements are reached.
-For example, the following is a reasonable use of two function return points:
-int computeSomething(int in_val)
+<p>5.5.1 Any class member function that does not change a data member of the associated class <strong>must</strong> be declared &#8220;const&#8221;.</p>
+<p>5.5.2 Function arguments <strong>must</strong> be ordered the same way for all routines in a project.</p>
+<blockquote>
+<div>Common conventions are either to put all input arguments first, then
+outputs, or the other way around. Input and output and outputs
+<strong>must not</strong> be mixed in a function signature. Parameters that are both
+input and output can make the best choice unclear. Conventions consistent
+with relatd functions <strong>must</strong> always be followed. When adding new
+parameters to an existing method, the established ordering convention
+<strong>must</strong> be followed. Do not just stick new parameters at the end of
+the argument list.</div></blockquote>
+<p>5.5.3 Each function argument that is not a built-in type (i.e., int, double, char, etc.) <strong>should</strong> be passed either by reference or as a pointer to avoid unnecessary copies.</p>
+<p>5.5.4 Each function reference or pointer argument that is not changed by the function <strong>must</strong> be declared &#8220;const&#8221;.</p>
+<p>5.5.6 Variable argument lists (i.e., using ellipses &#8221;...&#8221;) <strong>should</strong> be avoided.</p>
+<blockquote>
+<div>Although this is a common practice in C code, and can be done in C++ code,
+this is typically considered a dangerous carryover from C. Variadic
+functions are not type-safe and they require tight coupling between
+caller and callee, and can result in undefined behavior.</div></blockquote>
+<p>5.5.7 Each argument in a function declaration <strong>must</strong> be given a name that exactly matches the function implementation.</p>
+<blockquote>
+<div><p>For example, use:</p>
+<div class="highlight-python"><pre>void computeSomething(int op_count, int mode);</pre>
+</div>
+<p>not:</p>
+<div class="highlight-python"><pre>void computeSomething(int, int);</pre>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="function-implementations">
+<h2>5.6 Function implementations<a class="headerlink" href="#function-implementations" title="Permalink to this headline">¶</a></h2>
+<p>5.6.1 Each function body <strong>should</strong> be a reasonable length to be easily understood and viewed in a text editor. Long, complex routines <strong>should</strong> be refactored into smaller parts when this is reasonable to increase clarity, flexibility, and the potential for code reuse.</p>
+<p>5.6.2 Each function <strong>should</strong> have exactly one return point to make control logic clear.</p>
+<blockquote>
+<div><p>Functions with multiple return points tend to be a source of errors when
+modifying code. Such routines can always be refactored to have a single
+return point by using local scope boolean variables and/or different
+control logic.</p>
+<p>A function <strong>may</strong> have two return points if the first return statement
+is associated with error condition check, for example. In this case,
+the error check <strong>should</strong> be performed at the start of the function body
+before other statements are reached. For example, the following is a
+reasonable use of two function return points because the error condition
+check and the return value for successful completion are clearly visible:</p>
+<div class="highlight-python"><pre>int computeSomething(int in_val)
 {
-if (in_val &lt; 0) { return -1; }
-// ...
-return 0;
-}</p>
-<p>&#8220;Sanity checks&#8221; should be performed on values of function arguments (e.g.,
-range checking, checking for null pointers, etc.) upon entry to a function. This
-is an excellent way to provide run-time debugging capabilities in code. We need
-a set of macros/functions for this.</p>
-<p>Inline functions</p>
+   if (in_val &lt; 0) { return -1; }
+
+   // ...rest of function implementation...
+
+   return 0;
+}</pre>
+</div>
+</div></blockquote>
+<p>5.6.3 &#8220;Sanity checks&#8221; should be performed on values of function arguments (e.g., range checking, null pointer checking, etc.) upon entry to a function.</p>
 <blockquote>
-<div>Function inlining is a compile time operation; thus, inline function definitions must be seen wherever they are called (e.g., defined in a header file).</div></blockquote>
-<p>When the compiler chooses to inline a function, its code body replaces the function call where it is used. Excessive inlining may produce
-unwanted executable code bloat. Thus, care must be used when deciding which functions to inline. It is important to note that compilers typically
-decide whether a function is inlined. Typically, compilers will not inline functions that are too long or too complex (e.g., complicated conditional
-logic).</p>
-<p>Simple, short frequently called functions, such as accessors, should be inlined
-to enhance performance.
-An inline functions must be defined where it is declared in a header file. Often,
-a compiler will inline small, simple functions without explicit direction from the
-programmer; i.e., without using the inline keyword. To make intent clear to the
-compiler, this keyword should be used.
-Class constructors and destructors should not be inlined. The only case where
-it is reasonable to do so is when a class has no data members and it is not a
-subclass of another class. Remember that a class constructor implicitly calls
-the constructors for its base classes and initializes some or all of its data
-members, potentially calling more constructors. If a constructor is inlined, the
-construction and initialization needed for its members and bases will appear at
-every object declaration.
-Virtual functions must not be inlined due to polymorphism. For example, do not
-declare a class member function as
-virtual void foo( ) { }</p>
-<p>Function and operator overloading
-Functions with the same name must differ in their argument lists and/or in their
-&#8220;const&#8221; attribute. C++ does not allow identically named functions to differ only
-in their return type since it is always the option of the caller to ignore or use the
-function return value.
-Function overloading must not be used to define functions that do conceptually
-different things. Someone reading declarations of overloaded functions should
-be able to assume (and rightfully so!) that functions with the same name do
-something very similar.
-If an overloaded virtual method in a base class is overridden in a derived class,
-all overloaded methods with the same name in the base class must be
-overridden in the derived class. This prevents unexpected behavior when
-calling such member functions. Remember that when a virtual function is
-overridden, the overloads of that function in the base class are not visible to
-the derived class.</p>
-<blockquote>
-<div>Operator overloading must not be used to be clever to the point of obfuscation</div></blockquote>
-<p>and cause others to think too hard about an operation. An overloaded operator
-must preserve &#8220;natural&#8221; semantics by appealing to common conventions and
-must have meaning similar to non-overloaded operators of the same name.
-Overloading operators can be beneficial, but should not be overused or abused. Operator overloading is essentially &#8220;syntactic sugar&#8221; and an
-overloaded operator is just a function like any other function. An important benefit of overloading is that it often allows more appropriate syntax
-that more easily communicates the meaning of an operation. The resulting code can be easier to write, maintain, and understand, and it may be
-more efficient since it may allow the compiler to take advantage of longer expressions than it could otherwise.</p>
-<p>Both boolean operators &#8220;==&#8221; and &#8221;!=&#8221; _+should+_ be implemented if one of
-them is. For consistency and correctness, the &#8221;!=&#8221; operator should be
-implemented using the &#8220;==&#8221; operator implementation. For example,
-bool MyClass::operator!= (const MyClass&amp; rhs)
+<div><p>This is an excellent way to provide run-time debugging capabilities in
+code. Currently, we have a set of <em>assertion</em> macros to make syntax
+consistent. When triggered, they can emit a failed boolean expression and
+descriptive message that help to understand the violation. They are
+active or not based on the compilation mode, either debug (active) or
+optimized (inactive). For example:</p>
+<div class="highlight-python"><pre>void doSomething(int in_val, Foo* in_foo)
 {
-return !(this == rhs);
-}
-Standard operators, such as &#8220;&amp;&amp;&#8221;, &#8220;||&#8221;, and &#8221;,&#8221; (i.e., comma), must not be
-overloaded because the built-in versions are treated specially by the compiler.
-Programmers cannot implement the full semantics of these built-in operators,
-which can be confusing. For example, the order of operand evaluation cannot
-be guaranteed when overloading operators &#8220;&amp;&amp;&#8221; or &#8220;||&#8221;. This may cause
-problems as someone may write code that assumes that evaluation order is the
-same as the built-in versions.</p>
-<p>Types
-Behavior should not be selected by &#8220;switching&#8221; on the type of an object. Virtual
-functions (or templates) should be used to decide behavior, not by conditional
-logic in calling code. Doing so to customize behavior is unsafe and error-prone,
-and a clear indication of poor design and improper use of the C++ type system.
-The C++ &#8220;bool&#8221; type should be used instead of &#8220;int&#8221; to describe boolean
-true/false values.
-The C++ &#8220;string&#8221; type should be used in C++ code instead of &#8220;char*&#8221;. The string
-type supports and optimizes many character string manipulation operations
-which can be error-prone and less efficient if implemented explicitly using</p>
+   ATK_ASSERT_MSG( in_val &gt;= 0, "in_val must be positive or zero" );
+   ATK_ASSERT( in_foo != NULL );
+
+   // ...function implementation...
+}</pre>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="inline-functions">
+<h2>5.7 Inline functions<a class="headerlink" href="#inline-functions" title="Permalink to this headline">¶</a></h2>
+<p>Function inlining is a compile time operation and the full definition of an
+inline function must be seen wherever it is called. Thus, any function to be
+inlined must be implemented in a header file.</p>
+<p>When a function is implemented in a header file, but not declared inline, a
+compiler will choose whether or not to inline the function. Typically,
+a compiler will not inline a function that is too long or too complex (e.g.,
+if it contains complicated conditional logic). When a compiler inlines a
+function, it replace the function call with the body of the function. Most
+modern ccompilers do a good job of deciding when inlining is a good choice.</p>
+<p><strong>Important notes:</strong></p>
 <blockquote>
-<div>&#8220;char*&#8221; and standard C library functions. Note that &#8220;string&#8221; and &#8220;char*&#8221; types</div></blockquote>
-<p>are easily interchangeable, which allows C++ string data to be used when
-interacting with C routines.
-Class type variables should be defined using direct initialization instead of
-copy initialization to avoid unwanted and spurious conversions and
-constructor calls that may be generated by some compilers. For example, use
-std::string name(&#8220;Bill&#8221;);
-instead of
-std::string name = &#8220;Bill&#8221;;
-or
-std::string name = std::string(&#8220;Bill&#8221;);</p>
-<p>Type casting
-C-style casts must not be used in C++ code. All type conversions must be done
-explicitly using the named C++ casting operators; i.e., &#8220;static_cast&#8221;,
-&#8220;const_cast&#8221;, &#8220;dynamic_cast&#8221;, &#8220;reinterpret_cast&#8221;.
-The &#8220;static_cast&#8221; operator should not be used on pointers. The &#8220;dynamic_cast&#8221;
-operator is a more powerful and safer way to cast pointers. Exception: In
-performance critical code, dynamic cast overhead may be unacceptable (static
-casts are done at compile time and are essentially free at runtime whereas each
-dynamic cast may incur hundreds of cycles of runtime overhead). In such
-cases, other alternatives should be considered.
-The &#8220;const_cast&#8221; operator should be avoided in almost all cases. Casting away
-&#8220;const&#8221; is often a poor programming decision and can introduce errors.
-However, it may be necessary in some circumstances, such as when calling
-const-incorrect APIs.
-The &#8220;reinterpret_cast&#8221; should be avoided unless absolutely necessary. This
-operator was designed to perform a low-level reinterpretation of the bit pattern
-of an operand. This is needed only in special circumstances and circumvents
-type safety.</p>
-<p>Templates</p>
-<p>Typically, a class (or function) template should be used only when the behavior</p>
+<div><ul class="simple">
+<li>When a function implementation appears in a header file, every file that
+uses that inline method will often also emit a <em>function version</em> of the
+method in the object file (*.o file). This is needed to properly
+support function pointers.</li>
+<li>When a function is explicitly declared inline, using the &#8220;inline&#8221; keyword,
+the compiler still decides whether to inline the function. It is possible to
+specify function attributes and compiler flags that will force a compiler to
+inline a function. Excessive inlining can cause executable code bloat and
+may make debugging dificult. Thus, care must be used when deciding which
+functions to explicitly declare inline.</li>
+</ul>
+</div></blockquote>
+<p><strong>When in doubt, don&#8217;t use the &#8220;inline&#8221; keyword and let the compiler decide whether to inline a function.</strong></p>
+<p>5.7.1 Simple, short frequently called functions, such as accessors, <strong>should</strong> be implemented inline in header files in most cases.</p>
 <blockquote>
-<div>of the class (or function) is completely independent of the type of the object to</div></blockquote>
-<p>which it is applied. Class member templates (e.g., member functions that are
-templates of a class that is not a template) may be useful to reduce code
-redundancy.
-Generic templates that have external linkage must be defined in the header file
-where they are declared since template instantiation is a compile time
-operation. Implementations of class templates and member templates should b
-e placed in the header file after the class definition.
-Inline class methods that are templates must follow the same rules as regular
-(i.e., non-template) inline methods. See Section blah…
-Complete specializations of member templates or function templates must not
-appear in a header file. Such methods are not templates and may produce link
-errors if their definitions are seen more than once.</p>
-<p>Conditional statements and loops
-Curly braces must be used in all conditionals, loops, etc. even when the
-content inside the braces is a &#8220;one-liner&#8221;. This helps prevent coding errors and
-misinterpretation of intent. For example, use:
-if (done) { ... }
-not
-if (done) ...</p>
-<p>One-liners should not be used for &#8220;if&#8221; conditionals with &#8220;else/else if&#8221; clauses.
-For example, use the following form:
-if (done) {
-id = 3;
+<div><p><strong>Exception:</strong> Most accessors that return an object by value (i.e., not by
+pointer or a reference) <strong>should not</strong> be inlined. For example:</p>
+<div class="highlight-python"><pre>clas MyData
+{
+   // ...public interface...
+private:
+   // non-trivial private data members
+   vector&lt;Foo&gt; m_foovec;
+   Bar m_bar;
+};
+
+class MyClass
+{
+publis:
+   //...
+   MyData getData() { return m_mydata; }
+
+private:
+   MyData m_mydata;
+};</pre>
+</div>
+</div></blockquote>
+<p>5.7.2 Class constructors <strong>should not</strong> be inlined.</p>
+<blockquote>
+<div><p>A class constructor implicitly calls the constructors for its base
+classes and initializes some or all of its data members, potentially
+calling more constructors. If a constructor is inlined, the construction
+and initialization needed for its members and bases will appear at every
+object declaration.</p>
+<p><strong>Exception:</strong> The only case where it is reasonable to inline a
+constructor is when it has only POD (&#8220;plain old data&#8221;) mambers, is not a
+subclass of a base class, and does not explcitly declare a destructor.
+In this case, a compiler will not even generate a destructor in most
+cases. For example:</p>
+<div class="highlight-python"><pre>class MyClass
+{
+public:
+   MyClass() : m_data1(0), m_data2(0) { }
+
+   // No destructor declared
+
+   // ...rest of class definition...
+private:
+   // class has only POD members
+   int m_data1;
+   int m_data2;
+};</pre>
+</div>
+</div></blockquote>
+<p>5.7.3 Virtual functions <strong>must not</strong> be inlined due to polymorphism.</p>
+<blockquote>
+<div><p>For example, do not declare a virtual class member function as:</p>
+<div class="highlight-python"><pre>virtual void foo( ) { }</pre>
+</div>
+<p>In most circumstances, a virtual method cannot be inlined even though it
+would be inlined otherwise (e.g., because it is very short). A compiler
+must do runtime dispatch on a virtual method when it doesn&#8217;t know the
+complete type at compile time.</p>
+<p><strong>Exception:</strong> It is safe to define an empty destructor inline in an
+abstract base class with no data members. For example:</p>
+<div class="highlight-python"><pre>class MyBase
+{
+public:
+   virtual ~MyBase() {}
+
+   virtual void doSomething(int param1) = 0;
+
+   virtual void doSomethingElse(int param2) = 0;
+
+   // ...
+
+   // ...no data members...
+};</pre>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="function-and-operator-overloading">
+<h2>5.8 Function and operator overloading<a class="headerlink" href="#function-and-operator-overloading" title="Permalink to this headline">¶</a></h2>
+<p>5.8.1 Functions with the same name <strong>must</strong> differ in their argument lists and/or in their &#8220;const&#8221; attribute.</p>
+<blockquote>
+<div>C++ does not allow identically named functions to differ only in their
+return type since it is always the option of the caller to ignore or use
+the function return value.</div></blockquote>
+<p>5.8.2 Function overloading <strong>must not</strong> be used to define functions that do conceptually different things.</p>
+<blockquote>
+<div>Someone reading declarations of overloaded functions should be able to
+assume (and rightfully so!) that functions with the same name do
+something very similar.</div></blockquote>
+<p>5.8.3 If an overloaded virtual method in a base class is overridden in a derived class, all overloaded methods with the same name in the base class <strong>must</strong> be overridden in the derived class.</p>
+<blockquote>
+<div>This prevents unexpected behavior when calling such member functions.
+Remember that when a virtual function is overridden, the overloads of
+that function in the base class <strong>are not visible</strong> to the derived class.</div></blockquote>
+<p>5.8.4 Operator overloading <strong>must not</strong> be used to be clever to the point of obfuscation and cause others to think too hard about an operation. Specifically, an overloaded operator must preserve &#8220;natural&#8221; semantics by appealing to common conventions and <strong>must</strong> have meaning similar to non-overloaded operators of the same name.</p>
+<blockquote>
+<div>Overloading operators can be beneficial, but <strong>should not</strong> be overused
+or abused. Operator overloading is essentially &#8220;syntactic sugar&#8221; and an
+overloaded operator is just a function like any other function. An
+important benefit of overloading is that it often allows more
+appropriate syntax that more easily communicates the meaning of an
+operation. The resulting code can be easier to write, maintain, and
+understand, and it may be more efficient since it may allow the compiler
+to take advantage of longer expressions than it could otherwise.</div></blockquote>
+<p>5.8.5 Both boolean operators &#8220;==&#8221; and &#8221;!=&#8221; <strong>should</strong> be implemented if one of them is.</p>
+<blockquote>
+<div><p>For consistency and correctness, the &#8221;!=&#8221; operator <strong>should</strong> be
+implemented using the &#8220;==&#8221; operator implementation. For example:</p>
+<div class="highlight-python"><pre>bool MyClass::operator!= (const MyClass&amp; rhs)
+{
+   return !(this == rhs);
+}</pre>
+</div>
+</div></blockquote>
+<p>5.8.6 Standard operators, such as &#8220;&amp;&amp;&#8221;, &#8220;||&#8221;, and &#8221;,&#8221; (i.e., comma), <strong>must not</strong> be overloaded.</p>
+<blockquote>
+<div>The built-in versions are treated specially by the compiler. Thus,
+programmers cannot implement their full semantics. This can cause
+confusion. For example, the order of operand evaluation cannot be
+guaranteed when overloading operators &#8220;&amp;&amp;&#8221; or &#8220;||&#8221;. This may cause
+problems as someone may write code that assumes that evaluation order
+is the same as the built-in versions.</div></blockquote>
+</div>
+<div class="section" id="types">
+<h2>5.9 Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h2>
+<p>5.9.1 Behavior <strong>should not</strong> be selected by &#8220;switching&#8221; on the type of an
+object.</p>
+<blockquote>
+<div>Good object-oriented design uses virtual functions (or templates) to
+decide behavior. Using conditional logic (e.g., in calling code) to
+decide behavior is often unsafe and error-prone, and a clear indication
+of poor design and improper use of the C++ type system.</div></blockquote>
+<p>5.9.2 The &#8220;bool&#8221; type <strong>should</strong> be used in C++ code instead of &#8220;int&#8221; for boolean true/false values.</p>
+<p>5.9.3 The &#8220;string&#8221; type <strong>should</strong> be used in C++ code instead of &#8220;char*&#8221;.</p>
+<blockquote>
+<div>The string type supports and optimizes many character string manipulation
+operations which can be error-prone and less efficient if implemented
+explicitly using &#8220;char*&#8221; and standard C library functions. Note that
+&#8220;string&#8221; and &#8220;char*&#8221; types are easily interchangeable, which allows C++
+string data to be used when interacting with C routines.</div></blockquote>
+<p>5.9.4 Class type variables <strong>should</strong> be defined using direct initialization instead of copy initialization to avoid unwanted and spurious type conversions and constructor calls that may be generated by compilers.</p>
+<blockquote>
+<div><p>For example, use:</p>
+<div class="highlight-python"><pre>std::string name("Bill");</pre>
+</div>
+<p>instead of:</p>
+<div class="highlight-python"><pre>std::string name = "Bill";</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>std::string name = std::string("Bill");</pre>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="type-casting">
+<h2>5.10 Type casting<a class="headerlink" href="#type-casting" title="Permalink to this headline">¶</a></h2>
+<p>5.10.1 C-style casts <strong>must not</strong> be used in C++ code.</p>
+<blockquote>
+<div>All type conversions <strong>must</strong> be done explicitly using the named C++
+casting operators; i.e., &#8220;static_cast&#8221;, &#8220;const_cast&#8221;, &#8220;dynamic_cast&#8221;,
+&#8220;reinterpret_cast&#8221;.</div></blockquote>
+<p>5.10.2 The choice to use the &#8220;static_cast&#8221; or &#8220;dynamic_cast&#8221; operator on pointers <strong>must</strong> consider the performance context of the code.</p>
+<blockquote>
+<div>The &#8220;dynamic_cast&#8221; operator is a more powerful and safer way to cast
+pointers. However, in performance critical code, dynamic cast overhead
+may be unacceptable. Static casts are done at compile time and are
+essentially free at runtime whereas each dynamic cast may incur hundreds        of cycles of runtime overhead. When this choice is encountered, it may
+be wise to consider other implementation alternatives.</div></blockquote>
+<p>5.10.3 The &#8220;const_cast&#8221; operator <strong>should</strong> be avoided.</p>
+<blockquote>
+<div><p>Casting away &#8220;const-ness&#8221; is often a poor programming decision and can
+introduce errors.</p>
+<p><strong>Exception:</strong> It may be necessary in some circumstances to cast away
+const-ness, such as when calling const-incorrect APIs.</p>
+</div></blockquote>
+<p>5.10.4 The &#8220;reinterpret_cast&#8221; <strong>must not</strong> be used unless absolutely necessary.</p>
+<blockquote>
+<div>This operator was designed to perform a low-level reinterpretation of
+the bit pattern of an operand. This is needed only in special
+circumstances and circumvents type safety.</div></blockquote>
+</div>
+<div class="section" id="templates">
+<h2>5.11 Templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h2>
+<p>5.11.1 Typically, a class (or function) template <strong>should</strong> be used only when the behavior of the class (or function) is completely independent of the type of the object to which it is applied.</p>
+<blockquote>
+<div>Note that class member templates (e.g., member functions that are
+templates of a class that is not a template) are often useful to
+reduce code redundancy.</div></blockquote>
+<p>5.11.2 Generic templates that have external linkage <strong>must</strong> be defined in the header file where they are declared since template instantiation is a compile time operation. Thus, implementations of class templates and member templates <strong>must</strong> be placed in the class header file, preferably after the class definition.</p>
+<p>5.11.3 Complete specializations of member templates or function templates <strong>must not</strong> appear in a header file.</p>
+<blockquote>
+<div>Such methods <strong>are not templates</strong> and may produce link errors if their
+definitions are seen more than once.</div></blockquote>
+</div>
+<div class="section" id="conditional-statements-and-loops">
+<h2>5.12 Conditional statements and loops<a class="headerlink" href="#conditional-statements-and-loops" title="Permalink to this headline">¶</a></h2>
+<p>5.12.1 Curly braces <strong>must</strong> be used in all conditionals, loops, etc. even when the content inside the braces is a &#8220;one-liner&#8221;.</p>
+<blockquote>
+<div><p>This helps prevent coding errors and misinterpretation of intent.
+For example, use:</p>
+<div class="highlight-python"><pre>if (done) { ... }</pre>
+</div>
+<p>not:</p>
+<div class="highlight-python"><pre>if (done) ...</pre>
+</div>
+</div></blockquote>
+<p>5.12.2 One-liners <strong>may</strong> not be used for &#8220;if&#8221; conditionals with &#8220;else/else if&#8221;  clauses when the resulting code is clear.</p>
+<blockquote>
+<div><p>For example, either of the following styles <strong>may</strong> be used:</p>
+<div class="highlight-python"><pre>if (done) {
+   id = 3;
 } else {
-id = 0;
-}
-rather than
-if (done) { id = 3; } else { id = 0; }</p>
-<p>For clarity, the shortest block of an &#8220;if/else&#8221; statement should come first.
-Complex &#8220;if/else if&#8221; conditionals with many &#8220;else if&#8221; clauses should be avoided.
-Such statements can always be refactored using temporary boolean variables
-or &#8220;switch&#8221; statements. Doing so makes the code easier to read and
-understand and may improve performance.
-An explicit test for zero/nonzero must be used in a conditional unless the
-tested quantity is a bool or a pointer. For example, a conditional based on an</p>
+   id = 0;
+}</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>if (done) { id = 3; } else { id = 0; }</pre>
+</div>
+</div></blockquote>
+<p>5.12.3 For clarity, the shortest block of an &#8220;if/else&#8221; statement <strong>should</strong> come first.</p>
+<p>5.12.4 Complex &#8220;if/else if&#8221; conditionals with many &#8220;else if&#8221; clauses <strong>should</strong> be avoided.</p>
 <blockquote>
-<div>integer value should use:</div></blockquote>
-<p>if (num_lines != 0) {
-not
-if (num_lines) {</p>
-<p>A switch statement should use curly braces for each case and use indentation
-and white space for readability. Also, each case must contain a &#8220;break&#8221;
-statement and a &#8220;default&#8221; case must be provided to catch erroneous case
-values. &#8220;Fall through&#8221; cases are confusing and error-prone. For example:
-switch (condition) {
-case ABC : {
-...
-break;
-}
-case DEF :
-case GHI : {
-...
-break;
-}
-default : {
-...
-}
-}
-This code example has the following desirable properties:
-Curly braces are used for the &#8220;switch&#8221; statement and for the individual cases.
-Each &#8220;case&#8221; statement is indented within the &#8220;switch&#8221; statement.
-Blank lines are used between different cases.
-Each case containing executable statements has a &#8220;break&#8221; statement.
-A &#8220;default&#8221; case is provided to catch erroneous case values.</p>
-<p>The &#8220;goto&#8221; statement should not be used. Only if alternatives are considered
-and determined to be less desirable, should a &#8220;goto&#8221; even be contemplated.</p>
-<p>White space
-Blank lines and indentation should be used throughout code to enhance
-readability. Examples of helpful white space include:
-Between operands and operators in arithmetic expressions.
-After reserved words, such as &#8220;while&#8221;, &#8220;for&#8221;, &#8220;if&#8221;, &#8220;switch&#8221;, etc. and before the parenthesis or curly brace that follows.
-After commas separating arguments in functions.
-After semi-colons in for-loop expressions.
-Before and after curly braces in almost all cases.</p>
-<p>White space must not appear between a function name and the opening
-parenthesis to the argument list. If a function call is broken across source lines,
-the break must not be between the function name and the opening parenthesis.
-Tabs must not be used for indentation since this can be problematic for
-developers with different text editor settings.</p>
+<div>Such statements can always be refactored using local boolean variables
+or &#8220;switch&#8221; statements. Doing so often makes code easier to read and
+understand and may improve performance.</div></blockquote>
+<p>5.12.5 An explicit test for zero/nonzero <strong>must</strong> be used in a conditional unless the tested quantity is a bool or a pointer.</p>
 <blockquote>
-<div>Code alignment</div></blockquote>
-<p>Each argument in a function declaration or implementation should appear on
-its own line for clarity. The first argument may appear on the same line as the
-function name, but all arguments should be aligned vertically for clarity.
-All statements within a function body should be indented within the
-surrounding curly braces.
-The start of all source lines in the same scope should be aligned vertically,
-except for continuations of previous lines.
-If a source line is broken at a comma or semi-colon, it must be broken
-immediately after the comma or semi-colon, not before. Doing otherwise, yields
-code that is hard to read and can lead to errors.
-If a source line is broken at an arithmetic operator (i.e., , -, etc.), it +should be
-broken immediately after the operator, not before. Doing otherwise, yields code
-that is harder to read and can lead to errors.
-Parentheses should be used in non-trivial mathematical and logical
-expressions to clearly indicate structure (and intended order) of operations and
-to enhance readability. Do not assume everyone knows all rules for operator
-precedence.</p>
+<div><p>For example, a conditional based on an integer value should use:</p>
+<div class="highlight-python"><pre>if (num_lines != 0) {</pre>
+</div>
+<p>not:</p>
+<div class="highlight-python"><pre>if (num_lines) {</pre>
+</div>
+</div></blockquote>
+<p>5.12.6 A switch statement <strong>should</strong> use curly braces for each case and use indentation, white space, and comments for readability. Also, each case <strong>must</strong> contain a &#8220;break&#8221; statement and a &#8220;default&#8221; case <strong>must</strong> be provided to catch erroneous case values. &#8220;Fall through&#8221; cases are confusing and error-prone and so <strong>should</strong> be made clear in the code.</p>
+<blockquote>
+<div>Here is an example illustrating several preferred style practices.</div></blockquote>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="k">switch</span> <span class="p">(</span><span class="n">condition</span><span class="p">)</span> <span class="p">{</span>
+
+   <span class="k">case</span> <span class="n">ABC</span> <span class="o">:</span> <span class="p">{</span>
+      <span class="p">...</span>
+      <span class="k">break</span><span class="p">;</span>
+   <span class="p">}</span>
+
+   <span class="k">case</span> <span class="n">DEF</span> <span class="o">:</span>  <span class="c1">// fall-through case</span>
+   <span class="k">case</span> <span class="n">GHI</span> <span class="o">:</span> <span class="p">{</span>
+      <span class="p">...</span>
+   <span class="k">break</span><span class="p">;</span>
+   <span class="p">}</span>
+
+   <span class="k">default</span> <span class="o">:</span> <span class="p">{</span>
+   <span class="p">...</span>
+   <span class="p">}</span>
+
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This code example has the following desirable properties:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Curly braces are used for the &#8220;switch&#8221; statement and for each case.</li>
+<li>Each &#8220;case&#8221; statement is indented within the &#8220;switch&#8221; statement.</li>
+<li>Blank lines are used between different cases.</li>
+<li>Each case containing executable statements has a &#8220;break&#8221; statement.</li>
+<li>Fall-through case is documented.</li>
+<li>A &#8220;default&#8221; case is provided to catch erroneous case values.</li>
+</ul>
+</div></blockquote>
+<p>5.12.7 The &#8220;goto&#8221; statement <strong>should not</strong> be used.</p>
+<blockquote>
+<div>Only if alternatives are considered and determined to be less desirable,
+should a &#8220;goto&#8221; even be contemplated.</div></blockquote>
+</div>
+<div class="section" id="white-space">
+<h2>5.13 White space<a class="headerlink" href="#white-space" title="Permalink to this headline">¶</a></h2>
+<p>5.13.1 Blank lines and indentation <strong>should</strong> be used throughout code to enhance readability.</p>
+<blockquote>
+<div><p>Examples of helpful white space include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Between operands and operators in arithmetic expressions.</li>
+<li>After reserved words, such as &#8220;while&#8221;, &#8220;for&#8221;, &#8220;if&#8221;, &#8220;switch&#8221;, etc.
+and before the parenthesis or curly brace that follows.</li>
+<li>After commas separating arguments in functions.</li>
+<li>After semi-colons in for-loop expressions.</li>
+<li>Before and after curly braces in almost all cases.</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p>5.13.2 White space <strong>must not</strong> appear between a function name and the opening parenthesis to the argument list.  In particular, if a function call is broken across source lines, the break <strong>must not</strong> come between the function name and the opening parenthesis.</p>
+<p>5.13.3 Tabs <strong>must not</strong> be used for indentation since this can be problematic for developers with different text editor settings.</p>
+</div>
+<div class="section" id="code-alignment">
+<h2>5.14 Code alignment<a class="headerlink" href="#code-alignment" title="Permalink to this headline">¶</a></h2>
+<p>5.14.1 Each argument in a function declaration or implementation <strong>should</strong> appear on its own line for clarity. The first argument <strong>may</strong> appear on the same line as the function name. When function areguments are placed on multiple lines, they <strong>should</strong> be aligned vertically for clarity.</p>
+<p>5.14.2 All statements within a function body <strong>should</strong> be indented within the surrounding curly braces.</p>
+<p>5.14.3 The start of all source lines in the same scope <strong>should</strong> be aligned vertically, except for continuations of previous lines.</p>
+<p>5.14.4 If a source line is broken at a comma or semi-colon, it <strong>must</strong> be broken after the comma or semi-colon, not before.</p>
+<blockquote>
+<div>Doing otherwise, produces code that is hard to read and can lead to
+errors.</div></blockquote>
+<p>5.14.5 If a source line is broken at an arithmetic operator (i.e., , -, etc.), it <strong>should</strong> be broken after the operator, not before.</p>
+<blockquote>
+<div>Doing otherwise, yields code that is harder to read and can lead to
+errors.</div></blockquote>
+<p>5.14.6 Parentheses <strong>should</strong> be used in non-trivial mathematical and logical expressions to clearly indicate structure and intended order of operations and to enhance readability.</p>
+<blockquote>
+<div>Do not assume everyone who looks at the code knows all the rules for
+operator precedence.</div></blockquote>
 </div>
 </div>
 
@@ -418,6 +581,15 @@ precedence.</p>
 <li><a class="reference internal" href="#compilation-and-portability">5.3 Compilation and portability</a></li>
 <li><a class="reference internal" href="#memory-management">5.4 Memory management</a></li>
 <li><a class="reference internal" href="#function-declarations">5.5 Function declarations</a></li>
+<li><a class="reference internal" href="#function-implementations">5.6 Function implementations</a></li>
+<li><a class="reference internal" href="#inline-functions">5.7 Inline functions</a></li>
+<li><a class="reference internal" href="#function-and-operator-overloading">5.8 Function and operator overloading</a></li>
+<li><a class="reference internal" href="#types">5.9 Types</a></li>
+<li><a class="reference internal" href="#type-casting">5.10 Type casting</a></li>
+<li><a class="reference internal" href="#templates">5.11 Templates</a></li>
+<li><a class="reference internal" href="#conditional-statements-and-loops">5.12 Conditional statements and loops</a></li>
+<li><a class="reference internal" href="#white-space">5.13 White space</a></li>
+<li><a class="reference internal" href="#code-alignment">5.14 Code alignment</a></li>
 </ul>
 </li>
 </ul>
