@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>&lt;no title&gt; &mdash; Toolkit Coding Guidelines v1.0 documentation</title>
+    <title>6 Class Design and Implementation &mdash; Toolkit Coding Guidelines v1.0 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -22,7 +22,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Toolkit Coding Guidelines v1.0 documentation" href="index.html" /> 
+    <link rel="top" title="Toolkit Coding Guidelines v1.0 documentation" href="index.html" />
+    <link rel="prev" title="5 General Code Development" href="Sec5_code.html" /> 
   </head>
   <body>
     <div class="related">
@@ -31,6 +32,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Sec5_code.html" title="5 General Code Development"
+             accesskey="P">previous</a> |</li>
         <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -40,208 +44,280 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <p>Class Design and Implementation
-C++ class definitions
-This section contains guidelines for C++ class definitions. The summary here uses bold-type numbers and text to illustrate the basic structure.
-Details about individual items follow.
-(1) Class documentation prologue
-class MyClass
+  <div class="section" id="class-design-and-implementation">
+<h1>6 Class Design and Implementation<a class="headerlink" href="#class-design-and-implementation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="c-class-definition-structure-and-guidelines">
+<h2>6.1 C++ class definition structure and guidelines<a class="headerlink" href="#c-class-definition-structure-and-guidelines" title="Permalink to this headline">¶</a></h2>
+<p>This section contains guidelines for structuring a C++ class definition.
+The summary here uses numbers and text to illustrate the basic structure.
+Details about individual items follow.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/* (1) Class definition preceded by documentation prologue */</span>
+
+<span class="cm">/*!</span>
+<span class="cm"> * \brief ...summary comment text...</span>
+<span class="cm"> *</span>
+<span class="cm"> * ...detailed comment text...</span>
+<span class="cm"> */</span>
+<span class="k">class</span> <span class="nc">MyClass</span>
+<span class="p">{</span>
+
+   <span class="cm">/* (2) &quot;friend&quot; declarations (if needed) */</span>
+
+<span class="cm">/* (3) &quot;public&quot; members */</span>
+<span class="k">public</span><span class="o">:</span>
+
+   <span class="cm">/* (3a) static member function declarations (if needed) */</span>
+
+   <span class="cm">/* (3b) public member function declarations */</span>
+
+<span class="cm">/* (4) &quot;protected&quot; members (rarely needed) */</span>
+<span class="k">protected</span><span class="o">:</span>
+
+   <span class="cm">/* (4a) protected member function declarations (if needed) */</span>
+
+<span class="cm">/* (5) &quot;private members */</span>
+<span class="k">private</span><span class="o">:</span>
+
+   <span class="cm">/* (5a) private static data members (if needed) */</span>
+
+   <span class="cm">/* (5b) private member function declarations */</span>
+
+   <span class="cm">/* (5c) private data member declarations */</span>
+
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>The numbers in parentheses in the following guidelines correspond to the
+numbered items in the preceding summary.</p>
+<p>6.1.1 Each class definition <strong>must</strong> be preceded by a Doxygen documentation prologue.</p>
+<blockquote>
+<div>See Section 4 for details.</div></blockquote>
+<p>6.1.2 Both the opening curly brace &#8220;{&#8221; and the closing curly brace &#8220;};&#8221; for a class definition <strong>must</strong> be on their own source lines and must be aligned vertically with the &#8220;class&#8221; reserved word.</p>
+<p>6.1.3 &#8220;Friend&#8221; declarations should be needed rarely if at all, but if used, they**must** appear within the body of a class definition before any class member declarations (2).</p>
+<blockquote>
+<div>Note that placing &#8220;friend&#8221; declarations before the &#8220;public:&#8221; keyword makes      them private, which should be the case in most circumstances.</div></blockquote>
+<p>6.1.4 Class members <strong>must</strong> be declared in the following order:</p>
+<blockquote>
+<div><p># &#8220;public&#8221; (item 3 in summary)
+# &#8220;protected&#8221; (item 4 in summary)
+# &#8220;private&#8221; (item 5 in summary)</p>
+<p>That is, order members by decreasing scope of audience.</p>
+</div></blockquote>
+<p>6.1.5 Static class members (methods and data) <strong>must</strong> be used rarely, if at all. In every case, there usage <strong>must</strong> be considered carefully.</p>
+<blockquote>
+<div>When it is determined that a static member is needed, it <strong>must</strong> appear
+first in the appropriate member section. Typically, static member
+functions <strong>should</strong> be &#8220;public&#8221; (item 3a in summary) and static data
+members <strong>should</strong> be &#8220;private&#8221; (item 5a in summary).</div></blockquote>
+<p>6.1.6 Within each set of member declarations (i.e., public, protected, private), all function declarations <strong>must</strong> appear before data member declarations (items 3a and 3b, 4a, 5b and 5c in summary).</p>
+<p>6.1.7 Class data members <strong>should</strong> be &#8220;private&#8221; almost always. If &#8220;public&#8221; or &#8220;protected&#8221; data members are even considered, this choice <strong>must</strong> be reviewed carefully by other team members.</p>
+<blockquote>
+<div><p>Information hiding is an essential aspect of good software engineering
+and private data is the best means for a class to preserve its
+invariants. Specifically, a class should maintain control of how object
+state can be modified to minimize side effects. In addition, restricting
+direct access to class data enforces encapsulation and facilitates
+design changes through refactoring.</p>
+<p>Note that &#8220;public&#8221; and &#8220;protected&#8221; data members are not included in the
+summary above to reinforce this guideline.</p>
+</div></blockquote>
+<p>6.1.9  A class constructor that takes a single <em>non-default</em> argument or a single argument that has a <em>default</em> value, it <strong>must</strong> be declared &#8220;explicit&#8221;.</p>
+<blockquote>
+<div><p>This will prevent compilers from performing unexpected (and, in many
+cases, unwanted!) implicit type conversions. For example:</p>
+<div class="highlight-python"><pre>class MyClass
 {
-(2) &#8220;friend&#8221; declarations (if needed)
 public:
-(3a) static member function declarations (if needed)
-(3b) public member function declarations
-protected:
-(4a) protected member function declarations (if needed)
-(4b) protected data member declarations (if needed)
+   explicit MyClass(int i, double x = 0.0);
+};</pre>
+</div>
+<p>Note that, without the explicit declaration, an implicit conversion from
+an integer to an object of type MyClass is allowed. For example:</p>
+<div class="highlight-python"><pre>MyClass mc = 2;</pre>
+</div>
+<p>Clearly, this is confusing. The &#8220;explicit&#8221; keyword forces the following:</p>
+<div class="highlight-python"><pre>MyClass mc(2);</pre>
+</div>
+<p>to get the same result, which is much more clear.</p>
+</div></blockquote>
+<p>6.1.10 Each class member function that does not change the object state <strong>must</strong> be declared &#8220;const&#8221;.</p>
+<blockquote>
+<div>This helps compilers detect usage errors.</div></blockquote>
+<p>6.1.11 Each class member function that returns a class data member that should not be changed by the caller <strong>must</strong> be declared &#8220;const&#8221; and must return the data member as a &#8220;const&#8221; reference or pointer.</p>
+<blockquote>
+<div>Often, both &#8220;const&#8221; and non-&#8220;const&#8221; versions of member access functions
+are needed so that callers may declare the variable that holds the
+return value with the appropriate &#8220;const-ness&#8221;.</div></blockquote>
+<p>6.1.12 If a class contains nested classes or other types, these definitions <strong>should</strong> appear before other class members (i.e., data and functions) within the appropriate section (&#8220;public&#8221; or &#8220;private&#8221;) of the enclosing class definition.</p>
+<blockquote>
+<div>See Section 3.8 for further guidance.</div></blockquote>
+<p>6.1.13 Each class member function and data member declaration <strong>must</strong> be properly documented according to the guidelines Section 4.</p>
+</div>
+<div class="section" id="class-member-initialization-and-copying">
+<h2>6.2 Class member initialization and copying<a class="headerlink" href="#class-member-initialization-and-copying" title="Permalink to this headline">¶</a></h2>
+<p>6.2.1 Every class data member <strong>must</strong> be initialized (using default values when appropriate) in each class constructor. That is, an initializer/initialization <strong>must</strong> be provided for each class data member so that every object is in a well-defined state upon construction.</p>
+<blockquote>
+<div><p>Generally, this requires a user-defined default constructor when a class
+has POD members. Do not assume that a compiler-generated default
+constructor will leave any member variable in a well-defined state.</p>
+<p><strong>Exception:</strong> A class that has no member variables, including one that
+is derived from a base class with a default constructor that provides
+full member initialization does not require a user-defined default
+constructor since the compiler-generated version will suffice.</p>
+</div></blockquote>
+<p>6.2.2 Data member initialization <strong>should</strong> be used instead of assignment in constructors, especially for small classes.</p>
+<blockquote>
+<div>Initialization prevents needless run-time work and is often faster.</div></blockquote>
+<p>6.2.3 For classes with complex data members, assignment within the body of the constructor <strong>may</strong> be preferable.</p>
+<blockquote>
+<div>If the initialization process is sufficiently complex, it <strong>may</strong> be
+better to perform object initialization in a method that is called
+after object creation, such as &#8220;init()&#8221;.</div></blockquote>
+<p>6.2.4 When using initialization instead of assignment to set data member values in a constructor, the data members <strong>should</strong> always be initialized in the order in which they appear in the class definition.</p>
+<blockquote>
+<div>Compilers adhere to this order regardless of the order that members
+appear in the class initialization list. So you may as well agree with
+the compiler rules and avoid potential errors when initialization of
+one member depends on the state of another.</div></blockquote>
+<p>6.2.5 A constructor <strong>must not</strong> call a virtual function on any data member object since an overridden method defined in a subclass cannot be called until the object is fully constructed.</p>
+<blockquote>
+<div>There is no general guarantee that data members are fully-created
+before a constructor exits.</div></blockquote>
+<p>6.2.6 All memory allocated in a class constructor <strong>must</strong> be de-allocated in the class destructor.</p>
+<blockquote>
+<div>The intent of constructors is to acquire resources and the intent of
+destructors is to free those resources.  This is in the same spirit as
+guideline 5.4.1.</div></blockquote>
+<p>6.2.7 The following guidelines for class methods that may be <em>automatically generated by a compiler</em> (i.e., default constructor, destructor, copy constructor, and copy assignment operator) <strong>must</strong> be followed:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">The default constructor, copy constructor, and copy assignment operator
+<strong>should</strong> be declared private and unimplemented when the intent is
+that such methods should never be called. This is a good way to help
+a compiler to catch unintended usage. For example:</p>
+<div class="highlight-python"><pre>class MyClass
+{
+   // ...
+
 private:
-(5a) private static data member declarations (if needed)
-(5b) private member function declarations
-(5c) private data member declarations</p>
-<p>};
-The numbers in parentheses in the following guidelines correspond to the numbered items in the preceding summary.</p>
-<p>A documentation prologue (1) must precede each class definition; see Section
-blah…
-Both the opening curly brace &#8220;{&#8221; and the closing curly brace &#8220;};&#8221; for a class
-definition must be on their own source lines and must be aligned vertically with
-the &#8220;class&#8221; reserved word.
-Generally, &#8220;friend&#8221; declarations should be avoided. If needed, they must appear
-within the body of a class definition before any class member declarations (2).
-Class members must be declared in the following order: &#8220;public&#8221; (3),
-&#8220;protected&#8221; (4), and &#8220;private&#8221; (5). That is, order members by decreasing scope
-of audience.
-Using static class members (methods and data) should be considered carefully.
-When it is determined that they should be used, they must appear first in the
-appropriate section (3a, 5a).
-Within each set of member declarations (i.e., public, protected, private), all
-function declarations must appear before data member declarations (3a-3b),
-(4a-4b), (5a-5c).
-If the class contains nested classes or other types, these definitions should ap</p>
+   // The following methods are not implemented
+   MyClass();
+   MyClass(const MyClass&amp;);
+   void operator=(const MyClass&amp;);
+
+   // ...
+};</pre>
+</div>
+</li>
+<li><p class="first">The default constructor, copy constructor, destructor, and copy
+assignment <strong>may</strong> be left undeclared when the compiler-generated
+versions are appropriate. In this case, the class header file
+<strong>should</strong> contain comments indicating that the compiler-generated
+versions of these methods will be used.</p>
+<p><strong>Exception:</strong> If a class inherits from a base class that declares
+these methods private, the subclass need not declare the methods
+private. However, a comment <strong>should</strong> be provided in the derived
+class stating that the parent class enforces the non-copyable
+properties of the class.</p>
+</li>
+<li><p class="first">If a class is default-constructable and has POD data members, including
+raw pointers, the default constructor <strong>must</strong> be defined explicitly
+and the data members <strong>must</strong> be initialized explicitly. A
+compiler-generated version of a default constructor will not
+initialize such members, in general.</p>
+</li>
+<li><p class="first">Each class <strong>must</strong> follow the <em>rule of three</em> which states: if the
+destructor, copy constructor, or copy-assignment operator is
+explicitly defined, then the others must be defined or declared
+private and left unimplemented. In other words, compiler-generated
+and explicit versions of these methods <strong>must</strong> not be mixed.</p>
+</li>
+<li><p class="first">By convention, a functor class <strong>should</strong> have a copy constructor and
+copy-assignment operator. Typically, the compiler-generated versions
+are sufficient when the class has no state or non-POD data members.
+Since such classes are usually small and simple, the compiler-generated
+versions of these methods <strong>may</strong> be used without documenting the use
+of default value semantics in the functor definition.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>6.2.8 An explicit implementation of a class copy-assignment operator <strong>must</strong> check for assignment to self, and <strong>must</strong> return a reference to &#8220;*this&#8221; after copying all data members.</p>
 <blockquote>
-<div>pear before other class members (i.e., data and functions) within the</div></blockquote>
-<p>appropriate section (&#8220;public&#8221; or &#8220;private&#8221;) of the enclosing class definition.
-Each class member function and data member declaration must be
-documented according to the guidelines described in Sections blah…</p>
-<p>Class member declarations
-All class data members should be declared &#8220;private&#8221;. Information hiding is an
-essential aspect of good software engineering and private data is the best
-means for a class to preserve its invariants. In other words, the class should
-maintain control of how object state can be modified to minimize side effects.
-&#8220;Public&#8221; data members in classes should be avoided. Restricting direct access
-to class data enforces encapsulation and facilitates design changes through
-refactoring.
-&#8220;Protected&#8221; data members in classes should be avoided. Allowing subclasses
-direct access to base class data often causes the design of an inheritance
-hierarchy to diverge and degrade over time.
-A class constructor that takes a single (non-default) argument must be
-declared &#8220;explicit&#8221;. This will prevent compilers from performing unexpected
-(and unwanted!) implicit type conversions. For example,
-class MyClass
+<div><p>Moreover, the <em>copy-and-swap</em> idiom <strong>should</strong> be used. For example:</p>
+<div class="highlight-python"><pre>MyClass&amp; MyClass::operator= (const MyClass&amp; rhs)
 {
-public:
-explicit MyClass(int i, double x = 0.0);
-};</p>
-<p>Each class member function that does not change the object state must be
-declared &#8220;const&#8221;. This helps compilers detect usage errors.
-Each class member function that returns a class data member that should not
-be changed by the caller must be declared &#8220;const&#8221; and must return the data
-member as a &#8220;const&#8221; reference or pointer, whichever is appropriate.
-Sometimes, both &#8220;const&#8221; and non-&#8220;const&#8221; versions of &#8220;getter&#8221; functions are
-needed so that callers may declare the variable that holds the return value of
-such a function call with the appropriate &#8220;const-ness&#8221;.</p>
-<p>Class implementation
-Every class data member must be initialized (using default values when</p>
+   if (this != &amp;rhs) {
+      MyClass temp(rhs);
+      swap(temp);
+   }
+   return *this;
+}</pre>
+</div>
+<p>Note that the copy-and-swap idiom uses the copy constructor to create a
+temporary object and calls a swap method provided by the class that
+copies the individual class members from the temporary object. When
+this idiom is used, the swap method must call the swap method of each
+of its base classes. See item 6.3.14 for additional information involving
+class inheritance.</p>
+</div></blockquote>
+<p>6.2.9 A class that provides an explicit implementation of the copy constructor and copy-assignment operator <strong>must</strong> call the copy constructor and copy-assignment operator for each of its base classes in these methods.</p>
+</div>
+<div class="section" id="inheritance">
+<h2>6.3 Inheritance<a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h2>
+<p>6.3.1 Class composition <strong>should</strong> be used instead of inheritance to extend behavior.</p>
 <blockquote>
-<div>appropriate) in the class constructor(s). That is, an initializer/initialization must</div></blockquote>
-<p>be provided for every class data member so that every object is in a
-well-defined state upon construction. Generally, this requires a user-defined
-default constructor when a class has POD members. Do not assume that a
-compiler-generated default constructor will leave any member variable in a
-well-defined state.
-Exception: If a class has no member variables, and is derived from a base class with default constructor that provides full member initialization, a
-user-defined default constructor is not needed since the compiler-generated version will suffice.</p>
-<p>Data member initialization should be used instead of assignment in
-constructors, especially for small classes. Initialization prevents needless
-run-time work.
-For classes with complex data members, assignment within the body of the
-constructor may be preferable. However, if the initialization process is
-sufficiently complex, it should not be done in a constructor. This is best done
-in another method called after object creation, such as &#8220;init()&#8221;.
-When using initialization instead of assignment to set data member values in a
-constructor, the data members should always be initialized in the order in
-which they appear in the class declaration. Compilers adhere to this order
-regardless of the order that members appear in the class initialization list. So
-you may as well agree with the compiler rules.
-A constructor must not call a virtual function on any data member object since
-an overridden method defined in a subclass cannot be called until the object is
-constructed fully. There is no general guarantee that data members are
-fully-created before a constructor exits.
-All memory allocated in a class constructor must be de-allocated in the class
-destructor. The intent of constructors is to acquire resources and the intent of
-destructors is to free those resources.
-The following guidelines for class methods that may be automatically
-generated by a compiler (i.e., default constructor, destructor, copy constructor,
-and copy assignment operator) must be followed:
-The default constructor, copy constructor, and copy assignment operator should be declared private and unimplemented when the intent
-is that such methods should never be called. This is a good way to enable the compiler to catch unintended usage. For example,
-class MyClass
+<div>Looser coupling between objects is typically more flexible and easier
+to maintain and refactor.</div></blockquote>
+<p>6.3.2 Class hierarchies <strong>should</strong> be designed so that subclasses inherit from abstract interfaces; i.e., pure virtual base classes.</p>
+<blockquote>
+<div>Inheritance is often done to reuse code that exists in a base class.
+However, there are usually better design choices to achieve reuse.
+Good object-oriented use of inheritance is to reuse existing <em>calling</em>
+code by exploiting base class interfaces using polymorphism. Put another
+way, &#8220;interface inheritance&#8221; should be used instead of &#8220;implementation
+inheritance&#8221;.</div></blockquote>
+<p>6.3.3 Deep inheritance hierarchies; i.e., more than 2 or 3 levels, <strong>should</strong> be avoided.</p>
+<p>6.3.4 Multiple inheritance <strong>should</strong> be restricted so that only one base class contains methods that are not &#8220;pure virtual&#8221;; i.e., adhering to the Java model of inheritance is most effective for avoiding abuse of inheritance.</p>
+<p>6.3.5 One <strong>should not</strong> inherit from a class that was not designed to be a base class (e.g., if it does not have a virtual destructor).</p>
+<blockquote>
+<div>Doing so is bad practice and can cause problems that may not be reported
+by a compiler; e.g., hiding base class members. To add functionality,
+one <strong>should</strong> employ class composition rather than by &#8220;tweaking&#8221; an
+existing class.</div></blockquote>
+<p>6.3.6 The destructor of a class that is designed to be a base class <strong>must</strong> be declared &#8220;virtual&#8221;.</p>
+<blockquote>
+<div>However, sometimes a destructor should not be declared virtual, such as
+when deletion through a pointer to a base class object should be
+disallowed.</div></blockquote>
+<p>6.3.7 &#8220;Private&#8221; and &#8220;protected&#8221; inheritance <strong>must not</strong> be used unless you absolutely understand the ramifications of such a choice and are sure that it will not create design and implementation problems.</p>
+<blockquote>
+<div>Such a choice <strong>must</strong> be reviewed with team members. There almost
+always exist better alternatives to avoid these forms of inheritance.</div></blockquote>
+<p>6.3.8 Virtual functions <strong>should</strong> be overridden responsibly. That is, the pre- and post-conditions, default arguments, etc. of the virtual functions should be preserved.</p>
+<blockquote>
+<div>Also, the behavior of an overridden virtual function <strong>should not</strong>
+deviate from the intent of the base class. Remember that derived classes
+are subsets, not supersets, of their base classes.</div></blockquote>
+<p>6.3.9 A virtual function in a base class <strong>should only</strong> be defined if its behavior is always valid default behavior for <em>any</em> derived class.</p>
+<p>6.3.10 Inherited non-virtual methods <strong>must not</strong> be overloaded or hidden.</p>
+<p>6.3.11 If a virtual function in a base class is not expected to be overridden in any derived class, then the method <strong>should not</strong> be declared virtual.</p>
+<p>6.3.12 If each derived class has to provide specific behavior for a base class virtual function, then it <strong>should</strong> be declared <em>pure virtual</em>.</p>
+<p>6.3.13 Virtual functions <strong>must not</strong> be called in a class constructor or destructor. Doing so is undefined behavior according to the C++ standard. Even if it seems to work correctly, it is fragile and potentially non-portable.</p>
+<p>6.3.14 The copy-assignment operator of a derived class <strong>should</strong> use the <em>copy-and-swap idiom</em> described in item 6.2.8.</p>
+<blockquote>
+<div><p>This is preferred to explicit assignment of base class data members
+since the code is less coupled and since some base class data members
+may be private.</p>
+<p>Here is the preferred way to implement a swap method in a derived class:</p>
+<div class="highlight-python"><pre>void DerivedClass::swap(const DerivedClass&amp; rhs)
 {
-// ...
-private:
-// The following methods are not implemented
-MyClass();
-MyClass(const MyClass&amp;);</p>
-<blockquote>
-<div>void operator=(const MyClass&amp;);</div></blockquote>
-<p>// ...
-};
-The default constructor, copy constructor, destructor, and copy assignment may be left undeclared when the compiler-generated versions
-are appropriate. In this case, the class header file should contain comments indicating that the compiler-generated versions of these
-methods will be used. Note C++11 supports the &#8220;default&#8221; keyword to make this clear. It would be nice to use, but would need to be
-controlled for conditional compilation. Exception: If a class inherits from a base class that declares these methods private, the subclass
-need not declare the methods private. However, a comment should be provided in the derived class stating that the parent class enforces
-the non-copyable properties of the class.</p>
-<p>If a class is default-constructable and has POD data members, including raw pointers, the default constructor must be defined explicitly
-and the data members must be initialized explicitly. A compiler-generated version of a default constructor will not initialize such members,
-in general.</p>
-<p>Each class must follow the rule of three: if any of the destructor, copy constructor, and copy-assignment operator is explicitly defined,
-then the others must be defined or declared private and left unimplemented. It is best not to mix compiler-generated and explicit versions
-of these methods. Rule of five in C++11…</p>
-<p>By convention, functor classes should have copy constructors and copy-assignment operators. Typically, the compiler-generated version
-is what is desired in this case when the class has no state or non-POD data members. Since such classes are small and simple typically,
-the compiler-generated versions of these methods may be used without documenting the use of default value semantics in the functor
-definition.</p>
-<p>An explicit implementation of a class copy-assignment operator must check for
-assignment to self, and must return a reference to &#8220;<a href="#id1"><span class="problematic" id="id2">*</span></a>this&#8221; after copying all data
-members. The &#8220;copy-and-swap&#8221; idiom should be used. For example,
-MyClass&amp; MyClass::operator= (const MyClass&amp; rhs)
-{
-if (this != &amp;rhs) {
-MyClass temp(rhs);
-swap(temp);
-}
-return <a href="#id3"><span class="problematic" id="id4">*</span></a>this;
-}
-Note that the copy-and-swap idiom uses the copy constructor to create a temporary object and calls a swap method provided by the class which
-copies the individual class members from the temporary object. When this idiom is used, the swap method must call the swap method of each of
-its base classes.</p>
-<p>A class that provides an explicit implementation of the copy constructor and
-copy-assignment operator must call the corresponding copy constructor and
-copy-assignment operator in each of its base classes.</p>
-<p>Inheritance
-Class composition should often be used instead of inheritance to extend
-behavior. Looser coupling between objects is typically more flexible and easier
-to maintain.
-Class hierarchies should be designed so that subclasses inherit from abstract
-interfaces; i.e., pure virtual base classes. Inheritance is often done to reuse
-code that exists in a base class. However, there are usually better design</p>
-<blockquote>
-<div>choices to achieve reuse. Good object-oriented use of inheritance is to reuse</div></blockquote>
-<p>existing calling code by exploiting base class interfaces using polymorphism.
-Put another way, &#8220;interface inheritance&#8221; should be used instead of
-&#8220;implementation inheritance&#8221;.
-Deep inheritance hierarchies; i.e., more than 2 or 3 levels, should be avoided.
-Multiple inheritance should be restricted so that only one base class contains
-methods that are not &#8220;pure virtual&#8221;; i.e., adhering to the Java model of
-inheritance is most effective for avoiding abuse of inheritance.
-One should not inherit from a class that was not designed to be a base class
-(e.g., if it does not have a virtual destructor). Doing so is bad practice and can
-cause problems that may not be reported by a compiler; e.g., hiding base class
-members. To add functionality, one should employ class composition rather
-than &#8220;tweaking&#8221; an existing class.
-The destructor of a class that is designed to be a base class must be declared
-&#8220;virtual&#8221;. However, sometimes a destructor should not be declared virtual, such
-as when deletion through a pointer to a base class object should be disallowed.
-&#8220;Private&#8221; and &#8220;protected&#8221; inheritance must not be used unless you absolutely
-understand the ramifications of such a choice and are sure that it will not
-create design and implementation problems. There almost always exist
-alternatives to avoid these forms of inheritance.
-Virtual functions should be overridden responsibly. That is, the pre- and
-post-conditions, default arguments, etc. of the virtual functions should be
-preserved. Also, the behavior of an overridden virtual function should not devia
-te from the intent of the base class. Remember that derived classes are subsets
-, not supersets, of their base classes.
-A virtual function in a base class should only be defined if is behavior is always
-valid default behavior for any derived class.
-Inherited non-virtual methods must not be overloaded or hidden.
-If a virtual function in a base class is not overridden in any derived class then
-the method should not be declared virtual.
-If each derived class has to provide specific behavior for a base class virtual
-function, then it should be declared pure virtual.
-Virtual functions must not be called in a class constructor or destructor. Doing
-so is undefined behavior according to the C++ standard. Even if it seems to
-work correctly, it is fragile and potentially not portable.</p>
-<blockquote>
-<div>The copy-assignment operator of a derived class should use the copy-and-swa</div></blockquote>
-<p>p idiom described in item blah. This is preferred to explicit assignment of base
-class data members since the code is less coupled and since some base class
-data members may be private. For example, here is the preferred way to
-implement a swap method in a derived class.
-void DerivedClass::swap(const DerivedClass&amp; rhs)
-{
-BaseClass::swap(rhs);
-// assign DerivedClass data members...
-}</p>
+   BaseClass::swap(rhs);
+   // assign DerivedClass data members...
+}</pre>
+</div>
+</div></blockquote>
+</div>
+</div>
 
 
           </div>
@@ -249,6 +325,19 @@ BaseClass::swap(rhs);
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">6 Class Design and Implementation</a><ul>
+<li><a class="reference internal" href="#c-class-definition-structure-and-guidelines">6.1 C++ class definition structure and guidelines</a></li>
+<li><a class="reference internal" href="#class-member-initialization-and-copying">6.2 Class member initialization and copying</a></li>
+<li><a class="reference internal" href="#inheritance">6.3 Inheritance</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Sec5_code.html"
+                        title="previous chapter">5 General Code Development</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/Sec6_class.txt"
@@ -277,6 +366,9 @@ BaseClass::swap(rhs);
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="Sec5_code.html" title="5 General Code Development"
+             >previous</a> |</li>
         <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>

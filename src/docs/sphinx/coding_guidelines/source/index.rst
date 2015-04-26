@@ -18,6 +18,7 @@ Contents:
    Sec3_scope
    Sec4_doc
    Sec5_code
+   Sec6_class
 
 Indices and tables
 ==================

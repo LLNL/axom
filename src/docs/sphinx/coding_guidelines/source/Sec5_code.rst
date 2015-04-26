@@ -1,6 +1,6 @@
-******************
-5 Code Development
-******************
+****************************
+5 General Code Development
+****************************
 
 This section contains various development guidelines intended to improve code 
 readability, correctness, portability, consistency, and robustness.
