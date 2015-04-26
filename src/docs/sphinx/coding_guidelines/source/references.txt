@@ -1,0 +1,23 @@
+References and other useful resources
+Most of the guidelines in this document were gathered from the following sources. The list contains a variety of useful resources for programming
+in C and C++.
+[ALE3D] ALE3D Coding Standards & Style Guide, version 1.1, 2005.
+[C++03] ISO/IEC 14882:2003 Programming Language C+.
+[C++11] ISO/IEC 14882:2011 Programming Language C+.
+[Chromium] The Chromium Projects: C++ Dos and Don'ts web page. https://www.chromium.org/developers/coding-style/cpp-dos-and-donts
+[Dewhurst03] S. Dewhurst, C++ Gotchas: Avoiding Common Problems in Coding and Design, Addison-Wesley, 2003.
+[Dewhurst05] S. Dewhurst, C++ Common Knowledge: Essential Intermediate Programming, Addison-Wesley, 2005.
+[doxygen] Doxygen web page. http://www.stack.nl/~dimitri/doxygen/manual/index.html
+[googleC+] Google C+ Style Guide. https://google-styleguide.googlecode.com/svn/trunk/cppguide.html
+[Harbison02] S. P. Harbison, and G. L. Steele Jr. C: A Reference Manual (5th Edition), Prentice-Hall, 2002.
+[Josuttis12] N. Josuttis. The C++ Standard Library: A Tutorial and Reference, Second Edition, Addison-Wesley, 2012.
+[Lakos96] J. Lakos. Large-Scale C++ Software Design,, Addison-Wesley, 1996.
+[Lewine91] D. Lewine. POSIX Programmer's Guide: Writing Portable UNIX Programs, O'Reilly and Associates, Inc., 1991.
+[Meyers96] S. Meyers, More Effective C++: 35 New Ways to Improve Your Programs and Designs, Addison-Wesley, 1996.
+[Meyers01] S. Meyers, Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library, Addison-Wesley, 2001.
+[Meyers05] S. Meyers, Effective C++: 55 Specific Ways to Improve Your Programs and Designs (3rd Edition), Addison-Wesley, 2005.
+[Meyers14] S. Meyers, Effective Modern C+: 42 Specific Ways to Improve Your Use of C11 and C+14, O'Reilly.
+[PRG13] Programming Research Ltd. High-integrity C++ Coding Standard Version 4.0, 2013.
+[Sutter05] H. Sutter, and A. Alexandrescu, C++ Coding Standards: 101 Rules, Guidelines, and Best Practices, Addison-Wesley, 2005.
+
+
