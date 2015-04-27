@@ -1,6 +1,10 @@
 
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
+#include "DataView.hpp"
+#include <algorithm>
+
+#include "Utilities.hpp"
 
 namespace DataStoreNS
 {
@@ -8,85 +12,98 @@ namespace DataStoreNS
 
 DataBuffer::DataBuffer( const IDType uid ) :
     m_uid(uid),
-    m_stringDescriptor(),
-    m_ViewContainer(),
+    m_views(),
     m_data(nullptr),
-    m_dataShape(),
-    m_dataType(rtTypes::undefined),
-    m_memblob()
-{}
+    m_memblob(),
+    m_node(),
+    m_schema()
+{
+    
+}
 
-DataBuffer::DataBuffer( const IDType uid,
-                        const std::string& stringDescriptor ) :
-    m_uid(uid),
-    m_stringDescriptor(stringDescriptor),
-    m_ViewContainer(),
-    m_data(nullptr),
-    m_dataShape(),
-    m_dataType(rtTypes::undefined),
-    m_memblob()
-{}
 
 DataBuffer::DataBuffer(const DataBuffer& source ) :
     m_uid(source.m_uid),
-    m_stringDescriptor(source.m_stringDescriptor),
-    m_ViewContainer(source.m_ViewContainer),
+    m_views(source.m_views),
     m_data(source.m_data),
-    m_dataShape(source.m_dataShape),
-    m_dataType(source.m_dataType),
-    m_memblob(source.m_memblob)
+    m_memblob(source.m_memblob),
+    m_node(source.m_node),
+    m_schema(source.m_schema)
 {
+// disallow?
 }
 
 
 DataBuffer::~DataBuffer()
 {
+
 }
 
+
+/// init calls set declare, allocate
+DataBuffer* DataBuffer::Allocate(const Schema &schema)
+{
+    Declare(schema);
+    Allocate();
+    return this;
+}
+
+/// init calls set declare, allocate
+DataBuffer* DataBuffer::Allocate(const DataType &dtype)
+{
+    Declare(dtype);
+    Allocate();
+    return this;
+}
 
 
 DataBuffer* DataBuffer::Allocate()
 {
-  if ( m_dataShape.m_dimensions != nullptr && m_dataType!=rtTypes::undefined )
-  {
-    std::size_t size = 1;
-    for (int dim = 0; dim < m_dataShape.m_numDimensions; ++dim)
-    {
-      size *= m_dataShape.m_dimensions[dim];
-    }
-    m_memblob.resize( size * rtTypes::sizeofType(m_dataType) );
+    std::size_t alloc_size = m_schema.total_bytes();
+
+    ATK_ASSERT_MSG(alloc_size > 0, "Attempting to allocate buffer of size 0");   
+    m_memblob.resize(alloc_size);
     m_data = m_memblob.data();
-  }
-  else
-  {
-    throw std::exception();
-  }
-
-  ReconcileDataViews();
-
-  return this;
+    
+    m_node.set_external(m_schema,m_data);
+    return this;
 }
 
-
-
-void DataBuffer::AddDataView( DataView* dataView )
+void DataBuffer::Info(Node &n) const
 {
-  m_ViewContainer.insert( dataView );
+    n["uid"].set(m_uid);
+    n["descriptor"].set(m_schema.to_json());
+    n["node"].set(m_node.to_json());
 }
 
 
-void DataBuffer::RemoveDataView( DataView* dataView )
+void DataBuffer::Print() const
 {
-  m_ViewContainer.erase( dataView );
+    Node n;
+    Info(n);
+    n.print();
 }
 
-void DataBuffer::ReconcileDataViews()
+
+
+void DataBuffer::AttachView( DataView* view )
 {
-  for( ViewContainerType::iterator iterView=m_ViewContainer.begin() ;
-       iterView != m_ViewContainer.end() ; ++iterView )
-  {
-    (*iterView)->ReconcileWithBuffer();
-  }
+    m_views.push_back( view );
 }
+
+
+void DataBuffer::DetachView( DataView* view )
+{
+    //Find new end iterator
+    std::vector<DataView*>::iterator pos = std::remove(m_views.begin(),
+                                                       m_views.end(),
+                                                       view);
+    // check if pos is ok?
+    //Erase the "removed" elements.
+    m_views.erase(pos, m_views.end());
+}
+
 
 } /* namespace Datastore */
+
+

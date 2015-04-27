@@ -11,6 +11,12 @@
 #include <vector>
 #include "Types.hpp"
 
+#include "conduit/conduit.h"
+
+using conduit::Node;
+using conduit::Schema;
+using conduit::DataType;
+
 namespace DataStoreNS
 {
 
@@ -35,157 +41,118 @@ class DataView;
 class DataBuffer
 {
 public:
-  /// container of DataView pointers.
-  typedef std::set< DataView* > ViewContainerType;
+    friend class DataStore;
+    friend class DataView;
+    friend class DataGroup;
 
-  /// default constructor
-  DataBuffer();
+    /*!
+     * \brief Return the universal id for this buffer.
+     */
+    IDType GetUID() const
+    {
+        return m_uid;
+    }
 
-  /*!
-   *
-   * @param uid
-   * @param m_stringDescriptor
-   */
-  DataBuffer( const IDType uid,
-              const std::string& m_stringDescriptor );
-
-  /*!
-   *
-   * @param uid
-   */
-  DataBuffer( const IDType uid );
-
-  /*!
-   *
-   * @param source
-   */
-  DataBuffer(const DataBuffer& source );
+    /*!
+     * \brief Return a view attached to this buffer.
+     */
+    DataView *GetView(IDType idx)
+    {
+        return m_views[idx];
+    }
 
 
-  /*!
-   * destructor
-   */
-  ~DataBuffer();
+    /*!
+    * \brief Return number of views attached to this buffer.
+    */
+    size_t CountViews() const
+    {
+      return m_views.size();
+    }
+    
+
+    void *GetData()
+    { return m_data;}
 
 
+    DataBuffer* Declare(const Schema &schema)
+    {
+        m_schema.set(schema);
+        return this;
+    }
+    
+    DataBuffer* Declare(const DataType &dtype)
+    {
+        m_schema.set(dtype);
+        return this;
+    }
+  
+  
+    /**
+    *
+    * @return m_schema
+    */
+    const Schema &GetDescriptor() const
+    { return m_schema; }
 
-  void AddDataView( DataView* dataView );
-  void RemoveDataView( DataView* dataView );
+    /// note: in most cases, we want to use the const version of the node
+    Node &GetNode()
+    {return m_node; }  
 
-  void ReconcileDataViews();
+    const Node &GetNode() const
+    { return m_node; }  
 
-  /*!
-   * \brief Return the universal id for this DataBuffer.
-   */
-  IDType GetUID() { return m_uid; }
+    DataBuffer* Allocate();
+  
+    DataBuffer* Allocate(const Schema &schema);
+    DataBuffer* Allocate(const DataType &dtype);
 
-  /*!
-   * \brief Return DataGroups attached to this DataBuffer.
-   */
-  ViewContainerType *GetDataViews() { return &m_ViewContainer; }
-
-  /**
-   *
-   * @return casted pointer to m_data
-   * \brief there is a lot more that has to happen to ensure that the cast is legal
-   */
-  template< typename TYPE >
-#ifdef USECXX11
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
-#else
-  TYPE
-#endif
-  GetData()
-  { return static_cast<TYPE>(m_data); }
-
-  template< typename TYPE >
-#ifdef USECXX11
-  typename std::enable_if<std::is_pointer<TYPE>::value,TYPE>::type
-#else
-  const TYPE
-#endif
-  GetData() const
-  { return static_cast<const TYPE>(m_data); }
-
-
-
-
-  /**
-   * @name members that will be deprecated by conduit
-   */
-  ///@{
-
-  rtTypes::TypeID GetType() const
-  {
-    return m_dataType;
-  }
-
-  DataBuffer* SetType( const rtTypes::TypeID type )
-  {
-    m_dataType = type;
-    return this;
-  }
-
-  template< typename T >
-  DataBuffer* SetType()
-  {
-    m_dataType = rtTypes::GetTypeID<T>();
-    return this;
-  }
-
-
-  /**
-   *
-   * @return m_dataShape
-   */
-  const DataShape& GetDataShape() const
-  { return m_dataShape; }
-
-  /**
-   *
-   * @param dataShape
-   * @return
-   */
-  virtual DataBuffer* SetDataShape( const DataShape& dataShape )
-  {
-    // check to see what conditions m_dataDescriptor can be set.
-    m_dataShape = dataShape;
-    m_data = dataShape.m_dataPtr;
-    return this;
-  }
-
-
-
-  /**
-   *
-   * @return
-   */
-  DataBuffer* Allocate();
-
+    void Info(Node &n) const;
+    void Print() const;
   ///@}
 
 private:
+    /// default constructor
+    DataBuffer();
+
+    /*!
+     *
+     * @param uid
+     */
+    DataBuffer( const IDType uid );
+
+    /*!
+     *
+     * @param source
+     */
+    DataBuffer(const DataBuffer& source );
+
+    /*!
+     * destructor
+     */
+    ~DataBuffer();
+
+     /// TODO: the data store should be the only entity that can create a buffer
+
+    void AttachView( DataView* dataView );
+    void DetachView( DataView* dataView );
 
 
-  /// universal identification - unique within a DataStore
-  IDType m_uid;
 
-  /// a string that describes what is in the DataBuffer
-  std::string m_stringDescriptor;
+    /// universal identification - unique within a DataStore
+    IDType m_uid;
 
-  /// container of groups that contain this DataBuffer
-  ViewContainerType m_ViewContainer;
+    /// container of views that contain this DataBuffer
+    std::vector<DataView *> m_views;
 
-  /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
-  void* m_data;
+    /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
+    void* m_data;
+  
+    /// use a vector to allocate data until we implement an appropriate allocator interface.
+    std::vector<char> m_memblob;
 
-  DataShape m_dataShape;
-
-  ///
-  rtTypes::TypeID m_dataType;
-
-  /// use a vector to allocate data until we implement an appropriate allocator interface.
-  std::vector<char> m_memblob;
+    Node   m_node;
+    Schema m_schema;
 
 };
 

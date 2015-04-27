@@ -26,10 +26,6 @@ class DataBuffer;
 class DataStore
 {
 public:
-
-  /// typedef for container for DataBuffers
-  typedef std::vector< DataBuffer* > dataBufferContainerType;
-
   /*!
    * \brief Constructor.
    */
@@ -44,7 +40,7 @@ public:
    * \brief Create a DataBuffer.
    *    It is assigned a universal id and owned by the DataStore
    */
-  DataBuffer* CreateDataBuffer();
+  DataBuffer* CreateBuffer();
 
 
   /*!
@@ -52,7 +48,7 @@ public:
    * \brief Remove a DataObject from the DataStore.
    *   It is disassociated with all groups and returned to the free pool.
    */
-  void DeleteDataBuffer( const IDType id );
+  void DestroyBuffer( const IDType id );
 
   /*!
    *
@@ -60,29 +56,41 @@ public:
    * @return the DataBuffer that was at m_DataBuffer[id]
    * \brief Remove a DataBuffer from container, and return
    */
-  DataBuffer* DetatchDataBuffer( const IDType id );
+  DataBuffer* DetatchBuffer( const IDType id );
 
 
   /*!
    * \brief Return pointer to the root DataGroup.
    */
-  DataGroup* GetRootDataGroup() { return &m_RootGroup; };
+  DataGroup* GetRoot() 
+      { return m_RootGroup; };
 
   /*!
    *
    * @param id
    * @return
    */
-  DataBuffer* GetDataBuffer( const IDType id ) { return m_DataBuffers[id]; }
+  DataBuffer* GetBuffer( const IDType id ) 
+      { return m_DataBuffers[id]; }
+
+  void DestroyBuffers();
+
+  void Print() const;
+  void Info(Node &) const;
+
+  IDType GetNumberOfBuffers() const
+  {
+    return m_DataBuffers.size() - m_AvailableDataBuffers.size();
+  }
 
 private:
 
 
   /// Root data group, created automatically with datastore.
-  DataGroup m_RootGroup;
+  DataGroup *m_RootGroup;
 
   /// container of DataBuffers
-  dataBufferContainerType m_DataBuffers;
+  std::vector<DataBuffer*> m_DataBuffers;
 
   /// stack of unique ids that can be recycled
   std::stack< IDType > m_AvailableDataBuffers;

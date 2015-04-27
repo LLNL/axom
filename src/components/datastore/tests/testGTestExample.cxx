@@ -1,13 +1,8 @@
 #include "gtest/gtest.h"
 
-TEST(sample_test,basic_test)
-{
-  EXPECT_FALSE( true );
-}
-
 //------------------------------------------------------------------------------
 
-TEST(another_sample_test,basic_test)
+TEST(gtest_smoke,basic_assert_example)
 {
   EXPECT_TRUE( true );
 }
