@@ -24,10 +24,10 @@ namespace DataStoreNS
 *
 * The following four macros are defined below:
 *
-*   - ASCTK_ERROR(message)
-*   - ASCTK_WARNING(message)
-*   - ASCTK_ASSERT(bool_expr)
-*   - ASCTK_ASSERT_MSG(bool_expr, message)
+*   - ATK_ERROR(message)
+*   - ATK_WARNING(message)
+*   - ATK_ASSERT(bool_expr)
+*   - ATK_ASSERT_MSG(bool_expr, message)
 *
 * Each macro accepts a message string or boolean expression and message string.
 * A message string argument may be any formatted character string argument 
@@ -36,7 +36,7 @@ namespace DataStoreNS
 * otherwise. When triggered, all macros print the bool_expr and/or message to 
 * std output along with the file and line number where encountered.
 *
-* The first two macros, ASCTK_ERROR and ASCTK_WARNING, are always active when
+* The first two macros, ATK_ERROR and ATK_WARNING, are always active when
 * placed in the code and so should be used wherever runtime error or warning 
 * messages should be generated, such as when improper program state is 
 * defined by user-supplied information. The first one causes the program to 
@@ -57,13 +57,13 @@ namespace DataStoreNS
 
 //-----------------------------------------------------------------------------
 //
-/// The ASCTK_ERROR macro prints the message, file, and line number to std out
+/// The ATK_ERROR macro prints the message, file, and line number to std out
 /// and then ends the program by calling exit().  It is always active.
 ///
-/// Usage: ASCTK_ERROR( "Abandon Ship!!" );  
+/// Usage: ATK_ERROR( "Abandon Ship!!" );  
 ///
 //-----------------------------------------------------------------------------
-#define ASCTK_ERROR( msg )                                      \
+#define ATK_ERROR( msg )                                      \
 do {                                                                \
     std::ostringstream oss;                                         \
     oss << "Error Message: " << msg << std::ends;                   \
@@ -73,13 +73,13 @@ do {                                                                \
 
 //-----------------------------------------------------------------------------
 //
-/// The ASCTK_WARNING macro prints the message, file, and line number to std 
+/// The ATK_WARNING macro prints the message, file, and line number to std 
 /// out and does not force the program to quit.  It is always active.
 ///
-/// Usage: ASCTK_WARNING( "Hal, open the pod bay doors." );  
+/// Usage: ATK_WARNING( "Hal, open the pod bay doors." );  
 ///
 //-----------------------------------------------------------------------------
-#define ASCTK_WARNING( msg )                                    \
+#define ATK_WARNING( msg )                                    \
 do {                                                                \
     std::ostringstream oss;                                         \
     oss << "Warning Message: " << msg << std::ends;                 \
@@ -90,15 +90,15 @@ do {                                                                \
 #if defined(ATK_DEBUG) || 1
 //-----------------------------------------------------------------------------
 //
-/// The ASCTK_ASSERT macro can be used to capture an assertion when
+/// The ATK_ASSERT macro can be used to capture an assertion when
 /// the given expression does not evaluate to true. It prints the failed
 /// the failed assertion, file, and line number to std out and then forces 
-/// the program to exit in the same way as ASCTK_ERROR above.
+/// the program to exit in the same way as ATK_ERROR above.
 ///
-/// Usage:  ASCTK_ASSERT( my_val == 1 ); 
+/// Usage:  ATK_ASSERT( my_val == 1 ); 
 ///
 //-----------------------------------------------------------------------------
-#define ASCTK_ASSERT( EXP )                                        \
+#define ATK_ASSERT( EXP )                                        \
 do {                                                                   \
     if (!(EXP)) {                                                      \
        std::ostringstream oss;                                         \
@@ -110,15 +110,15 @@ do {                                                                   \
 
 //-----------------------------------------------------------------------------
 //
-/// The ASCTK_ASSERT_MSG macro can be used to capture an assertion when
+/// The ATK_ASSERT_MSG macro can be used to capture an assertion when
 /// the given expression does not evaluate to true. It prints the failed
 /// the failed assertion, file, line number, and message to std out and 
-//  then forces the program to exit in the same way as ASCTK_ERROR above.
+//  then forces the program to exit in the same way as ATK_ERROR above.
 ///
-/// Usage:  ASCTK_ASSERT( my_val == 1, "my_val must always be one" ); 
+/// Usage:  ATK_ASSERT( my_val == 1, "my_val must always be one" ); 
 ///
 //-----------------------------------------------------------------------------
-#define ASCTK_ASSERT_MSG( EXP, msg )                               \
+#define ATK_ASSERT_MSG( EXP, msg )                               \
 do {                                                                   \
     if (!(EXP)) {                                                      \
        std::ostringstream oss;                                         \
@@ -130,10 +130,10 @@ do {                                                                   \
 
 #else  // ASSERTION CHECKS TURNED OFF....
 
-#define ASCTK_ERROR( ignore_message ) ((void) 0) 
-#define ASCTK_WARNING( ignore_message ) ((void) 0) 
-#define ASCTK_ASSERT( ignore_EXP ) ((void) 0) 
-#define ASCTK_ASSERT_MSG( ignore_EXP, ignore_message ) ((void) 0) 
+#define ATK_ERROR( ignore_message ) ((void) 0) 
+#define ATK_WARNING( ignore_message ) ((void) 0) 
+#define ATK_ASSERT( ignore_EXP ) ((void) 0) 
+#define ATK_ASSERT_MSG( ignore_EXP, ignore_message ) ((void) 0) 
 
 #endif
 
