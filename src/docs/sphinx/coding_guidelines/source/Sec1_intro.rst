@@ -29,13 +29,6 @@ with variations that allow for individual stylistic preferences and which may
 be preferable in specific code circumstances. When changes are made, these 
 guidelines must be updated accordingly.
 
-An important concern addressed by these guidelines is C++ feature bloat. 
-C++ is a huge language with many advanced features. Often, it is good to 
-constrain, or even ban, the use of certain features to keep code simple, 
-portable, and to avoid errors and problems that may occur when language 
-features and usage are not completely understood or used consistently. The 
-guide lists restricted features and explains why their use is restricted.
-
 Each guideline in this document is qualified with: "must", "should", or "may". 
 
 * A "must" item is an absolute requirement. 

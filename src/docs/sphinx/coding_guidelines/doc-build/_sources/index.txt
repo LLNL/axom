@@ -19,6 +19,8 @@ Contents:
    Sec4_doc
    Sec5_code
    Sec6_class
+   Sec7_restrictions
+   references
 
 Indices and tables
 ==================

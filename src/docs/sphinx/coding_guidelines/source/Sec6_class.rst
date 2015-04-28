@@ -89,7 +89,7 @@ numbered items in the preceding summary.
       Note that "public" and "protected" data members are not included in the 
       summary above to reinforce this guideline.
 
-6.1.9  A class constructor that takes a single *non-default* argument or a single argument that has a *default* value, it **must** be declared "explicit". 
+6.1.9  A class constructor that takes a single *non-default* argument, or a single argument that has a *default* value, **must** be declared "explicit". 
 
        This will prevent compilers from performing unexpected (and, in many
        cases, unwanted!) implicit type conversions. For example::
@@ -115,7 +115,7 @@ numbered items in the preceding summary.
 
        This helps compilers detect usage errors.
 
-6.1.11 Each class member function that returns a class data member that should not be changed by the caller **must** be declared "const" and must return the data member as a "const" reference or pointer.
+6.1.11 Each class member function that returns a class data member that should not be changed by the caller **must** be declared "const" and **must** return the data member as a "const" reference or pointer.
 
        Often, both "const" and non-"const" versions of member access functions 
        are needed so that callers may declare the variable that holds the 

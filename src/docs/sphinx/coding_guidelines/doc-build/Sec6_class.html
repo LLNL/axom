@@ -23,6 +23,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Toolkit Coding Guidelines v1.0 documentation" href="index.html" />
+    <link rel="next" title="7 Restrictions on Language Usage and Libraries" href="Sec7_restrictions.html" />
     <link rel="prev" title="5 General Code Development" href="Sec5_code.html" /> 
   </head>
   <body>
@@ -32,6 +33,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Sec7_restrictions.html" title="7 Restrictions on Language Usage and Libraries"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="Sec5_code.html" title="5 General Code Development"
              accesskey="P">previous</a> |</li>
@@ -121,7 +125,7 @@ design changes through refactoring.</p>
 <p>Note that &#8220;public&#8221; and &#8220;protected&#8221; data members are not included in the
 summary above to reinforce this guideline.</p>
 </div></blockquote>
-<p>6.1.9  A class constructor that takes a single <em>non-default</em> argument or a single argument that has a <em>default</em> value, it <strong>must</strong> be declared &#8220;explicit&#8221;.</p>
+<p>6.1.9  A class constructor that takes a single <em>non-default</em> argument, or a single argument that has a <em>default</em> value, <strong>must</strong> be declared &#8220;explicit&#8221;.</p>
 <blockquote>
 <div><p>This will prevent compilers from performing unexpected (and, in many
 cases, unwanted!) implicit type conversions. For example:</p>
@@ -143,7 +147,7 @@ an integer to an object of type MyClass is allowed. For example:</p>
 <p>6.1.10 Each class member function that does not change the object state <strong>must</strong> be declared &#8220;const&#8221;.</p>
 <blockquote>
 <div>This helps compilers detect usage errors.</div></blockquote>
-<p>6.1.11 Each class member function that returns a class data member that should not be changed by the caller <strong>must</strong> be declared &#8220;const&#8221; and must return the data member as a &#8220;const&#8221; reference or pointer.</p>
+<p>6.1.11 Each class member function that returns a class data member that should not be changed by the caller <strong>must</strong> be declared &#8220;const&#8221; and <strong>must</strong> return the data member as a &#8220;const&#8221; reference or pointer.</p>
 <blockquote>
 <div>Often, both &#8220;const&#8221; and non-&#8220;const&#8221; versions of member access functions
 are needed so that callers may declare the variable that holds the
@@ -338,6 +342,9 @@ may be private.</p>
   <h4>Previous topic</h4>
   <p class="topless"><a href="Sec5_code.html"
                         title="previous chapter">5 General Code Development</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Sec7_restrictions.html"
+                        title="next chapter">7 Restrictions on Language Usage and Libraries</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/Sec6_class.txt"
@@ -366,6 +373,9 @@ may be private.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="Sec7_restrictions.html" title="7 Restrictions on Language Usage and Libraries"
+             >next</a> |</li>
         <li class="right" >
           <a href="Sec5_code.html" title="5 General Code Development"
              >previous</a> |</li>
