@@ -21,7 +21,7 @@ if (BUILD_TESTING)
 endif()
 
 
-add_uncrustify_check(uncrustify.cfg)
+add_code_check_targets(uncrustify.cfg)
 
 ################################
 # Create CMake importable
