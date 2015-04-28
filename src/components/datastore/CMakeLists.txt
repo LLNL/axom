@@ -20,6 +20,9 @@ if (BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
+
+add_uncrustify_check(uncrustify.cfg)
+
 ################################
 # Create CMake importable
 # exports for all of our targets

@@ -259,7 +259,7 @@ macro(add_component)
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
     
     ## setup a cmake vars to capture sources added via our macros
-    set("${arg_COMPONENT_NAME}_ALL_SOURCES" "")
+    set("${arg_COMPONENT_NAME}_ALL_SOURCES" CACHE PATH "" FORCE)
         
     ## adds an option so that the user can control whether to build this
     ## component.
@@ -293,8 +293,15 @@ macro(make_library libtarget srcs)
       set_property(TARGET ${libtarget} PROPERTY CXX_STANDARD 11)
    endif()
     
-    # add any passed source files to the running list for this project
-    list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${srcs}")
+    
+   foreach(src ${srcs})
+       if(IS_ABSOLUTE)
+           list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
+       else()
+           list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
+       endif()
+   endforeach()
+       
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
 
 endmacro(make_library)
@@ -323,8 +330,13 @@ macro(make_executable)
       set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
     endif()
     
-    # add any passed source files to the running list for this project
-    list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE} ")
+        
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
+    else()
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_EXECUTABLE_SOURCE}")
+    endif()
+
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
     
 endmacro(make_executable)
@@ -361,7 +373,12 @@ macro(add_gtest)
               )
 
     # add any passed source files to the running list for this project
-    list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+    else()
+          list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+    endif()
+
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
     
 endmacro(add_gtest)
@@ -396,7 +413,12 @@ macro(add_catch_test)
               )
 
     # add any passed source files to the running list for this project
-    list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+    else()
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+    endif()
+
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
 
 endmacro(add_catch_test)
@@ -426,7 +448,14 @@ add_custom_target(copy_headers
      )
      
      # add any passed source files to the running list for this project
-     list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${hdrs}")
+     foreach(hdr ${hdrs})
+         if(IS_ABSOLUTE)
+             list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${hdr}")
+         else()
+             list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${hdr}")
+         endif()
+     endforeach()
+
      set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )    
      
 endmacro(copy_headers_target)
