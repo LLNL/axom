@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 
-namespace DataStoreNS {
+namespace asctoolkit {
 
 namespace utilities {
 
@@ -52,4 +52,4 @@ void processWarning(
 
 }  // ending brace for utilities namespace
 
-}  // ending brace for datastore namespace
+}  // ending brace for asctoolkit namespace

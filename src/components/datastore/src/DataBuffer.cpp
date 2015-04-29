@@ -6,7 +6,7 @@
 
 #include "Utilities.hpp"
 
-namespace DataStoreNS
+namespace sidre
 {
 
 

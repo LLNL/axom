@@ -13,7 +13,7 @@
 #include "DataGroup.hpp"
 #include "Types.hpp"
 
-namespace DataStoreNS
+namespace sidre
 {
 
 class DataBuffer;

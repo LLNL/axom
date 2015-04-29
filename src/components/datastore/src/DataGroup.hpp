@@ -21,7 +21,7 @@
 
 using conduit::index_t;
 
-namespace DataStoreNS
+namespace sidre
 {
 
 /**

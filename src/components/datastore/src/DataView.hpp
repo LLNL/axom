@@ -17,7 +17,7 @@ using conduit::Node;
 using conduit::Schema;
 using conduit::DataType;
 
-namespace DataStoreNS
+namespace sidre
 {
 
 class DataGroup;

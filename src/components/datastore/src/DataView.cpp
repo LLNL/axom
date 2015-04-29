@@ -12,7 +12,7 @@
 
 #include "Utilities.hpp"
 
-namespace DataStoreNS
+namespace sidre
 {
 
 DataView::DataView( const std::string& name,

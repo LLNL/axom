@@ -8,7 +8,7 @@
 #include "DataStore.hpp"
 #include "DataBuffer.hpp"
 
-namespace DataStoreNS
+namespace sidre
 {
 
   DataStore::DataStore() :

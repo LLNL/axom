@@ -16,14 +16,14 @@ class PhysicsPackage
 {
    public:
 
-      PhysicsPackage(DataStoreNS::DataGroup& group):mDataGroup(group) {}
+      PhysicsPackage(sidre::DataGroup& group):mDataGroup(group) {}
 
       void setup()
       {
-         DataStoreNS::DataGroup& subgroup = *mDataGroup.CreateGroup("physicsB");
+         sidre::DataGroup& subgroup = *mDataGroup.CreateGroup("physicsB");
 
-         DataStoreNS::DataView& dataview = *subgroup.CreateViewAndBuffer("variable1");
-         DataStoreNS::DataBuffer& buffer = *dataview.GetBuffer();
+         sidre::DataView& dataview = *subgroup.CreateViewAndBuffer("variable1");
+         sidre::DataBuffer& buffer = *dataview.GetBuffer();
          buffer.Declare(DataType::float64(100));
          buffer.Allocate();
          conduit::float64* data_ptr1 = buffer.GetNode().as_float64_ptr();
@@ -57,7 +57,7 @@ class PhysicsPackage
 
       }
 
-      void saveState(DataStoreNS::DataGroup& group)
+      void saveState(sidre::DataGroup& group)
       {
          // Since the package wants to save all it's data as-is, it can just copy over it's group (with views) to the restart group.
          // It assumes a fresh, empty restart group is provided.
@@ -65,7 +65,7 @@ class PhysicsPackage
       }
 
    private:
-      DataStoreNS::DataGroup& mDataGroup;
+      sidre::DataGroup& mDataGroup;
 
 };
    
@@ -73,7 +73,7 @@ class StateFile
 {
    public:
       // Iterates over everything in provided tree and adds it to file
-      void save(DataStoreNS::DataGroup& group)
+      void save(sidre::DataGroup& group)
       {
          
          // Iterate over all groups and views to exercise needed API calls.
@@ -81,7 +81,7 @@ class StateFile
       }
       
       // Read everything from file into group.
-      void restore(DataStoreNS::DataGroup& group)
+      void restore(sidre::DataGroup& group)
       {
          // Restore state data back into group, exercising needed API calls.
          // A real code would read in each item from file first.
@@ -95,11 +95,11 @@ int main(void)
 {
 
    // Create datastore and problem state data.
-   DataStoreNS::DataStore datastore;
-   DataStoreNS::DataGroup& rootGroup = *datastore.GetRoot();
+   sidre::DataStore datastore;
+   sidre::DataGroup& rootGroup = *datastore.GetRoot();
 
    // Create a sub-tree for restart data.
-   DataStoreNS::DataGroup& restartGroup = *rootGroup.CreateGroup("restart");
+   sidre::DataGroup& restartGroup = *rootGroup.CreateGroup("restart");
 
    // Create example physics package that will use datastore.
    PhysicsPackage physics(rootGroup);

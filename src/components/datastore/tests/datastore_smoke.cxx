@@ -4,7 +4,7 @@
 
 #include "conduit/conduit.h"
 
-using DataStoreNS::DataStore;
+using sidre::DataStore;
 
 //------------------------------------------------------------------------------
 

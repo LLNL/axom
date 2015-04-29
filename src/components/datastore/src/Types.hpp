@@ -12,7 +12,7 @@
 /**
  *
  */
-namespace DataStoreNS
+namespace sidre
 {
     
 typedef conduit::index_t IDType;

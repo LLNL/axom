@@ -2,7 +2,7 @@
 
 #include "datastore/datastore.h"
 
-using namespace DataStoreNS;
+using namespace sidre;
 using namespace conduit;
 
 //------------------------------------------------------------------------------

@@ -3,8 +3,8 @@
 // do we need one include that brings all of these in?
 #include "datastore/datastore.h"
 
-using DataStoreNS::DataStore;
-using DataStoreNS::DataBuffer;
+using sidre::DataStore;
+using sidre::DataBuffer;
 
 using namespace conduit;
 

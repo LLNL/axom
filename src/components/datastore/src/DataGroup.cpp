@@ -15,7 +15,7 @@
 
 using conduit::NodeIterator;
 
-namespace DataStoreNS
+namespace sidre
 {
     DataGroup::DataGroup(const std::string &name,
                          DataGroup *parent)

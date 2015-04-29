@@ -8,8 +8,6 @@
 #include <iostream>
 #include <iomanip>
 
-namespace DataStoreNS
-{
 
 /*******************************************************************************
 *
@@ -67,7 +65,7 @@ namespace DataStoreNS
 do {                                                                \
     std::ostringstream oss;                                         \
     oss << "Error Message: " << msg << std::ends;                   \
-    DataStoreNS::utilities::processAbort( oss.str(), __FILE__, __LINE__);  \
+    asctoolkit::utilities::processAbort( oss.str(), __FILE__, __LINE__);  \
 } while (0)
 
 
@@ -83,7 +81,7 @@ do {                                                                \
 do {                                                                \
     std::ostringstream oss;                                         \
     oss << "Warning Message: " << msg << std::ends;                 \
-    DataStoreNS::utilities::processWarning( oss.str(), __FILE__, __LINE__);\
+    asctoolkit::utilities::processWarning( oss.str(), __FILE__, __LINE__);\
 } while (0)
 
 
@@ -103,7 +101,7 @@ do {                                                                   \
     if (!(EXP)) {                                                      \
        std::ostringstream oss;                                         \
        oss << "Failed Assert: " << # EXP << std::ends;                 \
-       DataStoreNS::utilities::processAbort( oss.str(), __FILE__, __LINE__);  \
+       asctoolkit::utilities::processAbort( oss.str(), __FILE__, __LINE__);  \
     }                                                                  \
 } while (0)
 
@@ -123,7 +121,7 @@ do {                                                                   \
     if (!(EXP)) {                                                      \
        std::ostringstream oss;                                         \
        oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;\
-       DataStoreNS::utilities::processAbort( oss.str(), __FILE__, __LINE__);  \
+       asctoolkit::utilities::processAbort( oss.str(), __FILE__, __LINE__);  \
     }                                                                  \
 } while (0)
 
@@ -145,7 +143,10 @@ do {                                                                   \
  *  
  ******************************************************************************
  */
-namespace utilities {
+namespace asctoolkit
+{
+namespace utilities
+{
 
    /*!
     * Print message, file, line number to preferred output stream 
@@ -175,8 +176,6 @@ namespace utilities {
       const int line);
 
 }  // ending brace for utilities namespace
-
-
-}  // ending brace for datastore namespace
+}  // ending brace for asctoolkit namespace
 
 #endif /* UTILITIES_HPP_ */
