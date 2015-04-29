@@ -40,7 +40,7 @@ public:
    * \brief Create a DataBuffer.
    *    It is assigned a universal id and owned by the DataStore
    */
-  DataBuffer* CreateBuffer();
+  DataBuffer* createBuffer();
 
 
   /*!
@@ -48,7 +48,7 @@ public:
    * \brief Remove a DataObject from the DataStore.
    *   It is disassociated with all groups and returned to the free pool.
    */
-  void DestroyBuffer( const IDType id );
+  void destroyBuffer( const IDType id );
 
   /*!
    *
@@ -56,13 +56,13 @@ public:
    * @return the DataBuffer that was at m_DataBuffer[id]
    * \brief Remove a DataBuffer from container, and return
    */
-  DataBuffer* DetatchBuffer( const IDType id );
+  DataBuffer* detachBuffer( const IDType id );
 
 
   /*!
    * \brief Return pointer to the root DataGroup.
    */
-  DataGroup* GetRoot() 
+  DataGroup* getRoot() 
       { return m_RootGroup; };
 
   /*!
@@ -70,15 +70,15 @@ public:
    * @param id
    * @return
    */
-  DataBuffer* GetBuffer( const IDType id ) 
+  DataBuffer* getBuffer( const IDType id ) 
       { return m_DataBuffers[id]; }
 
-  void DestroyBuffers();
+  void destroyBuffers();
 
-  void Print() const;
-  void Info(Node &) const;
+  void print() const;
+  void info(Node &) const;
 
-  IDType GetNumberOfBuffers() const
+  IDType getNumberOfBuffers() const
   {
     return m_DataBuffers.size() - m_AvailableDataBuffers.size();
   }
@@ -109,5 +109,5 @@ private:
 
 
 
-} /* namespace DataStoreNS */
+} /* namespace sidre */
 #endif /* DATASTORE_HPP_ */

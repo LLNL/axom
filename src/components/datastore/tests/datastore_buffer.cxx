@@ -13,16 +13,16 @@ using namespace conduit;
 TEST(datastore_buffer,create_buffers)
 {
     DataStore *ds = new DataStore();
-    DataBuffer *dbuff_0 = ds->CreateBuffer();
-    DataBuffer *dbuff_1 = ds->CreateBuffer();
+    DataBuffer *dbuff_0 = ds->createBuffer();
+    DataBuffer *dbuff_1 = ds->createBuffer();
     
     EXPECT_EQ(dbuff_0->GetUID(),0);
     EXPECT_EQ(dbuff_1->GetUID(),1);
-    ds->DestroyBuffer(0);
+    ds->destroyBuffer(0);
     
-    DataBuffer *dbuff_3 = ds->CreateBuffer();
+    DataBuffer *dbuff_3 = ds->createBuffer();
     EXPECT_EQ(dbuff_3->GetUID(),0);
-    ds->Print();
+    ds->print();
     delete ds;
 }
 
@@ -30,7 +30,7 @@ TEST(datastore_buffer,create_buffers)
 TEST(datastore_buffer,alloc_buffer_for_uint32_array)
 {
     DataStore *ds = new DataStore();
-    DataBuffer *dbuff = ds->CreateBuffer();
+    DataBuffer *dbuff = ds->createBuffer();
 
     dbuff->Declare(DataType::uint32(10));
     dbuff->Allocate();
@@ -43,9 +43,9 @@ TEST(datastore_buffer,alloc_buffer_for_uint32_array)
     dbuff->GetNode().print_detailed();
 
     EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
-              dbuff->GetDescriptor().total_bytes());
+              dbuff->getDescriptor().total_bytes());
   
-    ds->Print();
+    ds->print();
     delete ds;
     
 }
@@ -54,7 +54,7 @@ TEST(datastore_buffer,alloc_buffer_for_uint32_array)
 TEST(datastore_buffer,init_buffer_for_uint32_array)
 {
     DataStore *ds = new DataStore();
-    DataBuffer *dbuff = ds->CreateBuffer();
+    DataBuffer *dbuff = ds->createBuffer();
 
     dbuff->Allocate(DataType::uint32(10));
     uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
@@ -65,9 +65,9 @@ TEST(datastore_buffer,init_buffer_for_uint32_array)
     dbuff->GetNode().print_detailed();
 
     EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
-              dbuff->GetDescriptor().total_bytes());
+              dbuff->getDescriptor().total_bytes());
 
-    ds->Print();
+    ds->print();
     delete ds;
     
 }

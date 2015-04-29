@@ -45,66 +45,66 @@ public:
     /// if there is a 1-1 relationship between this view and its buffer
     /// this will force a description & an allocate on the underlying
     /// buffer, otherwise an assertion will result
-    DataView* Allocate();
-    DataView* Allocate(const Schema &schema);
-    DataView* Allocate(const DataType &dtype);
+    DataView* allocate();
+    DataView* allocate(const Schema &schema);
+    DataView* allocate(const DataType &dtype);
   
     /// sets the description that will be used to view data
-    DataView* Declare(const Schema &schema);  
-    DataView* Declare(const DataType &dtype);
+    DataView* declare(const Schema &schema);  
+    DataView* declare(const DataType &dtype);
   
     /// applies the description to buffer to init GetNode()
-    DataView* Apply();
-    DataView* Apply(const Schema &schema);  
-    DataView* Apply(const DataType &dtype);
+    DataView* apply();
+    DataView* apply(const Schema &schema);  
+    DataView* apply(const DataType &dtype);
   
   
-    bool   HasBuffer() const
+    bool   hasBuffer() const
     { return m_buffer != nullptr;}
 
-    bool   IsOpaque() const
+    bool   isOpaque() const
     {return m_opaque;}
     
-    void*  GetOpaque() const;
+    void*  getOpaque() const;
   
     /**
      *
      * @return m_schema
      */
-    const Schema &GetDescriptor() const
+    const Schema &getDescriptor() const
     { return m_schema; }
 
-    std::string GetName() const
+    std::string getName() const
     {return m_name;}
   
     /// note: in most cases, we want to use the const version of the node
-    Node &GetNode()
+    Node &getNode()
     {return m_node; }  
 
-    Node const& GetNode() const
+    Node const& getNode() const
     { return m_node; }
 
     /// for now, we assume a dataview always has a buffer and group
  
-    DataBuffer *GetBuffer()
+    DataBuffer *getBuffer()
     { return m_buffer; }  
  
-     DataBuffer const *GetBuffer() const
+     DataBuffer const *getBuffer() const
      { return m_buffer; }
  
-    DataGroup* GetParent()
+    DataGroup* getParent()
     {return m_group;}
 
-    DataGroup const* GetParent() const
+    DataGroup const* getParent() const
     {return m_group;}
 
 
     /// TODO: Bad name?
-    bool Applied() const
+    bool isApplied() const
     {return m_applied;}
 
-    void Print() const;  
-    void Info(Node &n) const;
+    void print() const;  
+    void info(Node &n) const;
     ///@}
 
 private:
@@ -157,5 +157,5 @@ private:
 
 
 
-} /* namespace DataStore */
+} /* namespace sidre */
 #endif /* DATAVIEW_HPP_ */

@@ -22,10 +22,10 @@ namespace sidre
   {
       // clean up views before we destroy buffers
       delete m_RootGroup;
-      DestroyBuffers();
+      destroyBuffers();
   }
 
-  DataBuffer* DataStore::CreateBuffer()
+  DataBuffer* DataStore::createBuffer()
   {
     // TODO: implement pool, look for free nodes.  Allocate in blocks.
     IDType newIndex = m_DataBuffers.size();
@@ -42,14 +42,14 @@ namespace sidre
     return obj;
   }
 
-  void DataStore::DestroyBuffer( const IDType id )
+  void DataStore::destroyBuffer( const IDType id )
   {
     delete m_DataBuffers[id];
     m_DataBuffers[id] = nullptr;
     m_AvailableDataBuffers.push(id);
   }
 
-  DataBuffer* DataStore::DetatchBuffer( const IDType id )
+  DataBuffer* DataStore::detachBuffer( const IDType id )
   {
     DataBuffer* const rval = m_DataBuffers[id];
     m_DataBuffers[id] = nullptr;
@@ -58,7 +58,7 @@ namespace sidre
     return rval;
   }
   
-  void DataStore::DestroyBuffers()
+  void DataStore::destroyBuffers()
   {
       for( std::vector<DataBuffer*>::iterator iter=m_DataBuffers.begin() ;
            iter!=m_DataBuffers.end() ; ++iter )
@@ -67,16 +67,16 @@ namespace sidre
       }
   }
 
-  void DataStore::Print() const
+  void DataStore::print() const
   {
       Node n;
-      Info(n);
+      info(n);
       n.print();
   }
 
-  void DataStore::Info(Node &n) const
+  void DataStore::info(Node &n) const
   {
-      m_RootGroup->Info(n["DataStore/root"]);
+      m_RootGroup->info(n["DataStore/root"]);
       for( std::vector<DataBuffer*>::const_iterator iter=m_DataBuffers.begin() ;
            iter!=m_DataBuffers.end() ;
            ++iter )
@@ -90,4 +90,4 @@ namespace sidre
   }
 
 
-} /* namespace DataStoreNS */
+} /* namespace sidre */

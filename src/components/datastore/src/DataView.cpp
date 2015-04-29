@@ -42,7 +42,7 @@ DataView::DataView( const std::string& name,
 {
     // todo, conduit should provide a check for if uint64 is a
     // good enough type to rep void *
-    GetNode().set((conduit::uint64)opaque);
+    getNode().set((conduit::uint64)opaque);
 }
 
 
@@ -50,81 +50,81 @@ DataView::~DataView()
 {
     if(m_buffer != nullptr)
     {
-        m_buffer->DetachView(this);
+        m_buffer->detachView(this);
     }
 }
 
-DataView* DataView::Apply()
+DataView* DataView::apply()
 {
     m_node.set_external(m_schema,m_buffer->GetData());
     m_applied = true;
     return this;
 }
 
-DataView* DataView::Apply(const Schema &schema)
+DataView* DataView::apply(const Schema &schema)
 {
-    Declare(schema);
-    Apply();
+    declare(schema);
+    apply();
     return this;
 }
 
-DataView* DataView::Apply(const DataType &dtype)
+DataView* DataView::apply(const DataType &dtype)
 {
-    Declare(dtype);
-    Apply();
+    declare(dtype);
+    apply();
     return this;
 }
 
 
-DataView* DataView::Declare(const Schema &schema)
+DataView* DataView::declare(const Schema &schema)
 {
     m_schema.set(schema);
     m_applied = false;
     return this;
 }
 
-DataView* DataView::Declare(const DataType &dtype)
+DataView* DataView::declare(const DataType &dtype)
 {
     m_schema.set(dtype);
     m_applied = false;
     return this;
 }
 
-DataView* DataView::Allocate()
+DataView* DataView::allocate()
 {
     // we only force alloc if there is a 1-1 between the view and buffer
     ATK_ASSERT_MSG( m_buffer->CountViews() == 1, \
                       "Can only allocate from a view if it's the only view associated with its buffer");
     
     m_buffer->Allocate(m_schema);
-    Apply();
+    apply();
     return this;
 }
 
-DataView* DataView::Allocate(const Schema &schema)
+DataView* DataView::allocate(const Schema &schema)
 {
-    Declare(schema);
-    Allocate();
-    Apply();
+    declare(schema);
+    allocate();
+    apply();
     return this;
 }
 
-DataView* DataView::Allocate(const DataType &dtype)
+DataView* DataView::allocate(const DataType &dtype)
 {
     
-    Declare(dtype);
-    Allocate();
-    Apply();
+    declare(dtype);
+    allocate();
+    apply();
     return this;
 }
 
-void *DataView::GetOpaque() const
+void *DataView::getOpaque() const
 {
     // if(!m_opaque) error?
-    return (void*)(GetNode().as_uint64());
+    return (void*)(getNode().as_uint64());
 }
 
-void DataView::Info(Node &n) const
+void DataView::info(Node &n) const
 {
     n["name"] = m_name;
     n["descriptor"] = m_schema.to_json();
@@ -133,12 +133,12 @@ void DataView::Info(Node &n) const
     n["opaque"] = m_opaque;
 }
 
-void DataView::Print() const
+void DataView::print() const
 {
     Node n;
-    Info(n);
+    info(n);
     n.print();
 }
 
 
-} /* namespace Datastore */
+} /* namespace sidre */

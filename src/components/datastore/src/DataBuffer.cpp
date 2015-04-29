@@ -86,13 +86,13 @@ void DataBuffer::Print() const
 
 
 
-void DataBuffer::AttachView( DataView* view )
+void DataBuffer::attachView( DataView* view )
 {
     m_views.push_back( view );
 }
 
 
-void DataBuffer::DetachView( DataView* view )
+void DataBuffer::detachView( DataView* view )
 {
     //Find new end iterator
     std::vector<DataView*>::iterator pos = std::remove(m_views.begin(),
@@ -104,6 +104,6 @@ void DataBuffer::DetachView( DataView* view )
 }
 
 
-} /* namespace Datastore */
+} /* end namespace sidre */
 
 

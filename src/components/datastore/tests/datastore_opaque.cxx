@@ -88,13 +88,13 @@ TEST(datastore_opaque,inout)
     const int ihi_val = 9; 
 
     DataStore* ds   = new DataStore();
-    DataGroup* root_gp = ds->GetRoot();
+    DataGroup* root_gp = ds->getRoot();
 
-    DataGroup* problem_gp = root_gp->CreateGroup("problem");
+    DataGroup* problem_gp = root_gp->createGroup("problem");
 
     Extent* ext = new Extent(0, ihi_val);
 
-    problem_gp->CreateOpaqueView("ext", ext);
+    problem_gp->createOpaqueView("ext", ext);
 #if 1
 //  problem_gp->CreateViewAndBuffer("ext");
 //  problem_gp->CreateOpaqueView("ext", ext);
@@ -116,11 +116,11 @@ TEST(datastore_opaque,inout)
 //  root_gp->DestroyGroup("bar");
 #endif
 
-    bool test_opaque = problem_gp->GetView("ext")->IsOpaque();
+    bool test_opaque = problem_gp->getView("ext")->isOpaque();
     EXPECT_EQ(test_opaque, true);
 
     Extent* test_extent = 
-       static_cast<Extent*>(problem_gp->GetView("ext")->GetOpaque());
+       static_cast<Extent*>(problem_gp->getView("ext")->getOpaque());
     int test_ihi = test_extent->m_ihi;
 
     EXPECT_EQ(test_ihi, ihi_val);
@@ -149,16 +149,16 @@ TEST(datastore_opaque,meshvar)
     const int node_var_depth = 2;
 
     DataStore* ds   = new DataStore();
-    DataGroup* root_gp = ds->GetRoot();
+    DataGroup* root_gp = ds->getRoot();
 
-    DataGroup* problem_gp = root_gp->CreateGroup("problem");
+    DataGroup* problem_gp = root_gp->createGroup("problem");
 
     // Add two different mesh vars to mesh var group
-    DataGroup* meshvar_gp = problem_gp->CreateGroup("mesh_var");
+    DataGroup* meshvar_gp = problem_gp->createGroup("mesh_var");
     MeshVar* zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth); 
-    meshvar_gp->CreateOpaqueView("zone_mv", zone_mv);
+    meshvar_gp->createOpaqueView("zone_mv", zone_mv);
     MeshVar* node_mv = new MeshVar(_Node_, _Double_, node_var_depth); 
-    meshvar_gp->CreateOpaqueView("node_mv", node_mv);
+    meshvar_gp->createOpaqueView("node_mv", node_mv);
 
     //
     // Create domain groups, add extents 
@@ -166,21 +166,21 @@ TEST(datastore_opaque,meshvar)
     //
     for (int idom = 0; idom < 2; ++idom) {
 
-       DataGroup* dom_gp = problem_gp->CreateGroup(dom_name[idom]);
+       DataGroup* dom_gp = problem_gp->createGroup(dom_name[idom]);
        Extent* dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
-       dom_gp->CreateOpaqueView("ext", dom_ext);
+       dom_gp->createOpaqueView("ext", dom_ext);
 
-       DataGroup* mv_gp = problem_gp->GetGroup("mesh_var"); 
+       DataGroup* mv_gp = problem_gp->getGroup("mesh_var"); 
 
-       DataView* dom_zone_view = dom_gp->CreateViewAndBuffer("zone_data");
+       DataView* dom_zone_view = dom_gp->createViewAndBuffer("zone_data");
        MeshVar* zonemv = static_cast<MeshVar*>( 
-                         mv_gp->GetView("zone_mv")->GetOpaque() );
-       dom_zone_view->Allocate( DataType::int32(zonemv->getNumVals(dom_ext)) );
+                         mv_gp->getView("zone_mv")->getOpaque() );
+       dom_zone_view->allocate( DataType::int32(zonemv->getNumVals(dom_ext)) );
 
-       DataView* dom_node_view = dom_gp->CreateViewAndBuffer("node_data");
+       DataView* dom_node_view = dom_gp->createViewAndBuffer("node_data");
        MeshVar* nodemv = static_cast<MeshVar*>( 
-                         mv_gp->GetView("node_mv")->GetOpaque() );
-       dom_node_view->Allocate( DataType::float64(nodemv->getNumVals(dom_ext)) );
+                         mv_gp->getView("node_mv")->getOpaque() );
+       dom_node_view->allocate( DataType::float64(nodemv->getNumVals(dom_ext)) );
 
     }
 
@@ -195,24 +195,24 @@ TEST(datastore_opaque,meshvar)
     //
     for (int idom = 0; idom < 2; ++idom) {
 
-       DataGroup* dom_gp = problem_gp->GetGroup(dom_name[idom]);
+       DataGroup* dom_gp = problem_gp->getGroup(dom_name[idom]);
        Extent* dom_ext = static_cast<Extent*>(
-                         dom_gp->GetView("ext")->GetOpaque() );
+                         dom_gp->getView("ext")->getOpaque() );
 
-       DataGroup* mv_gp = problem_gp->GetGroup("mesh_var");
+       DataGroup* mv_gp = problem_gp->getGroup("mesh_var");
        MeshVar* zonemv = static_cast<MeshVar*>(
-                         mv_gp->GetView("zone_mv")->GetOpaque() );
+                         mv_gp->getView("zone_mv")->getOpaque() );
        MeshVar* nodemv = static_cast<MeshVar*>(
-                         mv_gp->GetView("node_mv")->GetOpaque() );
+                         mv_gp->getView("node_mv")->getOpaque() );
 
        int num_zone_vals = zonemv->getNumVals(dom_ext);
-       int test_num_zone_vals = dom_gp->GetView("zone_data")->GetBuffer()->
-                                GetDescriptor().dtype().number_of_elements();
+       int test_num_zone_vals = dom_gp->getView("zone_data")->getBuffer()->
+                                getDescriptor().dtype().number_of_elements();
        EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
        int num_node_vals = nodemv->getNumVals(dom_ext);
-       int test_num_node_vals = dom_gp->GetView("node_data")->GetBuffer()->
-                                GetDescriptor().dtype().number_of_elements();
+       int test_num_node_vals = dom_gp->getView("node_data")->getBuffer()->
+                                getDescriptor().dtype().number_of_elements();
        EXPECT_EQ(num_node_vals, test_num_node_vals);
 
     }
@@ -222,7 +222,7 @@ TEST(datastore_opaque,meshvar)
     delete node_mv;
     for (int idom = 0; idom < 2; ++idom) {
        delete static_cast<Extent*>( 
-          problem_gp->GetGroup(dom_name[idom])->GetView("ext")->GetOpaque() );
+          problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaque() );
     }
     delete ds;
 }

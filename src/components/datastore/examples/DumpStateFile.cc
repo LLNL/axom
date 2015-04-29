@@ -20,10 +20,10 @@ class PhysicsPackage
 
       void setup()
       {
-         sidre::DataGroup& subgroup = *mDataGroup.CreateGroup("physicsB");
+         sidre::DataGroup& subgroup = *mDataGroup.createGroup("physicsB");
 
-         sidre::DataView& dataview = *subgroup.CreateViewAndBuffer("variable1");
-         sidre::DataBuffer& buffer = *dataview.GetBuffer();
+         sidre::DataView& dataview = *subgroup.createViewAndBuffer("variable1");
+         sidre::DataBuffer& buffer = *dataview.getBuffer();
          buffer.Declare(DataType::float64(100));
          buffer.Allocate();
          conduit::float64* data_ptr1 = buffer.GetNode().as_float64_ptr();
@@ -33,8 +33,8 @@ class PhysicsPackage
             data_ptr1[i] = i;
          }
 
-         dataview = *subgroup.CreateViewAndBuffer("variable2");
-         buffer = *dataview.GetBuffer();
+         dataview = *subgroup.createViewAndBuffer("variable2");
+         buffer = *dataview.getBuffer();
          buffer.Declare(DataType::float64(100));
          buffer.Allocate();
          conduit::float64* data_ptr2 = buffer.GetNode().as_float64_ptr();
@@ -44,8 +44,8 @@ class PhysicsPackage
             data_ptr2[i] = 100-i;
          }
          
-         dataview = *subgroup.CreateViewAndBuffer("dependentVariable");
-         buffer = *dataview.GetBuffer();
+         dataview = *subgroup.createViewAndBuffer("dependentVariable");
+         buffer = *dataview.getBuffer();
          buffer.Declare(DataType::float64(100));
          buffer.Allocate();
          conduit::float64* data_ptr3 = buffer.GetNode().as_float64_ptr();
@@ -61,7 +61,7 @@ class PhysicsPackage
       {
          // Since the package wants to save all it's data as-is, it can just copy over it's group (with views) to the restart group.
          // It assumes a fresh, empty restart group is provided.
-         group.CopyGroup( &mDataGroup );
+         group.copyGroup( &mDataGroup );
       }
 
    private:
@@ -96,10 +96,10 @@ int main(void)
 
    // Create datastore and problem state data.
    sidre::DataStore datastore;
-   sidre::DataGroup& rootGroup = *datastore.GetRoot();
+   sidre::DataGroup& rootGroup = *datastore.getRoot();
 
    // Create a sub-tree for restart data.
-   sidre::DataGroup& restartGroup = *rootGroup.CreateGroup("restart");
+   sidre::DataGroup& restartGroup = *rootGroup.createGroup("restart");
 
    // Create example physics package that will use datastore.
    PhysicsPackage physics(rootGroup);
@@ -116,7 +116,7 @@ int main(void)
    file.close();
 
    // Clean up restart tree
-   rootGroup.DestroyGroup("restart");
+   rootGroup.destroyGroup("restart");
 
    return 0;
 }

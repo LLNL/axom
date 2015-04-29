@@ -92,7 +92,7 @@ public:
     *
     * @return m_schema
     */
-    const Schema &GetDescriptor() const
+    const Schema &getDescriptor() const
     { return m_schema; }
 
     /// note: in most cases, we want to use the const version of the node
@@ -134,8 +134,8 @@ private:
 
      /// TODO: the data store should be the only entity that can create a buffer
 
-    void AttachView( DataView* dataView );
-    void DetachView( DataView* dataView );
+    void attachView( DataView* dataView );
+    void detachView( DataView* dataView );
 
 
 
@@ -159,5 +159,5 @@ private:
 
 
 
-} /* namespace DataStore */
+} /* namespace sidre */
 #endif /* DATABUFFER_HPP_ */
