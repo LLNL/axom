@@ -320,13 +320,15 @@ etc. must be documented in order to document any of its members.
 
 4.6.2 Regardless of which documentation form is used, a brief description of purpose of the definition **must** be included using the Doxygen command "\\brief".
 
-4.6.3 When documenting a data item inline (as in the second example above), the comment must follow the item on the same line and have the form::
+4.6.3 When documenting a data item inline (as in the second example above), the comment must follow the item on the same line.
+
+     The form of an inline Doxygen comment is::
 
          /*!< \brief ...comment text... */
 
-      Note that the "<" character must be included immediately after the start 
-      of the Doxygen comment form (with no space between). This tells Doxygen 
-      that the comment corresponds to the item immediately preceding it.
+     Note that the "<" character must be included immediately after the start 
+     of the Doxygen comment form (with no space between). This tells Doxygen 
+     that the comment corresponds to the item immediately preceding it.
 
 4.6.4 Any detailed notes about an item, if included, **must** appear after the brief comment and be separated from the brief comment with a blank line. 
 
@@ -396,7 +398,9 @@ The second example shows how to document the function arguments inline.
        bool initMode(OpMode mode /*!< [in] ReadMode, WriteMode are valid options */ );
 
 Note that the first example uses the "\\" character to identify Doxygen 
-commands;the second uses "@".
+commands; the second uses "@". Also, the "<" character must appear immediately 
+after the start of the Doxygen comment form (with no space between). This 
+tells Doxygen that the comment corresponds to the item immediately preceding it.
 
 4.7.3 A brief statement of purpose for a function must appear as the first text comment after the Doxygen command "\\brief" (or "@brief"). 
 

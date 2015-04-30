@@ -3,12 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ASC CS Toolkit Coding Guidelines documentation
+Welcome to ASC CS Toolkit Coding Guidelines
 =========================================================
 
-**ASC CS Toolkit Coding Guidelines**
-
-Contents:
+**Contents:**
 
 .. toctree::
    :maxdepth: 2

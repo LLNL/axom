@@ -1,18 +1,19 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5 General Code Development &mdash; Toolkit Coding Guidelines v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>5 General Code Development &mdash; Toolkit Coding Guidelines 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -22,12 +23,12 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Toolkit Coding Guidelines v1.0 documentation" href="index.html" />
+    <link rel="top" title="Toolkit Coding Guidelines 1.0 documentation" href="index.html" />
     <link rel="next" title="6 Class Design and Implementation" href="Sec6_class.html" />
     <link rel="prev" title="4 Code Documentation" href="Sec4_doc.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -39,14 +40,14 @@
         <li class="right" >
           <a href="Sec4_doc.html" title="4 Code Documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="general-code-development">
 <h1>5 General Code Development<a class="headerlink" href="#general-code-development" title="Permalink to this headline">¶</a></h1>
@@ -86,7 +87,8 @@ declaration appears.</div></blockquote>
 <p>5.2.2 Preprocessor macros <strong>should not</strong> be used when there is a better alternative, such as an inline function or a constant variable definition.</p>
 <blockquote>
 <div><p>For example, this:</p>
-<div class="highlight-python"><pre>const double PI = 3.1415926535897932384626433832;</pre>
+<div class="highlight-python"><div class="highlight"><pre>const double PI = 3.1415926535897932384626433832;
+</pre></div>
 </div>
 <p>is preferable to this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#define PI (3.1415926535897932384626433832)</span>
@@ -182,10 +184,12 @@ caller and callee, and can result in undefined behavior.</div></blockquote>
 <p>5.5.7 Each argument in a function declaration <strong>must</strong> be given a name that exactly matches the function implementation.</p>
 <blockquote>
 <div><p>For example, use:</p>
-<div class="highlight-python"><pre>void computeSomething(int op_count, int mode);</pre>
+<div class="highlight-python"><div class="highlight"><pre>void computeSomething(int op_count, int mode);
+</pre></div>
 </div>
 <p>not:</p>
-<div class="highlight-python"><pre>void computeSomething(int, int);</pre>
+<div class="highlight-python"><div class="highlight"><pre>void computeSomething(int, int);
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -204,14 +208,15 @@ the error check <strong>should</strong> be performed at the start of the functio
 before other statements are reached. For example, the following is a
 reasonable use of two function return points because the error condition
 check and the return value for successful completion are clearly visible:</p>
-<div class="highlight-python"><pre>int computeSomething(int in_val)
+<div class="highlight-python"><div class="highlight"><pre>int computeSomething(int in_val)
 {
    if (in_val &lt; 0) { return -1; }
 
    // ...rest of function implementation...
 
    return 0;
-}</pre>
+}
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.6.3 &#8220;Sanity checks&#8221; should be performed on values of function arguments (e.g., range checking, null pointer checking, etc.) upon entry to a function.</p>
@@ -222,13 +227,14 @@ consistent. When triggered, they can emit a failed boolean expression and
 descriptive message that help to understand the violation. They are
 active or not based on the compilation mode, either debug (active) or
 optimized (inactive). For example:</p>
-<div class="highlight-python"><pre>void doSomething(int in_val, Foo* in_foo)
+<div class="highlight-python"><div class="highlight"><pre>void doSomething(int in_val, Foo* in_foo)
 {
-   ATK_ASSERT_MSG( in_val &gt;= 0, "in_val must be positive or zero" );
+   ATK_ASSERT_MSG( in_val &gt;= 0, &quot;in_val must be positive or zero&quot; );
    ATK_ASSERT( in_foo != NULL );
 
    // ...function implementation...
-}</pre>
+}
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -263,7 +269,7 @@ functions to explicitly declare inline.</li>
 <blockquote>
 <div><p><strong>Exception:</strong> Most accessors that return an object by value (i.e., not by
 pointer or a reference) <strong>should not</strong> be inlined. For example:</p>
-<div class="highlight-python"><pre>clas MyData
+<div class="highlight-python"><div class="highlight"><pre>clas MyData
 {
    // ...public interface...
 private:
@@ -280,7 +286,8 @@ publis:
 
 private:
    MyData m_mydata;
-};</pre>
+};
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.7.2 Class constructors <strong>should not</strong> be inlined.</p>
@@ -295,7 +302,7 @@ constructor is when it has only POD (&#8220;plain old data&#8221;) mambers, is n
 subclass of a base class, and does not explcitly declare a destructor.
 In this case, a compiler will not even generate a destructor in most
 cases. For example:</p>
-<div class="highlight-python"><pre>class MyClass
+<div class="highlight-python"><div class="highlight"><pre>class MyClass
 {
 public:
    MyClass() : m_data1(0), m_data2(0) { }
@@ -307,13 +314,15 @@ private:
    // class has only POD members
    int m_data1;
    int m_data2;
-};</pre>
+};
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.7.3 Virtual functions <strong>must not</strong> be inlined due to polymorphism.</p>
 <blockquote>
 <div><p>For example, do not declare a virtual class member function as:</p>
-<div class="highlight-python"><pre>virtual void foo( ) { }</pre>
+<div class="highlight-python"><div class="highlight"><pre>virtual void foo( ) { }
+</pre></div>
 </div>
 <p>In most circumstances, a virtual method cannot be inlined even though it
 would be inlined otherwise (e.g., because it is very short). A compiler
@@ -321,7 +330,7 @@ must do runtime dispatch on a virtual method when it doesn&#8217;t know the
 complete type at compile time.</p>
 <p><strong>Exception:</strong> It is safe to define an empty destructor inline in an
 abstract base class with no data members. For example:</p>
-<div class="highlight-python"><pre>class MyBase
+<div class="highlight-python"><div class="highlight"><pre>class MyBase
 {
 public:
    virtual ~MyBase() {}
@@ -333,7 +342,8 @@ public:
    // ...
 
    // ...no data members...
-};</pre>
+};
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -368,10 +378,11 @@ to take advantage of longer expressions than it could otherwise.</div></blockquo
 <blockquote>
 <div><p>For consistency and correctness, the &#8221;!=&#8221; operator <strong>should</strong> be
 implemented using the &#8220;==&#8221; operator implementation. For example:</p>
-<div class="highlight-python"><pre>bool MyClass::operator!= (const MyClass&amp; rhs)
+<div class="highlight-python"><div class="highlight"><pre>bool MyClass::operator!= (const MyClass&amp; rhs)
 {
    return !(this == rhs);
-}</pre>
+}
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.8.6 Standard operators, such as &#8220;&amp;&amp;&#8221;, &#8220;||&#8221;, and &#8221;,&#8221; (i.e., comma), <strong>must not</strong> be overloaded.</p>
@@ -403,13 +414,16 @@ string data to be used when interacting with C routines.</div></blockquote>
 <p>5.9.4 Class type variables <strong>should</strong> be defined using direct initialization instead of copy initialization to avoid unwanted and spurious type conversions and constructor calls that may be generated by compilers.</p>
 <blockquote>
 <div><p>For example, use:</p>
-<div class="highlight-python"><pre>std::string name("Bill");</pre>
+<div class="highlight-python"><div class="highlight"><pre>std::string name(&quot;Bill&quot;);
+</pre></div>
 </div>
 <p>instead of:</p>
-<div class="highlight-python"><pre>std::string name = "Bill";</pre>
+<div class="highlight-python"><div class="highlight"><pre>std::string name = &quot;Bill&quot;;
+</pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><pre>std::string name = std::string("Bill");</pre>
+<div class="highlight-python"><div class="highlight"><pre>std::string name = std::string(&quot;Bill&quot;);
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -459,23 +473,27 @@ definitions are seen more than once.</div></blockquote>
 <blockquote>
 <div><p>This helps prevent coding errors and misinterpretation of intent.
 For example, use:</p>
-<div class="highlight-python"><pre>if (done) { ... }</pre>
+<div class="highlight-python"><div class="highlight"><pre>if (done) { ... }
+</pre></div>
 </div>
 <p>not:</p>
-<div class="highlight-python"><pre>if (done) ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>if (done) ...
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.12.2 One-liners <strong>may</strong> not be used for &#8220;if&#8221; conditionals with &#8220;else/else if&#8221;  clauses when the resulting code is clear.</p>
 <blockquote>
 <div><p>For example, either of the following styles <strong>may</strong> be used:</p>
-<div class="highlight-python"><pre>if (done) {
+<div class="highlight-python"><div class="highlight"><pre>if (done) {
    id = 3;
 } else {
    id = 0;
-}</pre>
+}
+</pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><pre>if (done) { id = 3; } else { id = 0; }</pre>
+<div class="highlight-python"><div class="highlight"><pre>if (done) { id = 3; } else { id = 0; }
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.12.3 For clarity, the shortest block of an &#8220;if/else&#8221; statement <strong>should</strong> come first.</p>
@@ -487,10 +505,12 @@ understand and may improve performance.</div></blockquote>
 <p>5.12.5 An explicit test for zero/nonzero <strong>must</strong> be used in a conditional unless the tested quantity is a bool or a pointer.</p>
 <blockquote>
 <div><p>For example, a conditional based on an integer value should use:</p>
-<div class="highlight-python"><pre>if (num_lines != 0) {</pre>
+<div class="highlight-python"><div class="highlight"><pre>if (num_lines != 0) {
+</pre></div>
 </div>
 <p>not:</p>
-<div class="highlight-python"><pre>if (num_lines) {</pre>
+<div class="highlight-python"><div class="highlight"><pre>if (num_lines) {
+</pre></div>
 </div>
 </div></blockquote>
 <p>5.12.6 A switch statement <strong>should</strong> use curly braces for each case and use indentation, white space, and comments for readability. Also, each case <strong>must</strong> contain a &#8220;break&#8221; statement and a &#8220;default&#8221; case <strong>must</strong> be provided to catch erroneous case values. &#8220;Fall through&#8221; cases are confusing and error-prone and so <strong>should</strong> be made clear in the code.</p>
@@ -498,13 +518,13 @@ understand and may improve performance.</div></blockquote>
 <div>Here is an example illustrating several preferred style practices.</div></blockquote>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="k">switch</span> <span class="p">(</span><span class="n">condition</span><span class="p">)</span> <span class="p">{</span>
 
-   <span class="k">case</span> <span class="n">ABC</span> <span class="o">:</span> <span class="p">{</span>
+   <span class="k">case</span> <span class="nl">ABC</span> <span class="p">:</span> <span class="p">{</span>
       <span class="p">...</span>
       <span class="k">break</span><span class="p">;</span>
    <span class="p">}</span>
 
-   <span class="k">case</span> <span class="n">DEF</span> <span class="o">:</span>  <span class="c1">// fall-through case</span>
-   <span class="k">case</span> <span class="n">GHI</span> <span class="o">:</span> <span class="p">{</span>
+   <span class="k">case</span> <span class="nl">DEF</span> <span class="p">:</span>  <span class="c1">// fall-through case</span>
+   <span class="k">case</span> <span class="nl">GHI</span> <span class="p">:</span> <span class="p">{</span>
       <span class="p">...</span>
    <span class="k">break</span><span class="p">;</span>
    <span class="p">}</span>
@@ -575,7 +595,7 @@ operator precedence.</div></blockquote>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -604,12 +624,14 @@ operator precedence.</div></blockquote>
   <h4>Next topic</h4>
   <p class="topless"><a href="Sec6_class.html"
                         title="next chapter">6 Class Design and Implementation</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/Sec5_code.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Sec5_code.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -626,7 +648,7 @@ operator precedence.</div></blockquote>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -638,12 +660,12 @@ operator precedence.</div></blockquote>
         <li class="right" >
           <a href="Sec4_doc.html" title="4 Code Documentation"
              >previous</a> |</li>
-        <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Rich Hornung.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

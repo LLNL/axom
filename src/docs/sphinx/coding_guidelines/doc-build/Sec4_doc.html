@@ -1,18 +1,19 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4 Code Documentation &mdash; Toolkit Coding Guidelines v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>4 Code Documentation &mdash; Toolkit Coding Guidelines 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -22,12 +23,12 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Toolkit Coding Guidelines v1.0 documentation" href="index.html" />
+    <link rel="top" title="Toolkit Coding Guidelines 1.0 documentation" href="index.html" />
     <link rel="next" title="5 General Code Development" href="Sec5_code.html" />
     <link rel="prev" title="3 Directories, Files, and Scope" href="Sec3_scope.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -39,14 +40,14 @@
         <li class="right" >
           <a href="Sec3_scope.html" title="3 Directories, Files, and Scope"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="code-documentation">
 <h1>4 Code Documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h1>
@@ -100,15 +101,17 @@ are writing code.</p>
 <blockquote>
 <div><p>JavaDoc style comments consist of a C-style comment block starting with
 two *&#8217;s, like this:</p>
-<div class="highlight-python"><pre>/**
+<div class="highlight-python"><div class="highlight"><pre>/**
  * ...comment text...
- */</pre>
+ */
+</pre></div>
 </div>
 <p>Qt style comments add an exclamation mark (!) after the opening of a
 C-style comment block,like this:</p>
-<div class="highlight-python"><pre>/*!
+<div class="highlight-python"><div class="highlight"><pre>/*!
  * ...comment text...
- */</pre>
+ */
+</pre></div>
 </div>
 <p>In either case, the intermediate asterisk characters (&#8220;*&#8221; are optional,
 but strongly encouraged.</p>
@@ -117,24 +120,28 @@ but strongly encouraged.</p>
 <blockquote>
 <div><p>Use a block of at least two C++ comment lines, where each line starts
 with an additional slash:</p>
-<div class="highlight-python"><pre>///
+<div class="highlight-python"><div class="highlight"><pre>///
 /// ...comment text...
-///</pre>
+///
+</pre></div>
 </div>
 <p>or an exclamation mark:</p>
-<div class="highlight-python"><pre>//!
+<div class="highlight-python"><div class="highlight"><pre>//!
 //! ...comment text...
-//!</pre>
+//!
+</pre></div>
 </div>
 </div></blockquote>
 <p>4.2.3 To be processed properly, Doxygen commands <strong>must</strong> be preceded with a special Doxygen character, either &#8220;\&#8221; or &#8220;&#64;&#8221;.</p>
 <blockquote>
 <div><p>For example, either of the following forms is acceptable Doxygen syntax
 for providing a &#8220;brief&#8221; descriptive comment:</p>
-<div class="highlight-python"><pre>\brief  ...comment text...</pre>
+<div class="highlight-python"><div class="highlight"><pre>\brief  ...comment text...
+</pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><pre>@brief  ...comment text...</pre>
+<div class="highlight-python"><div class="highlight"><pre>@brief  ...comment text...
+</pre></div>
 </div>
 </div></blockquote>
 <p>4.2.4 Whichever Doxygen comment block style or character used to signify a Doxygen command is used, it <strong>must</strong> be the same within a file.</p>
@@ -144,7 +151,8 @@ for providing a &#8220;brief&#8221; descriptive comment:</p>
 class/struct data members, enum values, function arguments, etc. <strong>must</strong>
 appear after the item be <strong>on the same line</strong> and <strong>must</strong> use the
 following syntax:</p>
-<div class="highlight-python"><pre>/*!&lt; ...comment text... */</pre>
+<div class="highlight-python"><div class="highlight"><pre>/*!&lt; ...comment text... */
+</pre></div>
 </div>
 <p>Note that the &#8220;&lt;&#8221; character must appear immediately after the opening of
 the Doxygen comment (with no space before). This tells Doxygen that the
@@ -314,38 +322,44 @@ such cross-reference so that links are generated in the documentation.</div></bl
 <p>4.6.1 Each struct field, C++ class data member, etc. <strong>should</strong> have a descriptive comment indicating its purpose.</p>
 <blockquote>
 <div><p>This comment may as appear as a prologue before the item, such as:</p>
-<div class="highlight-python"><pre>/*!
+<div class="highlight-python"><div class="highlight"><pre>/*!
  *
  * \brief Brief statement of purpose of data member m_mode.
  *
  * Optional detailed information about m_mode...
  */
-int m_mode;</pre>
+int m_mode;
+</pre></div>
 </div>
 <p>or, it may appear after the item as an inline comment such as:</p>
-<div class="highlight-python"><pre>int m_mode; /*!&lt; \brief Brief statement of purpose of m_mode... */</pre>
+<div class="highlight-python"><div class="highlight"><pre>int m_mode; /*!&lt; \brief Brief statement of purpose of m_mode... */
+</pre></div>
 </div>
 </div></blockquote>
 <p>4.6.2 Regardless of which documentation form is used, a brief description of purpose of the definition <strong>must</strong> be included using the Doxygen command &#8220;\brief&#8221;.</p>
-<p>4.6.3 When documenting a data item inline (as in the second example above), the comment must follow the item on the same line and have the form:</p>
-<div class="highlight-python"><pre>   /*!&lt; \brief ...comment text... */
-
-Note that the "&lt;" character must be included immediately after the start
-of the Doxygen comment form (with no space between). This tells Doxygen
-that the comment corresponds to the item immediately preceding it.</pre>
+<p>4.6.3 When documenting a data item inline (as in the second example above), the comment must follow the item on the same line.</p>
+<blockquote>
+<div><p>The form of an inline Doxygen comment is:</p>
+<div class="highlight-python"><div class="highlight"><pre>/*!&lt; \brief ...comment text... */
+</pre></div>
 </div>
+<p>Note that the &#8220;&lt;&#8221; character must be included immediately after the start
+of the Doxygen comment form (with no space between). This tells Doxygen
+that the comment corresponds to the item immediately preceding it.</p>
+</div></blockquote>
 <p>4.6.4 Any detailed notes about an item, if included, <strong>must</strong> appear after the brief comment and be separated from the brief comment with a blank line.</p>
 <p>4.6.5 When a detailed comment is provided, or the brief statement requires more than one line, the prologue comment form <strong>should</strong> be used instead of the inline form to make the documentation easier to read.</p>
 <p>4.6.6 If the names of data members are sufficiently clear that their meaning and purpose are obvious to other developers (which should be determined in a code review), then the members <strong>may</strong> be grouped together and documented with a single descriptive comment.</p>
 <blockquote>
 <div><p>An example of Doxygen syntax for such a grouping is:</p>
-<div class="highlight-python"><pre>//@{
+<div class="highlight-python"><div class="highlight"><pre>//@{
 //!  @name Data member description...
 
 int m_member1;
 int m_member2;
 ...
-//@}</pre>
+//@}
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -373,7 +387,7 @@ to document the function arguments in the function prologue.</p>
 <span class="cm"> *</span>
 <span class="cm"> *************************************************************************</span>
 <span class="cm"> */</span>
- <span class="kt">bool</span> <span class="n">initMode</span><span class="p">(</span><span class="n">OpMode</span> <span class="n">mode</span><span class="p">);</span>
+ <span class="kt">bool</span> <span class="nf">initMode</span><span class="p">(</span><span class="n">OpMode</span> <span class="n">mode</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>The second example shows how to document the function arguments inline.</p>
@@ -389,11 +403,13 @@ to document the function arguments in the function prologue.</p>
 <span class="cm"> *</span>
 <span class="cm"> *************************************************************************</span>
 <span class="cm"> */</span>
- <span class="kt">bool</span> <span class="n">initMode</span><span class="p">(</span><span class="n">OpMode</span> <span class="n">mode</span> <span class="cm">/*!&lt; [in] ReadMode, WriteMode are valid options */</span> <span class="p">);</span>
+ <span class="kt">bool</span> <span class="nf">initMode</span><span class="p">(</span><span class="n">OpMode</span> <span class="n">mode</span> <span class="cm">/*!&lt; [in] ReadMode, WriteMode are valid options */</span> <span class="p">);</span>
 </pre></div>
 </div>
 <p>Note that the first example uses the &#8220;\&#8221; character to identify Doxygen
-commands;the second uses &#8220;&#64;&#8221;.</p>
+commands; the second uses &#8220;&#64;&#8221;. Also, the &#8220;&lt;&#8221; character must appear immediately
+after the start of the Doxygen comment form (with no space between). This
+tells Doxygen that the comment corresponds to the item immediately preceding it.</p>
 <p>4.7.3 A brief statement of purpose for a function must appear as the first text comment after the Doxygen command &#8220;\brief&#8221; (or &#8220;&#64;brief&#8221;).</p>
 <p>4.7.4 Any detailed notes about a function, when included, <strong>must</strong> appear after the brief comment and <strong>must</strong> be separated from the brief comment by a blank line.</p>
 <p>4.7.4 If the function has a non-void return type, the return value <strong>should</strong> be documented in the prologue using the Doxygen command &#8220;return&#8221; (or &#8220;&#64;return&#8221;) preceding a description of the return value.</p>
@@ -427,13 +443,14 @@ this, such a description <strong>should</strong> be included; e.g., by using &#8
 <p>4.7.8 Short, simple functions (e.g., inline methods) <strong>may</strong> be grouped together and documented with a single descriptive comment when this is sufficient.</p>
 <blockquote>
 <div><p>An example of Doxygen syntax for such a grouping is:</p>
-<div class="highlight-python"><pre>//@{
+<div class="highlight-python"><div class="highlight"><pre>//@{
 //! @name Setters for data members
 
 void setMember1(int arg1) { m_member1 = arg1; }
 void setMember2(int arg2) { m_member2 = arg2; }
 
-//@}</pre>
+//@}
+</pre></div>
 </div>
 </div></blockquote>
 <p>4.7.9 Typically, important implementation details about a function <strong>should</strong> be documented in the source file where the function is implemented.</p>
@@ -446,7 +463,7 @@ syntax. Using Doygen syntax to document an item in more than one location
 formatting issues and potentially confusing documentation.</p>
 <p>A member of a class may be documented as follows in the source file
 for the class as follows:</p>
-<div class="highlight-python"><pre>/*
+<div class="highlight-python"><div class="highlight"><pre>/*
  ***********************************************************************
  *
  * Set operation mode for a Foo object.
@@ -458,7 +475,8 @@ for the class as follows:</p>
  bool Foo::initMode(OpMode mode)
  {
     ...function body...
- }</pre>
+ }
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -468,7 +486,7 @@ for the class as follows:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -490,12 +508,14 @@ for the class as follows:</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="Sec5_code.html"
                         title="next chapter">5 General Code Development</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/Sec4_doc.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Sec4_doc.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -512,7 +532,7 @@ for the class as follows:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -524,12 +544,12 @@ for the class as follows:</p>
         <li class="right" >
           <a href="Sec3_scope.html" title="3 Directories, Files, and Scope"
              >previous</a> |</li>
-        <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Rich Hornung.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

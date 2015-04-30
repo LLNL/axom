@@ -1,18 +1,19 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6 Class Design and Implementation &mdash; Toolkit Coding Guidelines v1.0 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <title>6 Class Design and Implementation &mdash; Toolkit Coding Guidelines 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '1.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -22,12 +23,12 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Toolkit Coding Guidelines v1.0 documentation" href="index.html" />
+    <link rel="top" title="Toolkit Coding Guidelines 1.0 documentation" href="index.html" />
     <link rel="next" title="7 Restrictions on Language Usage and Libraries" href="Sec7_restrictions.html" />
     <link rel="prev" title="5 General Code Development" href="Sec5_code.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -39,14 +40,14 @@
         <li class="right" >
           <a href="Sec5_code.html" title="5 General Code Development"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="class-design-and-implementation">
 <h1>6 Class Design and Implementation<a class="headerlink" href="#class-design-and-implementation" title="Permalink to this headline">¶</a></h1>
@@ -129,18 +130,21 @@ summary above to reinforce this guideline.</p>
 <blockquote>
 <div><p>This will prevent compilers from performing unexpected (and, in many
 cases, unwanted!) implicit type conversions. For example:</p>
-<div class="highlight-python"><pre>class MyClass
+<div class="highlight-python"><div class="highlight"><pre>class MyClass
 {
 public:
    explicit MyClass(int i, double x = 0.0);
-};</pre>
+};
+</pre></div>
 </div>
 <p>Note that, without the explicit declaration, an implicit conversion from
 an integer to an object of type MyClass is allowed. For example:</p>
-<div class="highlight-python"><pre>MyClass mc = 2;</pre>
+<div class="highlight-python"><div class="highlight"><pre>MyClass mc = 2;
+</pre></div>
 </div>
 <p>Clearly, this is confusing. The &#8220;explicit&#8221; keyword forces the following:</p>
-<div class="highlight-python"><pre>MyClass mc(2);</pre>
+<div class="highlight-python"><div class="highlight"><pre>MyClass mc(2);
+</pre></div>
 </div>
 <p>to get the same result, which is much more clear.</p>
 </div></blockquote>
@@ -199,7 +203,7 @@ guideline 5.4.1.</div></blockquote>
 <strong>should</strong> be declared private and unimplemented when the intent is
 that such methods should never be called. This is a good way to help
 a compiler to catch unintended usage. For example:</p>
-<div class="highlight-python"><pre>class MyClass
+<div class="highlight-python"><div class="highlight"><pre>class MyClass
 {
    // ...
 
@@ -210,7 +214,8 @@ private:
    void operator=(const MyClass&amp;);
 
    // ...
-};</pre>
+};
+</pre></div>
 </div>
 </li>
 <li><p class="first">The default constructor, copy constructor, destructor, and copy
@@ -248,14 +253,15 @@ of default value semantics in the functor definition.</p>
 <p>6.2.8 An explicit implementation of a class copy-assignment operator <strong>must</strong> check for assignment to self, and <strong>must</strong> return a reference to &#8220;*this&#8221; after copying all data members.</p>
 <blockquote>
 <div><p>Moreover, the <em>copy-and-swap</em> idiom <strong>should</strong> be used. For example:</p>
-<div class="highlight-python"><pre>MyClass&amp; MyClass::operator= (const MyClass&amp; rhs)
+<div class="highlight-python"><div class="highlight"><pre>MyClass&amp; MyClass::operator= (const MyClass&amp; rhs)
 {
    if (this != &amp;rhs) {
       MyClass temp(rhs);
       swap(temp);
    }
    return *this;
-}</pre>
+}
+</pre></div>
 </div>
 <p>Note that the copy-and-swap idiom uses the copy constructor to create a
 temporary object and calls a swap method provided by the class that
@@ -313,11 +319,12 @@ are subsets, not supersets, of their base classes.</div></blockquote>
 since the code is less coupled and since some base class data members
 may be private.</p>
 <p>Here is the preferred way to implement a swap method in a derived class:</p>
-<div class="highlight-python"><pre>void DerivedClass::swap(const DerivedClass&amp; rhs)
+<div class="highlight-python"><div class="highlight"><pre>void DerivedClass::swap(const DerivedClass&amp; rhs)
 {
    BaseClass::swap(rhs);
    // assign DerivedClass data members...
-}</pre>
+}
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -327,7 +334,7 @@ may be private.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -345,12 +352,14 @@ may be private.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="Sec7_restrictions.html"
                         title="next chapter">7 Restrictions on Language Usage and Libraries</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/Sec6_class.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Sec6_class.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -367,7 +376,7 @@ may be private.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -379,12 +388,12 @@ may be private.</p>
         <li class="right" >
           <a href="Sec5_code.html" title="5 General Code Development"
              >previous</a> |</li>
-        <li><a href="index.html">Toolkit Coding Guidelines v1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2015, Rich Hornung.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
