@@ -24,6 +24,10 @@ include(CMakeBasics)
 include(Setup3rdParty)
 
 ################################
+# Setup toolkit docs targets
+################################
+include(SetupDocs)
+
 # Setup toolkit source checks
 ################################
 include(SetupCodeChecks)
