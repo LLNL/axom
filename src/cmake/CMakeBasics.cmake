@@ -93,6 +93,9 @@ mark_as_advanced(
 ################################
 # Standard CMake Options
 ################################
+
+include(ExternalProject)
+
 option(BUILD_TESTING "Builds unit tests" ON)
 if (BUILD_TESTING)
 
@@ -107,6 +110,29 @@ if (BUILD_TESTING)
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
 
   enable_testing()
+
+endif()
+
+################################################################
+# For convenience, we support directly building uncrustify
+################################################################
+option(BUILD_UNCRUSTIFY "Build uncrustify binary" ON)
+if (BUILD_UNCRUSTIFY)
+    # use cmake external project
+    # using the tarball is an easy way to keep .o files from 
+    # uncrustify's in source build from entering our build tree
+    #
+    ExternalProject_Add(uncrustify_build
+                PREFIX uncrustify_build
+                URL ${PROJECT_SOURCE_DIR}/TPL/uncrustify-0.61.tar.gz
+                BUILD_IN_SOURCE 1
+                CONFIGURE_COMMAND  CC=${CMAKE_C_COMPILER} 
+                                   CXX=${CMAKE_CXX_COMPILER} 
+                                   ./configure 
+                                   --prefix=${PROJECT_BINARY_DIR}/TPL/uncrustify
+                BUILD_COMMAND ${make} )
+    # use this copy as our uncrustify exe 
+    set(UNCRUSTIFY_EXECUTABLE ${PROJECT_BINARY_DIR}/TPL/uncrustify/bin/uncrustify)
 
 endif()
 
@@ -224,19 +250,22 @@ endif()
 ##------------------------------------------------------------------------------
 macro(add_component)
 
-   set(options)
-   set(singleValueArgs COMPONENT_NAME DEFAULT_STATE )
-   set(multiValueArgs)
+    set(options)
+    set(singleValueArgs COMPONENT_NAME DEFAULT_STATE )
+    set(multiValueArgs)
 
-   ## parse the arugments to the macro
-   cmake_parse_arguments(arg
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
-
-   ## adds an option so that the user can control whether to build this
-   ## component.
-   option( ENABLE_${arg_COMPONENT_NAME}
-           "Enables ${arg_component_name}"
-           ${arg_DEFAULT_STATE})
+    ## parse the arugments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+    
+    ## setup a cmake vars to capture sources added via our macros
+    set("${arg_COMPONENT_NAME}_ALL_SOURCES" CACHE PATH "" FORCE)
+        
+    ## adds an option so that the user can control whether to build this
+    ## component.
+    option( ENABLE_${arg_COMPONENT_NAME}
+            "Enables ${arg_component_name}"
+            ${arg_DEFAULT_STATE})
 
     if ( ENABLE_${arg_COMPONENT_NAME} )
         add_subdirectory( ${arg_COMPONENT_NAME} )
@@ -263,6 +292,17 @@ macro(make_library libtarget srcs)
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${libtarget} PROPERTY CXX_STANDARD 11)
    endif()
+    
+    
+   foreach(src ${srcs})
+       if(IS_ABSOLUTE)
+           list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
+       else()
+           list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
+       endif()
+   endforeach()
+       
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
 
 endmacro(make_library)
 
@@ -289,7 +329,16 @@ macro(make_executable)
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
     endif()
+    
+        
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
+    else()
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_EXECUTABLE_SOURCE}")
+    endif()
 
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+    
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
@@ -323,6 +372,15 @@ macro(add_gtest)
               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
               )
 
+    # add any passed source files to the running list for this project
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+    else()
+          list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+    endif()
+
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+    
 endmacro(add_gtest)
 
 ##------------------------------------------------------------------------------
@@ -354,6 +412,15 @@ macro(add_catch_test)
               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
               )
 
+    # add any passed source files to the running list for this project
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+    else()
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+    endif()
+
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+
 endmacro(add_catch_test)
 
 ##------------------------------------------------------------------------------
@@ -379,6 +446,17 @@ add_custom_target(copy_headers
      COMMENT
         "copy headers"
      )
+     
+     # add any passed source files to the running list for this project
+     foreach(hdr ${hdrs})
+         if(IS_ABSOLUTE)
+             list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${hdr}")
+         else()
+             list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${hdr}")
+         endif()
+     endforeach()
 
+     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )    
+     
 endmacro(copy_headers_target)
 

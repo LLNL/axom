@@ -93,7 +93,7 @@ DataView* DataView::Declare(const DataType &dtype)
 DataView* DataView::Allocate()
 {
     // we only force alloc if there is a 1-1 between the view and buffer
-    ASCTK_ASSERT_MSG( m_buffer->CountViews() == 1, \
+    ATK_ASSERT_MSG( m_buffer->CountViews() == 1, \
                       "Can only allocate from a view if it's the only view associated with its buffer");
     
     m_buffer->Allocate(m_schema);

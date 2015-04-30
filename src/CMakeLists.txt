@@ -28,6 +28,10 @@ include(Setup3rdParty)
 ################################
 include(SetupDocs)
 
+# Setup toolkit source checks
+################################
+include(SetupCodeChecks)
+
 ################################
 # Add the datastore lib
 ################################

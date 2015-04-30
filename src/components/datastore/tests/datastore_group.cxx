@@ -46,7 +46,7 @@ TEST(datastore_group,group_name_collisions)
     DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
     flds->CreateViewAndBuffer("a");
 
-    EXPECT_TRUE(flds->HasChild("a"));
+    EXPECT_TRUE(flds->HasView("a"));
 
     delete ds;
 }
@@ -170,4 +170,95 @@ TEST(datastore_group,create_destroy_view_and_buffer)
 
   delete ds;
 }
+
+
+
+//------------------------------------------------------------------------------
+TEST(datastore_group,save_restore_simple)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
+
+    DataGroup *ga = flds->CreateGroup("a");
+
+    ga->CreateViewAndBuffer("i0")->Allocate(DataType::int32());
+
+    (*ga->GetView("i0")->GetNode().as_int32_ptr())   = 1;
+
+    EXPECT_TRUE(ds->GetRoot()->HasGroup("fields"));
+    EXPECT_TRUE(ds->GetRoot()->GetGroup("fields")->HasGroup("a"));
+    EXPECT_TRUE(ds->GetRoot()->GetGroup("fields")->GetGroup("a")->HasView("i0"));
+        
+        
+    ds->GetRoot()->save("out_ds_group_save_restore_simple","conduit");
+    
+    ds->Print();
+    
+    DataStore *ds2 = new DataStore();
+
+    ds2->GetRoot()->load("out_ds_group_save_restore_simple","conduit");
+    
+    flds = ds2->GetRoot()->GetGroup("fields");
+    // check that all sub groups exist
+    EXPECT_TRUE(flds->HasGroup("a"));
+    EXPECT_EQ(flds->GetGroup("a")->GetView("i0")->GetNode().as_int32(),1);
+    
+    ds2->Print();
+    
+    delete ds;    
+    delete ds2;
+    
+}
+
+
+
+//------------------------------------------------------------------------------
+TEST(datastore_group,save_restore_complex)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *flds = ds->GetRoot()->CreateGroup("fields");
+
+    DataGroup *ga = flds->CreateGroup("a");
+    DataGroup *gb = flds->CreateGroup("b");
+    DataGroup *gc = flds->CreateGroup("c");
+
+    ga->CreateViewAndBuffer("i0")->Allocate(DataType::int32());
+    gb->CreateViewAndBuffer("f0")->Allocate(DataType::float32());
+    gc->CreateViewAndBuffer("d0")->Allocate(DataType::float64());
+
+    (*ga->GetView("i0")->GetNode().as_int32_ptr())   = 1;
+    (*gb->GetView("f0")->GetNode().as_float32_ptr()) = 100.0;
+    (*gc->GetView("d0")->GetNode().as_float64_ptr()) = 3000.0;
+
+    // check that all sub groups exist
+    EXPECT_TRUE(flds->HasGroup("a"));
+    EXPECT_TRUE(flds->HasGroup("b"));
+    EXPECT_TRUE(flds->HasGroup("c"));
+
+    ds->GetRoot()->save("out_ds_group_save_restore_complex","conduit");
+
+    ds->Print();
+
+    DataStore *ds2 = new DataStore();
+
+
+    ds2->GetRoot()->load("out_ds_group_save_restore_complex","conduit");
+
+    flds = ds2->GetRoot()->GetGroup("fields");
+    // check that all sub groups exist
+    EXPECT_TRUE(flds->HasGroup("a"));
+    EXPECT_TRUE(flds->HasGroup("b"));
+    EXPECT_TRUE(flds->HasGroup("c"));
+
+    EXPECT_EQ(flds->GetGroup("a")->GetView("i0")->GetNode().as_int32(),1);
+    EXPECT_NEAR(flds->GetGroup("b")->GetView("f0")->GetNode().as_float32(),100.0,  1e-12);
+    EXPECT_NEAR(flds->GetGroup("c")->GetView("d0")->GetNode().as_float64(),3000.0, 1e-12);
+
+    ds2->Print();
+
+    delete ds;
+    delete ds2;
+
+}
+
 

@@ -20,6 +20,9 @@ if (BUILD_TESTING)
   add_subdirectory(tests)
 endif()
 
+
+add_code_check_targets(uncrustify.cfg)
+
 ################################
 # Add docs
 ################################
