@@ -5,36 +5,109 @@
 using namespace sidre;
 using namespace conduit;
 
+// API coverage tests
+// Each test should be documented with the interface functions being tested
+
 //------------------------------------------------------------------------------
-TEST(datastore_group,create_group)
+// getName()
+//------------------------------------------------------------------------------
+TEST(datastore_group,get_name)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
-    DataGroup *flds = root->createGroup("fields");
-    
-    DataBuffer *db0 = ds->createBuffer();
-    DataBuffer *db1 = ds->createBuffer();
-    
-    db0->Declare(DataType::uint64(10));
-    db0->Allocate();
-    uint64 *db0_ptr = db0->GetNode().as_uint64_ptr();
-    
-    db1->Declare(DataType::float64(10));
-    db1->Allocate();
-    float64 *db1_ptr = db1->GetNode().as_float64_ptr();
-    
-    for(int i=0;i<10;i++)
-    {
-        db0_ptr[i] = i;
-        db1_ptr[i] = i*i;
-    }
-    
-    flds->createView("u0",db0)->apply(DataType::uint64(10));
-    flds->createView("f1",db1)->apply(DataType::float64(10));
-    
-    flds->getView("u0")->getNode().print_detailed();
-    flds->getView("f1")->getNode().print_detailed();
+    DataGroup *group = root->createGroup("test");
+ 
+    EXPECT_TRUE(group->getName() == std::string("test") );
 
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// getParent()
+//------------------------------------------------------------------------------
+TEST(datastore_group,get_parent)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+    DataGroup *parent = root->createGroup("parent");
+    DataGroup *child = parent->createGroup("child");
+ 
+    EXPECT_TRUE( child->getParent() == parent );
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Verify getDatastore()
+//------------------------------------------------------------------------------
+TEST(datastore_group,get_datastore)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+    DataGroup *group = root->createGroup("parent");
+ 
+    EXPECT_TRUE( group->getDataStore() == ds );
+
+    DataStore const * const_ds = group->getDataStore();
+    EXPECT_TRUE( const_ds == ds );
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// hasGroup()
+//------------------------------------------------------------------------------
+TEST(datastore_group,has_child)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+ 
+    DataGroup *parent = root->createGroup("parent");
+    DataGroup *child = parent->createGroup("child");
+
+    EXPECT_TRUE( parent->hasGroup("child") );
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// createViewAndBuffer()
+// destroyViewAndBuffer()
+// hasView()
+//------------------------------------------------------------------------------
+TEST(datastore_group,create_destroy_has_viewbuffer)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+    DataGroup *group = root->createGroup("parent");
+
+    DataView *view = group->createViewAndBuffer("view");
+ 
+    EXPECT_TRUE( group->hasView("view") );
+
+    group->destroyViewAndBuffer("view");
+
+    EXPECT_FALSE( group->hasView("view") );
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// createGroup()
+// destroyGroup()
+// hasGroup()
+//------------------------------------------------------------------------------
+TEST(datastore_group,create_destroy_has_group)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+    DataGroup *group = root->createGroup("group");
+    
+    EXPECT_TRUE( root->hasGroup("group") );
+
+
+    root->destroyGroup("group");
+    EXPECT_FALSE( root->hasGroup("group") );
 
     delete ds;
 }
