@@ -8,3 +8,9 @@
 
 find_package(Doxygen)
 include(cmake/FindSphinx.cmake)
+
+################################
+# linting via Uncrustify
+################################
+include(cmake/FindUncrustify.cmake)
+
