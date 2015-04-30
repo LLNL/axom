@@ -15,5 +15,6 @@ TEST(gtest_meshapi_set,construct_set)
 {
     asctoolkit::meshapi::Set s;
 
+
     EXPECT_TRUE( true );
 }

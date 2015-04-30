@@ -14,7 +14,7 @@ namespace meshapi {
 
 Set::Index& Set::at( size_type idx )
 {
-  if(idx > m_entities.size())
+  if(idx >= m_entities.size())
   {
     std::stringstream sstr;
     sstr<< "MeshAPI::Set -- requested out of range element at position "
@@ -26,7 +26,7 @@ Set::Index& Set::at( size_type idx )
 
 Set::Index const& Set::at( size_type idx ) const
 {
-  if(idx > m_entities.size())
+  if(idx >= m_entities.size())
   {
     std::stringstream sstr;
     sstr<< "MeshAPI::Set -- requested out of range element at position "

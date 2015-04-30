@@ -3,8 +3,17 @@
 ################################
 project(meshapi)
 
+
 ################################
-# Add the datastore sources
+# Add the boost headers
+################################
+FIND_PACKAGE(Boost)
+MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
+MESSAGE(STATUS "Boost libraries dir: " ${BOOST_LIBRARY_DIR} )
+MESSAGE(STATUS "Boost version: " ${BOOST_VERSION} )
+
+################################
+# Add the mesh api sources
 ################################
 add_subdirectory(src)
 

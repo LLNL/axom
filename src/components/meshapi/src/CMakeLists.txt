@@ -1,9 +1,15 @@
+INCLUDE_DIRECTORIES(  
+    ${Boost_INCLUDE_DIRS}   
+)
+
 #
 # Specify all headers
 #
 set(meshapi_headers
     Hello.hpp
     Set.hpp
+	OrderedSet.hpp
+	Relation.hpp
 	Utilities.hpp
     )
 
@@ -13,6 +19,8 @@ set(meshapi_headers
 set(meshapi_sources
     Hello.cpp
     Set.cpp
+    Relation.cpp
+    OrderedSet.cpp
     )
 
 
