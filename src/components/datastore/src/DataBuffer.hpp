@@ -1,21 +1,32 @@
-/**
- * DataBuffer.hpp
+/*!
+ ******************************************************************************
  *
+ * \file
+ *
+ * \brief   Header file containing definition of DataBuffer class.
+ *
+ ******************************************************************************
  */
 
 #ifndef DATABUFFER_HPP_
 #define DATABUFFER_HPP_
 
+// Standard C++ headers
 #include <map>
 #include <set>
 #include <vector>
-#include "Types.hpp"
 
+// Other library headers
 #include "conduit/conduit.h"
 
+// SiDRe project headers
+#include "Types.hpp"
+
+
+// using directives to make Conduit usage easier and less visible
+using conduit::DataType;
 using conduit::Node;
 using conduit::Schema;
-using conduit::DataType;
 
 namespace sidre
 {
@@ -23,30 +34,37 @@ namespace sidre
 class DataStore;
 class DataView;
 
-/**
+/*!
  * \class DataBuffer
  *
- * \brief A class to manages interface to an actual piece of data, whether it be owned and allocated by the DataBuffer
- * or passed in from the outside.
+ * \brief DataBuffer holds a data object, which it owns (and allocates!)
  *
- * Requirements for this class are:
- *    - one-to-one relation with data. This means that a DataBuffer is the only DataBuffer that refers to a specific
- *      data address.
- *    - contain pointer to the owning entity of this DataBuffer.
- *    - contain collection of attributes
- *    - description of shape of data (if applicable)
- *    - description of type of data (if applicable)
+ * A data buffer instance has the following properties:
+ *
+ *    - Data buffer objects cannot be created directly, only by a datastore
+ *      object. 
+ *    - A data buffer object has a unique identifier within a datastore.
+ *    - The data object owned by a data buffer is unique to that data buffer;
+ *      i.e.,  data buffers do not share data objects.
+ *    - A data buffer object maintains a collection of data views that
+ *      refer to its data.
  *
  */
 class DataBuffer
 {
 public:
+
+    //
+    // Friend declarations to constrain usage via controlled access to
+    // private members.
+    //
     friend class DataStore;
-    friend class DataView;
     friend class DataGroup;
+    friend class DataView;
+
 
     /*!
-     * \brief Return the universal id for this buffer.
+     * \brief Return the unique id of this buffer object.
      */
     IDType GetUID() const
     {
@@ -54,103 +72,172 @@ public:
     }
 
     /*!
-     * \brief Return a view attached to this buffer.
+     * \brief Return number of views attached to this buffer.
      */
-    DataView *GetView(IDType idx)
-    {
-        return m_views[idx];
-    }
-
-
-    /*!
-    * \brief Return number of views attached to this buffer.
-    */
     size_t CountViews() const
     {
       return m_views.size();
     }
-    
-
-    void *GetData()
-    { return m_data;}
-
-
-    DataBuffer* Declare(const Schema &schema)
+   
+ 
+//@{
+//!  @name Data declaration and allocation methods
+ 
+    /*!
+     * \brief Declare a data object as a Conduit schema.
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* Declare(const Schema& schema)
     {
         m_schema.set(schema);
         return this;
     }
     
-    DataBuffer* Declare(const DataType &dtype)
+    /*!
+     * \brief Declare a data object as a pre-defined Conduit data type.
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* Declare(const DataType& dtype)
     {
         m_schema.set(dtype);
         return this;
     }
-  
-  
-    /**
-    *
-    * @return m_schema
-    */
-    const Schema &getDescriptor() const
-    { return m_schema; }
 
-    /// note: in most cases, we want to use the const version of the node
-    Node &GetNode()
-    {return m_node; }  
-
-    const Node &GetNode() const
-    { return m_node; }  
-
+    /*!
+     * \brief Allocate data previously declared using a Declare() method.
+     *
+     * \return pointer to this DataBuffer object.
+     */
     DataBuffer* Allocate();
   
+    /*!
+     * \brief Declare and allocate data described as a Conduit schema.
+     *
+     *        Equivalent to calling Declare(schema), then Allocate().
+     *
+     * \return pointer to this DataBuffer object.
+     */
     DataBuffer* Allocate(const Schema &schema);
-    DataBuffer* Allocate(const DataType &dtype);
 
+    /*!
+     * \brief Declare and allocate data described as a pre-defined 
+     *        Conduit data type.
+     *
+     *        Equivalent to calling Declare(dtype), then Allocate().
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* Allocate(const DataType& dtype);
+
+//@}
+
+
+//@{
+//!  @name Data access methods
+ 
+    /*!
+     * \brief Return void-pointer to data object.
+     */
+    void* GetData()
+    { 
+       return m_data;
+    }
+
+    /*!
+     * \brief Return non-const reference to Conduit node holding data.
+     */
+    Node& GetNode()
+    {
+       return m_node; 
+    }
+
+    /*!
+     * \brief Return const reference to Conduit node holding data.
+     */
+    const Node& GetNode() const
+    { 
+       return m_node; 
+    }
+
+    /*!
+     * \brief Return const reference to Conduit schema describing data.
+     */
+    const Schema& getDescriptor() const
+    { 
+       return m_schema; 
+    }
+
+    /*!
+     * \brief Return pointer to view attached to this buffer identified
+     *        by the given index.
+     */
+    DataView* GetView(IDType idx)
+    { 
+       return m_views[idx]; 
+    }
+
+//@}
+
+
+    /*!
+     * \brief Copy data buffer description to given Conduit node.
+     */
     void Info(Node &n) const;
+
+    /*!
+     * \brief Print JSON description of data buffer to stdout.
+     */
     void Print() const;
-  ///@}
+
 
 private:
-    /// default constructor
+    //
+    // Default ctor is not implemented.
+    //
     DataBuffer();
 
     /*!
-     *
-     * @param uid
+     *  \brief Private ctor that assigns unique id.
      */
     DataBuffer( const IDType uid );
 
     /*!
-     *
-     * @param source
+     * \brief Private copy ctor.
      */
     DataBuffer(const DataBuffer& source );
 
     /*!
-     * destructor
+     * \brief Private dtor.
      */
     ~DataBuffer();
 
-     /// TODO: the data store should be the only entity that can create a buffer
-
+    /*!
+     * \brief Private methods to attach/detach data view to buffer.
+     */
     void attachView( DataView* dataView );
+    ///
     void detachView( DataView* dataView );
 
 
-
-    /// universal identification - unique within a DataStore
+    /// universal identifier - unique within a dataStore
     IDType m_uid;
 
-    /// container of views that contain this DataBuffer
+    /// container of views that attached with this buffer
     std::vector<DataView *> m_views;
 
-    /// pointer to the data. This is intended to be a one-to-one relationship (i.e. One and only one DataBuffers m_data are equivalent to this->m_data.
+    /// pointer to the data owned by data buffer
     void* m_data;
   
-    /// use a vector to allocate data until we implement an appropriate allocator interface.
+    /// vector used to allocate data.
+    /// 
+    /// IMPORTANT: This is temorary until we implement an appropriate 
+    ///            allocator interface.
+    ///
     std::vector<char> m_memblob;
 
+    /// Conduit Node and Schema 
     Node   m_node;
     Schema m_schema;
 
