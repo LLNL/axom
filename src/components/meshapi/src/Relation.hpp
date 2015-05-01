@@ -1,5 +1,5 @@
 /**
- * \file OrderedSet.h
+ * \file Relation.h
  *
  * \brief Basic API for a topological relation between two sets
  *
@@ -9,6 +9,9 @@
 #define MESHAPI_RELATION_HPP_
 
 #include <vector>
+
+#include <iostream>
+
 #include "meshapi/Utilities.hpp"
 #include "meshapi/OrderedSet.hpp"
 
@@ -58,6 +61,20 @@ namespace meshapi    {
         size_type size(Index fromSetIndex)                  const
         {
             verifyIndex(fromSetIndex);
+/*
+            std::cout<<"\nIn size function for fromSetIndex " << fromSetIndex
+                    <<"\n\t toSetEndIndex -- "      << toSetEndIndex(fromSetIndex)
+                    <<"\n\t toSetBeginIndex -- "    << toSetBeginIndex(fromSetIndex)
+                    <<"\n\t size (diff)    -- "     << toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex)
+                    <<"\n\t fromArray end -- "      << m_fromSetBeginsVec[fromSetIndex+1]
+                    <<"\n\t fromArray begin -- "    << m_fromSetBeginsVec[fromSetIndex]
+                    <<"\n\t size (diff)    -- "     << m_fromSetBeginsVec[fromSetIndex+1] -m_fromSetBeginsVec[fromSetIndex]
+                  <<"\n\t toSetEndIndex cast-- "      << static_cast<unsigned int>(toSetEndIndex(fromSetIndex))
+                  <<"\n\t toSetBeginIndex -- "        << static_cast<unsigned int>(toSetBeginIndex(fromSetIndex))
+                  <<"\n\t size (diff)    -- "         << static_cast<unsigned int>(toSetEndIndex(fromSetIndex)) - static_cast<unsigned int>(toSetBeginIndex(fromSetIndex))
+                    << std::endl;
+*/
+
             return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
         }
 
@@ -65,8 +82,8 @@ namespace meshapi    {
 
     private:
         inline void  verifyIndex(Index fromSetIndex)       const { ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
-        inline Index toSetBeginIndex(Index fromSetIndex)   const { m_fromSetBeginsVec[fromSetIndex]; }
-        inline Index toSetEndIndex(Index fromSetIndex)     const { m_fromSetBeginsVec[fromSetIndex+1]; }
+        inline Index toSetBeginIndex(Index fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
+        inline Index toSetEndIndex(Index fromSetIndex)     const { return m_fromSetBeginsVec[fromSetIndex+1]; }
 
 
 

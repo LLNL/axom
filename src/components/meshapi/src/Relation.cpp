@@ -29,9 +29,6 @@ void Relation::setRelation(RelationVec const& beginsVec, RelationVec const& toOf
     std::copy(toOffsets.begin(), toOffsets.end(), std::back_inserter(m_toSetIndicesVec));
 }
 
-// Set* m_fromSet, m_toSet;
-// RelationVec m_fromSetBeginsVec, m_toSetIndicesVec;
-
 bool Relation::isValid(bool verboseOutput) const
 {
     bool bValid = true;
@@ -121,6 +118,13 @@ bool Relation::isValid(bool verboseOutput) const
         if(bValid)
         {
             std::cout<<"Relation was valid."<< std::endl;
+
+            std::cout<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
+            std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+
+            std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
+            std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+
         }
         else
         {
