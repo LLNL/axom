@@ -203,7 +203,7 @@ namespace sidre
         delete view;
 
         // there should be a better way?
-        getDataStore()->destroyBuffer(buffer->GetUID());
+        getDataStore()->destroyBuffer(buffer->getUID());
 
     }
 
@@ -211,7 +211,7 @@ namespace sidre
     {
         DataView* view = detachView(idx);
         // there should be a better way?
-        getDataStore()->destroyBuffer(view->getBuffer()->GetUID());
+        getDataStore()->destroyBuffer(view->getBuffer()->getUID());
         delete view;
     }
     
@@ -385,7 +385,7 @@ namespace sidre
         for(size_t i=0;i<nviews;i++)
         {
             DataView *view = this->getView(i);
-            getDataStore()->destroyBuffer(view->getBuffer()->GetUID());
+            getDataStore()->destroyBuffer(view->getBuffer()->getUID());
             delete view;
         }
         // clean up book keeping
@@ -491,9 +491,9 @@ namespace sidre
             buff["descriptor"].set(ds_buff->getDescriptor().to_json());
             
             // only set our data if the buffer was initialized 
-            if (ds_buff->GetData() != NULL )
+            if (ds_buff->getData() != NULL )
             {
-                buff["data"].set_external(ds_buff->GetNode());
+                buff["data"].set_external(ds_buff->getNode());
             }
         }
 
@@ -511,9 +511,9 @@ namespace sidre
             // if we have a buffer, simply add the id to the list
             if(view->hasBuffer())
             {
-                IDType buffer_id = view->getBuffer()->GetUID();
+                IDType buffer_id = view->getBuffer()->getUID();
                 n_view["buffer_id"].set(buffer_id);
-                buffer_ids.push_back(view->getBuffer()->GetUID());
+                buffer_ids.push_back(view->getBuffer()->getUID());
             }
         }
         
@@ -551,16 +551,16 @@ namespace sidre
                 {
                     DataBuffer *ds_buff = this->getDataStore()->createBuffer();
                     // map "id" to whatever new id the data store gives us.
-                    IDType buffer_ds_id = ds_buff->GetUID();
+                    IDType buffer_ds_id = ds_buff->getUID();
                     id_map[buffer_id] = buffer_ds_id;
                     // setup the new data store buffer
                     Schema schema(n_buff["descriptor"].as_string());
-                    ds_buff->Declare(schema);
+                    ds_buff->declare(schema);
                     if(n_buff.has_path("data"))
                     {
-                        ds_buff->Allocate();
+                        ds_buff->allocate();
                         // copy the data from the node
-                        ds_buff->GetNode().update(n_buff["data"]);
+                        ds_buff->getNode().update(n_buff["data"]);
                     }
                 }
             }

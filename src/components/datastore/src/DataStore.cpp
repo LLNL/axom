@@ -149,7 +149,7 @@ void DataStore::info(Node &n) const
         Node &b = n["DataStore/buffers"].append();
         if(*iter != nullptr)
         {
-            (*iter)->Info(b);
+            (*iter)->info(b);
         }
     }
 }

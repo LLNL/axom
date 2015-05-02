@@ -32,10 +32,10 @@ namespace sidre
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::Allocate(const Schema& schema)
+DataBuffer* DataBuffer::allocate(const Schema& schema)
 {
-    Declare(schema);
-    Allocate();
+    declare(schema);
+    allocate();
     return this;
 }
 
@@ -46,10 +46,10 @@ DataBuffer* DataBuffer::Allocate(const Schema& schema)
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::Allocate(const DataType& dtype)
+DataBuffer* DataBuffer::allocate(const DataType& dtype)
 {
-    Declare(dtype);
-    Allocate();
+    declare(dtype);
+    allocate();
     return this;
 }
 
@@ -60,7 +60,7 @@ DataBuffer* DataBuffer::Allocate(const DataType& dtype)
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::Allocate()
+DataBuffer* DataBuffer::allocate()
 {
     std::size_t alloc_size = m_schema.total_bytes();
 
@@ -80,7 +80,7 @@ DataBuffer* DataBuffer::Allocate()
 *
 *************************************************************************
 */
-void DataBuffer::Info(Node &n) const
+void DataBuffer::info(Node &n) const
 {
     n["uid"].set(m_uid);
     n["descriptor"].set(m_schema.to_json());
@@ -94,10 +94,10 @@ void DataBuffer::Info(Node &n) const
 *   
 *************************************************************************
 */
-void DataBuffer::Print() const
+void DataBuffer::print() const
 {
     Node n;
-    Info(n);
+    info(n);
     n.print();
 }
 

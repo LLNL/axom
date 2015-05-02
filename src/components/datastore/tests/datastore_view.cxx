@@ -19,8 +19,8 @@ TEST(datastore_view,create_views)
     DataBuffer *db_0 = dv_0->getBuffer();
     DataBuffer *db_1 = dv_1->getBuffer();
         
-    EXPECT_EQ(db_0->GetUID(),0);
-    EXPECT_EQ(db_1->GetUID(),1);
+    EXPECT_EQ(db_0->getUID(),0);
+    EXPECT_EQ(db_1->getUID(),1);
     delete ds;
 }
 
@@ -52,16 +52,16 @@ TEST(datastore_view,uint32_array_multi_view)
     DataGroup *root = ds->getRoot();
     DataBuffer *dbuff = ds->createBuffer();
 
-    dbuff->Declare(DataType::uint32(10));
-    dbuff->Allocate();
-    uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
+    dbuff->declare(DataType::uint32(10));
+    dbuff->allocate();
+    uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
         data_ptr[i] = i;
 
-    dbuff->GetNode().print_detailed();
+    dbuff->getNode().print_detailed();
 
-    EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
+    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
               dbuff->getDescriptor().total_bytes());
 
 
@@ -101,15 +101,15 @@ TEST(datastore_view,init_uint32_array_multi_view)
     DataGroup *root = ds->getRoot();
     DataBuffer *dbuff = ds->createBuffer();
 
-    dbuff->Allocate(DataType::uint32(10));
-    uint32 *data_ptr = dbuff->GetNode().as_uint32_ptr();
+    dbuff->allocate(DataType::uint32(10));
+    uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();
     
     for(int i=0;i<10;i++)
         data_ptr[i] = i;
 
-    dbuff->GetNode().print_detailed();
+    dbuff->getNode().print_detailed();
 
-    EXPECT_EQ(dbuff->GetNode().schema().total_bytes(),
+    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
               dbuff->getDescriptor().total_bytes());
 
 
@@ -190,7 +190,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
 
     /// setup our 4 views
     DataBuffer *buff_old = base_old->getBuffer();
-    buff_old->GetNode().print();
+    buff_old->getNode().print();
     DataView *r0_old = r_old->createView("r0",buff_old);
     DataView *r1_old = r_old->createView("r1",buff_old);
     DataView *r2_old = r_old->createView("r2",buff_old);
@@ -238,7 +238,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     base_new->allocate(DataType::uint32(4 * 12));
 
     DataBuffer *buff_new = base_new->getBuffer();
-    buff_new->GetNode().print();
+    buff_new->getNode().print();
 
     // create the 4 sub views of this array
     DataView *r0_new = r_new->createView("r0",buff_new);
@@ -263,13 +263,13 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     r3_new->apply(DataType::uint32(12,offset));
 
     /// update r2 as an example first
-    buff_new->GetNode().print();
+    buff_new->getNode().print();
     r2_new->getNode().print();
     
     /// copy the subset of value
     r2_new->getNode().update(r2_old->getNode());
     r2_new->getNode().print();
-    buff_new->GetNode().print();
+    buff_new->getNode().print();
     
     
     /// check pointer values
@@ -291,7 +291,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     r1_new->getNode().update(r1_old->getNode());
     r3_new->getNode().update(r3_old->getNode());
     
-    buff_new->GetNode().print();
+    buff_new->getNode().print();
 
     
     ds->print();

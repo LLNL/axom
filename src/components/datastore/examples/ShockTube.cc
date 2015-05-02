@@ -45,8 +45,8 @@ using namespace conduit;
 void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string& name, int32 const value )
 {
   DataBuffer* const buffer = grp->getDataStore()->createBuffer()
-                                                ->Declare(DataType::int32())
-                                                ->Allocate();
+                                                ->declare(DataType::int32())
+                                                ->allocate();
 
 
     DataView* const view = grp->createView(name, buffer)->apply(DataType::int32());
@@ -58,8 +58,8 @@ void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string
 void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::string& name, float64 const value )
 {
   DataBuffer* const buffer = grp->getDataStore()->createBuffer()
-                                                ->Declare(DataType::float64())
-                                                ->Allocate();
+                                                ->declare(DataType::float64())
+                                                ->allocate();
 
 
   DataView* const view = grp->createView(name,buffer)->apply(DataType::float64());
@@ -210,8 +210,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
   DataGroup* const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
   DataBuffer* const mapToElemsBuffer = elem->getDataStore()->createBuffer()
-                                                           ->Declare(DataType::int32(numTubeElems))
-                                                           ->Allocate();
+                                                           ->declare(DataType::int32(numTubeElems))
+                                                           ->allocate();
 
 
   DataView* const mapToElemsView = tube->createView("mapToElems", mapToElemsBuffer)
@@ -230,8 +230,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* Each face connects to two elements */
 
   DataBuffer* const faceToElemBuffer = face->getDataStore()->createBuffer()
-                                                           ->Declare(DataType::int32(2*numFaces,0,8))
-                                                           ->Allocate();
+                                                           ->declare(DataType::int32(2*numFaces,0,8))
+                                                           ->allocate();
 
   int32* const faceToElem = face->createView("faceToElem", faceToElemBuffer)
                                               ->apply(DataType::int32(2*numFaces,0,8))
@@ -246,8 +246,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
   DataBuffer* const elemToFaceBuffer = tube->getDataStore()->createBuffer()
-                                                           ->Declare(DataType::int32(2*numElems,0,8))
-                                                           ->Allocate();
+                                                           ->declare(DataType::int32(2*numElems,0,8))
+                                                           ->allocate();
 
 
   int32* elemToFace = tube->createView("elemToFace", faceToElemBuffer)
@@ -285,8 +285,8 @@ void InitializeShockTube(DataGroup * const prob)
   int32 const numFaces = prob->getView("numFaces")->getNode().as_int32();
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numElems))
-                               ->Allocate();
+                               ->declare(DataType::float64(numElems))
+                               ->allocate();
 
 
   float64* const mass = elem->createView("mass", buffer)
@@ -295,8 +295,8 @@ void InitializeShockTube(DataGroup * const prob)
 
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numElems))
-                               ->Allocate();
+                               ->declare(DataType::float64(numElems))
+                               ->allocate();
 
   float64* const momentum = elem->createView("momentum", buffer)
                                 ->apply(DataType::float64(numElems))
@@ -304,8 +304,8 @@ void InitializeShockTube(DataGroup * const prob)
 
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numElems))
-                               ->Allocate();
+                               ->declare(DataType::float64(numElems))
+                               ->allocate();
 
   float64* const energy = elem->createView("energy", buffer)
                               ->apply(DataType::float64(numElems))
@@ -313,8 +313,8 @@ void InitializeShockTube(DataGroup * const prob)
 
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numElems))
-                               ->Allocate();
+                               ->declare(DataType::float64(numElems))
+                               ->allocate();
 
   float64* const pressure = elem->createView("pressure", buffer)
                                 ->apply(DataType::float64(numElems))
@@ -324,22 +324,22 @@ void InitializeShockTube(DataGroup * const prob)
   /* Create face centered quantities */
 
   buffer = face->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numFaces))
-                               ->Allocate();
+                               ->declare(DataType::float64(numFaces))
+                               ->allocate();
 
   face->createView("F0", buffer)
       ->apply(DataType::float64(numFaces));
 
   buffer = face->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numFaces))
-                               ->Allocate();
+                               ->declare(DataType::float64(numFaces))
+                               ->allocate();
 
   face->createView("F1", buffer)
        ->apply(DataType::float64(numFaces));
 
   buffer = face->getDataStore()->createBuffer()
-                               ->Declare(DataType::float64(numFaces))
-                               ->Allocate();
+                               ->declare(DataType::float64(numFaces))
+                               ->allocate();
 
   face->createView("F2", buffer)
     ->apply(DataType::float64(numFaces));

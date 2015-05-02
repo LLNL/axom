@@ -25,9 +25,9 @@ class PhysicsPackage
 
          sidre::DataView& dataview = *subgroup.createViewAndBuffer("variable1");
          sidre::DataBuffer& buffer = *dataview.getBuffer();
-         buffer.Declare(DataType::float64(100));
-         buffer.Allocate();
-         conduit::float64* data_ptr1 = buffer.GetNode().as_float64_ptr();
+         buffer.declare(DataType::float64(100));
+         buffer.allocate();
+         conduit::float64* data_ptr1 = buffer.getNode().as_float64_ptr();
          // how do you get number of entries in conduit node? (ie, number of float64's)?
          for (size_t i=0; i < 100; ++i)
          {
@@ -36,9 +36,9 @@ class PhysicsPackage
 
          dataview = *subgroup.createViewAndBuffer("variable2");
          buffer = *dataview.getBuffer();
-         buffer.Declare(DataType::float64(100));
-         buffer.Allocate();
-         conduit::float64* data_ptr2 = buffer.GetNode().as_float64_ptr();
+         buffer.declare(DataType::float64(100));
+         buffer.allocate();
+         conduit::float64* data_ptr2 = buffer.getNode().as_float64_ptr();
          // how do you get number of entries in conduit node? (ie, number of float64's)?
          for (size_t i=0; i < 100; ++i)
          {
@@ -47,9 +47,9 @@ class PhysicsPackage
          
          dataview = *subgroup.createViewAndBuffer("dependentVariable");
          buffer = *dataview.getBuffer();
-         buffer.Declare(DataType::float64(100));
-         buffer.Allocate();
-         conduit::float64* data_ptr3 = buffer.GetNode().as_float64_ptr();
+         buffer.declare(DataType::float64(100));
+         buffer.allocate();
+         conduit::float64* data_ptr3 = buffer.getNode().as_float64_ptr();
          // how do you get number of entries in conduit node? (ie, number of float64's)?
          for (size_t i=0; i < 100; ++i)
          {

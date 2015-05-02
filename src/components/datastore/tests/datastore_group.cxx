@@ -224,7 +224,7 @@ TEST(datastore_group,create_destroy_view_and_buffer)
   EXPECT_TRUE(grp->hasView(viewName2));
   EXPECT_EQ( grp->getView(viewName2), view2 );
 
-  IDType const bufferId1 = view1->getBuffer()->GetUID();
+  IDType const bufferId1 = view1->getBuffer()->getUID();
 
   grp->destroyViewAndBuffer(viewName1);
 

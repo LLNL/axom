@@ -68,7 +68,7 @@ public:
     /*!
      * \brief Return the unique id of this buffer object.
      */
-    IDType GetUID() const
+    IDType getUID() const
     {
         return m_uid;
     }
@@ -76,7 +76,7 @@ public:
     /*!
      * \brief Return number of views attached to this buffer.
      */
-    size_t CountViews() const
+    size_t countViews() const
     {
       return m_views.size();
     }
@@ -90,7 +90,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* Declare(const Schema& schema)
+    DataBuffer* declare(const Schema& schema)
     {
         m_schema.set(schema);
         return this;
@@ -101,7 +101,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* Declare(const DataType& dtype)
+    DataBuffer* declare(const DataType& dtype)
     {
         m_schema.set(dtype);
         return this;
@@ -112,7 +112,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* Allocate();
+    DataBuffer* allocate();
   
     /*!
      * \brief Declare and allocate data described as a Conduit schema.
@@ -121,7 +121,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* Allocate(const Schema &schema);
+    DataBuffer* allocate(const Schema &schema);
 
     /*!
      * \brief Declare and allocate data described as a pre-defined 
@@ -131,7 +131,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* Allocate(const DataType& dtype);
+    DataBuffer* allocate(const DataType& dtype);
 
 //@}
 
@@ -142,7 +142,7 @@ public:
     /*!
      * \brief Return void-pointer to data held by DataBuffer.
      */
-    void* GetData()
+    void* getData()
     { 
        return m_data;
     }
@@ -150,7 +150,7 @@ public:
     /*!
      * \brief Return non-const reference to Conduit node holding data.
      */
-    Node& GetNode()
+    Node& getNode()
     {
        return m_node; 
     }
@@ -158,7 +158,7 @@ public:
     /*!
      * \brief Return const reference to Conduit node holding data.
      */
-    const Node& GetNode() const
+    const Node& getNode() const
     { 
        return m_node; 
     }
@@ -175,7 +175,7 @@ public:
      * \brief Return pointer to view attached to this buffer identified
      *        by the given index.
      */
-    DataView* GetView(IDType idx)
+    DataView* getView(IDType idx)
     { 
        return m_views[idx]; 
     }
@@ -186,12 +186,12 @@ public:
     /*!
      * \brief Copy data buffer description to given Conduit node.
      */
-    void Info(Node& n) const;
+    void info(Node& n) const;
 
     /*!
      * \brief Print JSON description of data buffer to stdout.
      */
-    void Print() const;
+    void print() const;
 
 
 private:

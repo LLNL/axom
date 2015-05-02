@@ -61,10 +61,10 @@ DataView* DataView::declare(const DataType& dtype)
 DataView* DataView::allocate()
 {
     // we only force alloc if there is a 1-1 between the view and buffer
-    ATK_ASSERT_MSG( m_data_buffer->CountViews() == 1, \
+    ATK_ASSERT_MSG( m_data_buffer->countViews() == 1, \
                     "Data allocation on a view allowed only if it's the only view associated with its buffer");
     
-    m_data_buffer->Allocate(m_schema);
+    m_data_buffer->allocate(m_schema);
     apply();
     return this;
 }
@@ -109,7 +109,7 @@ DataView* DataView::allocate(const DataType& dtype)
 */
 DataView* DataView::apply()
 {
-    m_node.set_external(m_schema, m_data_buffer->GetData());
+    m_node.set_external(m_schema, m_data_buffer->getData());
     m_is_applied = true;
     return this;
 }
