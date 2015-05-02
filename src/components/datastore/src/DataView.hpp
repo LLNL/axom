@@ -1,21 +1,33 @@
-/**
- * DataView.hpp
+/*!
+ ******************************************************************************
  *
+ * \file
+ *
+ * \brief   Header file containing definition of DataView class.
+ *
+ ******************************************************************************
  */
 
 #ifndef DATAVIEW_HPP_
 #define DATAVIEW_HPP_
 
+// Standard C++ headers
 #include <map>
 #include <set>
 #include <vector>
-#include "Types.hpp"
 
+// Other library headers
 #include "conduit/conduit.h"
 
+// SiDRe project headers
+#include "Types.hpp"
+
+
+// using directives to make Conduit usage easier and less visible
 using conduit::Node;
 using conduit::Schema;
 using conduit::DataType;
+
 
 namespace sidre
 {
@@ -23,121 +35,298 @@ namespace sidre
 class DataGroup;
 class DataStore;
 class DataBuffer;
+
 /**
- * \class
+ * \class DataView
  *
- * \brief A class to manages interface to an actual piece of data, whether it be owned and allocated by the
- * or passed in from the outside.
+ * \brief DataView privides a "view" into data, which may be owned by a
+ *        DataBuffer object or owned externally.
  *
- * Requirements for this class are:
- *    - contain pointer to the owning entity of this .
- *    - contain collection of attributes
- *    - description of shape of data (if applicable)
- *    - description of type of data (if applicable)
+ * A DataView instance has the following properties:
+ *
+ *    - DataView objects can only be created via the DataGroup interface,
+ *      not directly. The view object is owned by the DataGroup object that
+ *      creates it.
+ *    - A DataView object can refer to data in one of three ways:
+ *        # It can decribe a view into data owned by a pre-existing DataBuffer.
+ *          In this case, there can be multiple views into a single buffer.
+ *        # It can be used to declare and allocate data, using semantics 
+ *          similar to DataBuffer data declaration and allocation. When
+ *          data is declared via a DataView object, there is a one-to-one
+ *          relationship between the view and the buffer. That is, DataViews
+ *          cannot share data in this case.  
+ *        # It can hold a pointer to an "opaque" data object. In this case,
+ *          there is no associated DataBuffer.
+ *    - When a Dataview object is associated with a DataBuffer, the DataView
+ *      object holds a pointer to the DataBuffer object. The data description 
+ *      of the view is represented as a Conduit schema or a Conduit 
+ *      pre-defined data type. 
+ *    - A DataView holds a pointer to the DataGroup that created it and which
+ *      owns it.
+ *    - A DataView object has a unique name (string) within the DataGroup
+ *      that owns it.
  *
  */
 class DataView
 {
 public:
+
+    //
+    // Friend declarations to constrain usage via controlled access to
+    // private members.
+    //
     friend class DataGroup;
 
+//@{
+//!  @name Data declaration and allocation methods
 
-    /// if there is a 1-1 relationship between this view and its buffer
-    /// this will force a description & an allocate on the underlying
-    /// buffer, otherwise an assertion will result
-    DataView* allocate();
-    DataView* allocate(const Schema &schema);
-    DataView* allocate(const DataType &dtype);
-  
-    /// sets the description that will be used to view data
-    DataView* declare(const Schema &schema);  
-    DataView* declare(const DataType &dtype);
-  
-    /// applies the description to buffer to init GetNode()
-    DataView* apply();
-    DataView* apply(const Schema &schema);  
-    DataView* apply(const DataType &dtype);
-  
-  
-    bool   hasBuffer() const
-    { return m_buffer != nullptr;}
+    ////////////////////////////////////////////////////////////////
+    ///
+    /// IMPORTANT: We need to clearly destiguish which of these 
+    ///            methods apply to the case of a one-to-one 
+    ///            buffer-view relationship and which apply to the
+    ///            case of defining a view into an existing buffer 
+    ///            object (possibly one of many). 
+    ///
+    ////////////////////////////////////////////////////////////////
 
-    bool   isOpaque() const
-    {return m_opaque;}
-    
-    void*  getOpaque() const;
-  
-    /**
+    /*!
+     * \brief Declare a data view as a Conduit schema.
      *
-     * @return m_schema
+     * \return pointer to this DataView object.
      */
-    const Schema &getDescriptor() const
-    { return m_schema; }
+    DataView* declare(const Schema& schema);  
 
-    std::string getName() const
-    {return m_name;}
+    /*!
+     * \brief Declare a data view as a pre-defined Conduit data type.
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* declare(const DataType& dtype);
+ 
+    /*!
+     * \brief Allocate data for a DataView, previously declared.
+     *
+     * This is equivalent to calling the allocate() method on the
+     * associated data buffer and then calling apply() on this DataView
+     * object.
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* allocate();
+
+    /*!
+     * \brief Declare a data view as a Conduit schema and allocate the data.
+     *
+     * This is equivalent to calling declare(Schema), then allocate(),
+     * and then calling apply() on this DataView object.  
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* allocate(const Schema& schema);
+
+    /*!
+     * \brief Declare a data view as a Conduit pre-defined data type
+     *        and allocate the data.
+     *
+     * This is equivalent to calling declare(DataType), then allocate(),
+     * and then calling apply() on this DataView object.
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* allocate(const DataType &dtype);
+ 
+    /*!
+     * \brief Apply a previously declared data view to data held in
+     *        the DataBuffer associated with this DataView object.
+     *
+     * \return pointer to this DataView object.
+     */ 
+    DataView* apply();
+
+    /*!
+     * \brief Declare a data view as a Conduit schema and apply the
+     *        schema to the data in DataBuffer associated with this
+     *        DataView object.
+     *
+     * This is equivalent to calling declare(Schema), then apply().
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* apply(const Schema& schema);
+
+    /*!
+     * \brief Declare a data object as a Conduit pre-defined data type
+     *        and apply schema to the data in DataBuffer associated with 
+     *        this DataView object
+     *
+     * This is equivalent to calling declare(DataType), then apply().
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* apply(const DataType& dtype);
+
+//@}
   
-    /// note: in most cases, we want to use the const version of the node
-    Node &getNode()
-    {return m_node; }  
+  
+//@{
+//!  @name Methods to query whether data is opaque or describes a buffer
 
-    Node const& getNode() const
-    { return m_node; }
+    /*!
+     * \brief Return true if DataView is associated with a DataBuffer
+     *        (view is not opaque); false otherwise.
+     */
+    bool  hasBuffer() const
+    { 
+       return m_data_buffer != nullptr;
+    }
 
-    /// for now, we assume a dataview always has a buffer and group
- 
-    DataBuffer *getBuffer()
-    { return m_buffer; }  
- 
-     DataBuffer const *getBuffer() const
-     { return m_buffer; }
- 
-    DataGroup* getParent()
-    {return m_group;}
+    /*!
+     * \brief Return true if DataView is opaque (view is not associated
+     *        with a DataBuffer); false otherwise.
+     */
+    bool  isOpaque() const
+    {
+       return m_is_opaque;
+    }
 
-    DataGroup const* getParent() const
-    {return m_group;}
-
-
-    /// TODO: Bad name?
+    /*!
+     * \brief Return true if data declaration has been applied to data 
+     *        in DataBuffer associated with DataView; false otherwise.
+     */
     bool isApplied() const
-    {return m_applied;}
+    {
+       return m_is_applied;
+    }
 
-    void print() const;  
-    void info(Node &n) const;
-    ///@}
+//@}
+
+
+//@{
+//!  @name Accessor methods
+
+    /*!
+     * \brief Return const reference to name of DataView.
+     */
+    const std::string& getName() const
+    {
+       return m_name;
+    }
+    
+    /*!
+     * \brief Return void* pointer to data in view.
+     */
+    void* getOpaque() const;
+ 
+ 
+    /*!
+     * \brief Return pointer to non-const DataBuffer associated with DataView.
+     */
+    DataBuffer* getBuffer()
+    { 
+       return m_data_buffer; 
+    }
+ 
+    /*!
+     * \brief Return pointer to const DataBuffer associated with DataView.
+     */
+    DataBuffer const* getBuffer() const
+    { 
+       return m_data_buffer; 
+    }
+
+
+    /*!
+     * \brief Return non-const reference to Conduit node holding data.
+     */
+    Node& getNode()
+    {
+       return m_node;
+    }
+
+    /*!
+     * \brief Return const reference to Conduit node holding data.
+     */
+    const Node& getNode() const
+    {
+       return m_node;
+    }
+
+    /*!
+     * \brief Return const reference to Conduit schema describing data.
+     */
+    const Schema& getDescriptor() const
+    {
+       return m_schema;
+    } 
+
+    /*!
+     * \brief Return pointer to non-const DataGroup that owns DataView object.
+     */
+    DataGroup* getOwningGroup()
+    {
+       return m_owning_group;
+    }
+
+    /*!
+     * \brief Return pointer to const DataGroup that owns DataView object.
+     */
+    DataGroup const* getOwningGroup() const
+    {
+       return m_owning_group;
+    }
+
+//@}
+
+    /*!
+     * \brief Copy data view description to given Conduit node.
+     */
+    void info(Node& n) const;
+
+    /*!
+     * \brief Print JSON description of data view to stdout.
+     */
+    void print() const;
+
 
 private:
-    // These are private b/c we expect Views to only be 
-    // create from the context of a Group
+
+    /*!
+     *  \brief Private ctor that creates a DataView with given name
+     *         in given parent group and which is associated with given
+     *         DataBuffer object.
+     */
     DataView( const std::string& name,
-              DataGroup* const parentGroup,
-              DataBuffer* const dataBuffer );
+              DataGroup* const owning_group,
+              DataBuffer* const data_buffer );
 
+    /*!
+     *  \brief Private ctor that creates a DataView with given name
+     *         in given parent group and which is opaque.
+     */
     DataView( const std::string& name,
-              DataGroup* const parentGroup,
-              void *opaque);
+              DataGroup* const owning_group,
+              void* opaque_ptr);
 
+    /*!
+     * \brief Private copy ctor.
+     */
+    DataView(const DataView& source);
 
-
-    /// copy constructor
-    /// if this is public, we could get into some bookkeeping messes
-    /// for example what do we do with the parent group pointer?
-    DataView(const DataView& source );
-
-    
-    /// destructor is private
+    /*!
+     * \brief Private dtor.
+     */ 
     ~DataView();
 
 
     /// this view's name
     std::string m_name;
 
-    /// this views parent group
-    DataGroup*  m_group;
+    /// group that owns this view
+    DataGroup*  m_owning_group;
 
-    /// pointer to the DataBuffer
-    DataBuffer* m_buffer;
+    /// pointer to DataBuffer associated with view
+    DataBuffer* m_data_buffer;
 
     /// conduit schema used as descriptor
     Schema      m_schema;
@@ -145,16 +334,12 @@ private:
     /// conduit node used to access the data
     Node        m_node;
     
-    /// used to tell if the view is fully inited 
-    /// may be a bad name
-    bool        m_applied;
+    /// has schema been applied to buffer data?
+    bool        m_is_applied;
     
-    /// bookkeeping for now, we should absorb this meta data into
-    /// a more general descriptor
-    bool        m_opaque;
+    /// is view opaque?
+    bool        m_is_opaque;
 };
-
-
 
 
 } /* namespace sidre */

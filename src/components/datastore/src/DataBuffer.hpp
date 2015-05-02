@@ -40,14 +40,15 @@ class DataView;
  *
  * \brief DataBuffer holds a data object, which it owns (and allocates!)
  *
- * A data buffer instance has the following properties:
+ * A DataBuffer instance has the following properties:
  *
- *    - Data buffer objects cannot be created directly, only by a datastore
- *      object. 
- *    - A data buffer object has a unique identifier within a datastore.
- *    - The data object owned by a data buffer is unique to that data buffer;
- *      i.e.,  data buffers do not share data objects.
- *    - A data buffer object maintains a collection of data views that
+ *    - DataBuffer objects can only be created via the DataStore interface,
+ *      not directly. 
+ *    - A DataBuffer object has a unique identifier within a DataStore,
+ *      which is assigned by the DataStore when the buffer is created.
+ *    - The data object owned by a DataBuffer is unique to that DataDuffer
+ *      object; i.e.,  DataBuffers do not share data.
+ *    - A DataBuffer object maintains a collection of DataViews that
  *      refer to its data.
  *
  */
@@ -136,10 +137,10 @@ public:
 
 
 //@{
-//!  @name Data access methods
+//!  @name Accessor methods
  
     /*!
-     * \brief Return void-pointer to data object.
+     * \brief Return void-pointer to data held by DataBuffer.
      */
     void* GetData()
     { 
@@ -231,20 +232,21 @@ private:
     /// pointer to the data owned by data buffer
     void* m_data;
   
-    /// vector used to allocate data.
+    ///
+    /// vector used to allocate data
     /// 
     /// IMPORTANT: This is temorary until we implement an appropriate 
     ///            allocator interface.
     ///
     std::vector<char> m_memblob;
 
-    /// Conduit Node and Schema 
+    /// Conduit Node that holds buffer data 
     Node   m_node;
+
+    /// Conduit Schema that describes buffer data
     Schema m_schema;
 
 };
-
-
 
 
 } /* namespace sidre */

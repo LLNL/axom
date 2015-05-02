@@ -93,7 +93,7 @@ namespace sidre
                         "view->GetName() == " << view->getName() );
         
         // remove this view from its current parent
-        DataGroup *curr_grp = view->getParent();
+        DataGroup *curr_grp = view->getOwningGroup();
         
         curr_grp->detachView(view->getName());
         
@@ -159,7 +159,7 @@ namespace sidre
              }
           }
         
-          view->m_group = nullptr;
+          view->m_owning_group = nullptr;
        } 
        return view;
     }
@@ -179,7 +179,7 @@ namespace sidre
                 itr->second--;
             }
         }
-        view->m_group = nullptr;
+        view->m_owning_group = nullptr;
         return view;
     }
 

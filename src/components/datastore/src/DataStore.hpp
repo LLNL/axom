@@ -32,9 +32,14 @@ class DataGroup;
 /*!
  * \class DataStore
  *
- * \brief DataStore has a collection of DataBuffer objects and a "root" DataGroup.
+ * \brief DataStore is the main interface for creating and accessing
+ *        DataBuffer objects.
  *
- * It is the main interface for creating and accessing data buffers.
+ * It maintains a collection of DataBuffer objects and owns the "root" 
+ * DataGroup, called "/". A DataGroup hierachy (a tree) is created by 
+ * creating (sub) DataGroups withing the root group and (sub) DataGroups
+ * within child DataGroups.
+ *
  */
 class DataStore
 {
