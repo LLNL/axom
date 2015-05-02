@@ -8,14 +8,18 @@
  ******************************************************************************
  */
 
+
+// Associated header file
+#include "DataBuffer.hpp"
+
 // Standard C++ headers
 #include <algorithm>
 
 // SiDRe project headers
-#include "DataBuffer.hpp"
 #include "DataGroup.hpp"
 #include "DataView.hpp"
 #include "Utilities.hpp"
+
 
 namespace sidre
 {

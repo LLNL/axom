@@ -28,6 +28,7 @@ using conduit::DataType;
 using conduit::Node;
 using conduit::Schema;
 
+
 namespace sidre
 {
 
@@ -184,7 +185,7 @@ public:
     /*!
      * \brief Copy data buffer description to given Conduit node.
      */
-    void Info(Node &n) const;
+    void Info(Node& n) const;
 
     /*!
      * \brief Print JSON description of data buffer to stdout.

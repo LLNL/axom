@@ -1,100 +1,138 @@
-/**
- * @name DataStore.hpp
+/*!
+ ******************************************************************************
  *
- *  @date Dec 2, 2014
- *  @author settgast
+ * \file
+ *
+ * \brief   Header file containing definition of DataStore class.
+ *
+ ******************************************************************************
  */
 
 #ifndef DATASTORE_HPP_
 #define DATASTORE_HPP_
 
+// Standard C++ headers
 #include <vector>
 #include <stack>
-#include "DataGroup.hpp"
+
+// SiDRe project headers
 #include "Types.hpp"
+
+
+// using directives to make Conduit usage easier and less visible
+using conduit::Node;
+
 
 namespace sidre
 {
 
 class DataBuffer;
+class DataGroup;
 
-/**
+/*!
  * \class DataStore
  *
- * \brief Class to own DataObject and a root DataGroup.
+ * \brief DataStore has a collection of DataBuffer objects and a "root" DataGroup.
+ *
+ * It is the main interface for creating and accessing data buffers.
  */
 class DataStore
 {
 public:
+
   /*!
-   * \brief Constructor.
+   * \brief Default ctor initializes datastore object and creates root group.
    */
   DataStore();
 
   /*!
-   * \brief Destructor.
+   * \brief Dtor destroys all contents of the datastore, including data held
+   *        in buffers if owned by the buffers.
    */
   ~DataStore();
 
+
+//@{
+//!  @name DataBuffer methods
+
   /*!
-   * \brief Create a DataBuffer.
-   *    It is assigned a universal id and owned by the DataStore
+   * \brief Return (non-const) pointer to data buffer object with given id.
+   */
+  DataBuffer* getBuffer( const IDType id ) 
+  { 
+     return m_DataBuffers[id]; 
+  }
+
+  /*!
+   * \brief Create a data buffer object and return a pointer to it.
+   *
+   *    The buffer object is assigned a unique id when created and the 
+   *    buffer object is owned by the data store.
    */
   DataBuffer* createBuffer();
 
-
   /*!
-   * @param id  Universal id of the DataObject.
-   * \brief Remove a DataObject from the DataStore.
-   *   It is disassociated with all groups and returned to the free pool.
+   * \brief Remove data buffer with given id from the datastore and 
+   *        destroy it (including its data if data buffer owns it).
+   *
+   *   Note that buffer destruction detaches it from all groups and views 
+   *   it was associated with.
    */
   void destroyBuffer( const IDType id );
 
   /*!
+   * \brief Remove all data buffers from the datastore and destroy them 
+   *        (including data they own).
    *
-   * @param id the index
-   * @return the DataBuffer that was at m_DataBuffer[id]
-   * \brief Remove a DataBuffer from container, and return
+   *   Note that buffer destruction detaches it from all groups and views
+   *   it was associated with.
+   */
+  void destroyBuffers();
+
+  /*!
+   * \brief Remove data buffer with given id from the datastore, but leave
+   *        it intact.
+   *
+   * \return pointer to DataBuffer object that was datached.
    */
   DataBuffer* detachBuffer( const IDType id );
 
-
   /*!
-   * \brief Return pointer to the root DataGroup.
+   * \brief Return number of buffers in the datastore.
    */
-  DataGroup* getRoot() 
-      { return m_RootGroup; };
-
-  /*!
-   *
-   * @param id
-   * @return
-   */
-  DataBuffer* getBuffer( const IDType id ) 
-      { return m_DataBuffers[id]; }
-
-  void destroyBuffers();
-
-  void print() const;
-  void info(Node &) const;
-
   IDType getNumberOfBuffers() const
   {
     return m_DataBuffers.size() - m_AvailableDataBuffers.size();
   }
 
+//@}
+
+  /*!
+   * \brief Return pointer to the root DataGroup.
+   */
+  DataGroup* getRoot() 
+  { 
+      return m_RootGroup; 
+  };
+
+
+  /*!
+   * \brief Copy buffer descriptions and group tree, starting at root,
+   *        to given Conduit node. 
+   */ 
+  void info(Node& n) const;
+
+  /*!
+   * \brief Print JSON description of data buffers and group tree,
+   *        starting at root, to stdout.
+   */
+  void print() const;
+
+
 private:
-
-
-  /// Root data group, created automatically with datastore.
-  DataGroup *m_RootGroup;
-
-  /// container of DataBuffers
-  std::vector<DataBuffer*> m_DataBuffers;
-
-  /// stack of unique ids that can be recycled
-  std::stack< IDType > m_AvailableDataBuffers;
-
+  //
+  // Unimplemented ctors and copy-assignment operators.
+  //
 #ifdef USECXX11
   DataStore( const DataStore& ) = delete;
   DataStore( DataStore&& ) = delete;
@@ -105,6 +143,16 @@ private:
   DataStore( const DataStore& );
   DataStore& operator=( const DataStore& );
 #endif
+
+  /// Root data group, created when datastore is created.
+  DataGroup *m_RootGroup;
+
+  /// container of DataBuffers
+  std::vector<DataBuffer*> m_DataBuffers;
+
+  /// stack of unique buffer ids that can be recycled
+  std::stack< IDType > m_AvailableDataBuffers;
+
 };
 
 
