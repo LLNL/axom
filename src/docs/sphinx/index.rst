@@ -1,3 +1,0 @@
-Datastore Documentation
-=======================
-

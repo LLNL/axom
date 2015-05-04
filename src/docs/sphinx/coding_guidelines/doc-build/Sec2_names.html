@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2 Names &mdash; Toolkit Coding Guidelines 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Toolkit Coding Guidelines 1.0 documentation" href="index.html" />
+    <link rel="next" title="3 Directories, Files, and Scope" href="Sec3_scope.html" />
+    <link rel="prev" title="1 Purpose of the guidelines and general considerations" href="Sec1_intro.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Sec3_scope.html" title="3 Directories, Files, and Scope"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Sec1_intro.html" title="1 Purpose of the guidelines and general considerations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="names">
+<h1>2 Names<a class="headerlink" href="#names" title="Permalink to this headline">¶</a></h1>
+<p>This section contains guidelines for naming files, types (i.e., classes,
+structs, etc.), functions, data members, variables, etc. The main goal is
+to use a distinct and consistent naming convention for each item category
+so that the role of each entity in the code is obvious from the form of
+its name.</p>
+<div class="section" id="general">
+<h2>2.1 General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<p>2.1.1 Every name <strong>must</strong> be meaningful. That is, its meaning <strong>must</strong> be clear to other code developers and users, not just the author of the name.</p>
+<blockquote>
+<div>A substantial benefit of good name selection is that it can greatly
+reduce the amount of source code documentation required for others to
+understand it. For example, when the name of a function clearly indicates
+what it does and the meaning and purpose of each argument is clear from
+its name, then code comments may be unnecessary. In fact, documenting
+&#8220;the obvious&#8221; is often more distracting than helpful.</div></blockquote>
+<p>2.1.2 Each name <strong>must</strong> be consistent with other similar names in the code.</p>
+<blockquote>
+<div>For example, if getter/setter methods follow the convention &#8220;getFoo&#8221;
+and &#8220;setFoo&#8221; respectively, then adding a new setter method called
+&#8220;putBar&#8221; is clearly inconsistent.</div></blockquote>
+<p>2.1.3 Tersely abbreviated or cryptic or names <strong>should</strong> be avoided. However, common acronyms and jargon that are well understood by team members <strong>may</strong> be used.</p>
+</div>
+<div class="section" id="file-names">
+<h2>2.2 File names<a class="headerlink" href="#file-names" title="Permalink to this headline">¶</a></h2>
+<p>In this section and throughout the guidelines, we refer to &#8220;header&#8221; and
+&#8220;source&#8221; files. Header files are those that are included in other files
+(either header or source). Source files are not included in other files and
+form translation units when a program is compiled. Also, header files often
+do not contain implementations, only function declarations and type definitions.Common exceptions include class template header files and headers that contain
+inline functions. Such files must contain implementations.</p>
+<p>2.2.1 C++ header and source file extensions <strong>must</strong> be: *.hpp and *.cpp, respectively.</p>
+<p>2.2.2 C-only header and source file extensions <strong>must</strong> be: *.h and *.c, respectively.</p>
+<p>2.2.3 The name of each file <strong>must</strong> clearly indicate its contents.</p>
+<blockquote>
+<div><p>In partciular, a header file that defines a major type (e.g., a struct or
+class) or contains function signatures associated with a major type
+<strong>must</strong> include the type name in the file name. For example, the header
+file for the class &#8220;MyClass&#8221; should be named &#8220;MyClass.hpp&#8221;.</p>
+<p>Similarly, a source file that implements functionality associated with
+a major type, such as a class implementation file, <strong>must</strong> include
+the type name in the file name. For example, the source file for the
+class &#8220;MyClass&#8221; should be named &#8220;MyClass.cpp&#8221;.</p>
+</div></blockquote>
+<p>2.2.4 Header and source files that provide a limited, well-defined set of code functionality, but are not associated with a major data type, <strong>must</strong> be named so that the contents of the file are clear from the name.</p>
+<blockquote>
+<div>For example, header and source files containing unbound utility methods
+for dealing with file I/O <strong>should</strong> be named &#8220;FileUtils.hpp&#8221; and
+&#8220;FileUtils.cpp&#8221;, or similar.</div></blockquote>
+<p>2.2.5 File names that differ only in letter case <strong>must</strong> not be used.</p>
+<blockquote>
+<div>For example, having files with names &#8220;MyClass.hpp&#8221; and &#8220;myclass.hpp&#8221;
+is not acceptable.</div></blockquote>
+</div>
+<div class="section" id="scope-and-type-names">
+<h2>2.3 Scope and type names<a class="headerlink" href="#scope-and-type-names" title="Permalink to this headline">¶</a></h2>
+<p>2.3.1 All namespaces defined in the Toolkit <strong>must</strong> use all lowercase letters.</p>
+<blockquote>
+<div><p>For example, most C++ entities in the CS Toolkit are inluded in the
+namespace &#8220;asctoolkit&#8221;; for example:</p>
+<div class="highlight-python"><div class="highlight"><pre>namespace asctoolkit {
+     // . . .
+}
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.3.2 All type names (i.e., classes, structs, typedefs, enums, etc.) <strong>must</strong> be nouns and <strong>must</strong> be in mixed case with each word starting with an upper case
+letter and all other letters in lower case.</p>
+<blockquote>
+<div><p>For example, these are acceptable type names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Line</span><span class="p">,</span> <span class="n">BankAccount</span><span class="p">,</span> <span class="n">MyNiftyClass</span>
+</pre></div>
+</div>
+<p>These are not acceptable type names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">line</span><span class="p">,</span> <span class="n">LINE</span><span class="p">,</span> <span class="n">Bankaccount</span><span class="p">,</span> <span class="n">myNiftyClass</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.3.3 Separating characters, such as underscores, <strong>should</strong> not be used between words in a type name.</p>
+<blockquote>
+<div><p>For example, these are not acceptable type names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Bank_Account</span><span class="p">,</span> <span class="n">My</span><span class="o">-</span><span class="n">Nifty</span><span class="o">-</span><span class="n">Class</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.3.4 Suffixes that may be used by compilers for name mangling, or which are used in the C or C++ standard libraries, such as &#8220;_t&#8221;, <strong>must</strong> not be used in type names.</p>
+</div>
+<div class="section" id="function-names">
+<h2>2.4 Function names<a class="headerlink" href="#function-names" title="Permalink to this headline">¶</a></h2>
+<p>2.4.1 Function names <strong>must</strong> use &#8220;camelCase &#8221; style.</p>
+<blockquote>
+<div><p>Specifically, the first word must be in lower case letters. If
+multiple words are used, each word after the first must start with
+an upper case letter and have all other letters in lower case.
+Underscores must not be used in camelCase, but numbers may be
+used.</p>
+<p>For example, these are acceptable camelCase style function names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">compAverage</span><span class="p">(),</span> <span class="n">getName</span><span class="p">(),</span> <span class="n">copy2</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.4.2 All functions names (i.e., class members, unbound methods, etc.) <strong>must</strong> begin with a verb and clearly indicate what they do.</p>
+<p>2.4.3 Complementary verbs (e.g., &#8220;get/set&#8221;, &#8220;add/remove&#8221;, &#8220;create/destroy&#8221;) <strong>must</strong> be used for routines that perform complementary operations.</p>
+<blockquote>
+<div>Such symmetry prevents confusion and makes interfaces easier to use.</div></blockquote>
+<p>2.4.4 Verbs (e.g., &#8220;is&#8221;, &#8220;has&#8221;, &#8220;can&#8221;) <strong>must</strong> be used for any function with a boolean return type (including an int value indicating true/false).</p>
+<blockquote>
+<div><p>For example, use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">isInitialized</span><span class="p">(),</span> <span class="n">hasLicense</span><span class="p">(),</span> <span class="n">canEvaluate</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="data-member-and-variable-names">
+<h2>2.5 Data member and variable names<a class="headerlink" href="#data-member-and-variable-names" title="Permalink to this headline">¶</a></h2>
+<p>2.5.1 Variable names (e.g., class members, struct fields, function arguments, local variables) <strong>must</strong> use either &#8220;camelCase&#8221; style or &#8220;pot_hole&#8221; style. Within a Toolkit component, one consistent style <strong>must</strong> be used.</p>
+<blockquote>
+<div><p><strong>camelCase style:</strong> The first word must be in lower case letters.
+If multiple words are used, each word after the first must start with
+an upper case letter and have all other letters in lower case.
+Underscores must not be used in camelCase, but numbers may be used.</p>
+<p>For example, these are acceptable camelCase style variable names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">myAverage</span><span class="p">,</span> <span class="n">personName</span><span class="p">,</span> <span class="n">pressure2</span>
+</pre></div>
+</div>
+<p><strong>pot_hole style:</strong> All letters must be in lower case. If multiple
+words are used, they must be separated by a single underscore. Numbers
+may be used in pothole style names.</p>
+<p>For example, these are acceptable pothole style variable names:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">my_average</span><span class="p">,</span> <span class="n">person_name</span><span class="p">,</span> <span class="n">pressure_2</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.5.2 Class and struct data member names <strong>must</strong> use one of the two prefixes: &#8220;m_&#8221; and &#8220;s_&#8221;.</p>
+<blockquote>
+<div><p>The prefix &#8220;m_&#8221; indicates a regular data member and the prefix &#8220;s_&#8221;
+indicates a static member.</p>
+<p>This convention makes it obvious which variable names in the code refer
+to class members/struct fields and which are local variables. For example,      the following are acceptable names for class data members using
+camelCase style:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">m_myAverage</span><span class="p">,</span> <span class="n">m_personName</span>
+</pre></div>
+</div>
+<p>and pothole style:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">m_my_average</span><span class="p">,</span> <span class="n">m_person_name</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.5.3 Verbs, such as &#8220;is&#8221;, &#8220;has&#8221;, &#8220;can&#8221;, etc., <strong>must</strong> be used for each boolean variables, such as type bool or an integer that indicate true/false values.</p>
+<blockquote>
+<div><p>For example, use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">m_is_initialized</span><span class="p">,</span> <span class="n">has_license</span>
+</pre></div>
+</div>
+<p>not:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">m_initialized</span><span class="p">,</span> <span class="n">license</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.5.4 Local variables, such as loop indices, <strong>should</strong> be named so they are easy to search for using a text editor.</p>
+<blockquote>
+<div>For example, a loop index named &#8220;ivar&#8221; is easier to search for than
+one named simply &#8220;i&#8221;.</div></blockquote>
+<p>2.5.5 Each variable name <strong>should</strong> give an indication of its type.</p>
+<blockquote>
+<div><p>For example,:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Topic</span><span class="o">*</span> <span class="n">my_topic</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>is clearer than:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Topic</span><span class="o">*</span> <span class="n">my_value</span><span class="p">;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="macros-and-enumeration-constants">
+<h2>2.6 Macros and enumeration constants<a class="headerlink" href="#macros-and-enumeration-constants" title="Permalink to this headline">¶</a></h2>
+<p>2.6.1 Preprocessor macro constants <strong>must</strong> be named using all uppercase letters and underscores should be used between words.</p>
+<blockquote>
+<div><p>For example,:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">MAX_ITERATIONS</span><span class="p">,</span> <span class="n">READ_MODE</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>2.6.2 The name of each enumeration value <strong>should</strong> start with a capital letter and use an underscore between words when multiple words are used.</p>
+<blockquote>
+<div><p>For example,:</p>
+<div class="highlight-python"><div class="highlight"><pre>enum Orange
+{
+   Navel,
+   Valencia,
+   Num_Orange_Types
+};
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2 Names</a><ul>
+<li><a class="reference internal" href="#general">2.1 General</a></li>
+<li><a class="reference internal" href="#file-names">2.2 File names</a></li>
+<li><a class="reference internal" href="#scope-and-type-names">2.3 Scope and type names</a></li>
+<li><a class="reference internal" href="#function-names">2.4 Function names</a></li>
+<li><a class="reference internal" href="#data-member-and-variable-names">2.5 Data member and variable names</a></li>
+<li><a class="reference internal" href="#macros-and-enumeration-constants">2.6 Macros and enumeration constants</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Sec1_intro.html"
+                        title="previous chapter">1 Purpose of the guidelines and general considerations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Sec3_scope.html"
+                        title="next chapter">3 Directories, Files, and Scope</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Sec2_names.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Sec3_scope.html" title="3 Directories, Files, and Scope"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Sec1_intro.html" title="1 Purpose of the guidelines and general considerations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Rich Hornung.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

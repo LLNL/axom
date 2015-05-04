@@ -1,0 +1,602 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3 Directories, Files, and Scope &mdash; Toolkit Coding Guidelines 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Toolkit Coding Guidelines 1.0 documentation" href="index.html" />
+    <link rel="next" title="4 Code Documentation" href="Sec4_doc.html" />
+    <link rel="prev" title="2 Names" href="Sec2_names.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Sec4_doc.html" title="4 Code Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Sec2_names.html" title="2 Names"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="directories-files-and-scope">
+<h1>3 Directories, Files, and Scope<a class="headerlink" href="#directories-files-and-scope" title="Permalink to this headline">¶</a></h1>
+<p>This section contains some basic directory and file organization guidelines.
+While each toolkit component may establish its own directory structure,
+following these guidelines will help make it easy to locate a specific file
+and, once the file is found, to locate essential information in it easily
+and quickly.</p>
+<div class="section" id="file-location-and-directory-names">
+<h2>3.1 File location and directory names<a class="headerlink" href="#file-location-and-directory-names" title="Permalink to this headline">¶</a></h2>
+<p>It is common practice for C++ libraries to have header files and associated
+implementation files located in the same directory. We follow this practice.</p>
+<p>3.1.1 Each file <strong>must</strong> reside in a directory that corresponds to the code functionality supported by the contents of the file.</p>
+<p>3.1.2 Each source directory <strong>must</strong> be named so that the collective purpose of the files it contains is clear. Each directory name <strong>must</strong> be in all lower case letters and should consist of a single word with no non-alphabetic characters.</p>
+</div>
+<div class="section" id="c-only-header-file-h-extension-content-organization">
+<h2>3.2 C-only header file (*.h extension) content organization<a class="headerlink" href="#c-only-header-file-h-extension-content-organization" title="Permalink to this headline">¶</a></h2>
+<p>This section contains guidelines for C-only header files (with &#8220;*.h&#8221;
+extension).  The file layout summary here uses numbers and text to illustrate
+the basic structure. Details about individual items follow.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/* (1) Copyright statement */</span>
+
+<span class="cm">/* (2) Doxygen file prologue */</span>
+
+<span class="cm">/* (3a) Header file include guard, e.g., */</span>
+<span class="cp">#ifndef MYCOOLSTUFF_H</span>
+<span class="cp">#define MYCOOLSTUFF_H</span>
+
+<span class="cm">/* (4) Header file inclusions (when NEEDED in lieu of forward declarations) */</span>
+<span class="cp">#include &quot;...&quot;</span>
+
+<span class="cm">/* (5) Forward declarations NEEDED in the header file */</span>
+<span class="k">struct</span> <span class="p">...;</span>
+
+<span class="cm">/* (6) Type definitions (struct, enum, etc.) with Doxygen comments e.g., */</span>
+
+<span class="cm">/*!</span>
+<span class="cm"> * \brief Brief ...summary comment text...</span>
+<span class="cm"> *</span>
+<span class="cm"> * ...detailed comment text...</span>
+<span class="cm"> */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">MyStructType</span> <span class="p">{</span>
+   <span class="p">...</span>
+<span class="p">}</span> <span class="n">MyStruct</span><span class="p">;</span>
+
+<span class="cm">/* (7a) Function prototypes declared with external linkage (if needed to support interaction with other packages) */</span>
+<span class="cp">#ifdef __cplusplus</span>
+<span class="k">extern</span> <span class="s">&quot;C&quot;</span> <span class="p">{</span>
+<span class="cp">#endif</span>
+
+<span class="cm">/* (8) Prototypes for &quot;extern&quot; routines, e.g.,</span>
+<span class="cm">extern double MyCoolStuff_execFoo1(MyStuff_t* stuff);</span>
+<span class="cm">extern void MyCoolStuff_execFoo2(int* vec, int vec_len);</span>
+
+<span class="cm">/* (7b) External linkage closing brace (if needed) */</span>
+<span class="cp">#ifdef __cplusplus</span>
+<span class="p">}</span>
+<span class="cp">#endif</span>
+
+<span class="cm">/* (3b) Header file include guard closing endif */</span>
+<span class="cp">#endif </span><span class="cm">/* closing endif for header file include guard */</span><span class="cp"></span>
+</pre></div>
+</div>
+<p>The numbers in parentheses in the following guidelines correspond to the
+numbered items in the comments in the preceding summary.</p>
+<p>3.2.1 Each header file <strong>must</strong> begin with a comment section containing the LLNL copyright statement (item 1 in summary).</p>
+<blockquote>
+<div>See Section 4 for details.</div></blockquote>
+<p>3.2.2 A Doxygen file prologue (item 2 in summary) <strong>should</strong> follow the copyright statement.</p>
+<blockquote>
+<div>See Section 4 for details.</div></blockquote>
+<p>3.2.3 The contents of each header file <strong>must</strong> be guarded using a preprocessor directive that defines a unique &#8220;guard name&#8221; for the header file.</p>
+<blockquote>
+<div>The guard must appear immediately after the file prologue and use the
+#ifndef directive (item 3a in summary); this requires a closing #endif
+statement at the end of the file (item 3b in summary). The preprocessor
+constant must use the file name followed by &#8220;_H&#8221;; e.g., &#8220;MYCOOLSTUFF_H&#8221;
+as above.</div></blockquote>
+<p>3.2.4 All necessary header file include statements (item 4 in summary) <strong>must</strong> appear immediately after definition of the header guard and before any forward
+declarations, type definitions, or function prototypes.</p>
+<p>3.2.5 Forward declarations (item 5 in summary) needed for type definitions and function prototypes <strong>must</strong> appear before all type definitions and prototypes.</p>
+<p>3.2.6 All type definitions (item 6 in summary) <strong>must</strong> appear after the header file inclusions and before any subroutine prototypes. A proper type definition prologue <strong>must</strong> appear before each type definition; see Section 4 for details.</p>
+<p>3.2.7 All function prototypes <strong>must</strong> be declared with external &#8220;C&#8221; linkage if and only if this is needed for compatibility with another software package (items 7a and 7b in summary).</p>
+<blockquote>
+<div><p>This is done by wrapping all prototypes within an &#8220;extern&#8221; statement,
+which is guarded with a special macro constant:</p>
+<div class="highlight-python"><div class="highlight"><pre>#ifdef __cplusplus
+   extern &quot;C&quot; {
+#endif
+
+   /* function prototypes... */
+
+#ifdef __cplusplus
+{
+#endif
+</pre></div>
+</div>
+</div></blockquote>
+<p>3.2.8 Function prototypes <strong>must</strong> be declared using the &#8220;extern&#8221; keyword (item 8 in summary).</p>
+</div>
+<div class="section" id="c-only-source-file-c-extension-content-organization">
+<h2>3.3 C-only source file (*.c extension) content organization<a class="headerlink" href="#c-only-source-file-c-extension-content-organization" title="Permalink to this headline">¶</a></h2>
+<p>Do we need this?</p>
+</div>
+<div class="section" id="c-header-file-hpp-extension-content-organization">
+<h2>3.4 C++ header file (*.hpp extension) content organization<a class="headerlink" href="#c-header-file-hpp-extension-content-organization" title="Permalink to this headline">¶</a></h2>
+<p>This section contains guidelines for C++ header files (with &#8220;*.hpp&#8221; extension).
+The file layout summary here uses numbers and text to illustrate the basic
+structure. Details about individual items follow.</p>
+<div class="highlight-cpp"><div class="highlight"><pre>// (1) Copyright statement
+
+// (2) Doxygen file prologue
+
+// (3a) Header file include guard, e.g.,
+#ifndef MYCLASS_HPP
+#define MYCLASS_HPP
+
+// (4) Header file inclusions (when NEEDED in lieu of forward declarations)
+#include &quot;...&quot;
+
+// (5) Forward declarations NEEDED in header file (outside of asctoolkit
+namespace)
+class ...;
+
+// (6a) &quot;asctoolkit&quot; namespace declaration
+namespace asctoolkit {
+
+// (7a) Toolkit component namespace (if used); e.g.,
+namespace awesome {
+
+// (8) Forward declarations NEEDED in header file (in toolkit namespace(s)
+class ...;
+
+// (9) Type definitions (class, enum, etc.) with Doxygen comments e.g.,
+/*!
+ * \brief Brief ...summary comment text...
+ *
+ * ...detailed comment text...
+ */
+Class MyClass {
+   ...
+} MyClass;
+
+// (7b) Toolkit component namespace closing brace (if needed)
+} // awesome namespace closing brace
+
+// (6b) &quot;asctoolkit namespace closing brace
+} // asctoolkit namespace closing brace
+
+// (3b) Header file include guard closing endif */
+#endif // closing endif for header file include guard
+</pre></div>
+</div>
+<p>The numbers in parentheses in the following guidelines correspond to the
+numbered items in the comments in the preceding summary.</p>
+<p>3.4.1 Each header file <strong>must</strong> begin with a comment section containing the LLNL copyright statement (item 1 in summary).</p>
+<blockquote>
+<div>See Section 4 for details.</div></blockquote>
+<p>3.4.2 A Doxygen file prologue (item 2 in summary) <strong>should</strong> follow the copyright statement.</p>
+<blockquote>
+<div>See Section 4 for details.</div></blockquote>
+<p>3.4.3 The contents of each C++ header file <strong>must</strong> be guarded using a preprocessor directive that defines a unique &#8220;guard name&#8221; for the header file.</p>
+<blockquote>
+<div>The guard must appear immediately after the file prologue and use the
+&#8216;#ifndef&#8217; directive (item 3a in summary); this requires a closing
+&#8216;#endif&#8217; statement at the end of the file (item 3b in summary). The
+preprocessor constant must use the file name followed by &#8220;_HPP&#8221;; e.g.,
+&#8220;MYCLASS_HPP&#8221; as above.</div></blockquote>
+<p>3.4.4 All necessary header file include statements (item 4 in summary) <strong>must</strong> appear immediately after definition of the header guard and before any forward
+declarations, type definitions, etc.</p>
+<p>3.4.5 Any necessary forward declarations (item 5 in summary) for types defined outside the toolkit namespace <strong>must</strong> appear before the toolkit namespace statement.</p>
+<p>3.4.6 All types defined and methods defined in a C++ header file <strong>must</strong> be included in a namespace.</p>
+<blockquote>
+<div>Either the main &#8220;asctoolkit&#8221; namespace (item 6a in summary) or a toolkit
+component namespace (item 7a in summary) may be used, or both may be
+used. A closing brace ( &#8220;}&#8221; ) is required to close each namespace
+declaration (items 6b and 7b) before the closing &#8216;#endif&#8217; for the header
+file include guard.</div></blockquote>
+<p>3.4.7 Forward declarations for types defined in the toolkit, and which are needed for the header file, <strong>must</strong> appear first in the &#8220;asctoolkit&#8221; or nested namespace before any other statements (item 8 in summary).</p>
+<p>3.4.8 All class and other type definitions (item 9 in summary) <strong>must</strong> appear after the header file inclusions and forward declarations. A proper class prologue <strong>must</strong> appear before the class definition; see Section 4 for details.</p>
+</div>
+<div class="section" id="c-source-file-cpp-extension-content-organization">
+<h2>3.5 C++ source file (*.cpp extension) content organization<a class="headerlink" href="#c-source-file-cpp-extension-content-organization" title="Permalink to this headline">¶</a></h2>
+<p>This section contains guidelines for C++ source files (with &#8220;*.cpp&#8221; extension).
+The file layout summary here uses numbers and text to illustrate the basic
+structure. Details about individual items follow.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="c1">// (1) Copyright statement</span>
+
+<span class="c1">// (2) Header file inclusions (only those that are NECESSARY)</span>
+<span class="cp">#include &quot;...&quot;</span>
+
+<span class="c1">// (3a) &quot;asctoolkit&quot; namespace declaration</span>
+<span class="k">namespace</span> <span class="n">asctoolkit</span> <span class="p">{</span>
+
+<span class="c1">// (4a) Toolkit component namespace (if used); e.g.,</span>
+<span class="k">namespace</span> <span class="n">awesome</span> <span class="p">{</span>
+
+<span class="c1">// (5) Initialization of static class data members, if any; e.g.,</span>
+<span class="n">Foo</span><span class="o">*</span> <span class="n">MyClass</span><span class="o">::</span><span class="n">s_shared_foo</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// (6) Implementation of static class member functions, if any</span>
+
+<span class="c1">// (7) Implementation of non-static class members and other methods</span>
+
+<span class="c1">// (4b) Toolkit component namespace closing brace (if needed)</span>
+<span class="p">}</span> <span class="c1">// awesome namespace closing brace</span>
+
+<span class="c1">// (3b) &quot;asctoolkit namespace closing brace</span>
+<span class="p">}</span> <span class="c1">// asctoolkit namespace closing brace</span>
+</pre></div>
+</div>
+<p>The numbers in parentheses in the following guidelines correspond to the
+numbered items in the comments in the preceding summary.</p>
+<p>3.5.1 Each source file <strong>must</strong> begin with a comment section containing the LLNL copyright statement (item 1 in summary).</p>
+<p>3.5.2 All necessary header file include statements (item 2 in summary) <strong>must</strong> appear immediately after the copyright statement and before any actual implementation statements in the file.</p>
+<p>3.5.3 All contents in a C++ source file <strong>must</strong> follow the same namespace inclusion pattern as its corresponding header file (see item 3.4.6).</p>
+<blockquote>
+<div>Either the main &#8220;asctoolkit&#8221; namespace (item 3a in summary) or a toolkit
+component namespace (item 4a in summary) may be used, or both may be used.
+A closing brace ( &#8220;}&#8221; ) is required to close each namespace declaration
+(items 3b and 4b) before the closing &#8216;#endif&#8217; for the header file include
+guard.</div></blockquote>
+<p>3.5.4 When used, static class data members <strong>must</strong> be initialized explicitly
+in the class source file before any member functions are defined (item 5 in summary).</p>
+<p>3.5.6 All implementations of static class member functions (item 6 in summary), if any, <strong>must</strong> appear before implementations of non-static class member functions (item 7 in summary).</p>
+</div>
+<div class="section" id="general-header-file-guidelines">
+<h2>3.6 General header file guidelines<a class="headerlink" href="#general-header-file-guidelines" title="Permalink to this headline">¶</a></h2>
+<p>Good header file structure and conventions can make a huge positive impact on
+readability, and productivity of software developers. In earlier sections, we
+described basic header file organizational guidelines. In this section, we
+provide additional header file guidelines.</p>
+<p>3.6.1 Each source file <strong>must</strong> have an associated header file with a matching name, such as &#8220;Foo.hpp&#8221; for the source file Foo.cpp&#8221;.</p>
+<blockquote>
+<div><strong>Exceptions:</strong> Unit test files and the file containing main do not
+require headers.</div></blockquote>
+<p>3.6.2 Header files <strong>may</strong> contain multiple type definitions (e.g., structs, classes, enums, etc.). However, type definitions and function declarations in a header file <strong>must</strong> be related closely and/or support the primary type for which the file is named.</p>
+<p>3.6.3 A header file <strong>must</strong> be self-contained and self-sufficient.</p>
+<blockquote>
+<div><p>In particular, a header file</p>
+<ul>
+<li><p class="first">Must have proper header file include guards (as illustrated in previous         sections) to prevent multiple inclusion. The macro symbol name for each
+guard must be chosen to guarantee uniqueness within a compilation unit.</p>
+</li>
+<li><p class="first">Must include all other headers and/or forward declarations it needs to
+be compiled (i.e., each type used in the header file must be accounted
+for). In addition, a file should not rely on symbols defined in another
+header file that it includes; the other file should be included
+explicitly.</p>
+</li>
+<li><p class="first">Must contain the implementations of all generic templates and inline
+methods defined in it. A compiler will require the full definitions of
+these constructs to be seen in every source file that uses them.</p>
+<p><strong>Exceptions:</strong> Function templates or class template members whose
+implementations are fully specialized with all template arguments must
+be defined in an associated source file to avoid linker errors. Fully
+specialized templates are not templates and so they are treated just
+like any other function.</p>
+</li>
+</ul>
+</div></blockquote>
+<p>3.6.4 Header files <strong>should</strong> use forward declarations instead of header file inclusions when possible.</p>
+<blockquote>
+<div><p>This avoids having the compiler open more files than are needed, which
+can speed up recompilation when header files change.</p>
+<p><strong>Exceptions:</strong></p>
+<ul class="simple">
+<li>Header files that define external APIs for Toolkit components <strong>must</strong>
+include all header files for all types that appear in the API. This
+makes use of the API much easier.</li>
+<li>When using a function, such as an inline method or template, that is
+implemented in a header file, the header file containing the
+implementation must be included.</li>
+<li>Similarly, when using C+ standard library types in a header file, it
+<strong>may</strong> be preferable to include the associated standard headers in the
+header file to make it easier to use. This avoids having explicit
+inclusion of standard headers wherever the header file is used.</li>
+</ul>
+</div></blockquote>
+<p>3.6.5 A forward type declaration <strong>must</strong> be used in a header file when an include statement would result in a circular dependency among header files or when the only the type name is needed and not the type definition.</p>
+<p>3.6.6 Unnecessary header files or forward declarations (i.e., when a type definition or name is not needed) <strong>should not</strong> be included in header files.</p>
+<blockquote>
+<div>Such header file inclusions, in particular, introduce spurious file
+dependencies, which unnecessarily increases the number of files that
+are opened during code compilation.</div></blockquote>
+<p>3.6.7 Header file include statements <strong>should</strong> use the same ordering pattern for all files within a toolkit component.</p>
+<blockquote>
+<div><p>This improves code readability, helps to avoid misunderstanding
+dependencies, and insures successful compilation regardless of
+dependencies in other files. A common header file inclusion ordering
+scheme is:</p>
+<ol class="arabic simple">
+<li>Related header (e.g., class header in class implementation file)</li>
+<li>C library headers</li>
+<li>C++ library headers</li>
+<li>Headers from other libraries</li>
+<li>Project headers</li>
+</ol>
+<p>Also, code is easier to understand when include files are ordered
+alphabetically within each of these sections and a blank line is
+inserted between sections. Also, adding comments that describe the
+header file categories are sometimes useful.  For example,</p>
+</div></blockquote>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="c1">// Related header</span>
+<span class="cp">#include &quot;MyClass.hpp&quot;</span>
+
+<span class="c1">// C standard library (including non-std unistd.h)</span>
+<span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;unistd.h&gt;</span>
+
+<span class="c1">// C++ standard library</span>
+<span class="cp">#include &lt;hash_map&gt;</span>
+<span class="cp">#include &lt;vector&gt;</span>
+
+<span class="c1">// &quot;base&quot; library headers</span>
+<span class="cp">#include &quot;base/Port.hxx&quot;</span>
+
+<span class="c1">// Headers from this project</span>
+<span class="cp">#include &quot;MyOtherClass.hpp&quot;</span>
+</pre></div>
+</div>
+<p>3.6.8 A &#8220;typedef&#8221; statement, defining a synonymous name for a type, <strong>should</strong> appear in the header file where the type is defined. In addition, a header file <strong>should</strong> only define a synonymous name for a type whose definition appears in that same header file.</p>
+<blockquote>
+<div>These practices help insure that all names associated with a given type
+are available when the appropriate header file is used and eliminates
+potentially inconsistent type names.</div></blockquote>
+<p>3.6.9 Routines <strong>should</strong> be ordered and grouped in a header file to enhance
+code readability and understanding.</p>
+<blockquote>
+<div>For example, all related methods should be grouped together.</div></blockquote>
+<p>3.6.10 The name of each function argument <strong>must</strong> be specified in a header file declaration. Also, names in function declarations and definitions <strong>must</strong> match.</p>
+<blockquote>
+<div><p>For example, this is not an acceptable function declaration:</p>
+<div class="highlight-python"><div class="highlight"><pre>void doSomething(int, int, int);
+</pre></div>
+</div>
+</div></blockquote>
+<p>3.6.11 Each function, type, and variable declaration in a header file <strong>must</strong> be documented according to the guidelines in Section 4.</p>
+<blockquote>
+<div>However, clear names that are self-explanatory are typically preferable
+to reduce the need to write (and maintain!) documentation. For example,
+short, simple functions (e.g., inline functions) with related
+functionality should be grouped together and described with a single
+prologue if the resulting documentation is clearer and more concise.</div></blockquote>
+</div>
+<div class="section" id="general-source-file-guidelines">
+<h2>3.7 General source file guidelines<a class="headerlink" href="#general-source-file-guidelines" title="Permalink to this headline">¶</a></h2>
+<p>3.7.1 Unnecessary header files <strong>should not</strong> be included in source files (i.e., not needed to compile the file).</p>
+<blockquote>
+<div>Such header file inclusions introduce spurious file dependencies, which
+unnecessarily increases the number of files that are opened during code
+compilation.</div></blockquote>
+<p>3.7.2 The order of routines implemented in a source file <strong>should</strong> match the order in which they appear in the associated header file.</p>
+<blockquote>
+<div>This makes the methods easier to locate and compare with documentation
+in the header file.</div></blockquote>
+<p>3.7.3 Each function implementation in a source file <strong>should</strong> be documented according to the guidelines in Section 4.</p>
+</div>
+<div class="section" id="scope">
+<h2>3.8 Scope<a class="headerlink" href="#scope" title="Permalink to this headline">¶</a></h2>
+<p>3.8.1 All C++ code in the toolkit <strong>must</strong> be included in a namespace.</p>
+<blockquote>
+<div>Either the main &#8220;asctoolkit&#8221; namespace or a toolkit component namespace
+<strong>may</strong> be used, or both <strong>may</strong> be used with the component namespace
+nested within the &#8220;asctoolkit&#8221; namespace.</div></blockquote>
+<p>3.8.2 When a toolkit component namespace is used, it <strong>must</strong> be unique within the toolkit.</p>
+<blockquote>
+<div>In particular, Toolkit components <strong>must</strong> not share a namespace.</div></blockquote>
+<p>3.8.3 The C++ using directive <strong>must not</strong> be used in any header file.</p>
+<blockquote>
+<div>Using this directive in a header file leverages a bad decision to
+circumvent the namespace across every file that directly or indirectly
+includes that header file. Note that this guideline implies that each
+type name appearing in a header file <strong>must be fully-qualified</strong> (i.e.,
+using the namespace identifier and scope operator) if it resides in a
+different namespace than the contents of the file.</div></blockquote>
+<p>3.8.4 The C++ using directive <strong>may</strong> be used in source files to avoid the need to use a fully-qualified type name at each declaration. When used, using directives <strong>must</strong> appear after all &#8220;#include&#8221; directives in the file.</p>
+<p>3.8.5 When only parts of a namespace are used in an implementation file, only those parts <strong>should</strong> be included with a using directive instead of the entire namespace contents.</p>
+<blockquote>
+<div><p>For example, if you only need the standard library vector container form
+the &#8220;std&#8221; namespace, it is preferable to use:</p>
+<div class="highlight-python"><div class="highlight"><pre>using std::vector;
+</pre></div>
+</div>
+<p>rather than:</p>
+<div class="highlight-python"><div class="highlight"><pre>using namespace std;
+</pre></div>
+</div>
+</div></blockquote>
+<p>3.8.6 Non-member functions that are meant to be used only in a single source file <strong>should</strong> be placed in the unnamed namespace to limit their scope to that file.</p>
+<blockquote>
+<div><p>This guarantees link-time name conflicts will not occur. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>namespace {
+   void myInternalFunction();
+}
+</pre></div>
+</div>
+</div></blockquote>
+<p>3.8.7 Nested classes <strong>should</strong> be private unless they are part of the enclosing class interface.</p>
+<blockquote>
+<div><p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>class Outer
+{
+   // ...
+private:
+   class Inner
+   {
+      // ...
+   };
+};
+</pre></div>
+</div>
+<p>When only the enclosing class uses a nested class, making it private
+does not pollute the outer scope needlessly. Furthermore, nested classes
+can be forward declared within the enclosing class definition and then
+defined in the implementation file for the enclosing class. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>class Outer
+{
+   class Inner; // forward declaration
+
+   // use name &#39;Inner&#39; in Outer class definition
+};
+
+// In Outer.cxx implementation file...
+class Outer::Inner
+{
+   // Inner class definition
+}
+</pre></div>
+</div>
+<p>This makes it clear that the nested class is only needed in the
+implementation and does not clutter the class definition.</p>
+</div></blockquote>
+<p>3.8.8 Local variables <strong>should</strong> be declared in the narrowest scope possible and as close to first use as possible.</p>
+<blockquote>
+<div><p>Minimizing variable scope makes source code easier to comprehend and
+may also have performance benefits. For example, declaring a loop index
+inside a for-loop statement such as:</p>
+<div class="highlight-python"><div class="highlight"><pre>for (int ii = 0; ...) {
+</pre></div>
+</div>
+<p>is preferable to:</p>
+<div class="highlight-python"><div class="highlight"><pre>int ii;
+...
+for (ii = 0; ...) {
+</pre></div>
+</div>
+<p><strong>Exception:</strong> When a local variable is an object, its constructor and
+destructor may be invoked every time a scope (such as a loop) is entered
+and exited, respectively. Thus, instead of this:</p>
+<div class="highlight-python"><div class="highlight"><pre>for (int ii = 0; ii &lt; 1000000; ++ii) {
+   Foo f;
+   f.doSomethingCool(ii);
+}
+</pre></div>
+</div>
+<p>it may be more efficient to do this:</p>
+<div class="highlight-python"><div class="highlight"><pre>Foo f;
+for (int ii = 0; ii &lt; 1000000; ++ii) {
+   f.doSomethingCool(ii);
+}
+</pre></div>
+</div>
+</div></blockquote>
+<p>3.8.9 Static or global variables of class type <strong>must not</strong> be used.</p>
+<blockquote>
+<div>Due to indeterminate order of construction, their use may cause bugs
+that are very hard to find. Static or global variables that are pointers
+to class types <strong>may</strong> be used and must be initialized properly in a
+single source file.</div></blockquote>
+<p>3.8.10 A reference to any item in the global namespace (which should be rare if needed at all) <strong>should</strong> use the scope operator (&#8221;::&#8221;) to make this clear.</p>
+<blockquote>
+<div><p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>int local_val = ::global;
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3 Directories, Files, and Scope</a><ul>
+<li><a class="reference internal" href="#file-location-and-directory-names">3.1 File location and directory names</a></li>
+<li><a class="reference internal" href="#c-only-header-file-h-extension-content-organization">3.2 C-only header file (*.h extension) content organization</a></li>
+<li><a class="reference internal" href="#c-only-source-file-c-extension-content-organization">3.3 C-only source file (*.c extension) content organization</a></li>
+<li><a class="reference internal" href="#c-header-file-hpp-extension-content-organization">3.4 C++ header file (*.hpp extension) content organization</a></li>
+<li><a class="reference internal" href="#c-source-file-cpp-extension-content-organization">3.5 C++ source file (*.cpp extension) content organization</a></li>
+<li><a class="reference internal" href="#general-header-file-guidelines">3.6 General header file guidelines</a></li>
+<li><a class="reference internal" href="#general-source-file-guidelines">3.7 General source file guidelines</a></li>
+<li><a class="reference internal" href="#scope">3.8 Scope</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Sec2_names.html"
+                        title="previous chapter">2 Names</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Sec4_doc.html"
+                        title="next chapter">4 Code Documentation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Sec3_scope.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Sec4_doc.html" title="4 Code Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Sec2_names.html" title="2 Names"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Rich Hornung.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
