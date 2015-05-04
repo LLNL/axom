@@ -7,8 +7,10 @@
 
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
+
 #include <iostream>
 #include "conduit/conduit.h"
+
 /**
  *
  */
@@ -17,7 +19,7 @@ namespace sidre
     
 typedef conduit::index_t IDType;
 
-#ifdef USECXX11
+#ifdef USE_CXX11
 
 #else
 

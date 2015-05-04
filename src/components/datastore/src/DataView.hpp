@@ -14,10 +14,8 @@
 // Standard C++ headers
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
-
-// Other library headers
-#include "conduit/conduit.h"
 
 // SiDRe project headers
 #include "Types.hpp"
@@ -32,39 +30,39 @@ using conduit::DataType;
 namespace sidre
 {
 
+class DataBuffer;
 class DataGroup;
 class DataStore;
-class DataBuffer;
 
-/**
+/*!
  * \class DataView
  *
- * \brief DataView privides a "view" into data, which may be owned by a
+ * \brief DataView provides a "view" into data, which may be owned by a
  *        DataBuffer object or owned externally.
  *
- * A DataView instance has the following properties:
+ * The DataView class has the following properties:
  *
  *    - DataView objects can only be created via the DataGroup interface,
  *      not directly. The view object is owned by the DataGroup object that
  *      creates it.
+ *    - A DataView object has a unique name (string) within the DataGroup
+ *      that owns it.
+ *    - A DataView holds a pointer to the DataGroup that created it and which
+ *      owns it.
  *    - A DataView object can refer to data in one of three ways:
  *        # It can decribe a view into data owned by a pre-existing DataBuffer.
  *          In this case, there can be multiple views into a single buffer.
  *        # It can be used to declare and allocate data, using semantics 
  *          similar to DataBuffer data declaration and allocation. When
  *          data is declared via a DataView object, there is a one-to-one
- *          relationship between the view and the buffer. That is, DataViews
- *          cannot share data in this case.  
+ *          relationship between the view and the buffer and the view owns
+ *          the buffer. DataViews cannot share data in this case.  
  *        # It can hold a pointer to an "opaque" data object. In this case,
  *          there is no associated DataBuffer.
  *    - When a Dataview object is associated with a DataBuffer, the DataView
  *      object holds a pointer to the DataBuffer object. The data description 
  *      of the view is represented as a Conduit schema or a Conduit 
  *      pre-defined data type. 
- *    - A DataView holds a pointer to the DataGroup that created it and which
- *      owns it.
- *    - A DataView object has a unique name (string) within the DataGroup
- *      that owns it.
  *
  */
 class DataView

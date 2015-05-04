@@ -16,9 +16,6 @@
 #include <set>
 #include <vector>
 
-// Other library headers
-#include "conduit/conduit.h"
-
 // SiDRe project headers
 #include "Types.hpp"
 
@@ -40,7 +37,7 @@ class DataView;
  *
  * \brief DataBuffer holds a data object, which it owns (and allocates!)
  *
- * A DataBuffer instance has the following properties:
+ * The DataBuffer class has the following properties:
  *
  *    - DataBuffer objects can only be created via the DataStore interface,
  *      not directly. 

@@ -1,184 +1,300 @@
-/*
- * DataGroup.hpp
+/*!
+ ******************************************************************************
  *
- *  Created on: Dec 2, 2014
- *      Author: settgast
+ * \file
+ *
+ * \brief   Header file containing definition of DataGroup class.
+ *
+ ******************************************************************************
  */
 
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "DataView.hpp"
+// Standard C++ headers
 #include <memory>
 #include <map>
+#include <string>
 #include <vector>
+
+// SiDRe project headers
+#include "DataView.hpp"
 #include "Types.hpp"
-
-#include "conduit/conduit.h"
-
 #include "Utilities.hpp"
 
 
+// using directives to make Conduit usage easier and less visible
 using conduit::index_t;
+
 
 namespace sidre
 {
 
-/**
+class DataBuffer;
+class DataGroup;
+class DataStore;
+
+/*!
  * \class DataGroup
  *
- * \brief Class to access collections of DataViews.
- *  The DataGroup will name each DataView as it is added.
+ * \brief DataGroup holds a collection of DataViews and (child) DataGroups.
+ *
+ * The DataGroup class has the following properties:
+ *
+ *    - DataGroups can be organized into a (tree) hierachy by creating
+ *      child groups from the root group owned by a DataStore object.
+ *    - A DataGroup object can only be created by another DataGroup; the
+ *      DataGroup ctor is not visible externally. A DataGroup is owned
+ *      by the DataGroup that creates it (its parent) and becomes a child
+ *      group of the parent.
+ *    - A DataGroup object has a unique name (string) within its parent 
+ *      DataGroup.
+ *    - A DataGroup object maintains a pointer to its parent DataGroup.
+ *    - A DataGroup object can be moved or copied to another DataGroup.
+ *    - DataView objects are (only) created by DataGroup objects. The DataGroup
+ *      that creates a DataView owns it.
+ *    - A DataView object has a unique name (string) within the DataGroup
+ *      that owns it.
+ *    - A DataView object can be moved or copied to another DataGroup.
+ *
  */
 class DataGroup
 {
 public:
+
+     //
+    // Friend declarations to constrain usage via controlled access to
+    // private members.
+    //
     friend class DataStore;
 
-    /// -----  Basic Members  ---- /// 
-    std::string getName() const
-    {return m_name; }
+//@{
+//!  @name Basic Accessor methods
 
-    DataGroup  *getParent()
-    {return m_parent;}
+    /*!
+     * \brief Return const reference to name of DataGroup instance.
+     */
+    const std::string& getName() const
+    {
+       return m_name;
+    }
 
-    DataGroup const *getParent() const
-    {return m_parent;}
+    /*!
+     * \brief Return pointer to non-const DataGroup parent of group.
+     */
+    DataGroup* getParent()
+    {
+       return m_parent;
+    }
 
-    DataStore *getDataStore()
-    {return m_datastore;}
+    /*!
+     * \brief Return pointer to const DataGroup parent of group.
+     */
+    DataGroup const* getParent() const
+    {
+       return m_parent;
+    }
 
-    DataStore const *getDataStore() const
-    {return m_datastore;}
+    /*!
+     * \brief Return pointer to non-const DataStore that owns group hierarchy
+     *        to which DataGroup instance belongs.
+     */
+    DataStore* getDataStore()
+    {
+       return m_datastore;
+    }
+
+    /*!
+     * \brief Return pointer to const DataStore that owns group hierarchy
+     *        to which DataGroup instance belongs.
+     */
+    DataStore const* getDataStore() const
+    {
+       return m_datastore;
+    }
+
+//@}
 
 
-    /// -----  DataView Children ---- /// 
+//@{
+//!  @name DataView accessor methods
+
+    /*!
+     * \brief Return true if DataGroup owns a DataView with given name;
+     *        else false.
+     */
     bool hasView( const std::string& name );
 
     /*!
-    * @param name Name for created DataView.
-    * \brief Create a DataView and add to this DataGroup.
-    */
-    
-    DataView *createViewAndBuffer( const std::string& name );
-    DataView *createOpaqueView( const std::string& name, void *);
-    
-    DataView *createView( const std::string& name, DataBuffer *buff);
-
-
-    // removes a view from another group into this group
-    // returns `view`
-    DataView *moveView(DataView *view);
-    // creates a copy of the given view for this group
-    // Recall:copying the view does not imply copying the buffer.
-    // returns the new view
-    DataView *copyView(DataView *view);
-    
-    
-    void destroyViewAndBuffer(const std::string &name);
-    void destroyViewAndBuffer(IDType idx);
-    
-    void destroyView(const std::string &name);
-    void destroyView(IDType idx);
- 
-    /*!
-    * @param name Name of DataView to find.
-    * \brief Return pointer to DataView.
-    */
-    DataView *getView( const std::string& name )
+     * \brief Return (non-const) pointer to DataView with given name.
+     */
+    DataView* getView( const std::string& name )
     {
-        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "getView() tried to fetch invalid view named ");
-        // TODO: add "name" to error message, I had problems doing this with the macro
+        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), \
+                        "no view found with name == " << name);
             
         const IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
     }
 
-    DataView const * getView( const std::string& name ) const
+    /*!
+     * \brief Return (const) pointer to DataView with given name.
+     */
+    DataView const* getView( const std::string& name ) const
     {
-        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), "getView() tried to fetch invalid view named ");
-        // TODO: add "name" to error message, I had problems doing this with the macro
+        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), \
+                        "no view found with name == " << name);
+
         const IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
     }
 
     /*!
-    * @param idx Index of DataView within this DataGroup.
-    * \brief Return pointer to DataView.
-    */
-    DataView *getView( const IDType idx )
+     * \brief Return (non-const) pointer to DataView with given index.
+     */
+    DataView* getView( const IDType idx )
     {
-        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "getView() tried to fetch view at invalid index ");
-        // TODO: add "idx" to error message, I had problems doing this with the macro
+        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), \
+                        "no view found with idx == ");
+        // TODO: add "idx" to error message
+
         return m_views[idx];
     }
 
     /*!
-    * @param idx Index of DataView within this DataGroup.
-    * \brief Return pointer to DataView.
-    */
-    DataView const *getView( const IDType idx ) const
+     * \brief Return (const) pointer to DataView with given index.
+     */
+    DataView const* getView( const IDType idx ) const
     {
-        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), "getView() tried to fetch view at invalid index ");
-        // TODO: add "idx" to error message, I had problems doing this with the macro
+        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), \
+                        "no view found with idx == ");
+
         return m_views[idx];
     }
 
     /*!
-    * \brief Return the index of the DataView with the given name
-    */
+     * \brief Return the index of DataView with given name.
+     */
     IDType getViewIndex(const std::string &name) const
     {  
-      return m_viewsNameMap.at(name);
+        ATK_ASSERT_MSG( m_viewsNameMap.find(name) != m_viewsNameMap.end(), \
+                        "no view found with name == " << name);
+
+        return m_viewsNameMap.at(name);
     }
 
     /*!
-    * \brief Return the name of the DataView at the given index
-    */
-    std::string getViewName(IDType idx) const
+     * \brief Return the name of DataView with given index.
+     */
+    const std::string& getViewName(IDType idx) const
     {
-       return m_views[idx]->getName();
+        const DataView* view = getView(idx);
+        return view->getName();
     }
   
     /*!
-    * \brief Return number of DataViews contained in this DataGroup.
-    */
+     * \brief Return number of DataViews contained in this DataGroup.
+     */
     size_t getNumberOfViews() const
     {
-      return m_views.size();
+        return m_views.size();
     }
 
-    /*!
-    * \brief Remove all view from this group.
-    */
-    void destroyViews();
+//@}
+
+
+//@{
+//!  @name DataView create, destroy, copy, move methods
 
     /*!
-    * \brief Remove all views from this group and destroy their buffers.
-    */
+     * \brief Create a DataView object (and buffer) with given name and 
+     *        attach to this DataGroup object.
+     *
+     * Note that created DataBuffer will be owned by associated DataStore.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createViewAndBuffer( const std::string& name );
+
+    /*!
+     * \brief Create an opaque DataView with given name, holding data
+     *        referenced with given pointer, and attach to this DataGroup 
+     *        object.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createOpaqueView( const std::string& name, void* opaque_ptr);
+    
+    /*!
+     * \brief Create a DataView object (for view into given buffer) with 
+     *        given name, and attach to this DataGroup object.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createView( const std::string& name, DataBuffer* buff );
+
+    /*!
+     * \brief Destroy view in this DataGroup with given name and leave its
+     *        associated DataBuffer intact.
+     */
+    void destroyView(const std::string &name);
+
+    /*!
+     * \brief Destroy view in this DataGroup with given index and leave its
+     *        associated DataBuffer intact.
+     */
+    void destroyView(IDType idx);
+
+    /*!
+     * \brief Destroy all views in this DataGroup and leave all associated
+     *        DataBuffers intact.
+     */
+    void destroyViews();
+
+    /*! \brief Destroy views in this DataGroup with given name AND destroy 
+     *         its associated DataBuffer object.
+     */
+    void destroyViewAndBuffer(const std::string &name);
+
+    /*! \brief Destroy view in this DataGroup with given index AND destroy 
+     *         its associated DataBuffer object.
+     */
+    void destroyViewAndBuffer(IDType idx);
+ 
+    /*!
+     * \brief Destroy all views in this DataGroup AND destroy their 
+     *        associated DataBuffer objects.
+     */
     void destroyViewsAndBuffers();
+
+    /*!
+     * \brief Remove DataView object from its owning group and attach
+     *        to this DataGroup object.
+     *
+     * \return pointer to given DataView object.
+     */ 
+    DataView* moveView(DataView* view);
+
+    /*!
+     * \brief Create a copy of given DataView object and attach
+     *        to this DataGroup object.
+     *
+     * Note that this is a "shallow" copy; the DataBuffer associated with 
+     * the view is not copied. The new DataView is associated with the same
+     * buffer object.
+     *
+     * \return pointer to given DataView object.
+     */ 
+    DataView* copyView(DataView *view);
+    
+//@}
+
+
+//@{
+//!  @name (child) DataGroup accessor methods
 
     /// -----  DataGroup Children ---- /// 
     bool hasGroup( const std::string& name );
-
-    /*!
-    * @param name Name of DataGroup to create.
-    * \brief Create a new DataGroup within this DataGroup.
-    */
-    DataGroup* createGroup( const std::string& name );
-    
-    // removes a group from another group into this group
-    // returns `grp`
-    DataGroup *moveGroup(DataGroup *grp);
-    // creates a copy of the given group into this group
-    // this will also copy all sub groups and views. 
-    // Recall:copying the views does not imply copying the buffers.
-    // returns the new group
-    DataGroup *copyGroup(DataGroup *grp);
-
-
-    void destroyGroup(const std::string &name);
-    void destroyGroup(IDType idx);
 
     /*!
     * @param name Name of DataGroup to find.
@@ -226,7 +342,6 @@ public:
       return m_views[idx]->getName();
     }
 
-
     /*!
     * \brief Return number of DataGroups contained in this DataGroup.
     */
@@ -235,10 +350,38 @@ public:
     return m_groups.size();
     }
 
+//@}
+
+
+//@{
+//!  @name DataGoup create, destroy, copy, move methods
+
+    /*!
+    * @param name Name of DataGroup to create.
+    * \brief Create a new DataGroup within this DataGroup.
+    */
+    DataGroup* createGroup( const std::string& name );
+    
+    // removes a group from another group into this group
+    // returns `grp`
+    DataGroup *moveGroup(DataGroup *grp);
+    // creates a copy of the given group into this group
+    // this will also copy all sub groups and views. 
+    // Recall:copying the views does not imply copying the buffers.
+    // returns the new group
+    DataGroup *copyGroup(DataGroup *grp);
+
+
+    void destroyGroup(const std::string &name);
+    void destroyGroup(IDType idx);
+
     /*!
     * \brief Remove all DataViews from this DataGroup.
     */
     void destroyGroups();
+
+//@}
+
 
     void info(Node &n) const;
     void print() const;
@@ -277,7 +420,7 @@ private:
     */
     DataGroup& operator=( const DataGroup& rhs );
 
-#ifdef USECXX11
+#ifdef USE_CXX11
   /*!
     * @param source
     * \brief default move constructor
