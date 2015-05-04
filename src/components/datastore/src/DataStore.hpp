@@ -149,13 +149,13 @@ private:
   DataStore& operator=( const DataStore& );
 #endif
 
-  /// Root data group, created when datastore is created.
+  /// Root data group, created when DataStore instance is created.
   DataGroup *m_RootGroup;
 
-  /// container of DataBuffers
+  /// Collection of DataBuffers holding data in DataStore instance.
   std::vector<DataBuffer*> m_DataBuffers;
 
-  /// stack of unique buffer ids that can be recycled
+  /// Collection of unused unique buffer ids (they can be recycled).
   std::stack< IDType > m_AvailableDataBuffers;
 
 };

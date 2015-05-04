@@ -276,6 +276,7 @@ public:
 
 //@}
 
+
     /*!
      * \brief Copy data view description to given Conduit node.
      */
@@ -317,25 +318,25 @@ private:
     ~DataView();
 
 
-    /// this view's name
+    /// Name of this DataView object.
     std::string m_name;
 
-    /// group that owns this view
+    /// DataGroup object that owns this DataView object.
     DataGroup*  m_owning_group;
 
-    /// pointer to DataBuffer associated with view
+    /// DataBuffer associated with this DataView object.
     DataBuffer* m_data_buffer;
 
-    /// conduit schema used as descriptor
+    /// Conduit Schema that describes this DataView.
     Schema      m_schema;
     
-    /// conduit node used to access the data
+    /// Conduit node used to access the data in this DataView.
     Node        m_node;
     
-    /// has schema been applied to buffer data?
+    /// Has Schema been applied to buffer data?
     bool        m_is_applied;
     
-    /// is view opaque?
+    /// Is this DataView opaque?
     bool        m_is_opaque;
 };
 

@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Implementation file for DataBuffer class.
+ * \brief   Implementation file for DataView class.
  *
  ******************************************************************************
  */

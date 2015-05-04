@@ -220,27 +220,27 @@ private:
     void detachView( DataView* dataView );
 
 
-    /// universal identifier - unique within a dataStore
+    /// Identifier - unique within a dataStore.
     IDType m_uid;
 
-    /// container of views that attached with this buffer
+    /// Container of DataViews attached to this buffer.
     std::vector<DataView *> m_views;
 
-    /// pointer to the data owned by data buffer
+    /// Pointer to the data owned by DataBuffer.
     void* m_data;
   
     ///
-    /// vector used to allocate data
+    /// Vector used for data allocation.
     /// 
     /// IMPORTANT: This is temorary until we implement an appropriate 
     ///            allocator interface.
     ///
     std::vector<char> m_memblob;
 
-    /// Conduit Node that holds buffer data 
+    /// Conduit Node that holds buffer data.
     Node   m_node;
 
-    /// Conduit Schema that describes buffer data
+    /// Conduit Schema that describes buffer data.
     Schema m_schema;
 
 };
