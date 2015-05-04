@@ -22,6 +22,6 @@ TEST(datastore_smoke,conduit_in_datastore_smoke)
     // make sure we are linking with conduit ok. 
     conduit::Node n;
     n["field"] = 100;
-    EXPECT_EQ(n["field"].to_index_t(),100);
+    EXPECT_EQ(n["field"].to_index_t(),100u);
 }
 

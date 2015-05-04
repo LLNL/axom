@@ -16,7 +16,8 @@
  */
 namespace sidre
 {
-    
+ 
+// The IDType should always be an unsigned type.  Our internal checks assume the var is >= 0.   
 typedef conduit::index_t IDType;
 
 #ifdef USE_CXX11
