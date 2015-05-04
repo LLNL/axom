@@ -64,6 +64,7 @@ TEST(datastore_group,has_child)
  
     DataGroup *parent = root->createGroup("parent");
     DataGroup *child = parent->createGroup("child");
+    EXPECT_TRUE( child->getParent() == parent );
 
     EXPECT_TRUE( parent->hasGroup("child") );
 
@@ -82,6 +83,8 @@ TEST(datastore_group,create_destroy_has_viewbuffer)
     DataGroup *group = root->createGroup("parent");
 
     DataView *view = group->createViewAndBuffer("view");
+    EXPECT_TRUE( group->getParent() == root );
+    EXPECT_TRUE( view->hasBuffer() );
  
     EXPECT_TRUE( group->hasView("view") );
 
@@ -102,6 +105,7 @@ TEST(datastore_group,create_destroy_has_group)
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
     DataGroup *group = root->createGroup("group");
+    EXPECT_TRUE( group->getParent() == root );
     
     EXPECT_TRUE( root->hasGroup("group") );
 
@@ -230,7 +234,7 @@ TEST(datastore_group,create_destroy_view_and_buffer)
 
 
   EXPECT_FALSE(grp->hasView(viewName1));
-  EXPECT_EQ(ds->getNumberOfBuffers(),1);
+  EXPECT_EQ(ds->getNumberOfBuffers(),1u);
 
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
   bool buffValid = true;

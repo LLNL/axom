@@ -154,8 +154,7 @@ public:
      */
     DataView* getView( const IDType idx )
     {
-        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), \
-                        "no view found with idx == ");
+        ATK_ASSERT_MSG( idx < m_views.size(), "no view found with idx == ");
         // TODO: add "idx" to error message
 
         return m_views[idx];
@@ -166,8 +165,7 @@ public:
      */
     DataView const* getView( const IDType idx ) const
     {
-        ATK_ASSERT_MSG( idx >= 0 && idx < m_views.size(), \
-                        "no view found with idx == ");
+        ATK_ASSERT_MSG( idx < m_views.size(), "no view found with idx == ");
 
         return m_views[idx];
     }

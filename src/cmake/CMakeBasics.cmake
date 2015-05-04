@@ -146,7 +146,7 @@ endif()
 ## Choose static or shared libraries.
 option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 
-option(ENABLE_WARNINGS "Enable Compiler warnings." OFF)
+option(ENABLE_WARNINGS "Enable Compiler warnings." ON)
 if(ENABLE_WARNINGS)
 
     # set the warning levels we want to abide by
@@ -156,7 +156,7 @@ if(ENABLE_WARNINGS)
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
             "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             # using clang or gcc
-            add_definitions(-Wall -Wextra)
+            add_definitions(-Wall -Wextra -Werror)
         endif()
     endif()
 
