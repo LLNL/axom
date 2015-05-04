@@ -19,8 +19,8 @@ TEST(datastore_view,create_views)
     DataBuffer *db_0 = dv_0->getBuffer();
     DataBuffer *db_1 = dv_1->getBuffer();
         
-    EXPECT_EQ(db_0->getUID(),0);
-    EXPECT_EQ(db_1->getUID(),1);
+    EXPECT_EQ(db_0->getUID(),0u);
+    EXPECT_EQ(db_1->getUID(),1u);
     delete ds;
 }
 
@@ -86,8 +86,8 @@ TEST(datastore_view,uint32_array_multi_view)
                   << " om:" << dv_o_ptr[i]  % 2
                   << std::endl;
 
-        EXPECT_EQ(dv_e_ptr[i] % 2,0);
-        EXPECT_EQ(dv_o_ptr[i] % 2,1);
+        EXPECT_EQ(dv_e_ptr[i] % 2,0u);
+        EXPECT_EQ(dv_o_ptr[i] % 2,1u);
     }
     ds->print();
     delete ds;
@@ -138,8 +138,8 @@ TEST(datastore_view,init_uint32_array_multi_view)
                   << " om:" << dv_o_ptr[i]  % 2
                   << std::endl;
 
-        EXPECT_EQ(dv_e_ptr[i] % 2,0);
-        EXPECT_EQ(dv_o_ptr[i] % 2,1);
+        EXPECT_EQ(dv_e_ptr[i] % 2,0u);
+        EXPECT_EQ(dv_o_ptr[i] % 2,1u);
     }
     ds->print();
     delete ds;
@@ -215,7 +215,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     uint32 *r0_ptr = r0_old->getNode().as_uint32_ptr();
     for(int i=0;i<10;i++)
     { 
-        EXPECT_EQ(r0_ptr[i],1);
+        EXPECT_EQ(r0_ptr[i],1u);
         // check pointer relation
         EXPECT_EQ(&r0_ptr[i],&data_ptr[i]);
     }
@@ -223,7 +223,7 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     uint32 *r3_ptr = r3_old->getNode().as_uint32_ptr();
     for(int i=0;i<10;i++)
     { 
-        EXPECT_EQ(r3_ptr[i],4);
+        EXPECT_EQ(r3_ptr[i],4u);
         // check pointer relation
         EXPECT_EQ(&r3_ptr[i],&data_ptr[i+30]);
     }
@@ -277,12 +277,12 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     
     for(int i=0;i<10;i++)
     { 
-        EXPECT_EQ(r2_new_ptr[i],3);
+        EXPECT_EQ(r2_new_ptr[i],3u);
     }
 
     for(int i=10;i<12;i++)
     { 
-        EXPECT_EQ(r2_new_ptr[i],0); // assumes zero-ed alloc
+        EXPECT_EQ(r2_new_ptr[i],0u); // assumes zero-ed alloc
     }
 
 
@@ -314,7 +314,7 @@ TEST(datastore_view,simple_opaque)
     DataView *opq_view = root->createOpaqueView("my_opaque",src_ptr);
     
     // we shouldn't have any buffers
-    EXPECT_EQ(ds->getNumberOfBuffers(),0);
+    EXPECT_EQ(ds->getNumberOfBuffers(),0u);
     
     EXPECT_TRUE(opq_view->isOpaque());
     

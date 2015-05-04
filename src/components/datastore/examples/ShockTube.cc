@@ -186,8 +186,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
   int32 const numElems = prob->getView("numElems")->getNode().as_int32();
   int32 const numFaces = prob->getView("numFaces")->getNode().as_int32();
 
-  int inflow[1];
-  int outflow[1];
+  //int inflow[1];
+  //int outflow[1];
 
   /* create element and face classes */
 
@@ -196,11 +196,11 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* set up some important views */
 
-  inflow[0] = 0; /* identify inflow elements */
+  //inflow[0] = 0; /* identify inflow elements */
 //  elem->viewCreate("inflow", new IndexSet(1, inflow));
   elem->createGroup("inflow");
 
-  outflow[0] = numElems - 1; /* identify outflow elements */
+  //outflow[0] = numElems - 1; /* identify outflow elements */
 //  elem->viewCreate("outflow", new IndexSet(1, outflow));
   elem->createGroup("outflow");
 
@@ -250,7 +250,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
                                                            ->allocate();
 
 
-  int32* elemToFace = tube->createView("elemToFace", faceToElemBuffer)
+  int32* elemToFace = tube->createView("elemToFace", elemToFaceBuffer)
                                        ->apply(DataType::int32(2*numElems,0,8))
                                        ->getNode().as_int32_ptr();
 

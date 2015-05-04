@@ -74,19 +74,19 @@ class StateFile
 {
    public:
       // Iterates over everything in provided tree and adds it to file
-      void save(sidre::DataGroup& group)
-      {
+      //void save(sidre::DataGroup& group)
+//      {
          
          // Iterate over all groups and views to exercise needed API calls.
          // A real code would follow up by writing each item to file.
-      }
+//      }
       
       // Read everything from file into group.
-      void restore(sidre::DataGroup& group)
-      {
+//      void restore(sidre::DataGroup& group)
+//      {
          // Restore state data back into group, exercising needed API calls.
          // A real code would read in each item from file first.
-      }
+//      }
 
       void close() {}
 
@@ -113,7 +113,7 @@ int main(void)
 
    // Give 'restart' data group to another component, responsible for writing it out to file.
    StateFile file;
-   file.save( restartGroup );
+//   file.save( restartGroup );
    file.close();
 
    // Clean up restart tree
