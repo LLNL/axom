@@ -54,7 +54,7 @@ bool DataGroup::hasView( const std::string& name ) const
 */
 bool DataGroup::hasView( const IDType idx ) const
 {
-   return ( idx >= 0 && idx < m_views.size() );
+   return ( idx < m_views.size() );
 }
 
 /*
@@ -305,7 +305,7 @@ bool DataGroup::hasGroup( const std::string& name ) const
 */
 bool DataGroup::hasGroup( const IDType idx ) const
 {
-   return ( idx >= 0 && idx < m_groups.size() );
+   return ( idx < m_groups.size() );
 }
 
 /*
