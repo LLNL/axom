@@ -13,14 +13,15 @@
 #include "Utilities.hpp"
 
 #include <cstdlib>
+#include <sstream>
 
 
 namespace asctoolkit {
 
 namespace utilities {
 
-/*!
- * \brief Routine that prints message, file, line number to std out.
+/*
+ * Routine that prints message, file, line number to std out.
  */
 void printMessage(
    const std::string& message,
@@ -31,9 +32,9 @@ void printMessage(
    std::cout << "MESSAGE: " << std::endl << message << std::endl;
 }
 
-/*!
- * \brief Aborts the program after printing an error message with file and
- *        line number information.
+/*
+ * Aborts the program after printing an error message with file and
+ * line number information.
  */
 void processAbort(
    const std::string& message,
@@ -45,9 +46,9 @@ void processAbort(
    exit(-1);   
 }
 
-/*!
- * \brief Prints a warning message with file and line number information,
- *        but does not abort the program.
+/*
+ * Prints a warning message with file and line number information,
+ * but does not abort the program.
  */
 void processWarning(
    const std::string& message,
@@ -55,6 +56,23 @@ void processWarning(
    const int line)
 {
    utilities::printMessage( message, filename, line);
+}
+
+/*
+ * Convert int to string.
+ */
+std::string intToString(int val, int min_width)
+{
+   int tmp_width = (min_width > 0 ? min_width : 1);
+   std::ostringstream oss;
+   if (val < 0) {
+      oss << '-' << std::setw(tmp_width - 1) << std::setfill('0') << -val;
+   } else {
+      oss << std::setw(tmp_width) << std::setfill('0') << val;
+   }
+   oss << std::flush;
+
+   return oss.str();  //returns the string form of the stringstream object
 }
 
 

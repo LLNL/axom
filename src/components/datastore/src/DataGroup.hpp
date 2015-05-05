@@ -166,8 +166,8 @@ public:
      */
     DataView* getView( const IDType idx )
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == ");
-        // TODO: add "idx" to error message
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
+                        asctoolkit::utilities::intToString(idx, 4));
 
         return m_views[idx];
     }
@@ -177,8 +177,8 @@ public:
      */
     DataView const* getView( const IDType idx ) const
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == ");
-        // TODO: add "idx" to error message
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
+                        asctoolkit::utilities::intToString(idx, 4));
 
         return m_views[idx];
     }
@@ -198,8 +198,8 @@ public:
      */
     const std::string& getViewName(IDType idx) const
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == ");
-        // TODO: add "idx" to error message
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
+                        asctoolkit::utilities::intToString(idx, 4));
 
         const DataView* view = getView(idx);
         return view->getName();
@@ -347,8 +347,8 @@ public:
      */
     DataGroup* getGroup( const IDType idx ) 
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == ");
-        // TODO: add "idx" to error message
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
+                        asctoolkit::utilities::intToString(idx, 4));
 
         return m_groups[idx];
     }
@@ -358,8 +358,8 @@ public:
      */
     DataGroup const* getGroup( const IDType idx ) const
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == ");
-        // TODO: add "idx" to error message
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
+                        asctoolkit::utilities::intToString(idx, 4));
 
         return m_groups[idx];
     }
@@ -379,8 +379,8 @@ public:
      */
     const std::string& getGroupName(IDType idx) const
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == ");
-        // TODO: add "idx" to error message
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
+                        asctoolkit::utilities::intToString(idx, 4));
 
         const DataGroup* group = getGroup(idx);
         return group->getName();

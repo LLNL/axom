@@ -114,6 +114,7 @@ TEST(datastore_opaque,inout)
 //  Can't do following: method is private...
 //  root_gp->DetachGroup("bar");
 //  root_gp->DestroyGroup("bar");
+//  problem_gp->getView(2);
 #endif
 
     bool test_opaque = problem_gp->getView("ext")->isOpaque();

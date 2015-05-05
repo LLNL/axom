@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <string>
 
 
 /*******************************************************************************
@@ -155,8 +156,8 @@ namespace utilities
 {
 
    /*!
-    * Print message, file, line number to preferred output stream 
-    * (not specified here).
+    * \brief Print message, file, line number to preferred output stream 
+    *        (not specified here).
     */
    void printMessage(
       const std::string& message,
@@ -164,8 +165,8 @@ namespace utilities
       const int line);
 
    /*!
-    * Process error message with file and line number information and abort 
-    * the program.
+    * \brief Process error message with file and line number information 
+    *        and abort the program.
     */
    void processAbort(
       const std::string& message,
@@ -173,13 +174,30 @@ namespace utilities
       const int line); 
 
    /*!
-    * Process warning message with file and line number information and
-    * let program exectution continue.
+    * \brief Process warning message with file and line number information 
+    *        and let program exectution continue.
     */
    void processWarning(
       const std::string& message,
       const std::string& filename,
       const int line);
+
+   /*!
+    * \brief Convert an integer to a string.
+    *
+    * The returned string is padded with zeros as needed so that it
+    * contains at least the number of characters indicated by the
+    * minimum width argument.  When the number is positive, the
+    * string is padded on the left. When the number is negative,
+    * the '-' sign appears first, followed by the integer value
+    * padded on the left with zeros.  
+    *
+    * For example, intToString(12, 5) returns "00012" and 
+    * intTo2String(-12, 5) returns "-0012".
+    */
+   std::string intToString(
+      int val,
+      int min_width = 1);
 
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace
