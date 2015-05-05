@@ -426,115 +426,178 @@ void DataGroup::destroyGroups()
 }
 
 
-
-    void DataGroup::info(Node &n) const
+/*
+*************************************************************************
+*
+* Copy data group description to given Conduit node.
+*
+*************************************************************************
+*/
+void DataGroup::info(Node& n) const
+{
+    n["name"] = m_name;
+    for(IDType i=0;i<this->getNumberOfViews();i++)
     {
-        n["name"] = m_name;
-        for(IDType i=0;i<this->getNumberOfViews();i++)
-        {
-            DataView const *view = this->getView(i);
-            Node &v = n["views"].fetch(view->getName());
-            view->info(v);
+        DataView const *view = this->getView(i);
+        Node &v = n["views"].fetch(view->getName());
+        view->info(v);
 
-        }
-        for(IDType i=0;i<this->getNumberOfGroups();i++)
-        {
-            DataGroup const *grp =  this->getGroup(i);
-            Node &g = n["groups"].fetch(grp->getName());
-            grp->info(g);
-        }
     }
+    for(IDType i=0;i<this->getNumberOfGroups();i++)
+    {
+        DataGroup const *grp =  this->getGroup(i);
+        Node &g = n["groups"].fetch(grp->getName());
+        grp->info(g);
+    }
+}
 
-    void DataGroup::print() const
+/*
+*************************************************************************
+*
+* Print JSON description of data group to stdout.
+*
+*************************************************************************
+*/
+void DataGroup::print() const
+{
+    Node n;
+    info(n);
+    n.print();
+}
+
+/*
+*************************************************************************
+*
+* Print given number of levels of group (sub) tree starting at this 
+* group to stdout.
+*
+*************************************************************************
+*/
+void DataGroup::printTree( const int nlevels ) const
+{
+  for( int i=0 ; i<nlevels ; ++i ) std::cout<<"    ";
+  std::cout<<"DataGroup "<<this->getName()<<std::endl;
+
+  for( std::map<std::string, IDType>::const_iterator viewIter=m_viewsNameMap.begin() ;
+       viewIter!=m_viewsNameMap.end() ;
+       ++viewIter )
+  {
+    for( int i=0 ; i<nlevels+1 ; ++i ) std::cout<<"    ";
+    std::cout<<"DataView "<<viewIter->first<<std::endl;
+  }
+
+
+  for( std::map<std::string, IDType>::const_iterator groupIter=m_groupsNameMap.begin() ;
+       groupIter!=m_groupsNameMap.end() ;
+       ++groupIter )
+  {
+    IDType index = groupIter->second;
+    m_groups[index]->printTree( nlevels + 1 );
+  }
+
+}
+
+
+/*
+*************************************************************************
+*
+* Save this group object (including data views and child groups) to a 
+* file set named "obase".
+*
+* Note: Only valid protocol is "conduit".
+*
+*************************************************************************
+*/
+void DataGroup::save(const std::string& obase,
+                     const std::string& protocol) const
+{
+    if(protocol == "conduit")
     {
         Node n;
-        info(n);
-        n.print();
+        copyToNode(n);
+        // for debugging call: n.print();
+        n.save(obase);
     }
+}
 
-    void DataGroup::printTree( const int nlevels ) const
+/*
+*************************************************************************
+*
+* Load data group (including data views and child groups) from a file 
+* set named "obase" into this group object.
+*
+* Note: Only valid protocol is "conduit".
+*
+*************************************************************************
+*/
+void DataGroup::load(const std::string& obase,
+                     const std::string& protocol)
+{
+    if(protocol == "conduit")
     {
-      for( int i=0 ; i<nlevels ; ++i ) std::cout<<"    ";
-      std::cout<<"DataGroup "<<this->getName()<<std::endl;
-
-      for( std::map<std::string,IDType>::const_iterator viewIter=m_viewsNameMap.begin() ;
-           viewIter!=m_viewsNameMap.end() ;
-           ++viewIter )
-      {
-        for( int i=0 ; i<nlevels+1 ; ++i ) std::cout<<"    ";
-        std::cout<<"DataView "<<viewIter->first<<std::endl;
-      }
-
-
-      for( std::map<std::string,IDType>::const_iterator groupIter=m_groupsNameMap.begin() ;
-           groupIter!=m_groupsNameMap.end() ;
-           ++groupIter )
-      {
-        IDType index = groupIter->second;
-        m_groups[index]->printTree( nlevels + 1 );
-      }
-
-    }
-
-    /// ---------------------------------------------------------------
-    ///  Save + Restore Prototypes (ATK-39)
-    /// ---------------------------------------------------------------
-    /// saves "this", associated views and buffers to a file set.
-    void DataGroup::save(const std::string &obase,
-                         const std::string &protocol) const
-    {
-        if(protocol == "conduit")
-        {
-            Node n;
-            copyToNode(n);
-            // for debugging call: n.print();
-            n.save(obase);
-        }
-    }
-
-    /// restores as "this"
-    void DataGroup::load(const std::string &obase,
-                         const std::string &protocol)
-    {
-        if(protocol == "conduit")
-        {
-            destroyGroups();
-            destroyViews();
-            Node n;
-            n.load(obase);
-            // for debugging call: n.print();
-            copyFromNode(n);
-        }
-    }
-
-////////////////////////////////////////////////////////////////////////
-//
-// Private methods below.
-//
-////////////////////////////////////////////////////////////////////////
-
-
-
-    DataGroup::DataGroup(const std::string &name,
-                         DataGroup *parent)
-    :m_name(name),
-     m_parent(parent),
-     m_datastore(parent->getDataStore())
-    {}
-
-    DataGroup::DataGroup(const std::string &name,
-                         DataStore *datastore)
-    :m_name(name),
-     m_parent(datastore->getRoot()),
-     m_datastore(datastore)
-    {}
-
-    DataGroup::~DataGroup()
-    {
-        destroyViews();
         destroyGroups();
+        destroyViews();
+        Node n;
+        n.load(obase);
+        // for debugging call: n.print();
+        copyFromNode(n);
     }
+}
 
+
+
+/*
+*************************************************************************
+*
+* PRIVATE ctor makes group with given name and make it a child of parent.
+*
+*************************************************************************
+*/
+DataGroup::DataGroup(const std::string& name,
+                     DataGroup *parent) : 
+  m_name(name),
+  m_parent(parent),
+  m_datastore(parent->getDataStore())
+{ 
+
+}
+
+/*
+*************************************************************************
+*
+* PRIVATE ctor makes group with given name and make it a child of 
+* root group in datastore.
+*
+*************************************************************************
+*/
+DataGroup::DataGroup(const std::string& name,
+                     DataStore* datastore) :
+ m_name(name),
+ m_parent(datastore->getRoot()),
+ m_datastore(datastore)
+{
+
+}
+
+/*
+*************************************************************************
+*
+* PRIVATE dtor destroys group and all its contents.
+*
+*************************************************************************
+*/
+DataGroup::~DataGroup()
+{
+    destroyViews();
+    destroyGroups();
+}
+
+
+////////////////////////////////////////////////////////////////////////
+//
+// Private methods below ....still working on clean up....
+//
+////////////////////////////////////////////////////////////////////////
 
     /// --- DataView Children --- ///
 

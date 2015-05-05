@@ -480,7 +480,7 @@ public:
 
     /*!
      * \brief Load data group (including data views and child groups)
-     *        from a file set names "obase" into this DataGroup object.
+     *        from a file set named "obase" into this DataGroup object.
      *
      * \warning Currently, only valid protocol is "conduit".
      */
