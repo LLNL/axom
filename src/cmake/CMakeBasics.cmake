@@ -7,12 +7,6 @@
 #
 # All rights reserved.
 #
-# This file is part of Conduit.
-#
-# For details, see https://lc.llnl.gov/conduit/.
-#
-# Please also read conduit/LICENSE
-#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -111,6 +105,24 @@ if (BUILD_TESTING)
 
   enable_testing()
 
+endif()
+
+################################################################
+# For convenience, we support directly building uncrustify
+################################################################
+option(BUILD_BOOST "Install boost library headers" ON)
+if (BUILD_BOOST)
+    # use cmake external project
+    # only using the headers from boost, so no building actually necessary
+    ExternalProject_Add(boost_build
+                PREFIX boost_build
+                URL ${PROJECT_SOURCE_DIR}/TPL/boost/boost_1_58_0_brief.tar.gz
+                BUILD_IN_SOURCE 1
+                CONFIGURE_COMMAND ""
+                BUILD_COMMAND ""
+		INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory
+				<SOURCE_DIR> ${HEADER_INCLUDES_DIRECTORY}
+)
 endif()
 
 ################################################################
