@@ -1,7 +1,15 @@
-/*
- * Utilities.cpp
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Implementation file for utility routines.
+ *
+ ******************************************************************************
  */
 
+
+// Associated header file
 #include "Utilities.hpp"
 
 #include <cstdlib>
@@ -12,7 +20,7 @@ namespace asctoolkit {
 namespace utilities {
 
 /*!
- * Routine that prints message, file, line number to std out.
+ * \brief Routine that prints message, file, line number to std out.
  */
 void printMessage(
    const std::string& message,
@@ -24,8 +32,8 @@ void printMessage(
 }
 
 /*!
- * Aborts the program after printing an error message with file and
- * line number information.
+ * \brief Aborts the program after printing an error message with file and
+ *        line number information.
  */
 void processAbort(
    const std::string& message,
@@ -38,8 +46,8 @@ void processAbort(
 }
 
 /*!
- * Prints a warning message with file and line number information,
- * but does not abort the program.
+ * \brief Prints a warning message with file and line number information,
+ *        but does not abort the program.
  */
 void processWarning(
    const std::string& message,

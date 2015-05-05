@@ -11,9 +11,7 @@
 #include <iostream>
 #include "conduit/conduit.h"
 
-/**
- *
- */
+
 namespace sidre
 {
  

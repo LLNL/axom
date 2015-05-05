@@ -546,15 +546,22 @@ private:
     void copyFromNode(Node& n);
    
     /*!
-     * \brief Private methods to copy DataGroup to/from Conduit Node.
+     * \brief Private methods to copy DataGroup to Conduit Node.
      *
-     * The ids are used to manage DataBuffer ids.....punt???????
+     * Vector of ids is used to maintain correct association of DataBuffers
+     * to DataViews......???? punt!
      */  
-    void copyToNode(Node &n,
-                    std::vector<IDType> &buffer_ids) const;
-    ///
-    void copyFromNode(Node &n,
-                      std::map<IDType,IDType> &id_map);
+    void copyToNode(Node& n,
+                    std::vector<IDType>& buffer_ids) const;
+
+    /*!
+     * \brief Private methods to copy DataGroup from Conduit Node.
+     *
+     * Vector of ids is used to maintain correct association of DataBuffers
+     * to DataViews......???? punt!
+     */  
+    void copyFromNode(Node& n,
+                      std::map<IDType, IDType>& id_map);
 
    
     /// Name of this DataGroup object.
