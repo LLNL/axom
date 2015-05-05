@@ -8,7 +8,7 @@ set(datastore_headers
     DataView.hpp
     Utilities.hpp
     Types.hpp
-    datastore.h
+    sidre.hpp
     )
 
 #

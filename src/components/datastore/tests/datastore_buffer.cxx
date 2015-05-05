@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 // do we need one include that brings all of these in?
-#include "datastore/datastore.h"
+#include "datastore/sidre.hpp"
 
 using sidre::DataStore;
 using sidre::DataBuffer;
