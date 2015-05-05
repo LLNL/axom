@@ -7,7 +7,8 @@
 
 #include <stdexcept>
 #include <sstream>
-#include "Set.hpp"
+
+#include "meshapi/Set.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

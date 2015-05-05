@@ -67,6 +67,10 @@ do
         export CMAKE_OPTS="-G \"$CMAKE_ECLIPSE_GEN\" $CMAKE_OPTS"
         shift
         ;;
+        --with-warnings)
+        export CMAKE_OPTS="-DENABLE_WARNINGS:BOOL=ON $CMAKE_OPTS"
+        shift
+        ;;        
         *)
         # unknown option, skip
         shift

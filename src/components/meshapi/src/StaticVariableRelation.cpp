@@ -1,11 +1,11 @@
 /*
- * Relation.cpp
+ * StaticVariableRelation.cpp
  *
  *  Created on: Apr 29, 2015
  *      Author: weiss27
  */
 
-#include "Relation.hpp"
+#include "StaticVariableRelation.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -13,12 +13,12 @@
 namespace asctoolkit {
 namespace meshapi {
 
-Relation::Relation (OrderedSet* fromSet, OrderedSet* toSet)
+    StaticVariableRelation::StaticVariableRelation (OrderedSet* fromSet, OrderedSet* toSet)
     : m_fromSet(fromSet), m_toSet(toSet)
 {
 }
 
-void Relation::setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets)
+void StaticVariableRelation::setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets)
 {
     m_fromSetBeginsVec.clear();
     m_fromSetBeginsVec.reserve(beginsVec.size());
@@ -29,7 +29,7 @@ void Relation::setRelation(RelationVec const& beginsVec, RelationVec const& toOf
     std::copy(toOffsets.begin(), toOffsets.end(), std::back_inserter(m_toSetIndicesVec));
 }
 
-bool Relation::isValid(bool verboseOutput) const
+bool StaticVariableRelation::isValid(bool verboseOutput) const
 {
     bool bValid = true;
 

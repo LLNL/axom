@@ -14,9 +14,10 @@
 
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/Relation.hpp"
+#include "meshapi/StaticVariableRelation.hpp"
 
 using asctoolkit::meshapi::OrderedSet;
-using asctoolkit::meshapi::Relation;
+using asctoolkit::meshapi::StaticVariableRelation;
 
 typedef asctoolkit::meshapi::MeshIndexType IndexType;
 typedef asctoolkit::meshapi::MeshSizeType SizeType;
@@ -29,7 +30,7 @@ TEST(gtest_meshapi_relation,empty_relation)
 {
     std::cout<<"\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
-    Relation emptyRel(NULL, NULL);
+    StaticVariableRelation emptyRel(NULL, NULL);
 
     EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 
@@ -43,7 +44,7 @@ TEST(gtest_meshapi_relation,test_uninitialized_relation)
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    Relation emptyRel(&fromSet, &toSet);
+    StaticVariableRelation emptyRel(&fromSet, &toSet);
 
     EXPECT_FALSE(emptyRel.isValid(true)) << "Empty relation was not initialized";
 
@@ -84,9 +85,9 @@ TEST(gtest_meshapi_relation,simple_relation)
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    Relation incrementingRel(&fromSet, &toSet);
+    StaticVariableRelation incrementingRel(&fromSet, &toSet);
 
-    typedef Relation::RelationVec IndexVec;
+    typedef StaticVariableRelation::RelationVec IndexVec;
     IndexVec begins(FROMSET_SIZE +1);
     IndexVec offsets;
 
@@ -105,7 +106,7 @@ TEST(gtest_meshapi_relation,simple_relation)
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
     typedef OrderedSet::iterator SetIter;
-    typedef Relation::RelationVecConstIterator RelSetConstIter;
+    typedef StaticVariableRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)

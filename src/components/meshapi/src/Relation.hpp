@@ -10,11 +10,6 @@
 
 #include <vector>
 
-#include <iostream>
-
-#include "meshapi/Utilities.hpp"
-#include "meshapi/OrderedSet.hpp"
-
 
 namespace asctoolkit {
 namespace meshapi    {
@@ -26,78 +21,31 @@ namespace meshapi    {
         typedef MeshSizeType                                           size_type;
 
         typedef std::vector<Index>                                     RelationVec;
-        typedef typename RelationVec::iterator                         RelationVecIterator;
+        typedef RelationVec::iterator                         RelationVecIterator;
         typedef std::pair<RelationVecIterator,RelationVecIterator>     RelationVecIteratorPair;
 
-        typedef typename RelationVec::const_iterator                   RelationVecConstIterator;
+        typedef RelationVec::const_iterator                   RelationVecConstIterator;
         typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>     RelationVecConstIteratorPair;
 
     public:
-        Relation (OrderedSet* fromSet, OrderedSet* toSet);
+        virtual ~Relation(){}
 
-        /**
-         * \note TODO: swap this out for data in the datastore
-         */
-        void setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets);
+        virtual void setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets) = 0;
 
-        RelationVecConstIterator begin(Index fromSetIndex)       const
-        {
-            verifyIndex(fromSetIndex);
-            return m_toSetIndicesVec.begin() + toSetBeginIndex(fromSetIndex);
-        }
+        virtual RelationVecConstIterator begin(Index fromSetIndex)       const  = 0;
 
-        RelationVecConstIterator end(Index fromSetIndex)         const
-        {
-            verifyIndex(fromSetIndex);
-            return m_toSetIndicesVec.begin() + toSetEndIndex(fromSetIndex);
-        }
+        virtual RelationVecConstIterator end(Index fromSetIndex)         const  = 0;
 
-        RelationVecConstIteratorPair range(Index fromSetIndex)   const
-        {
-            return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
-        }
+        virtual RelationVecConstIteratorPair range(Index fromSetIndex)   const  = 0;
 
+        virtual size_type size(Index fromSetIndex)                       const  = 0;
 
-        size_type size(Index fromSetIndex)                  const
-        {
-            verifyIndex(fromSetIndex);
-/*
-            std::cout<<"\nIn size function for fromSetIndex " << fromSetIndex
-                    <<"\n\t toSetEndIndex -- "      << toSetEndIndex(fromSetIndex)
-                    <<"\n\t toSetBeginIndex -- "    << toSetBeginIndex(fromSetIndex)
-                    <<"\n\t size (diff)    -- "     << toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex)
-                    <<"\n\t fromArray end -- "      << m_fromSetBeginsVec[fromSetIndex+1]
-                    <<"\n\t fromArray begin -- "    << m_fromSetBeginsVec[fromSetIndex]
-                    <<"\n\t size (diff)    -- "     << m_fromSetBeginsVec[fromSetIndex+1] -m_fromSetBeginsVec[fromSetIndex]
-                  <<"\n\t toSetEndIndex cast-- "      << static_cast<unsigned int>(toSetEndIndex(fromSetIndex))
-                  <<"\n\t toSetBeginIndex -- "        << static_cast<unsigned int>(toSetBeginIndex(fromSetIndex))
-                  <<"\n\t size (diff)    -- "         << static_cast<unsigned int>(toSetEndIndex(fromSetIndex)) - static_cast<unsigned int>(toSetBeginIndex(fromSetIndex))
-                    << std::endl;
-*/
+        virtual bool isValid(bool verboseOutput = false)                const = 0;
 
-            return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
-        }
-
-        bool isValid(bool verboseOutput = false) const;
-
-    private:
-        inline void  verifyIndex(Index fromSetIndex)       const { ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
-        inline Index toSetBeginIndex(Index fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
-        inline Index toSetEndIndex(Index fromSetIndex)     const { return m_fromSetBeginsVec[fromSetIndex+1]; }
-
-
-
-    private:
-
-        OrderedSet* m_fromSet;
-        OrderedSet* m_toSet;
-
-        RelationVec m_fromSetBeginsVec;       // vector of size m_fromSet.size() + 1 that points into the to_set vectors
-        RelationVec m_toSetIndicesVec;        // vector of toSet entries
     };
 
 
 } // end namespace meshapi
 } // end namespace asctoolkit
 
-#endif /* MESHAPI_RELATION_HPP_ */
+#endif // MESHAPI_RELATION_HPP_
