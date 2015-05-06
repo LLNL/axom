@@ -2,7 +2,12 @@
 
 #include "datastore/sidre.hpp"
 
-using namespace sidre;
+using asctoolkit::sidre::DataBuffer;
+using asctoolkit::sidre::DataGroup;
+using asctoolkit::sidre::DataStore;
+using asctoolkit::sidre::DataView;
+using asctoolkit::sidre::IDType;
+
 using namespace conduit;
 
 // API coverage tests

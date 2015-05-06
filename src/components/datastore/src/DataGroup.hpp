@@ -30,6 +30,8 @@
 using conduit::index_t;
 
 
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -585,5 +587,8 @@ private:
     std::map<std::string, IDType> m_groupsNameMap;
 };
 
-} /* namespace sidre */
+
+} /* end namespace sidre */
+} /* end namespace asctoolkit */
+
 #endif /* DATAGROUP_HPP_ */

@@ -20,6 +20,8 @@
 using conduit::NodeIterator;
 
 
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -940,4 +942,5 @@ void DataGroup::copyFromNode(Node& n,
 }
 
 
-} /* namespace sidre */
+} /* end namespace sidre */
+} /* end namespace asctoolkit */

@@ -26,6 +26,8 @@ using conduit::Node;
 using conduit::Schema;
 
 
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -246,5 +248,7 @@ private:
 };
 
 
-} /* namespace sidre */
+} /* end namespace sidre */
+} /* end namespace asctoolkit */
+
 #endif /* DATABUFFER_HPP_ */

@@ -27,6 +27,9 @@ using conduit::Schema;
 using conduit::DataType;
 
 
+
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -341,5 +344,7 @@ private:
 };
 
 
-} /* namespace sidre */
+} /* end namespace sidre */
+} /* end namespace asctoolkit */
+
 #endif /* DATAVIEW_HPP_ */

@@ -16,6 +16,8 @@
 #include "DataGroup.hpp"
 
 
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -171,4 +173,5 @@ void DataStore::print() const
 }
 
 
-} /* namespace sidre */
+} /* end namespace sidre */
+} /* end namespace asctoolkit */

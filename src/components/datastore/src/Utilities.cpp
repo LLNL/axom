@@ -17,7 +17,6 @@
 
 
 namespace asctoolkit {
-
 namespace utilities {
 
 /*
@@ -58,6 +57,6 @@ void processWarning(
    utilities::printMessage( message, filename, line);
 }
 
-}  // ending brace for utilities namespace
 
+}  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace

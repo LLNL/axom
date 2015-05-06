@@ -3,8 +3,8 @@
 // do we need one include that brings all of these in?
 #include "datastore/sidre.hpp"
 
-using sidre::DataStore;
-using sidre::DataBuffer;
+using asctoolkit::sidre::DataStore;
+using asctoolkit::sidre::DataBuffer;
 
 using namespace conduit;
 

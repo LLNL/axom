@@ -13,6 +13,8 @@
 #include "../src/DataBuffer.hpp"
 #include "../src/DataStore.hpp"
 
+using namespace asctoolkit;
+
 class PhysicsPackage
 {
    public:

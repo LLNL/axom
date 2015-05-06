@@ -19,6 +19,9 @@
 #include "Utilities.hpp"
 
 
+
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -249,4 +252,6 @@ DataView::~DataView()
 }
 
 
-} /* namespace sidre */
+} /* end namespace sidre */
+} /* end namespace asctoolkit */
+
