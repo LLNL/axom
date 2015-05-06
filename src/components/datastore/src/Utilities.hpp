@@ -182,23 +182,6 @@ namespace utilities
       const std::string& filename,
       const int line);
 
-   /*!
-    * \brief Convert an integer to a string.
-    *
-    * The returned string is padded with zeros as needed so that it
-    * contains at least the number of characters indicated by the
-    * minimum width argument.  When the number is positive, the
-    * string is padded on the left. When the number is negative,
-    * the '-' sign appears first, followed by the integer value
-    * padded on the left with zeros.  
-    *
-    * For example, intToString(12, 5) returns "00012" and 
-    * intTo2String(-12, 5) returns "-0012".
-    */
-   std::string intToString(
-      int val,
-      int min_width = 1);
-
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace
 

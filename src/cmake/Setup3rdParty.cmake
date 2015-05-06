@@ -14,3 +14,9 @@ include(cmake/FindSphinx.cmake)
 ################################
 include(cmake/FindUncrustify.cmake)
 
+################################
+# Find boost headers
+################################
+FIND_PACKAGE(Boost 1.41)
+MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
+MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )

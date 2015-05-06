@@ -5,7 +5,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ################################
 # ASCTK ToolKit
 ################################
-
 project(asctk)
 
 ################################
@@ -43,3 +42,4 @@ add_subdirectory(docs)
 ################################s
 install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
 install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
+

@@ -58,24 +58,6 @@ void processWarning(
    utilities::printMessage( message, filename, line);
 }
 
-/*
- * Convert int to string.
- */
-std::string intToString(int val, int min_width)
-{
-   int tmp_width = (min_width > 0 ? min_width : 1);
-   std::ostringstream oss;
-   if (val < 0) {
-      oss << '-' << std::setw(tmp_width - 1) << std::setfill('0') << -val;
-   } else {
-      oss << std::setw(tmp_width) << std::setfill('0') << val;
-   }
-   oss << std::flush;
-
-   return oss.str();  //returns the string form of the stringstream object
-}
-
-
 }  // ending brace for utilities namespace
 
 }  // ending brace for asctoolkit namespace

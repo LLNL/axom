@@ -3,6 +3,12 @@
 ################################
 project(datastore)
 
+
+################################
+# Add the boost headers include
+################################
+include_directories( ${Boost_INCLUDE_DIRS} )
+
 ################################
 # Add the datastore sources
 ################################
