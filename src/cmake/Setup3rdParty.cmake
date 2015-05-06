@@ -17,6 +17,8 @@ include(cmake/FindUncrustify.cmake)
 ################################
 # Find boost headers
 ################################
-FIND_PACKAGE(Boost 1.41)
+find_package(Boost
+             1.57
+             REQUIRED)
 MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
 MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )

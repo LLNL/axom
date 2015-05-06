@@ -10,6 +10,12 @@
 set(CMAKE_C_COMPILER "/usr/apps/gnu/4.7.1/bin/gcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.7.1/bin/g++" CACHE PATH "")
 
+
+###############################################################################
+# Set location for boost library
+###############################################################################
+set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
+
 ###############################################################################
 # Additional Compiler Flags
 ###############################################################################
