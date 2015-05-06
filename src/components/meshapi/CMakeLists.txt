@@ -33,7 +33,7 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-#add_subdirectory(examples)
+add_subdirectory(examples)
 
 ################################
 # Add tests
