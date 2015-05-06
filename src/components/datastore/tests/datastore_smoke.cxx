@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "datastore/datastore.h"
+#include "datastore/sidre.hpp"
 
 #include "conduit/conduit.h"
 
