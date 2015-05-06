@@ -27,12 +27,12 @@ namespace meshapi{
       typedef boost::counting_iterator<Index> iterator;
 
     public:
-      OrderedSet(size_type size): m_size(size) {}
+      OrderedSet(size_type size = size_type()): m_size(size) {}
 
-      size_type size()  { return m_size; }
+      size_type size()  const { return m_size; }
 
-      iterator  begin()  { return iterator(0); }
-      iterator  end()    { return iterator(m_size); }
+      iterator  begin() const  { return iterator(0); }
+      iterator  end()   const  { return iterator(m_size); }
 
       Index     operator[](Index idx) { return idx;}
       Index     at(Index idx)   ;

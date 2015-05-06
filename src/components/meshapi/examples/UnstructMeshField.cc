@@ -16,6 +16,10 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "meshapi/OrderedSet.hpp"
+#include "meshapi/StaticVariableRelation.hpp"
+
+
 #include <cstdio>  /* defines FILENAME_MAX */
 #ifdef WINDOWS
     #include <direct.h>
@@ -31,53 +35,64 @@ namespace meshapi {
 namespace examples {
 
 
+typedef size_t IndexType;
 typedef double DataType;
+
 
 struct Point
 {
+   Point() : x(DataType()), y(DataType()), z(DataType()){}
+
+   DataType radius() const { return std::sqrt( x*x + y*y + z*z); }
+
    DataType x;
    DataType y;
    DataType z;
-
-   Point(): x(0.0), y(0.0), z(0.0){}
 };
-
-typedef size_t IndexType;
 
 struct HexMesh {
 
     enum { NODES_PER_ZONE = 8 };
 
+    typedef asctoolkit::meshapi::OrderedSet NodeSet;
+    typedef asctoolkit::meshapi::OrderedSet ZoneSet;
+
+    typedef asctoolkit::meshapi::StaticVariableRelation NodeZoneRelation;
+    typedef NodeZoneRelation::RelationVecConstIterator  NodeZoneIterator;
+
+    typedef asctoolkit::meshapi::StaticVariableRelation ZoneNodeRelation;
+    typedef ZoneNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
+
+    typedef NodeZoneRelation::Index         IndexType;
+    typedef NodeZoneRelation::size_type     SizeType;
+
+
     typedef std::vector< Point >                    PositionsVec;
     typedef std::vector< DataType >                 NodeField;
     typedef std::vector< DataType >                 ZoneField;
 
-    typedef std::vector< IndexType >                NodesOfZone;
-    typedef NodesOfZone::iterator                   ZoneNodeIndex;
-    typedef std::vector< ZoneNodeIndex >            StartNodeOfZones;
-
-    typedef std::vector< IndexType >                ZonesOfNode;
-    typedef ZonesOfNode::iterator                   NodeZoneIndex;
-    typedef std::vector< NodeZoneIndex >            StartZoneOfNodes;
 
     /** \brief Simple accessor for the number of nodes in the mesh  */
-    IndexType  numNodes() const { return nodePosition.size(); }
+    SizeType  numNodes() const { return nodes.size(); }
 
     /** \brief Simple accessor for the number of zones in the mesh */
-    IndexType  numZones() const { return startNodeOfZone.size() -1; }
+    SizeType  numZones() const { return zones.size(); }
 
+    NodeSet nodes;
+    ZoneSet zones;
+
+    // storage for relation_(3,0) -- zones -> nodes
+    ZoneNodeRelation    relationZoneNode;
+
+    // storage for relation_(0,3) -- nodes -> zones
+    ZoneNodeRelation    relationNodeZone;
+
+
+    // -- positions and fields
 
     // Node-centered position field
     PositionsVec                                    nodePosition;
     PositionsVec                                    zonePosition;
-
-    // storage for relation_(3,0) -- zones -> nodes
-    NodesOfZone                                     nodesOfZone;
-    StartNodeOfZones                                startNodeOfZone;
-
-    // storage for relation_(0,3) -- nodes -> zones
-    ZonesOfNode                                     zonesOfNode;
-    StartZoneOfNodes                                startZoneOfNode;
 
     // A zone field and two node fields
     ZoneField                                       zoneField;
@@ -98,10 +113,8 @@ void printCWD()
 
 }
 
-HexMesh readHexMesh(std::string fileName)
+void readHexMesh(std::string fileName, HexMesh& mesh)
 {
-    HexMesh mesh;
-
     std::ifstream vtkMesh( fileName.c_str() );
 
     //--------------------------------------------------------------
@@ -125,6 +138,10 @@ HexMesh readHexMesh(std::string fileName)
 
     std::cout << "Number of nodes = " << numNodes << "\n";
 
+    // Create the set of Nodes
+    mesh.nodes = HexMesh::NodeSet(numNodes);
+
+    // Read in the nodal position field
     mesh.nodePosition = HexMesh::PositionsVec( numNodes );
     for(IndexType i=0; i != numNodes; ++i)
     {
@@ -132,6 +149,7 @@ HexMesh readHexMesh(std::string fileName)
        vtkMesh >> mesh.nodePosition[i].y;
        vtkMesh >> mesh.nodePosition[i].z;
     }
+
 
     //--------------------------------------------------------------
 
@@ -158,163 +176,211 @@ HexMesh readHexMesh(std::string fileName)
 
     std::cout << "Number of zones = " << numZones << "\n";
 
-    // This stores in one vector a list of nodes in each zone.
-    mesh.nodesOfZone = HexMesh::NodesOfZone( numNodeZoneIndices );
+    // Create the set of Zones
+    mesh.zones = HexMesh::ZoneSet(numZones);
 
-    // This stores the index into nodesOfZone for the first node in a given
-    // zone.  There's an extra one for how we'll actually use it later.
-    // You could notice that this will be multiples of 8 into nodesOfZone,
-    // and do an optimization, but won't here.
+    // Create the topological incidence relation from zones to nodes
+    mesh.relationZoneNode = HexMesh::ZoneNodeRelation(&mesh.zones, &mesh.nodes);
 
-    mesh.startNodeOfZone = HexMesh::StartNodeOfZones( numZones + 1 );
+    // Read in and encode this as a static variable relation
+    // TODO: Replace with a static constant relation when that class is developed
+    typedef HexMesh::ZoneNodeRelation::RelationVec  RelationVec;
+    typedef RelationVec::iterator                   RelationVecIterator;
 
-    HexMesh::ZoneNodeIndex zni = mesh.nodesOfZone.begin();
+    // Setup the begins vector
+    //  -- exploit the fact that the relation is constant
+    //  -- note that for a constant relation, this is not necessary
+    RelationVec beginsVec( mesh.zones.size() + 1 );
+    for(HexMesh::IndexType idx=0; idx <= mesh.zones.size(); ++idx)
+    {
+        beginsVec[idx] = idx * HexMesh::NODES_PER_ZONE;
+    }
+
+    // Setup the offsets vector
+    RelationVec offsetsVec ( numNodeZoneIndices );
+    RelationVecIterator oIt = offsetsVec.begin();
     IndexType nodeCount;
-    for(IndexType z=0; z != numZones; ++z )
+    typedef HexMesh::ZoneSet::iterator SetIterator;
+    for(SetIterator zIt = mesh.zones.begin(); zIt != mesh.zones.end(); ++zIt)
     {
        vtkMesh >> nodeCount;
-       if( nodeCount != 8 )
+       if( nodeCount != HexMesh::NODES_PER_ZONE )
        {
-          std::cerr << "Unsupported mesh type with zone = " << z << ", nodeCount = " << nodeCount << "\n";
+          std::cerr << "Unsupported mesh type with zone = " << *zIt
+                    << ", nodeCount = " << nodeCount
+                    << " (expected " << HexMesh::NODES_PER_ZONE << ")\n";
           std::abort();
        }
 
-       mesh.startNodeOfZone[z] = zni;
        for( IndexType n = 0; n != nodeCount; ++n )
        {
-          vtkMesh >> *zni;
-          ++zni;
+          vtkMesh >> *oIt++;
        }
     }
-
-    if( zni != mesh.nodesOfZone.end() )
-    {
-       std::cerr << "Error reading nodes of zones!\n";
-       std::cerr << mesh.nodesOfZone.end() - zni << "\n";
-       std::abort();
-    }
-
-    // We specify one past the end to make iterating later easier.
-    mesh.startNodeOfZone[numZones] = mesh.nodesOfZone.end();
-
-    IndexType numNodesOfZone = mesh.nodesOfZone.size();
-    std::cout << "numNodesOfZone = " << numNodesOfZone << "\n";
-
-    //--------------------------------------------------------------
 
     // Close the file.
     vtkMesh.close();
 
-    return mesh;
+    // Set the relation here by copying over the data buffers
+    // NOTE: This should be a lot cleaner once we hook up to the datastore
+    mesh.relationZoneNode.setRelation(beginsVec, offsetsVec);
+
+    // Check that the relation is valid
+    mesh.relationZoneNode.isValid();
+
+    //--------------------------------------------------------------
+
+    if( oIt != offsetsVec.end() )
+    {
+       std::cerr << "Error reading nodes of zones!\n";
+       std::cerr << offsetsVec.end() - oIt << "\n";
+       std::abort();
+    }
+
 }
 
 void generateNodeZoneRelation(HexMesh & mesh)
 {
     // Now build the zonesOfNode list.
-    // This is tricky because we'll first
-    // do it into a flexible data structure, then into an "optimized" one.
 
-    typedef std::set< IndexType> NodeIndexSet;
+    // We will first build this as a vector of sets
+    // and then linearize this into a static variable relation
+    // TODO: Replace this with a dynamic variable relation once it is developed
+
+    typedef std::set< HexMesh::IndexType> NodeIndexSet;
     typedef NodeIndexSet::iterator NodeIndexSetIterator;
-
 
     std::vector< NodeIndexSet > tmpZonesOfNode( mesh.numNodes() );
     IndexType numZonesOfNode = 0;
-    for(IndexType z=0; z != mesh.numZones(); ++z)
+
+    typedef HexMesh::ZoneSet::iterator ZoneIterator;
+    for(ZoneIterator zIt = mesh.zones.begin(); zIt != mesh.zones.end(); ++zIt)
     {
-      for( HexMesh::ZoneNodeIndex zni = mesh.startNodeOfZone[z]; zni != mesh.startNodeOfZone[z+1]; ++zni )
-      {
-         tmpZonesOfNode[ *zni ].insert( z );
-         ++numZonesOfNode;
-      }
+        typedef HexMesh::ZoneNodeRelation::RelationVecConstIterator RelVecIt;
+        RelVecIt znIt = mesh.relationZoneNode.begin(*zIt);
+        RelVecIt znEnd = mesh.relationZoneNode.end(*zIt);
+        for( ; znIt != znEnd; ++znIt )
+        {
+            tmpZonesOfNode[ *znIt ].insert( *zIt );
+            ++numZonesOfNode;
+        }
     }
 
-    // Create the static-variable node->zone relation
-    mesh.startZoneOfNode = HexMesh::StartZoneOfNodes( mesh.numNodes() + 1 );
-    mesh.zonesOfNode = HexMesh::ZonesOfNode( numZonesOfNode );
-    HexMesh::NodeZoneIndex nzi = mesh.zonesOfNode.begin();
-    for(IndexType n=0; n != mesh.numNodes(); ++n)
-    {
-      mesh.startZoneOfNode[n] = nzi;
-      for( NodeIndexSetIterator z = tmpZonesOfNode[n].begin(); z != tmpZonesOfNode[n].end(); ++z )
-      {
-         *nzi = *z;
-         ++nzi;
-      }
-    }
-    mesh.startZoneOfNode[mesh.numNodes()] = mesh.zonesOfNode.end();
+    // Create the relation here
+    mesh.relationNodeZone = HexMesh::NodeZoneRelation( &mesh.nodes, &mesh.zones);
 
-    // Now free the temporary stuff. Yes, ugly, but what C++ wanted.
-    std::vector< NodeIndexSet >().swap( tmpZonesOfNode );
+    // Now, linearize the dynamic relation into a static relation here
+    typedef HexMesh::NodeZoneRelation::RelationVec  RelationVec;
+    typedef RelationVec::iterator                   RelationVecIterator;
+
+    RelationVec beginsVec( mesh.nodes.size() + 1 );
+    RelationVec offsetsVec( numZonesOfNode );
+    HexMesh::IndexType count = 0;
+    for(HexMesh::NodeSet::iterator nIt = mesh.nodes.begin(), nEnd = mesh.nodes.end(); nIt != nEnd; ++nIt)
+    {
+        beginsVec[*nIt] = count;
+        NodeIndexSetIterator sIt = tmpZonesOfNode[*nIt].begin();
+        NodeIndexSetIterator sEnd = tmpZonesOfNode[*nIt].end();
+        for(; sIt != sEnd; ++sIt)
+        {
+            offsetsVec[count++] = *sIt;
+        }
+    }
+    beginsVec[mesh.nodes.size()] = count;
+
+    // Send the data buffers over to the relation now and check the validity
+    mesh.relationNodeZone.setRelation(beginsVec, offsetsVec);
+    mesh.relationNodeZone.isValid();
 
     std::cout << "\n numZonesOfNode = " << numZonesOfNode << "\n";
-    if( nzi != mesh.zonesOfNode.end() )
+    if( count != numZonesOfNode )
     {
       std::cerr << "Error creating zones of Node list!\n";
       std::abort();
     }
-
 }
 
 void computeZoneBarycenters(HexMesh & mesh)
 {
-    // Compute the zone position, or the average of the nodes around the zone
+    typedef HexMesh::ZoneSet::iterator ZoneIter;
+    typedef HexMesh::ZoneNodeIterator ZNIterator;
+
+    // Compute the zone positions as the the averages of the positions of the nodes around each zone
     mesh.zonePosition = HexMesh::PositionsVec( mesh.numZones() );
-    for( IndexType z = 0; z != mesh.numZones(); ++z )
+
+    // Outer loop over each zone in the set
+    for(ZoneIter zIt = mesh.zones.begin(); zIt != mesh.zones.end(); ++zIt )
     {
-       // Instead of counting, we could subtract two consecutive startNodeOfZones.
-       int count = 0;
-       Point& zp = mesh.zonePosition[z];
-       for( HexMesh::ZoneNodeIndex n = mesh.startNodeOfZone[z]; n != mesh.startNodeOfZone[z+1]; ++n)
+       Point& zonePos = mesh.zonePosition[ *zIt ];
+
+       // Inner loop over each node of the zone
+       ZNIterator  nIt  = mesh.relationZoneNode.begin(*zIt);
+       ZNIterator  nEnd = mesh.relationZoneNode.end(*zIt);
+       DataType numNodes = static_cast<DataType>(mesh.relationZoneNode.size(*zIt));
+       for( ; nIt != nEnd; ++nIt)
        {
-          zp.x += mesh.nodePosition[*n].x;
-          zp.y += mesh.nodePosition[*n].y;
-          zp.z += mesh.nodePosition[*n].z;
-          ++count;
+           Point& nodePos = mesh.nodePosition[*nIt];
+           zonePos.x += nodePos.x;
+           zonePos.y += nodePos.y;
+           zonePos.z += nodePos.z;
        }
-       zp.x /= count;
-       zp.y /= count;
-       zp.z /= count;
+       zonePos.x /= numNodes;
+       zonePos.y /= numNodes;
+       zonePos.z /= numNodes;
     }
 }
 
 void createZoneRadiusField (HexMesh & mesh)
 {
-    // Compute a zone field based on the position
+    // Compute a zone field based on the L2 norm of their position vectors
     mesh.zoneField = HexMesh::ZoneField ( mesh.numZones() );
-    for (IndexType z = 0; z != mesh.numZones(); ++z)
+
+    typedef HexMesh::ZoneSet::iterator ZoneIter;
+    for (ZoneIter zIt = mesh.zones.begin(); zIt != mesh.zones.end();++zIt)
     {
-        const Point& zp = mesh.zonePosition[z];
+        Point const& zp = mesh.zonePosition[*zIt];
         // What's the radius?
-        mesh.zoneField[z] = std::sqrt (zp.x * zp.x + zp.y * zp.y + zp.z * zp.z);
+        mesh.zoneField[*zIt] = zp.radius();
     }
 }
 
 void computeNodalErrors(HexMesh & mesh)
 {
     // Compute the node average version, and the maximum relative error
+    typedef HexMesh::NodeSet::iterator NodeIter;
+    typedef HexMesh::NodeZoneIterator NZIterator;
+
     // Relying on zeroing out the average field by the vector constructor.
     mesh.nodeFieldAvg = HexMesh::NodeField( mesh.numNodes(), 0.0 );
     mesh.nodeFieldExact = HexMesh::NodeField( mesh.numNodes() );
     double errSqSum = 0.0;
-    for( IndexType n = 0; n != mesh.numNodes(); ++n )
-    {
-       const Point& np = mesh.nodePosition[n];
-       // What's the radius?
-       mesh.nodeFieldExact[n] = std::sqrt( np.x*np.x + np.y*np.y + np.z*np.z);
 
-       IndexType numZones = mesh.startZoneOfNode[n+1]- mesh.startZoneOfNode[n];
-       for( HexMesh::NodeZoneIndex z = mesh.startZoneOfNode[n]; z != mesh.startZoneOfNode[n+1]; ++z)
+    // Outer loop over each node
+    for (NodeIter nIt = mesh.nodes.begin(); nIt != mesh.nodes.end();++nIt)
+    {
+       const Point& np = mesh.nodePosition[*nIt];
+
+       // What's the radius?
+       mesh.nodeFieldExact[*nIt] = np.radius();
+
+       // Inner loop over each zone of the node
+       NZIterator  zIt  = mesh.relationNodeZone.begin(*nIt);
+       NZIterator  zEnd = mesh.relationNodeZone.end(*nIt);
+       DataType numZones = static_cast<DataType>(mesh.relationNodeZone.size(*nIt));
+       for( ; zIt != zEnd; ++zIt)
        {
-          //std::cout << "node, zone = " << n << " " <<  *z << "\n";
-          mesh.nodeFieldAvg[n] += mesh.zoneField[*z];
+           mesh.nodeFieldAvg[*nIt] += mesh.zoneField[*zIt];
        }
-       mesh.nodeFieldAvg[n] /= numZones;
-       const double err = mesh.nodeFieldAvg[n] - mesh.nodeFieldExact[n];
+
+       mesh.nodeFieldAvg[*nIt] /= numZones;
+
+       double const err = mesh.nodeFieldAvg[*nIt] - mesh.nodeFieldExact[*nIt];
        errSqSum += err*err;
     }
 
-    std::cout << "\n\tThe L2-ish error in the node average radius was " << std::sqrt( errSqSum / mesh.numNodes() ) << "\n";
+    std::cout   << "\n\tThe L2-ish error in the node average radius was "
+                << std::sqrt( errSqSum / mesh.numNodes() )
+                << std::endl;
 }
 
 }   // end namespace examples
@@ -332,8 +398,13 @@ int main()
 
    printCWD();
 
+#ifndef USE_ONE
    int const NUM_RESOLUTIONS = 4;
    int fileResolutions[] = {1,2,4,8};
+#else
+   int const NUM_RESOLUTIONS = 1;
+   int fileResolutions[] = {1};
+#endif
 
    for(int res = 0; res < NUM_RESOLUTIONS; ++res)
    {
@@ -344,16 +415,16 @@ int main()
 
        std::cout<<"\n** Loading mesh file '" << meshName << "' and generating zone-> node relation...\n";
 
-       HexMesh hexMesh = readHexMesh( meshName );
+       HexMesh hexMesh;
+       readHexMesh( meshName, hexMesh );
 
        //--------------------------------------------------------------
 
        // Now build the node to zone relation
        std::cout<<"\n** Generating node->zone relation...";
-       generateNodeZoneRelation(hexMesh);
+       generateNodeZoneRelation( hexMesh );
 
        //--------------------------------------------------------------
-
        // Now that we have the mesh in memory, we can start to do things with it.
 
        std::cout<<"\n** Computing zone barycenters using zone->node relation...";
@@ -371,6 +442,4 @@ int main()
    //--------------------------------------------------------------
    return 0;
 }
-
-
 

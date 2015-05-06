@@ -35,7 +35,7 @@ namespace meshapi    {
         typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>     RelationVecConstIteratorPair;
 
     public:
-        StaticVariableRelation (OrderedSet* fromSet, OrderedSet* toSet);
+        StaticVariableRelation (OrderedSet* fromSet = NULL, OrderedSet* toSet = NULL);
         virtual ~StaticVariableRelation(){}
         /**
          * \note TODO: swap this out for data in the datastore
