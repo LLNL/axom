@@ -12,6 +12,9 @@
 #include "conduit/conduit.h"
 
 
+
+namespace asctoolkit
+{
 namespace sidre
 {
  
@@ -262,7 +265,8 @@ typedef conduit::index_t IDType;
 
 
 
-}
+} /* end namespace sidre */
+} /* end namespace asctoolkit */
 
 
 #endif /* TYPES_HPP_ */

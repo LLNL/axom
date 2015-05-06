@@ -23,6 +23,8 @@
 using conduit::Node;
 
 
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -161,6 +163,7 @@ private:
 };
 
 
+} /* end namespace sidre */
+} /* end namespace asctoolkit */
 
-} /* namespace sidre */
 #endif /* DATASTORE_HPP_ */

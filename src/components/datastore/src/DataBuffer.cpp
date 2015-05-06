@@ -21,6 +21,8 @@
 #include "Utilities.hpp"
 
 
+namespace asctoolkit
+{
 namespace sidre
 {
 
@@ -186,5 +188,5 @@ void DataBuffer::detachView( DataView* view )
 
 
 } /* end namespace sidre */
-
+} /* end namespace asctoolkit */
 

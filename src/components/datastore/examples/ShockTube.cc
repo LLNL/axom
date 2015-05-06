@@ -36,9 +36,11 @@
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
-using sidre::DataView;
-using sidre::DataGroup;
-using sidre::DataBuffer;
+using asctoolkit::sidre::DataBuffer;
+using asctoolkit::sidre::DataGroup;
+using asctoolkit::sidre::DataStore;
+using asctoolkit::sidre::DataView;
+
 using namespace conduit;
 
 
@@ -75,7 +77,7 @@ void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::stri
  * Purpose   :  Ask for control and output information
  *************************************************************************/
 
-void GetUserInput(sidre::DataGroup* const problem)
+void GetUserInput(DataGroup* const problem)
 {
   /**********************************/
   /* Get mesh info, and create mesh */
@@ -656,10 +658,10 @@ int main(void)
   /* adding a communication subroutine in the main loop, */
   /* and calling MPI_Finalize() at the end of main() */
 
-  sidre::DataStore DATASTORE;
-  sidre::DataStore* const dataStore = &DATASTORE;
-  sidre::DataGroup* const rootGroup = dataStore->getRoot();
-  sidre::DataGroup* const problem = rootGroup->createGroup("problem");
+  DataStore DATASTORE;
+  DataStore* const dataStore = &DATASTORE;
+  DataGroup* const rootGroup = dataStore->getRoot();
+  DataGroup* const problem = rootGroup->createGroup("problem");
 
   GetUserInput(problem);
   CreateShockTubeMesh(problem);

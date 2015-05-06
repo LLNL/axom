@@ -2,9 +2,10 @@
 
 #include "datastore/sidre.hpp"
 
+
 #include "conduit/conduit.h"
 
-using sidre::DataStore;
+using asctoolkit::sidre::DataStore;
 
 //------------------------------------------------------------------------------
 
