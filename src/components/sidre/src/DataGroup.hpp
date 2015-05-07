@@ -17,9 +17,6 @@
 #include <string>
 #include <vector>
 
-// Library headers
-#include <boost/lexical_cast.hpp>
-
 // SiDRe project headers
 #include "DataView.hpp"
 #include "common/Types.hpp"
@@ -171,8 +168,7 @@ public:
      */
     DataView* getView( const common::IDType idx )
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
-                        boost::lexical_cast<std::string>(idx));
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx);
 
         return m_views[idx];
     }
@@ -182,8 +178,7 @@ public:
      */
     DataView const* getView( const common::IDType idx ) const
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
-                        boost::lexical_cast<std::string>(idx));
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx);
 
         return m_views[idx];
     }
@@ -203,8 +198,7 @@ public:
      */
     const std::string& getViewName(common::IDType idx) const
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
-                        boost::lexical_cast<std::string>(idx));
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx);
 
         const DataView* view = getView(idx);
         return view->getName();
@@ -352,8 +346,7 @@ public:
      */
     DataGroup* getGroup( const common::IDType idx ) 
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
-                        boost::lexical_cast<std::string>(idx));
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx);
 
         return m_groups[idx];
     }
@@ -363,8 +356,7 @@ public:
      */
     DataGroup const* getGroup( const common::IDType idx ) const
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
-                        boost::lexical_cast<std::string>(idx));
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx);
 
         return m_groups[idx];
     }
@@ -384,8 +376,7 @@ public:
      */
     const std::string& getGroupName(common::IDType idx) const
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
-                        boost::lexical_cast<std::string>(idx));
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx);
 
         const DataGroup* group = getGroup(idx);
         return group->getName();
