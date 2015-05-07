@@ -1,6 +1,6 @@
 PROJECT_NAME  = ASCTK
 PROJECT_BRIEF = "ASC CS Toolkit"
-INPUT = @PROJECT_SOURCE_DIR@/components/datastore/src \
+INPUT = @PROJECT_SOURCE_DIR@/components/sidre/src \
         @PROJECT_SOURCE_DIR@/components/conduit/src/conduit
 
 GENERATE_XML = YES

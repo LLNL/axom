@@ -18,7 +18,7 @@
 // SiDRe project headers
 #include "DataGroup.hpp"
 #include "DataView.hpp"
-#include "Utilities.hpp"
+#include "common/Utilities.hpp"
 
 
 namespace asctoolkit
@@ -111,7 +111,7 @@ void DataBuffer::print() const
 *   
 *************************************************************************
 */
-DataBuffer::DataBuffer( const IDType uid ) :
+DataBuffer::DataBuffer( const common::IDType uid ) :
     m_uid(uid),
     m_views(),
     m_data(nullptr),

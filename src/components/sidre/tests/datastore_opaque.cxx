@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "datastore/sidre.hpp"
+#include "sidre/sidre.hpp"
 
 using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;

@@ -159,30 +159,40 @@ namespace utilities
     * \brief Print message, file, line number to preferred output stream 
     *        (not specified here).
     */
-   void printMessage(
+   inline void printMessage(
       const std::string& message,
       const std::string& filename,
-      const int line);
+      const int line)
+   {
+      std::cout << "File ``" << filename << "'' at line " << line << std::endl;
+      std::cout << "MESSAGE: " << std::endl << message << std::endl;
+   }
 
    /*!
     * \brief Process error message with file and line number information 
     *        and abort the program.
     */
-   void processAbort(
+   inline void processAbort(
       const std::string& message,
       const std::string& filename,
-      const int line); 
+      const int line)
+   { 
+      utilities::printMessage( message, filename, line);
+      std::cout << "PROGRAM TERMINATION!!!" << std::endl;
+      exit(-1);
+   }
 
    /*!
     * \brief Process warning message with file and line number information 
     *        and let program exectution continue.
     */
-   void processWarning(
+   inline void processWarning(
       const std::string& message,
       const std::string& filename,
-      const int line);
-
+      const int line)
+   {
+      utilities::printMessage( message, filename, line);
+   }
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace
-
-#endif /* UTILITIES_HPP_ */
+#endif

@@ -22,10 +22,10 @@
 
 //#include "Vista.h"
 //#include "View.h"
-#include "../src/Types.hpp"
-#include "../src/DataBuffer.hpp"
-#include "../src/DataGroup.hpp"
-#include "../src/DataStore.hpp"
+#include "common/Types.hpp"
+#include "sidre/DataBuffer.hpp"
+#include "sidre/DataGroup.hpp"
+#include "sidre/DataStore.hpp"
 
 #include <stdio.h>
 #include <math.h>

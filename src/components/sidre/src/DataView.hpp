@@ -18,7 +18,7 @@
 #include <vector>
 
 // SiDRe project headers
-#include "Types.hpp"
+#include "common/Types.hpp"
 
 
 // using directives to make Conduit usage easier and less visible

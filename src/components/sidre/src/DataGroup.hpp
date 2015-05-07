@@ -22,8 +22,8 @@
 
 // SiDRe project headers
 #include "DataView.hpp"
-#include "Types.hpp"
-#include "Utilities.hpp"
+#include "common/Types.hpp"
+#include "common/Utilities.hpp"
 
 
 // using directives to make Conduit usage easier and less visible
@@ -142,7 +142,7 @@ public:
      * \brief Return true if DataGroup owns a DataView with given index;
      *        else false.
      */
-    bool hasView( const IDType idx ) const;
+    bool hasView( const common::IDType idx ) const;
 
     /*!
      * \brief Return (non-const) pointer to DataView with given name.
@@ -151,7 +151,7 @@ public:
     {
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
             
-        const IDType idx = m_viewsNameMap.at(name);
+        const common::IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
     }
 
@@ -162,14 +162,14 @@ public:
     {
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
-        const IDType idx = m_viewsNameMap.at(name);
+        const common::IDType idx = m_viewsNameMap.at(name);
         return m_views[idx];
     }
 
     /*!
      * \brief Return (non-const) pointer to DataView with given index.
      */
-    DataView* getView( const IDType idx )
+    DataView* getView( const common::IDType idx )
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
                         boost::lexical_cast<std::string>(idx));
@@ -180,7 +180,7 @@ public:
     /*!
      * \brief Return (const) pointer to DataView with given index.
      */
-    DataView const* getView( const IDType idx ) const
+    DataView const* getView( const common::IDType idx ) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
                         boost::lexical_cast<std::string>(idx));
@@ -191,7 +191,7 @@ public:
     /*!
      * \brief Return the index of DataView with given name.
      */
-    IDType getViewIndex(const std::string &name) const
+    common::IDType getViewIndex(const std::string &name) const
     {  
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
@@ -201,7 +201,7 @@ public:
     /*!
      * \brief Return the name of DataView with given index.
      */
-    const std::string& getViewName(IDType idx) const
+    const std::string& getViewName(common::IDType idx) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << \
                         boost::lexical_cast<std::string>(idx));
@@ -261,7 +261,7 @@ public:
      * \brief Destroy view in this DataGroup with given index and leave its
      *        associated DataBuffer intact.
      */
-    void destroyView(IDType idx);
+    void destroyView(common::IDType idx);
 
     /*!
      * \brief Destroy all views in this DataGroup and leave all associated
@@ -279,7 +279,7 @@ public:
      * \brief Destroy view in this DataGroup with given index AND destroy 
      *        its associated DataBuffer object.
      */
-    void destroyViewAndBuffer(IDType idx);
+    void destroyViewAndBuffer(common::IDType idx);
  
     /*!
      * \brief Destroy all views in this DataGroup AND destroy their 
@@ -323,7 +323,7 @@ public:
      * \brief Return true if DataGroup has an (immediate) child DataGroup 
      *        with given index; else false.
      */
-    bool hasGroup( const IDType idx ) const;
+    bool hasGroup( const common::IDType idx ) const;
 
     /*!
      * \brief Return (non-const) pointer to child DataGroup with given name.
@@ -332,7 +332,7 @@ public:
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
-        const IDType idx = m_groupsNameMap.at(name);
+        const common::IDType idx = m_groupsNameMap.at(name);
         return m_groups[idx];
     }
 
@@ -343,14 +343,14 @@ public:
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
-        const IDType idx = m_groupsNameMap.at(name);
+        const common::IDType idx = m_groupsNameMap.at(name);
         return m_groups[idx];
     }
 
     /*!
      * \brief Return (non-const) pointer to child DataGroup with given index.
      */
-    DataGroup* getGroup( const IDType idx ) 
+    DataGroup* getGroup( const common::IDType idx ) 
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
                         boost::lexical_cast<std::string>(idx));
@@ -361,7 +361,7 @@ public:
     /*!
      * \brief Return (const) pointer to child DataGroup with given index.
      */
-    DataGroup const* getGroup( const IDType idx ) const
+    DataGroup const* getGroup( const common::IDType idx ) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
                         boost::lexical_cast<std::string>(idx));
@@ -372,7 +372,7 @@ public:
     /*!
      * \brief Return the index of child DataGroup with given name.
      */
-    IDType getGroupIndex(const std::string &name) const
+    common::IDType getGroupIndex(const std::string &name) const
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
@@ -382,7 +382,7 @@ public:
     /*!
      * \brief Return the name of child DataGroup with given index.
      */
-    const std::string& getGroupName(IDType idx) const
+    const std::string& getGroupName(common::IDType idx) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << \
                         boost::lexical_cast<std::string>(idx));
@@ -420,7 +420,7 @@ public:
     /*!
      * \brief Destroy child group in this DataGroup with given index.
      */
-    void destroyGroup(IDType idx); 
+    void destroyGroup(common::IDType idx); 
 
     /*!
      * \brief Destroy all DataGroups in this DataGroup.
@@ -532,7 +532,7 @@ private:
     ///
     DataView* detachView(const std::string& name);
     ///
-    DataView* detachView(IDType idx);
+    DataView* detachView(common::IDType idx);
 
     /*!
      * \brief Private methods to attach/detach DataGroup object to DataGroup.
@@ -541,7 +541,7 @@ private:
     ///
     DataGroup* detachGroup(const std::string& name);
     ///
-    DataGroup* detachGroup(IDType idx);
+    DataGroup* detachGroup(common::IDType idx);
 
     /*!
      * \brief Private methods to copy DataGroup to/from Conduit Node.
@@ -557,7 +557,7 @@ private:
      * to DataViews......???? punt!
      */  
     void copyToNode(Node& n,
-                    std::vector<IDType>& buffer_ids) const;
+                    std::vector<common::IDType>& buffer_ids) const;
 
     /*!
      * \brief Private methods to copy DataGroup from Conduit Node.
@@ -566,7 +566,7 @@ private:
      * to DataViews......???? punt!
      */  
     void copyFromNode(Node& n,
-                      std::map<IDType, IDType>& id_map);
+                      std::map<common::IDType, common::IDType>& id_map);
 
    
     /// Name of this DataGroup object.
@@ -580,11 +580,11 @@ private:
 
     /// Vector of views (indexed by id) and map of view names to ids.
     std::vector<DataView*>        m_views;
-    std::map<std::string, IDType> m_viewsNameMap;
+    std::map<std::string, common::IDType> m_viewsNameMap;
 
     /// Vector of child groups (indexed by id) and map of group names to ids.
     std::vector<DataGroup*>       m_groups;
-    std::map<std::string, IDType> m_groupsNameMap;
+    std::map<std::string, common::IDType> m_groupsNameMap;
 };
 
 

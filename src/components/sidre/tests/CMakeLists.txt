@@ -22,14 +22,14 @@ set(gtest_datastore_tests
 # Add catch based tests
 #
 foreach(test ${catch_datastore_tests})
-    add_catch_test( TEST_SOURCE ${test} DEPENDS_ON datastore )
+    add_catch_test( TEST_SOURCE ${test} DEPENDS_ON sidre )
 endforeach()
 
 #
 # Add gtest based tests
 #
 foreach(test ${gtest_datastore_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON datastore conduit)
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit )
 endforeach()
 
 

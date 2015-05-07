@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 // do we need one include that brings all of these in?
-#include "datastore/sidre.hpp"
+#include "sidre/sidre.hpp"
 
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;

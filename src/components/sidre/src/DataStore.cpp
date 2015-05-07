@@ -65,7 +65,7 @@ DataStore::~DataStore()
 DataBuffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  IDType newIndex = m_DataBuffers.size();
+  common::IDType newIndex = m_DataBuffers.size();
   m_DataBuffers.push_back( nullptr );
   if( !m_AvailableDataBuffers.empty() )
   {
@@ -88,7 +88,7 @@ DataBuffer* DataStore::createBuffer()
 *
 *************************************************************************
 */
-void DataStore::destroyBuffer( const IDType id )
+void DataStore::destroyBuffer( const common::IDType id )
 {
   delete m_DataBuffers[id];
   m_DataBuffers[id] = nullptr;
@@ -123,7 +123,7 @@ void DataStore::destroyBuffers()
 *
 *************************************************************************
 */
-DataBuffer* DataStore::detachBuffer( const IDType id )
+DataBuffer* DataStore::detachBuffer( const common::IDType id )
 {
   DataBuffer* const rval = m_DataBuffers[id];
   m_DataBuffers[id] = nullptr;

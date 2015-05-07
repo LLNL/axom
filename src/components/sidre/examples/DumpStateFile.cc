@@ -8,10 +8,10 @@
  * datastore API.
  ******************************************************************************************************************************/
 
-#include "../src/Types.hpp"
-#include "../src/DataGroup.hpp"
-#include "../src/DataBuffer.hpp"
-#include "../src/DataStore.hpp"
+#include "common/Types.hpp"
+#include "sidre/DataGroup.hpp"
+#include "sidre/DataBuffer.hpp"
+#include "sidre/DataStore.hpp"
 
 using namespace asctoolkit;
 

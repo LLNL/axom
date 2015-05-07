@@ -21,7 +21,7 @@ set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
 ###############################################################################
 
 # additional flags for all configurations 
-#  set(EXTRA_CXX_FLAGS "-DEXTRA_FLAGS_CXX_DEFINE" CACHE PATH "")
+#set(EXTRA_CXX_FLAGS "-DEXTRA_FLAGS_CXX_DEFINE" CACHE PATH "")
 
 # additional flags for debug builds
 # set(EXTRA_CXX_DEBUG_FLAGS "-DEXTRA_CXX_DEBUG_FLAGS_DEFINE" CACHE PATH "")

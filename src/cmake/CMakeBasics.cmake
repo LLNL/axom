@@ -131,7 +131,7 @@ if (BUILD_UNCRUSTIFY)
 endif()
 
 ## Enable ENABLE C++ 11 features
-option(ENABLE_CXX11 "Enables C++11 features" OFF)
+option(ENABLE_CXX11 "Enables C++11 features" ON)
 if (ENABLE_CXX11)
   # define a macro so the code can ifdef accordingly.
   add_definitions("-DUSE_CXX11")
@@ -423,9 +423,9 @@ endmacro(add_catch_test)
 ##
 ## copy_headers_copy( hdrs dest )
 ##------------------------------------------------------------------------------
-macro(copy_headers_target hdrs dest)
+macro(copy_headers_target proj hdrs dest)
 
-add_custom_target(copy_headers
+add_custom_target(copy_headers_${proj}
      COMMAND ${CMAKE_COMMAND}
              -DHEADER_INCLUDES_DIRECTORY=${dest}
              -DLIBHEADERS="${hdrs}"

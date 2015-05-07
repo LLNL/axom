@@ -17,7 +17,7 @@
 #include <vector>
 
 // SiDRe project headers
-#include "Types.hpp"
+#include "common/Types.hpp"
 
 
 // using directives to make Conduit usage easier and less visible
@@ -67,7 +67,7 @@ public:
     /*!
      * \brief Return the unique id of this buffer object.
      */
-    IDType getUID() const
+    common::IDType getUID() const
     {
         return m_uid;
     }
@@ -174,7 +174,7 @@ public:
      * \brief Return pointer to view attached to this buffer identified
      *        by the given index.
      */
-    DataView* getView(IDType idx)
+    DataView* getView(common::IDType idx)
     { 
        return m_views[idx]; 
     }
@@ -202,7 +202,7 @@ private:
     /*!
      *  \brief Private ctor that assigns unique id.
      */
-    DataBuffer( const IDType uid );
+    DataBuffer( const common::IDType uid );
 
     /*!
      * \brief Private copy ctor.
@@ -223,7 +223,7 @@ private:
 
 
     /// Identifier - unique within a dataStore.
-    IDType m_uid;
+    common::IDType m_uid;
 
     /// Container of DataViews attached to this buffer.
     std::vector<DataView *> m_views;

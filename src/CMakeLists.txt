@@ -28,7 +28,7 @@ include(Setup3rdParty)
 include(SetupCodeChecks)
 
 ################################
-# Add the datastore lib
+# Add components
 ################################
 add_subdirectory(components)
 

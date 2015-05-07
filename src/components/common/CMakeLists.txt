@@ -1,23 +1,13 @@
 ################################
 # Datastore
 ################################
-project(datastore)
+project(common)
 
 
 ################################
-# Add the boost headers include
-################################
-include_directories( ${Boost_INCLUDE_DIRS} )
-
-################################
-# Add the datastore sources
+# Add the common sources
 ################################
 add_subdirectory(src)
-
-################################
-# Add examples
-################################
-add_subdirectory(examples)
 
 ################################
 # Add tests
@@ -33,4 +23,4 @@ add_code_check_targets(uncrustify.cfg)
 # Create CMake importable
 # exports for all of our targets
 ################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+#install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)

@@ -16,7 +16,7 @@
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
-#include "Types.hpp"
-#include "Utilities.hpp"
+#include "common/Types.hpp"
+#include "common/Utilities.hpp"
 
 #endif
