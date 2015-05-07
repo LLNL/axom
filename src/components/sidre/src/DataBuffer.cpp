@@ -15,10 +15,12 @@
 // Standard C++ headers
 #include <algorithm>
 
+// Other CS Toolkit headers
+#include "common/Utilities.hpp"
+
 // SiDRe project headers
 #include "DataGroup.hpp"
 #include "DataView.hpp"
-#include "common/Utilities.hpp"
 
 
 namespace asctoolkit
@@ -111,7 +113,7 @@ void DataBuffer::print() const
 *   
 *************************************************************************
 */
-DataBuffer::DataBuffer( const common::IDType uid ) :
+DataBuffer::DataBuffer( common::IDType uid ) :
     m_uid(uid),
     m_views(),
     m_data(nullptr),

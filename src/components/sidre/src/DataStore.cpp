@@ -30,13 +30,8 @@ namespace sidre
 *************************************************************************
 */
 DataStore::DataStore()
-#if 0
- : 
-   m_DataBuffers(),
-   m_AvailableDataBuffers()
-#endif
 {
-    m_RootGroup = new DataGroup("/",this);
+    m_RootGroup = new DataGroup("/", this);
 };
 
 
@@ -49,7 +44,7 @@ DataStore::DataStore()
 */
 DataStore::~DataStore()
 {
-      // clean up views before we destroy buffers
+      // clean up groups and views before we destroy buffers
       delete m_RootGroup;
       destroyBuffers();
 }
@@ -88,7 +83,7 @@ DataBuffer* DataStore::createBuffer()
 *
 *************************************************************************
 */
-void DataStore::destroyBuffer( const common::IDType id )
+void DataStore::destroyBuffer( common::IDType id )
 {
   delete m_DataBuffers[id];
   m_DataBuffers[id] = nullptr;
@@ -123,7 +118,7 @@ void DataStore::destroyBuffers()
 *
 *************************************************************************
 */
-DataBuffer* DataStore::detachBuffer( const common::IDType id )
+DataBuffer* DataStore::detachBuffer( common::IDType id )
 {
   DataBuffer* const rval = m_DataBuffers[id];
   m_DataBuffers[id] = nullptr;

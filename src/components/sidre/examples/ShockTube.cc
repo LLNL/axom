@@ -588,7 +588,7 @@ void DumpUltra( DataGroup * const prob)
    fprintf(fp, "# Problem: %s\n", "problem" ) ;
 
 
-     for(size_t i=0;i<prob->getNumberOfViews();i++)
+     for(size_t i=0;i<prob->getNumViews();i++)
      {
          DataView * const view = prob->getView(i);
          const int length = view->getDescriptor().dtype().number_of_elements();
@@ -612,7 +612,7 @@ void DumpUltra( DataGroup * const prob)
     }
 
 
-    for(size_t i=0;i<elem->getNumberOfViews();i++)
+    for(size_t i=0;i<elem->getNumViews();i++)
     {
          DataView * const view = elem->getView(i);
          const int length = view->getDescriptor().dtype().number_of_elements();

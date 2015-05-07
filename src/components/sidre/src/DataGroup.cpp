@@ -15,7 +15,6 @@
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
-#include "common/Utilities.hpp"
 
 using conduit::NodeIterator;
 
@@ -25,39 +24,12 @@ namespace asctoolkit
 namespace sidre
 {
 
+
 ////////////////////////////////////////////////////////////////////////
 //
 //  Methods for managing DataView objects in DataGroup 
 //
 ////////////////////////////////////////////////////////////////////////
-
-/*
-*************************************************************************
-*
-* Return true if DataGroup owns a DataView with given name; else false.
-*
-*************************************************************************
-*/
-bool DataGroup::hasView( const std::string& name ) const
-{
-    std::map<std::string, common::IDType>::const_iterator itr;
-    itr = m_viewsNameMap.find( name );
-    if( itr != m_viewsNameMap.end() )
-        return true;
-    return false;
-}
-
-/*
-*************************************************************************
-*
-* Return true if DataGroup owns a DataView with given index; else false.
-*
-*************************************************************************
-*/
-bool DataGroup::hasView( const common::IDType idx ) const
-{
-   return ( idx < m_views.size() );
-}
 
 /*
 *************************************************************************
@@ -149,17 +121,15 @@ void DataGroup::destroyView( common::IDType idx )
 */
 void DataGroup::destroyViews()
 {
-    size_t nviews = getNumberOfViews();
+    size_t nviews = getNumViews();
                      
-    for (size_t i=0;i<nviews;i++)
+    for (size_t i=0; i<nviews; ++i)
     {
         DataView *view = this->getView(i);
         delete view;
     }
 
-    // clean up book keeping
-    m_views.clear(); 
-    m_viewsNameMap.clear();
+    m_view_coll.removeAllItems();
 }
 
 /*
@@ -210,19 +180,16 @@ void DataGroup::destroyViewAndBuffer( common::IDType idx )
 */
 void DataGroup::destroyViewsAndBuffers()
 {
-    size_t nviews = getNumberOfViews();
+    size_t nviews = getNumViews();
 
-    for (size_t i=0;i<nviews;i++)
+    for (size_t i=0; i<nviews; ++i)
     {
         DataView *view = this->getView(i);
         getDataStore()->destroyBuffer(view->getBuffer()->getUID());
         delete view;
     }
 
-    // clean up book keeping
-    m_views.clear();
-    m_viewsNameMap.clear();
-
+    m_view_coll.removeAllItems();
 }
 
 /*
@@ -236,7 +203,7 @@ DataView* DataGroup::moveView(DataView* view)
 {
     ATK_ASSERT( view != 0 );
     ATK_ASSERT_MSG( hasView(view->getName()) == false, \
-                    "view->GetName() == " << view->getName() );
+                    "view->getName() == " << view->getName() );
 
     // remove this view from its current parent
     DataGroup* curr_group = view->getOwningGroup();
@@ -262,11 +229,11 @@ DataView* DataGroup::copyView(DataView* view)
 {
     ATK_ASSERT( view != 0 );
     ATK_ASSERT_MSG( hasView(view->getName()) == false, \
-                    "view->GetName() == " << view->getName() );
+                    "view->getName() == " << view->getName() );
 
-    DataView *res = createView(view->getName(),view->getBuffer());
+    DataView *res = createView(view->getName(), view->getBuffer());
     res->declare(view->getDescriptor());
-    if(view->isApplied())
+    if (view->isApplied())
     {
         res->apply();
     }
@@ -280,35 +247,6 @@ DataView* DataGroup::copyView(DataView* view)
 //
 ////////////////////////////////////////////////////////////////////////
 
-/*
-*************************************************************************
-*
-* Return true if group has an (immediate) child group with given name;
-* else false.
-*
-*************************************************************************
-*/
-bool DataGroup::hasGroup( const std::string& name ) const
-{
-    std::map<std::string, common::IDType>::const_iterator itr;
-    itr = m_groupsNameMap.find( name );
-    if( itr != m_groupsNameMap.end() )
-        return true;
-    return false;
-}
-
-/*
-*************************************************************************
-*
-* Return true if group has an (immediate) child group with given index;
-* else false.
-*
-*************************************************************************
-*/
-bool DataGroup::hasGroup( const common::IDType idx ) const
-{
-   return ( idx < m_groups.size() );
-}
 
 /*
 *************************************************************************
@@ -321,64 +259,6 @@ DataGroup* DataGroup::createGroup( const std::string& name )
 {
     DataGroup*  group = new DataGroup( name, this);
     return attachGroup(group);
-}
-
-/*
-*************************************************************************
-*
-* Remove given group from its owning group and make it a child of this group.
-*
-*************************************************************************
-*/
-DataGroup* DataGroup::moveGroup(DataGroup* group)
-{
-    ATK_ASSERT( group != 0 );
-    ATK_ASSERT_MSG( hasGroup(group->getName()) == false, \
-                    "group->GetName() == " << group->getName() );
-
-    // remove this group from its current parent
-    DataGroup *curr_group = group->getParent();
-
-    curr_group->detachGroup(group->getName());
-
-    /// finally, attach to this group
-    attachGroup(group);
-
-    return group;
-}
-
-/*
-*************************************************************************
-*
-* Create a copy of given group and make it a child of this group.
-*
-* Copying a group does not perform a deep copy of any of its buffers. 
-*
-*************************************************************************
-*/
-DataGroup *DataGroup::copyGroup(DataGroup *group)
-{
-    ATK_ASSERT( group != 0 );
-    ATK_ASSERT_MSG( hasGroup(group->getName()) == false, \
-                    "group->GetName() == " << group->getName() );
-
-    DataGroup *res = createGroup(group->getName());
-
-    // copy all groups
-    size_t nchild_groups = group->getNumberOfGroups();
-    for (size_t i=0; i < nchild_groups; i++)
-    {
-        res->copyGroup(group->getGroup(i));
-    }
-
-
-    size_t nchild_views = group->getNumberOfViews();
-    for (size_t i=0; i < nchild_views; i++)
-    {
-        res->copyView(group->getView(i));
-    }
-
-    return res;
 }
 
 /*
@@ -414,19 +294,74 @@ void DataGroup::destroyGroup( common::IDType idx )
 */
 void DataGroup::destroyGroups()
 {
-    size_t ngroups = getNumberOfGroups();
+    size_t ngroups = getNumGroups();
 
-    for (size_t i=0;i<ngroups;i++)
+    for (size_t i=0; i<ngroups; ++i)
     {
         DataGroup* group = this->getGroup(i);
         delete group;
     }
 
-    // clean up book keeping
-    m_groups.clear();
-    m_groupsNameMap.clear();
+    m_group_coll.removeAllItems();
 }
 
+/*
+*************************************************************************
+*
+* Remove given group from its owning group and make it a child of this group.
+*
+*************************************************************************
+*/
+DataGroup* DataGroup::moveGroup(DataGroup* group)
+{
+    ATK_ASSERT( group != 0 );
+    ATK_ASSERT_MSG( hasGroup(group->getName()) == false, \
+                    "group->getName() == " << group->getName() );
+
+    // remove this group from its current parent
+    DataGroup *curr_group = group->getParent();
+
+    curr_group->detachGroup(group->getName());
+
+    /// finally, attach to this group
+    attachGroup(group);
+
+    return group;
+}
+
+/*
+*************************************************************************
+*
+* Create a copy of given group and make it a child of this group.
+*
+* Copying a group does not perform a deep copy of any of its buffers. 
+*
+*************************************************************************
+*/
+DataGroup* DataGroup::copyGroup(DataGroup* group)
+{
+    ATK_ASSERT( group != 0 );
+    ATK_ASSERT_MSG( hasGroup(group->getName()) == false, \
+                    "group->getName() == " << group->getName() );
+
+    DataGroup *res = createGroup(group->getName());
+
+    // copy all groups
+    size_t nchild_groups = group->getNumGroups();
+    for (size_t i=0; i < nchild_groups; ++i)
+    {
+        res->copyGroup(group->getGroup(i));
+    }
+
+
+    size_t nchild_views = group->getNumViews();
+    for (size_t i=0; i < nchild_views; ++i)
+    {
+        res->copyView(group->getView(i));
+    }
+
+    return res;
+}
 
 /*
 *************************************************************************
@@ -438,14 +373,14 @@ void DataGroup::destroyGroups()
 void DataGroup::info(Node& n) const
 {
     n["name"] = m_name;
-    for (common::IDType i=0;i<this->getNumberOfViews();i++)
+    for (common::IDType i=0; i<this->getNumViews(); ++i)
     {
         DataView const *view = this->getView(i);
         Node& v = n["views"].fetch(view->getName());
         view->info(v);
 
     }
-    for (common::IDType i=0;i<this->getNumberOfGroups();i++)
+    for (common::IDType i=0; i<this->getNumGroups(); ++i)
     {
         DataGroup const* group =  this->getGroup(i);
         Node& g = n["groups"].fetch(group->getName());
@@ -480,22 +415,21 @@ void DataGroup::printTree( const int nlevels ) const
   for ( int i=0 ; i<nlevels ; ++i ) std::cout<<"    ";
   std::cout<<"DataGroup "<<this->getName()<<std::endl;
 
+  size_t nviews = getNumViews();
+  for (size_t idx = 0; idx < nviews; ++idx)
+  {
+     const DataView* view = getView(idx);
+
+     for ( int i=0 ; i<nlevels+1 ; ++i ) std::cout<<"    ";
+     std::cout<< "DataView " << view->getName() << std::endl;
+  } 
    
-  for ( std::map<std::string, common::IDType>::const_iterator viewIter=m_viewsNameMap.begin() ;
-       viewIter!=m_viewsNameMap.end() ;
-       ++viewIter )
+  size_t ngroups = getNumGroups();
+  for (size_t idx = 0; idx < ngroups; ++idx)
   {
-    for ( int i=0 ; i<nlevels+1 ; ++i ) std::cout<<"    ";
-    std::cout<<"DataView "<<viewIter->first<<std::endl;
-  }
+     const DataGroup* group = getGroup(idx);
 
-
-  for ( std::map<std::string, common::IDType>::const_iterator groupIter=m_groupsNameMap.begin() ;
-       groupIter!=m_groupsNameMap.end() ;
-       ++groupIter )
-  {
-    common::IDType index = groupIter->second;
-    m_groups[index]->printTree( nlevels + 1 );
+     group->printTree( nlevels + 1 ); 
   }
 
 }
@@ -563,12 +497,11 @@ void DataGroup::load(const std::string& obase,
 *************************************************************************
 */
 DataGroup::DataGroup(const std::string& name,
-                     DataGroup *parent) : 
-  m_name(name),
+                     DataGroup* parent) 
+: m_name(name),
   m_parent(parent),
   m_datastore(parent->getDataStore())
 { 
-
 }
 
 /*
@@ -580,12 +513,11 @@ DataGroup::DataGroup(const std::string& name,
 *************************************************************************
 */
 DataGroup::DataGroup(const std::string& name,
-                     DataStore* datastore) :
- m_name(name),
- m_parent(datastore->getRoot()),
- m_datastore(datastore)
+                     DataStore* datastore) 
+: m_name(name),
+  m_parent(datastore->getRoot()),
+  m_datastore(datastore)
 {
-
 }
 
 /*
@@ -597,8 +529,8 @@ DataGroup::DataGroup(const std::string& name,
 */
 DataGroup::~DataGroup()
 {
-    destroyViews();
-    destroyGroups();
+   destroyViews();
+   destroyGroups();
 }
 
 
@@ -609,14 +541,13 @@ DataGroup::~DataGroup()
 *
 *************************************************************************
 */
-DataView* DataGroup::attachView(DataView* const view)
+DataView* DataGroup::attachView(DataView* view)
 {
     ATK_ASSERT( view != 0 );
     ATK_ASSERT_MSG( hasView(view->getName()) == false, \
-                    "view->GetName() == " << view->getName() );
+                    "view->getName() == " << view->getName() );
 
-    m_viewsNameMap[view->getName()] = m_views.size(); // map name to index
-    m_views.push_back( view );
+    m_view_coll.insertItem(view, view->getName());
 
     return view;
 }
@@ -630,31 +561,10 @@ DataView* DataGroup::attachView(DataView* const view)
 */
 DataView* DataGroup::detachView(const std::string& name )
 {
-    DataView* view = nullptr;
-
-    std::map<std::string, common::IDType>::iterator itr;
-    itr = m_viewsNameMap.find( name );
-    if ( itr == m_viewsNameMap.end() )
-    {
-       ATK_WARNING("No view with name " << name << " -- null return value"); 
-    }
-    else {
-       common::IDType idx = itr->second;
-       view = m_views[idx];
-       m_viewsNameMap.erase( itr );
-       m_views.erase(m_views.begin() + idx);
-    
-      // any entry in m_viewsNameMap above idx needs to shift down by 1
-      for (itr = m_viewsNameMap.begin();itr!= m_viewsNameMap.end();itr++)
-      {
-         if(itr->second > idx)
-         {
-            itr->second--;
-         }
-      }
-    
+   DataView* view = m_view_coll.removeItem(name);
+   if (view) {
       view->m_owning_group = nullptr;
-   } 
+   }
 
    return view;
 }
@@ -668,23 +578,12 @@ DataView* DataGroup::detachView(const std::string& name )
 */
 DataView* DataGroup::detachView(common::IDType idx)
 {
-    DataView *view = m_views[idx];
+   DataView* view = m_view_coll.removeItem(idx);
+   if (view) {
+      view->m_owning_group = nullptr;
+   }
 
-    std::map<std::string, common::IDType>::iterator itr;
-    itr = m_viewsNameMap.find(view->getName());
-    m_viewsNameMap.erase( itr );
-    m_views.erase(m_views.begin() + idx);
-    // any entry in m_viewsNameMap above idx needs to shift down by 1
-    for (itr = m_viewsNameMap.begin();itr!= m_viewsNameMap.end();itr++)
-    {
-        if(itr->second > idx)
-        {
-            itr->second--;
-        }
-    }
-    view->m_owning_group = nullptr;
-
-    return view;
+   return view;
 }
 
 
@@ -695,14 +594,14 @@ DataView* DataGroup::detachView(common::IDType idx)
 *
 *************************************************************************
 */
-DataGroup* DataGroup::attachGroup(DataGroup* const group)
+DataGroup* DataGroup::attachGroup(DataGroup* group)
 {
     ATK_ASSERT( group != 0 );
     ATK_ASSERT_MSG( hasGroup(group->getName()) == false, \
-                    "group->GetName() == " << group->getName() );
+                    "group->getName() == " << group->getName() );
 
-    m_groupsNameMap[group->getName()] = m_groups.size(); // map name to index
-    m_groups.push_back( group );
+    m_group_coll.insertItem(group, group->getName());  
+   
     return group;
 }
 
@@ -715,31 +614,9 @@ DataGroup* DataGroup::attachGroup(DataGroup* const group)
 */
 DataGroup* DataGroup::detachGroup(const std::string& name )
 {
-   DataGroup* group = nullptr;
-
-   std::map<std::string, common::IDType>::iterator itr;
-   itr = m_groupsNameMap.find( name );
-   if ( itr == m_groupsNameMap.end() )
-   {
-      ATK_WARNING("No view with name " << name << " -- null return value"); 
-   }
-   else
-   {
-      common::IDType idx = itr->second;
-      group = m_groups[idx];
-      m_groupsNameMap.erase( itr );
-      m_groups.erase(m_groups.begin() + idx);
-
-      // any entry in m_groupsNameMap above idx needs to shift down by 1
-      for (itr = m_groupsNameMap.begin();itr!= m_groupsNameMap.end();itr++)
-      {
-          if(itr->second > idx)
-          {
-              itr->second--;
-          }
-      }
+   DataGroup* group = m_group_coll.removeItem(name);
+   if (group) {
       group->m_parent = nullptr;
-
    }
 
    return group;
@@ -754,22 +631,12 @@ DataGroup* DataGroup::detachGroup(const std::string& name )
 */
 DataGroup* DataGroup::detachGroup(common::IDType idx)
 {
-    DataGroup* group = m_groups[idx];
+   DataGroup* group = m_group_coll.removeItem(idx);
+   if (group) {
+      group->m_parent = nullptr;
+   }
 
-    std::map<std::string,common::IDType>::iterator itr;
-    itr = m_groupsNameMap.find(group->getName());
-    m_groupsNameMap.erase( itr );
-    // any entry in m_groupsNameMap above idx needs to shift down by 1
-    for (itr = m_groupsNameMap.begin();itr!= m_groupsNameMap.end();itr++)
-    {
-        if(itr->second > idx)
-        {
-            itr->second--;
-        }
-    }
-    group->m_parent = nullptr;
-
-    return group;
+   return group;
 }
 
 
@@ -828,7 +695,7 @@ void DataGroup::copyFromNode(Node& n)
 void DataGroup::copyToNode(Node& n,
                            std::vector<common::IDType>& buffer_ids) const
 {
-    for (common::IDType i=0; i < this->getNumberOfViews(); i++)
+    for (common::IDType i=0; i < this->getNumViews(); ++i)
     {
         DataView const* view = this->getView(i);
         Node& n_view = n["views"].fetch(view->getName());
@@ -844,7 +711,7 @@ void DataGroup::copyToNode(Node& n,
         }
     }
     
-    for (common::IDType i=0; i < this->getNumberOfGroups(); i++)
+    for (common::IDType i=0; i < this->getNumGroups(); ++i)
     {
         DataGroup const* group =  this->getGroup(i);
         Node& n_group = n["groups"].fetch(group->getName());
