@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-// SiDRe project headers
+// Other CS Toolkit headers
 #include "common/Types.hpp"
 
 

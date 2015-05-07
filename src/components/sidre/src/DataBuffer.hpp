@@ -202,7 +202,7 @@ private:
     /*!
      *  \brief Private ctor that assigns unique id.
      */
-    DataBuffer( const common::IDType uid );
+    DataBuffer( common::IDType uid );
 
     /*!
      * \brief Private copy ctor.

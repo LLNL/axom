@@ -2,6 +2,7 @@
 # Specify all headers
 #
 set(sidre_headers
+    Collections.hpp
     DataBuffer.hpp
     DataGroup.hpp
     DataStore.hpp

@@ -15,7 +15,7 @@
 #include <vector>
 #include <stack>
 
-// SiDRe project headers
+// Other CS Toolkit headers
 #include "common/Types.hpp"
 
 
@@ -65,7 +65,7 @@ public:
   /*!
    * \brief Return (non-const) pointer to data buffer object with given id.
    */
-  DataBuffer* getBuffer( const common::IDType id ) 
+  DataBuffer* getBuffer( common::IDType id ) 
   { 
      return m_DataBuffers[id]; 
   }
@@ -85,7 +85,7 @@ public:
    *   Note that buffer destruction detaches it from all groups and views 
    *   it was associated with.
    */
-  void destroyBuffer( const common::IDType id );
+  void destroyBuffer( common::IDType id );
 
   /*!
    * \brief Remove all data buffers from the datastore and destroy them 
@@ -102,7 +102,7 @@ public:
    *
    * \return pointer to DataBuffer object that was datached.
    */
-  DataBuffer* detachBuffer( const common::IDType id );
+  DataBuffer* detachBuffer( common::IDType id );
 
   /*!
    * \brief Return number of buffers in the datastore.

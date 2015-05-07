@@ -17,14 +17,18 @@
 #include <string>
 #include <vector>
 
-// SiDRe project headers
-#include "DataView.hpp"
+// Other CS Toolkit headers
 #include "common/Types.hpp"
 #include "common/Utilities.hpp"
+
+// SiDRe project headers
+#include "Collections.hpp"
+#include "DataView.hpp"
 
 
 // using directives to make Conduit usage easier and less visible
 using conduit::index_t;
+
 
 
 namespace asctoolkit
@@ -133,13 +137,19 @@ public:
      * \brief Return true if DataGroup owns a DataView with given name;
      *        else false.
      */
-    bool hasView( const std::string& name ) const;
+    bool hasView( const std::string& name ) const 
+    {
+       return m_view_coll.hasItem(name);
+    }
 
     /*!
      * \brief Return true if DataGroup owns a DataView with given index;
      *        else false.
      */
-    bool hasView( const common::IDType idx ) const;
+    bool hasView( common::IDType idx ) const
+    {
+       return m_view_coll.hasItem(idx);
+    }
 
     /*!
      * \brief Return (non-const) pointer to DataView with given name.
@@ -147,9 +157,8 @@ public:
     DataView* getView( const std::string& name )
     {
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
-            
-        const common::IDType idx = m_viewsNameMap.at(name);
-        return m_views[idx];
+       
+        return m_view_coll.getItem(name);     
     }
 
     /*!
@@ -159,30 +168,49 @@ public:
     {
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
-        const common::IDType idx = m_viewsNameMap.at(name);
-        return m_views[idx];
+        return m_view_coll.getItem(name);     
     }
 
     /*!
      * \brief Return (non-const) pointer to DataView with given index.
      */
-    DataView* getView( const common::IDType idx )
+    DataView* getView( common::IDType idx )
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx);
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
-        return m_views[idx];
+        return m_view_coll.getItem(idx);     
     }
 
     /*!
      * \brief Return (const) pointer to DataView with given index.
      */
-    DataView const* getView( const common::IDType idx ) const
+    DataView const* getView( common::IDType idx ) const
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx);
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
-        return m_views[idx];
+        return m_view_coll.getItem(idx);     
     }
 
+#if 0  // 
+       // RDH -- These should probably be removed since they are error-prone.
+       //      
+       // I compiled them out for now since they are not used anywhere. 
+       //
+       // For example, using the map "at" method throws an exception if no 
+       // item is found with a given key (here, a name). In that case, the 
+       // returned index value is undefined. We could replace the "at" usage 
+       // with "find" and then return an "undefined" index value that a caller 
+       // could test for. However, common::IDType we are using is unsigned. So 
+       // there is no clear choice for an "undefined" index.  
+       //
+       // Similarly, if there is no item with a given index, then what should 
+       // the returned name be? An empty string? Again, a caller would have to 
+       // check against this.  
+       //
+       // IMO, users should always know whether they should use a name or 
+       // index for lookup. We have routines to check whether an item exists 
+       // with a name or index.
+       //
     /*!
      * \brief Return the index of DataView with given name.
      */
@@ -198,18 +226,19 @@ public:
      */
     const std::string& getViewName(common::IDType idx) const
     {
-        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx);
+        ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
         const DataView* view = getView(idx);
         return view->getName();
     }
-  
+#endif
+
     /*!
      * \brief Return number of DataViews contained in this DataGroup.
      */
-    size_t getNumberOfViews() const
+    size_t getNumViews() const
     {
-        return m_views.size();
+        return m_view_coll.getNumItems();
     }
 
 //@}
@@ -307,17 +336,19 @@ public:
 //@{
 //!  @name (child) DataGroup accessor methods
 
-    /*!
-     * \brief Return true if DataGroup has an (immediate) child DataGroup 
-     *        with given name; else false.
-     */
-    bool hasGroup( const std::string& name ) const;
+    bool hasGroup( const std::string& name ) const
+    {
+       return m_group_coll.hasItem(name);
+    }
 
     /*!
      * \brief Return true if DataGroup has an (immediate) child DataGroup 
      *        with given index; else false.
      */
-    bool hasGroup( const common::IDType idx ) const;
+    bool hasGroup( common::IDType idx ) const
+    {
+       return m_group_coll.hasItem(idx);
+    }
 
     /*!
      * \brief Return (non-const) pointer to child DataGroup with given name.
@@ -326,8 +357,7 @@ public:
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
-        const common::IDType idx = m_groupsNameMap.at(name);
-        return m_groups[idx];
+        return m_group_coll.getItem(name);
     }
 
     /*!
@@ -337,30 +367,34 @@ public:
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
-        const common::IDType idx = m_groupsNameMap.at(name);
-        return m_groups[idx];
+        return m_group_coll.getItem(name);
     }
 
     /*!
      * \brief Return (non-const) pointer to child DataGroup with given index.
      */
-    DataGroup* getGroup( const common::IDType idx ) 
+    DataGroup* getGroup( common::IDType idx ) 
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx);
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
-        return m_groups[idx];
+        return m_group_coll.getItem(idx);
     }
 
     /*!
      * \brief Return (const) pointer to child DataGroup with given index.
      */
-    DataGroup const* getGroup( const common::IDType idx ) const
+    DataGroup const* getGroup( common::IDType idx ) const
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx);
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
-        return m_groups[idx];
+        return m_group_coll.getItem(idx);
     }
 
+#if 0  // 
+       //  RDH -- These should probably be removed since they are error-prone.
+       //
+       // See comments above for similar view methods.
+       //
     /*!
      * \brief Return the index of child DataGroup with given name.
      */
@@ -376,18 +410,19 @@ public:
      */
     const std::string& getGroupName(common::IDType idx) const
     {
-        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx);
+        ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
         const DataGroup* group = getGroup(idx);
         return group->getName();
     }
+#endif
 
     /*!
      * \brief Return number of child DataGroups contained in this DataGroup.
      */
-    size_t getNumberOfGroups() const
+    size_t getNumGroups() const
     {
-        return m_groups.size();
+        return m_group_coll.getNumItems();
     }
 
 //@}
@@ -498,7 +533,7 @@ private:
     DataGroup(const std::string& name, DataStore* datastore);
 
     //
-    // Unimplemented ctors and copy-assignment operators.
+    // Unimplemented copy ctors and copy-assignment operators.
     //
 #ifdef USE_CXX11
     DataGroup( const DataGroup& source ) = delete;
@@ -559,6 +594,7 @@ private:
     void copyFromNode(Node& n,
                       std::map<common::IDType, common::IDType>& id_map);
 
+
    
     /// Name of this DataGroup object.
     std::string  m_name;
@@ -569,13 +605,21 @@ private:
     /// This DataGroup object lives in the tree of this DataStore object.
     DataStore* m_datastore;
 
-    /// Vector of views (indexed by id) and map of view names to ids.
-    std::vector<DataView*>        m_views;
-    std::map<std::string, common::IDType> m_viewsNameMap;
 
-    /// Vector of child groups (indexed by id) and map of group names to ids.
-    std::vector<DataGroup*>       m_groups;
-    std::map<std::string, common::IDType> m_groupsNameMap;
+    ///
+    /// Typedefs for view and shild group containers. They are here to
+    /// avoid propagating specific type names in the group implementation.
+    ///
+    typedef MapCollection<DataView> DataViewCollection;
+    ///
+    typedef MapCollection<DataGroup> DataGroupCollection;
+ 
+    /// Collection of DataViews
+    DataViewCollection m_view_coll;
+
+    /// Collection of child DataGroups
+    DataGroupCollection m_group_coll;
+
 };
 
 
