@@ -30,7 +30,7 @@ namespace meshapi    {
     public:
         virtual ~Relation(){}
 
-        virtual void setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets) = 0;
+        //void setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets) = 0;
 
         virtual RelationVecConstIterator begin(Index fromSetIndex)       const  = 0;
 

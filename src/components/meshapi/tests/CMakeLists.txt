@@ -5,7 +5,8 @@
 set(gtest_meshapi_tests
    testHello.cxx
    testOrderedSet.cxx
-   testRelation.cxx
+   testStaticVariableRelation.cxx
+   testStaticConstantRelation.cxx
    testSet.cxx
    )
 

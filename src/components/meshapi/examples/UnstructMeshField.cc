@@ -20,8 +20,11 @@
 
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/StaticVariableRelation.hpp"
+#include "meshapi/StaticConstantRelation.hpp"
 
-
+#ifndef USE_CONSTANT_RELATION
+  #define USE_CONSTANT_RELATION
+#endif
 
 
 namespace asctoolkit {
@@ -57,7 +60,11 @@ public:
     typedef asctoolkit::meshapi::StaticVariableRelation NodeZoneRelation;
     typedef NodeZoneRelation::RelationVecConstIterator  NodeZoneIterator;
 
+#ifdef USE_CONSTANT_RELATION
+    typedef asctoolkit::meshapi::StaticConstantRelation ZoneNodeRelation;
+#else
     typedef asctoolkit::meshapi::StaticVariableRelation ZoneNodeRelation;
+#endif
     typedef ZoneNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
     typedef NodeZoneRelation::Index         IndexType;
@@ -175,6 +182,9 @@ void readHexMesh(std::string fileName, HexMesh& mesh)
     typedef HexMesh::ZoneNodeRelation::RelationVec  RelationVec;
     typedef RelationVec::iterator                   RelationVecIterator;
 
+#ifdef USE_CONSTANT_RELATION
+    IndexType const STRIDE = HexMesh::NODES_PER_ZONE;
+#else
     // Setup the 'begins' vector
     //  -- exploit the fact that the relation is constant
     //  -- note that for a constant relation, this array is not really necessary
@@ -183,6 +193,7 @@ void readHexMesh(std::string fileName, HexMesh& mesh)
     {
         beginsVec[idx] = idx * HexMesh::NODES_PER_ZONE;
     }
+#endif
 
     // Setup the 'offsets' vector
     RelationVec offsetsVec ( numNodeZoneIndices );
@@ -211,7 +222,11 @@ void readHexMesh(std::string fileName, HexMesh& mesh)
 
     // Set the relation here by copying over the data buffers
     // NOTE: This should be a lot cleaner once we hook up to the datastore
+#ifdef USE_CONSTANT_RELATION
+    mesh.relationZoneNode.setRelation(offsetsVec, STRIDE);
+#else
     mesh.relationZoneNode.setRelation(beginsVec, offsetsVec);
+#endif
 
     // Check that the relation is valid
     mesh.relationZoneNode.isValid();

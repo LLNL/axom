@@ -16,6 +16,7 @@ set(meshapi_headers
 	# SRM Relation headers
 	Relation.hpp
 	StaticVariableRelation.hpp
+	StaticConstantRelation.hpp
 	# SRM Map headers
 	   # nothing yet...
     )
@@ -30,6 +31,7 @@ set(meshapi_sources
     OrderedSet.cpp
     # SRM Relation sources
     StaticVariableRelation.cpp
+	StaticConstantRelation.cpp
     # SRM Map sources
     )
 

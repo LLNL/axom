@@ -1,5 +1,5 @@
-/*
- * testRelation.cxx
+/**
+ * \file testStaticConstantRelation.cxx
  *
  *  Created on: Apr 29, 2015
  *      Author: weiss27
@@ -14,39 +14,39 @@
 
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/Relation.hpp"
-#include "meshapi/StaticVariableRelation.hpp"
+#include "meshapi/StaticConstantRelation.hpp"
 
 using asctoolkit::meshapi::OrderedSet;
-using asctoolkit::meshapi::StaticVariableRelation;
+using asctoolkit::meshapi::StaticConstantRelation;
 
 typedef asctoolkit::meshapi::MeshIndexType IndexType;
 typedef asctoolkit::meshapi::MeshSizeType SizeType;
 
 const IndexType FROMSET_SIZE = 5;
-const IndexType TOSET_SIZE = 8;
+const IndexType TOSET_SIZE = 6;
 
 
-TEST(gtest_meshapi_relation,empty_relation)
+TEST(gtest_meshapi_static_constant_relation,empty_relation)
 {
     std::cout<<"\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
-    StaticVariableRelation emptyRel(NULL, NULL);
+    StaticConstantRelation emptyRel(NULL, NULL);
 
     EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 
     std::cout<<"\n****** done."<<std::endl;
 }
 
-TEST(gtest_meshapi_relation,test_uninitialized_relation)
+TEST(gtest_meshapi_static_constant_relation,test_uninitialized_relation)
 {
-    std::cout<<"\n****** Testing uninitialized relation.  isValid() should be false." << std::endl;
+    std::cout<<"\n****** Testing uninitialized relation.  isValid() should be TRUE since stride is 0 by default." << std::endl;
 
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    StaticVariableRelation emptyRel(&fromSet, &toSet);
+    StaticConstantRelation emptyRel(&fromSet, &toSet);
 
-    EXPECT_FALSE(emptyRel.isValid(true)) << "Empty relation was not initialized";
+    EXPECT_TRUE(emptyRel.isValid(true)) << "Constant relation with stride 0 should be valid";
 
     std::cout<<"\n****** done."<<std::endl;
 }
@@ -60,53 +60,49 @@ void printVector(StrType const& msg, VecType const& vec)
 }
 
 template<typename VecType>
-void generateIncrementingRelations(VecType* begins, VecType* offsets)
+void generateIncrementingRelations(IndexType stride, VecType* offsets)
 {
-    VecType& beginsVec = *begins;
     VecType& offsetsVec = *offsets;
 
     IndexType curIdx = IndexType();
     for(IndexType i=0; i < FROMSET_SIZE; ++i)
     {
-        beginsVec[i] = curIdx;
-        for(IndexType j=0; j <= i; ++j)
+        for(IndexType j=0; j < stride; ++j)
         {
-            offsetsVec.push_back( j % TOSET_SIZE );
+            offsetsVec.push_back( (i+j) % TOSET_SIZE );
             ++curIdx;
         }
     }
-    beginsVec[FROMSET_SIZE] = curIdx;
 }
 
-TEST(gtest_meshapi_relation,simple_relation)
+TEST(gtest_meshapi_static_constant_relation,simple_relation)
 {
     std::cout<<"\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    StaticVariableRelation incrementingRel(&fromSet, &toSet);
+    StaticConstantRelation incrementingRel(&fromSet, &toSet);
 
-    typedef StaticVariableRelation::RelationVec IndexVec;
-    IndexVec begins(FROMSET_SIZE +1);
+    typedef StaticConstantRelation::RelationVec IndexVec;
     IndexVec offsets;
 
-    printVector("begins vector", begins);
     printVector("offsets vector", offsets);
 
-    generateIncrementingRelations(&begins, &offsets);
+    IndexType const ELEM_STRIDE = 5;
 
-    printVector("begins vector", begins);
+    generateIncrementingRelations(ELEM_STRIDE, &offsets);
+
     printVector("offsets vector", offsets);
 
 
-    incrementingRel.setRelation(begins, offsets);
+    incrementingRel.setRelation(offsets, ELEM_STRIDE);
 
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
     typedef OrderedSet::iterator SetIter;
-    typedef StaticVariableRelation::RelationVecConstIterator RelSetConstIter;
+    typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
@@ -114,28 +110,28 @@ TEST(gtest_meshapi_relation,simple_relation)
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
         SizeType actualSize = incrementingRel.size( *sIt);
-        SizeType expectedSize = std::distance(fromSet.begin(), sIt) +1;
+        SizeType expectedSize = ELEM_STRIDE;
 
         std::cout <<"\n\t\tExpected: " << expectedSize;
         std::cout <<"\n\t\tActual: " <<  actualSize <<"\n";
 
         EXPECT_EQ( expectedSize, actualSize ) << "relation for this element was incorrect size.";
 
+        IndexType fromSetEltNum = std::distance(fromSet.begin(), sIt);
+
         RelSetConstIter toSetBegin = incrementingRel.begin(*sIt);
         RelSetConstIter toSetEnd = incrementingRel.end(*sIt);
         for(RelSetConstIter innerIt = toSetBegin; innerIt != toSetEnd; ++innerIt)
         {
-            IndexType eltNum = std::distance(toSetBegin, innerIt);
+            IndexType toSetEltNum = std::distance(toSetBegin, innerIt);
 
-            std::cout <<"\n\t\t " << eltNum <<": " << *innerIt ;
+            std::cout <<"\n\t\t " << toSetEltNum <<": " << *innerIt ;
 
-            IndexType expectedVal =  (eltNum ) % TOSET_SIZE;
+            IndexType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
             IndexType actualVal = *innerIt;
             ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }
-
-
     std::cout<<"\n****** done."<<std::endl;
 }
 
