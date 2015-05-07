@@ -213,7 +213,7 @@ TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
       m_items.erase(m_items.begin() + idx);
 
       // Decrement approriate item indices
-      for (mit = m_name2idx_map.begin(); mit != m_name2idx_map.end(); mit++)
+      for (mit = m_name2idx_map.begin(); mit != m_name2idx_map.end(); ++mit)
       {
          if (mit->second > idx)
          {
