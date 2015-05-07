@@ -16,18 +16,12 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "meshapi/FileUtilities.hpp"
+
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/StaticVariableRelation.hpp"
 
 
-#include <cstdio>  /* defines FILENAME_MAX */
-#ifdef WINDOWS
-    #include <direct.h>
-    #define GetCurrentDir _getcwd
-#else
-    #include <unistd.h>
-    #define GetCurrentDir getcwd
-#endif
 
 
 namespace asctoolkit {
@@ -52,11 +46,14 @@ struct Point
 
 struct HexMesh {
 
+public:
     enum { NODES_PER_ZONE = 8 };
 
+    // types for sets
     typedef asctoolkit::meshapi::OrderedSet NodeSet;
     typedef asctoolkit::meshapi::OrderedSet ZoneSet;
 
+    // types for relations
     typedef asctoolkit::meshapi::StaticVariableRelation NodeZoneRelation;
     typedef NodeZoneRelation::RelationVecConstIterator  NodeZoneIterator;
 
@@ -66,29 +63,30 @@ struct HexMesh {
     typedef NodeZoneRelation::Index         IndexType;
     typedef NodeZoneRelation::size_type     SizeType;
 
-
+    // types for maps
+    // TODO: Convert to meshapi::Map
     typedef std::vector< Point >                    PositionsVec;
     typedef std::vector< DataType >                 NodeField;
     typedef std::vector< DataType >                 ZoneField;
 
-
+public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
     SizeType  numNodes() const { return nodes.size(); }
 
     /** \brief Simple accessor for the number of zones in the mesh */
     SizeType  numZones() const { return zones.size(); }
 
+public:
+    /// Sets in the mesh
     NodeSet nodes;
     ZoneSet zones;
 
-    // storage for relation_(3,0) -- zones -> nodes
-    ZoneNodeRelation    relationZoneNode;
-
-    // storage for relation_(0,3) -- nodes -> zones
-    ZoneNodeRelation    relationNodeZone;
+    /// Relations in the mesh
+    ZoneNodeRelation    relationZoneNode;   // storage for relation_(3,0) -- zones -> nodes
+    NodeZoneRelation    relationNodeZone;   // storage for relation_(0,3) -- nodes -> zones
 
 
-    // -- positions and fields
+    /// Maps (fields) in the mesh -- positions and scalar fields
 
     // Node-centered position field
     PositionsVec                                    nodePosition;
@@ -100,29 +98,21 @@ struct HexMesh {
     NodeField                                       nodeFieldAvg;
 };
 
-void printCWD()
-{
-    char cCurrentPath[FILENAME_MAX];
-
-    if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
-    {
-        std::abort();
-    }
-
-    std::cout << "The current working directory is " << std::string(cCurrentPath);
-
-}
 
 void readHexMesh(std::string fileName, HexMesh& mesh)
 {
     std::ifstream vtkMesh( fileName.c_str() );
+    if(!vtkMesh)
+    {
+        std::cerr <<"fstream error -- problem opening file: '" << fileName <<"'"
+                  << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() <<"'"
+                  << std::endl;
+        std::abort();
+    }
 
     //--------------------------------------------------------------
 
-    // Read some initial header stuff.  There's no error checking
-    // like there should be, but this is a memory stressing routine,
-    // not a robust mesh reader.
-
+    // Read some initial header stuff.  Note: this is not a robust vtkreader
     std::string junk;
     while( junk != "POINTS" )
     {
@@ -141,7 +131,7 @@ void readHexMesh(std::string fileName, HexMesh& mesh)
     // Create the set of Nodes
     mesh.nodes = HexMesh::NodeSet(numNodes);
 
-    // Read in the nodal position field
+    // Create the nodal position field, and read in file file
     mesh.nodePosition = HexMesh::PositionsVec( numNodes );
     for(IndexType i=0; i != numNodes; ++i)
     {
@@ -150,11 +140,9 @@ void readHexMesh(std::string fileName, HexMesh& mesh)
        vtkMesh >> mesh.nodePosition[i].z;
     }
 
-
     //--------------------------------------------------------------
 
-    // Read in the CELL data, that we'll call zones.  We're going to assume
-    // a VTK type 12 (Hexahedral zones).
+    // Read in the CELL data, that we'll call zones.  We're going to assume hexahedra (VTK type 12)
 
     IndexType numZones;
     IndexType listSize;
@@ -187,16 +175,16 @@ void readHexMesh(std::string fileName, HexMesh& mesh)
     typedef HexMesh::ZoneNodeRelation::RelationVec  RelationVec;
     typedef RelationVec::iterator                   RelationVecIterator;
 
-    // Setup the begins vector
+    // Setup the 'begins' vector
     //  -- exploit the fact that the relation is constant
-    //  -- note that for a constant relation, this is not necessary
+    //  -- note that for a constant relation, this array is not really necessary
     RelationVec beginsVec( mesh.zones.size() + 1 );
     for(HexMesh::IndexType idx=0; idx <= mesh.zones.size(); ++idx)
     {
         beginsVec[idx] = idx * HexMesh::NODES_PER_ZONE;
     }
 
-    // Setup the offsets vector
+    // Setup the 'offsets' vector
     RelationVec offsetsVec ( numNodeZoneIndices );
     RelationVecIterator oIt = offsetsVec.begin();
     IndexType nodeCount;
@@ -396,7 +384,7 @@ int main()
    // Load the hexmesh from the vtk file
    //--------------------------------------------------------------
 
-   printCWD();
+
 
 #ifndef USE_ONE
    int const NUM_RESOLUTIONS = 4;
@@ -409,7 +397,7 @@ int main()
    for(int res = 0; res < NUM_RESOLUTIONS; ++res)
    {
        std::stringstream filePath;
-       filePath << "../src/components/meshapi/examples/"
+       filePath  << "../src/components/meshapi/examples/"
                  << "ball_"<< fileResolutions[res] << ".vtk";
        std::string meshName = filePath.str();
 

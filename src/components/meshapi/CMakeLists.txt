@@ -11,6 +11,9 @@ project(meshapi)
 ### -Wno-missing-braces added to avoid warnings from boost
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_11} -Wall -Wno-missing-braces -fno-strict-aliasing " CACHE INTERNAL "meshapi") # -Wextra
 
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter " CACHE INTERNAL "meshapi") # -Wextra
+
+
 #SET(CMAKE_CXX_VECTORIZER_FLAGS "-ftree-vectorize -fdump-tree-vect -ftree-vectorizer-verbose=7 -fdump-tree-optimized-details ") #-march=native "
 
 #SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 ")

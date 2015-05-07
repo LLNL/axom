@@ -156,7 +156,7 @@ if(ENABLE_WARNINGS)
         if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
             "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             # using clang or gcc
-            add_definitions(-Wall -Wextra)
+            add_definitions(-Wall -Wextra -Wno-unused-parameter)
         endif()
     endif()
 

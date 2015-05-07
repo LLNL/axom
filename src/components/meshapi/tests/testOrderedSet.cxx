@@ -13,7 +13,7 @@
 
 
 typedef asctoolkit::meshapi::OrderedSet SetType;
-typedef typename SetType::iterator SetIterator;
+typedef SetType::iterator SetIterator;
 static SetType::size_type const MAX_SET_SIZE = 10;
 
 

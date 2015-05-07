@@ -7,7 +7,9 @@ INCLUDE_DIRECTORIES(
 #
 set(meshapi_headers
     Hello.hpp
+    # Utility files
     Utilities.hpp
+    FileUtilities.hpp
 	# SRM Set headers
     Set.hpp
     OrderedSet.hpp
@@ -15,6 +17,7 @@ set(meshapi_headers
 	Relation.hpp
 	StaticVariableRelation.hpp
 	# SRM Map headers
+	   # nothing yet...
     )
 
 #
