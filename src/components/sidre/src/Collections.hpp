@@ -111,12 +111,15 @@ namespace sidre
 * \class MapCollection
 *
 * \brief MapCollection is a container class template for holding 
-*        a collection of items of template parameter type, using
-*        std::map.
+*        a collection of items of template parameter type TYPE, using
+*        a map container of type MAP_TYPE.
+*
+* \warning Only std::map and std::unordered_map have been tested so far.
+*        
 *
 *************************************************************************
 */
-template <typename TYPE> 
+template <typename TYPE, typename MAP_TYPE> 
 class MapCollection
 {
 public:
@@ -136,7 +139,7 @@ public:
 
    bool hasItem(const std::string& name) const
    {
-      MapType::const_iterator mit = m_name2idx_map.find(name);
+      typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ? true : false );
    }
 
@@ -147,14 +150,14 @@ public:
 
    TYPE* getItem(const std::string& name)
    {
-      MapType::iterator mit = m_name2idx_map.find(name);
+      typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ? 
                m_items[ mit->second ] : ATK_NULLPTR );
    }
 
    TYPE const* getItem(const std::string& name) const
    {
-      MapType::const_iterator mit = m_name2idx_map.find(name);
+      typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ?
                m_items[ mit->second ] : ATK_NULLPTR );
    }
@@ -183,11 +186,12 @@ public:
 
 private:
    std::vector<TYPE*>  m_items;
-   MapType             m_name2idx_map;
+   MAP_TYPE            m_name2idx_map;
 };
 
-template <typename TYPE>
-bool MapCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
+template <typename TYPE, typename MAP_TYPE> 
+bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE* item, 
+                                               const std::string& name)
 {
    if ( m_name2idx_map.insert( std::make_pair(name, m_items.size()) ).second ) {
       // item was inserted into map
@@ -199,12 +203,12 @@ bool MapCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
    }
 } 
 
-template <typename TYPE>
-TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
+template <typename TYPE, typename MAP_TYPE>
+TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 {
    TYPE* ret_val = ATK_NULLPTR;
 
-   MapType::iterator mit = m_name2idx_map.find(name);
+   typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
    if ( mit != m_name2idx_map.end() ) {
       common::IDType idx = mit->second;
 
@@ -214,7 +218,7 @@ TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
       m_items.erase(m_items.begin() + idx);
 
       // Decrement approriate item indices
-      for (mit = m_name2idx_map.begin(); mit != m_name2idx_map.end(); mit++)
+      for (mit = m_name2idx_map.begin(); mit != m_name2idx_map.end(); ++mit)
       {
          if (mit->second > idx)
          {
@@ -226,8 +230,8 @@ TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
    return ret_val;
 }
 
-template <typename TYPE>
-TYPE* MapCollection<TYPE>::removeItem(common::IDType idx)
+template <typename TYPE, typename MAP_TYPE>
+TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(common::IDType idx)
 {
    if ( hasItem(idx) ) {
       TYPE* item = removeItem( m_items[idx]->getName() );

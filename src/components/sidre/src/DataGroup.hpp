@@ -17,6 +17,16 @@
 #include <string>
 #include <vector>
 
+#if 0 // These work but are disabled for now
+
+#if defined(USE_CXX11)
+#include <unordered_map>
+#else
+#include <boost/unordered_map>
+#endif
+
+#endif
+
 // Other CS Toolkit headers
 #include "common/Types.hpp"
 #include "common/Utilities.hpp"
@@ -608,11 +618,33 @@ private:
 
     ///
     /// Typedefs for view and shild group containers. They are here to
-    /// avoid propagating specific type names in the group implementation.
+    /// avoid propagating specific type names in the DataGroup class
+    /// implementation when we experiment with different containers.
     ///
-    typedef MapCollection<DataView> DataViewCollection;
+    ///////////////////////////////////////////////////////////////////
+    // Map container options
+    //
+    // Currently, std::map and boost/std::unordered_map containers
+    // have been tested.
+    //
+    typedef std::map<std::string, common::IDType> MapType;
+    //
+#if 0 // These work but are disabled for now
+
+#if defined(USE_CXX11)
+    typedef std::unordered_map<std::string, common::IDType> MapType;
+#else
+    typedef boost::unordered_map<std::string, common::IDType> MapType;
+#endif
+
+#endif
     ///
-    typedef MapCollection<DataGroup> DataGroupCollection;
+    typedef MapCollection<DataView, MapType> DataViewCollection;
+    ///
+    typedef MapCollection<DataGroup, MapType> DataGroupCollection;
+    // 
+    ///////////////////////////////////////////////////////////////////
+
  
     /// Collection of DataViews
     DataViewCollection m_view_coll;

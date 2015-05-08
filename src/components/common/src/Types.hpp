@@ -52,7 +52,7 @@ class atk_nullptr_t
  
 } atk_nullptr = {};
 
-#define ATK_NULLPTR atk_nullptr
+#define ATK_NULLPTR asctoolkit::common::atk_nullptr
 
 #endif
 
