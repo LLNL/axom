@@ -131,7 +131,7 @@ if (BUILD_UNCRUSTIFY)
 endif()
 
 ## Enable ENABLE C++ 11 features
-option(ENABLE_CXX11 "Enables C++11 features" ON)
+option(ENABLE_CXX11 "Enables C++11 features" OFF)
 if (ENABLE_CXX11)
   # define a macro so the code can ifdef accordingly.
   add_definitions("-DUSE_CXX11")

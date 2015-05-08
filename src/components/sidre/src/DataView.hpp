@@ -179,7 +179,7 @@ public:
      */
     bool  hasBuffer() const
     { 
-       return m_data_buffer != nullptr;
+       return m_data_buffer != ATK_NULLPTR;
     }
 
     /*!

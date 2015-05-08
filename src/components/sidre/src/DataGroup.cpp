@@ -563,7 +563,7 @@ DataView* DataGroup::detachView(const std::string& name )
 {
    DataView* view = m_view_coll.removeItem(name);
    if (view) {
-      view->m_owning_group = nullptr;
+      view->m_owning_group = ATK_NULLPTR;
    }
 
    return view;
@@ -580,7 +580,7 @@ DataView* DataGroup::detachView(common::IDType idx)
 {
    DataView* view = m_view_coll.removeItem(idx);
    if (view) {
-      view->m_owning_group = nullptr;
+      view->m_owning_group = ATK_NULLPTR;
    }
 
    return view;
@@ -616,7 +616,7 @@ DataGroup* DataGroup::detachGroup(const std::string& name )
 {
    DataGroup* group = m_group_coll.removeItem(name);
    if (group) {
-      group->m_parent = nullptr;
+      group->m_parent = ATK_NULLPTR;
    }
 
    return group;
@@ -633,7 +633,7 @@ DataGroup* DataGroup::detachGroup(common::IDType idx)
 {
    DataGroup* group = m_group_coll.removeItem(idx);
    if (group) {
-      group->m_parent = nullptr;
+      group->m_parent = ATK_NULLPTR;
    }
 
    return group;

@@ -243,7 +243,7 @@ TEST(datastore_group,create_destroy_view_and_buffer)
 
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
   bool buffValid = true;
-  if( buffer1 == nullptr )
+  if( buffer1 == ATK_NULLPTR )
   {
     buffValid = false;
   }

@@ -116,7 +116,7 @@ void DataBuffer::print() const
 DataBuffer::DataBuffer( common::IDType uid ) :
     m_uid(uid),
     m_views(),
-    m_data(nullptr),
+    m_data(ATK_NULLPTR),
     m_memblob(),
     m_node(),
     m_schema()

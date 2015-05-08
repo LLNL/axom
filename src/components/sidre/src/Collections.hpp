@@ -45,12 +45,12 @@
  *       
  *               bool hasItem(common::IDType idx) const;
  *
- *          - // Return pointer to item with given name (nullptr if none).
+ *          - // Return pointer to item with given name (ATK_NULLPTR if none).
  *
  *               TYPE* getItem(const std::string& name);
  *               TYPE const* getItem(const std::string& name) const ;
  *
- *          - // Return pointer to item with given index (nullptr if none).
+ *          - // Return pointer to item with given index (ATK_NULLPTR if none).
  *
  *               TYPE* getItem(common::IDType idx);
  *               TYPE const* getItem(common::IDType idx) cosnt;
@@ -61,12 +61,12 @@
  *               bool insertItem(TYPE* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a 
- *               pointer to it. If it doesn't exist, return nullptr.
+ *               pointer to it. If it doesn't exist, return ATK_NULLPTR.
  *
  *               TYPE* removeItem(const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a 
- *               pointer to it. If it doesn't exist, return nullptr.
+ *               pointer to it. If it doesn't exist, return ATK_NULLPTR.
  *
  *               TYPE* removeItem(common::IDType idx);
  *
@@ -121,7 +121,8 @@ class MapCollection
 {
 public:
 
-   typedef std::map<std::string, common::IDType> MapType;
+//   typedef std::map<std::string, common::IDType> MapType;
+   typedef common::UnorderedMapStringToIDType MapType;
 
    //
    // Default compiler-generated ctor, dtor, copy ctor, and copy assignment 
@@ -148,24 +149,24 @@ public:
    {
       MapType::iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ? 
-               m_items[ mit->second ] : nullptr );
+               m_items[ mit->second ] : ATK_NULLPTR );
    }
 
    TYPE const* getItem(const std::string& name) const
    {
       MapType::const_iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ?
-               m_items[ mit->second ] : nullptr );
+               m_items[ mit->second ] : ATK_NULLPTR );
    }
 
    TYPE* getItem(common::IDType idx)
    {
-      return ( hasItem(idx) ? m_items[idx] : nullptr );
+      return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
    }
 
    TYPE const* getItem(common::IDType idx) const
    {
-      return ( hasItem(idx) ? m_items[idx] : nullptr );
+      return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
    }
 
    bool insertItem(TYPE* item, const std::string& name);
@@ -201,7 +202,7 @@ bool MapCollection<TYPE>::insertItem(TYPE* item, const std::string& name)
 template <typename TYPE>
 TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
 {
-   TYPE* ret_val = nullptr;
+   TYPE* ret_val = ATK_NULLPTR;
 
    MapType::iterator mit = m_name2idx_map.find(name);
    if ( mit != m_name2idx_map.end() ) {
@@ -232,7 +233,7 @@ TYPE* MapCollection<TYPE>::removeItem(common::IDType idx)
       TYPE* item = removeItem( m_items[idx]->getName() );
       return item;
    } else {
-      return nullptr;
+      return ATK_NULLPTR;
    }
 }
 
