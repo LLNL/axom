@@ -19,7 +19,10 @@ set(logapi_sources
 
 if (ENABLE_MPI)
    list(APPEND logapi_headers SynchronizedConsole.hpp)
+   list(APPEND logapi_headers SeperateFilePerRankStream.hpp)
+
    list(APPEND logapi_sources SynchronizedConsole.cpp)
+   list(APPEND logapi_sources SeperateFilePerRankStream.cpp)
 endif()
 
 #
