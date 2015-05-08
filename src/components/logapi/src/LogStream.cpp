@@ -15,12 +15,15 @@
 
 #include "LogStream.hpp"
 
+#include <sstream>
+
 namespace asctoolkit {
 
 namespace logapi {
 
 
-LogStream::LogStream()
+LogStream::LogStream() :
+    m_fmtString( "[<MTYPE>] <FILE>:<LINE>\n MESSAGE: <MESSAGE>\n" )
 {
 
 }
@@ -29,6 +32,48 @@ LogStream::LogStream()
 LogStream::~LogStream()
 {
 
+}
+
+//------------------------------------------------------------------------------
+std::string LogStream::getFormatedMessage( const std::string& msgTypeName,
+                                           const std::string& message,
+                                           const std::string& fileName,
+                                           int line )
+{
+  std::string msg = m_fmtString;
+
+  std::size_t pos = msg.find( "<MTYPE>" );
+  if ( pos != std::string::npos ) {
+
+    msg = msg.substr(0,pos) + msgTypeName + msg.substr(pos+7,msg.length()-1);
+
+  } // END if
+
+  pos = msg.find( "<FILE>" );
+  if ( pos != std::string::npos ) {
+
+    msg = msg.substr(0,pos) + fileName + msg.substr(pos+6,msg.length()-1);
+
+  } // END if
+
+  pos = msg.find( "<LINE>" );
+  if ( pos != std::string::npos ) {
+
+    std::ostringstream oss;
+    oss << line;
+
+    msg = msg.substr(0,pos) + oss.str() + msg.substr(pos+6,msg.length()-1);
+
+  } // END if
+
+  pos = msg.find( "<MESSAGE>" );
+  if ( pos != std::string::npos ) {
+
+    msg = msg.substr(0,pos) + message + msg.substr(pos+9,msg.length()-1);
+
+  } // END if
+
+  return( msg );
 }
 
 } /* namespace logapi */

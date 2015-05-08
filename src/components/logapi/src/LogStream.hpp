@@ -46,6 +46,21 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Sets the format string.
+   * \param fmt a format string
+   * \note The following keywords in the format string are replaced:
+   *  <ul>
+   *    <li> <MTYPE> with the message type, e.g, ERROR, FATAL, etc. </li>
+   *    <li> <FILE> with the filename </li>
+   *    <li> <LINE> with the line number </li>
+   *    <li> <MESSAGE> with the user-supplied message </li>
+   *  </ul>
+   *****************************************************************************
+   */
+  void setFormatString(const std::string& fmt) { m_fmtString = fmt; }
+
+  /*!
+   *****************************************************************************
    * \brief Appends the given message to the stream.
    * \param [in] msgType the type of the message.
    * \param [in] msgTypeName string representation of the message type.
@@ -70,9 +85,24 @@ public:
    *  operation intended for a synchronization checkpoint.
    *****************************************************************************
    */
-  virtual void flush() {};
+  virtual void flush() { };
+
+protected:
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the formatted message as a single string.
+   * \return
+   *****************************************************************************
+   */
+   std::string getFormatedMessage( const std::string& msgTypeName,
+                                   const std::string& message,
+                                   const std::string& fileName,
+                                   int line );
 
 private:
+
+  std::string m_fmtString;
 
   /// \name Disabled Methods
   ///@{

@@ -40,10 +40,8 @@ void Console::append( MessageType msgType,
                       const std::string& fileName,
                       int line )
 {
-  std::cout << "[" << msgTypeName << "]: " << message << std::endl;
-  std::cout << "FILE: " << fileName << std::endl;
-  std::cout << "LINE: " << line     << std::endl;
-  std::cout.flush();
+  std::cout << this->getFormatedMessage( msgTypeName, message, fileName, line );
+  std::cout << "\n";
 }
 
 

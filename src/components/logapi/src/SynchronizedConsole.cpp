@@ -39,11 +39,11 @@ struct SynchronizedConsole::MessageCache
     }
 
     std::cout << "======\n";
-    std::cout << "RANK[" << rank << "] NMSGS=" << N << std::endl;
+    std::cout << "RANK[" << rank << "] NMSGS=" << N << "\n";
     std::cout << "======\n";
 
     for ( unsigned i=0; i < N; ++i ) {
-      std::cout << messages[ i ] << std::endl;
+      std::cout << messages[ i ] << "\n";
     } // END for all messages
 
     std::cout.flush();
@@ -88,14 +88,9 @@ void SynchronizedConsole::append( MessageType msgType,
 {
   assert( "pre: null message cache!" && (m_cache != NULL) );
 
-  // STEP 0: form the message
-  std::ostringstream oss;
-  oss << "[" << msgTypeName << "]: " << message << std::endl;
-  oss << "FILE: " << fileName << std::endl;
-  oss << "LINE: " << line << std::endl;
-
-  // STEP 1: cache it
-  m_cache->messages.push_back( oss.str() );
+  // STEP 1: cache formatted message
+  m_cache->messages.push_back(
+        this->getFormatedMessage(msgTypeName, message, fileName, line) );
 }
 
 //------------------------------------------------------------------------------
