@@ -123,6 +123,16 @@ if (BUILD_TESTING)
 
 endif()
 
+################################
+# MPI
+################################
+option(ENABLE_MPI "ENABLE MPI" OFF)
+if (ENABLE_MPI)
+  find_package(MPI REQUIRED)
+  include_directories(${MPI_C_INCLUDE_PATH})
+endif()
+
+
 ## Enable ENABLE C++ 11 features
 option(ENABLE_CXX11 "Enables C++11 features" OFF)
 if (ENABLE_CXX11)
@@ -154,11 +164,11 @@ endif()
 # Support extra compiler flags and defines
 #############################################
 #
-# We don't try to use this approach for CMake generators that support 
+# We don't try to use this approach for CMake generators that support
 # multiple configurations. See: CZ JIRA: ATK-45
 #
 if(NOT CMAKE_CONFIGURATION_TYPES)
-    
+
     ######################################################
     # Add define we can use when debug builds are enabled
     ######################################################
@@ -229,6 +239,7 @@ endif()
 #  macros
 ################################
 
+
 ##------------------------------------------------------------------------------
 ## - Adds a component to the build given the component's name and default state
 ##   (ON/OFF). This macro also adds an "option" so that the user can control
@@ -243,10 +254,10 @@ macro(add_component)
     ## parse the arugments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
-    
+
     ## setup a cmake vars to capture sources added via our macros
     set("${arg_COMPONENT_NAME}_ALL_SOURCES" CACHE PATH "" FORCE)
-        
+
     ## adds an option so that the user can control whether to build this
     ## component.
     option( ENABLE_${arg_COMPONENT_NAME}
@@ -278,8 +289,8 @@ macro(make_library libtarget srcs)
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${libtarget} PROPERTY CXX_STANDARD 11)
    endif()
-    
-    
+
+
    foreach(src ${srcs})
        if(IS_ABSOLUTE)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
@@ -287,7 +298,7 @@ macro(make_library libtarget srcs)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
        endif()
    endforeach()
-       
+
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
 
 endmacro(make_library)
@@ -315,8 +326,8 @@ macro(make_executable)
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
     endif()
-    
-        
+
+
     if(IS_ABSOLUTE)
         list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
     else()
@@ -324,7 +335,7 @@ macro(make_executable)
     endif()
 
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
-    
+
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
@@ -366,7 +377,7 @@ macro(add_gtest)
     endif()
 
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
-    
+
 endmacro(add_gtest)
 
 ##------------------------------------------------------------------------------
@@ -464,7 +475,7 @@ add_custom_target(copy_headers_${proj}
      COMMENT
         "copy headers"
      )
-     
+
      # add any passed source files to the running list for this project
      foreach(hdr ${hdrs})
          if(IS_ABSOLUTE)
@@ -474,7 +485,7 @@ add_custom_target(copy_headers_${proj}
          endif()
      endforeach()
 
-     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )    
-     
+     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+
 endmacro(copy_headers_target)
 
