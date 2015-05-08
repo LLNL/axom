@@ -129,6 +129,7 @@ endif()
 option(ENABLE_MPI "ENABLE MPI" OFF)
 if (ENABLE_MPI)
   find_package(MPI REQUIRED)
+  include_directories(${MPI_C_INCLUDE_PATH})
 endif()
 
 
@@ -374,6 +375,10 @@ macro(make_library)
       set_property(TARGET ${arg_LIBRARY_NAME} PROPERTY CXX_STANDARD 11)
    endif()
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> COMP: Add ability to build with MPI
    foreach(src ${srcs})
        if(IS_ABSOLUTE)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
@@ -383,8 +388,12 @@ macro(make_library)
        endif()
    endforeach()
 
+<<<<<<< HEAD
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
+=======
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+>>>>>>> COMP: Add ability to build with MPI
 
 endmacro(make_library)
 
@@ -420,6 +429,7 @@ macro(make_executable)
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
    endif()
 
+<<<<<<< HEAD
    get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
    add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
    target_link_libraries( ${exe_name} "${arg_DEPENDS_ON}" )
@@ -459,6 +469,22 @@ macro(make_executable)
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
 
+=======
+    if ( ENABLE_CXX11 )
+      ## Note, this requires cmake 3.1 and above
+      set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
+    endif()
+
+
+    if(IS_ABSOLUTE)
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
+    else()
+        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${CMAKE_CURRENT_SOURCE_DIR}/${arg_EXECUTABLE_SOURCE}")
+    endif()
+
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+
+>>>>>>> COMP: Add ability to build with MPI
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
@@ -500,8 +526,12 @@ macro(add_gtest)
                       "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
     endif()
 
+<<<<<<< HEAD
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
+=======
+    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+>>>>>>> COMP: Add ability to build with MPI
 
 endmacro(add_gtest)
 
@@ -619,8 +649,12 @@ add_custom_target(copy_headers_${proj}
          endif()
      endforeach()
 
+<<<<<<< HEAD
      set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
          CACHE STRING "" FORCE )
+=======
+     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
+>>>>>>> COMP: Add ability to build with MPI
 
 endmacro(copy_headers_target)
 
