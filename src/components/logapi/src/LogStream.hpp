@@ -52,11 +52,11 @@ public:
    * \param [in] line the line within the file at which the message is appended.
    *****************************************************************************
    */
-  virtual void append( const int msgType,
+  virtual void append( int msgType,
                        const std::string& msgTypeName,
                        const std::string& message,
                        const std::string& fileName,
-                       const int line
+                       int line
                        ) = 0;
 
   /*!

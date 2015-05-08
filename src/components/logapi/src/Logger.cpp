@@ -56,21 +56,21 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::enable(const int type)
+void Logger::enable( int type)
 {
   assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
   m_StreamState[ type ] = true;
 }
 
 //------------------------------------------------------------------------------
-void Logger::disable(const int type)
+void Logger::disable( int type)
 {
   assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
   m_StreamState[ type ] = false;
 }
 
 //------------------------------------------------------------------------------
-void Logger::setLogStream( const int type, LogStream* ls )
+void Logger::setLogStream( int type, LogStream* ls )
 {
   assert("pre: supplied log stream is NULL!" && ls != NULL );
   assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
@@ -79,10 +79,10 @@ void Logger::setLogStream( const int type, LogStream* ls )
 }
 
 //------------------------------------------------------------------------------
-void Logger::logMessage( const int type,
+void Logger::logMessage( int type,
                          const std::string& message,
                          const std::string& fileName,
-                         const int line )
+                         int line )
 {
   if ( m_StreamState[ type ]==false  ) {
 

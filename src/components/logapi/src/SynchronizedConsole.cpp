@@ -80,11 +80,11 @@ void SynchronizedConsole::setCommunicator(MPI_Comm comm)
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedConsole::append( const int msgType,
+void SynchronizedConsole::append( int msgType,
                                   const std::string& msgTypeName,
                                   const std::string& message,
                                   const std::string& fileName,
-                                  const int line )
+                                  int line )
 {
   assert( "pre: null message cache!" && (m_cache != NULL) );
 

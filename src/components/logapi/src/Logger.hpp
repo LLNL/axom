@@ -85,7 +85,7 @@ public:
    * \pre type >= FATAL && type < Num_Msg_Types
    *****************************************************************************
    */
-  void enable( const int type );
+  void enable( int type );
 
   /*!
    *****************************************************************************
@@ -94,7 +94,7 @@ public:
    * \pre type >= FATAL && type < Num_Msg_types
    *****************************************************************************
    */
-  void disable( const int type );
+  void disable( int type );
 
   /*!
    *****************************************************************************
@@ -105,7 +105,7 @@ public:
    * \pre ls != NULL
    *****************************************************************************
    */
-  void setLogStream( const int type, LogStream* ls);
+  void setLogStream( int type, LogStream* ls);
 
   /*!
    *****************************************************************************
@@ -118,10 +118,10 @@ public:
    * \pre m_Streams[ type ] != NULL
    *****************************************************************************
    */
-  void logMessage( const int type,
+  void logMessage( int type,
                    const std::string& message,
                    const std::string& fileName,
-                   const int line );
+                   int line );
 
   /*!
    *****************************************************************************

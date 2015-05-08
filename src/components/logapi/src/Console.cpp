@@ -34,11 +34,11 @@ Console::~Console()
 }
 
 //------------------------------------------------------------------------------
-void Console::append( const int msgType,
+void Console::append( int msgType,
                       const std::string& msgTypeName,
                       const std::string& message,
                       const std::string& fileName,
-                      const int line )
+                      int line )
 {
   std::cout << "[" << msgTypeName << "]: " << message << std::endl;
   std::cout << "FILE: " << fileName << std::endl;

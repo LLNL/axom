@@ -39,11 +39,11 @@ public:
   virtual ~Console();
 
   /// \see LogStream::append
-  virtual void append( const int msgType,
+  virtual void append( int msgType,
                        const std::string& msgTypeName,
                        const std::string& message,
                        const std::string& fileName,
-                       const int line );
+                       int line );
 private:
 
   /// \name Disabled Methods
