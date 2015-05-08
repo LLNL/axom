@@ -34,7 +34,7 @@ Console::~Console()
 }
 
 //------------------------------------------------------------------------------
-void Console::append( int msgType,
+void Console::append( MessageType msgType,
                       const std::string& msgTypeName,
                       const std::string& message,
                       const std::string& fileName,

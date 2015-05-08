@@ -27,9 +27,9 @@ using namespace asctoolkit;
 
 #define N 20
 
-int getRandomEvent( const int start, const int end )
+logapi::MessageType getRandomEvent( const int start, const int end )
 {
-  return( std::rand() % (end-start) + start );
+  return( static_cast<logapi::MessageType>(std::rand() % (end-start) + start));
 }
 
 //------------------------------------------------------------------------------
@@ -46,8 +46,10 @@ int main( int argc, char** argv )
   // STEP 2: enable logging of all messages
   for ( int mtype=0; mtype < logapi::Num_Msg_Types; ++mtype ) {
 
-    logapi::Logger::getInstance()->enable( mtype );
-    logapi::Logger::getInstance()->setLogStream( mtype, scls);
+    logapi::Logger::getInstance()->enable(
+        static_cast<logapi::MessageType>(mtype) );
+    logapi::Logger::getInstance()->setLogStream(
+        static_cast<logapi::MessageType>(mtype), scls);
 
   } // END for all message types
 

@@ -16,6 +16,8 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
+#include "logapi/MessageType.h"
+
 // C/C++ includes
 #include <string> // for STL string
 
@@ -23,27 +25,6 @@ namespace asctoolkit {
 
 namespace logapi {
 
-/*!
- *******************************************************************************
- * \enum MessageType
- *
- * \brief Enumerates the different types of messaging.
- *
- * \note The ordering of the enumerators reflects the level of severity of
- *  a message.
- *
- * \see Logger
- *******************************************************************************
- */
-enum MessageType {
-  Fatal,        //!< FATAL log a non-recoverable event.
-  Error,        //!< ERROR log an error that *may* be recoverable.
-  Warning,      //!< WARNING log a warning.
-  Info,         //!< INFO log information that is useful for users & developers.
-  Debug,        //!< DEBUG log information that is useful for developers.
-
-  Num_Msg_Types //!< Num_Msg_Types
-};
 
 // Forward declarations
 class LogStream;
@@ -85,7 +66,7 @@ public:
    * \pre type >= FATAL && type < Num_Msg_Types
    *****************************************************************************
    */
-  void enable( int type );
+  void enable( MessageType type );
 
   /*!
    *****************************************************************************
@@ -94,7 +75,7 @@ public:
    * \pre type >= FATAL && type < Num_Msg_types
    *****************************************************************************
    */
-  void disable( int type );
+  void disable( MessageType type );
 
   /*!
    *****************************************************************************
@@ -105,7 +86,7 @@ public:
    * \pre ls != NULL
    *****************************************************************************
    */
-  void setLogStream( int type, LogStream* ls);
+  void setLogStream( MessageType type, LogStream* ls);
 
   /*!
    *****************************************************************************
@@ -118,7 +99,7 @@ public:
    * \pre m_Streams[ type ] != NULL
    *****************************************************************************
    */
-  void logMessage( int type,
+  void logMessage( MessageType type,
                    const std::string& message,
                    const std::string& fileName,
                    int line );

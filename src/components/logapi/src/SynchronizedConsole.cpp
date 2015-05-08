@@ -80,7 +80,7 @@ void SynchronizedConsole::setCommunicator(MPI_Comm comm)
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedConsole::append( int msgType,
+void SynchronizedConsole::append( MessageType msgType,
                                   const std::string& msgTypeName,
                                   const std::string& message,
                                   const std::string& fileName,

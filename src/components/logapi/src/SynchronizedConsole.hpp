@@ -69,7 +69,7 @@ public:
    *  in rank order when flush is called.
    *****************************************************************************
    */
-  virtual void append( int msgType,
+  virtual void append( MessageType msgType,
                        const std::string& msgTypeName,
                        const std::string& message,
                        const std::string& fileName,

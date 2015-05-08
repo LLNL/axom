@@ -16,6 +16,8 @@
 #ifndef LOGSTREAM_HPP_
 #define LOGSTREAM_HPP_
 
+#include "logapi/MessageType.h"
+
 // C/C++ includes
 #include <string> // For STL string
 
@@ -52,7 +54,7 @@ public:
    * \param [in] line the line within the file at which the message is appended.
    *****************************************************************************
    */
-  virtual void append( int msgType,
+  virtual void append( MessageType msgType,
                        const std::string& msgTypeName,
                        const std::string& message,
                        const std::string& fileName,

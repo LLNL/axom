@@ -5,6 +5,7 @@ set(logapi_headers
     Console.hpp
     Logger.hpp
     LogStream.hpp
+    MessageType.h
     )
 
 #
