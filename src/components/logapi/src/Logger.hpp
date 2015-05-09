@@ -61,6 +61,28 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Enables all streams above (and including) the severity of the given
+   *  message type.
+   * \param [in] type the message type.
+   * \pre type >= FATAL && type < Num_Msg_types
+   *****************************************************************************
+   */
+  void enableStreamsBelow( MessageType type);
+
+  /*!
+   *****************************************************************************
+   * \brief Sets the streams above (and including) the severity of the given
+   *  message type to the supplied log stream instance.
+   * \param [in] type the message type.
+   * \param [in] ls pointer to the user-supplied log stream.
+   * \pre type >= FATAL && type < Num_Msg_types
+   * \pre ls != NULL
+   *****************************************************************************
+   */
+  void setStreamsBelow( MessageType type, LogStream* ls);
+
+  /*!
+   *****************************************************************************
    * \brief Enables log messages of the given type.
    * \param [in] type message type.
    * \pre type >= FATAL && type < Num_Msg_Types

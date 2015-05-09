@@ -56,6 +56,29 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
+void Logger::enableStreamsBelow( MessageType type )
+{
+  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
+
+  for ( int i=0; i <= type; ++i ) {
+    m_StreamState[ i ] = true;
+  }
+
+}
+
+//------------------------------------------------------------------------------
+void Logger::setStreamsBelow( MessageType type, LogStream* ls)
+{
+  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
+  assert("pre: supplied log stream is NULL!" && (ls != NULL) );
+
+  for ( int i=0; i <= type; ++i ) {
+    m_Streams[ i ] = ls;
+  }
+
+}
+
+//------------------------------------------------------------------------------
 void Logger::enable( MessageType type)
 {
   assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));

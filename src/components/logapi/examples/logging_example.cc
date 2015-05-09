@@ -39,14 +39,8 @@ int main( int argc, char** argv )
   logapi::Console* cls = new logapi::Console();
 
   // STEP 2: enable logging of all messages
-  for ( int mtype=0; mtype < logapi::Num_Msg_Types; ++mtype ) {
-
-    logapi::Logger::getInstance()->enable(
-        static_cast< logapi::MessageType >(mtype) );
-    logapi::Logger::getInstance()->setLogStream(
-        static_cast<logapi::MessageType>(mtype), cls);
-
-  } // END for all message types
+  logapi::Logger::getInstance()->enableStreamsBelow( logapi::Debug );
+  logapi::Logger::getInstance()->setStreamsBelow( logapi::Debug, cls );
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
