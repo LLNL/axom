@@ -10,7 +10,6 @@
 
 // TODO:  We should pull out the types out of conduit and put them here...
 // -- Aaron
-#include "boost/unordered_map.hpp"
 #include "conduit/conduit.h"
 
 namespace asctoolkit
@@ -23,18 +22,13 @@ namespace common
 // //TODO: We should define our own IDType instead of using conduit's. -- Aaron
 typedef conduit::index_t IDType;
 
-// Add typedefs for C++11 only container types.  We are supporting using C++11 containers if
-// there is an equivalent boost library solution we can use on compilers that don't support C++11.
-#ifdef USE_CXX11
-typedef boost::unordered_map< std::string, common::IDType> UnorderedMapStringToIDType;
-#else
-typedef boost::unordered_map< std::string, common::IDType> UnorderedMapStringToIDType;
-#endif
-
 #ifdef USE_CXX11
 #define ATK_NULLPTR nullptr
 #else
 
+#define ATK_NULLPTR (void*)0
+
+/* An alternative solution for nullptr in C++98
 const // It is a const object...
 class atk_nullptr_t 
 {
@@ -51,6 +45,7 @@ class atk_nullptr_t
     void operator&() const;  // Can't take address of nullptr
  
 } atk_nullptr = {};
+*/
 
 #define ATK_NULLPTR asctoolkit::common::atk_nullptr
 
