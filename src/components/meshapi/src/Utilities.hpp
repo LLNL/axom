@@ -39,7 +39,7 @@ namespace meshapi{
       s << kind << ": (" << #x << ") is false: " << msg << '\n'; \
       s << "...at line " << __LINE__ << \
          " of file " << __FILE__ << "." << std::ends;\
-      killProcess(s);\
+      killProcess(s.str());\
      }
 
     #define REQUIRE2(x, msg) DBC_ASSERTION(x, msg, "Precondition violated")

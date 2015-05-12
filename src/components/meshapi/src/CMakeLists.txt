@@ -7,16 +7,21 @@ INCLUDE_DIRECTORIES(
 #
 set(meshapi_headers
     Hello.hpp
+    
     # Utility files
     Utilities.hpp
     FileUtilities.hpp
+    
 	# SRM Set headers
     Set.hpp
     OrderedSet.hpp
+    
 	# SRM Relation headers
 	Relation.hpp
 	StaticVariableRelation.hpp
 	StaticConstantRelation.hpp
+	DynamicVariableRelation.hpp
+	
 	# SRM Map headers
 	   # nothing yet...
     )
@@ -26,12 +31,16 @@ set(meshapi_headers
 #
 set(meshapi_sources
     Hello.cpp
+    
     # SRM Set sources
     Set.cpp
     OrderedSet.cpp
+    
     # SRM Relation sources
     StaticVariableRelation.cpp
 	StaticConstantRelation.cpp
+	DynamicVariableRelation.cpp
+	
     # SRM Map sources
     )
 
