@@ -25,30 +25,7 @@ typedef conduit::index_t IDType;
 #ifdef USE_CXX11
 #define ATK_NULLPTR nullptr
 #else
-
 #define ATK_NULLPTR (void*)0
-
-/* An alternative solution for nullptr in C++98
-const // It is a const object...
-class atk_nullptr_t 
-{
-  public:
-    template<class T>
-    inline operator T*() const // convertible to any type of null non-member pointer...
-    { return 0; }
- 
-    template<class C, class T>
-    inline operator T C::*() const   // or any type of null member pointer...
-    { return 0; }
- 
-  private:
-    void operator&() const;  // Can't take address of nullptr
- 
-} atk_nullptr = {};
-*/
-
-#define ATK_NULLPTR asctoolkit::common::atk_nullptr
-
 #endif
 
 
