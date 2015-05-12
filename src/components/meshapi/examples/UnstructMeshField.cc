@@ -107,15 +107,16 @@ public:
 };
 
 
-class HeshMeshReaderVTK
+class SimpleVTKHeshMeshReader
 {
 public:
-    HeshMeshReaderVTK(std::string fileName) : vtkMesh( fileName.c_str() )
+    // uses RAII to open/close the file
+    SimpleVTKHeshMeshReader(std::string fileName) : vtkMesh( fileName.c_str() )
     {
         ASSERT2( vtkMesh, "fstream error -- problem opening file: '" << fileName <<"'"
                               << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() <<"'");
     }
-    ~HeshMeshReaderVTK()
+    ~SimpleVTKHeshMeshReader()
     {
         vtkMesh.close();    // Close the file.
     }
@@ -165,7 +166,7 @@ public:
         // This is only because we're assuming Hex's.  General meshes can be different.
         ASSERT2( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices
                ,  "Error in reading mesh!\n" << "  numZones = " << numZones << "\n"
-                                             << "  numZones*8 = " << numZones* (HexMesh::NODES_PER_ZONE) << "\n"
+                                             << "  numZones*"<<(HexMesh::NODES_PER_ZONE)<< " = " << numZones* (HexMesh::NODES_PER_ZONE) << "\n"
                                              << "  numNodeZoneIndices = " << numNodeZoneIndices << "\n" );
         std::cout << "\tNumber of zones = "  << numZones << "\n";
 
@@ -183,9 +184,7 @@ public:
     #ifdef USE_CONSTANT_RELATION
         IndexType const STRIDE = HexMesh::NODES_PER_ZONE;
     #else
-        // Setup the 'begins' vector
-        //  -- exploit the fact that the relation is constant
-        //  -- note that for a constant relation, this array is not really necessary
+        // Setup the 'begins' vector  -- exploits the fact that the relation is constant
         RelationVec beginsVec( mesh->zones.size() + 1 );
         for(HexMesh::IndexType idx=0; idx <= mesh->zones.size(); ++idx)
         {
@@ -193,7 +192,7 @@ public:
         }
     #endif
 
-        // Setup the 'offsets' vector
+        // Setup the 'offsets' vector into the index space of the nodes set
         RelationVec offsetsVec ( numNodeZoneIndices );
         RelationVecIterator oIt = offsetsVec.begin();
         IndexType nodeCount;
@@ -213,7 +212,6 @@ public:
 
 
         // Set the relation here by copying over the data buffers
-        // NOTE: This should be a lot cleaner once we hook up to the datastore
     #ifdef USE_CONSTANT_RELATION
         mesh->relationZoneNode.setRelation(offsetsVec, STRIDE);
     #else
@@ -230,7 +228,7 @@ private:
 
 void readHexMesh(std::string fileName, HexMesh* mesh)
 {
-    HeshMeshReaderVTK vtkMeshReader(fileName);
+    SimpleVTKHeshMeshReader vtkMeshReader(fileName);
 
     vtkMeshReader.loadNodesAndPositions(mesh);
     vtkMeshReader.loadHexToNodesRelation(mesh);
@@ -238,25 +236,23 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
 
 void generateNodeZoneRelation(HexMesh* mesh)
 {
-    // Now build the relation from nodes to zones
-    // We will first build this as a dynamic variable relation, and then linearize it to a static variable relation
+    // Now build the (variable) relation from nodes to zones
+    // Strategy: We will first build this as a DynamicVariableRelation, and then linearize it to a StaticVariableRelation
+    // In both cases, we are using the relation's range() function to get a pair of iterators to the inner relation
 
-    // --- dynamic variable relation
+    // --- Step 1: Generate a dynamic variable relation from Nodes to Zones
     typedef asctoolkit::meshapi::DynamicVariableRelation DynRelation;
-    typedef DynRelation::RelationVecConstIterator DynRelationIterator;
+    typedef DynRelation::RelationVecConstIteratorPair DynRelationIteratorPair;
 
     DynRelation tmpZonesOfNode( &mesh->nodes, &mesh->zones );
     IndexType numZonesOfNode = 0;
-
-    typedef HexMesh::ZoneSet::iterator ZoneIterator;
-    for(ZoneIterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
+    for(HexMesh::ZoneSet::iterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
     {
-        typedef HexMesh::ZoneNodeRelation::RelationVecConstIterator RelVecIt;
-        RelVecIt znIt  = mesh->relationZoneNode.begin(*zIt);
-        RelVecIt znEnd = mesh->relationZoneNode.end(*zIt);
-        for( ; znIt < znEnd; ++znIt )
+        typedef HexMesh::ZoneNodeRelation::RelationVecConstIteratorPair RelVecItPair;
+        for(RelVecItPair znItPair  = mesh->relationZoneNode.range(*zIt); znItPair.first < znItPair.second; ++znItPair.first )
         {
-            tmpZonesOfNode.insert( *znIt, *zIt );
+            HexMesh::NodeSet::Index const& nodeIdx = *(znItPair.first);
+            tmpZonesOfNode.insert( nodeIdx, *zIt );
             ++numZonesOfNode;
         }
     }
@@ -264,7 +260,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
 
     // -------------------------------------------------
 
-    // --- static variable relation
+    // --- Step 2: Convert this to a static variable relation from Nodes to Zones
     mesh->relationNodeZone = HexMesh::NodeZoneRelation( &mesh->nodes, &mesh->zones);
 
     // Now, linearize the dynamic relation into a static relation here
@@ -277,11 +273,10 @@ void generateNodeZoneRelation(HexMesh* mesh)
     for(HexMesh::NodeSet::iterator nIt = mesh->nodes.begin(), nEnd = mesh->nodes.end(); nIt < nEnd; ++nIt)
     {
         beginsVec[*nIt] = count;
-        DynRelationIterator sIt = tmpZonesOfNode.begin(*nIt);
-        DynRelationIterator sEnd = tmpZonesOfNode.end(*nIt);
-        for(; sIt != sEnd; ++sIt)
+        for(DynRelationIteratorPair sItPair = tmpZonesOfNode.range(*nIt); sItPair.first < sItPair.second; ++sItPair.first)
         {
-            offsetsVec[count++] = *sIt;
+            HexMesh::ZoneSet::Index const& zoneIdx = *(sItPair.first);
+            offsetsVec[count++] = zoneIdx;
         }
     }
     beginsVec[mesh->nodes.size()] = count;
