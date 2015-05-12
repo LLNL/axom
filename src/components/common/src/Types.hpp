@@ -25,8 +25,13 @@ typedef conduit::index_t IDType;
 #ifdef USE_CXX11
 #define ATK_NULLPTR nullptr
 #else
+
+#define ATK_NULLPTR NULL
+
+//* Worry about exploring different solutions for null pointer later.
 //#define ATK_NULLPTR (void*)0
 
+/*
 const // It is a const object...
 class atk_nullptr_t 
 {
@@ -45,7 +50,7 @@ class atk_nullptr_t
 } atk_nullptr = {};
 
 #define ATK_NULLPTR asctoolkit::common::atk_nullptr
-
+*/
 #endif
 
 
