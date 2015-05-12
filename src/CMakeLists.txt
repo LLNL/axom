@@ -23,6 +23,10 @@ include(CMakeBasics)
 include(Setup3rdParty)
 
 ################################
+# Setup toolkit docs targets
+################################
+include(SetupDocs)
+
 # Setup toolkit source checks
 ################################
 include(SetupCodeChecks)
@@ -42,4 +46,3 @@ add_subdirectory(docs)
 ################################s
 install(DIRECTORY ${PROJECT_BINARY_DIR}/bin DESTINATION . )
 install(DIRECTORY ${PROJECT_BINARY_DIR}/include DESTINATION .)
-

@@ -125,7 +125,6 @@ class MapCollection
 public:
 
 //   typedef std::map<std::string, common::IDType> MapType;
-   typedef common::UnorderedMapStringToIDType MapType;
 
    //
    // Default compiler-generated ctor, dtor, copy ctor, and copy assignment 

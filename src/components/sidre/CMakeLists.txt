@@ -30,6 +30,12 @@ endif()
 add_code_check_targets(uncrustify.cfg)
 
 ################################
+# Add docs
+################################
+add_subdirectory(docs)
+
+
+################################
 # Create CMake importable
 # exports for all of our targets
 ################################

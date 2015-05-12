@@ -1,0 +1,555 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>4 Code Documentation &mdash; Toolkit Coding Guidelines 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Toolkit Coding Guidelines 1.0 documentation" href="index.html" />
+    <link rel="next" title="5 General Code Development" href="Sec5_code.html" />
+    <link rel="prev" title="3 Directories, Files, and Scope" href="Sec3_scope.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="Sec5_code.html" title="5 General Code Development"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Sec3_scope.html" title="3 Directories, Files, and Scope"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="code-documentation">
+<h1>4 Code Documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h1>
+<p>This section contains content and formatting guidelines for the various code
+documentation items mentioned in earlier sections. The aims of these
+guidelines are to:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Document files, data types, functions, etc. consistently.</li>
+<li>Promote good documentation practices so that essential information is
+presented clearly and lucidly, and which do not over-burden developers.</li>
+<li>Generate source code documentation using the Doxygen system.</li>
+</ul>
+</div></blockquote>
+<div class="section" id="general-documentation-considerations">
+<h2>4.1 General documentation considerations<a class="headerlink" href="#general-documentation-considerations" title="Permalink to this headline">¶</a></h2>
+<p>4.1.1 New source code <strong>must</strong> be documented following the guidelines in this section. Documentation of existing code <strong>should</strong> be modified to conform to these guidelines when appropriate.</p>
+<blockquote>
+<div>Documentation of existing code <strong>should</strong> be changed when significant code
+modifications are made (i.e., beyond bug fixes and small changes) and
+existing documentation is insufficient.</div></blockquote>
+<p>4.1.2 All header and source files <strong>should</strong> have comments necessary to make the code easy to understand. However, extraneous comments (e.g., documenting &#8220;the obvious&#8221;) <strong>should</strong> be avoided.</p>
+<blockquote>
+<div>Code that has clear, descriptive names (functions, variables, etc.) and
+clear logical structure is preferable to code that relies on a lot of
+comments for understanding. To be useful, comments must be understood by
+others and kept current with the executable code. Generally, maintenance
+and understanding are better served by rewriting tricky, unclear code
+than by adding comments to it.</div></blockquote>
+<p>4.1.3 End-of-line comments <strong>should</strong> not be used to document code logic, since they tend to be less visible than other comment forms and may be difficult to format cleanly.</p>
+<blockquote>
+<div>Short end-of-line comments <strong>may</strong> be useful for labeling closing braces
+associated with nested loops, conditionals, for scope in general, and
+for documenting local variable declarations.</div></blockquote>
+<p>4.1.4 All comments, except end of line comments, <strong>should</strong> be indented to match the indentation of the code they are describing. Multiple line comment blocks <strong>should</strong> be aligned vertically on the left.</p>
+<p>4.1.5 To make comment text clear and reduce ambiguity, code comments <strong>should</strong> be written in grammatically-correct complete sentences.</p>
+<p>4.1.6 Comments <strong>should</strong> be clearly delimited from executable code with blank lines and &#8220;blocking characters&#8221; (see examples below) to make them stand out and, thus, improve the chances they will be read.</p>
+<p>4.1.7 Blank lines, indentation, and vertical alignment <strong>should</strong> be used in comment blocks to enhance readability, emphasize important information, etc.</p>
+</div>
+<div class="section" id="general-doxygen-usage-guidelines-and-summary-of-common-commands">
+<h2>4.2 General Doxygen usage guidelines and summary of common commands<a class="headerlink" href="#general-doxygen-usage-guidelines-and-summary-of-common-commands" title="Permalink to this headline">¶</a></h2>
+<p>The Doxygen code documentation system uses C or C++ style comment sections
+with special markings and Doxygen-specific commands to extract documentation
+from source and header files. Although Doxygen provides many sophisticated
+documentation capabilities and can generate a source code manual in a variety
+of formats such as LaTeX, PDF, and HTML, these guidelines address only a small
+subset of Doxygen syntax. The goal of adhering to a simple documentation
+is that developers will be encouraged to build useful documentation when they
+are writing code.</p>
+<p>4.2.1 Doxygen comment blocks for C-only files <strong>must</strong> use either JavaDoc or Qt style comment block forms.</p>
+<blockquote>
+<div><p>JavaDoc style comments consist of a C-style comment block starting with
+two *&#8217;s, like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>/**
+ * ...comment text...
+ */
+</pre></div>
+</div>
+<p>Qt style comments add an exclamation mark (!) after the opening of a
+C-style comment block,like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>/*!
+ * ...comment text...
+ */
+</pre></div>
+</div>
+<p>In either case, the intermediate asterisk characters (&#8220;*&#8221; are optional,
+but strongly encouraged.</p>
+</div></blockquote>
+<p>4.2.2 Doxygen comment blocks for C++ files <strong>must</strong> use either JavaDoc or Qt style comment block forms (see previous item) or one of the C++ comment forms described below.</p>
+<blockquote>
+<div><p>Use a block of at least two C++ comment lines, where each line starts
+with an additional slash:</p>
+<div class="highlight-python"><div class="highlight"><pre>///
+/// ...comment text...
+///
+</pre></div>
+</div>
+<p>or an exclamation mark:</p>
+<div class="highlight-python"><div class="highlight"><pre>//!
+//! ...comment text...
+//!
+</pre></div>
+</div>
+</div></blockquote>
+<p>4.2.3 To be processed properly, Doxygen commands <strong>must</strong> be preceded with a special Doxygen character, either &#8220;\&#8221; or &#8220;&#64;&#8221;.</p>
+<blockquote>
+<div><p>For example, either of the following forms is acceptable Doxygen syntax
+for providing a &#8220;brief&#8221; descriptive comment:</p>
+<div class="highlight-python"><div class="highlight"><pre>\brief  ...comment text...
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre>@brief  ...comment text...
+</pre></div>
+</div>
+</div></blockquote>
+<p>4.2.4 Whichever Doxygen comment block style or character used to signify a Doxygen command is used, it <strong>must</strong> be the same within a file.</p>
+<p>4.2.5 Most Doxygen comments <strong>should</strong> appear immediately before the items they describe.</p>
+<blockquote>
+<div><p><strong>Exceptions:</strong> Inline Doxygen comments used after items such as
+class/struct data members, enum values, function arguments, etc. <strong>must</strong>
+appear after the item be <strong>on the same line</strong> and <strong>must</strong> use the
+following syntax:</p>
+<div class="highlight-python"><div class="highlight"><pre>/*!&lt; ...comment text... */
+</pre></div>
+</div>
+<p>Note that the &#8220;&lt;&#8221; character must appear immediately after the opening of
+the Doxygen comment (with no space before). This tells Doxygen that the
+comment applies to the item immediately preceding the comment. See
+examples below.</p>
+</div></blockquote>
+<p>4.2.6 A &#8220;brief&#8221; description <strong>should</strong> be provided in the Doxygen comment section for each of the following items:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A type definition (i.e., class, struct, typedef, enum, etc.)</li>
+<li>A macro definition</li>
+<li>A struct field or C++ class data member</li>
+<li>A C++ class member function declaration (in the header file class
+definition)</li>
+<li>An unbound function signature (in a header file)</li>
+<li>A function implementation (when there is no description in the
+associated header file)</li>
+</ul>
+<p>A brief comment <strong>should</strong> be a concise statement of purpose for an item
+(usually no more than one line) and must start with the Doxygen command
+&#8220;\brief&#8221; (or &#8220;&#64;brief&#8221;).</p>
+<p>The Doxygen system interprets each comment as either &#8220;brief&#8221; or
+&#8220;detailed&#8221;. Brief comments appear in summary sections of the generate
+documentation. They are typically seen before detailed comments when
+scanning the documentation; thus good brief comments make it easier to
+navigate a source code manual.</p>
+</div></blockquote>
+<p>4.2.7 Important information of a more lengthy nature (e.g., spanning multiple lines) <strong>should</strong> be provided for files, major data types and definitions, functions, etc. when needed. A detailed comment <strong>must</strong> be separated from a brief comment with a blank line.</p>
+<p>4.2.8 Summary of commonly used Doxygen commands</p>
+<p>This Section provides an overview of Doxygen commands used commonly in the CS
+Toolkit source code documentation. Please see the Doxygen documentation cited
+in the references at the end of these guidelines for more details and
+information about other commands that you may find useful.</p>
+<p>Note that to be processed properly, Doxygen commands <strong>must</strong> be preceded with
+either &#8220;\&#8221; or &#8220;&#64;&#8221; character. For brevity, we use &#8220;\&#8221; for all commands
+described here.</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>\author</strong> The &#8220;author&#8221; command (followed by a name) identifies the
+author of a documented item. Multiple authors may be provided with each
+on listed on its own line following the &#8220;author&#8221; keyword.</li>
+<li><strong>\brief</strong> The &#8220;brief&#8221; command is used to begin a brief description of
+a documented item. The brief description ends at the next blank line.</li>
+<li><strong>\file</strong> The &#8220;file&#8221; command is used to document a file. Doxygen requires
+that to document any global item (function, typedef, enum, etc.), the file
+in which it is defined must be documents.</li>
+<li><strong>\if</strong> and <strong>\endif</strong> The &#8220;if&#8221; command, followed by a label, defines
+the start of a conditional documentation section. The section ends with a
+matching &#8220;endif&#8221; command. Conditionals are typically used to
+enable/disable documentation sections. For example, this may be useful if
+a project wants to provide documentation of all private class members
+for developer documentation, but wnats to hide private members in
+documentation for users. Conditional sections are disabled by default
+and must be explicitly enabled in the doxygen configuration file.
+Conditional blocks can be nested; nested sections are only enabled if
+all enclosing sections are. The &#8220;\elseif&#8221; command is also available to
+provide more sophisticated control of conditional documentation.</li>
+<li><strong>\name</strong> The &#8220;name&#8221; command, followed by a name containing no blank
+spaces, is used to define a name that can be referred to elsewhere
+in the documentation (via a link).</li>
+<li><strong>\param</strong> The &#8220;param&#8221; command documents a function parameter/argument.
+It is followed by the parameter name and description. The &#8220;\param&#8221;
+command can be given an optional attribute to indicate usage of the
+function argument; possible values are &#8220;[in]&#8221;, &#8220;[out]&#8221;, and &#8220;[in,out]&#8221;.</li>
+<li><strong>\return</strong> The &#8220;return&#8221; command is used to describe the return value
+of a function.</li>
+<li><strong>\sa</strong> The &#8220;sa&#8221; command (i.e., &#8220;see also&#8221;) is used to refer (and
+provide a link to) another documented item. It is followed by the target
+of the reference (e.g., class/struct name, function name, documentation
+page, etc.).</li>
+<li><strong>&#64;{</strong> and <strong>&#64;}</strong>  These two-character sequences begin and end a
+grouping of documented items. Optionally, the group can be given a name
+using the &#8220;name&#8221; command. Groups are useful for providing additional
+organization in the documentation, and also when several items can be
+documented with a single description (e.g., a set of simple, related
+functions).</li>
+<li><strong>\verbatim, \endverbatim</strong> The &#8220;verbatim/endverbatim&#8221; commands are
+used to start/stop a block of text that is to appear exactly as it is
+typed, without additional formatting, in the generated documentation.</li>
+<li><strong>-</strong> and <strong>-#</strong> The &#8220;-&#8221; and &#8220;-#&#8221; symbols begin an item in a bulleted
+list or numbered list, respectively. In either case, the item ends at
+the next blank line or next item.</li>
+<li><strong>\b</strong> and <strong>\e</strong> These symbols are used to make the next word bold or
+emphasized/italicized, respectively, in the generated documentation.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="llnl-copyright-statement">
+<h2>4.3 LLNL copyright statement<a class="headerlink" href="#llnl-copyright-statement" title="Permalink to this headline">¶</a></h2>
+<p>4.3.1 Each header and source file <strong>must</strong> begin with a comment section containing the LLNL copyright statement (using whichever comment characters are appropriate for the programming language). For example:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/*</span>
+<span class="cm"> * Copyright (c) 2015, Lawrence Livermore National Security, LLC.</span>
+<span class="cm"> * Produced at the Lawrence Livermore National Laboratory.</span>
+<span class="cm"> */</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="file-documentation">
+<h2>4.4 File documentation<a class="headerlink" href="#file-documentation" title="Permalink to this headline">¶</a></h2>
+<p>4.3.1 Each header files that declares unbound functions, defines enums, typedefs, etc. <strong>must</strong> have a Doxygen file prologue similar to the following:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/*!</span>
+<span class="cm"> ***************************************************************************</span>
+<span class="cm"> *</span>
+<span class="cm"> * \file ...optional name of file...</span>
+<span class="cm"> *</span>
+<span class="cm"> * \brief A brief statement describing the file contents/purpose. (optional)</span>
+<span class="cm"> *</span>
+<span class="cm"> * Optional detailed explanatory notes about the file.</span>
+<span class="cm"> *</span>
+<span class="cm"> * \author Name of file author (optional)</span>
+<span class="cm"> *</span>
+<span class="cm"> ****************************************************************************</span>
+<span class="cm"> */</span>
+</pre></div>
+</div>
+<p>4.3.2 The Doxygen command &#8220;\file&#8221; <strong>must</strong> appear first in the file prologue.</p>
+<blockquote>
+<div><p>The &#8220;\file&#8221; command identifies the comment section as documentation
+for the file. Doxygen requires that the file itself must be documented
+for documentation to be generated for any global item (global function,
+typedef, enum, etc.) defined in the file.</p>
+<p>The file name may include (part of) the path if the file name is not
+unique. If the file name is omitted on the line after the &#8220;\file&#8221;
+command, then any documentation in the comment block will belong to
+the file in which it is located instead of the summary documentation
+in the listing of documented files.</p>
+</div></blockquote>
+<p>4.3.3 A brief statement of purpose for the file <strong>should</strong> appear as the first comment after the file. If included, the brief statement, <strong>must</strong> be preceded by the &#8220;\brief&#8221; command.</p>
+<blockquote>
+<div>Brief documentation statements are often helpful to those scanning the
+documentation.</div></blockquote>
+<p>4.3.4 Any detailed notes about the file <strong>may</strong> be included after the brief comment. If this is done, the detailed comments <strong>must</strong> be separated from the brief statement by a blank line.</p>
+<p>4.3.4 The name of the original author of the file <strong>may</strong> be entered after the file notes. If the author&#8217;s name is included, it <strong>must</strong> be preceded by the &#8220;\author&#8221; command.</p>
+</div>
+<div class="section" id="type-documentation">
+<h2>4.5 Type documentation<a class="headerlink" href="#type-documentation" title="Permalink to this headline">¶</a></h2>
+<p>4.5.1 Each type definition (i.e., class, struct, enum, typedef, etc.) and macro definition appearing in a header file <strong>must</strong> have a Doxygen type definition comment prologue immediately before it. For example</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/*!</span>
+<span class="cm"> ****************************************************************************</span>
+<span class="cm"> *</span>
+<span class="cm"> * \brief A brief statement of purpose of the type or macro.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Optional detailed information that is helpful in understanding the</span>
+<span class="cm"> * purpose, usage, etc. of the type/macro ...</span>
+<span class="cm"> *</span>
+<span class="cm"> * \sa optional cross-reference to other types, functions, etc...</span>
+<span class="cm"> * \sa etc...</span>
+<span class="cm"> *</span>
+<span class="cm"> * \warning This class is only partially functional.</span>
+<span class="cm"> *</span>
+<span class="cm"> ****************************************************************************</span>
+<span class="cm"> */</span>
+</pre></div>
+</div>
+<p>Note that Doxygen requires that a compound entity, such as a class, struct,
+etc. must be documented in order to document any of its members.</p>
+<p>4.5.2 A brief statement describing the type <strong>must</strong> appear as the first text comment using the Doxygen command &#8220;\brief&#8221;.</p>
+<p>4.5.3 Important details about the item <strong>should</strong> be included after the brief comment and, if included, <strong>must</strong> be separated from the brief comment by a blank line.</p>
+<p>4.5.4 Cross-references to other items, such as relevant major types, important functions, etc., <strong>should</strong> be included at the end of the prologue to enhance the navigability of the Doxygen documentation.</p>
+<blockquote>
+<div>The Doxygen command &#8220;\sa&#8221; (for &#8220;see also&#8221;) <strong>should</strong> appear before each
+such cross-reference so that links are generated in the documentation.</div></blockquote>
+<p>4.5.6 Caveats or limitations about the documented type <strong>should</strong> be noted using the &#8220;\warning&#8221; Doxygen command as shown above.</p>
+</div>
+<div class="section" id="data-member-documentation">
+<h2>4.6 Data member documentation<a class="headerlink" href="#data-member-documentation" title="Permalink to this headline">¶</a></h2>
+<p>4.6.1 Each struct field, C++ class data member, etc. <strong>should</strong> have a descriptive comment indicating its purpose.</p>
+<blockquote>
+<div><p>This comment may as appear as a prologue before the item, such as:</p>
+<div class="highlight-python"><div class="highlight"><pre>/*!
+ *
+ * \brief Brief statement of purpose of data member m_mode.
+ *
+ * Optional detailed information about m_mode...
+ */
+int m_mode;
+</pre></div>
+</div>
+<p>or, it may appear after the item as an inline comment such as:</p>
+<div class="highlight-python"><div class="highlight"><pre>int m_mode; /*!&lt; \brief Brief statement of purpose of m_mode... */
+</pre></div>
+</div>
+</div></blockquote>
+<p>4.6.2 Regardless of which documentation form is used, a brief description of purpose of the definition <strong>must</strong> be included using the Doxygen command &#8220;\brief&#8221;.</p>
+<p>4.6.3 When documenting a data item inline (as in the second example above), the comment must follow the item on the same line.</p>
+<blockquote>
+<div><p>The form of an inline Doxygen comment is:</p>
+<div class="highlight-python"><div class="highlight"><pre>/*!&lt; \brief ...comment text... */
+</pre></div>
+</div>
+<p>Note that the &#8220;&lt;&#8221; character must be included immediately after the start
+of the Doxygen comment form (with no space between). This tells Doxygen
+that the comment corresponds to the item immediately preceding it.</p>
+</div></blockquote>
+<p>4.6.4 Any detailed notes about an item, if included, <strong>must</strong> appear after the brief comment and be separated from the brief comment with a blank line.</p>
+<p>4.6.5 When a detailed comment is provided, or the brief statement requires more than one line, the prologue comment form <strong>should</strong> be used instead of the inline form to make the documentation easier to read.</p>
+<p>4.6.6 If the names of data members are sufficiently clear that their meaning and purpose are obvious to other developers (which should be determined in a code review), then the members <strong>may</strong> be grouped together and documented with a single descriptive comment.</p>
+<blockquote>
+<div><p>An example of Doxygen syntax for such a grouping is:</p>
+<div class="highlight-python"><div class="highlight"><pre>//@{
+//!  @name Data member description...
+
+int m_member1;
+int m_member2;
+...
+//@}
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="function-documentation">
+<h2>4.7 Function documentation<a class="headerlink" href="#function-documentation" title="Permalink to this headline">¶</a></h2>
+<p>4.7.1 Each unbound functions <strong>should</strong> be be documented with a function prologue in the header file where its prototype appears or in a source file immediately preceding its implementation.</p>
+<p>4.7.2 Since C++ class member member functions define the class interface, they <strong>should</strong> be documented with a function prologue immediately preceding their declaration in the class definition.</p>
+<p>The following examples show two function prologue variations that may
+be used to document a method in a class definition. The first shows how
+to document the function arguments in the function prologue.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/*!</span>
+<span class="cm"> *************************************************************************</span>
+<span class="cm"> *</span>
+<span class="cm"> * \brief Initialize a Foo object to given operation mode.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The &quot;read&quot; mode means one thing, while &quot;write&quot; mode means another.</span>
+<span class="cm"> *</span>
+<span class="cm"> * \return bool indicating success or failure of initialization.</span>
+<span class="cm"> *              Success returns true, failure returns false.</span>
+<span class="cm"> *</span>
+<span class="cm"> * \param[in] mode OpMode enum value specifying initialization mode.</span>
+<span class="cm"> *                 ReadMode and WriteMode are valid options.</span>
+<span class="cm"> *                 Any other value generates a warning message and the</span>
+<span class="cm"> *                 failure value (&quot;false&quot;) is returned.</span>
+<span class="cm"> *</span>
+<span class="cm"> *************************************************************************</span>
+<span class="cm"> */</span>
+ <span class="kt">bool</span> <span class="nf">initMode</span><span class="p">(</span><span class="n">OpMode</span> <span class="n">mode</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The second example shows how to document the function arguments inline.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cm">/*!</span>
+<span class="cm"> ************************************************************************</span>
+<span class="cm"> *</span>
+<span class="cm"> * @brief Initialize a Foo object to given operation mode.</span>
+<span class="cm"> *</span>
+<span class="cm"> * The &quot;read&quot; mode means one thing, while &quot;write&quot; mode means another.</span>
+<span class="cm"> *</span>
+<span class="cm"> * @return bool value indicating success or failure of initialization.</span>
+<span class="cm"> *             Success returns true, failure returns false.</span>
+<span class="cm"> *</span>
+<span class="cm"> *************************************************************************</span>
+<span class="cm"> */</span>
+ <span class="kt">bool</span> <span class="nf">initMode</span><span class="p">(</span><span class="n">OpMode</span> <span class="n">mode</span> <span class="cm">/*!&lt; [in] ReadMode, WriteMode are valid options */</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>Note that the first example uses the &#8220;\&#8221; character to identify Doxygen
+commands; the second uses &#8220;&#64;&#8221;. Also, the &#8220;&lt;&#8221; character must appear immediately
+after the start of the Doxygen comment form (with no space between). This
+tells Doxygen that the comment corresponds to the item immediately preceding it.</p>
+<p>4.7.3 A brief statement of purpose for a function must appear as the first text comment after the Doxygen command &#8220;\brief&#8221; (or &#8220;&#64;brief&#8221;).</p>
+<p>4.7.4 Any detailed notes about a function, when included, <strong>must</strong> appear after the brief comment and <strong>must</strong> be separated from the brief comment by a blank line.</p>
+<p>4.7.4 If the function has a non-void return type, the return value <strong>should</strong> be documented in the prologue using the Doxygen command &#8220;return&#8221; (or &#8220;&#64;return&#8221;) preceding a description of the return value.</p>
+<blockquote>
+<div>Functions with &#8220;void&#8221; return type and C++ class constructors and
+destructors <strong>should not</strong> have such documentation.</div></blockquote>
+<p>4.7.5 Function arguments <strong>should</strong> be documented in the function prologue or inline (as shown above) when the intent or usage of the arguments is not obvious.</p>
+<blockquote>
+<div><p>The inline form of the comment may be preferable when the argument
+documentation is short. When a longer description is provided (such as
+when noting the range of valid values, error conditions, etc.) the
+description <strong>should</strong> be placed within the function prologue for
+readability. However, the two alternatives for documenting function
+arguments <strong>must not</strong> be mixed within the documentation of a single
+function to reduce confusion.</p>
+<p>In any case, superfluous documentation should be avoided. For example,
+when there are one or two arguments and their meaning is obvious from
+their names or the description of the function, providing no comments is
+better than cluttering the code by documenting the obvious. Comments
+that impart no useful information are distracting and less useful than
+no comment at all.</p>
+</div></blockquote>
+<p>4.7.6 When a function argument is documented in the prologue comment section, the Doxygen command &#8220;param&#8221; <strong>should</strong> appear before the comment as in the first example above.</p>
+<p>4.7.7. The &#8220;in/out&#8221; status of each function argument <strong>should</strong> be documented.</p>
+<blockquote>
+<div>The Doxygen &#8220;param&#8221; command supports this directly by allowing such an
+attribute to be specified as &#8220;param[in]&#8221;, &#8220;param[out]&#8221;, or
+&#8220;param[in,out]&#8221;. Although the inline comment form does not support
+this, such a description <strong>should</strong> be included; e.g., by using &#8220;[in]&#8221;,
+&#8220;[out]&#8221;, or &#8220;[in,out]&#8221; in the comment.</div></blockquote>
+<p>4.7.8 Short, simple functions (e.g., inline methods) <strong>may</strong> be grouped together and documented with a single descriptive comment when this is sufficient.</p>
+<blockquote>
+<div><p>An example of Doxygen syntax for such a grouping is:</p>
+<div class="highlight-python"><div class="highlight"><pre>//@{
+//! @name Setters for data members
+
+void setMember1(int arg1) { m_member1 = arg1; }
+void setMember2(int arg2) { m_member2 = arg2; }
+
+//@}
+</pre></div>
+</div>
+</div></blockquote>
+<p>4.7.9 Typically, important implementation details about a function <strong>should</strong> be documented in the source file where the function is implemented.</p>
+<blockquote>
+<div><p>Header file documentation <strong>should</strong> include only purpose and usage
+information germane to an interface. When a function has separate
+implementation documentation, the comments <strong>must</strong> not contain Doxygen
+syntax. Using Doygen syntax to document an item in more than one location
+(e.g., header file and source file) can cause undesired Doxygen
+formatting issues and potentially confusing documentation.</p>
+<p>A member of a class may be documented as follows in the source file
+for the class as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre>/*
+ ***********************************************************************
+ *
+ * Set operation mode for a Foo object.
+ *
+ * Important detailed information about what the function does...
+ *
+ ***********************************************************************
+ */
+ bool Foo::initMode(OpMode mode)
+ {
+    ...function body...
+ }
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4 Code Documentation</a><ul>
+<li><a class="reference internal" href="#general-documentation-considerations">4.1 General documentation considerations</a></li>
+<li><a class="reference internal" href="#general-doxygen-usage-guidelines-and-summary-of-common-commands">4.2 General Doxygen usage guidelines and summary of common commands</a></li>
+<li><a class="reference internal" href="#llnl-copyright-statement">4.3 LLNL copyright statement</a></li>
+<li><a class="reference internal" href="#file-documentation">4.4 File documentation</a></li>
+<li><a class="reference internal" href="#type-documentation">4.5 Type documentation</a></li>
+<li><a class="reference internal" href="#data-member-documentation">4.6 Data member documentation</a></li>
+<li><a class="reference internal" href="#function-documentation">4.7 Function documentation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="Sec3_scope.html"
+                        title="previous chapter">3 Directories, Files, and Scope</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="Sec5_code.html"
+                        title="next chapter">5 General Code Development</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Sec4_doc.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="Sec5_code.html" title="5 General Code Development"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Sec3_scope.html" title="3 Directories, Files, and Scope"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Toolkit Coding Guidelines 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Rich Hornung.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

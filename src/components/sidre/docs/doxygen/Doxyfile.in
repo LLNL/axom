@@ -1,4 +1,4 @@
 PROJECT_NAME  = Datastore
 PROJECT_BRIEF = "Inter-Operable Data Interface for HPC Simulations"
-INPUT = @PROJECT_SOURCE_DIR@/datastore
+INPUT = @PROJECT_SOURCE_DIR@/src
 GENERATE_XML = YES
