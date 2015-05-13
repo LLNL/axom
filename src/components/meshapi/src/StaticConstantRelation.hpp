@@ -24,6 +24,22 @@ namespace meshapi    {
     class StaticConstantRelation : public Relation
     {
     public:
+        class SubArrayProxy{
+        public:
+            SubArrayProxy(RelationVecConstIterator it, Index stride): m_iter(it), m_stride(stride) {}
+            Index const& operator[](Index index) const
+            {
+                ASSERT2( index < m_stride, "Inner array access out of bounds."
+                                             <<"\n\tPresented value: "<< index
+                                             <<"\n\tMax allowed value: " << static_cast<int>(m_stride -1))
+                return m_iter[index];
+            }
+        private:
+            RelationVecConstIterator m_iter;
+            Index m_stride;
+        };
+
+    public:
 
         typedef MeshIndexType                                                   Index;
         typedef MeshSizeType                                                    size_type;
@@ -60,6 +76,10 @@ namespace meshapi    {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
+        SubArrayProxy const operator[](Index fromSetElt) const
+        {
+            return SubArrayProxy( begin(fromSetElt), size(fromSetElt) );
+        }
 
         size_type size(Index fromSetIndex)                  const
         {

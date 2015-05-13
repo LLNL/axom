@@ -248,6 +248,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
     IndexType numZonesOfNode = 0;
     for(HexMesh::ZoneSet::iterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
     {
+#ifdef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
         typedef HexMesh::ZoneNodeRelation::RelationVecConstIteratorPair RelVecItPair;
         for(RelVecItPair znItPair  = mesh->relationZoneNode.range(*zIt); znItPair.first < znItPair.second; ++znItPair.first )
         {
@@ -255,6 +256,16 @@ void generateNodeZoneRelation(HexMesh* mesh)
             tmpZonesOfNode.insert( nodeIdx, *zIt );
             ++numZonesOfNode;
         }
+#else
+        IndexType zoneIndex = *zIt;
+        for(IndexType i = 0; i < mesh->relationZoneNode.size(*zIt); ++i)
+        {
+
+            IndexType nodeIndex = mesh->relationZoneNode[zoneIndex][i];
+            tmpZonesOfNode.insert( nodeIndex, zoneIndex );
+            ++numZonesOfNode;
+        }
+#endif
     }
     ASSERT2( tmpZonesOfNode.isValid(), "Error creating (dynamic) relation from nodes to zones!\n");
 
@@ -334,7 +345,7 @@ void createZoneRadiusField (HexMesh* mesh)
     }
 }
 
-void computeNodalErrors(HexMesh* mesh)
+DataType computeNodalErrors(HexMesh* mesh)
 {
     // Compute the node average version, and the maximum relative error
     typedef HexMesh::NodeSet::iterator NodeIter;
@@ -368,9 +379,10 @@ void computeNodalErrors(HexMesh* mesh)
        errSqSum += err*err;
     }
 
-    std::cout   << "\n\tThe L2-ish error in the node average radius was "
-                << std::sqrt( errSqSum / mesh->numNodes() )
-                << std::endl;
+    DataType err = std::sqrt( errSqSum / mesh->numNodes() );
+    std::cout   << "\n\tThe L2-ish error in the node average radius was " << err << std::endl;
+
+    return err;
 }
 
 }   // end namespace examples
@@ -384,11 +396,12 @@ int main()
 
 #ifndef USE_ONE
    int const NUM_RESOLUTIONS = 4;
-   int fileResolutions[] = {1,2,4,8};
 #else
    int const NUM_RESOLUTIONS = 1;
-   int fileResolutions[] = {1};
 #endif
+
+   int fileResolutions[] = {1,2,4,8};
+   DataType expectedResults[] = {0.10736689892, 0.037977237476, 0.013251067479, 0.0046357167735};
 
    for(int res = 0; res < NUM_RESOLUTIONS; ++res)
    {
@@ -418,7 +431,13 @@ int main()
        createZoneRadiusField(&hexMesh);
 
        std::cout<<"\n** Computing node-based errors using node->zone relation...";
-       computeNodalErrors(&hexMesh);
+       DataType errVal = computeNodalErrors(&hexMesh);
+
+       // Some error checking based on precomputed values
+       ASSERT2( asctoolkit::meshapi::util::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
+               <<"\n\texpected: " << expectedResults[res]
+               <<"\n\tactual: "   << errVal
+               <<"\n\tdiff: "     << (errVal - expectedResults[res]));
 
        std::cout<<"\ndone." << std::endl;
    }
@@ -426,4 +445,3 @@ int main()
    //--------------------------------------------------------------
    return 0;
 }
-

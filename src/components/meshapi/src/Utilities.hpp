@@ -5,6 +5,8 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <cmath>
+
 
 namespace {
 
@@ -26,9 +28,17 @@ namespace meshapi{
     typedef unsigned int        MeshIndexType;
     typedef unsigned long long  MeshSizeType;
 
-
     class NotImplementedException{};
 
+namespace util {
+
+    template<typename RealType>
+    bool compareReals(RealType a, RealType b, RealType thresh = 1e-8)
+    {
+        return std::fabs(a-b) < thresh;
+    }
+
+} // end namespace util
 
 // DBC assertions from Kull
 #ifdef ATK_DEBUG
