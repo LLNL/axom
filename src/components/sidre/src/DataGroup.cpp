@@ -563,7 +563,7 @@ DataView* DataGroup::detachView(const std::string& name )
 {
    DataView* view = m_view_coll.removeItem(name);
    if (view) {
-      view->m_owning_group = ATK_NULLPTR;
+      view->m_owning_group = static_cast<DataGroup*>(ATK_NULLPTR);
    }
 
    return view;
