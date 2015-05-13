@@ -23,10 +23,13 @@ namespace meshapi    {
 
     class StaticConstantRelation : public Relation
     {
-    public:
-        class SubArrayProxy{
+    private:
+        /**
+         * A small helper class to allow double subscripting on the relation
+         */
+        class SubscriptProxy{
         public:
-            SubArrayProxy(RelationVecConstIterator it, Index stride): m_iter(it), m_stride(stride) {}
+            SubscriptProxy(RelationVecConstIterator it, Index stride): m_iter(it), m_stride(stride) {}
             Index const& operator[](Index index) const
             {
                 ASSERT2( index < m_stride, "Inner array access out of bounds."
@@ -76,9 +79,9 @@ namespace meshapi    {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
-        SubArrayProxy const operator[](Index fromSetElt) const
+        SubscriptProxy const operator[](Index fromSetElt) const
         {
-            return SubArrayProxy( begin(fromSetElt), size(fromSetElt) );
+            return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
         }
 
         size_type size(Index fromSetIndex)                  const

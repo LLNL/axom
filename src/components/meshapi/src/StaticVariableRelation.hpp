@@ -23,6 +23,24 @@ namespace meshapi    {
 
     class StaticVariableRelation : public Relation
     {
+    private:
+        /**
+         * A small helper class to allow double subscripting on the relation
+         */
+        class SubscriptProxy{
+        public:
+            SubscriptProxy(RelationVecConstIterator it, size_type size): m_iter(it), m_size(size) {}
+            Index const& operator[](Index index) const
+            {
+                ASSERT2( index < m_size, "Inner array access out of bounds."
+                                             <<"\n\tPresented value: "<< index
+                                             <<"\n\tMax allowed value: " << static_cast<int>(m_size -1))
+                return m_iter[index];
+            }
+        private:
+            RelationVecConstIterator m_iter;
+            size_type m_size;
+        };
     public:
         typedef MeshIndexType                                          Index;
         typedef MeshSizeType                                           size_type;
@@ -59,24 +77,14 @@ namespace meshapi    {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
+        SubscriptProxy const operator[](Index fromSetElt) const
+        {
+            return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
+        }
 
         size_type size(Index fromSetIndex)                  const
         {
             verifyIndex(fromSetIndex);
-/*
-            std::cout<<"\nIn size function for fromSetIndex " << fromSetIndex
-                    <<"\n\t toSetEndIndex -- "      << toSetEndIndex(fromSetIndex)
-                    <<"\n\t toSetBeginIndex -- "    << toSetBeginIndex(fromSetIndex)
-                    <<"\n\t size (diff)    -- "     << toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex)
-                    <<"\n\t fromArray end -- "      << m_fromSetBeginsVec[fromSetIndex+1]
-                    <<"\n\t fromArray begin -- "    << m_fromSetBeginsVec[fromSetIndex]
-                    <<"\n\t size (diff)    -- "     << m_fromSetBeginsVec[fromSetIndex+1] -m_fromSetBeginsVec[fromSetIndex]
-                  <<"\n\t toSetEndIndex cast-- "      << static_cast<unsigned int>(toSetEndIndex(fromSetIndex))
-                  <<"\n\t toSetBeginIndex -- "        << static_cast<unsigned int>(toSetBeginIndex(fromSetIndex))
-                  <<"\n\t size (diff)    -- "         << static_cast<unsigned int>(toSetEndIndex(fromSetIndex)) - static_cast<unsigned int>(toSetBeginIndex(fromSetIndex))
-                    << std::endl;
-*/
-
             return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
         }
 

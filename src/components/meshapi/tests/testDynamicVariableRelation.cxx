@@ -1,5 +1,5 @@
 /**
- * \file testStaticConstantRelation.cxx
+ * \file testDynamicVariableRelation.cxx
  *
  *  Created on: Apr 29, 2015
  *      Author: weiss27
@@ -14,39 +14,39 @@
 
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/Relation.hpp"
-#include "meshapi/StaticConstantRelation.hpp"
+#include "meshapi/DynamicVariableRelation.hpp"
 
 using asctoolkit::meshapi::OrderedSet;
-using asctoolkit::meshapi::StaticConstantRelation;
+using asctoolkit::meshapi::DynamicVariableRelation;
 
 typedef asctoolkit::meshapi::MeshIndexType IndexType;
 typedef asctoolkit::meshapi::MeshSizeType SizeType;
 
 const IndexType FROMSET_SIZE = 5;
-const IndexType TOSET_SIZE = 6;
+const IndexType TOSET_SIZE = 8;
 
 
-TEST(gtest_meshapi_static_constant_relation,empty_relation)
+TEST(gtest_meshapi_dynamic_variable_relation,empty_relation)
 {
     std::cout<<"\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
-    StaticConstantRelation emptyRel(NULL, NULL);
+    DynamicVariableRelation emptyRel(NULL, NULL);
 
     EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 
     std::cout<<"\n****** done."<<std::endl;
 }
 
-TEST(gtest_meshapi_static_constant_relation,test_uninitialized_relation)
+TEST(gtest_meshapi_dynamic_variable_relation,test_uninitialized_relation)
 {
-    std::cout<<"\n****** Testing uninitialized relation.  isValid() should be TRUE since stride is 0 by default." << std::endl;
+    std::cout<<"\n****** Testing uninitialized relation.  isValid() should be false." << std::endl;
 
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    StaticConstantRelation emptyRel(&fromSet, &toSet);
+    DynamicVariableRelation emptyRel(&fromSet, &toSet);
 
-    EXPECT_TRUE(emptyRel.isValid(true)) << "Constant relation with stride 0 should be valid";
+    EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not initialized";
 
     std::cout<<"\n****** done."<<std::endl;
 }
@@ -59,50 +59,40 @@ void printVector(StrType const& msg, VecType const& vec)
     std::copy(vec.begin(), vec.end(), std::ostream_iterator<IndexType>(std::cout, " "));
 }
 
-template<typename VecType>
-void generateIncrementingRelations(IndexType stride, VecType* offsets)
+void generateIncrementingRelations(DynamicVariableRelation* rel)
 {
-    VecType& offsetsVec = *offsets;
-
     IndexType curIdx = IndexType();
     for(IndexType i=0; i < FROMSET_SIZE; ++i)
     {
-        for(IndexType j=0; j < stride; ++j)
+        for(IndexType j=0; j <= i; ++j)
         {
-            offsetsVec.push_back( (i+j) % TOSET_SIZE );
+            rel->insert(i, j % TOSET_SIZE );
             ++curIdx;
         }
     }
 }
 
-TEST(gtest_meshapi_static_constant_relation,simple_relation)
+TEST(gtest_meshapi_dynamic_variable_relation,simple_relation)
 {
     std::cout<<"\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    StaticConstantRelation incrementingRel(&fromSet, &toSet);
+    DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+    generateIncrementingRelations(&incrementingRel);
 
-    typedef StaticConstantRelation::RelationVec IndexVec;
-    IndexVec offsets;
-
-    printVector("offsets vector", offsets);
-
-    IndexType const ELEM_STRIDE = 5;
-
-    generateIncrementingRelations(ELEM_STRIDE, &offsets);
-
-    printVector("offsets vector", offsets);
-
-
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
-
+    for(IndexType idx=0; idx< fromSet.size(); ++idx)
+    {
+        std::stringstream sstr;
+        sstr << "Related to index " << idx;
+        printVector(sstr.str(), incrementingRel[idx]);
+    }
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
     typedef OrderedSet::iterator SetIter;
-    typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
+    typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
@@ -110,68 +100,68 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
         SizeType actualSize = incrementingRel.size( *sIt);
-        SizeType expectedSize = ELEM_STRIDE;
+        SizeType expectedSize = std::distance(fromSet.begin(), sIt) +1;
 
         std::cout <<"\n\t\tExpected: " << expectedSize;
         std::cout <<"\n\t\tActual: " <<  actualSize <<"\n";
 
         EXPECT_EQ( expectedSize, actualSize ) << "relation for this element was incorrect size.";
 
-        IndexType fromSetEltNum = std::distance(fromSet.begin(), sIt);
-
         RelSetConstIter toSetBegin = incrementingRel.begin(*sIt);
         RelSetConstIter toSetEnd = incrementingRel.end(*sIt);
         for(RelSetConstIter innerIt = toSetBegin; innerIt != toSetEnd; ++innerIt)
         {
-            IndexType toSetEltNum = std::distance(toSetBegin, innerIt);
+            IndexType eltNum = std::distance(toSetBegin, innerIt);
 
-            std::cout <<"\n\t\t " << toSetEltNum <<": " << *innerIt ;
+            std::cout <<"\n\t\t " << eltNum <<": " << *innerIt ;
 
-            IndexType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
+            IndexType expectedVal =  (eltNum ) % TOSET_SIZE;
             IndexType actualVal = *innerIt;
             ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }
+
     std::cout<<"\n****** done."<<std::endl;
 }
 
-TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
+TEST(gtest_meshapi_dynamic_variable_relation,test_iterator_range)
 {
     std::cout<<"\n****** Testing range function on incrementing relation." << std::endl;
 
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    StaticConstantRelation incrementingRel(&fromSet, &toSet);
+    DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+    generateIncrementingRelations(&incrementingRel);
 
-    typedef StaticConstantRelation::RelationVec IndexVec;
-    IndexVec offsets;
-
-    IndexType const ELEM_STRIDE = 5;
-    generateIncrementingRelations(ELEM_STRIDE, &offsets);
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+    for(IndexType idx=0; idx< fromSet.size(); ++idx)
+    {
+        std::stringstream sstr;
+        sstr << "Related to index " << idx;
+        printVector(sstr.str(), incrementingRel[idx]);
+    }
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
     typedef OrderedSet::iterator SetIter;
-    typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
-    typedef StaticConstantRelation::RelationVecConstIteratorPair RelSetConstIterPair;
+    typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
+    typedef DynamicVariableRelation::RelationVecConstIteratorPair RelSetConstIterPair;
 
     std::cout<<"\n\tLooking at relation's stored values...";
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
-        IndexType fromSetEltNum = std::distance(fromSet.begin(), sIt);
 
         RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
         for(RelSetConstIter it = toSetItPair.first; it < toSetItPair.second; ++it)
         {
-            IndexType toSetEltNum = std::distance(toSetItPair.first, it);
+            IndexType eltNum = std::distance(toSetItPair.first, it);
 
-            std::cout <<"\n\t\t " << toSetEltNum <<": " << *it ;
+            std::cout <<"\n\t\t " << eltNum <<": " << *it ;
 
-            IndexType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
-            ASSERT_EQ( expectedVal, *it) << "incrementing relation's value was incorrect";
+            IndexType expectedVal =  (eltNum ) % TOSET_SIZE;
+            IndexType actualVal = *it;
+            ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }
 
@@ -179,26 +169,27 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
 }
 
 
-TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
+TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
 {
     std::cout<<"\n****** Testing access via double subscript." << std::endl;
 
     OrderedSet fromSet(FROMSET_SIZE);
     OrderedSet toSet(TOSET_SIZE);
 
-    StaticConstantRelation incrementingRel(&fromSet, &toSet);
+    DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+    generateIncrementingRelations(&incrementingRel);
 
-    typedef StaticConstantRelation::RelationVec IndexVec;
-    IndexVec offsets;
-
-    IndexType const ELEM_STRIDE = 5;
-    generateIncrementingRelations(ELEM_STRIDE, &offsets);
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+    for(IndexType idx=0; idx< fromSet.size(); ++idx)
+    {
+        std::stringstream sstr;
+        sstr << "Related to index " << idx;
+        printVector(sstr.str(), incrementingRel[idx]);
+    }
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
     typedef OrderedSet::iterator SetIter;
-    typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
+    typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
@@ -207,14 +198,13 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
 
         for(IndexType idx=0; idx< incrementingRel.size(*sIt); ++idx)
         {
-            IndexType expectedVal =  (*sIt + idx) % TOSET_SIZE;
-            IndexType actualVal = incrementingRel[*sIt][idx];
-            EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
+            EXPECT_EQ( idx, incrementingRel[*sIt][idx]) << "incrementing relation's value was incorrect";
         }
     }
 
     std::cout<<"\n****** done."<<std::endl;
 }
+
 
 
 

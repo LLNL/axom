@@ -60,10 +60,16 @@ namespace meshapi    {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
+
+        RelationVec const& operator[](Index fromSetIndex) const
+        {
+            verifyIndex(fromSetIndex);
+            return m_relationsVec[fromSetIndex];
+        }
+
         size_type size(Index fromSetIndex)                  const
         {
             verifyIndex(fromSetIndex);
-
             return fromSetRelationsVec(fromSetIndex).size();
         }
 
@@ -77,6 +83,12 @@ namespace meshapi    {
             verifyIndex(fromSetIndex);
             m_relationsVec[fromSetIndex].push_back(toSetIndex);
 
+        }
+
+        RelationVec& operator[](Index fromSetIndex)
+        {
+            verifyIndex(fromSetIndex);
+            return m_relationsVec[fromSetIndex];
         }
 
 

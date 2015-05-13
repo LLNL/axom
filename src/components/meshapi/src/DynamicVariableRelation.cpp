@@ -98,16 +98,22 @@ namespace meshapi {
                 if(m_toSet)
                     std::cout<< "\n** toSet has size " << m_toSet->size() <<": ";
 
-                size_type overallCount = 0;
-                std::cout<< "\n** relations vec elements:";
-                for(OrderedSet::iterator sIt = m_fromSet->begin(), sItEnd = m_fromSet->end(); sIt < sItEnd; ++sIt)
+                if(m_relationsVec.empty())
                 {
-                    std::cout<<"\n\telt[" << *sIt << "] (" <<size(*sIt)  << "):\t";
-                    std::copy(begin(*sIt), end(*sIt), std::ostream_iterator<Index>(std::cout, " "));
-                    overallCount += size(*sIt);
+                    std::cout<< "\n** relations vec is empty:";
                 }
-                std::cout<< "\n\n\tOverall size of relation" << overallCount << std::endl;
-
+                else
+                {
+                    size_type overallCount = 0;
+                    std::cout<< "\n** relations vec elements:";
+                    for(OrderedSet::iterator sIt = m_fromSet->begin(), sItEnd = m_fromSet->end(); sIt < sItEnd; ++sIt)
+                    {
+                        std::cout<<"\n\telt[" << *sIt << "] (" <<size(*sIt)  << "):\t";
+                        std::copy(begin(*sIt), end(*sIt), std::ostream_iterator<Index>(std::cout, " "));
+                        overallCount += size(*sIt);
+                    }
+                    std::cout<< "\n\n\tOverall size of relation" << overallCount << std::endl;
+                }
             }
             else
             {

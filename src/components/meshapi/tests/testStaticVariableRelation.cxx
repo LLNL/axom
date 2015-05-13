@@ -138,6 +138,81 @@ TEST(gtest_meshapi_static_variable_relation,simple_relation)
     std::cout<<"\n****** done."<<std::endl;
 }
 
+TEST(gtest_meshapi_static_variable_relation,test_iterator_range)
+{
+    std::cout<<"\n****** Testing range function on incrementing relation." << std::endl;
+
+    OrderedSet fromSet(FROMSET_SIZE);
+    OrderedSet toSet(TOSET_SIZE);
+
+    StaticVariableRelation incrementingRel(&fromSet, &toSet);
+
+    typedef StaticVariableRelation::RelationVec IndexVec;
+    IndexVec begins(FROMSET_SIZE +1);
+    IndexVec offsets;
+    generateIncrementingRelations(&begins, &offsets);
+    incrementingRel.setRelation(begins, offsets);
+
+    EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
+
+    typedef OrderedSet::iterator SetIter;
+    typedef StaticVariableRelation::RelationVecConstIterator RelSetConstIter;
+    typedef StaticVariableRelation::RelationVecConstIteratorPair RelSetConstIterPair;
+
+    std::cout<<"\n\tLooking at relation's stored values...";
+    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
+    {
+        std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
+
+        RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
+        for(RelSetConstIter it = toSetItPair.first; it < toSetItPair.second; ++it)
+        {
+            IndexType eltNum = std::distance(toSetItPair.first, it);
+
+            std::cout <<"\n\t\t " << eltNum <<": " << *it ;
+
+            IndexType expectedVal =  (eltNum ) % TOSET_SIZE;
+            IndexType actualVal = *it;
+            ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
+        }
+    }
+
+    std::cout<<"\n****** done."<<std::endl;
+}
 
 
+TEST(gtest_meshapi_static_variable_relation,double_subscript_test)
+{
+    std::cout<<"\n****** Testing access via double subscript." << std::endl;
 
+    OrderedSet fromSet(FROMSET_SIZE);
+    OrderedSet toSet(TOSET_SIZE);
+
+    StaticVariableRelation incrementingRel(&fromSet, &toSet);
+
+    typedef StaticVariableRelation::RelationVec IndexVec;
+    IndexVec begins(FROMSET_SIZE +1);
+    IndexVec offsets;
+    generateIncrementingRelations(&begins, &offsets);
+    incrementingRel.setRelation(begins, offsets);
+
+    EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
+
+    typedef OrderedSet::iterator SetIter;
+    typedef StaticVariableRelation::RelationVecConstIterator RelSetConstIter;
+
+    std::cout<<"\n\tLooking at relation's stored values...";
+    for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
+    {
+        std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
+
+        for(IndexType idx=0; idx< incrementingRel.size(*sIt); ++idx)
+        {
+            IndexType actualVal = incrementingRel[*sIt][idx];
+            IndexType expectedVal = idx;
+            EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
+        }
+    }
+
+    std::cout<<"\n****** done."<<std::endl;
+}

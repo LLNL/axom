@@ -248,21 +248,20 @@ void generateNodeZoneRelation(HexMesh* mesh)
     IndexType numZonesOfNode = 0;
     for(HexMesh::ZoneSet::iterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
     {
-#ifdef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
+        IndexType const& zoneIdx = *zIt;
+#ifndef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
         typedef HexMesh::ZoneNodeRelation::RelationVecConstIteratorPair RelVecItPair;
-        for(RelVecItPair znItPair  = mesh->relationZoneNode.range(*zIt); znItPair.first < znItPair.second; ++znItPair.first )
+        for(RelVecItPair znItPair  = mesh->relationZoneNode.range(zoneIdx); znItPair.first < znItPair.second; ++znItPair.first )
         {
-            HexMesh::NodeSet::Index const& nodeIdx = *(znItPair.first);
-            tmpZonesOfNode.insert( nodeIdx, *zIt );
+            IndexType const& nodeIdx = *(znItPair.first);
+            tmpZonesOfNode.insert( nodeIdx, zoneIdx );
             ++numZonesOfNode;
         }
 #else
-        IndexType zoneIndex = *zIt;
-        for(IndexType i = 0; i < mesh->relationZoneNode.size(*zIt); ++i)
+        for(IndexType idx = 0; idx < mesh->relationZoneNode.size(*zIt); ++idx)
         {
-
-            IndexType nodeIndex = mesh->relationZoneNode[zoneIndex][i];
-            tmpZonesOfNode.insert( nodeIndex, zoneIndex );
+            IndexType const& nodeIdx = mesh->relationZoneNode[zoneIdx][idx];
+            tmpZonesOfNode.insert( nodeIdx, zoneIdx );
             ++numZonesOfNode;
         }
 #endif
