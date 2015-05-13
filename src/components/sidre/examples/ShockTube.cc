@@ -281,7 +281,7 @@ void InitializeShockTube(DataGroup * const prob)
   /* Create element centered quantities */
 
 
-  DataBuffer* buffer = ATK_NULLPTR;
+  DataBuffer* buffer = static_cast<DataBuffer*>(ATK_NULLPTR);
 
   int32 const numElems = prob->getView("numElems")->getNode().as_int32();
   int32 const numFaces = prob->getView("numFaces")->getNode().as_int32();

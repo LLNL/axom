@@ -222,7 +222,7 @@ DataView::DataView( const std::string& name,
                     void* is_opaque) :
   m_name(name),
   m_owning_group(owning_group),
-  m_data_buffer(ATK_NULLPTR),
+  m_data_buffer(static_cast<DataBuffer*>(ATK_NULLPTR)),
   m_schema(),
   m_node(),
   m_is_applied(false),
@@ -243,7 +243,7 @@ DataView::DataView( const std::string& name,
 */
 DataView::~DataView()
 {
-    if (m_data_buffer != ATK_NULLPTR)
+    if (m_data_buffer != static_cast<DataBuffer*>(ATK_NULLPTR))
     {
         m_data_buffer->detachView(this);
     }
