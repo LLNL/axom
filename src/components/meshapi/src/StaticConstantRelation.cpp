@@ -88,19 +88,9 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
 
     if(verboseOutput)
     {
-        std::cout<<"\n*** Detailed results of isValid on the relation.\n";
         if(bValid)
         {
             std::cout<<"(static,constant) Relation with stride " << m_stride << " was valid."<< std::endl;
-
-            if(m_fromSet)
-                std::cout<< "\n** fromSet has size " << m_fromSet->size() <<": ";
-            if(m_toSet)
-                std::cout<< "\n** toSet has size " << m_toSet->size() <<": ";
-
-            std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
-            std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
-
         }
         else
         {
@@ -108,6 +98,16 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
                      << sstr.str()
                      << std::endl;
         }
+
+        std::cout<<"\n*** Detailed results of isValid on the relation.\n";
+        if(m_fromSet)
+            std::cout<< "\n** fromSet has size " << m_fromSet->size() <<": ";
+        if(m_toSet)
+            std::cout<< "\n** toSet has size " << m_toSet->size() <<": ";
+
+        std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
+        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+
     }
 
     return bValid;

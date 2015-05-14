@@ -31,9 +31,9 @@
 namespace asctoolkit {
 namespace meshapi {
 namespace examples {
+namespace unstructured {
 
-
-typedef size_t IndexType;
+typedef asctoolkit::meshapi::MeshIndexType IndexType;
 typedef double DataType;
 
 
@@ -384,6 +384,7 @@ DataType computeNodalErrors(HexMesh* mesh)
     return err;
 }
 
+}   // end namespace unstructured
 }   // end namespace examples
 }   // end namespace meshapi
 }   // end namespace asctoolkit
@@ -391,7 +392,7 @@ DataType computeNodalErrors(HexMesh* mesh)
 
 int main()
 {
-   using namespace asctoolkit::meshapi::examples;
+   using namespace asctoolkit::meshapi::examples::unstructured;
 
 #ifndef USE_ONE
    int const NUM_RESOLUTIONS = 4;

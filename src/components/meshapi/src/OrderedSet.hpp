@@ -25,6 +25,7 @@ namespace meshapi{
       typedef MeshSizeType      size_type;
 
       typedef boost::counting_iterator<Index> iterator;
+      typedef std::pair<iterator,iterator> iterator_pair;
 
     public:
       OrderedSet(size_type size = size_type()): m_size(size) {}
@@ -33,6 +34,7 @@ namespace meshapi{
 
       iterator  begin() const  { return iterator(0); }
       iterator  end()   const  { return iterator(m_size); }
+      iterator_pair  range() const  { return std::make_pair(begin(), end()); }
 
       Index     operator[](Index idx) { return idx;}
       Index     at(Index idx)   ;

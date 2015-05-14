@@ -118,13 +118,6 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         if(bValid)
         {
             std::cout<<"Relation was valid."<< std::endl;
-
-            std::cout<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
-            std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<Index>(std::cout, " "));
-
-            std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
-            std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
-
         }
         else
         {
@@ -132,6 +125,13 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
                      << sstr.str()
                      << std::endl;
         }
+
+        std::cout<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
+        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+
+        std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
+        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+
     }
 
     return bValid;

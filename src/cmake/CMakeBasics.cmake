@@ -317,7 +317,7 @@ macro(make_executable)
    set(singleValueArgs EXECUTABLE_SOURCE)
    set(multiValueArgs DEPENDS_ON)
 
-   ## parse the arugments to the macro
+   ## parse the arguments to the macro
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
