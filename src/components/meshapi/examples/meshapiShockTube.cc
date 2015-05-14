@@ -1,11 +1,13 @@
 /**
- * \file ShockTube.cc
+ * \file meshapiShockTube.cc
  *
  * \brief 1D shock tube, split flux Euler equations
  *
  * \author J. Keasler (original)
- * \author K. Weiss (modified to use mesh API)
+ * \author K. Weiss (modified to use the asc toolkit mesh API)
  *
+ * \details
+ * \verbatim
  *         | m  |            |    mv    |
  *     Q = | mv |        F = | mv^2 + P |
  *         | E  |            |  v(E+P)  |
@@ -21,7 +23,7 @@
  *     @Q   @F    @Q   @F @Q
  *     -- + -- =  -- + -- -- = 0
  *     @t   @x    @t   @Q @x
- *
+ * \endverbatim
  */
 
 
@@ -54,10 +56,10 @@ namespace shocktube {
     const double INIT_D_RATIO = 0.5;
 
     /**
-     * \detail Simple representation of the mesh for this 1D example
+     * \brief Simple representation of the mesh for this 1D example
      *
-     * Mesh contains a set of elements and a set of faces between elements
-     * as well as the relations from elements to faces and vice versa.
+     * \detail Mesh contains a set of elements and a set of faces between elements
+     *         as well as the relations from elements to faces and vice versa.
      *
      * \note The mesh is currently missing a few subsets on the element set
      *       Specifically, we want the 'tube' to skip the first and last element
@@ -93,18 +95,20 @@ namespace shocktube {
 
     };
 
-    /** \detail A helper class to print the name of a few types */
+    /** \brief A helper class to print the name of a few types */
     template<typename T> struct TypeToString{};
 
-    /** \detail A helper class to print the name of integers as 'int' */
+    /** \brief A helper class to print the name of integers as 'int' */
     template<> struct TypeToString<int>{ static std::string to_string(){return "int";} };
 
-    /** \detail A helper class to print the name of doubles as 'double' */
+    /** \brief A helper class to print the name of doubles as 'double' */
     template<> struct TypeToString<double>{ static std::string to_string(){return "double";} };
 
     /**
-     * \detail Very simple container for fields of a given type DataType with minimal error checking.
-     *         We are using concrete instances for int and double in the code below
+     * \brief Very simple container for fields of a given type DataType with minimal error checking.
+     * \note
+     *         We are using concrete instances for int and double in the code below.
+     *         This should eventually be replaced with the sidre datastore.
      */
     template<typename DataType>
     class FieldRegistry
@@ -146,7 +150,7 @@ namespace shocktube {
         DataAttrMap m_dataAttrs;
     };
 
-    // Define the explicit classes
+    // Define the explicit instances for int and double
     FieldRegistry<int>    intsRegistry;
     FieldRegistry<double> realsRegistry;
 
@@ -228,43 +232,37 @@ void GetUserInput()
    return ;
 }
 
-/**************************************************************************
- * Subroutine:  CreateShockTubeMesh
- * Purpose   :  Build an empty mesh for the shock tube
-
-
-     Gaps between elements are faces
-                    |
-     -------------------------------
-     |   |   |             |   |   |
-
-  ### ### ### ###       ### ### ### ###
-  ### ### ### ###  ...  ### ### ### ###  <--- 1D Shock tube model
-  ### ### ### ###       ### ### ### ###
-
-   |  |                           |  |
-   |  -----------------------------  |
-  Inflow           |               Outflow
-  Element      Tube Elements       Element
-
-
- *************************************************************************/
-
+/**
+ * \brief Build an empty mesh for the shock tube
+ * \details
+ * \verbatim
+ *      Gaps between elements are faces
+ *                     |
+ *      -------------------------------
+ *      |   |   |             |   |   |
+ *
+ *   ### ### ### ###       ### ### ### ###
+ *   ### ### ### ###  ...  ### ### ### ###  <--- 1D Shock tube model
+ *   ### ### ### ###       ### ### ### ###
+ *
+ *    |  |                           |  |
+ *    |  -----------------------------  |
+ *   Inflow           |               Outflow
+ *   Element      Tube Elements       Element
+ *
+ * \endverbatim
+ */
 void CreateShockTubeMesh(ShockTubeMesh *mesh)
 {
-   int numElems = intsRegistry.getAttribute("numElems") ;
-   int numFaces = intsRegistry.getAttribute("numFaces") ;
-
-   //int inflow[1]  ;
-   //int outflow[1] ;
-
    // create element and face sets
-   mesh->elems = ShockTubeMesh::ElemSet(numElems);
-   mesh->faces = ShockTubeMesh::FaceSet(numFaces);
+   mesh->elems = ShockTubeMesh::ElemSet( intsRegistry.getAttribute("numElems") );
+   mesh->faces = ShockTubeMesh::FaceSet( intsRegistry.getAttribute("numFaces") );
 
    // TODO: Need to define subsets for inflow, outflow and tube
 
    /*
+       int inflow[1]  ;
+       int outflow[1] ;
        inflow[0] = 0 ;              // identify inflow elements
        elem->viewCreate("inflow", new IndexSet(1, inflow)) ;
 
@@ -274,22 +272,21 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
        // identify shock tube elements - set up basic map
        View *tube = elem->viewCreate("tube", new IndexSet(numElems-2)) ;
 
-       // Shift IndexSet indicies to identify shocktube elements
+       // Shift IndexSet indices to identify shocktube elements
        // (shocktube element numbers are one through numElems-1 inclusive)
        tube->indexSet()->shift(1) ;
    */
 
    // ------------ Set up relations
 
-   // TODO: Need to define DynamicConstantRelations
-   // TODO: Need to define ImplicitConstantRelation
+   // TODO: Need to define DynamicConstantRelation -- which will allow modifying the relation elements
+   // TODO: Need to define ImplicitConstantRelation -- since the relations are actually implicit
    //       -- no storage should be necessary for regular grid neighbors
    // For now, we will have to do this explicitly...
    const int STRIDE = 2;
    typedef std::vector<ShockTubeMesh::IndexType> IndexVec;
 
-
-   /// Setup the relation from elements to faces
+   /// Setup the face -> elem relation
    IndexVec relVec( STRIDE * mesh->faces.size());
    IndexVec::iterator relIt = relVec.begin();
    for(ShockTubeMesh::IndexType idx =0; idx < mesh->faces.size(); ++idx)
@@ -303,8 +300,13 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    ASSERT(mesh->relationFaceElem.isValid());
 
 
-   /// Setup the relation from elements to faces
-   // Note: This relation needs to be on the TUBE subset of the elements, not on the full set of elements
+   /// Setup the elem -> face relation
+   // Note: This relation needs to be on the TUBE subset of the elements (i.e. skip the first and last elt
+   //       It is currently on all elements, which necessitates a workaround below.
+   //       And the first and last elements of the relation are set to 0 which is wrong.
+   //       Question -- how are we planning to handle indexes that are out or range (accidentally)?
+   //                   how are we planning to handle indexes that are intentionally out of range
+   //                   (e.g. to indicate a problem, or a missing element etc..)?
    unsigned int const elemSize = mesh->elems.size();
    relVec.clear();
    relVec.resize( STRIDE * elemSize);
@@ -327,51 +329,48 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
  * Subroutine:  InitializeShockTube
  * Purpose   :  Populate the mesh with values
  *************************************************************************/
-
 void InitializeShockTube(ShockTubeMesh const& mesh)
 {
-   int i ;
-
-   // Create element centered quantities
+    typedef ShockTubeMesh::IndexType IndexType;
 
    // TODO: Define and use mesh API maps over sets for these
-   // Note -- the extra code and allocations here will be unnecessary once maps are defined
-   RealField elemField(mesh.elems.size());
+   // Note -- the extra code and allocations here will be unnecessary once maps on sets are defined
 
+   // Create element centered fields
+   RealField elemField(mesh.elems.size());
    RealField& mass      = realsRegistry.addField("mass", elemField );
    RealField& momentum  = realsRegistry.addField("momentum", elemField );
    RealField& energy    = realsRegistry.addField("energy", elemField );
    RealField& pressure  = realsRegistry.addField("pressure", elemField );
 
+   // Create face centered fields
    // mv, mv^2+P, and v(E+P)
    RealField faceField(mesh.faces.size());
    realsRegistry.addField("F0", faceField );
    realsRegistry.addField("F1", faceField );
    realsRegistry.addField("F2", faceField );
 
-
-
    // Fill left half with high pressure, right half with low pressure
-   int startTube = 0 ;
-   int endTube = mesh.elems.size();
-   int midTube = endTube / 2 ;
+   IndexType startTube = 0 ;
+   IndexType endTube = mesh.elems.size();
+   IndexType midTube = endTube / 2 ;
 
-   /* Non-dimensionalized reference values */
+   // Non-dimensionalized reference values
    double massInitial = 1.0 ;
    double momentumInitial = 0.0 ;
    double pressureInitial = gammaaInverse ;
    double energyInitial = pressureInitial/(gammaa-1.0) ;
 
-   /* Initialize zonal quantities*/
-   for (i=startTube; i<midTube; ++i)
+   // Initialize zonal quantities
+   for (IndexType idx=startTube; idx<midTube; ++idx)
    {
-      mass[i] = massInitial ;
-      momentum[i] = momentumInitial ;
-      pressure[i] = pressureInitial ;
-      energy[i] = energyInitial ;
+      mass[idx] = massInitial ;
+      momentum[idx] = momentumInitial ;
+      pressure[idx] = pressureInitial ;
+      energy[idx] = energyInitial ;
    }
 
-   /* adjust parameters for low pressure portion of tube */
+   // adjust parameters for low pressure portion of tube
    double dratio = realsRegistry.getAttribute("densityRatio") ;
    double pratio = realsRegistry.getAttribute("pressureRatio") ;
 
@@ -379,15 +378,15 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    pressureInitial *= pratio ;
    energyInitial = pressureInitial/(gammaa - 1.0) ;
 
-   for (i=midTube; i<endTube; ++i)
+   for (IndexType idx=midTube; idx<endTube; ++idx)
    {
-      mass[i] = massInitial ;
-      momentum[i] = momentumInitial ;
-      pressure[i] = pressureInitial ;
-      energy[i] = energyInitial ;
+      mass[idx] = massInitial ;
+      momentum[idx] = momentumInitial ;
+      pressure[idx] = pressureInitial ;
+      energy[idx] = energyInitial ;
    }
 
-   /* Create needed time info */
+   // Create needed time info
    realsRegistry.addAttribute("time", 0.0) ;
    intsRegistry.addAttribute("cycle", 0) ;
 
@@ -397,20 +396,25 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
 
 }
 
-/**************************************************************************
- * Subroutine:  ComputeFaceInfo
- * Purpose   :  Compute F quantities at faces.
+/**
+ * \function ComputeFaceInfo
+ * \brief Compute F quantities at faces.
  *
+ * \details
+ *
+ * \verbatim
  *  @F   @F0   @F1   @F2
  *  -- = --- + --- + ---  
  *  @x   @x    @x    @x
+ *  \endverbatime
  *
  *  Calculate F0, F1 and F2 at the face centers.
  *
- *************************************************************************/
-
+ */
 void ComputeFaceInfo(ShockTubeMesh const& mesh)
 {
+   typedef ShockTubeMesh::IndexType IndexType;
+
    // Face fields
    RealField& F0 = realsRegistry.getField("F0") ;
    RealField& F1 = realsRegistry.getField("F1") ;
@@ -421,18 +425,18 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
    RealField const& momentum = realsRegistry.getField("momentum") ;
    RealField const& energy =   realsRegistry.getField("energy") ;
 
-   // Loop through faces
+   // Update face data using element data using the face->elem relation
    for (ShockTubeMesh::IndexType fIdx=0; fIdx< mesh.faces.size() ; ++fIdx)
    {
       // each face has an upwind and downwind element.
-      int upWind   = mesh.relationFaceElem[fIdx][UPWIND] ;   // upwind element
-      int downWind = mesh.relationFaceElem[fIdx][DOWNWIND] ; // downwind element
+      IndexType upWind   = mesh.relationFaceElem[fIdx][UPWIND] ;   // upwind element
+      IndexType downWind = mesh.relationFaceElem[fIdx][DOWNWIND] ; // downwind element
 
       // calculate face centered quantities as avg of element centered ones
-      double massf =     0.5 * (mass[upWind]     + mass[downWind] ) ;
-      double momentumf = 0.5 * (momentum[upWind] + momentum[downWind] ) ;
-      double energyf =   0.5 * (energy[upWind]   + energy[downWind] ) ;
-      double pressuref = (gammaa - 1.0) * (energyf - 0.5*momentumf*momentumf/massf) ;
+      double massf      = 0.5 * (mass[upWind]     + mass[downWind] ) ;
+      double momentumf  = 0.5 * (momentum[upWind] + momentum[downWind] ) ;
+      double energyf    = 0.5 * (energy[upWind]   + energy[downWind] ) ;
+      double pressuref  = (gammaa - 1.0) * (energyf - 0.5*momentumf*momentumf/massf) ;
       double c = sqrt(gammaa*pressuref/massf) ;
       double v = momentumf/massf ;
 
@@ -447,10 +451,10 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
 
       F0[fIdx] = F1[fIdx] = F2[fIdx] = 0.0 ;
 
-      int contributor = ((v >= 0.0) ? upWind : downWind) ;
-      massf = mass[contributor] ;
+      IndexType contributor = ((v >= 0.0) ? upWind : downWind) ;
+      massf     = mass[contributor] ;
       momentumf = momentum[contributor] ;
-      energyf = energy[contributor] ;
+      energyf   = energy[contributor] ;
       pressuref = energyf - 0.5*momentumf*momentumf/massf ;
       ev = v*(gammaa - 1.0) ;
 
@@ -459,9 +463,9 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       F2[fIdx] += ev*(energyf - pressuref) ;
 
       contributor = ((v + c >= 0.0) ? upWind : downWind) ;
-      massf = mass[contributor] ;
+      massf     = mass[contributor] ;
       momentumf = momentum[contributor] ;
-      energyf = energy[contributor] ;
+      energyf   = energy[contributor] ;
       pressuref = (gammaa - 1.0)*(energyf - 0.5*momentumf*momentumf/massf) ;
       ev = 0.5*(v + c) ;
       cLocal = sqrt(gammaa*pressuref/massf) ;
@@ -471,9 +475,9 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       F2[fIdx] += ev*(energyf + pressuref + momentumf*cLocal) ;
 
       contributor = ((v - c >= 0.0) ? upWind : downWind) ;
-      massf = mass[contributor] ;
+      massf     = mass[contributor] ;
       momentumf = momentum[contributor] ;
-      energyf = energy[contributor] ;
+      energyf   = energy[contributor] ;
       pressuref = (gammaa - 1.0)*(energyf - 0.5*momentumf*momentumf/massf) ;
       ev = 0.5*(v - c) ;
       cLocal = sqrt(gammaa*pressuref/massf) ;
@@ -500,15 +504,7 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
     RealField& energy = realsRegistry.getField("energy") ;
     RealField& pressure = realsRegistry.getField("pressure") ;
 
-   // focus on just the elements within the shock tube
- /*
-   View *tube = elem->view("tube") ;
-   Relation &elemToFace = *tube->relation("elemToFace") ;
-   int numTubeElems = tube->length() ;
-   int *is = tube->map() ;
- */
-
-   /* The element update is calculated as the flux between faces */
+   // The element update is calculated as the flux between faces
    RealField const& F0 = realsRegistry.getField("F0") ;
    RealField const& F1 = realsRegistry.getField("F1") ;
    RealField const& F2 = realsRegistry.getField("F2") ;
@@ -517,32 +513,29 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
    double dt = realsRegistry.getAttribute("dt") ;
    double &time = realsRegistry.getAttribute("time") ;
 
-   //ShockTubeMesh::ElemFaceRelation::RelationVecConstIteratorPair relItPair = mesh.relationElemFace
-   ShockTubeMesh::ElemSet::iterator_pair elemItPair = mesh.elems.range();
 
-   // Hack -- update the ranges to match the tube.
-   // NOTE: This will not be necessary once subsets are defined.
+   /// Update the element fields based on the face data using the elem->face relation
+   ShockTubeMesh::ElemSet::iterator_pair elemItPair = mesh.elems.range();
+   // HACK: We must update the iterator ranges to match the tube.
+   // TODO: Switch to relation on tube element set once Subsets are defined.
    elemItPair.first++;    elemItPair.second--;
 
    for (; elemItPair.first < elemItPair.second; ++elemItPair.first)
    {
       ShockTubeMesh::IndexType elemIdx = *elemItPair.first;
 
-      // each element inside the tube has an upwind and downwind face
+      // Each element inside the tube has an upwind and downwind face
       ShockTubeMesh::IndexType upWind   = mesh.relationElemFace[elemIdx][UPWIND] ;      // upwind face
       ShockTubeMesh::IndexType downWind = mesh.relationElemFace[elemIdx][DOWNWIND] ;    // downwind face
 
-      mass[elemIdx] -= gammaaInverse*(F0[downWind] - F0[upWind])*dt/dx ;
+      mass[elemIdx]     -= gammaaInverse*(F0[downWind] - F0[upWind])*dt/dx ;
       momentum[elemIdx] -= gammaaInverse*(F1[downWind] - F1[upWind])*dt/dx ;
-      energy[elemIdx] -= gammaaInverse*(F2[downWind] - F2[upWind])*dt/dx ;
-      pressure[elemIdx] = (gammaa - 1.0) *
-                          (energy[elemIdx] - 0.5 *
-                           momentum[elemIdx]*momentum[elemIdx]/mass[elemIdx]) ;
+      energy[elemIdx]   -= gammaaInverse*(F2[downWind] - F2[upWind])*dt/dx ;
+      pressure[elemIdx]  = (gammaa - 1.0) * (energy[elemIdx] - 0.5 * momentum[elemIdx]*momentum[elemIdx]/mass[elemIdx]) ;
    }
 
    // update the time
    time += dt ;
-
 }
 
 

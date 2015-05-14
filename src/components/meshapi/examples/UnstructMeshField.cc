@@ -1,10 +1,12 @@
 /**
  * \file UnstructMeshField.cc
  *
- * \brief Simple user of the mesh api class.  Loads a hex mesh from a VTK file, generates the Node to Zone relation and does simple mesh processing
+ * \brief Simple user of the mesh api class.
+ *
+ * \details Loads a hex mesh from a VTK file, generates the Node to Zone relation and does simple mesh processing.
  *
  * \author T. Brunner (original)
- * \author K. Weiss (modified to use mesh API)
+ * \author K. Weiss (modified to use the asc toolkit mesh API)
  */
 
 #include <iostream>

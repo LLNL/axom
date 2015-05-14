@@ -6,8 +6,6 @@ INCLUDE_DIRECTORIES(
 # Specify all headers
 #
 set(meshapi_headers
-    Hello.hpp
-    
     # Utility files
     Utilities.hpp
     FileUtilities.hpp
@@ -30,8 +28,6 @@ set(meshapi_headers
 # Specify all sources
 #
 set(meshapi_sources
-    Hello.cpp
-    
     # SRM Set sources
     Set.cpp
     OrderedSet.cpp
