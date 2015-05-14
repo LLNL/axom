@@ -5,7 +5,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ################################
 # ASCTK ToolKit
 ################################
-
 project(asctk)
 
 ################################
@@ -33,7 +32,7 @@ include(SetupDocs)
 include(SetupCodeChecks)
 
 ################################
-# Add the datastore lib
+# Add components
 ################################
 add_subdirectory(components)
 
