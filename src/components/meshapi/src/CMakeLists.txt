@@ -46,7 +46,7 @@ set(meshapi_sources
 #
 make_library(meshapi "${meshapi_sources}" "${meshapi_headers}")
 add_dependencies(meshapi copy_headers_meshapi)
-add_dependencies(meshapi datastore)
+add_dependencies(meshapi sidre)
 install(TARGETS meshapi DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 #

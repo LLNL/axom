@@ -40,7 +40,7 @@ namespace meshapi{
       Index     at(Index idx)   ;
 
 
-      void reset(size_type new_size) { throw NotImplementedException(); }
+      void reset(size_type) { throw NotImplementedException(); }
 
     private:
       int m_size;

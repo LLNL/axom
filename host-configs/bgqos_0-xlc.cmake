@@ -1,21 +1,21 @@
 ###############################################################################
 #
-# CMake Cache Seed file for chaos_5_x86_64_ib machines using gcc 4.7
+# CMake Cache Seed file for bgqos_0 machines using xlc.
 #
 ###############################################################################
 
 ###############################################################################
 # Select the c and c++ compiler though the standard CMake Variables.
 ###############################################################################
-set(CMAKE_C_COMPILER "/usr/apps/gnu/4.7.1/bin/gcc" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.7.1/bin/g++" CACHE PATH "")
-set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/tools/spack/opt/chaos_5_x86_64_ib/gcc\@4.4.7/python\@2.7.8-703c7a96/bin/sphinx-build" CACHE PATH "")
+set(CMAKE_C_COMPILER "bgxlc_r" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "bgxlc++_r" CACHE PATH "")
 
 
 ###############################################################################
 # Set location for boost library
+# Need to provide your own boost and set this by hand, no boost 1.57 on BG/Q.
 ###############################################################################
-set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
+#set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
 
 ###############################################################################
 # Additional Compiler Flags

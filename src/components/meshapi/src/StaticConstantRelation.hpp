@@ -84,8 +84,9 @@ namespace meshapi    {
             return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
         }
 
-        size_type size(Index fromSetIndex)                  const
+        size_type size(Index fromSetIndex = 0)                  const
         {
+            verifyIndex(fromSetIndex);        
             return m_stride;
         }
 
