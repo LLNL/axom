@@ -1,3 +1,3 @@
-Datastore Documentation
+SiDRe Documentation
 =======================
 
