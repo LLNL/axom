@@ -4,7 +4,7 @@ import socket
 from os.path import join as pjoin
 
 class Uberenv(Package):
-    """Spack Based Uber Build for Toolkit TPLs """
+    """Spack Based Uberenv Build for Toolkit TPLs """
 
     # TODO: what do we need for DIY mode?
     
@@ -13,17 +13,18 @@ class Uberenv(Package):
 
     version('1.3.1', '8786a194acf9673464c5455b11fd4332')
     
-    # both of theses are custom
+    # all of these theses are custom
     depends_on("python")
     depends_on("py-sphinx")
     depends_on("py-breathe")
-    
-    # this was pushed to develop, but not yet in the diy branch
-    depends_on("uncrustify")
+    depends_on("cmake")
 
     # boost, header only
     depends_on("boost-headers")
-        
+
+    # this was pushed to develop, but not yet in the diy branch
+    depends_on("uncrustify")
+
     def install(self, spec, prefix):
         #mkdirp(prefix)
         dest_dir = env["SPACK_DEBUG_LOG_DIR"]
