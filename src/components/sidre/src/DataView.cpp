@@ -167,7 +167,7 @@ void *DataView::getOpaque() const
 void DataView::info(Node &n) const
 {
     n["name"] = m_name;
-    n["descriptor"] = m_schema.to_json();
+    n["schema"] = m_schema.to_json();
     n["node"] = m_node.to_json();
     n["is_applied"] = m_is_applied;
     n["is_opaque"] = m_is_opaque;

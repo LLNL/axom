@@ -214,12 +214,12 @@ TEST(sidre_opaque,meshvar)
 
        int num_zone_vals = zonemv->getNumVals(dom_ext);
        int test_num_zone_vals = dom_gp->getView("zone_data")->getBuffer()->
-                                getDescriptor().dtype().number_of_elements();
+                                getSchema().dtype().number_of_elements();
        EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
        int num_node_vals = nodemv->getNumVals(dom_ext);
        int test_num_node_vals = dom_gp->getView("node_data")->getBuffer()->
-                                getDescriptor().dtype().number_of_elements();
+                                getSchema().dtype().number_of_elements();
        EXPECT_EQ(num_node_vals, test_num_node_vals);
 
     }
