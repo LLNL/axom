@@ -20,7 +20,10 @@ class Uberenv(Package):
     
     # this was pushed to develop, but not yet in the diy branch
     depends_on("uncrustify")
-    
+
+    # boost, header only
+    depends_on("boost-headers")
+        
     def install(self, spec, prefix):
         #mkdirp(prefix)
         dest_dir = env["SPACK_DEBUG_LOG_DIR"]
@@ -35,6 +38,8 @@ class Uberenv(Package):
         cfg.write('set(SPHINX_EXECUTABLE "%s" CACHE PATH "")\n\n' % sphinx_build_exe)
         cfg.write("# uncrustify from uberenv\n")
         cfg.write('set(UNCRUSTIFY_EXECUTABLE "%s" CACHE PATH "")\n\n' % uncrustify_exe)
+        cfg.write("# boost headers from uberenv\n")
+        cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
         cfg.write("\n")
         cfg.close()        
         
