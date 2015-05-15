@@ -46,7 +46,7 @@ TEST(sidre_view,uint32_buffer_from_view)
     dv->getNode().print_detailed();
 
     EXPECT_EQ(dv->getNode().schema().total_bytes(),
-              dv->getDescriptor().total_bytes());
+              dv->getSchema().total_bytes());
     delete ds;
     
 }
@@ -69,7 +69,7 @@ TEST(sidre_view,uint32_array_multi_view)
     dbuff->getNode().print_detailed();
 
     EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              dbuff->getDescriptor().total_bytes());
+              dbuff->getSchema().total_bytes());
 
 
     DataView *dv_e = root->createView("even",dbuff);
@@ -118,7 +118,7 @@ TEST(sidre_view,init_uint32_array_multi_view)
     dbuff->getNode().print_detailed();
 
     EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              dbuff->getDescriptor().total_bytes());
+              dbuff->getSchema().total_bytes());
 
 
     DataView *dv_e = root->createView("even",dbuff);

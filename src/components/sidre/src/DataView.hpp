@@ -256,7 +256,7 @@ public:
     /*!
      * \brief Return const reference to Conduit schema describing data.
      */
-    const Schema& getDescriptor() const
+    const Schema& getSchema() const
     {
        return m_schema;
     } 

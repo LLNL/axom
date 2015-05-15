@@ -591,17 +591,17 @@ void DumpUltra( DataGroup * const prob)
      for(size_t i=0;i<prob->getNumViews();i++)
      {
          DataView * const view = prob->getView(i);
-         const int length = view->getDescriptor().dtype().number_of_elements();
+         const int length = view->getSchema().dtype().number_of_elements();
          const std::string& name = view->getName();
          if( length <= 1 )
          {
-             if( view->getDescriptor().dtype().id() == DataType::INT32_T )
+             if( view->getSchema().dtype().id() == DataType::INT32_T )
              {
                  fprintf(fp, "# %s = %d\n",
                          name.c_str(),
                          view->getNode().as_int32());
              }
-             else if( view->getDescriptor().dtype().id() == 
+             else if( view->getSchema().dtype().id() == 
                       DataType::FLOAT64_T )
              {
                  fprintf(fp, "# %s = %f\n",
@@ -615,11 +615,11 @@ void DumpUltra( DataGroup * const prob)
     for(size_t i=0;i<elem->getNumViews();i++)
     {
          DataView * const view = elem->getView(i);
-         const int length = view->getDescriptor().dtype().number_of_elements();
+         const int length = view->getSchema().dtype().number_of_elements();
          const std::string& name = view->getName();
          fprintf(fp, "# %s\n", name.c_str() ) ;
          
-         if( view->getDescriptor().dtype().id() == DataType::INT32_T )
+         if( view->getSchema().dtype().id() == DataType::INT32_T )
          {
              int32 const * const data = view->getNode().as_int32_ptr();
              for ( int i=0; i<length; ++i)
@@ -628,7 +628,7 @@ void DumpUltra( DataGroup * const prob)
              }
              fprintf(fp, "\n") ;
          }
-         else if( view->getDescriptor().dtype().id() == DataType::FLOAT64_T )
+         else if( view->getSchema().dtype().id() == DataType::FLOAT64_T )
          {
              float64 const * const data = view->getNode().as_float64_ptr();
              for ( int i=0; i<length; ++i)

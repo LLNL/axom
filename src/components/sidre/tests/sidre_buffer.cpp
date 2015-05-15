@@ -44,7 +44,7 @@ TEST(sidre_buffer,alloc_buffer_for_uint32_array)
     dbuff->getNode().print_detailed();
 
     EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              dbuff->getDescriptor().total_bytes());
+              dbuff->getSchema().total_bytes());
   
     ds->print();
     delete ds;
@@ -67,7 +67,7 @@ TEST(sidre_buffer,init_buffer_for_uint32_array)
     dbuff->getNode().print_detailed();
 
     EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              dbuff->getDescriptor().total_bytes());
+              dbuff->getSchema().total_bytes());
 
     ds->print();
     delete ds;

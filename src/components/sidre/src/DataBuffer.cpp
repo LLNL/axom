@@ -87,7 +87,7 @@ DataBuffer* DataBuffer::allocate()
 void DataBuffer::info(Node &n) const
 {
     n["uid"].set(m_uid);
-    n["descriptor"].set(m_schema.to_json());
+    n["schema"].set(m_schema.to_json());
     n["node"].set(m_node.to_json());
 }
 
