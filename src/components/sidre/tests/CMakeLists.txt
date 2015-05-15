@@ -3,17 +3,17 @@
 #
 
 set(catch_datastore_tests
-   testCatchExample.cxx
+   testCatchExample.cpp
    )
 
 
 set(gtest_datastore_tests
-   testGTestExample.cxx
-   datastore_smoke.cxx
-   datastore_buffer.cxx
-   datastore_view.cxx
-   datastore_group.cxx
-   datastore_opaque.cxx
+   testGTestExample.cpp
+   datastore_smoke.cpp
+   datastore_buffer.cpp
+   datastore_view.cpp
+   datastore_group.cpp
+   datastore_opaque.cpp
    )
 
 
