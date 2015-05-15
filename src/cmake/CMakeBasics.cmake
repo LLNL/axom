@@ -90,12 +90,6 @@ mark_as_advanced(
 
 include(ExternalProject)
 
-option(BUILD_FORTRAN_SUPPORT "Build Fortran support for toolkit components" ON)
-if(BUILD_FORTRAN_SUPPORT)
-    enable_language (Fortran)
-endif()
-
-
 option(BUILD_TESTING "Builds unit tests" ON)
 if (BUILD_TESTING)
 
