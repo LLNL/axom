@@ -113,29 +113,6 @@ if (BUILD_TESTING)
 
 endif()
 
-################################################################
-# For convenience, we support directly building uncrustify
-################################################################
-option(BUILD_UNCRUSTIFY "Build uncrustify binary" ON)
-if (BUILD_UNCRUSTIFY)
-    # use cmake external project
-    # using the tarball is an easy way to keep .o files from 
-    # uncrustify's in source build from entering our build tree
-    #
-    ExternalProject_Add(uncrustify_build
-                PREFIX uncrustify_build
-                URL ${PROJECT_SOURCE_DIR}/TPL/uncrustify-0.61.tar.gz
-                BUILD_IN_SOURCE 1
-                CONFIGURE_COMMAND  CC=${CMAKE_C_COMPILER} 
-                                   CXX=${CMAKE_CXX_COMPILER} 
-                                   ./configure 
-                                   --prefix=${PROJECT_BINARY_DIR}/TPL/uncrustify
-                BUILD_COMMAND ${make} )
-    # use this copy as our uncrustify exe 
-    set(UNCRUSTIFY_EXECUTABLE ${PROJECT_BINARY_DIR}/TPL/uncrustify/bin/uncrustify)
-
-endif()
-
 ## Enable ENABLE C++ 11 features
 option(ENABLE_CXX11 "Enables C++11 features" OFF)
 if (ENABLE_CXX11)
