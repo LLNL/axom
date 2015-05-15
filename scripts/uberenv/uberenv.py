@@ -59,10 +59,12 @@ def main():
     dest_spack = pjoin(dest_dir,"spack")
     dest_spack_pkgs = pjoin(dest_spack,"var","spack","packages")
     # print a warning if the dest path already exists
-    if os.path.isdir(dest_spack):
-        print "[warning: destination '%s' already exists]"  % dest_spack
-    else:
+    if not os.path.isdir(dest_dir):
         os.mkdir(dest_dir)
+    else:
+        print "[info: destination '%s' already exists]"  % dest_dir
+    if os.path.isdir(dest_spack):
+        print "[info: destination '%s' already exists]"  % dest_spack
     # clone spack into the dest path
     os.chdir(dest_dir)
     sexe("git clone https://github.com/scalability-llnl/spack.git")
