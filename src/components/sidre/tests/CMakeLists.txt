@@ -2,18 +2,18 @@
 # Specify list of tests
 #
 
-set(catch_datastore_tests
-   testCatchExample.cxx
+set(catch_sidre_tests
+   testCatchExample.cpp
    )
 
 
-set(gtest_datastore_tests
-   testGTestExample.cxx
-   datastore_smoke.cxx
-   datastore_buffer.cxx
-   datastore_view.cxx
-   datastore_group.cxx
-   datastore_opaque.cxx
+set(gtest_sidre_tests
+#   testGTestExample.cpp
+   sidre_smoke.cpp
+   sidre_buffer.cpp
+   sidre_view.cpp
+   sidre_group.cpp
+   sidre_opaque.cpp
    )
 
 
@@ -21,14 +21,14 @@ set(gtest_datastore_tests
 #
 # Add catch based tests
 #
-foreach(test ${catch_datastore_tests})
+foreach(test ${catch_sidre_tests})
     add_catch_test( TEST_SOURCE ${test} DEPENDS_ON sidre )
 endforeach()
 
 #
 # Add gtest based tests
 #
-foreach(test ${gtest_datastore_tests})
+foreach(test ${gtest_sidre_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit )
 endforeach()
 

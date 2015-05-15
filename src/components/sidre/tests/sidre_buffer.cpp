@@ -10,7 +10,7 @@ using namespace conduit;
 
 //------------------------------------------------------------------------------
 
-TEST(datastore_buffer,create_buffers)
+TEST(sidre_buffer,create_buffers)
 {
     DataStore *ds = new DataStore();
     DataBuffer *dbuff_0 = ds->createBuffer();
@@ -26,8 +26,9 @@ TEST(datastore_buffer,create_buffers)
     delete ds;
 }
 
+//------------------------------------------------------------------------------
 
-TEST(datastore_buffer,alloc_buffer_for_uint32_array)
+TEST(sidre_buffer,alloc_buffer_for_uint32_array)
 {
     DataStore *ds = new DataStore();
     DataBuffer *dbuff = ds->createBuffer();
@@ -50,8 +51,9 @@ TEST(datastore_buffer,alloc_buffer_for_uint32_array)
     
 }
 
+//------------------------------------------------------------------------------
 
-TEST(datastore_buffer,init_buffer_for_uint32_array)
+TEST(sidre_buffer,init_buffer_for_uint32_array)
 {
     DataStore *ds = new DataStore();
     DataBuffer *dbuff = ds->createBuffer();

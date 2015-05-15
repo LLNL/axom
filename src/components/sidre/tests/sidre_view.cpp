@@ -11,7 +11,7 @@ using namespace conduit;
 
 //------------------------------------------------------------------------------
 
-TEST(datastore_view,create_views)
+TEST(sidre_view,create_views)
 {
     DataStore *ds   = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -28,7 +28,9 @@ TEST(datastore_view,create_views)
     delete ds;
 }
 
-TEST(datastore_view,uint32_buffer_from_view)
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,uint32_buffer_from_view)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -49,8 +51,9 @@ TEST(datastore_view,uint32_buffer_from_view)
     
 }
 
+//------------------------------------------------------------------------------
 
-TEST(datastore_view,uint32_array_multi_view)
+TEST(sidre_view,uint32_array_multi_view)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -98,8 +101,9 @@ TEST(datastore_view,uint32_array_multi_view)
     
 }
 
+//------------------------------------------------------------------------------
 
-TEST(datastore_view,init_uint32_array_multi_view)
+TEST(sidre_view,init_uint32_array_multi_view)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -150,8 +154,9 @@ TEST(datastore_view,init_uint32_array_multi_view)
     
 }
 
+//------------------------------------------------------------------------------
 
-TEST(datastore_view,uint32_array_multi_view_resize)
+TEST(sidre_view,uint32_array_multi_view_resize)
 {
     ///
     /// This example creates a 4 * 10 buffer of ints,
@@ -303,7 +308,9 @@ TEST(datastore_view,uint32_array_multi_view_resize)
     
 }
 
-TEST(datastore_view,simple_opaque)
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,simple_opaque)
 {
     // create our main data store
     DataStore *ds = new DataStore();

@@ -9,7 +9,7 @@ using asctoolkit::sidre::DataStore;
 
 //------------------------------------------------------------------------------
 
-TEST(datastore_smoke,create_datastore)
+TEST(sidre_smoke,create_datastore)
 {
     DataStore *ds = new DataStore();
     delete ds;
@@ -18,7 +18,7 @@ TEST(datastore_smoke,create_datastore)
 
 //------------------------------------------------------------------------------
 
-TEST(datastore_smoke,conduit_in_datastore_smoke)
+TEST(sidre_smoke,conduit_in_sidre_smoke)
 {
     // make sure we are linking with conduit ok. 
     conduit::Node n;
