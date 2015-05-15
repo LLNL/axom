@@ -9,7 +9,7 @@ set(sidre_headers
     DataView.hpp
     sidre.hpp
 
-    capi/c-datastore.h
+    capi/sidre.h
     capi/wrapDataStore.h
     capi/wrapDataGroup.h
     capi/wrapDataBuffer.h

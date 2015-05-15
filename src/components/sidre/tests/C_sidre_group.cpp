@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "sidre/c-datastore.h"
+#include "sidre/sidre.h"
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_group)
