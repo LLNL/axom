@@ -13,7 +13,7 @@
 
 //#include <iostream>
 
-#include "meshapi/Utilities.hpp"
+#include "common/Utilities.hpp"
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/Relation.hpp"
 
@@ -32,9 +32,9 @@ namespace meshapi    {
             SubscriptProxy(RelationVecConstIterator it, size_type size): m_iter(it), m_size(size) {}
             Index const& operator[](Index index) const
             {
-                ASSERT2( index < m_size, "Inner array access out of bounds."
+                ATK_ASSERT_MSG( index < m_size, "Inner array access out of bounds."
                                              <<"\n\tPresented value: "<< index
-                                             <<"\n\tMax allowed value: " << static_cast<int>(m_size -1))
+                                             <<"\n\tMax allowed value: " << static_cast<int>(m_size -1));
                 return m_iter[index];
             }
         private:
@@ -91,7 +91,7 @@ namespace meshapi    {
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(Index fromSetIndex)       const { ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
+        inline void  verifyIndex(Index fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
         inline Index toSetBeginIndex(Index fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
         inline Index toSetEndIndex(Index fromSetIndex)     const { return m_fromSetBeginsVec[fromSetIndex+1]; }
 

@@ -14,7 +14,7 @@
 
 //#include <iostream>
 
-#include "meshapi/Utilities.hpp"
+#include "common/Utilities.hpp"
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/Relation.hpp"
 
@@ -93,7 +93,7 @@ namespace meshapi    {
 
 
     private:
-        inline void  verifyIndex(Index fromSetIndex)       const { ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
+        inline void  verifyIndex(Index fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
         inline RelationVec      & fromSetRelationsVec(Index fromSetIndex)           { return m_relationsVec[fromSetIndex]; }
         inline RelationVec const& fromSetRelationsVec(Index fromSetIndex)   const   { return m_relationsVec[fromSetIndex]; }
 

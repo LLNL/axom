@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <string>
 #include <cstdlib>
+#include <cmath>
 
 
 /*******************************************************************************
@@ -22,10 +23,10 @@
 * The pre-processor macros below should be used to catch erroneous, or
 * potentially dangerous, run-time conditions in the ASC CS Toolkit. When 
 * used extensively in the code, they help simplify the debugging process for 
-* developers and users. In partcular, enable developers to specify conditions 
+* developers and users. In particular, enable developers to specify conditions
 * when the code cannot continue correct execution or when continued execution 
 * is suspect. For example, they are especially helpful to check arguments 
-* passed to methos; e.g., null pointers, values out of range, etc.  There 
+* passed to methods; e.g., null pointers, values out of range, etc.  There
 * are many other uses as well.
 *
 * The following four macros are defined below:
@@ -38,7 +39,7 @@
 * Each macro accepts a message string or boolean expression and message string.
 * A message string argument may be any formatted character string argument 
 * that can be accepted by standard C++ I/O stream utilities. A boolean 
-* expression should evaulate to 'true' when the program is correct and 'false' 
+* expression should evaluate to 'true' when the program is correct and 'false'
 * otherwise. When triggered, all macros print the bool_expr and/or message to 
 * std output along with the file and line number where encountered.
 *
@@ -185,7 +186,7 @@ namespace utilities
 
    /*!
     * \brief Process warning message with file and line number information 
-    *        and let program exectution continue.
+    *        and let program execution continue.
     */
    inline void processWarning(
       const std::string& message,
@@ -194,6 +195,19 @@ namespace utilities
    {
       utilities::printMessage( message, filename, line);
    }
+
+   /*!
+    * \brief Fuzzy comparison of two real valued quantities
+    *
+    * \param thresh The threshold of the fuzzy comparison.  Default is 1e-8
+    * \return \c true if the absolute value of the difference is less than \param thresh, else false
+    */
+   template<typename RealType>
+   bool compareReals(RealType a, RealType b, RealType thresh = 1e-8)
+   {
+       return std::fabs(a-b) < thresh;
+   }
+
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace
 #endif

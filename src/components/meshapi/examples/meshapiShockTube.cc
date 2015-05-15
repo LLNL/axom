@@ -33,6 +33,8 @@
 #include <string>
 #include <iostream>
 
+
+#include "common/Utilities.hpp"
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
 
@@ -58,7 +60,7 @@ namespace shocktube {
     /**
      * \brief Simple representation of the mesh for this 1D example
      *
-     * \detail Mesh contains a set of elements and a set of faces between elements
+     * \details Mesh contains a set of elements and a set of faces between elements
      *         as well as the relations from elements to faces and vice versa.
      *
      * \note The mesh is currently missing a few subsets on the element set
@@ -121,33 +123,33 @@ namespace shocktube {
 
     public:
         DataVec&  addField(KeyType key, DataVec& vec) { return m_dataVecs[key] = vec; }
-        DataType& addAttribute(KeyType key, DataType val) { return m_dataAttrs[key] = val; }
+        DataType& addScalar(KeyType key, DataType val) { return m_dataScalars[key] = val; }
 
         DataVec& getField(KeyType key)
         {
-            ASSERT2( m_dataVecs.find(key) != m_dataVecs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " field named " << key );
+            ATK_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " field named " << key );
             return m_dataVecs[key];
         }
         DataVec const& getField(KeyType key) const
         {
-            ASSERT2( m_dataVecs.find(key) != m_dataVecs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " field named " << key );
+            ATK_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " field named " << key );
             return m_dataVecs[key];
         }
 
-        DataType& getAttribute(KeyType key)
+        DataType& getScalar(KeyType key)
         {
-            ASSERT2( m_dataAttrs.find(key) != m_dataAttrs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " attribute named " << key );
-            return m_dataAttrs[key];
+            ATK_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end(), "Didn't find " << TypeToString<DataType>::to_string() << " scalar named " << key );
+            return m_dataScalars[key];
         }
-        DataType const& getAttribute(KeyType key) const
+        DataType const& getScalar(KeyType key) const
         {
-            ASSERT2( m_dataAttrs.find(key) != m_dataAttrs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " attribute named " << key );
-            return m_dataAttrs[key];
+            ATK_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end(), "Didn't find " << TypeToString<DataType>::to_string() << " scalar named " << key );
+            return m_dataScalars[key];
         }
 
     private:
         DataVecMap  m_dataVecs;
-        DataAttrMap m_dataAttrs;
+        DataAttrMap m_dataScalars;
     };
 
     // Define the explicit instances for int and double
@@ -179,8 +181,8 @@ void GetUserInput()
       numElems += 2;
       numFaces = numElems - 1;
 
-      intsRegistry.addAttribute("numElems", numElems);
-      intsRegistry.addAttribute("numFaces", numFaces) ;
+      intsRegistry.addScalar("numElems", numElems);
+      intsRegistry.addScalar("numFaces", numFaces) ;
    }
 
    /********************/
@@ -202,8 +204,8 @@ void GetUserInput()
          std::cout << dratio <<std::endl;
       }
 
-      realsRegistry.addAttribute("pressureRatio", pratio) ;
-      realsRegistry.addAttribute("densityRatio", dratio) ;
+      realsRegistry.addScalar("pressureRatio", pratio) ;
+      realsRegistry.addScalar("densityRatio", dratio) ;
    }
 
    /********************/
@@ -224,9 +226,9 @@ void GetUserInput()
       int numTotalCycles = numUltraDumps*numCyclesPerDump;
       std::cout << "\nSimulation will run for " << numTotalCycles <<" cycles."<<std::endl;
 
-      intsRegistry.addAttribute("numUltraDumps", numUltraDumps) ;
-      intsRegistry.addAttribute("numCyclesPerDump", numCyclesPerDump) ;
-      intsRegistry.addAttribute("numTotalCycles", numTotalCycles) ;
+      intsRegistry.addScalar("numUltraDumps", numUltraDumps) ;
+      intsRegistry.addScalar("numCyclesPerDump", numCyclesPerDump) ;
+      intsRegistry.addScalar("numTotalCycles", numTotalCycles) ;
    }
 
    return ;
@@ -255,8 +257,8 @@ void GetUserInput()
 void CreateShockTubeMesh(ShockTubeMesh *mesh)
 {
    // create element and face sets
-   mesh->elems = ShockTubeMesh::ElemSet( intsRegistry.getAttribute("numElems") );
-   mesh->faces = ShockTubeMesh::FaceSet( intsRegistry.getAttribute("numFaces") );
+   mesh->elems = ShockTubeMesh::ElemSet( intsRegistry.getScalar("numElems") );
+   mesh->faces = ShockTubeMesh::FaceSet( intsRegistry.getScalar("numFaces") );
 
    // TODO: Need to define subsets for inflow, outflow and tube
 
@@ -297,7 +299,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
 
    mesh->relationFaceElem = ShockTubeMesh::FaceElemRelation(&mesh->faces, &mesh->elems);
    mesh->relationFaceElem.setRelation(relVec, STRIDE);
-   ASSERT(mesh->relationFaceElem.isValid());
+   ATK_ASSERT(mesh->relationFaceElem.isValid());
 
 
    /// Setup the elem -> face relation
@@ -320,7 +322,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
 
    mesh->relationElemFace = ShockTubeMesh::ElemFaceRelation(&mesh->elems, &mesh->faces);
    mesh->relationElemFace.setRelation(relVec, STRIDE);
-   ASSERT(mesh->relationElemFace.isValid());
+   ATK_ASSERT(mesh->relationElemFace.isValid());
 
 }
 
@@ -371,8 +373,8 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    }
 
    // adjust parameters for low pressure portion of tube
-   double dratio = realsRegistry.getAttribute("densityRatio") ;
-   double pratio = realsRegistry.getAttribute("pressureRatio") ;
+   double dratio = realsRegistry.getScalar("densityRatio") ;
+   double pratio = realsRegistry.getScalar("pressureRatio") ;
 
    massInitial *= dratio ;
    pressureInitial *= pratio ;
@@ -387,12 +389,12 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    }
 
    // Create needed time info
-   realsRegistry.addAttribute("time", 0.0) ;
-   intsRegistry.addAttribute("cycle", 0) ;
+   realsRegistry.addScalar("time", 0.0) ;
+   intsRegistry.addScalar("cycle", 0) ;
 
    double dx = 1.0 / static_cast<double>(endTube);
-   realsRegistry.addAttribute("dx", dx);
-   realsRegistry.addAttribute("dt", 0.4*dx) ;
+   realsRegistry.addScalar("dx", dx);
+   realsRegistry.addScalar("dt", 0.4*dx) ;
 
 }
 
@@ -509,9 +511,9 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
    RealField const& F1 = realsRegistry.getField("F1") ;
    RealField const& F2 = realsRegistry.getField("F2") ;
 
-   double dx = realsRegistry.getAttribute("dx") ;
-   double dt = realsRegistry.getAttribute("dt") ;
-   double &time = realsRegistry.getAttribute("time") ;
+   double dx = realsRegistry.getScalar("dx") ;
+   double dt = realsRegistry.getScalar("dt") ;
+   double &time = realsRegistry.getScalar("time") ;
 
 
    /// Update the element fields based on the face data using the elem->face relation
@@ -570,18 +572,18 @@ int main(void)
     CreateShockTubeMesh(&mesh);     // setup sets and relations
     InitializeShockTube(mesh);      // setup fields
 
-    int numTotalCycles = intsRegistry.getAttribute("numTotalCycles") ;
-    int dumpInterval   = intsRegistry.getAttribute("numCyclesPerDump") ;
+    int numTotalCycles = intsRegistry.getScalar("numTotalCycles") ;
+    int dumpInterval   = intsRegistry.getScalar("numCyclesPerDump") ;
 
     // use the & operation when you want to update the param directly
-    int& currCycle = intsRegistry.getAttribute("cycle") ;
+    int& currCycle = intsRegistry.getScalar("cycle") ;
     for (currCycle=0; currCycle<numTotalCycles; ++currCycle)
     {
         if( currCycle % dumpInterval == 0)
         {
             //   DumpUltra(problem) ;
             std::cout<< "\n\tStarting cycle " << currCycle
-                 << " at time " << realsRegistry.getAttribute("time");
+                 << " at time " << realsRegistry.getScalar("time");
         }
 
 
