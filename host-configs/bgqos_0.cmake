@@ -1,1 +1,1 @@
-bgqos_0-xlc.cmake
+host-configs/bgqos_0-xlc.cmake

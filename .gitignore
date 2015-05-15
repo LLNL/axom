@@ -4,3 +4,4 @@ install-debug
 .project
 .settings
 build
+*.pyc
