@@ -41,7 +41,7 @@ endforeach()
 #
 # Add fortran tests
 #
-add_fortran_test(TEST_SOURCE testfortran.f sidre)
+add_fortran_test(TEST_SOURCE testfortran.f DEPENDS_ON sidre)
 
 
 
