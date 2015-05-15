@@ -1,0 +1,78 @@
+#
+# API for Datastore
+#
+options:
+  C_prefix: DS_
+  namespace: asctoolkit sidre
+
+classes:
+  - name: DataStore
+    options:
+      cpp_header: sidre/DataStore.hpp
+    methods:
+    -  decl: DataStore *new+constructor
+    -  decl: void delete+destructor
+    -  decl: DataBuffer* createBuffer
+#    -  decl: void destroyBuffer( const IDType id )
+#    -  decl: DataBuffer* detatchBuffer( const IDType id )
+    -  decl: DataGroup *getRoot()
+#    -  decl: DataBuffer* getBuffer( const IDType id )
+#    -  decl: void Destroybuffers()
+#    -  decl: void print() const
+#    -  decl: void info(Node &) const
+#    -  decl: IDType getNumberOfBuffers() const
+
+  - name: DataGroup
+    options:
+      cpp_header: sidre/DataGroup.hpp
+
+    methods:
+#    -  decl: std::string getName() const
+#    -  decl: DataGroup  *getParent()
+#    -  decl: DataStore *getDataStore()
+#    -  decl: bool hasView( const std::string& name )
+    -  decl: DataView *createViewAndBuffer( const string& name )
+#    -  decl: DataView *createOpaqueView( const std::string& name, void *)
+#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
+#    -  decl: DataView *moveView(DataView *view)
+#    -  decl: DataView *copyView(DataView *view)
+#    -  decl: void destroyViewAndBuffer(const std::string &name)
+#    -  decl: void destroyViewAndBuffer(IDType idx)
+#    -  decl: void destroyView(const std::string &name)
+#    -  decl: void destroyView(IDType idx)
+#    -  decl: DataView *getView( const std::string& name )
+#    -  decl: DataView const * getView( const std::string& name ) const
+#    -  decl: DataView *getView( const IDType idx )
+#    -  decl: DataView const *getView( const IDType idx ) const
+#    -  decl: IDType getViewIndex(const std::string &name) const
+#    -  decl: std::string getViewName(IDType idx) const
+#    -  decl: size_t countViews() const
+#    -  decl: void destroyViews()
+#    -  decl: void destroyViewsAndBuffers()
+#    -  decl: bool hasGroup( const std::string& name )
+#    -  decl: DataGroup* createGroup( const std::string& name )
+    -  decl: DataGroup *createGroup( const string& name )
+#    -  decl: DataGroup *moveGroup(DataGroup *grp)
+#    -  decl: DataGroup *copyGroup(DataGroup *grp)
+#    -  decl: void destroyGroup(const std::string &name)
+#    -  decl: void destroyGroup(IDType idx)
+#    -  decl: DataGroup const * getGroup( const std::string& name ) const
+#    -  decl: DataGroup * getGroup( const std::string& name )
+#    -  decl: DataGroup const * getGroup(IDType idx) const
+#    -  decl: DataGroup * getGroup( IDType idx)
+#    -  decl: IDType getGroupIndex(const std::string &name) const
+#    -  decl: std::string getGroupName(IDType idx) const
+#    -  decl: size_t countGroups() const
+#    -  decl: void destroyGroups()
+#    -  decl: void info(Node &n) const
+#    -  decl: void print() const
+#    -  decl: void printTree( const int level ) const
+
+  - name: DataBuffer
+    options:
+      cpp_header: sidre/DataBuffer.hpp
+
+  - name: DataView
+    options:
+      cpp_header: sidre/DataView.hpp
+

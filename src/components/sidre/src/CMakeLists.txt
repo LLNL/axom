@@ -8,6 +8,12 @@ set(sidre_headers
     DataStore.hpp
     DataView.hpp
     sidre.hpp
+
+    capi/c-datastore.h
+    capi/wrapDataStore.h
+    capi/wrapDataGroup.h
+    capi/wrapDataBuffer.h
+    capi/wrapDataView.h
     )
 
 #
@@ -18,6 +24,13 @@ set(sidre_sources
     DataGroup.cpp
     DataStore.cpp
     DataView.cpp
+
+    capi/wrapDataStore.cpp
+    capi/wrapDataGroup.cpp
+    capi/wrapDataBuffer.cpp
+    capi/wrapDataView.cpp
+#    capi/fstr_mod.f
+#    capi/wrapfDataStore.f
     )
 
 
