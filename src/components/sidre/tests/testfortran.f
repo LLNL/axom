@@ -3,5 +3,5 @@
 !
 
 program main
-  print *, "testmain"
+  print *, "Hello, world!"
 end program main

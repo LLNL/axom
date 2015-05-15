@@ -39,4 +39,7 @@ foreach(test ${gtest_sidre_tests})
 endforeach()
 
 
-
+# sample fortran test
+add_executable( testf testfortran.f )
+set_target_properties(testf PROPERTIES Fortran_FORMAT "FREE")
+target_link_libraries( testf sidre)
