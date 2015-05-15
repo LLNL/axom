@@ -14,7 +14,6 @@ set(gtest_sidre_tests
    sidre_view.cpp
    sidre_group.cpp
    sidre_opaque.cpp
-
    C_sidre_smoke.cpp
 #   C_sidre_buffer.cpp
 #   C_sidre_view.cpp
@@ -39,7 +38,11 @@ foreach(test ${gtest_sidre_tests})
 endforeach()
 
 
-# sample fortran test
-add_executable( testf testfortran.f )
-set_target_properties(testf PROPERTIES Fortran_FORMAT "FREE")
-target_link_libraries( testf sidre)
+#
+# Add fortran tests
+#
+add_fortran_test(TEST_SOURCE testfortran.f sidre)
+
+
+
+

@@ -85,6 +85,22 @@ mark_as_advanced(
 
 
 ################################
+# Check if we want to build Fortran support.
+################################
+option(ENABLE_FORTRAN "Enables Fortran compiler support" ON)
+
+if(ENABLE_FORTRAN)
+    # if enabled but no fortran compiler, halt the configure
+    if(CMAKE_Fortran_COMPILER)
+        MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
+    else()
+        MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
+    endif()    
+else()
+    MESSAGE(STATUS  "Fortran support disabled. (ENABLE_FORTRAN == OFF)")
+endif()
+
+################################
 # Standard CMake Options
 ################################
 
@@ -212,7 +228,6 @@ endif()
 ################################
 #  macros
 ################################
-
 
 ##------------------------------------------------------------------------------
 ## - Adds a component to the build given the component's name and default state
@@ -393,6 +408,38 @@ macro(add_catch_test)
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}" CACHE STRING "" FORCE )
 
 endmacro(add_catch_test)
+
+
+##------------------------------------------------------------------------------
+## - Builds and adds a fortran based test.
+##
+## add_fortran_test( TEST_SOURCE testX.f DEPENDS_ON dep1 dep2... )
+##------------------------------------------------------------------------------
+macro(add_fortran_test)
+    # only add the test if fortran is enabled
+    if(ENABLE_FORTRAN)
+       set(options)
+       set(singleValueArgs TEST_SOURCE)
+       set(multiValueArgs DEPENDS_ON)
+
+       ## parse the arguments to the macro
+       cmake_parse_arguments(arg
+            "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+       get_filename_component(test_name ${arg_TEST_SOURCE} NAME_WE)
+       add_executable( ${test_name} ${arg_TEST_SOURCE} )
+       target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+
+        set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")
+
+        add_test( NAME ${test_name}
+                  COMMAND ${test_name}
+                  WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+                  )
+       #TODO: we aren't tracking / grouping fortran sources. 
+   endif()
+endmacro(add_fortran_test)
+
 
 ##------------------------------------------------------------------------------
 ## - Adds a custom "copy_headers" target to copy the given list of headers to
