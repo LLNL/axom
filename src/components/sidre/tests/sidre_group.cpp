@@ -16,7 +16,7 @@ using namespace conduit;
 //------------------------------------------------------------------------------
 // getName()
 //------------------------------------------------------------------------------
-TEST(datastore_group,get_name)
+TEST(sidre_group,get_name)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -30,7 +30,7 @@ TEST(datastore_group,get_name)
 //------------------------------------------------------------------------------
 // getParent()
 //------------------------------------------------------------------------------
-TEST(datastore_group,get_parent)
+TEST(sidre_group,get_parent)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -45,7 +45,7 @@ TEST(datastore_group,get_parent)
 //------------------------------------------------------------------------------
 // Verify getDatastore()
 //------------------------------------------------------------------------------
-TEST(datastore_group,get_datastore)
+TEST(sidre_group,get_datastore)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -62,7 +62,7 @@ TEST(datastore_group,get_datastore)
 //------------------------------------------------------------------------------
 // hasGroup()
 //------------------------------------------------------------------------------
-TEST(datastore_group,has_child)
+TEST(sidre_group,has_child)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -81,7 +81,7 @@ TEST(datastore_group,has_child)
 // destroyViewAndBuffer()
 // hasView()
 //------------------------------------------------------------------------------
-TEST(datastore_group,create_destroy_has_viewbuffer)
+TEST(sidre_group,create_destroy_has_viewbuffer)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -105,7 +105,7 @@ TEST(datastore_group,create_destroy_has_viewbuffer)
 // destroyGroup()
 // hasGroup()
 //------------------------------------------------------------------------------
-TEST(datastore_group,create_destroy_has_group)
+TEST(sidre_group,create_destroy_has_group)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -122,7 +122,7 @@ TEST(datastore_group,create_destroy_has_group)
 }
 
 //------------------------------------------------------------------------------
-TEST(datastore_group,group_name_collisions)
+TEST(sidre_group,group_name_collisions)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->getRoot()->createGroup("fields");
@@ -133,7 +133,7 @@ TEST(datastore_group,group_name_collisions)
     delete ds;
 }
 //------------------------------------------------------------------------------
-TEST(datastore_group,view_copy_move)
+TEST(sidre_group,view_copy_move)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->getRoot()->createGroup("fields");
@@ -179,7 +179,7 @@ TEST(datastore_group,view_copy_move)
 }
 
 //------------------------------------------------------------------------------
-TEST(datastore_group,groups_move_copy)
+TEST(sidre_group,groups_move_copy)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->getRoot()->createGroup("fields");
@@ -215,8 +215,8 @@ TEST(datastore_group,groups_move_copy)
     delete ds;
 }
 
-
-TEST(datastore_group,create_destroy_view_and_buffer)
+//------------------------------------------------------------------------------
+TEST(sidre_group,create_destroy_view_and_buffer)
 {
   DataStore * const ds = new DataStore();
   DataGroup * const grp = ds->getRoot()->createGroup("grp");
@@ -253,10 +253,8 @@ TEST(datastore_group,create_destroy_view_and_buffer)
   delete ds;
 }
 
-
-
 //------------------------------------------------------------------------------
-TEST(datastore_group,save_restore_simple)
+TEST(sidre_group,save_restore_simple)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->getRoot()->createGroup("fields");
@@ -292,10 +290,8 @@ TEST(datastore_group,save_restore_simple)
     
 }
 
-
-
 //------------------------------------------------------------------------------
-TEST(datastore_group,save_restore_complex)
+TEST(sidre_group,save_restore_complex)
 {
     DataStore *ds = new DataStore();
     DataGroup *flds = ds->getRoot()->createGroup("fields");

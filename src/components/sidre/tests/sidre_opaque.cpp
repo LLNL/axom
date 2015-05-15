@@ -81,11 +81,12 @@ public:
 
 }  // closing brace for dsopaquetest namespace
 
+//------------------------------------------------------------------------------
 //
 // Simple test that adds an opaque data object, retrieves it and checks if 
 // the retrieved object is in the expected state.
 //
-TEST(datastore_opaque,inout)
+TEST(sidre_opaque,inout)
 {
     using namespace dsopaquetest;
 
@@ -135,13 +136,14 @@ TEST(datastore_opaque,inout)
     delete ds;
 }
 
+//------------------------------------------------------------------------------
 //
 // Test that adds "MeshVars" as opaque data objects, creates views for their
 // data on each of two domains, allocates their data (based on centering,
 // domain size, and depth), and then checks to if the allocated data 
 // lengths match the expected values.
 //
-TEST(datastore_opaque,meshvar)
+TEST(sidre_opaque,meshvar)
 {
     using namespace dsopaquetest;
 
