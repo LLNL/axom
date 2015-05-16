@@ -232,7 +232,7 @@ DataView* DataGroup::copyView(DataView* view)
                     "view->getName() == " << view->getName() );
 
     DataView *res = createView(view->getName(), view->getBuffer());
-    res->declare(view->getDescriptor());
+    res->declare(view->getSchema());
     if (view->isApplied())
     {
         res->apply();
@@ -659,7 +659,7 @@ void DataGroup::copyToNode(Node& n) const
         common::IDType buffer_id = buffer_ids[i];
         DataBuffer *ds_buff =  m_datastore->getBuffer(buffer_id);
         buff["id"].set(buffer_id);
-        buff["descriptor"].set(ds_buff->getDescriptor().to_json());
+        buff["schema"].set(ds_buff->getSchema().to_json());
         
         // only set our data if the buffer was initialized 
         if (ds_buff->getData() != NULL )
@@ -699,7 +699,7 @@ void DataGroup::copyToNode(Node& n,
     {
         DataView const* view = this->getView(i);
         Node& n_view = n["views"].fetch(view->getName());
-        n_view["descriptor"].set(view->getDescriptor().to_json());
+        n_view["schema"].set(view->getSchema().to_json());
         n_view["applied"].set(view->isApplied());
 
         // if we have a buffer, simply add the id to the list
@@ -751,7 +751,7 @@ void DataGroup::copyFromNode(Node& n,
                 common::IDType buffer_ds_id = ds_buff->getUID();
                 id_map[buffer_id] = buffer_ds_id;
                 // setup the new data store buffer
-                Schema schema(n_buff["descriptor"].as_string());
+                Schema schema(n_buff["schema"].as_string());
                 ds_buff->declare(schema);
                 if (n_buff.has_path("data"))
                 {
@@ -785,9 +785,9 @@ void DataGroup::copyFromNode(Node& n,
             // create a new view with the buffer
             DataView* ds_view = createView(view_name,ds_buff);
             // declare using the schema
-            Schema schema(n_view["descriptor"].as_string());
+            Schema schema(n_view["schema"].as_string());
             ds_view->declare(schema);
-            // if the descriptor was applied, restore this state
+            // if the schema was applied, restore this state
             if (n_view["applied"].to_uint64() != 0)
                 ds_view->apply();
         }
