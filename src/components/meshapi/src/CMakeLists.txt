@@ -9,6 +9,7 @@ set(meshapi_headers
     # Utility files
     Utilities.hpp
     FileUtilities.hpp
+    FieldRegistry.hpp
     
 	# SRM Set headers
     Set.hpp
@@ -21,7 +22,7 @@ set(meshapi_headers
 	DynamicVariableRelation.hpp
 	
 	# SRM Map headers
-	   # nothing yet...
+	Map.hpp
     )
 
 #

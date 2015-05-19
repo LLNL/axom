@@ -35,6 +35,7 @@
 
 
 #include "common/Utilities.hpp"
+#include "meshapi/FieldRegistry.hpp"
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
 
@@ -82,81 +83,28 @@ namespace shocktube {
         typedef asctoolkit::meshapi::OrderedSet FaceSet;
 
         // types for relations
-        typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceRelation;
-        typedef asctoolkit::meshapi::StaticConstantRelation FaceElemRelation;
+        typedef asctoolkit::meshapi::StaticConstantRelation ElemToFaceRelation;
+        typedef asctoolkit::meshapi::StaticConstantRelation FaceToElemRelation;
 
         // other types
         typedef asctoolkit::meshapi::MeshIndexType IndexType;
 
     public:
         ElemSet elems;
-        ElemSet faces;
+        FaceSet faces;
 
-        FaceElemRelation relationFaceElem;
-        ElemFaceRelation relationElemFace;
+        FaceToElemRelation relationFaceElem;
+        ElemToFaceRelation relationElemFace;
 
     };
 
-    /** \brief A helper class to print the name of a few types */
-    template<typename T> struct TypeToString{};
-
-    /** \brief A helper class to print the name of integers as 'int' */
-    template<> struct TypeToString<int>{ static std::string to_string(){return "int";} };
-
-    /** \brief A helper class to print the name of doubles as 'double' */
-    template<> struct TypeToString<double>{ static std::string to_string(){return "double";} };
-
-    /**
-     * \brief Very simple container for fields of a given type DataType with minimal error checking.
-     * \note
-     *         We are using concrete instances for int and double in the code below.
-     *         This should eventually be replaced with the sidre datastore.
-     */
-    template<typename DataType>
-    class FieldRegistry
-    {
-    public:
-        typedef std::string                     KeyType;
-        typedef typename std::vector<DataType>  DataVec;
-        typedef std::map<KeyType, DataVec>      DataVecMap;
-        typedef std::map<KeyType, DataType>     DataAttrMap;
-
-    public:
-        DataVec&  addField(KeyType key, DataVec& vec) { return m_dataVecs[key] = vec; }
-        DataType& addScalar(KeyType key, DataType val) { return m_dataScalars[key] = val; }
-
-        DataVec& getField(KeyType key)
-        {
-            ATK_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " field named " << key );
-            return m_dataVecs[key];
-        }
-        DataVec const& getField(KeyType key) const
-        {
-            ATK_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end(), "Didn't find " << TypeToString<DataType>::to_string() << " field named " << key );
-            return m_dataVecs[key];
-        }
-
-        DataType& getScalar(KeyType key)
-        {
-            ATK_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end(), "Didn't find " << TypeToString<DataType>::to_string() << " scalar named " << key );
-            return m_dataScalars[key];
-        }
-        DataType const& getScalar(KeyType key) const
-        {
-            ATK_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end(), "Didn't find " << TypeToString<DataType>::to_string() << " scalar named " << key );
-            return m_dataScalars[key];
-        }
-
-    private:
-        DataVecMap  m_dataVecs;
-        DataAttrMap m_dataScalars;
-    };
 
     // Define the explicit instances for int and double
     FieldRegistry<int>    intsRegistry;
     FieldRegistry<double> realsRegistry;
 
-    typedef FieldRegistry<double>::DataVec RealField;
+    typedef FieldRegistry<int>::MapType    IntField;
+    typedef FieldRegistry<double>::MapType RealField;
 
 
 /**************************************************************************
@@ -297,7 +245,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
        *relIt++ = idx+1;
    }
 
-   mesh->relationFaceElem = ShockTubeMesh::FaceElemRelation(&mesh->faces, &mesh->elems);
+   mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
    mesh->relationFaceElem.setRelation(relVec, STRIDE);
    ATK_ASSERT(mesh->relationFaceElem.isValid());
 
@@ -320,7 +268,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
        *relIt++ = (idx == elemSize-1)? 0 : idx;
    }
 
-   mesh->relationElemFace = ShockTubeMesh::ElemFaceRelation(&mesh->elems, &mesh->faces);
+   mesh->relationElemFace = ShockTubeMesh::ElemToFaceRelation(&mesh->elems, &mesh->faces);
    mesh->relationElemFace.setRelation(relVec, STRIDE);
    ATK_ASSERT(mesh->relationElemFace.isValid());
 
@@ -339,18 +287,16 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    // Note -- the extra code and allocations here will be unnecessary once maps on sets are defined
 
    // Create element centered fields
-   RealField elemField(mesh.elems.size());
-   RealField& mass      = realsRegistry.addField("mass", elemField );
-   RealField& momentum  = realsRegistry.addField("momentum", elemField );
-   RealField& energy    = realsRegistry.addField("energy", elemField );
-   RealField& pressure  = realsRegistry.addField("pressure", elemField );
+   RealField& mass      = realsRegistry.addField("mass", &mesh.elems);
+   RealField& momentum  = realsRegistry.addField("momentum", &mesh.elems);
+   RealField& energy    = realsRegistry.addField("energy", &mesh.elems);
+   RealField& pressure  = realsRegistry.addField("pressure", &mesh.elems );
 
    // Create face centered fields
    // mv, mv^2+P, and v(E+P)
-   RealField faceField(mesh.faces.size());
-   realsRegistry.addField("F0", faceField );
-   realsRegistry.addField("F1", faceField );
-   realsRegistry.addField("F2", faceField );
+   realsRegistry.addField("F0", &mesh.faces );
+   realsRegistry.addField("F1", &mesh.faces );
+   realsRegistry.addField("F2", &mesh.faces );
 
    // Fill left half with high pressure, right half with low pressure
    IndexType startTube = 0 ;

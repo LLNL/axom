@@ -22,6 +22,8 @@ TEST(gtest_meshapi_ordered_set,construct_ordered_set)
 
     SetType s(MAX_SET_SIZE);
 
+    EXPECT_TRUE(s.isValid());
+
     std::cout<<"Iterating through set of size " << s.size() << std::endl;
     EXPECT_EQ(s.size(), MAX_SET_SIZE);
 

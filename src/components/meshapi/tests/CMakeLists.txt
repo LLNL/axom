@@ -8,6 +8,7 @@ set(gtest_meshapi_tests
    testStaticVariableRelation.cxx
    testStaticConstantRelation.cxx
    testSet.cxx
+   testMap.cxx
    )
 
 

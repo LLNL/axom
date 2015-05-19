@@ -19,7 +19,8 @@ namespace asctoolkit{
 namespace meshapi{
 
 
-    class OrderedSet {
+    class OrderedSet  // : public Set
+    {
     public:
       typedef MeshIndexType     Index;
       typedef MeshSizeType      size_type;
@@ -42,6 +43,7 @@ namespace meshapi{
 
       void reset(size_type) { throw NotImplementedException(); }
 
+      bool isValid(bool verboseOutput = false) const;
     private:
       int m_size;
 

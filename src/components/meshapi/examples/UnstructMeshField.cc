@@ -26,6 +26,9 @@
 #include "meshapi/StaticConstantRelation.hpp"
 #include "meshapi/DynamicVariableRelation.hpp"
 
+#include "meshapi/Map.hpp"
+
+
 #ifndef USE_CONSTANT_RELATION
   #define USE_CONSTANT_RELATION
 #endif
@@ -61,24 +64,24 @@ public:
     typedef asctoolkit::meshapi::OrderedSet ZoneSet;
 
     // types for relations
-    typedef asctoolkit::meshapi::StaticVariableRelation NodeZoneRelation;
-    typedef NodeZoneRelation::RelationVecConstIterator  NodeZoneIterator;
+    typedef asctoolkit::meshapi::StaticVariableRelation NodeToZoneRelation;
+    typedef NodeToZoneRelation::RelationVecConstIterator  NodeZoneIterator;
 
 #ifdef USE_CONSTANT_RELATION
-    typedef asctoolkit::meshapi::StaticConstantRelation ZoneNodeRelation;
+    typedef asctoolkit::meshapi::StaticConstantRelation ZoneToNodeRelation;
 #else
-    typedef asctoolkit::meshapi::StaticVariableRelation ZoneNodeRelation;
+    typedef asctoolkit::meshapi::StaticVariableRelation ZoneToNodeRelation;
 #endif
-    typedef ZoneNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
+    typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
-    typedef NodeZoneRelation::Index         IndexType;
-    typedef NodeZoneRelation::size_type     SizeType;
+    typedef NodeToZoneRelation::Index         IndexType;
+    typedef NodeToZoneRelation::size_type     SizeType;
 
     // types for maps
     // TODO: Convert to meshapi::Map
-    typedef std::vector< Point >                    PositionsVec;
-    typedef std::vector< DataType >                 NodeField;
-    typedef std::vector< DataType >                 ZoneField;
+    typedef asctoolkit::meshapi::Map< Point >       PositionsVec;
+    typedef asctoolkit::meshapi::Map< DataType >    NodeField;
+    typedef asctoolkit::meshapi::Map< DataType >    ZoneField;
 
 public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -93,8 +96,8 @@ public:
     ZoneSet zones;
 
     /// Relations in the mesh
-    ZoneNodeRelation    relationZoneNode;   // storage for relation_(3,0) -- zones -> nodes
-    NodeZoneRelation    relationNodeZone;   // storage for relation_(0,3) -- nodes -> zones
+    ZoneToNodeRelation    relationZoneNode;   // storage for relation_(3,0) -- zones -> nodes
+    NodeToZoneRelation    relationNodeZone;   // storage for relation_(0,3) -- nodes -> zones
 
 
     /// Maps (fields) in the mesh -- positions and scalar fields
@@ -145,7 +148,7 @@ public:
 
         // Create the nodal position field, and read positions from file
         // TODO: Convert this to a SRM Map<Positions>
-        mesh->nodePosition = HexMesh::PositionsVec( numNodes );
+        mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );
         for(IndexType i=0; i < numNodes; ++i)
         {
            vtkMesh >> mesh->nodePosition[i].x;
@@ -177,11 +180,11 @@ public:
         mesh->zones = HexMesh::ZoneSet(numZones);
 
         // Create the topological incidence relation from zones to nodes
-        mesh->relationZoneNode = HexMesh::ZoneNodeRelation(&mesh->zones, &mesh->nodes);
+        mesh->relationZoneNode = HexMesh::ZoneToNodeRelation(&mesh->zones, &mesh->nodes);
 
         // Read in and encode this as a static variable relation
         // TODO: Replace with a static constant relation when that class is developed
-        typedef HexMesh::ZoneNodeRelation::RelationVec  RelationVec;
+        typedef HexMesh::ZoneToNodeRelation::RelationVec  RelationVec;
         typedef RelationVec::iterator                   RelationVecIterator;
 
     #ifdef USE_CONSTANT_RELATION
@@ -253,7 +256,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
     {
         IndexType const& zoneIdx = *zIt;
 #ifndef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
-        typedef HexMesh::ZoneNodeRelation::RelationVecConstIteratorPair RelVecItPair;
+        typedef HexMesh::ZoneToNodeRelation::RelationVecConstIteratorPair RelVecItPair;
         for(RelVecItPair znItPair  = mesh->relationZoneNode.range(zoneIdx); znItPair.first < znItPair.second; ++znItPair.first )
         {
             IndexType const& nodeIdx = *(znItPair.first);
@@ -274,10 +277,10 @@ void generateNodeZoneRelation(HexMesh* mesh)
     // -------------------------------------------------
 
     // --- Step 2: Convert this to a static variable relation from Nodes to Zones
-    mesh->relationNodeZone = HexMesh::NodeZoneRelation( &mesh->nodes, &mesh->zones);
+    mesh->relationNodeZone = HexMesh::NodeToZoneRelation( &mesh->nodes, &mesh->zones);
 
     // Now, linearize the dynamic relation into a static relation here
-    typedef HexMesh::NodeZoneRelation::RelationVec  RelationVec;
+    typedef HexMesh::NodeToZoneRelation::RelationVec  RelationVec;
     typedef RelationVec::iterator                   RelationVecIterator;
 
     RelationVec beginsVec( mesh->nodes.size() + 1 );
@@ -309,7 +312,7 @@ void computeZoneBarycenters(HexMesh* mesh)
     typedef HexMesh::ZoneNodeIterator ZNIterator;
 
     // Compute the zone positions as the the averages of the positions of the nodes around each zone
-    mesh->zonePosition = HexMesh::PositionsVec( mesh->numZones() );
+    mesh->zonePosition = HexMesh::PositionsVec( & mesh->zones );
 
     // Outer loop over each zone in the set
     for(ZoneIter zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt )
@@ -336,7 +339,7 @@ void computeZoneBarycenters(HexMesh* mesh)
 void createZoneRadiusField (HexMesh* mesh)
 {
     // Compute a zone field based on the L2 norm of their position vectors
-    mesh->zoneField = HexMesh::ZoneField ( mesh->numZones() );
+    mesh->zoneField = HexMesh::ZoneField ( &mesh->zones );
 
     typedef HexMesh::ZoneSet::iterator ZoneIter;
     for (ZoneIter zIt = mesh->zones.begin(); zIt < mesh->zones.end();++zIt)
@@ -354,8 +357,8 @@ DataType computeNodalErrors(HexMesh* mesh)
     typedef HexMesh::NodeZoneIterator NZIterator;
 
     // Relying on zeroing out the average field by the vector constructor.
-    mesh->nodeFieldAvg = HexMesh::NodeField( mesh->numNodes(), 0.0 );
-    mesh->nodeFieldExact = HexMesh::NodeField( mesh->numNodes() );
+    mesh->nodeFieldAvg = HexMesh::NodeField( &mesh->nodes, 0.0 );
+    mesh->nodeFieldExact = HexMesh::NodeField( &mesh->nodes );
     double errSqSum = 0.0;
 
     // Outer loop over each node
