@@ -21,7 +21,7 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
-#include "logapi/MessageType.h"
+#include "logapi/MessageLevel.h"
 
 // C/C++ includes
 #include <string> // for STL string
@@ -67,33 +67,33 @@ public:
   /*!
    *****************************************************************************
    * \brief Enables all streams above (and including) the severity of the given
-   *  message type.
-   * \param [in] type the message type.
-   * \pre type >= FATAL && type < Num_Msg_types
+   *  message level.
+   * \param [in] level the message level.
+   * \pre level >= FATAL && level < Num_Msg_types
    *****************************************************************************
    */
-  void enableStreamsBelow( MessageType type);
+  void enableStreamsBelow( message::Level level);
 
   /*!
    *****************************************************************************
    * \brief Sets the streams above (and including) the severity of the given
    *  message type to the supplied log stream instance.
-   * \param [in] type the message type.
+   * \param [in] level the message type.
    * \param [in] ls pointer to the user-supplied log stream.
-   * \pre type >= FATAL && type < Num_Msg_types
+   * \pre level >= FATAL && level < Num_Msg_types
    * \pre ls != NULL
    *****************************************************************************
    */
-  void setStreamsBelow( MessageType type, LogStream* ls);
+  void setStreamsBelow( message::Level level, LogStream* ls);
 
   /*!
    *****************************************************************************
    * \brief Enables log messages of the given type.
-   * \param [in] type message type.
-   * \pre type >= FATAL && type < Num_Msg_Types
+   * \param [in] level message level.
+   * \pre level >= FATAL && level < Num_Msg_Types
    *****************************************************************************
    */
-  void enable( MessageType type );
+  void enable( message::Level level );
 
   /*!
    *****************************************************************************
@@ -102,7 +102,7 @@ public:
    * \pre type >= FATAL && type < Num_Msg_types
    *****************************************************************************
    */
-  void disable( MessageType type );
+  void disable( message::Level level );
 
   /*!
    *****************************************************************************
@@ -113,20 +113,20 @@ public:
    * \pre ls != NULL
    *****************************************************************************
    */
-  void setLogStream( MessageType type, LogStream* ls);
+  void setLogStream( message::Level level, LogStream* ls);
 
   /*!
    *****************************************************************************
    * \brief Logs the given message
-   * \param [in] type
-   * \param [in] message
-   * \param [in] fileName
-   * \param [in] line
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] fileName the name of the file that calls this log message.
+   * \param [in] line the line number within the file that logs this message.
    * \pre type >= FATAL && type < Num_Msg_Types
    * \pre m_Streams[ type ] != NULL
    *****************************************************************************
    */
-  void logMessage( MessageType type,
+  void logMessage( message::Level level,
                    const std::string& message,
                    const std::string& fileName,
                    int line );
@@ -191,8 +191,8 @@ private:
   /// \name Private class members
   ///@{
 
-  bool m_StreamState[ Num_Msg_Types ];
-  LogStream* m_Streams[ Num_Msg_Types ];
+  bool m_StreamState[ message::Num_Levels ];
+  LogStream* m_Streams[ message::Num_Levels ];
 
   ///@}
 

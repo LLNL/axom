@@ -39,13 +39,15 @@ Console::~Console()
 }
 
 //------------------------------------------------------------------------------
-void Console::append( MessageType msgType,
-                      const std::string& msgTypeName,
+void Console::append( message::Level msgLevel,
                       const std::string& message,
                       const std::string& fileName,
                       int line )
 {
-  std::cout << this->getFormatedMessage( msgTypeName, message, fileName, line );
+  std::cout << this->getFormatedMessage( message::getLevelAsString( msgLevel),
+                                         message,
+                                         fileName,
+                                         line );
   std::cout << "\n";
 }
 

@@ -85,8 +85,7 @@ void SynchronizedConsole::setCommunicator(MPI_Comm comm)
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedConsole::append( MessageType msgType,
-                                  const std::string& msgTypeName,
+void SynchronizedConsole::append( message::Level msgLevel,
                                   const std::string& message,
                                   const std::string& fileName,
                                   int line )
@@ -95,7 +94,8 @@ void SynchronizedConsole::append( MessageType msgType,
 
   // STEP 1: cache formatted message
   m_cache->messages.push_back(
-        this->getFormatedMessage(msgTypeName, message, fileName, line) );
+        this->getFormatedMessage(message::getLevelAsString( msgLevel ),
+                                 message, fileName, line) );
 }
 
 //------------------------------------------------------------------------------

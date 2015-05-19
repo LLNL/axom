@@ -33,20 +33,11 @@ namespace logapi {
 Logger* Logger::s_Logger = NULL;
 
 
-const std::string MsgTypeName[ Num_Msg_Types ] = {
-    "FATAL",
-    "ERROR",
-    "WARNING",
-    "INFO",
-    "DEBUG"
-};
-
-
 //------------------------------------------------------------------------------
 Logger::Logger()
 {
   // by default, all message streams are disabled
-  for ( int i=0; i < Num_Msg_Types; ++i ) {
+  for ( int i=0; i < message::Num_Levels; ++i ) {
 
     m_StreamState[ i ] = false;
     m_Streams[ i ]     = NULL;
@@ -61,73 +52,78 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::enableStreamsBelow( MessageType type )
+void Logger::enableStreamsBelow( message::Level level )
 {
-  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
+  assert("pre: invalid message type" &&
+          (level >= 0) && (level < message::Num_Levels));
 
-  for ( int i=0; i <= type; ++i ) {
+  for ( int i=0; i <= message::Num_Levels; ++i ) {
     m_StreamState[ i ] = true;
   }
 
 }
 
 //------------------------------------------------------------------------------
-void Logger::setStreamsBelow( MessageType type, LogStream* ls)
+void Logger::setStreamsBelow( message::Level level, LogStream* ls)
 {
-  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
+  assert("pre: invalid message type" &&
+         (level >= 0) && (level < message::Num_Levels));
   assert("pre: supplied log stream is NULL!" && (ls != NULL) );
 
-  for ( int i=0; i <= type; ++i ) {
+  for ( int i=0; i <= message::Num_Levels; ++i ) {
     m_Streams[ i ] = ls;
   }
 
 }
 
 //------------------------------------------------------------------------------
-void Logger::enable( MessageType type)
+void Logger::enable( message::Level level)
 {
-  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
-  m_StreamState[ type ] = true;
+  assert("pre: invalid message type" &&
+          (level >= 0) && (level < message::Num_Levels));
+  m_StreamState[ level ] = true;
 }
 
 //------------------------------------------------------------------------------
-void Logger::disable( MessageType type)
+void Logger::disable( message::Level level)
 {
-  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
-  m_StreamState[ type ] = false;
+  assert("pre: invalid message type" &&
+          (level >= 0) && (level < message::Num_Levels));
+  m_StreamState[ level ] = false;
 }
 
 //------------------------------------------------------------------------------
-void Logger::setLogStream( MessageType type, LogStream* ls )
+void Logger::setLogStream( message::Level level, LogStream* ls )
 {
   assert("pre: supplied log stream is NULL!" && ls != NULL );
-  assert("pre: invalid message type" && (type >= 0) && (type < Num_Msg_Types));
+  assert("pre: invalid message type" &&
+          (level >= 0) && (level < message::Num_Levels));
 
-  m_Streams[ type ] = ls;
+  m_Streams[ level ] = ls;
 }
 
 //------------------------------------------------------------------------------
-void Logger::logMessage( MessageType type,
+void Logger::logMessage( message::Level level,
                          const std::string& message,
                          const std::string& fileName,
                          int line )
 {
-  if ( m_StreamState[ type ]==false  ) {
+  if ( m_StreamState[ level ]==false  ) {
 
     /* short-circuit */
     return;
 
   } // END if
 
-  assert( "pre: no stream set for type!" && m_Streams[ type ] != NULL );
+  assert( "pre: no stream set for type!" && m_Streams[ level ] != NULL );
 
-  m_Streams[ type ]->append( type,MsgTypeName[ type ],message,fileName,line );
+  m_Streams[ level ]->append( level,message,fileName,line );
 }
 
 //------------------------------------------------------------------------------
 void Logger::flushAllStreams()
 {
-  for ( int i=0; i < Num_Msg_Types; ++i ) {
+  for ( int i=0; i < message::Num_Levels; ++i ) {
 
     if ( m_StreamState[ i ] ) {
 

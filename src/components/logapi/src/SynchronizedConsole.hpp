@@ -64,7 +64,6 @@ public:
    * \brief Appends the given message to the stream.
    *
    * \param [in] msgType the type of the message.
-   * \param [in] msgTypeName string representation of the message type.
    * \param [in] message the user-supplied message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
@@ -74,8 +73,7 @@ public:
    *  in rank order when flush is called.
    *****************************************************************************
    */
-  virtual void append( MessageType msgType,
-                       const std::string& msgTypeName,
+  virtual void append( message::Level msgLevel,
                        const std::string& message,
                        const std::string& fileName,
                        int line );

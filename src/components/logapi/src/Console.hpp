@@ -44,8 +44,7 @@ public:
   virtual ~Console();
 
   /// \see LogStream::append
-  virtual void append( MessageType msgType,
-                       const std::string& msgTypeName,
+  virtual void append( message::Level msgType,
                        const std::string& message,
                        const std::string& fileName,
                        int line );

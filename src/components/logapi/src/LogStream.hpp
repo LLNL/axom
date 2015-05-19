@@ -21,7 +21,7 @@
 #ifndef LOGSTREAM_HPP_
 #define LOGSTREAM_HPP_
 
-#include "logapi/MessageType.h"
+#include "logapi/MessageLevel.h"
 
 // C/C++ includes
 #include <string> // For STL string
@@ -67,15 +67,13 @@ public:
   /*!
    *****************************************************************************
    * \brief Appends the given message to the stream.
-   * \param [in] msgType the type of the message.
-   * \param [in] msgTypeName string representation of the message type.
+   * \param [in] msgLevel the level of the message.
    * \param [in] message the user-supplied message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
    *****************************************************************************
    */
-  virtual void append( MessageType msgType,
-                       const std::string& msgTypeName,
+  virtual void append( message::Level msgLevel,
                        const std::string& message,
                        const std::string& fileName,
                        int line
@@ -97,10 +95,11 @@ protected:
   /*!
    *****************************************************************************
    * \brief Returns the formatted message as a single string.
-   * \return
+   * \return str the formatted message string.
+   * \post str != "".
    *****************************************************************************
    */
-   std::string getFormatedMessage( const std::string& msgTypeName,
+   std::string getFormatedMessage( const std::string& msgLeveleName,
                                    const std::string& message,
                                    const std::string& fileName,
                                    int line );

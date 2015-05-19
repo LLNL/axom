@@ -32,9 +32,9 @@ using namespace asctoolkit;
 
 #define N 20
 
-logapi::MessageType getRandomEvent( const int start, const int end )
+logapi::message::Level getRandomEvent( const int start, const int end )
 {
-  return( static_cast<logapi::MessageType>(std::rand() % (end-start) + start));
+  return( static_cast<logapi::message::Level>(std::rand() % (end-start) + start));
 }
 
 //------------------------------------------------------------------------------
@@ -49,14 +49,14 @@ int main( int argc, char** argv )
       new logapi::SeperateFilePerRankStream("logfile",MPI_COMM_WORLD);
 
   // STEP 2: enable logging of all messages
-  logapi::Logger::getInstance()->enableStreamsBelow( logapi::Debug );
-  logapi::Logger::getInstance()->setStreamsBelow( logapi::Debug, scls );
+  logapi::Logger::getInstance()->enableStreamsBelow( logapi::message::Debug );
+  logapi::Logger::getInstance()->setStreamsBelow( logapi::message::Debug, scls );
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
     logapi::Logger::getInstance()->logMessage(
-            getRandomEvent(0,logapi::Num_Msg_Types),
+            getRandomEvent(0,logapi::message::Num_Levels),
             "a random message", __FILE__,  __LINE__  );
 
     // Flush every 5 cycles

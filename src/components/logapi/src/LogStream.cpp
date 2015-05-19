@@ -27,6 +27,7 @@ namespace asctoolkit {
 namespace logapi {
 
 
+//------------------------------------------------------------------------------
 LogStream::LogStream() :
     m_fmtString( "[<MTYPE>] <FILE>:<LINE>\n MESSAGE: <MESSAGE>\n" )
 {
