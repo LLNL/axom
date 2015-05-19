@@ -7,7 +7,7 @@ structs, etc.), functions, data members, variables, etc. The main goal is
 to use a distinct and consistent naming convention for each item category 
 so that the role of each entity in the code is obvious from the form of 
 its name.
-
+ 
 ===========
 2.1 General
 ===========
@@ -28,6 +28,7 @@ its name.
       "putBar" is clearly inconsistent.
 
 2.1.3 Tersely abbreviated or cryptic or names **should** be avoided. However, common acronyms and jargon that are well understood by team members **may** be used.
+
 
 ==============
 2.2 File names
@@ -67,6 +68,7 @@ inline functions. Such files must contain implementations.
       For example, having files with names "MyClass.hpp" and "myclass.hpp" 
       is not acceptable.
 
+
 ========================
 2.3 Scope and type names
 ========================
@@ -99,6 +101,7 @@ letter and all other letters in lower case.
 
 2.3.4 Suffixes that may be used by compilers for name mangling, or which are used in the C or C++ standard libraries, such as "\_t", **must** not be used in type names.
 
+
 ==================
 2.4 Function names
 ==================
@@ -126,6 +129,7 @@ letter and all other letters in lower case.
       For example, use::
 
          isInitialized(), hasLicense(), canEvaluate()
+
 
 ==================================
 2.5 Data member and variable names
@@ -189,6 +193,7 @@ letter and all other letters in lower case.
       is clearer than::
 
          Topic* my_value;
+
 
 ====================================
 2.6 Macros and enumeration constants

@@ -18,6 +18,8 @@ Welcome to ASC CS Toolkit Coding Guidelines
    Sec5_code
    Sec6_class
    Sec7_restrictions
+   AppendixA_automethods
+   AppendixB_copymove
    references
 
 Indices and tables

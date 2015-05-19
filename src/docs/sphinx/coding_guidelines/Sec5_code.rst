@@ -5,6 +5,7 @@
 This section contains various development guidelines intended to improve code 
 readability, correctness, portability, consistency, and robustness.
 
+
 =====================================================
 5.1 General design and implementation considerations
 =====================================================
@@ -32,6 +33,7 @@ readability, correctness, portability, consistency, and robustness.
 5.1.4 Global, complex, or opaque data sharing **should** be avoided. Shared data increases coupling and contention between different parts of a code base, which makes maintenance and modification difficult.
 
 5.1.5 When making substantial modifications or stylistic changes to existing code, an attempt **should** be made to make all other code, for example in a source file, consistent with the changes.
+
 
 =====================
 5.2 Code robustness 
@@ -75,6 +77,7 @@ readability, correctness, portability, consistency, and robustness.
 
       For example, use "0.5" instead of ".5" and "1.0" instead of "1" or "1.". 
 
+
 =================================
 5.3 Compilation and portability
 =================================
@@ -109,6 +112,7 @@ readability, correctness, portability, consistency, and robustness.
       problems that do not appear until later or until specific run-time 
       conditions are encountered.
 
+
 =======================
 5.4 Memory management
 =======================
@@ -117,7 +121,16 @@ readability, correctness, portability, consistency, and robustness.
 
 5.4.2 Memory **should** be deallocated as soon as it is no longer needed.
 
-5.4.3 Pointers **should** be set to null explicitly when memory is deallocated. Since we have not yet moved to C++11, this **must** be done using "NULL".
+5.4.3 Pointers **should** be set to null explicitly when memory is deallocated. 
+
+      For uniformity across the CS Toolkit and to facilitate C++11 and 
+      non-C++11 usage, this should be done using the common macro 
+      "ATK\_NULLPTR"; For example:: 
+
+         double* data = new double[10];
+         // ...
+         delete [ ] data;
+         data = ATK_NULLPTR;
   
 5.4.4 Data managed exclusively within C++ code **must** be allocated and deallocated using the "new" and "delete" operators. 
 
@@ -136,6 +149,7 @@ readability, correctness, portability, consistency, and robustness.
       variety fo compilers, testing, memory-checking, etc. will be done 
       automatically as part of the *pull request* approval process.  The pull
       request will not be approved until all of these tasks succeed.
+
 
 ===========================
 5.5 Function declarations
@@ -174,6 +188,7 @@ readability, correctness, portability, consistency, and robustness.
       not::
 
          void computeSomething(int, int);
+
 
 =============================
 5.6 Function implementations
@@ -220,6 +235,7 @@ readability, correctness, portability, consistency, and robustness.
 
             // ...function implementation...
          }  
+
 
 ======================
 5.7 Inline functions
@@ -331,6 +347,7 @@ modern ccompilers do a good job of deciding when inlining is a good choice.
               // ...no data members...
            };
 
+
 =======================================
 5.8 Function and operator overloading
 =======================================
@@ -383,6 +400,7 @@ modern ccompilers do a good job of deciding when inlining is a good choice.
       problems as someone may write code that assumes that evaluation order 
       is the same as the built-in versions.
 
+
 ============
 5.9 Types
 ============
@@ -419,6 +437,7 @@ object.
 
          std::string name = std::string("Bill");
 
+
 ===================
 5.10 Type casting
 ===================
@@ -451,6 +470,7 @@ object.
        the bit pattern of an operand. This is needed only in special 
        circumstances and circumvents type safety.
 
+
 ================
 5.11 Templates
 ================
@@ -467,6 +487,7 @@ object.
 
        Such methods **are not templates** and may produce link errors if their 
        definitions are seen more than once.
+
 
 ======================================
 5.12 Conditional statements and loops
@@ -554,6 +575,7 @@ This code example has the following desirable properties:
       Only if alternatives are considered and determined to be less desirable, 
       should a "goto" even be contemplated.
 
+
 =================
 5.13 White space
 =================
@@ -572,6 +594,7 @@ This code example has the following desirable properties:
 5.13.2 White space **must not** appear between a function name and the opening parenthesis to the argument list.  In particular, if a function call is broken across source lines, the break **must not** come between the function name and the opening parenthesis.
 
 5.13.3 Tabs **must not** be used for indentation since this can be problematic for developers with different text editor settings.
+
 
 ======================
 5.14 Code alignment
