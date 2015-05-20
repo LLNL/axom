@@ -44,22 +44,22 @@ int main( int argc, char** argv )
   MPI_Init( &argc, &argv );
   logapi::Logger::initialize();
 
-  logapi::Logger::getInstance()->setLoggingLevel( logapi::message::Debug );
-  logapi::Logger::getInstance()->addLogStream(
+  logapi::Logger::setLogLevel( logapi::message::Debug );
+  logapi::Logger::addStream(
       new logapi::SeperateFilePerRankStream( "logfile",MPI_COMM_WORLD) );
 
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
-    logapi::Logger::getInstance()->logMessage(
-            getRandomEvent(0,logapi::message::Num_Levels),
-            "a random message", __FILE__,  __LINE__  );
+    logapi::Logger::log(
+        getRandomEvent(0,logapi::message::Num_Levels),
+        "a random message", __FILE__,  __LINE__  );
 
     // Flush every 5 cycles
     if ( (i % 5)==0 ) {
 
-      logapi::Logger::getInstance()->flushAllStreams();
+      logapi::Logger::flushStreams();
 
     } // END if
 

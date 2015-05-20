@@ -153,6 +153,100 @@ void Logger::initialize()
 }
 
 //------------------------------------------------------------------------------
+void Logger::setLogLevel( message::Level level )
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
+  s_Logger->setLoggingLevel( level );
+}
+
+//------------------------------------------------------------------------------
+void Logger::addStream( LogStream* ls )
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
+  s_Logger->addLogStream( ls );
+}
+
+//------------------------------------------------------------------------------
+void Logger::log( message::Level level,
+                  const std::string& message )
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
+  s_Logger->logMessage( level,message );
+}
+
+//------------------------------------------------------------------------------
+void Logger::log( message::Level level,
+                  const std::string& message,
+                  const std::string& tag )
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
+  s_Logger->logMessage( level,message,tag );
+}
+
+//------------------------------------------------------------------------------
+void Logger::log( message::Level level,
+                  const std::string& message,
+                  const std::string& fileName,
+                  int line )
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `"
+              << __FUNCTION__ << "` is called with a NULL logger!";
+
+  }
+  s_Logger->logMessage( level,message,fileName,line );
+}
+
+//------------------------------------------------------------------------------
+void Logger::log( message::Level level,
+                  const std::string& message,
+                  const std::string& tag,
+                  const std::string& fileName,
+                  int line )
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
+  s_Logger->logMessage( level,message,tag,fileName,line );
+}
+
+//------------------------------------------------------------------------------
+void Logger::flushStreams()
+{
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
+  s_Logger->flushAllStreams();
+}
+
+//------------------------------------------------------------------------------
 void Logger::finalize()
 {
   delete s_Logger;
@@ -162,7 +256,12 @@ void Logger::finalize()
 //------------------------------------------------------------------------------
 Logger* Logger::getInstance()
 {
-  assert( "pre: uninitialized logger!" && (s_Logger != NULL) );
+  if ( s_Logger == NULL ) {
+
+    std::cerr << "ERROR: `" << __FUNCTION__
+              << "` is called with a NULL logger!";
+
+  }
   return s_Logger;
 }
 

@@ -43,15 +43,14 @@ int main( int argc, char** argv )
   // STEP 0: initialize logging environment
   logapi::Logger::initialize();
 
-  logapi::Logger::getInstance()->setLoggingLevel( logapi::message::Debug );
-  logapi::Logger::getInstance()->addLogStream( new logapi::Console() );
+  logapi::Logger::setLogLevel( logapi::message::Debug );
+  logapi::Logger::addStream( new logapi::Console() );
 
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
-    logapi::Logger::getInstance()->logMessage(
-            getRandomEvent(0,logapi::message::Num_Levels),
+    logapi::Logger::log( getRandomEvent(0,logapi::message::Num_Levels),
             "a random message", __FILE__,  __LINE__  );
 
   }
