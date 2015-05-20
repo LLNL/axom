@@ -27,15 +27,12 @@
 #include <string>
 #include <vector>
 
-#if 0 // These work but are disabled for now
-
 #if defined(USE_CXX11)
 #include <unordered_map>
 #else
-#include <boost/unordered_map>
+#include "boost/unordered_map.hpp"
 #endif
 
-#endif
 
 // Other CS Toolkit headers
 #include "common/Types.hpp"
@@ -632,21 +629,20 @@ private:
     /// implementation when we experiment with different containers.
     ///
     ///////////////////////////////////////////////////////////////////
+    // 
     // Map container options
     //
-    // Currently, std::map and boost/std::unordered_map containers
-    // have been tested.
+    // To try a different container, set the "MapType" typedef to 
+    // what you want.  Note: only one typedef should be active!!!
     //
-    typedef std::map<std::string, common::IDType> MapType;
+    // Current options are std::map and boost/std::unordered_map
     //
-#if 0 // These work but are disabled for now
-
+       typedef std::map<std::string, common::IDType> MapType;
+    //
 #if defined(USE_CXX11)
-    typedef std::unordered_map<std::string, common::IDType> MapType;
+    // typedef std::unordered_map<std::string, common::IDType> MapType;
 #else
-    typedef boost::unordered_map<std::string, common::IDType> MapType;
-#endif
-
+    // typedef boost::unordered_map<std::string, common::IDType> MapType;
 #endif
     ///
     typedef MapCollection<DataView, MapType> DataViewCollection;
