@@ -81,6 +81,7 @@ SynchronizedConsole::~SynchronizedConsole()
 void SynchronizedConsole::append( message::Level msgLevel,
                                   const std::string& message,
                                   const std::string& fileName,
+                                  const std::string& tagName,
                                   int line )
 {
   assert( "pre: null message cache!" && (m_cache != NULL) );
@@ -88,7 +89,7 @@ void SynchronizedConsole::append( message::Level msgLevel,
   // STEP 1: cache formatted message
   m_cache->messages.push_back(
         this->getFormatedMessage(message::getLevelAsString( msgLevel ),
-                                 message, fileName, line) );
+                                 message, tagName, fileName, line) );
 }
 
 //------------------------------------------------------------------------------

@@ -86,7 +86,33 @@ void Logger::addLogStream( LogStream* ls )
 
 //------------------------------------------------------------------------------
 void Logger::logMessage( message::Level level,
+                         const std::string& message )
+{
+  this->logMessage(
+      level,message,MSG_IGNORE_TAG,MSG_IGNORE_FILE,MSG_IGNORE_LINE );
+}
+
+//------------------------------------------------------------------------------
+void Logger::logMessage( message::Level level,
                          const std::string& message,
+                         const std::string& tagName )
+{
+  this->logMessage( level,message,tagName,MSG_IGNORE_FILE,MSG_IGNORE_LINE );
+}
+
+//------------------------------------------------------------------------------
+void Logger::logMessage( message::Level level,
+                         const std::string& message,
+                         const std::string& fileName,
+                         int line )
+{
+  this->logMessage( level, message, MSG_IGNORE_TAG, fileName, line );
+}
+
+//------------------------------------------------------------------------------
+void Logger::logMessage( message::Level level,
+                         const std::string& message,
+                         const std::string& tagName,
                          const std::string& fileName,
                          int line )
 {
@@ -100,9 +126,9 @@ void Logger::logMessage( message::Level level,
   unsigned nstreams = m_logStreams.size();
   for ( unsigned istream=0; istream < nstreams; ++istream ) {
 
-    m_logStreams[ istream ]->append( level, message, fileName, line );
+    m_logStreams[ istream ]->append( level, message, tagName, fileName, line );
 
-  }
+  } // END for all streams
 
 }
 

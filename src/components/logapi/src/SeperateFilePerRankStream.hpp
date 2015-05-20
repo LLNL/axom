@@ -41,6 +41,7 @@ public:
   /// \brief See LogStream::append
   virtual void append( message::Level msgLevel,
                        const std::string& message,
+                       const std::string& tagName,
                        const std::string& fileName,
                        int line );
 

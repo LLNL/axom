@@ -41,11 +41,13 @@ Console::~Console()
 //------------------------------------------------------------------------------
 void Console::append( message::Level msgLevel,
                       const std::string& message,
+                      const std::string& tagName,
                       const std::string& fileName,
                       int line )
 {
   std::cout << this->getFormatedMessage( message::getLevelAsString( msgLevel),
                                          message,
+                                         tagName,
                                          fileName,
                                          line );
   std::cout << "\n";

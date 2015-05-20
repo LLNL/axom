@@ -69,13 +69,14 @@ SeperateFilePerRankStream::~SeperateFilePerRankStream()
 //------------------------------------------------------------------------------
 void SeperateFilePerRankStream::append( message::Level msgLevel,
                                       const std::string& message,
+                                      const std::string& tagName,
                                       const std::string& fileName,
                                       int line )
 {
   assert( "pre: null file stream" && (m_fstream != NULL) );
   assert( "pre: file stream is not open!" && m_fstream->ofs.is_open() );
   m_fstream->ofs << this->getFormatedMessage(
-      message::getLevelAsString( msgLevel ),message,fileName,line);
+      message::getLevelAsString( msgLevel ),message,tagName,fileName,line);
 }
 
 } /* namespace logapi */

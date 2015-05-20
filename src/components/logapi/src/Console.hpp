@@ -46,6 +46,7 @@ public:
   /// \see LogStream::append
   virtual void append( message::Level msgType,
                        const std::string& message,
+                       const std::string& tagName,
                        const std::string& fileName,
                        int line );
 private:

@@ -23,6 +23,15 @@
 
 #include "logapi/MessageLevel.h"
 
+/// \name Wildcards
+/// @{
+
+#define MSG_IGNORE_TAG ""
+#define MSG_IGNORE_FILE ""
+#define MSG_IGNORE_LINE -1
+
+/// @}
+
 // C/C++ includes
 #include <string> // For STL string
 
@@ -55,10 +64,11 @@ public:
    * \param fmt a format string
    * \note The following keywords in the format string are replaced:
    *  <ul>
-   *    <li> <MTYPE> with the message type, e.g, ERROR, FATAL, etc. </li>
+   *    <li> <LEVEL> with the message type, e.g, ERROR, FATAL, etc. </li>
+   *    <li> <MESSAGE> with the user-supplied message </li>
+   *    <li> <TAG> user-supplied tag </li>
    *    <li> <FILE> with the filename </li>
    *    <li> <LINE> with the line number </li>
-   *    <li> <MESSAGE> with the user-supplied message </li>
    *  </ul>
    *****************************************************************************
    */
@@ -67,14 +77,24 @@ public:
   /*!
    *****************************************************************************
    * \brief Appends the given message to the stream.
+   *
    * \param [in] msgLevel the level of the message.
    * \param [in] message the user-supplied message.
+   * \param [in] tagName user-supplied tag to associate with the given message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
+   *
+   * \note The following wildcards may be used to ignore a particular field:
+   * <ul>
+   *   <li> MSG_IGNORE_TAG  </li>
+   *   <li> MSG_IGNORE_FILE </li>
+   *   <li> MSG_IGNORE_LINE </li>
+   * </ul>
    *****************************************************************************
    */
   virtual void append( message::Level msgLevel,
                        const std::string& message,
+                       const std::string& tagName,
                        const std::string& fileName,
                        int line
                        ) = 0;
@@ -95,18 +115,38 @@ protected:
   /*!
    *****************************************************************************
    * \brief Returns the formatted message as a single string.
+   * \param [in] msgLevel the level of the given message.
+   * \param [in] message the user-supplied message.
+   * \param [in] tagName user-supplied tag, may be MSG_IGNORE_TAG
+   * \param [in] fileName filename where this message is logged, may be
+   *  MSG_IGNORE_FILE to ignore this field.
+   * \param [in] line the line number within the file where the message is
+   *  logged. Likewise, may be set to MSG_IGNORE_LINE to ignore this field.
    * \return str the formatted message string.
    * \post str != "".
    *****************************************************************************
    */
-   std::string getFormatedMessage( const std::string& msgLeveleName,
+   std::string getFormatedMessage( const std::string& msgLevel,
                                    const std::string& message,
+                                   const std::string& tagName,
                                    const std::string& fileName,
                                    int line );
 
 private:
 
   std::string m_fmtString;
+
+  /*!
+   *****************************************************************************
+   * \brief Replaces the given key in the message string with the given value.
+   * \param [in,out] msg the message string that will be modified.
+   * \param [in] key the key in the message that will be replace.
+   * \param [in] value the value to replace it with.
+   *****************************************************************************
+   */
+  void replaceKey( std::string& msg,
+                   const std::string& key,
+                   const std::string& value );
 
   /// \name Disabled Methods
   ///@{

@@ -77,7 +77,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Adds the given log stream to this Logger instance.
+   * \brief Registers the given log stream to this Logger instance.
    * \param [in] ls pointer to a user-supplied LogStream object.
    * \pre ls != NULL.
    *****************************************************************************
@@ -87,17 +87,52 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Logs the given message
+   * \brief Logs the given message to all registered streams.
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
-   * \param [in] fileName the name of the file that calls this log message.
-   * \param [in] line the line number within the file that logs this message.
-   * \pre type >= FATAL && type < Num_Msg_Types
-   * \pre m_Streams[ type ] != NULL
+   *****************************************************************************
+   */
+  void logMessage( message::Level level, const std::string& message );
+
+  /*!
+   *****************************************************************************
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] tagName user-supplied tag to associated with the given message.
    *****************************************************************************
    */
   void logMessage( message::Level level,
                    const std::string& message,
+                   const std::string& tagName );
+
+  /*!
+   *****************************************************************************
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] fileName name of the file this call is made from.
+   * \param [in] line line within the file that this call is made from.
+   *****************************************************************************
+   */
+  void logMessage( message::Level level,
+                   const std::string& message,
+                   const std::string& fileName,
+                   int line );
+
+  /*!
+   *****************************************************************************
+   * \brief Logs the given message to all registered streams.
+   * \param [in] level the level of the given message.
+   * \param [in] message the user-supplied message to log.
+   * \param [in] tagName user-supplied tag to associated with the given message.
+   * \param [in] fileName name of the file this call is made from.
+   * \param [in] line line within the file that this call is made from.
+   *****************************************************************************
+   */
+  void logMessage( message::Level level,
+                   const std::string& message,
+                   const std::string& tagName,
                    const std::string& fileName,
                    int line );
 

@@ -29,7 +29,7 @@ namespace logapi {
 
 //------------------------------------------------------------------------------
 LogStream::LogStream() :
-    m_fmtString( "[<MTYPE>] <FILE>:<LINE>\n MESSAGE: <MESSAGE>\n" )
+    m_fmtString("*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
 {
 
 }
@@ -41,43 +41,49 @@ LogStream::~LogStream()
 }
 
 //------------------------------------------------------------------------------
-std::string LogStream::getFormatedMessage( const std::string& msgTypeName,
+void LogStream::replaceKey( std::string& msg,
+                            const std::string& key,
+                            const std::string& value )
+{
+
+  std::size_t pos = msg.find( key );
+
+  if ( pos != std::string::npos ) {
+
+    msg = msg.substr(0,pos) +
+          value +
+          msg.substr(pos+key.length(),msg.length()-1);
+
+  } // END if
+
+}
+
+//------------------------------------------------------------------------------
+std::string LogStream::getFormatedMessage( const std::string& msgLevel,
                                            const std::string& message,
+                                           const std::string& tagName,
                                            const std::string& fileName,
                                            int line )
 {
   std::string msg = m_fmtString;
 
-  std::size_t pos = msg.find( "<MTYPE>" );
-  if ( pos != std::string::npos ) {
+  this->replaceKey( msg, "<LEVEL>", msgLevel );
+  this->replaceKey( msg, "<MESSAGE>", message );
+  this->replaceKey( msg, "<TAG>", tagName );
+  this->replaceKey( msg, "<FILE>", fileName );
 
-    msg = msg.substr(0,pos) + msgTypeName + msg.substr(pos+7,msg.length()-1);
-
-  } // END if
-
-  pos = msg.find( "<FILE>" );
-  if ( pos != std::string::npos ) {
-
-    msg = msg.substr(0,pos) + fileName + msg.substr(pos+6,msg.length()-1);
-
-  } // END if
-
-  pos = msg.find( "<LINE>" );
-  if ( pos != std::string::npos ) {
+  if ( line != MSG_IGNORE_LINE ) {
 
     std::ostringstream oss;
     oss << line;
 
-    msg = msg.substr(0,pos) + oss.str() + msg.substr(pos+6,msg.length()-1);
+    this->replaceKey( msg, "<LINE>", oss.str() );
 
-  } // END if
+  } else {
 
-  pos = msg.find( "<MESSAGE>" );
-  if ( pos != std::string::npos ) {
+    this->replaceKey( msg, "<LINE>", "" );
 
-    msg = msg.substr(0,pos) + message + msg.substr(pos+9,msg.length()-1);
-
-  } // END if
+  }
 
   return( msg );
 }
