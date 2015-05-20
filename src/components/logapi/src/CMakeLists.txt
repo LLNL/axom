@@ -12,27 +12,29 @@
 # Specify all headers
 #
 set(logapi_headers
-    Console.hpp
     Logger.hpp
     LogStream.hpp
     MessageLevel.h
+
+    logstreams/Console.hpp
     )
 
 #
 # Specify all sources
 #
 set(logapi_sources
-    Console.cpp
     Logger.cpp
     LogStream.cpp
+
+    logstreams/Console.cpp
     )
 
 if (ENABLE_MPI)
-   list(APPEND logapi_headers SynchronizedConsole.hpp)
-   list(APPEND logapi_headers SeperateFilePerRankStream.hpp)
+   list(APPEND logapi_headers logstreams/SynchronizedConsole.hpp)
+   list(APPEND logapi_headers logstreams/SeperateFilePerRankStream.hpp)
 
-   list(APPEND logapi_sources SynchronizedConsole.cpp)
-   list(APPEND logapi_sources SeperateFilePerRankStream.cpp)
+   list(APPEND logapi_sources logstreams/SynchronizedConsole.cpp)
+   list(APPEND logapi_sources logstreams/SeperateFilePerRankStream.cpp)
 endif()
 
 #
