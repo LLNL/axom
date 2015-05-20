@@ -52,8 +52,8 @@ def main():
     opts, extras = parse_args()
     # get the current working path, and the glob used to identify the 
     # package files we want to hot-copy to spack
-    cwd = os.path.abspath(os.getcwd())
-    pkgs = pjoin(cwd,"packages","*")
+    uberenv_path = os.path.split(os.path.abspath(__file__))[0]
+    pkgs = pjoin(uberenv_path, "packages","*")
     # setup destination paths
     dest_dir = os.path.abspath(opts["prefix"])
     dest_spack = pjoin(dest_dir,"spack")
