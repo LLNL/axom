@@ -29,12 +29,6 @@ set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos
 set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.55.0" CACHE PATH "")
 
 
-
-###############################################################################
-# Set location for boost library
-###############################################################################
-set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
-
 ###############################################################################
 # Additional Compiler Flags
 ###############################################################################
