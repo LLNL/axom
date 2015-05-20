@@ -25,21 +25,41 @@ team members.
 
 7.1.1 All C++11 usage **must** be guarded using the macro constant "USE_CXX11" so that it can be compiled out of the code when necessary. 
 
+   For example, suppose you have a class that you want to support *move* 
+   semantics when available (i.e., when using a C++11-compilant compiler) 
+   and fall back to copy semantics otherwise:
+
 .. code-block:: cpp
 
-   #if defined(USE_CXX11)
-   #include <unordered_map>
-   #else
-   #include <boost/unordered_map>
-   #endif
+   class MyClass
+   {
+   public:
 
-   // ...
+      /// Default constructor.
+      MyClass();
+
+      /// Destructor.
+      ~MyClass();
+
+      /// Copy constructor.
+      MyClass(const MyClass& other);
+
+      /// Copy-assignment operator.
+      MyClass& operator=(const MyClass& rhs);
 
    #if defined(USE_CXX11)
-      typedef std::unordered_map<std::string, common::IDType> MapType;
-   #else
-      typedef boost::unordered_map<std::string, common::IDType> MapType;
-   #endif
+      /// Move constructor.
+      MyClass(MyClass&& other);
+
+      /// Move-assignment operator.
+      MyClass& operator=(MyClass&& rhs);
+   #endif 
+
+      // other methods...
+
+   private:
+      // data members...
+   }; 
 
 7.1.2 Whenever C++11 features are used, an alternative implementation **must** be provided that conforms to the 2003 C++ standard.
 

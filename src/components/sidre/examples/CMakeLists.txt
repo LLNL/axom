@@ -3,8 +3,8 @@
 # List of example sources
 #
 set(example_sources
-    ShockTube.cc
-    DumpStateFile.cc
+    ShockTube.cpp
+    DumpStateFile.cpp
     )
 
 #
