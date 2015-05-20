@@ -72,7 +72,7 @@ public:
    *  </ul>
    *****************************************************************************
    */
-  void setFormatString(const std::string& fmt) { m_fmtString = fmt; }
+  void setFormatString(const std::string& format) { m_formatString = format; }
 
   /*!
    *****************************************************************************
@@ -134,7 +134,7 @@ protected:
 
 private:
 
-  std::string m_fmtString;
+  std::string m_formatString;
 
   /*!
    *****************************************************************************

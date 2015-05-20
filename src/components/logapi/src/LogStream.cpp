@@ -29,7 +29,7 @@ namespace logapi {
 
 //------------------------------------------------------------------------------
 LogStream::LogStream() :
-    m_fmtString("*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
+    m_formatString("*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
 {
 
 }
@@ -65,7 +65,7 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
                                            const std::string& fileName,
                                            int line )
 {
-  std::string msg = m_fmtString;
+  std::string msg = m_formatString;
 
   this->replaceKey( msg, "<LEVEL>", msgLevel );
   this->replaceKey( msg, "<MESSAGE>", message );
