@@ -11,6 +11,7 @@ guidelines are to:
      presented clearly and lucidly, and which do not over-burden developers.
    * Generate source code documentation using the Doxygen system.
 
+
 ========================================
 4.1 General documentation considerations
 ========================================
@@ -43,6 +44,7 @@ guidelines are to:
 4.1.6 Comments **should** be clearly delimited from executable code with blank lines and "blocking characters" (see examples below) to make them stand out and, thus, improve the chances they will be read.
 
 4.1.7 Blank lines, indentation, and vertical alignment **should** be used in comment blocks to enhance readability, emphasize important information, etc.
+
 
 ===================================================================
 4.2 General Doxygen usage guidelines and summary of common commands
@@ -214,12 +216,13 @@ described here.
    /*
     * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
     * Produced at the Lawrence Livermore National Laboratory.
-    * 
+    *
     * All rights reserved.
     *
     * This source code cannot be distributed without permission and 
     * further review from Lawrence Livermore National Laboratory.
     */
+
 
 ============================
 4.4 File documentation
@@ -265,6 +268,7 @@ described here.
 
 4.3.4 The name of the original author of the file **may** be entered after the file notes. If the author's name is included, it **must** be preceded by the "\\author" command.
 
+
 ========================
 4.5 Type documentation
 ========================
@@ -302,6 +306,7 @@ etc. must be documented in order to document any of its members.
       such cross-reference so that links are generated in the documentation.
 
 4.5.6 Caveats or limitations about the documented type **should** be noted using the "\\warning" Doxygen command as shown above.
+
 
 ===============================
 4.6 Data member documentation
@@ -350,6 +355,7 @@ etc. must be documented in order to document any of its members.
          int m_member2;
          ...
          //@}
+
 
 ==========================
 4.7 Function documentation

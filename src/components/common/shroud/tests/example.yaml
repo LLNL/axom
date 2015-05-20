@@ -1,0 +1,78 @@
+copyright:
+  - blah blah
+  - yada yada
+  -
+
+options:
+#  module_name: exclass1_mod
+  C_prefix: AA_
+  namespace: example nested
+#  impl_file_per_class: True
+
+typedef:
+  other:
+    cpp: junk
+
+classes:
+  - name: ExClass1
+    options:
+      cpp_header: ExClass1.hpp
+    methods:
+    - decl: ExClass1 *new+constructor ( const string *name )
+      docs: constructor
+
+    - decl: void delete+destructor
+
+    - decl: int incrementCount(int incr)
+      docs: blah blah
+#      C_code:   my code
+
+#    - decl: string getName+const+reference
+    - decl: const string& getName()
+      result:
+         attrs:
+            len: aa_exclass1_get_name_length(obj%obj)
+
+    - docs: helper function for Fortran
+      result:
+         name: get_name_length
+         type: int
+         attrs:
+            const: True
+            len: aa_get_exclass2_name_length(obj%obj)
+      C_code: return selfobj->getName().length();
+
+    - decl: ExClass2 *getRoot()
+
+    - decl: int  getValue(int value)
+      method_suffix: _from_int
+    - decl: long getValue(long value)
+
+
+  - name: ExClass2
+    options:
+      cpp_header: ExClass2.hpp
+    methods:
+    - decl: ExClass2 *ExClass2+constructor (const string *name)
+
+    - decl: void ExClass1+destructor
+
+    - decl: const string& getName
+      result:
+         attrs:
+            len: aa_exclass2_get_name_length(obj%obj)
+
+    - docs: helper function for Fortran
+      result:
+         name: get_name_length
+         type: int
+         attrs:
+            const: True
+            len: exclass2_get_name_length(obj%obj)
+      C_code: return selfobj->getName().length();
+
+
+
+functions:
+  - decl: void local_function1
+    docs: yada yada yada

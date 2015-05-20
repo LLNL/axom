@@ -8,6 +8,7 @@ following these guidelines will help make it easy to locate a specific file
 and, once the file is found, to locate essential information in it easily 
 and quickly.
 
+
 =====================================
 3.1 File location and directory names
 =====================================
@@ -18,6 +19,7 @@ implementation files located in the same directory. We follow this practice.
 3.1.1 Each file **must** reside in a directory that corresponds to the code functionality supported by the contents of the file.
 
 3.1.2 Each source directory **must** be named so that the collective purpose of the files it contains is clear. Each directory name **must** be in all lower case letters and should consist of a single word with no non-alphabetic characters.
+
 
 ============================================================
 3.2 C-only header file (\*.h extension) content organization
@@ -115,11 +117,13 @@ declarations, type definitions, or function prototypes.
 
 3.2.8 Function prototypes **must** be declared using the "extern" keyword (item 8 in summary).
 
+
 ============================================================
 3.3 C-only source file (\*.c extension) content organization
 ============================================================
 
 Do we need this?
+
 
 ============================================================
 3.4 C++ header file (\*.hpp extension) content organization
@@ -210,6 +214,7 @@ declarations, type definitions, etc.
 
 3.4.8 All class and other type definitions (item 9 in summary) **must** appear after the header file inclusions and forward declarations. A proper class prologue **must** appear before the class definition; see Section 4 for details.
 
+
 ============================================================
 3.5 C++ source file (\*.cpp extension) content organization 
 ============================================================
@@ -263,6 +268,7 @@ numbered items in the comments in the preceding summary.
 in the class source file before any member functions are defined (item 5 in summary).
 
 3.5.6 All implementations of static class member functions (item 6 in summary), if any, **must** appear before implementations of non-static class member functions (item 7 in summary).
+
 
 ==================================
 3.6 General header file guidelines
@@ -389,6 +395,7 @@ code readability and understanding.
        functionality should be grouped together and described with a single 
        prologue if the resulting documentation is clearer and more concise.
 
+
 ==================================
 3.7 General source file guidelines
 ==================================
@@ -405,6 +412,7 @@ code readability and understanding.
       in the header file.
 
 3.7.3 Each function implementation in a source file **should** be documented according to the guidelines in Section 4.
+
 
 ==========
 3.8 Scope

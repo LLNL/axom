@@ -8,6 +8,8 @@ beyond what is presented in these guidelines.
 
 #. *ALE3D Coding Standards & Style Guide*, version 1.1, 2005.
 
+#. *Boost: C++ Libraries*, www.boost.org.
+
 #. *The Chromium Projects: C++ Dos and Don'ts*. https://www.chromium.org/developers/coding-style/cpp-dos-and-donts
 
 #. Dewhurst, S., *C++ Gotchas: Avoiding Common Problems in Coding and Design*, Addison-Wesley, 2003.
