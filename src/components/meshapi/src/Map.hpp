@@ -26,15 +26,17 @@ namespace meshapi    {
         typedef MeshIndexType                                          Index;
         typedef MeshSizeType                                           size_type;
 
+        typedef asctoolkit::meshapi::OrderedSet                        SetType;
+
         typedef std::vector<DataType>                                  OrderedMap;
 
     public:
-        Map(OrderedSet const* theSet = NULL) : m_set(theSet)
+        Map(SetType const* theSet = NULL) : m_set(theSet)
         {
             if(m_set) { m_data.resize( m_set->size() ); }
         }
 
-        Map(OrderedSet const* theSet, DataType defaultValue) : m_set(theSet)
+        Map(SetType const* theSet, DataType defaultValue) : m_set(theSet)
         {
             if(m_set) { m_data.resize( m_set->size(), defaultValue ); }
         }
@@ -53,6 +55,16 @@ namespace meshapi    {
             return m_data[setIndex];
         }
 
+
+        SetType const* set() const { return m_set; }
+
+
+        //* Placeholder for function that returns the (pointer to) underlying data **/
+        OrderedMap      & data()        { return m_data; }
+        //* Placeholder for function that returns the (const pointer to) underlying data **/
+        OrderedMap const& data() const  { return m_data; }
+
+
         size_type size() const { return m_set ? m_set->size() : size_type(); }
 
         bool isValid(bool verboseOutput = false) const;
@@ -61,7 +73,7 @@ namespace meshapi    {
         inline void  verifyIndex(Index setIndex)       const { ATK_ASSERT( m_set && (setIndex < m_set->size() ) ); }
 
     private:
-        OrderedSet const*  m_set;
+        SetType const*  m_set;
         OrderedMap         m_data;
     };
 

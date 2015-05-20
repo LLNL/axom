@@ -32,6 +32,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <iomanip>
 
 
 #include "common/Utilities.hpp"
@@ -52,8 +53,8 @@ namespace shocktube {
     const double gammaaInverse = M_SQRT1_2 ;
 
     const int INIT_NUM_ELEMS = 100;
-    const int INIT_NUM_ULTRA_DUMPS = 10;
-    const int INIT_NUM_ULTRA_CYCLES_PER_DUMP = 100;
+    const int INIT_NUM_ULTRA_DUMPS = 5;
+    const int INIT_NUM_ULTRA_CYCLES_PER_DUMP = 200;
 
     const double INIT_P_RATIO = 0.5;
     const double INIT_D_RATIO = 0.5;
@@ -299,39 +300,39 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    realsRegistry.addField("F2", &mesh.faces );
 
    // Fill left half with high pressure, right half with low pressure
-   IndexType startTube = 0 ;
-   IndexType endTube = mesh.elems.size();
-   IndexType midTube = endTube / 2 ;
+   IndexType startTube  = 0 ;
+   IndexType endTube    = mesh.elems.size();
+   IndexType midTube    = endTube / 2 ;
 
    // Non-dimensionalized reference values
-   double massInitial = 1.0 ;
-   double momentumInitial = 0.0 ;
-   double pressureInitial = gammaaInverse ;
-   double energyInitial = pressureInitial/(gammaa-1.0) ;
+   double massInitial       = 1.0 ;
+   double momentumInitial   = 0.0 ;
+   double pressureInitial   = gammaaInverse ;
+   double energyInitial     = pressureInitial/(gammaa-1.0) ;
 
    // Initialize zonal quantities
    for (IndexType idx=startTube; idx<midTube; ++idx)
    {
-      mass[idx] = massInitial ;
+      mass[idx]     = massInitial ;
       momentum[idx] = momentumInitial ;
       pressure[idx] = pressureInitial ;
-      energy[idx] = energyInitial ;
+      energy[idx]   = energyInitial ;
    }
 
    // adjust parameters for low pressure portion of tube
    double dratio = realsRegistry.getScalar("densityRatio") ;
    double pratio = realsRegistry.getScalar("pressureRatio") ;
 
-   massInitial *= dratio ;
-   pressureInitial *= pratio ;
-   energyInitial = pressureInitial/(gammaa - 1.0) ;
+   massInitial      *= dratio ;
+   pressureInitial  *= pratio ;
+   energyInitial     = pressureInitial/(gammaa - 1.0) ;
 
    for (IndexType idx=midTube; idx<endTube; ++idx)
    {
-      mass[idx] = massInitial ;
+      mass[idx]     = massInitial ;
       momentum[idx] = momentumInitial ;
       pressure[idx] = pressureInitial ;
-      energy[idx] = energyInitial ;
+      energy[idx]   = energyInitial ;
    }
 
    // Create needed time info
@@ -364,14 +365,14 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
    typedef ShockTubeMesh::IndexType IndexType;
 
    // Face fields
-   RealField& F0 = realsRegistry.getField("F0") ;
-   RealField& F1 = realsRegistry.getField("F1") ;
-   RealField& F2 = realsRegistry.getField("F2") ;
+   RealField & F0 = realsRegistry.getField("F0") ;
+   RealField & F1 = realsRegistry.getField("F1") ;
+   RealField & F2 = realsRegistry.getField("F2") ;
 
    // Element fields
-   RealField const& mass =     realsRegistry.getField("mass") ;
+   RealField const& mass     = realsRegistry.getField("mass") ;
    RealField const& momentum = realsRegistry.getField("momentum") ;
-   RealField const& energy =   realsRegistry.getField("energy") ;
+   RealField const& energy   = realsRegistry.getField("energy") ;
 
    // Update face data using element data using the face->elem relation
    for (ShockTubeMesh::IndexType fIdx=0; fIdx< mesh.faces.size() ; ++fIdx)
@@ -395,6 +396,7 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       // Now that we have the wave speeds, we might want to
       // look for the max wave speed here, and update dt
       // appropriately right before leaving this function.
+
       // OK, calculate face quantities
 
       F0[fIdx] = F1[fIdx] = F2[fIdx] = 0.0 ;
@@ -404,7 +406,7 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       momentumf = momentum[contributor] ;
       energyf   = energy[contributor] ;
       pressuref = energyf - 0.5*momentumf*momentumf/massf ;
-      ev = v*(gammaa - 1.0) ;
+      ev        = v*(gammaa - 1.0) ;
 
       F0[fIdx] += ev*massf ;
       F1[fIdx] += ev*momentumf ;
@@ -415,8 +417,8 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       momentumf = momentum[contributor] ;
       energyf   = energy[contributor] ;
       pressuref = (gammaa - 1.0)*(energyf - 0.5*momentumf*momentumf/massf) ;
-      ev = 0.5*(v + c) ;
-      cLocal = sqrt(gammaa*pressuref/massf) ;
+      ev        = 0.5*(v + c) ;
+      cLocal    = sqrt(gammaa*pressuref/massf) ;
 
       F0[fIdx] += ev*massf ;
       F1[fIdx] += ev*(momentumf + massf*cLocal) ;
@@ -427,8 +429,8 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       momentumf = momentum[contributor] ;
       energyf   = energy[contributor] ;
       pressuref = (gammaa - 1.0)*(energyf - 0.5*momentumf*momentumf/massf) ;
-      ev = 0.5*(v - c) ;
-      cLocal = sqrt(gammaa*pressuref/massf) ;
+      ev        = 0.5*(v - c) ;
+      cLocal    = sqrt(gammaa*pressuref/massf) ;
 
       F0[fIdx] += ev*massf ;
       F1[fIdx] += ev*(momentumf - massf*cLocal) ;
@@ -447,19 +449,19 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
 void UpdateElemInfo(ShockTubeMesh const& mesh)
 {
     // get the element quantities we want to update
-    RealField& mass = realsRegistry.getField("mass") ;
-    RealField& momentum = realsRegistry.getField("momentum") ;
-    RealField& energy = realsRegistry.getField("energy") ;
-    RealField& pressure = realsRegistry.getField("pressure") ;
+    RealField & mass     = realsRegistry.getField("mass") ;
+    RealField & momentum = realsRegistry.getField("momentum") ;
+    RealField & energy   = realsRegistry.getField("energy") ;
+    RealField & pressure = realsRegistry.getField("pressure") ;
 
    // The element update is calculated as the flux between faces
    RealField const& F0 = realsRegistry.getField("F0") ;
    RealField const& F1 = realsRegistry.getField("F1") ;
    RealField const& F2 = realsRegistry.getField("F2") ;
 
-   double dx = realsRegistry.getScalar("dx") ;
-   double dt = realsRegistry.getScalar("dt") ;
-   double &time = realsRegistry.getScalar("time") ;
+   double   dx   = realsRegistry.getScalar("dx") ;
+   double   dt   = realsRegistry.getScalar("dt") ;
+   double & time = realsRegistry.getScalar("time") ;
 
 
    /// Update the element fields based on the face data using the elem->face relation
@@ -486,6 +488,45 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
    time += dt ;
 }
 
+void dumpData(ShockTubeMesh const& mesh)
+{
+    RealField const& mass     = realsRegistry.getField("mass") ;
+    RealField const& momentum = realsRegistry.getField("momentum") ;
+    RealField const& energy   = realsRegistry.getField("energy") ;
+    RealField const& pressure = realsRegistry.getField("pressure") ;
+
+    static const ShockTubeMesh::ElemSet::size_type MAX_ELEM_DUMP = 10;
+    const int maxDump = std::min(mesh.elems.size(), MAX_ELEM_DUMP);
+    const int rmaxDump = std::min(MAX_ELEM_DUMP, mesh.elems.size() - maxDump);
+
+    // TODO: The following is currently grabbing the raw data from the Map and spitting out at most MAX_ELEM_DUMP elements
+    // I would like to create a subset with a stride to only print every n_th element
+    std::cout<<"\n\t\tElem idx: ";
+    std::copy(mesh.elems.begin(), mesh.elems.begin()+maxDump, std::ostream_iterator<ShockTubeMesh::IndexType>(std::cout, "\t"));
+    std::cout<<"...\t";
+    std::copy(mesh.elems.end()-rmaxDump, mesh.elems.end(), std::ostream_iterator<ShockTubeMesh::IndexType>(std::cout, "\t"));
+
+    std::cout<<"\n\t\tMass    : " << std::setprecision(3) ;
+    std::copy(mass.data().begin(), mass.data().begin()+maxDump, std::ostream_iterator<double>(std::cout, "\t"));
+    std::cout<<"...\t";
+    std::copy(mass.data().end()-rmaxDump, mass.data().end(), std::ostream_iterator<double>(std::cout, "\t"));
+
+    std::cout<<"\n\t\tMomentum: ";
+    std::copy(momentum.data().begin(), momentum.data().begin()+maxDump, std::ostream_iterator<double>(std::cout, "\t"));
+    std::cout<<"...\t";
+    std::copy(momentum.data().end()-rmaxDump, momentum.data().end(), std::ostream_iterator<double>(std::cout, "\t"));
+
+    std::cout<<"\n\t\tEnergy  : ";
+    std::copy(energy.data().begin(), energy.data().begin()+maxDump, std::ostream_iterator<double>(std::cout, "\t"));
+    std::cout<<"...\t";
+    std::copy(energy.data().end()-rmaxDump, energy.data().end(), std::ostream_iterator<double>(std::cout, "\t"));
+
+    std::cout<<"\n\t\tPressure: ";
+    std::copy(pressure.data().begin(), pressure.data().begin()+maxDump, std::ostream_iterator<double>(std::cout, "\t"));
+    std::cout<<"...\t";
+    std::copy(pressure.data().end()-rmaxDump, pressure.data().end(), std::ostream_iterator<double>(std::cout, "\t"));
+
+}
 
 } // end namespace shocktube
 } // end namespace examples
@@ -530,6 +571,7 @@ int main(void)
             //   DumpUltra(problem) ;
             std::cout<< "\n\tStarting cycle " << currCycle
                  << " at time " << realsRegistry.getScalar("time");
+            dumpData(mesh);
         }
 
 
@@ -537,9 +579,10 @@ int main(void)
         UpdateElemInfo(mesh) ;
     }
 
-    std::cout<<"\ndone." << std::endl;
 
-    //DumpUltra(problem) ; /* One last dump */
+    std::cout<< "\n\tFinished cycle " << currCycle << " at time " << realsRegistry.getScalar("time");
+    dumpData(mesh);
+    std::cout<<"\ndone." << std::endl;
 
     return 0 ;
 }
