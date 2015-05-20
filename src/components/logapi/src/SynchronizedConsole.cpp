@@ -59,8 +59,8 @@ struct SynchronizedConsole::MessageCache
 };
 
 //------------------------------------------------------------------------------
-SynchronizedConsole::SynchronizedConsole():
-    m_comm(MPI_COMM_NULL),
+SynchronizedConsole::SynchronizedConsole(MPI_Comm comm):
+    m_comm( comm ),
     m_cache( new MessageCache() )
 {
 
@@ -75,13 +75,6 @@ SynchronizedConsole::~SynchronizedConsole()
     m_cache = NULL;
   }
 
-}
-
-//------------------------------------------------------------------------------
-void SynchronizedConsole::setCommunicator(MPI_Comm comm)
-{
-  assert( "pre: NULL MPI Communicator" && (comm != MPI_COMM_NULL)  );
-  m_comm = comm;
 }
 
 //------------------------------------------------------------------------------

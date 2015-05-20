@@ -47,17 +47,8 @@ namespace logapi {
 class SynchronizedConsole : public LogStream
 {
 public:
-  SynchronizedConsole();
+  SynchronizedConsole( MPI_Comm comm );
   virtual ~SynchronizedConsole();
-
-  /*!
-   *****************************************************************************
-   * \brief Sets the MPI communicator.
-   * \param [in] comm the MPI communicator to use by this instance.
-   * \pre comm != MPI_COMM_NULL
-   *****************************************************************************
-   */
-  void setCommunicator(MPI_Comm comm);
 
   /*!
    *****************************************************************************
@@ -97,6 +88,15 @@ private:
   MessageCache* m_cache;
 
   /// @}
+
+  /*!
+   *****************************************************************************
+   * \brief Default constructor. Made private to prevent applications from
+   *  using it. Instead the constructor that passes the underlying MPI comm.
+   *  should be used.
+   *****************************************************************************
+   */
+  SynchronizedConsole(): m_comm(MPI_COMM_NULL), m_cache(NULL) { };
 
   /// \name Disabled Methods
   /// @{

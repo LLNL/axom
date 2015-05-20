@@ -25,6 +25,7 @@
 
 // C/C++ includes
 #include <string> // for STL string
+#include <vector> // for STL vector
 
 namespace asctoolkit {
 
@@ -66,54 +67,23 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Enables all streams above (and including) the severity of the given
-   *  message level.
-   * \param [in] level the message level.
-   * \pre level >= FATAL && level < Num_Msg_types
+   * \brief Sets the logging level to the given level. This controls which
+   *  messages are logged based on severity. All messages with equal or higher
+   *  severity to the given level will be logged.
+   * \param [in] level the logging level.
    *****************************************************************************
    */
-  void enableStreamsBelow( message::Level level);
+  void setLoggingLevel( message::Level level );
 
   /*!
    *****************************************************************************
-   * \brief Sets the streams above (and including) the severity of the given
-   *  message type to the supplied log stream instance.
-   * \param [in] level the message type.
-   * \param [in] ls pointer to the user-supplied log stream.
-   * \pre level >= FATAL && level < Num_Msg_types
-   * \pre ls != NULL
+   * \brief Adds the given log stream to this Logger instance.
+   * \param [in] ls pointer to a user-supplied LogStream object.
+   * \pre ls != NULL.
    *****************************************************************************
    */
-  void setStreamsBelow( message::Level level, LogStream* ls);
+  void addLogStream( LogStream* ls );
 
-  /*!
-   *****************************************************************************
-   * \brief Enables log messages of the given type.
-   * \param [in] level message level.
-   * \pre level >= FATAL && level < Num_Msg_Types
-   *****************************************************************************
-   */
-  void enable( message::Level level );
-
-  /*!
-   *****************************************************************************
-   * \brief Disables log messages of the given type.
-   * \param [in] type message type.
-   * \pre type >= FATAL && type < Num_Msg_types
-   *****************************************************************************
-   */
-  void disable( message::Level level );
-
-  /*!
-   *****************************************************************************
-   * \brief Sets the LogStream for the given message type.
-   * \param [in] type the message type/level.
-   * \param [in] ls pointer to an application log stream.
-   * \pre type >= FATAL && type < Num_Msg_Types
-   * \pre ls != NULL
-   *****************************************************************************
-   */
-  void setLogStream( message::Level level, LogStream* ls);
 
   /*!
    *****************************************************************************
@@ -191,8 +161,8 @@ private:
   /// \name Private class members
   ///@{
 
-  bool m_StreamState[ message::Num_Levels ];
-  LogStream* m_Streams[ message::Num_Levels ];
+  bool m_isEnabled[ message::Num_Levels ];
+  std::vector< LogStream* > m_logStreams;
 
   ///@}
 

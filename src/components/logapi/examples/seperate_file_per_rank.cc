@@ -44,13 +44,10 @@ int main( int argc, char** argv )
   MPI_Init( &argc, &argv );
   logapi::Logger::initialize();
 
-  // STEP 1: Setup the log stream
-  logapi::SeperateFilePerRankStream* scls =
-      new logapi::SeperateFilePerRankStream("logfile",MPI_COMM_WORLD);
+  logapi::Logger::getInstance()->setLoggingLevel( logapi::message::Debug );
+  logapi::Logger::getInstance()->addLogStream(
+      new logapi::SeperateFilePerRankStream( "logfile",MPI_COMM_WORLD) );
 
-  // STEP 2: enable logging of all messages
-  logapi::Logger::getInstance()->enableStreamsBelow( logapi::message::Debug );
-  logapi::Logger::getInstance()->setStreamsBelow( logapi::message::Debug, scls );
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
@@ -71,7 +68,6 @@ int main( int argc, char** argv )
   // STEP 4: shutdown logging environment
   logapi::Logger::finalize();
 
-  delete scls;
 
   // STEP 5: Finalize MPI
   MPI_Finalize();
