@@ -278,6 +278,32 @@ public:
     DataView* createViewAndBuffer( const std::string& name );
 
     /*!
+     * \brief Create a DataView object (and buffer) with given name,
+     *        and use the Conduit DataType to allocate the 
+     *        underlying buffer and initialize the view.
+     *        Attach the new view to this DataGroup object.
+     *
+     * Note that created DataBuffer will be owned by associated DataStore.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createViewAndBuffer( const std::string& name, 
+                                   const DataType &dtype);
+
+    /*!
+     * \brief Create a DataView object (and buffer) with given name,
+     *        and use the Conduit Schema to allocate the 
+     *        underlying buffer and initialize the view.
+     *        Attach the new view to this DataGroup object.
+     *
+     * Note that created DataBuffer will be owned by associated DataStore.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createViewAndBuffer( const std::string& name, 
+                                   const Schema &schema);
+
+    /*!
      * \brief Create an opaque DataView with given name, holding data
      *        referenced with given pointer, and attach to this DataGroup 
      *        object.
@@ -293,6 +319,32 @@ public:
      * \return pointer to created DataView object.
      */ 
     DataView* createView( const std::string& name, DataBuffer* buff );
+
+
+    /*!
+     * \brief Create a DataView object (for view into given buffer) with 
+     *        given name and use the Conduit DataType to initialize the 
+     *        view into this buffer. Attach the new view to this 
+     *        DataGroup object.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createView( const std::string& name,
+                          DataBuffer* buff, 
+                          const DataType &dtype);
+
+
+    /*!
+     * \brief Create a DataView object (for view into given buffer) with 
+     *        given name and use the Conduit Schema to initialize the 
+     *        view into this buffer. Attach the new view to this 
+     *        DataGroup object.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createView( const std::string& name,
+                          DataBuffer* buff, 
+                          const Schema &schema);
 
     /*!
      * \brief Destroy view in this DataGroup with given name and leave its

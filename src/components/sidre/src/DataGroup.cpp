@@ -62,6 +62,47 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name )
 /*
 *************************************************************************
 *
+* Create view and buffer with given name, use the data type to 
+* allocate the buffer and initialize the view. Attach new view to group.
+*
+*************************************************************************
+*/
+DataView* DataGroup::createViewAndBuffer( const std::string& name,
+                                          const DataType &dtype)
+{
+    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+
+    DataBuffer *buff = this->getDataStore()->createBuffer();
+    DataView* const view = new DataView( name, this,buff);
+    buff->attachView(view);
+    view->allocate(dtype);
+    return attachView(view);
+}
+
+
+/*
+*************************************************************************
+*
+* Create view and buffer with given name, use the data type to 
+* allocate the buffer and initialize the view. Attach new view to group.
+*
+*************************************************************************
+*/
+DataView* DataGroup::createViewAndBuffer( const std::string& name,
+                                          const Schema &schema)
+{
+    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+
+    DataBuffer *buff = this->getDataStore()->createBuffer();
+    DataView* const view = new DataView( name, this,buff);
+    buff->attachView(view);
+    view->allocate(schema);
+    return attachView(view);
+}
+
+/*
+*************************************************************************
+*
 * Create opaque view and attach to group.
 *
 *************************************************************************
@@ -91,6 +132,49 @@ DataView* DataGroup::createView( const std::string& name,
     DataView* const view = new DataView( name, this, buff );
     return attachView(view);
 }
+
+
+/*
+*************************************************************************
+*
+* Create view associated with given buffer, apply given data type 
+* and attach to group.
+*
+*************************************************************************
+*/
+DataView* DataGroup::createView( const std::string& name,
+                                 DataBuffer* buff,
+                                 const DataType &dtype)
+{
+    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+    ATK_ASSERT( buff != 0 );
+
+    DataView* const view = new DataView( name, this, buff );
+    view->apply(dtype);
+    return attachView(view);
+}
+
+
+/*
+*************************************************************************
+*
+* Create view associated with given buffer, apply given schema 
+* and attach to group.
+*
+*************************************************************************
+*/
+DataView* DataGroup::createView( const std::string& name,
+                                 DataBuffer* buff,
+                                 const Schema &schema)
+{
+    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+    ATK_ASSERT( buff != 0 );
+
+    DataView* const view = new DataView( name, this, buff );
+    view->apply(schema);
+    return attachView(view);
+}
+
 
 /*
 *************************************************************************
