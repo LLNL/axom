@@ -249,6 +249,8 @@ void Logger::flushStreams()
 //------------------------------------------------------------------------------
 void Logger::finalize()
 {
+  s_Logger->flushAllStreams();
+
   delete s_Logger;
   s_Logger = NULL;
 }
