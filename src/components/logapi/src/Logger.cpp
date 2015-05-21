@@ -26,7 +26,6 @@
 
 // C/C++ includes
 #include <iostream> // for std::cout, std::cerr
-#include <cassert>  // for assert()
 
 namespace asctoolkit {
 

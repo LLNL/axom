@@ -18,7 +18,6 @@
  *******************************************************************************
  */
 
-#include <cassert>
 #include <vector>
 #include "SynchronizedStream.hpp"
 
@@ -87,7 +86,10 @@ void SynchronizedStream::append( message::Level msgLevel,
                                   const std::string& fileName,
                                   int line )
 {
-  assert( "pre: null message cache!" && (m_cache != ATK_NULLPTR) );
+  if ( m_cache == ATK_NULLPTR ) {
+    std::cerr << "ERROR: NULL cache!\n";
+    return;
+  }
 
   // STEP 1: cache formatted message
   m_cache->messages.push_back(
@@ -98,8 +100,15 @@ void SynchronizedStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void SynchronizedStream::flush()
 {
-  assert( "pre: null message cache!" && (m_cache != ATK_NULLPTR) );
-  assert( "pre: null MPI communicator!" && (m_comm != MPI_COMM_NULL) );
+  if ( m_cache == ATK_NULLPTR ) {
+    std::cerr << "ERROR: NULL cache!\n";
+    return;
+  }
+
+  if ( m_comm == MPI_COMM_NULL ) {
+    std::cerr << "ERROR: NULL communicator!\n";
+    return;
+  }
 
   int rank   = -1;
   int nranks =  0;
