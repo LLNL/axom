@@ -20,10 +20,12 @@
 
 // C/C++ includes
 #include <cstdlib> // for rand()
+#include <fstream> // for ofstream
+#include <sstream> // for ostringstream
 
 // Logging includes
 #include "logapi/Logger.hpp"
-#include "logapi/SeperateFilePerRankStream.hpp"
+#include "logapi/GenericOutputStream.hpp"
 
 // MPI
 #include <mpi.h>
@@ -44,9 +46,17 @@ int main( int argc, char** argv )
   MPI_Init( &argc, &argv );
   logapi::Logger::initialize();
 
+  int rank = -1;
+  MPI_Comm_rank( MPI_COMM_WORLD, &rank);
+
+  std::ostringstream oss;
+  oss << "logfile_" << rank << ".dat";
+
+  std::ofstream ofs;
+  ofs.open( oss.str().c_str() );
+
   logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream(
-      new logapi::SeperateFilePerRankStream( "logfile",MPI_COMM_WORLD) );
+  logapi::Logger::addStream( new logapi::GenericOutputStream(&ofs) );
 
 
   // STEP 3: loop N times and generate a random logging event
@@ -64,6 +74,8 @@ int main( int argc, char** argv )
     } // END if
 
   }
+
+  ofs.close();
 
   // STEP 4: shutdown logging environment
   logapi::Logger::finalize();

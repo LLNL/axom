@@ -23,7 +23,7 @@
 
 // Logging includes
 #include "logapi/Logger.hpp"
-#include "logapi/Console.hpp"
+#include "logapi/GenericOutputStream.hpp"
 
 using namespace asctoolkit;
 
@@ -43,7 +43,6 @@ int main( int argc, char** argv )
   // STEP 0: initialize logging environment
   logapi::Logger::initialize();
 
-  logapi::Console* console = new logapi::Console();
   std::string format =  std::string( "***********************************\n" )+
                         std::string( "* <TIMESTAMP>\n\n" ) +
                         std::string( "* LEVEL=<LEVEL>\n" ) +
@@ -51,13 +50,13 @@ int main( int argc, char** argv )
                         std::string( "* FILE=<FILE>\n" ) +
                         std::string( "* LINE=<LINE>\n" ) +
                         std::string( "***********************************\n" );
-  console->setFormatString( format );
 
   logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream( console );
+  logapi::Logger::addStream(
+      new logapi::GenericOutputStream( &std::cout, format ) );
 
 
-  // STEP 3: loop N times and generate a random logging event
+  // STEP 1: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
     logapi::Logger::log( getRandomEvent(0,logapi::message::Num_Levels),
@@ -65,7 +64,7 @@ int main( int argc, char** argv )
 
   }
 
-  // STEP 4: shutdown logging environment
+  // STEP 2: shutdown logging environment
   logapi::Logger::finalize();
 
   return 0;

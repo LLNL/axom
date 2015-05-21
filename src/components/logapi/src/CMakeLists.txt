@@ -16,7 +16,7 @@ set(logapi_headers
     LogStream.hpp
     MessageLevel.h
 
-    logstreams/Console.hpp
+    logstreams/GenericOutputStream.hpp
     )
 
 #
@@ -26,15 +26,12 @@ set(logapi_sources
     Logger.cpp
     LogStream.cpp
 
-    logstreams/Console.cpp
+    logstreams/GenericOutputStream.cpp
     )
 
 if (ENABLE_MPI)
    list(APPEND logapi_headers logstreams/SynchronizedConsole.hpp)
-   list(APPEND logapi_headers logstreams/SeperateFilePerRankStream.hpp)
-
    list(APPEND logapi_sources logstreams/SynchronizedConsole.cpp)
-   list(APPEND logapi_sources logstreams/SeperateFilePerRankStream.cpp)
 endif()
 
 #
