@@ -175,7 +175,7 @@ public:
    {
       typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ? 
-               m_items[ mit->second ] : static_cast<TYPE*>(ATK_NULLPTR) );
+               m_items[ mit->second ] : ATK_NULLPTR );
    }
 
    ///
@@ -183,19 +183,19 @@ public:
    {
       typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ?
-               m_items[ mit->second ] : static_cast<TYPE*>(ATK_NULLPTR) );
+               m_items[ mit->second ] : ATK_NULLPTR );
    }
 
    ///
    TYPE* getItem(IDType idx)
    {
-      return ( hasItem(idx) ? m_items[idx] : static_cast<TYPE*>(ATK_NULLPTR) );
+      return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
    }
 
    ///
    TYPE const* getItem(IDType idx) const
    {
-      return ( hasItem(idx) ? m_items[idx] : static_cast<TYPE*>(ATK_NULLPTR) );
+      return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
    }
 
    ///
@@ -236,7 +236,7 @@ bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE* item,
 template <typename TYPE, typename MAP_TYPE>
 TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 {
-   TYPE* ret_val = static_cast<TYPE*>(ATK_NULLPTR);
+   TYPE* ret_val = ATK_NULLPTR;
 
    typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
    if ( mit != m_name2idx_map.end() ) {
@@ -267,7 +267,7 @@ TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(IDType idx)
       TYPE* item = removeItem( m_items[idx]->getName() );
       return item;
    } else {
-      return static_cast<TYPE*>(ATK_NULLPTR);
+      return ATK_NULLPTR;
    }
 }
 

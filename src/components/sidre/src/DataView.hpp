@@ -190,7 +190,7 @@ public:
      */
     bool  hasBuffer() const
     { 
-       return m_data_buffer != static_cast<DataBuffer*>(ATK_NULLPTR);
+       return m_data_buffer != ATK_NULLPTR;
     }
 
     /*!

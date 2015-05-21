@@ -17,7 +17,7 @@ namespace common
 #ifdef USE_CXX11
 #define ATK_NULLPTR nullptr
 #else
-#define ATK_NULLPTR ((void*)0)
+#define ATK_NULLPTR NULL
 #endif
 
 

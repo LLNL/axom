@@ -75,7 +75,7 @@ DataBuffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
   IDType newIndex = m_DataBuffers.size();
-  m_DataBuffers.push_back( static_cast<DataBuffer*>(ATK_NULLPTR) );
+  m_DataBuffers.push_back( ATK_NULLPTR );
   if( !m_AvailableDataBuffers.empty() )
   {
     newIndex = m_AvailableDataBuffers.top();
@@ -100,7 +100,7 @@ DataBuffer* DataStore::createBuffer()
 void DataStore::destroyBuffer( IDType id )
 {
   delete m_DataBuffers[id];
-  m_DataBuffers[id] = static_cast<DataBuffer*>(ATK_NULLPTR);
+  m_DataBuffers[id] = ATK_NULLPTR;
   m_AvailableDataBuffers.push(id);
 }
 
@@ -135,7 +135,7 @@ void DataStore::destroyBuffers()
 DataBuffer* DataStore::detachBuffer( IDType id )
 {
   DataBuffer* const rval = m_DataBuffers[id];
-  m_DataBuffers[id] = static_cast<DataBuffer*>(ATK_NULLPTR);
+  m_DataBuffers[id] = ATK_NULLPTR;
   m_AvailableDataBuffers.push(id);
 
   return rval;
@@ -158,7 +158,7 @@ void DataStore::info(Node &n) const
          ++iter )
     {
         Node &b = n["DataStore/buffers"].append();
-        if(*iter != static_cast<DataBuffer*>(ATK_NULLPTR))
+        if (*iter != ATK_NULLPTR)
         {
             (*iter)->info(b);
         }
