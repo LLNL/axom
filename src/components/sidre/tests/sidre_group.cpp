@@ -263,6 +263,98 @@ TEST(sidre_group,create_destroy_view_and_buffer)
   delete ds;
 }
 
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,create_destroy_alloc_view_and_buffer)
+{
+  DataStore * const ds = new DataStore();
+  DataGroup * const grp = ds->getRoot()->createGroup("grp");
+
+  std::string const viewName1 = "viewBuffer1";
+  std::string const viewName2 = "viewBuffer2";
+
+  // use create + alloc convenience methods
+  // this one is the DataType & method
+  DataView * const view1 = grp->createViewAndBuffer(viewName1,
+                                                          DataType::uint32(10));
+  // this one is the Schema & method
+  Schema s;
+  s.set(DataType::float64(10));
+  DataView * const view2 = grp->createViewAndBuffer(viewName2,
+                                                          s);
+
+  EXPECT_TRUE(grp->hasView(viewName1));
+  EXPECT_EQ( grp->getView(viewName1), view1 );
+
+  EXPECT_TRUE(grp->hasView(viewName2));
+  EXPECT_EQ( grp->getView(viewName2), view2 );
+
+  
+  uint32  *v1_vals = view1->getNode().as_uint32_ptr();
+  float64 *v2_vals = view2->getNode().as_float64_ptr();
+  
+  for(int i=0;i<10;i++)
+  {
+      v1_vals[i] = i;
+      v2_vals[i] = i * 3.1415;
+  }
+
+
+  EXPECT_EQ(view1->getSchema().total_bytes(), 10 * sizeof(uint32));
+  EXPECT_EQ(view2->getSchema().total_bytes(), 10 * sizeof(float64));
+    
+  grp->destroyViewAndBuffer(viewName1);
+  grp->destroyViewAndBuffer(viewName2);
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,create_view_of_buffer_with_schema)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  // use create + alloc convenience methods
+  // this one is the DataType & method
+  DataView *  base =  root->createViewAndBuffer("base",
+                                                DataType::uint32(10)); 
+  uint32 *base_vals = base->getNode().as_uint32_ptr();
+  for(int i=0;i<10;i++)
+  {
+      if(i < 5)
+      {
+          base_vals[i] = 10;
+      }
+      else
+      {
+          base_vals[i] = 20;
+      }
+  }
+
+  DataBuffer *base_buff = base->getBuffer();
+  // create two views into this buffer
+  // view for the first 5 values
+  root->createView("sub_a",base_buff,DataType::uint32(5));
+  // view for the second 5 values
+  //  (schema call path case)
+  Schema s(DataType::uint32(5,5*sizeof(uint32)));
+  root->createView("sub_b",base_buff,s);
+
+  uint32 *sub_a_vals = root->getView("sub_a")->getNode().as_uint32_ptr();
+  uint32 *sub_b_vals = root->getView("sub_b")->getNode().as_uint32_ptr();
+
+  for(int i=0;i<5;i++)
+  {
+     EXPECT_EQ(sub_a_vals[i],10);
+     EXPECT_EQ(sub_b_vals[i],20);
+  }
+
+  delete ds;
+}
+
+
+
+
 //------------------------------------------------------------------------------
 TEST(sidre_group,save_restore_simple)
 {
