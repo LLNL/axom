@@ -47,15 +47,10 @@ class LogStream;
  *  'logMessage(type,msg,file,line)' or through the convenience macro layer,
  *  which allows for logging messages to be compiled out.
  *
- *  The Logger delegates the messages to the corresponding LogStream according
- *  to the type of the message. Messages can filtered out through calls to
- *  enable()/disable(). Messages are logged using the LogStream abstraction
- *  layer. This allows an application to use some of the predefined LogStream
- *  mechanisms or implement a custom one by deriving from the LogStream class.
- *  Each message type is associated with a concrete LogStream instance set by
- *  the application with an invocation to the setLogStream(type,logStream)
- *  method. Each message type may point to a different LogStream instance or
- *  all can point to the same stream.
+ *  The Logger appends the messages to the set of registered LogStreams.
+ *  Messages are logged using the LogStream abstraction layer. This allows an
+ *  application to use some of the predefined LogStream mechanisms or implement
+ *  a custom one by implementing a derivative of the LogStream class.
  *
  * \see LogStream MessageType
  *******************************************************************************
