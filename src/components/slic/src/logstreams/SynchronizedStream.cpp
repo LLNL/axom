@@ -22,7 +22,7 @@
 #include "SynchronizedStream.hpp"
 
 namespace asctoolkit {
-namespace logapi {
+namespace slic {
 
 struct SynchronizedStream::MessageCache
 {
@@ -159,5 +159,5 @@ void SynchronizedStream::flush()
 
 }
 
-} /* namespace logapi */
+} /* namespace slic */
 } /* namespace asctoolkit */

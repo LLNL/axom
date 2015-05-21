@@ -21,7 +21,7 @@
 #ifndef SYNCHRONIZEDSTREAM_HPP_
 #define SYNCHRONIZEDSTREAM_HPP_
 
-#include "logapi/LogStream.hpp"
+#include "slic/LogStream.hpp"
 
 #include "common/Types.hpp"
 
@@ -33,7 +33,7 @@
 
 
 namespace asctoolkit {
-namespace logapi {
+namespace slic {
 
 /*!
  *******************************************************************************
@@ -123,7 +123,7 @@ private:
   /// @}
 };
 
-} /* namespace logapi */
+} /* namespace slic */
 } /* namespace asctoolkit */
 
 #endif /* SYNCHRONIZEDSTREAM_HPP_ */

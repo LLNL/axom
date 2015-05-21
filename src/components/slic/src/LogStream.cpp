@@ -26,7 +26,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 
 //------------------------------------------------------------------------------
@@ -110,6 +110,6 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
   return( msg );
 }
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */

@@ -21,7 +21,7 @@
 #ifndef GENERICOUTPUTSTREAM_HPP_
 #define GENERICOUTPUTSTREAM_HPP_
 
-#include "logapi/LogStream.hpp"
+#include "slic/LogStream.hpp"
 
 #include "common/Types.hpp" // for ATK_NULLPTR
 
@@ -30,7 +30,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 /*!
  *******************************************************************************
@@ -101,7 +101,7 @@ private:
   /// @}
 };
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */
 

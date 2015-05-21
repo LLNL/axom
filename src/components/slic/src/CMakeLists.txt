@@ -11,7 +11,7 @@
 #
 # Specify all headers
 #
-set(logapi_headers
+set(slic_headers
     Logger.hpp
     LogStream.hpp
     MessageLevel.h
@@ -22,7 +22,7 @@ set(logapi_headers
 #
 # Specify all sources
 #
-set(logapi_sources
+set(slic_sources
     Logger.cpp
     LogStream.cpp
 
@@ -30,20 +30,20 @@ set(logapi_sources
     )
 
 if (ENABLE_MPI)
-   list(APPEND logapi_headers logstreams/SynchronizedStream.hpp)
-   list(APPEND logapi_sources logstreams/SynchronizedStream.cpp)
+   list(APPEND slic_headers logstreams/SynchronizedStream.hpp)
+   list(APPEND slic_sources logstreams/SynchronizedStream.cpp)
 endif()
 
 #
 # make the library
 #
-make_library(logapi "${logapi_sources}" "${logapi_headers}")
-add_dependencies(logapi copy_headers_logapi)
-install( TARGETS logapi DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
+make_library(slic "${slic_sources}" "${slic_headers}")
+add_dependencies(slic copy_headers_slic)
+install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 #
 # custom target to copy header files in the "include" folder of the build tree.
 #
 copy_headers_target( ${PROJECT_NAME}
-                     "${logapi_headers}"
+                     "${slic_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )

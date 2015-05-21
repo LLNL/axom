@@ -10,9 +10,9 @@
 
 
 ################################
-# logapi
+# slic
 ################################
-project(logapi)
+project(slic)
 
 ################################
 # Add the logapi sources

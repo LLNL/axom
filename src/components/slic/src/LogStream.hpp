@@ -21,7 +21,7 @@
 #ifndef LOGSTREAM_HPP_
 #define LOGSTREAM_HPP_
 
-#include "logapi/MessageLevel.h"
+#include "slic/MessageLevel.h"
 
 /// \name Wildcards
 /// @{
@@ -37,7 +37,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 /*!
  *******************************************************************************
@@ -180,7 +180,7 @@ private:
   ///@}
 };
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */
 

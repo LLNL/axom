@@ -25,7 +25,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 namespace message {
 
@@ -84,7 +84,7 @@ static inline std::string getLevelAsString( Level l )
 
 } /* namespace loglevel */
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */
 

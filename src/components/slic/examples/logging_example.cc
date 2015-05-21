@@ -22,16 +22,16 @@
 #include <cstdlib> // for rand()
 
 // Logging includes
-#include "logapi/Logger.hpp"
-#include "logapi/GenericOutputStream.hpp"
+#include "slic/Logger.hpp"
+#include "slic/GenericOutputStream.hpp"
 
 using namespace asctoolkit;
 
 #define N 10
 
-logapi::message::Level getRandomEvent( const int start, const int end )
+slic::message::Level getRandomEvent( const int start, const int end )
 {
-  return( static_cast<logapi::message::Level>(std::rand() % (end-start) + start));
+  return( static_cast<slic::message::Level>(std::rand() % (end-start) + start));
 }
 
 //------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ int main( int argc, char** argv )
   static_cast<void>(argv);
 
   // STEP 0: initialize logging environment
-  logapi::Logger::initialize();
+  slic::Logger::initialize();
 
   std::string format =  std::string( "***********************************\n" )+
                         std::string( "* <TIMESTAMP>\n\n" ) +
@@ -51,21 +51,21 @@ int main( int argc, char** argv )
                         std::string( "* LINE=<LINE>\n" ) +
                         std::string( "***********************************\n" );
 
-  logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream(
-      new logapi::GenericOutputStream( &std::cout, format ) );
+  slic::Logger::setLogLevel( slic::message::Debug );
+  slic::Logger::addStream(
+      new slic::GenericOutputStream( &std::cout, format ) );
 
 
   // STEP 1: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
-    logapi::Logger::log( getRandomEvent(0,logapi::message::Num_Levels),
+    slic::Logger::log( getRandomEvent(0,slic::message::Num_Levels),
             "a random message", __FILE__,  __LINE__  );
 
   }
 
   // STEP 2: shutdown logging environment
-  logapi::Logger::finalize();
+  slic::Logger::finalize();
 
   return 0;
 }

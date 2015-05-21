@@ -23,8 +23,8 @@
 #include <sstream> // for ostringstream
 
 // Logging includes
-#include "logapi/Logger.hpp"
-#include "logapi/SynchronizedStream.hpp"
+#include "slic/Logger.hpp"
+#include "slic/SynchronizedStream.hpp"
 
 // MPI
 #include <mpi.h>
@@ -33,9 +33,9 @@ using namespace asctoolkit;
 
 #define N 20
 
-logapi::message::Level getRandomEvent( const int start, const int end )
+slic::message::Level getRandomEvent( const int start, const int end )
 {
-  return( static_cast<logapi::message::Level>(std::rand() % (end-start) + start));
+  return( static_cast<slic::message::Level>(std::rand() % (end-start) + start));
 }
 
 //------------------------------------------------------------------------------
@@ -53,12 +53,12 @@ int main( int argc, char** argv )
                        std::string( "\tFILE=<FILE>\n") +
                        std::string( "\tLINE=<LINE>\n");
 
-  logapi::Logger::initialize();
+  slic::Logger::initialize();
 
 
-  logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream(
-      new logapi::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
+  slic::Logger::setLogLevel( slic::message::Debug );
+  slic::Logger::addStream(
+      new slic::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
@@ -66,7 +66,7 @@ int main( int argc, char** argv )
     std::ostringstream oss;
     oss << "[ " << rank << "]: message " << i << "/" << N-1;
 
-    logapi::Logger::log( getRandomEvent(0,logapi::message::Num_Levels),
+    slic::Logger::log( getRandomEvent(0,slic::message::Num_Levels),
                          oss.str(),
                          __FILE__,
                          __LINE__
@@ -75,14 +75,14 @@ int main( int argc, char** argv )
     // Flush every 5 cycles
     if ( (i % 5)==0 ) {
 
-      logapi::Logger::flushStreams();
+      slic::Logger::flushStreams();
 
     } // END if
 
   }
 
   // STEP 4: shutdown logging environment
-  logapi::Logger::finalize();
+  slic::Logger::finalize();
 
   // STEP 5: Finalize MPI
   MPI_Finalize();

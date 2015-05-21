@@ -22,7 +22,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 GenericOutputStream::GenericOutputStream( std::ostream* os ):
     m_stream( os )
@@ -62,6 +62,6 @@ void GenericOutputStream::append( message::Level msgLevel,
                                             line );
 }
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */

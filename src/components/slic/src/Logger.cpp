@@ -29,7 +29,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 Logger* Logger::s_Logger = static_cast< Logger* >( ATK_NULLPTR );
 
@@ -267,6 +267,6 @@ Logger* Logger::getInstance()
   return s_Logger;
 }
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */

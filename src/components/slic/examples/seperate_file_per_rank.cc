@@ -24,8 +24,8 @@
 #include <sstream> // for ostringstream
 
 // Logging includes
-#include "logapi/Logger.hpp"
-#include "logapi/GenericOutputStream.hpp"
+#include "slic/Logger.hpp"
+#include "slic/GenericOutputStream.hpp"
 
 // MPI
 #include <mpi.h>
@@ -34,9 +34,9 @@ using namespace asctoolkit;
 
 #define N 20
 
-logapi::message::Level getRandomEvent( const int start, const int end )
+slic::message::Level getRandomEvent( const int start, const int end )
 {
-  return( static_cast<logapi::message::Level>(std::rand() % (end-start) + start));
+  return( static_cast<slic::message::Level>(std::rand() % (end-start) + start));
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ int main( int argc, char** argv )
 {
   // STEP 0: initialize MPI & logging environment
   MPI_Init( &argc, &argv );
-  logapi::Logger::initialize();
+  slic::Logger::initialize();
 
   int rank = -1;
   MPI_Comm_rank( MPI_COMM_WORLD, &rank);
@@ -55,21 +55,21 @@ int main( int argc, char** argv )
   std::ofstream ofs;
   ofs.open( oss.str().c_str() );
 
-  logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream( new logapi::GenericOutputStream(&ofs) );
+  slic::Logger::setLogLevel( slic::message::Debug );
+  slic::Logger::addStream( new slic::GenericOutputStream(&ofs) );
 
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
-    logapi::Logger::log(
-        getRandomEvent(0,logapi::message::Num_Levels),
+    slic::Logger::log(
+        getRandomEvent(0,slic::message::Num_Levels),
         "a random message", __FILE__,  __LINE__  );
 
     // Flush every 5 cycles
     if ( (i % 5)==0 ) {
 
-      logapi::Logger::flushStreams();
+      slic::Logger::flushStreams();
 
     } // END if
 
@@ -78,7 +78,7 @@ int main( int argc, char** argv )
   ofs.close();
 
   // STEP 4: shutdown logging environment
-  logapi::Logger::finalize();
+  slic::Logger::finalize();
 
 
   // STEP 5: Finalize MPI

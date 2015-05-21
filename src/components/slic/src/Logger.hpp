@@ -21,7 +21,7 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
-#include "logapi/MessageLevel.h"
+#include "slic/MessageLevel.h"
 
 // C/C++ includes
 #include <string> // for STL string
@@ -29,7 +29,7 @@
 
 namespace asctoolkit {
 
-namespace logapi {
+namespace slic {
 
 
 // Forward declarations
@@ -291,7 +291,7 @@ private:
 
 };
 
-} /* namespace logapi */
+} /* namespace slic */
 
 } /* namespace asctoolkit */
 
