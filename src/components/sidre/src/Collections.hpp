@@ -16,7 +16,7 @@
  * \brief   Header file for Collection classes.
  *
  *          Each of these classes holds a collection of items of a fixed 
- *          type that can be accessed by string name or common::IDType index.
+ *          type that can be accessed by string name or sidre::IDType index.
  *
  *          The primary intent is to decouple the implementation of the
  *          collections from the DataGroup class which owns collections of 
@@ -58,7 +58,7 @@
  *
  *          - // Return true if item with given index in collection; else false.
  *       
- *               bool hasItem(common::IDType idx) const;
+ *               bool hasItem(sidre::IDType idx) const;
  *
  *          - // Return pointer to item with given name (ATK_NULLPTR if none).
  *
@@ -67,8 +67,8 @@
  *
  *          - // Return pointer to item with given index (ATK_NULLPTR if none).
  *
- *               TYPE* getItem(common::IDType idx);
- *               TYPE const* getItem(common::IDType idx) cosnt;
+ *               TYPE* getItem(sidre::IDType idx);
+ *               TYPE const* getItem(sidre::IDType idx) cosnt;
  *
  *          - // Insert item with given name; return true if insertion 
  *               succeeded, and false otherwise.
@@ -83,7 +83,7 @@
  *          - // Remove item with given name if it exists and return a 
  *               pointer to it. If it doesn't exist, return ATK_NULLPTR.
  *
- *               TYPE* removeItem(common::IDType idx);
+ *               TYPE* removeItem(sidre::IDType idx);
  *
  *          - // Remove all items (items not destroyed).
  *
@@ -107,7 +107,11 @@
 #include <vector>
 
 // other CS Toolkit headers
-#include "common/Types.hpp"
+#include "common/CommonTypes.hpp"
+
+// SiDRe project headers
+#include "SidreTypes.hpp"
+
 
 namespace asctoolkit
 {
@@ -159,9 +163,11 @@ public:
    }
 
    ///
-   bool hasItem(common::IDType idx) const 
+   bool hasItem(IDType idx) const 
    { 
-       return (idx < getNumItems() && m_items[idx]); 
+       return (idx >= 0 && 
+               static_cast<unsigned>(idx) < getNumItems() &&
+               m_items[idx]); 
    }
 
    ///
@@ -181,13 +187,13 @@ public:
    }
 
    ///
-   TYPE* getItem(common::IDType idx)
+   TYPE* getItem(IDType idx)
    {
       return ( hasItem(idx) ? m_items[idx] : static_cast<TYPE*>(ATK_NULLPTR) );
    }
 
    ///
-   TYPE const* getItem(common::IDType idx) const
+   TYPE const* getItem(IDType idx) const
    {
       return ( hasItem(idx) ? m_items[idx] : static_cast<TYPE*>(ATK_NULLPTR) );
    }
@@ -199,7 +205,7 @@ public:
    TYPE* removeItem(const std::string& name);
 
    ///
-   TYPE* removeItem(common::IDType idx);
+   TYPE* removeItem(IDType idx);
 
    ///
    void removeAllItems()
@@ -234,7 +240,7 @@ TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 
    typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
    if ( mit != m_name2idx_map.end() ) {
-      common::IDType idx = mit->second;
+      IDType idx = mit->second;
 
       ret_val = m_items[idx];
 
@@ -255,7 +261,7 @@ TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 }
 
 template <typename TYPE, typename MAP_TYPE>
-TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(common::IDType idx)
+TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(IDType idx)
 {
    if ( hasItem(idx) ) {
       TYPE* item = removeItem( m_items[idx]->getName() );

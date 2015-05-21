@@ -16,7 +16,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-using asctoolkit::common::IDType;
+using asctoolkit::sidre::IDType;
 
 using namespace conduit;
 
@@ -249,7 +249,7 @@ TEST(sidre_group,create_destroy_view_and_buffer)
 
 
   EXPECT_FALSE(grp->hasView(viewName1));
-  EXPECT_EQ(ds->getNumberOfBuffers(),1u);
+  EXPECT_EQ(ds->getNumBuffers(), 1u);
 
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
   bool buffValid = true;
@@ -345,8 +345,8 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
 
   for(int i=0;i<5;i++)
   {
-     EXPECT_EQ(sub_a_vals[i],10);
-     EXPECT_EQ(sub_b_vals[i],20);
+     EXPECT_EQ(sub_a_vals[i], 10u);
+     EXPECT_EQ(sub_b_vals[i], 20u);
   }
 
   delete ds;
@@ -373,13 +373,15 @@ TEST(sidre_group,save_restore_simple)
         
         
     ds->getRoot()->save("out_ds_group_save_restore_simple","conduit");
-    
+
     ds->print();
     
     DataStore *ds2 = new DataStore();
 
     ds2->getRoot()->load("out_ds_group_save_restore_simple","conduit");
     
+    ds2->print();
+
     flds = ds2->getRoot()->getGroup("fields");
     // check that all sub groups exist
     EXPECT_TRUE(flds->hasGroup("a"));

@@ -22,6 +22,9 @@
 // Associated header file
 #include "DataView.hpp"
 
+// Other toolkit project headers
+#include "common/CommonTypes.hpp"
+
 // SiDRe project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
@@ -72,7 +75,7 @@ DataView* DataView::declare(const DataType& dtype)
 DataView* DataView::allocate()
 {
     // we only force alloc if there is a 1-1 between the view and buffer
-    ATK_ASSERT_MSG( m_data_buffer->countViews() == 1, \
+    ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                     "Data allocation on a view allowed only if it's the only view associated with its buffer");
     
     m_data_buffer->allocate(m_schema);

@@ -28,7 +28,8 @@
 #include <vector>
 
 // Other CS Toolkit headers
-#include "common/Types.hpp"
+#include "common/CommonTypes.hpp"
+#include "conduit/conduit.h"
 
 
 // using directives to make Conduit usage easier and less visible

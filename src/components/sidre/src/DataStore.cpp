@@ -21,9 +21,13 @@
 // Associated header file
 #include "DataStore.hpp"
 
+// Other toolkit component headers
+#include "common/CommonTypes.hpp"
+
 // SiDRe project headers
 #include "DataBuffer.hpp"
 #include "DataGroup.hpp"
+#include "SidreTypes.hpp"
 
 
 namespace asctoolkit
@@ -70,7 +74,7 @@ DataStore::~DataStore()
 DataBuffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  common::IDType newIndex = m_DataBuffers.size();
+  IDType newIndex = m_DataBuffers.size();
   m_DataBuffers.push_back( static_cast<DataBuffer*>(ATK_NULLPTR) );
   if( !m_AvailableDataBuffers.empty() )
   {
@@ -93,7 +97,7 @@ DataBuffer* DataStore::createBuffer()
 *
 *************************************************************************
 */
-void DataStore::destroyBuffer( common::IDType id )
+void DataStore::destroyBuffer( IDType id )
 {
   delete m_DataBuffers[id];
   m_DataBuffers[id] = static_cast<DataBuffer*>(ATK_NULLPTR);
@@ -128,7 +132,7 @@ void DataStore::destroyBuffers()
 *
 *************************************************************************
 */
-DataBuffer* DataStore::detachBuffer( common::IDType id )
+DataBuffer* DataStore::detachBuffer( IDType id )
 {
   DataBuffer* const rval = m_DataBuffers[id];
   m_DataBuffers[id] = static_cast<DataBuffer*>(ATK_NULLPTR);

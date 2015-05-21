@@ -26,7 +26,6 @@
 #include "DataGroup.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
-#include "common/Types.hpp"
-#include "common/Utilities.hpp"
+#include "SidreTypes.hpp"
 
 #endif

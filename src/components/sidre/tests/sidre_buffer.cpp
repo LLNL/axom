@@ -10,7 +10,6 @@
 
 #include "gtest/gtest.h"
 
-// do we need one include that brings all of these in?
 #include "sidre/sidre.hpp"
 
 using asctoolkit::sidre::DataStore;
@@ -26,12 +25,12 @@ TEST(sidre_buffer,create_buffers)
     DataBuffer *dbuff_0 = ds->createBuffer();
     DataBuffer *dbuff_1 = ds->createBuffer();
     
-    EXPECT_EQ(dbuff_0->getUID(),0u);
-    EXPECT_EQ(dbuff_1->getUID(),1u);
+    EXPECT_EQ(dbuff_0->getUID(), 0);
+    EXPECT_EQ(dbuff_1->getUID(), 1);
     ds->destroyBuffer(0);
     
     DataBuffer *dbuff_3 = ds->createBuffer();
-    EXPECT_EQ(dbuff_3->getUID(),0u);
+    EXPECT_EQ(dbuff_3->getUID(), 0);
     ds->print();
     delete ds;
 }

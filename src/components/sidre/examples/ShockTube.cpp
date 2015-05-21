@@ -32,19 +32,14 @@
 
 //#include "Vista.h"
 //#include "View.h"
-#include "common/Types.hpp"
-#include "sidre/DataBuffer.hpp"
-#include "sidre/DataGroup.hpp"
-#include "sidre/DataStore.hpp"
 
+// Standard library headers
 #include <stdio.h>
 #include <math.h>
-#include "stdlib.h"
-#define UPWIND   0
-#define DOWNWIND 1
+#include <cstdlib>
 
-const double gammaa = M_SQRT2;
-const double gammaaInverse = M_SQRT1_2;
+// SiDRe component headers
+#include "sidre/sidre.hpp"
 
 using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
@@ -52,6 +47,12 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 
 using namespace conduit;
+
+#define UPWIND   0
+#define DOWNWIND 1
+
+const double gammaa = M_SQRT2;
+const double gammaaInverse = M_SQRT1_2;
 
 
 void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string& name, int32 const value )

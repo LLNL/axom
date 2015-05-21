@@ -21,12 +21,13 @@
 // Associated header file
 #include "DataGroup.hpp"
 
+// Other toolkit component headers
+#include "common/CommonTypes.hpp"
+
 // SiDRe project headers
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
-
-using conduit::NodeIterator;
 
 
 namespace asctoolkit
@@ -199,7 +200,7 @@ void DataGroup::destroyView( const std::string& name )
 *
 *************************************************************************
 */
-void DataGroup::destroyView( common::IDType idx )
+void DataGroup::destroyView( IDType idx )
 {
     delete detachView(idx);
 }
@@ -255,7 +256,7 @@ void DataGroup::destroyViewAndBuffer( const std::string& name )
 *
 *************************************************************************
 */
-void DataGroup::destroyViewAndBuffer( common::IDType idx )
+void DataGroup::destroyViewAndBuffer( IDType idx )
 {
     DataView* view = detachView(idx);
     // there should be a better way?
@@ -374,7 +375,7 @@ void DataGroup::destroyGroup( const std::string& name )
 *
 *************************************************************************
 */
-void DataGroup::destroyGroup( common::IDType idx )
+void DataGroup::destroyGroup( IDType idx )
 {
     delete detachGroup(idx);
 }
@@ -467,14 +468,14 @@ DataGroup* DataGroup::copyGroup(DataGroup* group)
 void DataGroup::info(Node& n) const
 {
     n["name"] = m_name;
-    for (common::IDType i=0; i<this->getNumViews(); ++i)
+    for (size_t i=0; i < this->getNumViews(); ++i)
     {
         DataView const *view = this->getView(i);
         Node& v = n["views"].fetch(view->getName());
         view->info(v);
 
     }
-    for (common::IDType i=0; i<this->getNumGroups(); ++i)
+    for (size_t i=0; i<this->getNumGroups(); ++i)
     {
         DataGroup const* group =  this->getGroup(i);
         Node& g = n["groups"].fetch(group->getName());
@@ -670,7 +671,7 @@ DataView* DataGroup::detachView(const std::string& name )
 *
 *************************************************************************
 */
-DataView* DataGroup::detachView(common::IDType idx)
+DataView* DataGroup::detachView(IDType idx)
 {
    DataView* view = m_view_coll.removeItem(idx);
    if (view) {
@@ -723,7 +724,7 @@ DataGroup* DataGroup::detachGroup(const std::string& name )
 *
 *************************************************************************
 */
-DataGroup* DataGroup::detachGroup(common::IDType idx)
+DataGroup* DataGroup::detachGroup(IDType idx)
 {
    DataGroup* group = m_group_coll.removeItem(idx);
    if (group) {
@@ -743,14 +744,14 @@ DataGroup* DataGroup::detachGroup(common::IDType idx)
 */
 void DataGroup::copyToNode(Node& n) const
 {
-    std::vector<common::IDType> buffer_ids;
+    std::vector<IDType> buffer_ids;
     copyToNode(n,buffer_ids);
 
     // save the buffers discovered by buffer_ids
     for (size_t i=0; i < buffer_ids.size(); i++)
     {
         Node& buff = n["buffers"].append();
-        common::IDType buffer_id = buffer_ids[i];
+        IDType buffer_id = buffer_ids[i];
         DataBuffer *ds_buff =  m_datastore->getBuffer(buffer_id);
         buff["id"].set(buffer_id);
         buff["schema"].set(ds_buff->getSchema().to_json());
@@ -773,7 +774,7 @@ void DataGroup::copyToNode(Node& n) const
 */
 void DataGroup::copyFromNode(Node& n)
 {
-     std::map<common::IDType, common::IDType> id_map;
+     std::map<IDType, IDType> id_map;
      copyFromNode(n, id_map);
 }
     
@@ -787,9 +788,9 @@ void DataGroup::copyFromNode(Node& n)
 *************************************************************************
 */
 void DataGroup::copyToNode(Node& n,
-                           std::vector<common::IDType>& buffer_ids) const
+                           std::vector<IDType>& buffer_ids) const
 {
-    for (common::IDType i=0; i < this->getNumViews(); ++i)
+    for (size_t i=0; i < this->getNumViews(); ++i)
     {
         DataView const* view = this->getView(i);
         Node& n_view = n["views"].fetch(view->getName());
@@ -799,13 +800,13 @@ void DataGroup::copyToNode(Node& n,
         // if we have a buffer, simply add the id to the list
         if (view->hasBuffer())
         {
-            common::IDType buffer_id = view->getBuffer()->getUID();
+            IDType buffer_id = view->getBuffer()->getUID();
             n_view["buffer_id"].set(buffer_id);
             buffer_ids.push_back(view->getBuffer()->getUID());
         }
     }
     
-    for (common::IDType i=0; i < this->getNumGroups(); ++i)
+    for (size_t i=0; i < this->getNumGroups(); ++i)
     {
         DataGroup const* group =  this->getGroup(i);
         Node& n_group = n["groups"].fetch(group->getName());
@@ -823,7 +824,7 @@ void DataGroup::copyToNode(Node& n,
 *************************************************************************
 */
 void DataGroup::copyFromNode(Node& n,
-                             std::map<common::IDType, common::IDType>& id_map)
+                             std::map<IDType, IDType>& id_map)
 {
     /// for restore each group contains:
     /// buffers, views, and groups
@@ -831,18 +832,18 @@ void DataGroup::copyFromNode(Node& n,
     // create the buffers
     if (n.has_path("buffers"))
     {
-        NodeIterator buffs_itr = n["buffers"].iterator();
+        conduit::NodeIterator buffs_itr = n["buffers"].iterator();
         while (buffs_itr.has_next())
         {
             Node& n_buff = buffs_itr.next();
-            common::IDType buffer_id = n_buff["id"].as_uint64();
+            IDType buffer_id = n_buff["id"].as_int32();
 
             // create a new mapping and buffer if necessary
             if ( id_map.find(buffer_id) == id_map.end())
             {
                 DataBuffer* ds_buff = this->getDataStore()->createBuffer();
                 // map "id" to whatever new id the data store gives us.
-                common::IDType buffer_ds_id = ds_buff->getUID();
+                IDType buffer_ds_id = ds_buff->getUID();
                 id_map[buffer_id] = buffer_ds_id;
                 // setup the new data store buffer
                 Schema schema(n_buff["schema"].as_string());
@@ -858,7 +859,7 @@ void DataGroup::copyFromNode(Node& n,
     }
 
     // create the child views
-    NodeIterator views_itr = n["views"].iterator();
+    conduit::NodeIterator views_itr = n["views"].iterator();
     while (views_itr.has_next())
     {
         Node& n_view = views_itr.next();
@@ -866,7 +867,7 @@ void DataGroup::copyFromNode(Node& n,
         {
             std::string view_name = views_itr.path();
             
-            common::IDType buffer_id = n_view["buffer_id"].as_uint64();
+            IDType buffer_id = n_view["buffer_id"].as_int32();
             // get the mapped buffer id
             if( id_map.find(buffer_id) == id_map.end() )
             {
@@ -892,7 +893,7 @@ void DataGroup::copyFromNode(Node& n,
     }
 
     // create the child groups
-    NodeIterator groups_itr = n["groups"].iterator();
+    conduit::NodeIterator groups_itr = n["groups"].iterator();
     while (groups_itr.has_next())
     {
         Node& n_group = groups_itr.next();

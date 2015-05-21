@@ -18,10 +18,13 @@
  * datastore API.
  ******************************************************************************************************************************/
 
-#include "common/Types.hpp"
-#include "sidre/DataGroup.hpp"
-#include "sidre/DataBuffer.hpp"
-#include "sidre/DataStore.hpp"
+// Other CS Toolkit headers
+#include "conduit/conduit.h"
+
+// SiDRe component headers
+#include "sidre/sidre.hpp"
+
+using conduit::DataType;
 
 using namespace asctoolkit;
 

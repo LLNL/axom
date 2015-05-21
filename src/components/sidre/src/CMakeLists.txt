@@ -7,6 +7,7 @@ set(sidre_headers
     DataGroup.hpp
     DataStore.hpp
     DataView.hpp
+    SidreTypes.hpp
     sidre.hpp
 
     capi/sidre.h

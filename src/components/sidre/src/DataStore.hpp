@@ -26,7 +26,10 @@
 #include <stack>
 
 // Other CS Toolkit headers
-#include "common/Types.hpp"
+#include "conduit/conduit.h"
+
+// SiDRe project headers
+#include "SidreTypes.hpp"
 
 
 // using directives to make Conduit usage easier and less visible
@@ -75,7 +78,7 @@ public:
   /*!
    * \brief Return (non-const) pointer to data buffer object with given id.
    */
-  DataBuffer* getBuffer( common::IDType id ) 
+  DataBuffer* getBuffer( IDType id ) 
   { 
      return m_DataBuffers[id]; 
   }
@@ -95,7 +98,7 @@ public:
    *   Note that buffer destruction detaches it from all groups and views 
    *   it was associated with.
    */
-  void destroyBuffer( common::IDType id );
+  void destroyBuffer( IDType id );
 
   /*!
    * \brief Remove all data buffers from the datastore and destroy them 
@@ -112,12 +115,12 @@ public:
    *
    * \return pointer to DataBuffer object that was datached.
    */
-  DataBuffer* detachBuffer( common::IDType id );
+  DataBuffer* detachBuffer( IDType id );
 
   /*!
    * \brief Return number of buffers in the datastore.
    */
-  common::IDType getNumberOfBuffers() const
+  size_t getNumBuffers() const
   {
     return m_DataBuffers.size() - m_AvailableDataBuffers.size();
   }
@@ -168,7 +171,7 @@ private:
   std::vector<DataBuffer*> m_DataBuffers;
 
   /// Collection of unused unique buffer ids (they can be recycled).
-  std::stack< common::IDType > m_AvailableDataBuffers;
+  std::stack< IDType > m_AvailableDataBuffers;
 
 };
 

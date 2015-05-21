@@ -1,0 +1,3 @@
+#!/bin/sh -f
+export PYTHONPATH=/g/g16/hornung1/ASCCST/source/asctoolkit/src/components/common/shroud
+/home/taylor16/testzzz-ets-4.6.3-4.3f3/bin/python3 /g/g16/hornung1/ASCCST/source/asctoolkit/src/components/common/shroud/main.py "$@"

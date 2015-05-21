@@ -33,19 +33,20 @@
 #include "boost/unordered_map.hpp"
 #endif
 
-
 // Other CS Toolkit headers
-#include "common/Types.hpp"
 #include "common/Utilities.hpp"
+#include "conduit/conduit.h"
 
 // SiDRe project headers
 #include "Collections.hpp"
 #include "DataView.hpp"
+#include "SidreTypes.hpp"
 
 
 // using directives to make Conduit usage easier and less visible
-using conduit::index_t;
-
+using conduit::Node;
+using conduit::Schema;
+using conduit::DataType;
 
 
 namespace asctoolkit
@@ -163,7 +164,7 @@ public:
      * \brief Return true if DataGroup owns a DataView with given index;
      *        else false.
      */
-    bool hasView( common::IDType idx ) const
+    bool hasView( IDType idx ) const
     {
        return m_view_coll.hasItem(idx);
     }
@@ -191,7 +192,7 @@ public:
     /*!
      * \brief Return (non-const) pointer to DataView with given index.
      */
-    DataView* getView( common::IDType idx )
+    DataView* getView( IDType idx )
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -201,7 +202,7 @@ public:
     /*!
      * \brief Return (const) pointer to DataView with given index.
      */
-    DataView const* getView( common::IDType idx ) const
+    DataView const* getView( IDType idx ) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -231,7 +232,7 @@ public:
     /*!
      * \brief Return the index of DataView with given name.
      */
-    common::IDType getViewIndex(const std::string &name) const
+    IDType getViewIndex(const std::string &name) const
     {  
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
@@ -241,7 +242,7 @@ public:
     /*!
      * \brief Return the name of DataView with given index.
      */
-    const std::string& getViewName(common::IDType idx) const
+    const std::string& getViewName(IDType idx) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -353,7 +354,7 @@ public:
      * \brief Destroy view in this DataGroup with given index and leave its
      *        associated DataBuffer intact.
      */
-    void destroyView(common::IDType idx);
+    void destroyView(IDType idx);
 
     /*!
      * \brief Destroy all views in this DataGroup and leave all associated
@@ -371,7 +372,7 @@ public:
      * \brief Destroy view in this DataGroup with given index AND destroy 
      *        its associated DataBuffer object.
      */
-    void destroyViewAndBuffer(common::IDType idx);
+    void destroyViewAndBuffer(IDType idx);
  
     /*!
      * \brief Destroy all views in this DataGroup AND destroy their 
@@ -414,7 +415,7 @@ public:
      * \brief Return true if DataGroup has an (immediate) child DataGroup 
      *        with given index; else false.
      */
-    bool hasGroup( common::IDType idx ) const
+    bool hasGroup( IDType idx ) const
     {
        return m_group_coll.hasItem(idx);
     }
@@ -442,7 +443,7 @@ public:
     /*!
      * \brief Return (non-const) pointer to child DataGroup with given index.
      */
-    DataGroup* getGroup( common::IDType idx ) 
+    DataGroup* getGroup( IDType idx ) 
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -452,7 +453,7 @@ public:
     /*!
      * \brief Return (const) pointer to child DataGroup with given index.
      */
-    DataGroup const* getGroup( common::IDType idx ) const
+    DataGroup const* getGroup( IDType idx ) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -467,7 +468,7 @@ public:
     /*!
      * \brief Return the index of child DataGroup with given name.
      */
-    common::IDType getGroupIndex(const std::string &name) const
+    IDType getGroupIndex(const std::string &name) const
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
@@ -477,7 +478,7 @@ public:
     /*!
      * \brief Return the name of child DataGroup with given index.
      */
-    const std::string& getGroupName(common::IDType idx) const
+    const std::string& getGroupName(IDType idx) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -515,7 +516,7 @@ public:
     /*!
      * \brief Destroy child group in this DataGroup with given index.
      */
-    void destroyGroup(common::IDType idx); 
+    void destroyGroup(IDType idx); 
 
     /*!
      * \brief Destroy all DataGroups in this DataGroup.
@@ -627,7 +628,7 @@ private:
     ///
     DataView* detachView(const std::string& name);
     ///
-    DataView* detachView(common::IDType idx);
+    DataView* detachView(IDType idx);
 
     /*!
      * \brief Private methods to attach/detach DataGroup object to DataGroup.
@@ -636,7 +637,7 @@ private:
     ///
     DataGroup* detachGroup(const std::string& name);
     ///
-    DataGroup* detachGroup(common::IDType idx);
+    DataGroup* detachGroup(IDType idx);
 
     /*!
      * \brief Private methods to copy DataGroup to/from Conduit Node.
@@ -652,7 +653,7 @@ private:
      * to DataViews......???? punt!
      */  
     void copyToNode(Node& n,
-                    std::vector<common::IDType>& buffer_ids) const;
+                    std::vector<IDType>& buffer_ids) const;
 
     /*!
      * \brief Private methods to copy DataGroup from Conduit Node.
@@ -661,7 +662,7 @@ private:
      * to DataViews......???? punt!
      */  
     void copyFromNode(Node& n,
-                      std::map<common::IDType, common::IDType>& id_map);
+                      std::map<IDType, IDType>& id_map);
 
 
    
@@ -689,12 +690,12 @@ private:
     //
     // Current options are std::map and boost/std::unordered_map
     //
-       typedef std::map<std::string, common::IDType> MapType;
+       typedef std::map<std::string, IDType> MapType;
     //
 #if defined(USE_CXX11)
-    // typedef std::unordered_map<std::string, common::IDType> MapType;
+    // typedef std::unordered_map<std::string, IDType> MapType;
 #else
-    // typedef boost::unordered_map<std::string, common::IDType> MapType;
+    // typedef boost::unordered_map<std::string, IDType> MapType;
 #endif
     ///
     typedef MapCollection<DataView, MapType> DataViewCollection;

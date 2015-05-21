@@ -26,11 +26,13 @@
 #include <algorithm>
 
 // Other CS Toolkit headers
+#include "common/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 
 // SiDRe project headers
 #include "DataGroup.hpp"
 #include "DataView.hpp"
+#include "SidreTypes.hpp"
 
 
 namespace asctoolkit
@@ -123,7 +125,7 @@ void DataBuffer::print() const
 *   
 *************************************************************************
 */
-DataBuffer::DataBuffer( common::IDType uid ) :
+DataBuffer::DataBuffer( IDType uid ) :
     m_uid(uid),
     m_views(),
     m_data(ATK_NULLPTR),
