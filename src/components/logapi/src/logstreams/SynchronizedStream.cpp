@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file SynchronizedConsole.cpp
+ * \file SynchronizedStream.cpp
  *
  * \date May 7, 2015
  * \author George Zagaris (zagaris2@llnl.gov)
@@ -18,24 +18,25 @@
  *******************************************************************************
  */
 
-#include "SynchronizedConsole.hpp"
-
-// C/C++ includes
 #include <cassert>
-#include <iostream>
-#include <sstream>
 #include <vector>
+#include "SynchronizedStream.hpp"
 
 namespace asctoolkit {
 namespace logapi {
 
-struct SynchronizedConsole::MessageCache
+struct SynchronizedStream::MessageCache
 {
 
   std::vector< std::string > messages;
 
-  void printMessages( const int rank )
+  void printMessages( std::ostream* stream )
   {
+    if ( stream == NULL ) {
+      std::cerr << "ERROR: cannot write to NULL stream!\n";
+      return;
+    }
+
     const unsigned N = messages.size();
 
     if( N==0 ) {
@@ -43,15 +44,9 @@ struct SynchronizedConsole::MessageCache
       return;
     }
 
-    std::cout << "======\n";
-    std::cout << "RANK[" << rank << "] NMSGS=" << N << "\n";
-    std::cout << "======\n";
-
     for ( unsigned i=0; i < N; ++i ) {
-      std::cout << messages[ i ] << "\n";
+      (*stream) << messages[ i ] << "\n";
     } // END for all messages
-
-    std::cout.flush();
 
     messages.clear();
   }
@@ -59,29 +54,37 @@ struct SynchronizedConsole::MessageCache
 };
 
 //------------------------------------------------------------------------------
-SynchronizedConsole::SynchronizedConsole(MPI_Comm comm):
+SynchronizedStream::SynchronizedStream(std::ostream* stream, MPI_Comm comm):
     m_comm( comm ),
-    m_cache( new MessageCache() )
+    m_cache( new MessageCache() ),
+    m_stream( stream )
 {
 
 }
 
 //------------------------------------------------------------------------------
-SynchronizedConsole::~SynchronizedConsole()
+SynchronizedStream::SynchronizedStream( std::ostream* stream,
+                                        MPI_Comm comm,
+                                        std::string& format ) :
+                                            m_comm( comm ),
+                                            m_cache( new MessageCache ),
+                                            m_stream( stream )
 {
-
-  if ( m_cache != NULL ) {
-    delete m_cache;
-    m_cache = NULL;
-  }
-
+  this->setFormatString( format );
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedConsole::append( message::Level msgLevel,
+SynchronizedStream::~SynchronizedStream()
+{
+  delete m_cache;
+  m_cache = NULL;
+}
+
+//------------------------------------------------------------------------------
+void SynchronizedStream::append( message::Level msgLevel,
                                   const std::string& message,
-                                  const std::string& fileName,
                                   const std::string& tagName,
+                                  const std::string& fileName,
                                   int line )
 {
   assert( "pre: null message cache!" && (m_cache != NULL) );
@@ -93,7 +96,7 @@ void SynchronizedConsole::append( message::Level msgLevel,
 }
 
 //------------------------------------------------------------------------------
-void SynchronizedConsole::flush()
+void SynchronizedStream::flush()
 {
   assert( "pre: null message cache!" && (m_cache != NULL) );
   assert( "pre: null MPI communicator!" && (m_comm != MPI_COMM_NULL) );
@@ -113,7 +116,7 @@ void SynchronizedConsole::flush()
     /* rank 0 */
 
     // print messages at this rank
-    m_cache->printMessages( rank );
+    m_cache->printMessages( m_stream );
 
     if ( nranks > 1 ) {
 
@@ -130,7 +133,7 @@ void SynchronizedConsole::flush()
     MPI_Recv(NULL,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
 
     // print messages at this rank
-    m_cache->printMessages( rank );
+    m_cache->printMessages( m_stream );
 
   } else {
 
@@ -138,7 +141,7 @@ void SynchronizedConsole::flush()
     MPI_Recv(NULL,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
 
     // print messages at this rank
-    m_cache->printMessages( rank );
+    m_cache->printMessages( m_stream );
 
     // signal next rank
     MPI_Isend(NULL,0,MPI_INT,nextrank,0,m_comm,&null_request);

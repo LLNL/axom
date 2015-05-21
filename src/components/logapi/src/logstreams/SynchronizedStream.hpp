@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file SynchronizedConsole.hpp
+ * \file SynchronizedStream.hpp
  *
  * \date May 7, 2015
  * \author George Zagaris (zagaris2@llnl.gov)
@@ -18,10 +18,13 @@
  *******************************************************************************
  */
 
-#ifndef SYNCHRONIZEDCONSOLE_HPP_
-#define SYNCHRONIZEDCONSOLE_HPP_
+#ifndef SYNCHRONIZEDSTREAM_HPP_
+#define SYNCHRONIZEDSTREAM_HPP_
 
 #include "logapi/LogStream.hpp"
+
+// C/C++ includes
+#include <iostream> // for std::ostream
 
 // MPI
 #include <mpi.h> // For MPI
@@ -32,23 +35,29 @@ namespace logapi {
 
 /*!
  *******************************************************************************
- * \class SynchronizedConsole
+ * \class SynchronizedStream
  *
- * \brief A concrete instance of LogStream that dumps messages to the console
- *  in rank order.
+ * \brief A concrete instance of LogStream that dumps messages to a C++
+ *  std::ostream object.
  *
  * \note The intent of this class is to illustrate how to using the Logging
  *  facility within an MPI distributed environment and provide a utility that
  *  could be useful for debugging problems at small scales.
  *
  * \warning Do not use this for large-scale production runs.
+ * \warning The intent of this class is to be used primarily with std::cout,
+ *  std::cerr, etc. It is suggested that applications do not use this class
+ *  with an std::ofstream object.
  *******************************************************************************
  */
-class SynchronizedConsole : public LogStream
+class SynchronizedStream : public LogStream
 {
 public:
-  SynchronizedConsole( MPI_Comm comm );
-  virtual ~SynchronizedConsole();
+  SynchronizedStream( std::ostream* stream, MPI_Comm comm );
+  SynchronizedStream( std::ostream* stream, MPI_Comm comm,
+                      std::string& format);
+
+  virtual ~SynchronizedStream();
 
   /*!
    *****************************************************************************
@@ -87,7 +96,7 @@ private:
 
   MPI_Comm m_comm;
   MessageCache* m_cache;
-
+  std::ostream* m_stream;
   /// @}
 
   /*!
@@ -97,13 +106,14 @@ private:
    *  should be used.
    *****************************************************************************
    */
-  SynchronizedConsole(): m_comm(MPI_COMM_NULL), m_cache(NULL) { };
+  SynchronizedStream(): m_comm(MPI_COMM_NULL),m_cache(NULL),m_stream(NULL) { };
+
 
   /// \name Disabled Methods
   /// @{
 
-  SynchronizedConsole( const SynchronizedConsole& ); // Not implemented
-  SynchronizedConsole& operator=( const SynchronizedConsole& ); // Not implemented
+  SynchronizedStream( const SynchronizedStream& ); // Not implemented
+  SynchronizedStream& operator=( const SynchronizedStream& ); // Not implemented
 
   /// @}
 };
@@ -111,4 +121,4 @@ private:
 } /* namespace logapi */
 } /* namespace asctoolkit */
 
-#endif /* SYNCHRONIZEDCONSOLE_HPP_ */
+#endif /* SYNCHRONIZEDSTREAM_HPP_ */

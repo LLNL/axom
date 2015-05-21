@@ -30,8 +30,8 @@ set(logapi_sources
     )
 
 if (ENABLE_MPI)
-   list(APPEND logapi_headers logstreams/SynchronizedConsole.hpp)
-   list(APPEND logapi_sources logstreams/SynchronizedConsole.cpp)
+   list(APPEND logapi_headers logstreams/SynchronizedStream.hpp)
+   list(APPEND logapi_sources logstreams/SynchronizedStream.cpp)
 endif()
 
 #

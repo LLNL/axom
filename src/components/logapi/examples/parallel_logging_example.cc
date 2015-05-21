@@ -20,10 +20,11 @@
 
 // C/C++ includes
 #include <cstdlib> // for rand()
+#include <sstream> // for ostringstream
 
 // Logging includes
 #include "logapi/Logger.hpp"
-#include "logapi/SynchronizedConsole.hpp"
+#include "logapi/SynchronizedStream.hpp"
 
 // MPI
 #include <mpi.h>
@@ -43,17 +44,33 @@ int main( int argc, char** argv )
   // STEP 0: initialize MPI & logging environment
   MPI_Init( &argc, &argv );
 
+  int rank=-1;
+  MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+
+  std::string format = std::string( "<MESSAGE>\n") +
+                       std::string( "\t<TIMESTAMP>" ) +
+                       std::string( "\tLEVEL=<LEVEL>\n") +
+                       std::string( "\tFILE=<FILE>\n") +
+                       std::string( "\tLINE=<LINE>\n");
+
   logapi::Logger::initialize();
 
 
   logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream(new logapi::SynchronizedConsole( MPI_COMM_WORLD ));
+  logapi::Logger::addStream(
+      new logapi::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
 
   // STEP 3: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
+    std::ostringstream oss;
+    oss << "[ " << rank << "]: message " << i << "/" << N-1;
+
     logapi::Logger::log( getRandomEvent(0,logapi::message::Num_Levels),
-            "a random message", __FILE__,  __LINE__  );
+                         oss.str(),
+                         __FILE__,
+                         __LINE__
+                         );
 
     // Flush every 5 cycles
     if ( (i % 5)==0 ) {
