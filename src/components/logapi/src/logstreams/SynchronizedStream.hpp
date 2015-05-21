@@ -23,6 +23,8 @@
 
 #include "logapi/LogStream.hpp"
 
+#include "common/Types.hpp"
+
 // C/C++ includes
 #include <iostream> // for std::ostream
 
@@ -106,7 +108,10 @@ private:
    *  should be used.
    *****************************************************************************
    */
-  SynchronizedStream(): m_comm(MPI_COMM_NULL),m_cache(NULL),m_stream(NULL) { };
+  SynchronizedStream(): m_comm(MPI_COMM_NULL),
+                        m_cache( static_cast<MessageCache*>(ATK_NULLPTR) ),
+                        m_stream( static_cast<std::ostream*>(ATK_NULLPTR) )
+  { };
 
 
   /// \name Disabled Methods

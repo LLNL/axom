@@ -50,7 +50,7 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   const std::string& fileName,
                                   int line )
 {
-  if ( m_stream == NULL ) {
+  if ( m_stream == ATK_NULLPTR ) {
     std::cerr << "ERROR: NULL stream!\n";
     return;
   }

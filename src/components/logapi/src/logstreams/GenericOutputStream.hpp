@@ -23,6 +23,8 @@
 
 #include "logapi/LogStream.hpp"
 
+#include "common/Types.hpp" // for ATK_NULLPTR
+
 // C/C++ includes
 #include <iostream> // for ostream
 
@@ -88,7 +90,7 @@ private:
    * \note Made private to prevent applications from using it.
    *****************************************************************************
    */
-  GenericOutputStream(): m_stream(NULL) { };
+  GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) ){};
 
   /// \name Disabled Methods
   /// @{

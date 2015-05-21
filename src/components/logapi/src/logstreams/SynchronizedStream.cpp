@@ -32,7 +32,7 @@ struct SynchronizedStream::MessageCache
 
   void printMessages( std::ostream* stream )
   {
-    if ( stream == NULL ) {
+    if ( stream == ATK_NULLPTR ) {
       std::cerr << "ERROR: cannot write to NULL stream!\n";
       return;
     }
@@ -77,7 +77,7 @@ SynchronizedStream::SynchronizedStream( std::ostream* stream,
 SynchronizedStream::~SynchronizedStream()
 {
   delete m_cache;
-  m_cache = NULL;
+  m_cache = static_cast< MessageCache* >( ATK_NULLPTR );
 }
 
 //------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ void SynchronizedStream::append( message::Level msgLevel,
                                   const std::string& fileName,
                                   int line )
 {
-  assert( "pre: null message cache!" && (m_cache != NULL) );
+  assert( "pre: null message cache!" && (m_cache != ATK_NULLPTR) );
 
   // STEP 1: cache formatted message
   m_cache->messages.push_back(
@@ -98,7 +98,7 @@ void SynchronizedStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void SynchronizedStream::flush()
 {
-  assert( "pre: null message cache!" && (m_cache != NULL) );
+  assert( "pre: null message cache!" && (m_cache != ATK_NULLPTR) );
   assert( "pre: null MPI communicator!" && (m_comm != MPI_COMM_NULL) );
 
   int rank   = -1;
@@ -121,7 +121,7 @@ void SynchronizedStream::flush()
     if ( nranks > 1 ) {
 
       /* signal next rank */
-      MPI_Isend(NULL,0,MPI_INT,1,0,m_comm,&null_request);
+      MPI_Isend(ATK_NULLPTR,0,MPI_INT,1,0,m_comm,&null_request);
 
     } // END if
 
@@ -130,7 +130,7 @@ void SynchronizedStream::flush()
     /* last rank */
 
     // Wait for signal from previous rank
-    MPI_Recv(NULL,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
+    MPI_Recv(ATK_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
 
     // print messages at this rank
     m_cache->printMessages( m_stream );
@@ -138,13 +138,13 @@ void SynchronizedStream::flush()
   } else {
 
     // Wait for signal from previous rank
-    MPI_Recv(NULL,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
+    MPI_Recv(ATK_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,MPI_STATUSES_IGNORE);
 
     // print messages at this rank
     m_cache->printMessages( m_stream );
 
     // signal next rank
-    MPI_Isend(NULL,0,MPI_INT,nextrank,0,m_comm,&null_request);
+    MPI_Isend(ATK_NULLPTR,0,MPI_INT,nextrank,0,m_comm,&null_request);
 
   } // END else
 
