@@ -20,6 +20,8 @@
 
 #include "LogStream.hpp"
 
+// C/C++ includes
+#include <ctime>
 #include <sstream>
 
 namespace asctoolkit {
@@ -29,7 +31,8 @@ namespace logapi {
 
 //------------------------------------------------------------------------------
 LogStream::LogStream() :
-    m_formatString("*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
+    m_formatString(
+     "*****\n[<LEVEL>]\n\n <MESSAGE> \n\n <FILE>\n<LINE>\n****\n")
 {
 
 }
@@ -43,10 +46,13 @@ LogStream::~LogStream()
 //------------------------------------------------------------------------------
 void LogStream::replaceKey( std::string& msg,
                             const std::string& key,
-                            const std::string& value )
+                            const std::string& value,
+                            std::size_t pos )
 {
 
-  std::size_t pos = msg.find( key );
+  if ( pos == std::string::npos ) {
+    pos = msg.find( key );
+  }
 
   if ( pos != std::string::npos ) {
 
@@ -56,6 +62,15 @@ void LogStream::replaceKey( std::string& msg,
 
   } // END if
 
+}
+
+//------------------------------------------------------------------------------
+std::string LogStream::getTimeStamp( )
+{
+  std::time_t t;
+  std::time( &t );
+  std::string timestamp( std::asctime( std::localtime( &t ) ) );
+  return timestamp;
 }
 
 //------------------------------------------------------------------------------
@@ -82,6 +97,13 @@ std::string LogStream::getFormatedMessage( const std::string& msgLevel,
   } else {
 
     this->replaceKey( msg, "<LINE>", "" );
+
+  }
+
+  std::size_t pos = msg.find( "<TIMESTAMP>" );
+  if ( pos != std::string::npos ) {
+
+    this->replaceKey( msg, "<TIMESTAMP>", this->getTimeStamp(), pos );
 
   }
 

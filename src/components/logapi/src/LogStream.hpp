@@ -61,7 +61,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Sets the format string.
-   * \param fmt a format string
+   * \param format a format string
    * \note The following keywords in the format string are replaced:
    *  <ul>
    *    <li> <LEVEL> with the message type, e.g, ERROR, FATAL, etc. </li>
@@ -69,7 +69,21 @@ public:
    *    <li> <TAG> user-supplied tag </li>
    *    <li> <FILE> with the filename </li>
    *    <li> <LINE> with the line number </li>
+   *    <li> <TIMESTAMP> date/time the message is logged </li>
    *  </ul>
+   *
+   *  An example illustrating how an application can setup the format string
+   *  is shown below:
+   * \code
+   *  std::string format =
+   *         std::string( "***********************************\n" )+
+   *         std::string( "* <TIMESTAMP>\n\n" ) +
+   *         std::string( "* LEVEL=<LEVEL>\n" ) +
+   *         std::string( "* MESSAGE=<MESSAGE>\n" ) +
+   *         std::string( "* FILE=<FILE>\n" ) +
+   *         std::string( "* LINE=<LINE>\n" ) +
+   *         std::string( "***********************************\n" );
+   * \endcode
    *****************************************************************************
    */
   void setFormatString(const std::string& format) { m_formatString = format; }
@@ -132,6 +146,14 @@ protected:
                                    const std::string& fileName,
                                    int line );
 
+   /*!
+    ****************************************************************************
+    * \brief Returns a time-stamp.
+    * \return str a textual representation of the current time.
+    ****************************************************************************
+    */
+   std::string getTimeStamp( );
+
 private:
 
   std::string m_formatString;
@@ -146,7 +168,8 @@ private:
    */
   void replaceKey( std::string& msg,
                    const std::string& key,
-                   const std::string& value );
+                   const std::string& value,
+                   std::size_t pos=std::string::npos );
 
   /// \name Disabled Methods
   ///@{

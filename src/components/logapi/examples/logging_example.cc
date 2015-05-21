@@ -43,8 +43,18 @@ int main( int argc, char** argv )
   // STEP 0: initialize logging environment
   logapi::Logger::initialize();
 
+  logapi::Console* console = new logapi::Console();
+  std::string format =  std::string( "***********************************\n" )+
+                        std::string( "* <TIMESTAMP>\n\n" ) +
+                        std::string( "* LEVEL=<LEVEL>\n" ) +
+                        std::string( "* MESSAGE=<MESSAGE>\n" ) +
+                        std::string( "* FILE=<FILE>\n" ) +
+                        std::string( "* LINE=<LINE>\n" ) +
+                        std::string( "***********************************\n" );
+  console->setFormatString( format );
+
   logapi::Logger::setLogLevel( logapi::message::Debug );
-  logapi::Logger::addStream( new logapi::Console() );
+  logapi::Logger::addStream( console );
 
 
   // STEP 3: loop N times and generate a random logging event
