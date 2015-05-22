@@ -17,6 +17,7 @@ using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::IDType;
+using asctoolkit::sidre::InvalidID;
 
 using namespace conduit;
 
@@ -70,9 +71,9 @@ TEST(sidre_group,get_datastore)
 }
 
 //------------------------------------------------------------------------------
-// hasGroup()
+// Verify hasGroup()
 //------------------------------------------------------------------------------
-TEST(sidre_group,has_child)
+TEST(sidre_group,has_group)
 {
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
@@ -82,6 +83,98 @@ TEST(sidre_group,has_child)
     EXPECT_TRUE( child->getParent() == parent );
 
     EXPECT_TRUE( parent->hasGroup("child") );
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Verify hasView()
+//------------------------------------------------------------------------------
+TEST(sidre_group,has_view)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+
+    DataGroup *parent = root->createGroup("parent");
+    DataView *view = parent->createViewAndBuffer("view");
+
+    EXPECT_TRUE( view->getOwningGroup() == parent );
+
+    EXPECT_TRUE( parent->hasView("view") );
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Verify getViewName(), getViewIndex()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_view_name_index)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+
+    DataGroup *parent = root->createGroup("parent");
+    DataView *view1 = parent->createViewAndBuffer("view1");
+    DataView *view2 = parent->createViewAndBuffer("view2");
+
+    EXPECT_EQ(parent->getNumViews(), 2u);
+
+    IDType idx1 = parent->getViewIndex("view1");
+    IDType idx2 = parent->getViewIndex("view2");
+
+    std::string name1(parent->getViewName(idx1));
+    std::string name2(parent->getViewName(idx2));
+   
+    EXPECT_EQ(name1, std::string("view1")); 
+    EXPECT_EQ(view1->getName(), name1); 
+
+    EXPECT_EQ(name2, std::string("view2")); 
+    EXPECT_EQ(view2->getName(), name2); 
+
+#if 0 // Leave out for now until we resolve error/warning/assert macro usage
+    IDType idx3 = parent->getViewIndex("view3");
+    std::string name3(parent->getViewName(idx3));
+
+    EXPECT_EQ(idx3, InvalidID);
+    EXPECT_TRUE(name3.empty());
+#endif
+
+    delete ds;
+}
+
+//------------------------------------------------------------------------------
+// Verify getGroupName(), getGroupIndex()
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_group_name_index)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+
+    DataGroup *parent = root->createGroup("parent");
+    DataGroup *group1 = parent->createGroup("group1");
+    DataGroup *group2 = parent->createGroup("group2");
+
+    EXPECT_EQ(parent->getNumGroups(), 2u);
+
+    IDType idx1 = parent->getGroupIndex("group1");
+    IDType idx2 = parent->getGroupIndex("group2");
+
+    std::string name1(parent->getGroupName(idx1));
+    std::string name2(parent->getGroupName(idx2));
+
+    EXPECT_EQ(name1, std::string("group1"));
+    EXPECT_EQ(group1->getName(), name1);
+
+    EXPECT_EQ(name2, std::string("group2"));
+    EXPECT_EQ(group2->getName(), name2);
+
+#if 0 // Leave out for now until we resolve error/warning/assert macro usage
+    IDType idx3 = parent->getGroupIndex("group3");
+    std::string name3(parent->getGroupName(idx3));
+
+    EXPECT_EQ(idx3, InvalidID);
+    EXPECT_TRUE(name3.empty());
+#endif
 
     delete ds;
 }

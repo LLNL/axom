@@ -209,47 +209,29 @@ public:
         return m_view_coll.getItem(idx);     
     }
 
-#if 0  // 
-       // RDH -- These should probably be removed since they are error-prone.
-       //      
-       // I compiled them out for now since they are not used anywhere. 
-       //
-       // For example, using the map "at" method throws an exception if no 
-       // item is found with a given key (here, a name). In that case, the 
-       // returned index value is undefined. We could replace the "at" usage 
-       // with "find" and then return an "undefined" index value that a caller 
-       // could test for. However, common::IDType we are using is unsigned. So 
-       // there is no clear choice for an "undefined" index.  
-       //
-       // Similarly, if there is no item with a given index, then what should 
-       // the returned name be? An empty string? Again, a caller would have to 
-       // check against this.  
-       //
-       // IMO, users should always know whether they should use a name or 
-       // index for lookup. We have routines to check whether an item exists 
-       // with a name or index.
-       //
     /*!
      * \brief Return the index of DataView with given name.
+     *
+     *        If none, return sidre::InvalidID;
      */
     IDType getViewIndex(const std::string &name) const
     {  
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
-        return m_viewsNameMap.at(name);
+        return m_view_coll.getItemIndex(name);
     }
 
     /*!
      * \brief Return the name of DataView with given index.
+     *
+     *        If none, return empty string.
      */
-    const std::string& getViewName(IDType idx) const
+    std::string getViewName(IDType idx) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
-        const DataView* view = getView(idx);
-        return view->getName();
+        return m_view_coll.getItemName(idx);
     }
-#endif
 
     /*!
      * \brief Return number of DataViews contained in this DataGroup.
@@ -460,32 +442,29 @@ public:
         return m_group_coll.getItem(idx);
     }
 
-#if 0  // 
-       //  RDH -- These should probably be removed since they are error-prone.
-       //
-       // See comments above for similar view methods.
-       //
     /*!
      * \brief Return the index of child DataGroup with given name.
+     *
+     *        If none, return sidre::InvalidID;
      */
     IDType getGroupIndex(const std::string &name) const
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
-        return m_groupsNameMap.at(name);
+        return m_group_coll.getItemIndex(name);
     }
 
     /*!
      * \brief Return the name of child DataGroup with given index.
+     *
+     *        If none, return empty string.
      */
-    const std::string& getGroupName(IDType idx) const
+    std::string getGroupName(IDType idx) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
-        const DataGroup* group = getGroup(idx);
-        return group->getName();
+        return m_group_coll.getItemName(idx);
     }
-#endif
 
     /*!
      * \brief Return number of child DataGroups contained in this DataGroup.

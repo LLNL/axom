@@ -68,7 +68,16 @@
  *          - // Return pointer to item with given index (ATK_NULLPTR if none).
  *
  *               TYPE* getItem(sidre::IDType idx);
- *               TYPE const* getItem(sidre::IDType idx) cosnt;
+ *               TYPE const* getItem(sidre::IDType idx) const;
+ *
+ *          - // Return name of object with given index (empty string if none).
+ *
+ *               std::string getItemName(sidre::IDType idx) const;
+ *
+ *          - // Return index of object with given index 
+ *               (sidre::InvalidID if none).
+ *
+ *               sidre::IDType getItemIndex(const std::string& name) const;
  *
  *          - // Insert item with given name; return true if insertion 
  *               succeeded, and false otherwise.
@@ -196,6 +205,20 @@ public:
    TYPE const* getItem(IDType idx) const
    {
       return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
+   }
+
+   ///
+   std::string getItemName(sidre::IDType idx) const
+   { 
+      return ( hasItem(idx) ? m_items[idx]->getName() : std::string() );
+   }
+
+   ///
+   IDType getItemIndex(const std::string& name) const
+   {
+      typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
+      return ( mit != m_name2idx_map.end() ? 
+               mit->second : InvalidID );
    }
 
    ///

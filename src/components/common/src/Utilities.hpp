@@ -93,7 +93,7 @@ do {                                                                \
 } while (0)
 
 
-#if defined(ATK_DEBUG) || 1
+#if defined(ATK_DEBUG) 
 //-----------------------------------------------------------------------------
 //
 /// The ATK_ASSERT macro can be used to capture an assertion when
