@@ -281,24 +281,16 @@ public:
      * \return pointer to created DataView object.
      */ 
     DataView* createViewAndBuffer( const std::string& name, 
-                                   const Schema &schema);
+                                   const Schema& schema);
 
-    /*!
-     * \brief Create an opaque DataView with given name, holding data
-     *        referenced with given pointer, and attach to this DataGroup 
-     *        object.
-     *
-     * \return pointer to created DataView object.
-     */ 
-    DataView* createOpaqueView( const std::string& name, void* opaque_ptr);
-    
     /*!
      * \brief Create a DataView object (for view into given buffer) with 
      *        given name, and attach to this DataGroup object.
      *
      * \return pointer to created DataView object.
      */ 
-    DataView* createView( const std::string& name, DataBuffer* buff );
+    DataView* createView( const std::string& name, 
+                          DataBuffer* buff );
 
 
     /*!
@@ -324,8 +316,40 @@ public:
      */ 
     DataView* createView( const std::string& name,
                           DataBuffer* buff, 
-                          const Schema &schema);
+                          const Schema& schema);
 
+    /*!
+     * \brief Create an opaque DataView with given name, holding data
+     *        referenced with given pointer, and attach to this DataGroup 
+     *        object.
+     *
+     * \return pointer to created DataView object.
+     */ 
+    DataView* createOpaqueView( const std::string& name, 
+                                void* opaque_ptr);
+
+    /*!
+     * \brief Create an DataView into externally-owned data with given name, 
+     *        using the given Conduit DataType to describe the data. Attach 
+     *        the new view to this DataGroup object.
+     *
+     * \return pointer to created DataView object.
+     */
+    DataView* createExternalView( const std::string& name, 
+                                  void* external_data,
+                                  const DataType& dtype );
+   
+    /*!
+     * \brief Create an DataView into externally-owned data with given name,
+     *        using the given Conduit Schema to describe the data. Attach 
+     *        the new view to this DataGroup object.
+     *
+     * \return pointer to created DataView object.
+     */
+    DataView* createExternalView( const std::string& name,
+                                  void* external_data,
+                                  const Schema& schema );
+ 
     /*!
      * \brief Destroy view in this DataGroup with given name and leave its
      *        associated DataBuffer intact.

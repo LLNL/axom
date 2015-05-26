@@ -182,7 +182,7 @@ public:
   
   
 //@{
-//!  @name Methods to query whether data is opaque or describes a buffer
+//!  @name DataView query methods
 
     /*!
      * \brief Return true if DataView is associated with a DataBuffer
@@ -195,7 +195,8 @@ public:
 
     /*!
      * \brief Return true if DataView is opaque (view is not associated
-     *        with a DataBuffer); false otherwise.
+     *        with a DataBuffer and view has no knowledge of data type, 
+     *        structure, etc.); false otherwise.
      */
     bool  isOpaque() const
     {
@@ -209,6 +210,15 @@ public:
     bool isApplied() const
     {
        return m_is_applied;
+    }
+
+    /*!
+     * \brief Return true if DataView describes externally-owned data (i.e.,
+     *        not in an associated buffer); false otherwise.
+     */
+    bool isExternal() const
+    {
+       return m_is_external;
     }
 
 //@}
@@ -314,12 +324,32 @@ private:
               DataBuffer* const data_buffer );
 
     /*!
-     *  \brief Private ctor that creates a DataView with given name
-     *         in given parent group and which is opaque.
+     *  \brief Private ctor that creates an opaque DataView with given name
+     *         in given parent group.
      */
     DataView( const std::string& name,
               DataGroup* const owning_group,
               void* opaque_ptr);
+
+    /*!
+     *  \brief Private ctor that creates an external DataView with given 
+     *         name in given parent group and which is described by given
+     *         Conduit data type.
+     */
+    DataView( const std::string& name,
+              DataGroup* const owning_group,
+              void* external_data,
+              const DataType& dtype );
+
+    /*!
+     *  \brief Private ctor that creates an external DataView with given      
+     *         name in given parent group and which is described by given
+     *         Conduit schema.
+     */
+    DataView( const std::string& name,
+              DataGroup* const owning_group,
+              void* external_data,
+              const Schema& schema );
 
     /*!
      * \brief Private copy ctor.
@@ -347,11 +377,14 @@ private:
     /// Conduit node used to access the data in this DataView.
     Node        m_node;
     
-    /// Has Schema been applied to buffer data?
-    bool        m_is_applied;
-    
     /// Is this DataView opaque?
     bool        m_is_opaque;
+
+    /// Is this a DataView into external data?
+    bool        m_is_external;
+
+    /// Has Schema been applied to buffer data?
+    bool        m_is_applied;
 };
 
 

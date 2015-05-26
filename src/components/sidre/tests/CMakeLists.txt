@@ -11,9 +11,10 @@ set(gtest_sidre_tests
 #   testGTestExample.cpp
    sidre_smoke.cpp
    sidre_buffer.cpp
-   sidre_view.cpp
+   sidre_external.cpp
    sidre_group.cpp
    sidre_opaque.cpp
+   sidre_view.cpp
    C_sidre_smoke.cpp
 #   C_sidre_buffer.cpp
 #   C_sidre_view.cpp

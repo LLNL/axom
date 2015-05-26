@@ -104,22 +104,6 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name,
 /*
 *************************************************************************
 *
-* Create opaque view and attach to group.
-*
-*************************************************************************
-*/
-DataView *DataGroup::createOpaqueView( const std::string& name,
-                                       void* opaque_ptr)
-{
-   ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
-    
-   DataView* const view = new DataView(name, this, opaque_ptr);
-   return attachView(view);
-}
-
-/*
-*************************************************************************
-*
 * Create view associated with given buffer and attach to group.
 *
 *************************************************************************
@@ -174,6 +158,60 @@ DataView* DataGroup::createView( const std::string& name,
     DataView* const view = new DataView( name, this, buff );
     view->apply(schema);
     return attachView(view);
+}
+
+
+/*
+*************************************************************************
+*
+* Create opaque view and attach to group.
+*
+*************************************************************************
+*/
+DataView *DataGroup::createOpaqueView( const std::string& name,
+                                       void* opaque_ptr)
+{
+   ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+    
+   DataView* const view = new DataView(name, this, opaque_ptr);
+   return attachView(view);
+}
+
+
+/*
+*************************************************************************
+*
+* Create external view with given data type and attach to group.
+*
+*************************************************************************
+*/
+DataView *DataGroup::createExternalView( const std::string& name,
+                                         void* external_data,
+                                         const DataType& dtype)
+{
+   ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+   
+   DataView* const view = new DataView(name, this, 
+                                       external_data, dtype);
+   return attachView(view);
+}
+
+/*
+*************************************************************************
+*
+* Create external view with given schema and attach to group.
+*
+*************************************************************************
+*/
+DataView *DataGroup::createExternalView( const std::string& name,
+                                         void* external_data,
+                                         const Schema& schema)
+{
+   ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  
+   DataView* const view = new DataView(name, this, 
+                                       external_data, schema);
+   return attachView(view);
 }
 
 
