@@ -4,14 +4,16 @@ configure_file(config.hpp.in "${HEADER_INCLUDES_DIRECTORY}/lumberjack/config.hpp
 # Specify all headers
 #
 set(lumberjack_headers
-    Message.hpp
+	Combiner.hpp
+	MessageEqualityCombiner.hpp
+    MessageInfo.hpp
     )
 
 #
 # Specify all sources
 #
 set(lumberjack_sources
-    Message.cpp
+    MessageInfo.cpp
     )
 
 

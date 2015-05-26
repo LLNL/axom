@@ -1,5 +1,5 @@
-#ifndef MESSAGE_HPP
-#define MESSAGE_HPP
+#ifndef MESSAGEINFO_HPP
+#define MESSAGEINFO_HPP
 
 #include <string>
 #include <vector>
@@ -7,16 +7,17 @@
 namespace asctoolkit {
 namespace lumberjack {
 
-class Message {
+class MessageInfo {
 	public:
 		// Constructors
-		Message()
+		MessageInfo()
 		: m_message("")
 		, m_rankCount(0)
 		, m_fileName("")
 		, m_lineNumber(0) {}
 
-		Message(const std::string& message, int rank, const std::string& fileName, int lineNumber)
+		MessageInfo(const std::string& message, int rank,
+			        const std::string& fileName, int lineNumber)
 		: m_message(message)
 		, m_rankCount(1)
 		, m_fileName(fileName)
@@ -25,7 +26,8 @@ class Message {
 			m_ranks.push_back(rank);
 		}
 
-		Message(const std::string& message, std::vector<int> ranks, const std::string& fileName, int lineNumber)
+		MessageInfo(const std::string& message, std::vector<int> ranks,
+			        const std::string& fileName, int lineNumber)
 		: m_message(message)
 		, m_ranks(ranks)
 		, m_rankCount(ranks.size())
@@ -43,8 +45,8 @@ class Message {
 		void message(const std::string& newMessage);
 		void fileName(const std::string& newFileName);
 		void lineNumber(int newLineNumber);
-		void addRank(int newRank, int rankLimit);
-		void addRanks(const std::vector<int>& newRanks, int rankLimit);
+		void addRank(int newRank, int ranksLimit);
+		void addRanks(const std::vector<int>& newRanks, int ranksLimit);
 	private:
 		std::string m_message;
 		std::vector<int> m_ranks;

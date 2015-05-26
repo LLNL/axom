@@ -1,11 +1,11 @@
 #include "gtest/gtest.h"
 
-#include "lumberjack/Message.hpp"
+#include "lumberjack/MessageInfo.hpp"
 
-TEST(lumberjack_message, getSet01)
+TEST(lumberjack_MessageInfo, getSet01)
 {
 	//Test most basic case: one message, one rank, file name, line number
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message("I never wanted to do this job in the first place!");
 	m.addRank(14, 5);
 	m.fileName("foo.cpp");
@@ -19,12 +19,12 @@ TEST(lumberjack_message, getSet01)
 	EXPECT_EQ(m.ranks()[0], 14);
 }
 
-TEST(lumberjack_message, getSet02)
+TEST(lumberjack_MessageInfo, getSet02)
 {
 	//Test that const char* will convert fine to string
 	const char* messageConstCharPointer = "I... I wanted to be... A LUMBERJACK!";
 	std::string messageString = "I... I wanted to be... A LUMBERJACK!";
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message(messageConstCharPointer);
 	m.addRank(14, 5);
 
@@ -34,11 +34,11 @@ TEST(lumberjack_message, getSet02)
 	EXPECT_EQ(m.ranks()[0], 14);
 }
 
-TEST(lumberjack_message, getSet03)
+TEST(lumberjack_MessageInfo, getSet03)
 {
 	//Test case: one message, filled ranks to rank limit
 	const int rankLimit = 5;
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message("Leaping from tree to tree! As they float down the mighty rivers of British Columbia!");
 	for(int i=0; i<rankLimit; ++i){
 		m.addRank(i+1, rankLimit);
@@ -52,11 +52,11 @@ TEST(lumberjack_message, getSet03)
 	}
 }
 
-TEST(lumberjack_message, getSet04)
+TEST(lumberjack_MessageInfo, getSet04)
 {
 	//Test case: one message, filled ranks to past rank limit
 	const int rankLimit = 5;
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message("With my best girl by my side!");
 	for(int i=0; i<rankLimit*2; ++i){
 		m.addRank(i+1, rankLimit);
@@ -70,12 +70,12 @@ TEST(lumberjack_message, getSet04)
 	}
 }
 
-TEST(lumberjack_message, getSet05)
+TEST(lumberjack_MessageInfo, getSet05)
 {
 	//Test case: one message, fill ranks with vector of 1 rank
 	const int rankLimit = 5;
 	std::vector<int> ranks;
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message("The Larch! The Pine! The Giant Redwood tree! The Sequoia!");
 	ranks.push_back(123);
 	m.addRanks(ranks,rankLimit);
@@ -86,12 +86,12 @@ TEST(lumberjack_message, getSet05)
 	EXPECT_EQ(m.ranks()[0], 123);
 }
 
-TEST(lumberjack_message, getSet06)
+TEST(lumberjack_MessageInfo, getSet06)
 {
 	//Test case: one message, fill ranks with vector of ranks don't go past ranklimit
 	const int rankLimit = 5;
 	std::vector<int> ranks;
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message("Oh, I'm a lumberjack, and I'm okay,");
 	for(int i=0; i<rankLimit; ++i){
 		ranks.push_back(i+1);
@@ -106,12 +106,12 @@ TEST(lumberjack_message, getSet06)
 	}
 }
 
-TEST(lumberjack_message, getSet07)
+TEST(lumberjack_MessageInfo, getSet07)
 {
 	//Test case: one message, fill ranks with vector of ranks that will go past ranklimit
 	const int rankLimit = 5;
 	std::vector<int> ranks;
-	asctoolkit::lumberjack::Message m;
+	asctoolkit::lumberjack::MessageInfo m;
 	m.message("I sleep all night and I work all day.");
 	for(int i=0; i<rankLimit*3; ++i){
 		ranks.push_back(i+1);
@@ -126,10 +126,10 @@ TEST(lumberjack_message, getSet07)
 	}
 }
 
-TEST(lumberjack_message, testConstructor01)
+TEST(lumberjack_MessageInfo, testConstructor01)
 {
 	//Test most basic case: one message, one rank, file name, line number
-	asctoolkit::lumberjack::Message m("He's a lumberjack, and he's okay,",
+	asctoolkit::lumberjack::MessageInfo m("He's a lumberjack, and he's okay,",
 									  122, "foo.cpp", 154);
 
 	EXPECT_EQ(m.message(), "He's a lumberjack, and he's okay,");
@@ -140,7 +140,7 @@ TEST(lumberjack_message, testConstructor01)
 	EXPECT_EQ(m.ranks()[0], 122);
 }
 
-TEST(lumberjack_message, testConstructor02)
+TEST(lumberjack_MessageInfo, testConstructor02)
 {
 	//Test most basic case: one message, one rank, file name, line number
 	const int rankLimit = 5;
@@ -149,7 +149,7 @@ TEST(lumberjack_message, testConstructor02)
 		ranks.push_back(i+1);
 	}
 
-	asctoolkit::lumberjack::Message m("He sleeps all night and he works all day.",
+	asctoolkit::lumberjack::MessageInfo m("He sleeps all night and he works all day.",
 									  ranks, "foo.cpp", 154);
 
 	EXPECT_EQ(m.message(), "He sleeps all night and he works all day.");

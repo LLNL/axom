@@ -3,7 +3,8 @@
 #
 
 set(gtest_lumberjack_tests
-   lumberjack_Message.cpp
+   lumberjack_MessageInfo.cpp
+   lumberjack_MessageEqualityCombiner.cpp
    )
 
 #
