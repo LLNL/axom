@@ -39,20 +39,20 @@ TEST(sidre_external, simple_arrays)
     }
 
     (void) root->createExternalView("idata", idata, 
-                                     DataType::int32(len));
+                                     DataType::c_int(len));
     (void) root->createExternalView("ddata", ddata, 
-                                     DataType::float64(len));
+                                     DataType::c_double(len));
     EXPECT_EQ(root->getNumViews(), 2u);
 
     root->getView("idata")->getNode().print_detailed();  
     root->getView("ddata")->getNode().print_detailed();  
 
-    int* idata_chk = root->getView("idata")->getNode().as_int32_ptr();
+    int* idata_chk = root->getView("idata")->getNode().as_int_ptr();
     for (int ii = 0; ii < len; ++ii) {
        EXPECT_EQ(idata_chk[ii], idata[ii]);
     }
 
-    double* ddata_chk = root->getView("ddata")->getNode().as_float64_ptr();
+    double* ddata_chk = root->getView("ddata")->getNode().as_double_ptr();
     for (int ii = 0; ii < len; ++ii) {
        EXPECT_EQ(ddata_chk[ii], ddata[ii]);
     }
