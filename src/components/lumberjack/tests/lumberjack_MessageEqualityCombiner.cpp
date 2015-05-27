@@ -20,11 +20,11 @@ TEST(lumberjack_MessageEqualityCombiner, case01)
 
 	asctoolkit::lumberjack::MessageEqualityCombiner c;
 
-	bool areMessageInfosEqual = c.areMessageInfosEqual(m1, m2);
+	bool shouldMessageInfosBeCombined = c.shouldMessageInfosBeCombined(m1, m2);
 
 	c.combine(m1, m2, 5);
 
-	EXPECT_EQ(areMessageInfosEqual, true);
+	EXPECT_EQ(shouldMessageInfosBeCombined, true);
 	EXPECT_EQ(m1.message().compare(message), 0);
 	EXPECT_EQ(m1.rankCount(), 2);
 	EXPECT_EQ(m1.ranks()[0], 13);
@@ -50,9 +50,9 @@ TEST(lumberjack_MessageEqualityCombiner, case02)
 
 	asctoolkit::lumberjack::MessageEqualityCombiner c;
 
-	bool areMessageInfosEqual = c.areMessageInfosEqual(m1, m2);
+	bool shouldMessageInfosBeCombined = c.shouldMessageInfosBeCombined(m1, m2);
 
-	EXPECT_EQ(areMessageInfosEqual, false);
+	EXPECT_EQ(shouldMessageInfosBeCombined, false);
 	EXPECT_EQ(m1.message().compare(message1), 0);
 	EXPECT_EQ(m1.rankCount(), 1);
 	EXPECT_EQ(m1.ranks()[0], 13);

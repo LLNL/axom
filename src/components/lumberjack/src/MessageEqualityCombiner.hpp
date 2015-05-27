@@ -9,7 +9,8 @@ namespace lumberjack {
 
 class MessageEqualityCombiner: public Combiner {
 	public:
-		bool areMessageInfosEqual(const MessageInfo& leftMessage, const MessageInfo& rightMessage)
+		bool shouldMessageInfosBeCombined(const MessageInfo& leftMessage,
+			                              const MessageInfo& rightMessage)
 		{
 			if (leftMessage.message().compare(rightMessage.message()) == 0){
 				return true;
@@ -17,7 +18,7 @@ class MessageEqualityCombiner: public Combiner {
 			return false;
 		}
 
-		void combine(MessageInfo& combined, const MessageInfo& combinee, int ranksLimit)
+		void combine(MessageInfo& combined, const MessageInfo& combinee, const int ranksLimit)
 		{
 			combined.addRanks(combinee.ranks(), ranksLimit);
 		}
