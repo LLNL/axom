@@ -83,3 +83,54 @@ TEST(sidre_buffer,init_buffer_for_uint32_array)
     
 }
 
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_buffer,realloc_buffer)
+{
+    DataStore *ds = new DataStore();
+    DataBuffer *dbuff = ds->createBuffer();
+
+    dbuff->allocate(DataType::int64(5));
+    
+
+    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
+              sizeof(int64)*5);
+    
+    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
+    
+    for(int i=0;i<5;i++)
+    {
+        data_ptr[i] = 5;
+    }
+
+    dbuff->getNode().print_detailed();
+
+    dbuff->reallocate(DataType::int64(10));
+
+    // data buffer changes 
+    data_ptr = dbuff->getNode().as_int64_ptr();
+
+    for(int i=0;i<5;i++)
+    {
+        EXPECT_EQ(data_ptr[i],5);
+    }
+
+    for(int i=5;i<10;i++)
+    {
+        data_ptr[i] = 10;
+    }
+
+
+    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
+              sizeof(int64)*10);
+    
+    dbuff->getNode().print_detailed();
+    
+    ds->print();
+    delete ds;
+    
+}
+
+
+

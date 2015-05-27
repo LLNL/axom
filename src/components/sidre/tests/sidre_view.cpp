@@ -318,6 +318,69 @@ TEST(sidre_view,uint32_array_multi_view_resize)
     
 }
 
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,uint32_array_realloc)
+{
+    ///
+    /// info
+    ///
+    
+    // create our main data store
+    DataStore *ds = new DataStore();
+    // get access to our root data Group
+    DataGroup *root = ds->getRoot();
+    
+    // create a view to hold the base buffer
+    DataView* a1 = root->createViewAndBuffer("a1",DataType::uint32(5));
+    DataView* a2 = root->createViewAndBuffer("a2",DataType::int32(5));
+    
+    uint32* a1_ptr = a1->getNode().as_uint32_ptr();
+    int32*  a2_ptr = a2->getNode().as_int32_ptr();
+    
+    for(int i=0;i<5;i++)
+    {
+        a1_ptr[i] =  5;
+        a2_ptr[i] = -5;
+    }
+    
+    EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(uint32)*5);
+    EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int32)*5);
+        
+    
+    a1->reallocate(DataType::uint32(10));
+    a2->reallocate(DataType::int32(15));
+
+    a1_ptr = a1->getNode().as_uint32_ptr();
+    a2_ptr = a2->getNode().as_int32_ptr();
+
+    for(int i=0;i<5;i++)
+    {
+        EXPECT_EQ(a1_ptr[i],5);
+        EXPECT_EQ(a2_ptr[i],-5);
+    }
+
+    for(int i=5;i<10;i++)
+    {
+        a1_ptr[i] = 10;
+        a2_ptr[i] = -10;
+    }
+
+    for(int i=10;i<15;i++)
+    {
+        a2_ptr[i] = -15;
+    }
+
+    EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(uint32)*10);
+    EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int32)*15);
+
+    
+    ds->print();
+    delete ds;
+    
+}
+
 //------------------------------------------------------------------------------
 
 TEST(sidre_view,simple_opaque)
