@@ -465,13 +465,13 @@ TEST(sidre_group,save_restore_simple)
     EXPECT_TRUE(ds->getRoot()->getGroup("fields")->getGroup("a")->hasView("i0"));
         
         
-    ds->getRoot()->save("out_ds_group_save_restore_simple","conduit");
+    ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
 
     ds->print();
     
     DataStore *ds2 = new DataStore();
 
-    ds2->getRoot()->load("out_ds_group_save_restore_simple","conduit");
+    ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
     
     ds2->print();
 
@@ -510,14 +510,14 @@ TEST(sidre_group,save_restore_complex)
     EXPECT_TRUE(flds->hasGroup("b"));
     EXPECT_TRUE(flds->hasGroup("c"));
 
-    ds->getRoot()->save("out_ds_group_save_restore_complex","conduit");
+    ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
 
     ds->print();
 
     DataStore *ds2 = new DataStore();
 
 
-    ds2->getRoot()->load("out_ds_group_save_restore_complex","conduit");
+    ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
 
     flds = ds2->getRoot()->getGroup("fields");
     // check that all sub groups exist

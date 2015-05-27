@@ -833,7 +833,8 @@ void DataGroup::copyToNode(Node& n,
         DataView const* view = this->getView(i);
         Node& n_view = n["views"].fetch(view->getName());
         n_view["schema"].set(view->getSchema().to_json());
-        n_view["applied"].set(view->isApplied());
+        n_view["is_applied"].set(view->isApplied());
+        n_view["is_external"].set(view->isExternal());
 
         // if we have a buffer, simply add the id to the list
         if (view->hasBuffer())
@@ -921,7 +922,7 @@ void DataGroup::copyFromNode(Node& n,
             Schema schema(n_view["schema"].as_string());
             ds_view->declare(schema);
             // if the schema was applied, restore this state
-            if (n_view["applied"].to_uint64() != 0)
+            if (n_view["is_applied"].to_uint64() != 0)
                 ds_view->apply();
         }
         else
