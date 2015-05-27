@@ -3,8 +3,8 @@
 # List of example sources
 #
 set(example_sources
-	meshapiShockTube.cc
-    UnstructMeshField.cc
+	meshapiShockTube.cpp
+    UnstructMeshField.cpp
     )
 
 #

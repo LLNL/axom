@@ -4,17 +4,17 @@
 
 set(gtest_meshapi_tests
    # test sets
-   testSet.cxx
+   testSet.cpp
    testNullSet.cpp
-   testOrderedSet.cxx
+   testOrderedSet.cpp
 
    # test relations
-   testDynamicVariableRelation.cxx
-   testStaticVariableRelation.cxx
-   testStaticConstantRelation.cxx
+   testDynamicVariableRelation.cpp
+   testStaticVariableRelation.cpp
+   testStaticConstantRelation.cpp
    
    # test maps
-   testMap.cxx
+   testMap.cpp
    )
 
 
