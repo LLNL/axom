@@ -146,8 +146,29 @@ public:
      *
      * \return pointer to this DataView object.
      */
-    DataView* allocate(const DataType &dtype);
+    DataView* allocate(const DataType& dtype);
  
+    /*!
+     * \brief  Reallocate the views' underlying buffer using a Conduit 
+     *         schema.
+     *
+     *  Uses conduit's update semantics();
+     *
+     * \return pointer to this DataView object.
+     */
+     DataView* reallocate(const Schema& schema);
+
+    /*!
+     * \brief  Reallocate the views' underlying buffer using a Conduit 
+     *         data type.
+     *
+     *  Uses conduit's update semantics();
+     *
+     * \return pointer to this DataView object.
+     */
+     DataView* reallocate(const DataType& dtype);
+ 
+   
     /*!
      * \brief Apply a previously declared data view to data held in
      *        the DataBuffer associated with this DataView object.

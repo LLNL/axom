@@ -72,18 +72,71 @@ DataBuffer* DataBuffer::allocate(const DataType& dtype)
 /*
 *************************************************************************
 *
-* Allocate data previosly declared.
+* Reallocate data using a Conduit schema.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::reallocate(const Schema& schema)
+{
+    //  make sure realloc actually makes sense
+    ATK_ASSERT_MSG(m_data != ATK_NULLPTR,
+                   "Attempting to reallocate an unallocated buffer");
+
+    std::size_t realloc_size = schema.total_bytes();
+    ATK_ASSERT_MSG(realloc_size > 0,
+                   "Attempting to reallocate buffer to size 0");
+
+    void* realloc_data = allocateBytes(realloc_size);
+
+    // use conduit to get data from old to new schema.
+    Node n;
+    n.set_external(schema,realloc_data);
+    // use conduit update, need more error checking.
+    n.update(m_node);
+
+    // cleanup old data
+    cleanup();
+
+    // set the buffer to use the new schema
+    m_schema = schema;
+    
+    // let the buffer hold the new data
+    m_data = realloc_data;
+    
+    // update the buffer's Conduit Node
+    m_node.set_external(m_schema,m_data);
+    return this;
+}
+
+/*
+*************************************************************************
+*
+* Reallocate data using a basic Conduit data type.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::reallocate(const DataType& dtype)
+{
+    Schema s(dtype);
+    reallocate(s);
+    return this;
+}
+
+/*
+*************************************************************************
+*
+* Allocate data previously declared.
 *
 *************************************************************************
 */
 DataBuffer* DataBuffer::allocate()
 {
+    // cleanup old data
+    cleanup();
     std::size_t alloc_size = m_schema.total_bytes();
-
-    ATK_ASSERT_MSG(alloc_size > 0, "Attempting to allocate buffer of size 0");   
-    m_memblob.resize(alloc_size);
-    m_data = m_memblob.data();
-
+    ATK_ASSERT_MSG(alloc_size > 0,
+                   "Attempting to allocate buffer of size 0");
+    m_data = allocateBytes(alloc_size);
     m_node.set_external(m_schema,m_data);
     return this;
 }
@@ -129,7 +182,6 @@ DataBuffer::DataBuffer( IDType uid ) :
     m_uid(uid),
     m_views(),
     m_data(ATK_NULLPTR),
-    m_memblob(),
     m_node(),
     m_schema()
 {
@@ -148,7 +200,6 @@ DataBuffer::DataBuffer(const DataBuffer& source ) :
     m_uid(source.m_uid),
     m_views(source.m_views),
     m_data(source.m_data),
-    m_memblob(source.m_memblob),
     m_node(source.m_node),
     m_schema(source.m_schema)
 {
@@ -165,7 +216,7 @@ DataBuffer::DataBuffer(const DataBuffer& source ) :
 */
 DataBuffer::~DataBuffer()
 {
-
+    cleanup();
 }
 
 
@@ -199,6 +250,52 @@ void DataBuffer::detachView( DataView* view )
     //Erase the "removed" elements.
     m_views.erase(pos, m_views.end());
 }
+
+/*
+*************************************************************************
+*   
+* PRIVATE cleanup
+*   
+*************************************************************************
+*/
+void DataBuffer::cleanup()
+{
+    // cleanup alloced data
+    if(m_data != ATK_NULLPTR)
+    {
+        releaseBytes(m_data);
+        m_data = ATK_NULLPTR;
+    }
+}
+
+/*
+*************************************************************************
+*   
+* PRIVATE allocateBytes
+*   
+*************************************************************************
+*/
+void *DataBuffer::allocateBytes(std::size_t numBytes)
+{
+    ATK_ASSERT_MSG(numBytes > 0,
+                   "Attempting to allocate 0 bytes");
+
+    char *data = new char[numBytes];
+    return ((void *)data);
+}
+
+/*
+*************************************************************************
+*   
+* PRIVATE releaseBytes
+*   
+*************************************************************************
+*/
+void DataBuffer::releaseBytes(void *ptr)
+{
+    delete [] ((char*)ptr);
+}
+
 
 
 } /* end namespace sidre */

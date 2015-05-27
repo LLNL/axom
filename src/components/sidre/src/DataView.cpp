@@ -114,6 +114,57 @@ DataView* DataView::allocate(const DataType& dtype)
     return this;
 }
 
+
+/*
+*************************************************************************
+*
+* Reallocate the data view's buffer according to a Conduit schema.
+*
+*************************************************************************
+*/
+DataView* DataView::reallocate(const Schema& schema)
+{
+    // in these cases the view does not have a buffer
+    ATK_ASSERT_MSG( !isExternal() && !isOpaque(),
+                   "Attempting to reallocate an external or opaque view");
+    
+    // following alloc,  we only force realloc if there is a 1-1 between 
+    // the view and its buffer.
+    ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+                    "Data reallocation on a view allowed only if it's the only view associated with its buffer");
+    
+    declare(schema);
+    m_data_buffer->reallocate(m_schema);
+    apply();
+    return this;
+}
+
+/*
+*************************************************************************
+*
+* Reallocate the data view's buffer according to a Conduit data type.
+*
+*************************************************************************
+*/
+DataView* DataView::reallocate(const DataType& dtype)
+{
+    
+    // in these cases the view does not have a buffer
+    ATK_ASSERT_MSG( !isExternal() && !isOpaque(),
+                   "Attempting to reallocate an external or opaque view");
+
+    // following alloc,  we only force realloc if there is a 1-1 between 
+    // the view and its buffer.
+    ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+                    "Data reallocation on a view allowed only if it's the only view associated with its buffer");
+    
+    declare(dtype);
+    m_data_buffer->reallocate(m_schema);
+    apply();
+    return this;
+}
+
+
 /*
 *************************************************************************
 *

@@ -143,6 +143,26 @@ public:
      * \return pointer to this DataBuffer object.
      */
     DataBuffer* allocate(const DataType& dtype);
+  
+    /*!
+     * \brief Reallocate data described as a Conduit schema.
+     *
+     *        Leverages Conduit Node::update() semantics. 
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* reallocate(const Schema& schema);
+
+    /*!
+     * \brief Reallocate data described as a pre-defined 
+     *        Conduit data type.
+     *
+     *        Leverages Conduit Node::update() semantics. 
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* reallocate(const DataType& dtype);
+
 
 //@}
 
@@ -233,6 +253,18 @@ private:
     ///
     void detachView( DataView* dataView );
 
+    
+    
+
+    /*!
+     * \brief Private methods allocate and deallocate bytes data view to buffer.
+     */
+    void cleanup();
+    ///
+    void *allocateBytes(std::size_t numBytes);
+    ///
+    void  releaseBytes(void *);
+
 
     /// Identifier - unique within a dataStore.
     IDType m_uid;
@@ -243,14 +275,6 @@ private:
     /// Pointer to the data owned by DataBuffer.
     void* m_data;
   
-    ///
-    /// Vector used for data allocation.
-    /// 
-    /// IMPORTANT: This is temorary until we implement an appropriate 
-    ///            allocator interface.
-    ///
-    std::vector<char> m_memblob;
-
     /// Conduit Node that holds buffer data.
     Node   m_node;
 
