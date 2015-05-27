@@ -13,7 +13,7 @@
 namespace asctoolkit {
 namespace meshapi {
 
-OrderedSet::Index OrderedSet::at( Index idx )
+OrderedSet::SetIndex OrderedSet::at( SetIndex idx ) const
 {
   if(idx >= size())
   {
@@ -31,16 +31,16 @@ bool OrderedSet::isValid(bool verboseOutput) const
 
     std::stringstream errStr;
 
-    if( m_size < 0 )
-    {
-        if(verboseOutput)
-        {
-            errStr <<"\n** OrderedSet's size cannot be less than zero"
-                    <<"\n\t Size was " << m_size
-                    ;
-        }
-        bValid = false;
-    }
+//    if( m_size < 0 )
+//    {
+//        if(verboseOutput)
+//        {
+//            errStr <<"\n** OrderedSet's size cannot be less than zero"
+//                    <<"\n\t Size was " << m_size
+//                    ;
+//        }
+//        bValid = false;
+//    }
 
 
     if(verboseOutput)

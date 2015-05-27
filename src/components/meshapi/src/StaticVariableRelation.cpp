@@ -9,11 +9,12 @@
 
 #include <sstream>
 #include <iostream>
+#include <iterator>
 
 namespace asctoolkit {
 namespace meshapi {
 
-    StaticVariableRelation::StaticVariableRelation (OrderedSet* fromSet, OrderedSet* toSet)
+    StaticVariableRelation::StaticVariableRelation (Set* fromSet, Set* toSet)
     : m_fromSet(fromSet), m_toSet(toSet)
 {
 }
@@ -127,10 +128,10 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         }
 
         std::cout<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
-        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<SetIndex>(std::cout, " "));
 
         std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
-        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetIndex>(std::cout, " "));
 
     }
 

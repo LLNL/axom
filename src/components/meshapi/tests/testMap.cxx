@@ -16,7 +16,7 @@
 typedef asctoolkit::meshapi::OrderedSet SetType;
 typedef asctoolkit::meshapi::Map<int> IntMap;
 typedef asctoolkit::meshapi::Map<double> RealMap;
-typedef SetType::Index  SetIndex;
+typedef SetType::SetIndex  SetIndex;
 
 typedef SetType::iterator SetIterator;
 static SetType::size_type const MAX_SET_SIZE = 10;

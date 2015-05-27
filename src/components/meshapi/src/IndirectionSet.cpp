@@ -13,7 +13,7 @@
 namespace asctoolkit {
 namespace meshapi {
 
-Set::Index& Set::at( size_type idx )
+IndirectionSet::Index& Set::at( size_type idx )
 {
   if(idx >= m_entities.size())
   {
@@ -25,7 +25,7 @@ Set::Index& Set::at( size_type idx )
   return m_entities[idx];
 }
 
-Set::Index const& Set::at( size_type idx ) const
+IndirectionSet::Index const& Set::at( size_type idx ) const
 {
   if(idx >= m_entities.size())
   {

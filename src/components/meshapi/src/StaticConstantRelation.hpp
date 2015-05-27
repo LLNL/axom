@@ -14,7 +14,7 @@
 //#include <iostream>
 
 #include "common/Utilities.hpp"
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/Set.hpp"
 #include "meshapi/Relation.hpp"
 
 
@@ -29,8 +29,8 @@ namespace meshapi    {
          */
         class SubscriptProxy{
         public:
-            SubscriptProxy(RelationVecConstIterator it, Index stride): m_iter(it), m_stride(stride) {}
-            Index const& operator[](Index index) const
+            SubscriptProxy(RelationVecConstIterator it, SetIndex stride): m_iter(it), m_stride(stride) {}
+            SetIndex const& operator[](SetIndex index) const
             {
                 ATK_ASSERT_MSG( index < m_stride, "Inner array access out of bounds."
                                              <<"\n\tPresented value: "<< index
@@ -39,15 +39,15 @@ namespace meshapi    {
             }
         private:
             RelationVecConstIterator m_iter;
-            Index m_stride;
+            SetIndex m_stride;
         };
 
     public:
 
-        typedef MeshIndexType                                                   Index;
-        typedef MeshSizeType                                                    size_type;
+        typedef Relation::SetIndex                                              SetIndex;
+        typedef Relation::size_type                                            size_type;
 
-        typedef std::vector<Index>                                              RelationVec;
+        typedef std::vector<SetIndex>                                           RelationVec;
         typedef RelationVec::iterator                                           RelationVecIterator;
         typedef std::pair<RelationVecIterator,RelationVecIterator>              RelationVecIteratorPair;
 
@@ -55,36 +55,36 @@ namespace meshapi    {
         typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>    RelationVecConstIteratorPair;
 
     public:
-        StaticConstantRelation (OrderedSet* fromSet = NULL, OrderedSet* toSet = NULL);
+        StaticConstantRelation (Set* fromSet = NULL, Set* toSet = NULL);
         virtual ~StaticConstantRelation(){}
         /**
          * \note TODO: swap this out for data in the datastore
          */
-        void setRelation(RelationVec const& toOffsets, Index stride = 0);
+        void setRelation(RelationVec const& toOffsets, SetIndex stride = 0);
 
-        RelationVecConstIterator begin(Index fromSetIndex)       const
+        RelationVecConstIterator begin(SetIndex fromSetIndex)       const
         {
             verifyIndex(fromSetIndex);
             return m_toSetIndicesVec.begin() + toSetBeginIndex(fromSetIndex);
         }
 
-        RelationVecConstIterator end(Index fromSetIndex)         const
+        RelationVecConstIterator end(SetIndex fromSetIndex)         const
         {
             verifyIndex(fromSetIndex);
             return m_toSetIndicesVec.begin() + toSetEndIndex(fromSetIndex);
         }
 
-        RelationVecConstIteratorPair range(Index fromSetIndex)   const
+        RelationVecConstIteratorPair range(SetIndex fromSetIndex)   const
         {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
-        SubscriptProxy const operator[](Index fromSetElt) const
+        SubscriptProxy const operator[](SetIndex fromSetElt) const
         {
             return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
         }
 
-        size_type size(Index fromSetIndex = 0)                  const
+        size_type size(SetIndex fromSetIndex = 0)                  const
         {
             verifyIndex(fromSetIndex);        
             return m_stride;
@@ -93,18 +93,18 @@ namespace meshapi    {
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(Index fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
-        inline Index toSetBeginIndex(Index fromSetIndex)   const { return m_stride * (fromSetIndex); }
-        inline Index toSetEndIndex(Index fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
+        inline SetIndex toSetBeginIndex(SetIndex fromSetIndex)   const { return m_stride * (fromSetIndex); }
+        inline SetIndex toSetEndIndex(SetIndex fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
 
 
 
     private:
 
-        Index       m_stride;
+        SetIndex       m_stride;
 
-        OrderedSet* m_fromSet;
-        OrderedSet* m_toSet;
+        Set* m_fromSet;
+        Set* m_toSet;
 
         RelationVec m_toSetIndicesVec;        // vector of toSet entries
     };

@@ -14,18 +14,19 @@
 #include <boost/iterator/counting_iterator.hpp>
 
 #include "Utilities.hpp"
+#include "Set.hpp"
 
 namespace asctoolkit{
 namespace meshapi{
 
 
-    class OrderedSet  // : public Set
+    class OrderedSet  : public Set
     {
     public:
-      typedef MeshIndexType     Index;
-      typedef MeshSizeType      size_type;
+      typedef Set::SetIndex     SetIndex;
+      typedef Set::size_type    size_type;
 
-      typedef boost::counting_iterator<Index> iterator;
+      typedef boost::counting_iterator<SetIndex> iterator;
       typedef std::pair<iterator,iterator> iterator_pair;
 
     public:
@@ -37,15 +38,15 @@ namespace meshapi{
       iterator  end()   const  { return iterator(m_size); }
       iterator_pair  range() const  { return std::make_pair(begin(), end()); }
 
-      Index     operator[](Index idx) { return idx;}
-      Index     at(Index idx)   ;
+      SetIndex     operator[](SetIndex idx) const { return idx;}
+      SetIndex     at(SetIndex idx)   const ;
 
 
       void reset(size_type) { throw NotImplementedException(); }
 
       bool isValid(bool verboseOutput = false) const;
     private:
-      int m_size;
+      SetIndex m_size;
 
     };
 

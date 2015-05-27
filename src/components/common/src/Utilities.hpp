@@ -11,6 +11,8 @@
 #ifndef UTILITIES_HPP_
 #define UTILITIES_HPP_
 
+
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <string>

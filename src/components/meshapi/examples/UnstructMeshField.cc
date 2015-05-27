@@ -21,6 +21,7 @@
 #include "common/Utilities.hpp"
 #include "meshapi/FileUtilities.hpp"
 
+#include "meshapi/Set.hpp"
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/StaticVariableRelation.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
@@ -74,7 +75,7 @@ public:
 #endif
     typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
-    typedef NodeToZoneRelation::Index         IndexType;
+    typedef NodeToZoneRelation::SetIndex      IndexType;
     typedef NodeToZoneRelation::size_type     SizeType;
 
     // types for maps
@@ -285,13 +286,13 @@ void generateNodeZoneRelation(HexMesh* mesh)
 
     RelationVec beginsVec( mesh->nodes.size() + 1 );
     RelationVec offsetsVec( numZonesOfNode );
-    HexMesh::IndexType count = 0;
+    HexMesh::NodeSet::SetIndex count = 0;
     for(HexMesh::NodeSet::iterator nIt = mesh->nodes.begin(), nEnd = mesh->nodes.end(); nIt < nEnd; ++nIt)
     {
         beginsVec[*nIt] = count;
         for(DynRelationIteratorPair sItPair = tmpZonesOfNode.range(*nIt); sItPair.first < sItPair.second; ++sItPair.first)
         {
-            HexMesh::ZoneSet::Index const& zoneIdx = *(sItPair.first);
+            HexMesh::ZoneSet::SetIndex const& zoneIdx = *(sItPair.first);
             offsetsVec[count++] = zoneIdx;
         }
     }

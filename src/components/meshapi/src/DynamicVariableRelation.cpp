@@ -9,11 +9,12 @@
 
 #include <sstream>
 #include <iostream>
+#include <iterator>
 
 namespace asctoolkit {
 namespace meshapi {
 
-    DynamicVariableRelation::DynamicVariableRelation (OrderedSet* fromSet, OrderedSet* toSet)
+    DynamicVariableRelation::DynamicVariableRelation (Set* fromSet, Set* toSet)
     : m_fromSet(fromSet), m_toSet(toSet)
     {
         if(m_fromSet)
@@ -63,23 +64,21 @@ namespace meshapi {
                 bValid = false;
             }
 
-
             // Check that all elements of the relations vector point to valid set elements in the toSet
-            for(OrderedSet::iterator sIt = m_fromSet->begin(), sItEnd = m_fromSet->end(); sIt < sItEnd; ++sIt)
+            for(SetIndex fromIdx=0; fromIdx < m_fromSet->size(); ++fromIdx)
             {
-                for(RelationVecConstIterator rIt = begin(*sIt), rEnd = end(*sIt); rIt < rEnd; ++rIt)
+                SetIndex idx = (*m_fromSet)[fromIdx];
+                for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx); rIt < rEnd; ++rIt)
                 {
                     if( *rIt >= m_toSet->size() )
                     {
                         if(verboseOutput)
                         {
-                            Index fromIdx = std::distance(m_fromSet->begin(), sIt);
                             sstr << "\n\t* relation for element " << fromIdx << " of fromSet had an out-of-range element."
-                                    << " -- value of element " << std::distance( begin(*sIt), rIt) << " was " << *rIt
+                                    << " -- value of element " << std::distance( begin(idx), rIt) << " was " << *rIt
                                     << ". Max possible value should be " << m_toSet->size() <<"." ;
                         }
                         bValid = false;
-
                     }
                 }
             }
@@ -113,11 +112,13 @@ namespace meshapi {
             {
                 size_type overallCount = 0;
                 std::cout<< "\n** relations vec elements:";
-                for(OrderedSet::iterator sIt = m_fromSet->begin(), sItEnd = m_fromSet->end(); sIt < sItEnd; ++sIt)
+
+                for(SetIndex fromIdx=0; fromIdx < m_fromSet->size(); ++fromIdx)
                 {
-                    std::cout<<"\n\telt[" << *sIt << "] (" <<size(*sIt)  << "):\t";
-                    std::copy(begin(*sIt), end(*sIt), std::ostream_iterator<Index>(std::cout, " "));
-                    overallCount += size(*sIt);
+                    SetIndex idx = (*m_fromSet)[fromIdx];
+                    std::cout<<"\n\telt[" << fromIdx << "] (" <<size(idx)  << "):\t";
+                    std::copy(begin(idx), end(idx), std::ostream_iterator<SetIndex>(std::cout, " "));
+                    overallCount += size(idx);
                 }
                 std::cout<< "\n\n\tOverall size of relation" << overallCount << std::endl;
             }

@@ -9,16 +9,17 @@
 
 #include <sstream>
 #include <iostream>
+#include <iterator>
 
 namespace asctoolkit {
 namespace meshapi {
 
-    StaticConstantRelation::StaticConstantRelation (OrderedSet* fromSet, OrderedSet* toSet)
-    : m_stride(Index()), m_fromSet(fromSet), m_toSet(toSet)
+    StaticConstantRelation::StaticConstantRelation (Set* fromSet, Set* toSet)
+    : m_stride(SetIndex()), m_fromSet(fromSet), m_toSet(toSet)
 {
 }
 
-void StaticConstantRelation::setRelation(RelationVec const& toOffsets, Index stride)
+void StaticConstantRelation::setRelation(RelationVec const& toOffsets, SetIndex stride)
 {
     m_stride = stride;
 
@@ -106,7 +107,7 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
             std::cout<< "\n** toSet has size " << m_toSet->size() <<": ";
 
         std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
-        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<Index>(std::cout, " "));
+        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetIndex>(std::cout, " "));
 
     }
 

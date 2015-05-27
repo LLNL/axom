@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "meshapi/Set.hpp"
 
 namespace asctoolkit {
 namespace meshapi    {
@@ -17,10 +18,10 @@ namespace meshapi    {
     class Relation
     {
     public:
-        typedef MeshIndexType                                          Index;
-        typedef MeshSizeType                                           size_type;
+        typedef Set::SetIndex                                          SetIndex;
+        typedef Set::size_type                                           size_type;
 
-        typedef std::vector<Index>                                     RelationVec;
+        typedef std::vector<SetIndex>                                     RelationVec;
         typedef RelationVec::iterator                         RelationVecIterator;
         typedef std::pair<RelationVecIterator,RelationVecIterator>     RelationVecIteratorPair;
 
@@ -32,13 +33,13 @@ namespace meshapi    {
 
         //void setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets) = 0;
 
-        virtual RelationVecConstIterator begin(Index fromSetIndex)       const  = 0;
+        virtual RelationVecConstIterator begin(SetIndex fromSetIndex)       const  = 0;
 
-        virtual RelationVecConstIterator end(Index fromSetIndex)         const  = 0;
+        virtual RelationVecConstIterator end(SetIndex fromSetIndex)         const  = 0;
 
-        virtual RelationVecConstIteratorPair range(Index fromSetIndex)   const  = 0;
+        virtual RelationVecConstIteratorPair range(SetIndex fromSetIndex)   const  = 0;
 
-        virtual size_type size(Index fromSetIndex)                       const  = 0;
+        virtual size_type size(SetIndex fromSetIndex)                       const  = 0;
 
         virtual bool isValid(bool verboseOutput = false)                const = 0;
 
