@@ -55,7 +55,7 @@ namespace meshapi    {
         typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>    RelationVecConstIteratorPair;
 
     public:
-        StaticConstantRelation (Set* fromSet = NULL, Set* toSet = NULL);
+        StaticConstantRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
         virtual ~StaticConstantRelation(){}
         /**
          * \note TODO: swap this out for data in the datastore
@@ -93,7 +93,7 @@ namespace meshapi    {
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
         inline SetIndex toSetBeginIndex(SetIndex fromSetIndex)   const { return m_stride * (fromSetIndex); }
         inline SetIndex toSetEndIndex(SetIndex fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
 

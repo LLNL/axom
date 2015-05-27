@@ -75,3 +75,16 @@ TEST(gtest_meshapi_ordered_set,construct_ordered_set)
     std::cout << "--\ndone." << std::endl;
 
 }
+
+TEST(gtest_meshapi_ordered_set,test_ordered_set_out_of_bounds)
+{
+    std::cout<<"\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;
+
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+    SetType s(MAX_SET_SIZE);
+
+    ASSERT_DEATH( s[MAX_SET_SIZE], "");
+}
+
+

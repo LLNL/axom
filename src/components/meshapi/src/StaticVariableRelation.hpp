@@ -15,6 +15,7 @@
 
 #include "common/Utilities.hpp"
 #include "meshapi/Set.hpp"
+#include "meshapi/NullSet.hpp"
 #include "meshapi/Relation.hpp"
 
 
@@ -52,8 +53,10 @@ namespace meshapi    {
         typedef RelationVec::const_iterator                   RelationVecConstIterator;
         typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>     RelationVecConstIteratorPair;
 
+
+
     public:
-        StaticVariableRelation (Set* fromSet = NULL, Set* toSet = NULL);
+        StaticVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
         virtual ~StaticVariableRelation(){}
         /**
          * \note TODO: swap this out for data in the datastore
@@ -91,7 +94,7 @@ namespace meshapi    {
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
         inline SetIndex toSetBeginIndex(SetIndex fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
         inline SetIndex toSetEndIndex(SetIndex fromSetIndex)     const { return m_fromSetBeginsVec[fromSetIndex+1]; }
 

@@ -30,7 +30,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,empty_relation)
 {
     std::cout<<"\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
-    DynamicVariableRelation emptyRel(NULL, NULL);
+    DynamicVariableRelation emptyRel;
 
     EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 

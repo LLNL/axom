@@ -30,12 +30,25 @@ TEST(gtest_meshapi_static_variable_relation,empty_relation)
 {
     std::cout<<"\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
-    StaticVariableRelation emptyRel(NULL, NULL);
+    StaticVariableRelation emptyRel;
 
     EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 
+
+
     std::cout<<"\n****** done."<<std::endl;
 }
+
+TEST(gtest_meshapi_static_variable_relation,empty_relation_out_of_bounds)
+{
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+    StaticVariableRelation emptyRel;
+
+    ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
+}
+
+
 
 TEST(gtest_meshapi_static_variable_relation,test_uninitialized_relation)
 {
@@ -136,6 +149,26 @@ TEST(gtest_meshapi_static_variable_relation,simple_relation)
     }
 
     std::cout<<"\n****** done."<<std::endl;
+}
+
+TEST(gtest_meshapi_static_variable_relation,initialized_rel_out_of_bounds)
+{
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+    std::cout<<"\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
+
+    OrderedSet fromSet(FROMSET_SIZE);
+    OrderedSet toSet(TOSET_SIZE);
+    StaticVariableRelation incrementingRel(&fromSet, &toSet);
+
+    typedef StaticVariableRelation::RelationVec IndexVec;
+    IndexVec begins(FROMSET_SIZE +1);
+    IndexVec offsets;
+
+    generateIncrementingRelations(&begins, &offsets);
+    incrementingRel.setRelation(begins, offsets);
+
+    ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
 }
 
 TEST(gtest_meshapi_static_variable_relation,test_iterator_range)

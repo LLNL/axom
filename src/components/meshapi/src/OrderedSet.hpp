@@ -38,17 +38,32 @@ namespace meshapi{
       iterator  end()   const  { return iterator(m_size); }
       iterator_pair  range() const  { return std::make_pair(begin(), end()); }
 
-      SetIndex     operator[](SetIndex idx) const { return idx;}
+      SetIndex     operator[](SetIndex idx) const { verifyIndex(idx); return idx;}
       SetIndex     at(SetIndex idx)   const ;
-
 
       void reset(size_type) { throw NotImplementedException(); }
 
       bool isValid(bool verboseOutput = false) const;
+
+    private:
+      inline void  verifyIndex(SetIndex idx)       const { ATK_ASSERT( idx < size() ); }
     private:
       SetIndex m_size;
 
     };
+
+
+    /**
+     * \brief Two OrderedSets are equal if they have the same cardinality
+     * \note Two sets of different types are (currently) considered to be unequal
+     */
+    inline bool operator==(OrderedSet const& firstSet, OrderedSet const& otherSet) { return firstSet.size() == otherSet.size();}
+
+    /**
+     * \brief Two OrderedSets are equal if they have the same cardinality
+     * \note Two sets of different types are (currently) considered to be unequal
+     */
+    inline bool operator!=(OrderedSet const& firstSet, OrderedSet const& otherSet) { return !(firstSet==otherSet); }
 
 
 } // end namespace meshapi

@@ -11,9 +11,12 @@
 #include <vector>
 
 #include "meshapi/Set.hpp"
+#include "meshapi/NullSet.hpp"
 
 namespace asctoolkit {
 namespace meshapi    {
+
+    class NullSet;
 
     class Relation
     {
@@ -27,6 +30,8 @@ namespace meshapi    {
 
         typedef RelationVec::const_iterator                   RelationVecConstIterator;
         typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>     RelationVecConstIteratorPair;
+
+        static NullSet s_nullSet;
 
     public:
         virtual ~Relation(){}

@@ -30,11 +30,21 @@ TEST(gtest_meshapi_static_constant_relation,empty_relation)
 {
     std::cout<<"\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
-    StaticConstantRelation emptyRel(NULL, NULL);
+    StaticConstantRelation emptyRel;
 
     EXPECT_TRUE(emptyRel.isValid(true)) << "Empty relation was not valid";
 
     std::cout<<"\n****** done."<<std::endl;
+}
+
+TEST(gtest_meshapi_static_constant_relation,empty_relation_out_of_bounds)
+{
+    std::cout<<"\n****** Testing access on empty relation -- code is expected to assert and die." << std::endl;
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+    StaticConstantRelation emptyRel;
+
+    ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
 }
 
 TEST(gtest_meshapi_static_constant_relation,test_uninitialized_relation)
@@ -134,6 +144,27 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
     }
     std::cout<<"\n****** done."<<std::endl;
 }
+
+TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
+{
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+    std::cout<<"\n****** Testing out of bounds access on initialized relation.  Code is expected to assert and die." << std::endl;
+
+    OrderedSet fromSet(FROMSET_SIZE);
+    OrderedSet toSet(TOSET_SIZE);
+    StaticConstantRelation incrementingRel(&fromSet, &toSet);
+
+    typedef StaticConstantRelation::RelationVec IndexVec;
+    IndexVec offsets;
+
+    IndexType const ELEM_STRIDE = 5;
+    generateIncrementingRelations(ELEM_STRIDE, &offsets);
+    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+
+    ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
+}
+
 
 TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
 {

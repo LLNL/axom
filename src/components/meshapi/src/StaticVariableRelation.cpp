@@ -1,5 +1,5 @@
-/*
- * StaticVariableRelation.cpp
+/**
+ * \file StaticVariableRelation.cpp
  *
  *  Created on: Apr 29, 2015
  *      Author: weiss27
@@ -14,7 +14,10 @@
 namespace asctoolkit {
 namespace meshapi {
 
-    StaticVariableRelation::StaticVariableRelation (Set* fromSet, Set* toSet)
+
+
+
+StaticVariableRelation::StaticVariableRelation (Set* fromSet, Set* toSet)
     : m_fromSet(fromSet), m_toSet(toSet)
 {
 }
@@ -37,15 +40,15 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
     std::stringstream sstr;
 
 
-    if( m_fromSet == NULL || m_toSet == NULL)
+    if( *m_fromSet == s_nullSet || *m_toSet == s_nullSet)
     {
         if(!m_fromSetBeginsVec.empty())
         {
             if(verboseOutput)
             {
                 sstr << "\n\t* fromSetBeginsVec was not empty "
-                    <<" -- fromSet was " << (m_fromSet == NULL ? "" : " not ") << "null"
-                    <<" , toSet was " << (m_toSet == NULL ? "" : " not ") << "null";
+                    <<" -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
+                    <<" , toSet was " << (*m_toSet == s_nullSet ? "" : " not ") << "null";
             }
 
             bValid = false;
@@ -55,8 +58,8 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
             if(verboseOutput)
             {
                 sstr << "\n\t* toSetIndicesVec was not empty "
-                    <<" -- fromSet was " << (m_fromSet == NULL ? "" : " not ") << "null"
-                    <<" , toSet was " << (m_toSet == NULL ? "" : " not ") << "null";
+                    <<" -- fromSet was " << (*m_fromSet == s_nullSet? "" : " not ") << "null"
+                    <<" , toSet was " << (*m_toSet == s_nullSet? "" : " not ") << "null";
             }
 
             bValid = false;

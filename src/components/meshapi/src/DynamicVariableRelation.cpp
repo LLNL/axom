@@ -17,10 +17,7 @@ namespace meshapi {
     DynamicVariableRelation::DynamicVariableRelation (Set* fromSet, Set* toSet)
     : m_fromSet(fromSet), m_toSet(toSet)
     {
-        if(m_fromSet)
-        {
-            m_relationsVec.resize( m_fromSet->size() );
-        }
+        m_relationsVec.resize( m_fromSet->size() );
     }
 
 
@@ -31,15 +28,15 @@ namespace meshapi {
 
         std::stringstream sstr;
 
-        if( m_fromSet == NULL || m_toSet == NULL)
+        if( *m_fromSet == s_nullSet || *m_toSet == s_nullSet)
         {
             if(!m_relationsVec.empty())
             {
                 if(verboseOutput)
                 {
                     sstr << "\n\t* relations vector was not empty "
-                        <<" -- fromSet was " << (m_fromSet == NULL ? "" : " not ") << "null"
-                        <<" , toSet was " << (m_toSet == NULL ? "" : " not ") << "null";
+                        <<" -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
+                        <<" , toSet was " << (*m_toSet == s_nullSet? "" : " not ") << "null";
                 }
 
                 bValid = false;

@@ -40,7 +40,7 @@ namespace meshapi    {
         typedef RelationsContainer::iterator                                    RelationsContainerIt;
 
     public:
-        DynamicVariableRelation (Set* fromSet = NULL, Set* toSet = NULL);
+        DynamicVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
         virtual ~DynamicVariableRelation(){}
 
         RelationVecConstIterator begin(SetIndex fromSetIndex)       const
@@ -93,7 +93,7 @@ namespace meshapi    {
 
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( m_fromSet && (fromSetIndex < m_fromSet->size() ) ); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
         inline RelationVec      & fromSetRelationsVec(SetIndex fromSetIndex)           { return m_relationsVec[fromSetIndex]; }
         inline RelationVec const& fromSetRelationsVec(SetIndex fromSetIndex)   const   { return m_relationsVec[fromSetIndex]; }
 

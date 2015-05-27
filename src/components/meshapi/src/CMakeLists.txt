@@ -13,6 +13,7 @@ set(meshapi_headers
     
 	# SRM Set headers
     Set.hpp
+    NullSet.hpp
     IndirectionSet.hpp
     OrderedSet.hpp
     
@@ -35,6 +36,7 @@ set(meshapi_sources
     IndirectionSet.hpp
     
     # SRM Relation sources
+    Relation.cpp
     StaticVariableRelation.cpp
 	StaticConstantRelation.cpp
 	DynamicVariableRelation.cpp

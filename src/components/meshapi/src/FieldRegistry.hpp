@@ -6,6 +6,7 @@
 
 #include "common/Utilities.hpp"
 #include "meshapi/Utilities.hpp"
+#include "meshapi/Set.hpp"
 #include "meshapi/Map.hpp"
 
 namespace asctoolkit{
@@ -30,7 +31,7 @@ namespace meshapi{
         typedef std::map<KeyType, DataType>             DataAttrMap;
 
     public:
-        MapType&  addField(KeyType key, OrderedSet const* theSet) { return m_dataVecs[key] = MapType(theSet); }
+        MapType&  addField(KeyType key, Set const* theSet) { return m_dataVecs[key] = MapType(theSet); }
         DataType& addScalar(KeyType key, DataType val)      { return m_dataScalars[key] = val; }
 
         MapType& getField(KeyType key)

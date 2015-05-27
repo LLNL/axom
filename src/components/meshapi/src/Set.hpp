@@ -11,7 +11,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "Utilities.hpp"
+#include "common/Utilities.hpp"
+#include "meshapi/Utilities.hpp"
 
 namespace asctoolkit{
 namespace meshapi{
@@ -62,7 +63,7 @@ namespace meshapi{
   {
   public:
     typedef MeshIndexType                 SetIndex;
-    typedef std::vector<SetIndex>            ArrType;
+    typedef std::vector<SetIndex>         ArrType;
 
     typedef ArrType::const_iterator       ArrCIter;
     typedef std::pair<ArrCIter, ArrCIter> ArrCIterPair;
@@ -135,6 +136,35 @@ namespace meshapi{
       virtual Set* parentSet()            =0;
 #endif
   };
+
+
+
+  /**
+   * \brief General equality operator for two sets.
+   * \detail Two sets are considered equal if they have the same number of elements, and their ordered indices agree.
+   */
+  inline bool operator==(Set const& set1, Set const& set2)
+  {
+      typedef Set::SetIndex SetIndex;
+      SetIndex const numElts = set1.size();
+
+      // Sets are different if they have a different size
+      if(set2.size() != numElts)
+          return false;
+
+      // Otherwise, compare the indices element wise
+      for(SetIndex idx= SetIndex(); idx < numElts; ++idx)
+      {
+          if(set1[idx] != set2[idx])
+              return false;
+      }
+      return true;
+  }
+  /**
+   * \brief Set inequality operator
+   */
+  inline bool operator!=(Set const& set1, Set const& set2){ return !(set1 == set2);}
+
 
 } // end namespace meshapi
 } // end namespace asctoolkit

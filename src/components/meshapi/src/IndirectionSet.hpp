@@ -123,7 +123,6 @@ namespace meshapi{
        */
       Index const& at(size_type idx) const;
 
-
       /**
        * \brief Get the number of entities in the set
        * @return The number of entities in the set.
@@ -189,6 +188,32 @@ namespace meshapi{
       ArrType   m_entities;
       Set*      m_parentSet;
   };
+
+
+  /**
+   * \brief Two IndirectionSets are equal if they have the same cardinality and all indexes are the same (and in the same order)
+   * \note Two sets of different types are (currently) considered to be unequal
+   */
+  inline bool operator==(IndirectionSet const& firstSet, IndirectionSet const& otherSet)
+  {
+      if(firstSet.size() != otherSet.size() )
+          return false;
+      for(SetIndex idx=0; idx< firstSet.size(); ++idx)
+      {
+          if( firstSet[idx] != otherSet[idx] )
+              return false;
+      }
+      return true;
+  }
+
+  /**
+   * \brief Two IndirectionSets are equal if they have the same cardinality and all indexes are the same (and in the same order)
+   * \note Two sets of different types are (currently) considered to be unequal
+   */
+  inline bool operator!=(IndirectionSet const& firstSet, IndirectionSet const& otherSet) { return !(firstSet==otherSet); }
+
+
+
 
 } // end namespace meshapi
 } // end namespace asctoolkit
