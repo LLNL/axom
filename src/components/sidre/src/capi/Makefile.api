@@ -1,7 +1,8 @@
 #
 # Generate the API files
 #
+# TODO: replace with CMake targets Jira ATK-137
 
 gen : api.yaml
-	../../../common/shroud/shroud api.yaml
+	echo "shroud api.yaml"
 
