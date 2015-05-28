@@ -226,10 +226,6 @@ public:
 
 
 private:
-    //
-    // Default ctor is not implemented.
-    //
-    DataBuffer();
 
     /*!
      *  \brief Private ctor that assigns unique id.
@@ -280,6 +276,20 @@ private:
 
     /// Conduit Schema that describes buffer data.
     Schema m_schema;
+
+    /*!
+     *  Unimplemented ctors and copy-assignment operators.
+     */
+  #ifdef USE_CXX11
+    DataBuffer() = delete;
+    DataBuffer( DataBuffer&& ) = delete;
+
+    DataBuffer& operator=( const DataBuffer& ) = delete;
+    DataBuffer& operator=( DataBuffer&& ) = delete;
+  #else
+    DataBuffer();
+    DataBuffer& operator=( const DataBuffer& );
+  #endif
 
 };
 

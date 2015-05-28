@@ -150,9 +150,9 @@ public:
 
 
 private:
-  //
-  // Unimplemented ctors and copy-assignment operators.
-  //
+  /*!
+   *  Unimplemented ctors and copy-assignment operators.
+   */
 #ifdef USE_CXX11
   DataStore( const DataStore& ) = delete;
   DataStore( DataStore&& ) = delete;

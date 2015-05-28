@@ -38,33 +38,33 @@ class PhysicsPackage
       {
          sidre::DataGroup& subgroup = *mDataGroup.createGroup("physicsB");
 
-         sidre::DataView& dataview = *subgroup.createViewAndBuffer("variable1");
-         sidre::DataBuffer& buffer = *dataview.getBuffer();
-         buffer.declare(DataType::float64(100));
-         buffer.allocate();
-         conduit::float64* data_ptr1 = buffer.getNode().as_float64_ptr();
+         sidre::DataView* dataview = subgroup.createViewAndBuffer("variable1");
+         sidre::DataBuffer* buffer = dataview->getBuffer();
+         buffer->declare(DataType::float64(100));
+         buffer->allocate();
+         conduit::float64* data_ptr1 = buffer->getNode().as_float64_ptr();
          // how do you get number of entries in conduit node? (ie, number of float64's)?
          for (size_t i=0; i < 100; ++i)
          {
-            data_ptr1[i] = i;
+           data_ptr1[i] = i;
          }
 
-         dataview = *subgroup.createViewAndBuffer("variable2");
-         buffer = *dataview.getBuffer();
-         buffer.declare(DataType::float64(100));
-         buffer.allocate();
-         conduit::float64* data_ptr2 = buffer.getNode().as_float64_ptr();
+         dataview = subgroup.createViewAndBuffer("variable2");
+         buffer = dataview->getBuffer();
+         buffer->declare(DataType::float64(100));
+         buffer->allocate();
+         conduit::float64* data_ptr2 = buffer->getNode().as_float64_ptr();
          // how do you get number of entries in conduit node? (ie, number of float64's)?
          for (size_t i=0; i < 100; ++i)
          {
             data_ptr2[i] = 100-i;
          }
-         
-         dataview = *subgroup.createViewAndBuffer("dependentVariable");
-         buffer = *dataview.getBuffer();
-         buffer.declare(DataType::float64(100));
-         buffer.allocate();
-         conduit::float64* data_ptr3 = buffer.getNode().as_float64_ptr();
+
+         dataview = subgroup.createViewAndBuffer("dependentVariable");
+         buffer = dataview->getBuffer();
+         buffer->declare(DataType::float64(100));
+         buffer->allocate();
+         conduit::float64* data_ptr3 = buffer->getNode().as_float64_ptr();
          // how do you get number of entries in conduit node? (ie, number of float64's)?
          for (size_t i=0; i < 100; ++i)
          {

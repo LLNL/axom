@@ -406,6 +406,21 @@ private:
 
     /// Has Schema been applied to buffer data?
     bool        m_is_applied;
+
+    /*!
+     *  Unimplemented ctors and copy-assignment operators.
+     */
+  #ifdef USE_CXX11
+    DataView() = delete;
+    DataView( DataView&& ) = delete;
+
+    DataView& operator=( const DataView& ) = delete;
+    DataView& operator=( DataView&& ) = delete;
+  #else
+    DataView();
+    DataView& operator=( const DataView& );
+  #endif
+
 };
 
 
