@@ -13,9 +13,21 @@ namespace asctoolkit
 namespace sidre
 {
 
+typedef conduit::DataType::TypeID TypeID;
+
+
+
 typedef int IDType;
 
 const IDType InvalidID = -1;
+
+
+template< int TYPEID >
+TypeID getTypeID()
+{
+  return static_cast<TypeID>(TYPEID);
+}
+
 
 
 } /* end namespace sidre */

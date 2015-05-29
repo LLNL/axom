@@ -341,7 +341,7 @@ TEST(sidre_view,uint32_array_realloc)
     
     for(int i=0;i<5;i++)
     {
-        a1_ptr[i] =  5;
+        a1_ptr[i] =  5u;
         a2_ptr[i] = -5;
     }
     
@@ -357,13 +357,13 @@ TEST(sidre_view,uint32_array_realloc)
 
     for(int i=0;i<5;i++)
     {
-        EXPECT_EQ(a1_ptr[i],5);
+        EXPECT_EQ(a1_ptr[i],5u);
         EXPECT_EQ(a2_ptr[i],-5);
     }
 
     for(int i=5;i<10;i++)
     {
-        a1_ptr[i] = 10;
+        a1_ptr[i] = 10u;
         a2_ptr[i] = -10;
     }
 

@@ -14,6 +14,7 @@ set(gtest_sidre_tests
    sidre_external.cpp
    sidre_group.cpp
    sidre_opaque.cpp
+   sidre_types.cpp
    sidre_view.cpp
    C_sidre_smoke.cpp
 #   C_sidre_buffer.cpp
