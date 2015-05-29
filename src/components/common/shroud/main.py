@@ -244,7 +244,10 @@ class Schema(object):
 
     def check_function_dependencies(self, node, used_types):
         result = node['result']
-        result_typedef = self.typedef[result['type']]
+        rv_type = result['type']
+        if rv_type not in self.typedef:
+            raise RuntimeError("Unknown type {} for function decl: {}".format(rv_type, node['decl']))
+        result_typedef = self.typedef[rv_type]
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
         for arg in node.get('args', []):

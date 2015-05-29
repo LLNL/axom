@@ -16,6 +16,15 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
+int ATK_databuffer_get_uid(ATK_databuffer * self)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+int rv = selfobj->getUID();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

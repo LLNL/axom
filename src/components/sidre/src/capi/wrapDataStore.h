@@ -33,6 +33,8 @@ void ATK_datastore_delete(ATK_datastore * self);
 
 ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self);
 
+void ATK_datastore_destroy_buffer(ATK_datastore * self, const int id);
+
 ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
 
 #ifdef __cplusplus

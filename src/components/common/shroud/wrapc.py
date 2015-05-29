@@ -204,7 +204,8 @@ class Wrapc(object):
 
         # return type
         result = node['result']
-        result_typedef = self.typedef[result['type']]
+        result_type = result['type']
+        result_typedef = self.typedef[result_type]
         C_this = node['options']['C_this']
         is_const = result['attrs'].get('const', False)
         is_ctor  = result['attrs'].get('constructor', False)
@@ -259,13 +260,18 @@ class Wrapc(object):
             node['C_object'] = wformat(template, fmt_dict)
 
         if 'C_code' not in node:
+            # generate the C body
             lines = []
             if is_ctor:
                 lines.append('return (%s) %sobj;' % (C_this_type, C_this))
             elif is_dtor:
                 lines.append('delete %sobj;' % C_this)
+            elif result_type == 'void':
+                line = wformat('{cpp_this}->{cpp_name}({call_list});',
+                               fmt_dict)
+                lines.append(line)
+                lines.append('return;')
             else:
-                # void function
                 line = wformat('{rv_decl} = {cpp_this}->{cpp_name}({call_list});',
                                fmt_dict)
                 lines.append(line)

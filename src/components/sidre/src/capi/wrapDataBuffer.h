@@ -24,6 +24,8 @@ struct s_ATK_databuffer;
 typedef struct s_ATK_databuffer ATK_databuffer;
 #endif
 
+int ATK_databuffer_get_uid(ATK_databuffer * self);
+
 #ifdef __cplusplus
 }
 #endif

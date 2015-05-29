@@ -10,37 +10,33 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
-
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataBuffer;
-
-using namespace conduit;
+#include "sidre/sidre.h"
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,create_buffers)
+TEST(C_sidre_buffer,create_buffers)
 {
-    DataStore *ds = new DataStore();
-    DataBuffer *dbuff_0 = ds->createBuffer();
-    DataBuffer *dbuff_1 = ds->createBuffer();
+    ATK_datastore *ds = ATK_datastore_new();
+    ATK_databuffer *dbuff_0 = ATK_datastore_create_buffer(ds);
+    ATK_databuffer *dbuff_1 = ATK_datastore_create_buffer(ds);
     
-    EXPECT_EQ(dbuff_0->getUID(), 0);
-    EXPECT_EQ(dbuff_1->getUID(), 1);
-    ds->destroyBuffer(0);
+    EXPECT_EQ(ATK_databuffer_get_uid(dbuff_0), 0);
+    EXPECT_EQ(ATK_databuffer_get_uid(dbuff_1), 1);
+    ATK_datastore_destroy_buffer(ds, 0);
     
-    DataBuffer *dbuff_3 = ds->createBuffer();
-    EXPECT_EQ(dbuff_3->getUID(), 0);
-    ds->print();
-    delete ds;
+    ATK_databuffer *dbuff_3 = ATK_datastore_create_buffer(ds);
+    EXPECT_EQ(ATK_databuffer_get_uid(dbuff_3), 0);
+    //    ds->print();
+    ATK_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,alloc_buffer_for_uint32_array)
+#if 0
+TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
 {
-    DataStore *ds = new DataStore();
-    DataBuffer *dbuff = ds->createBuffer();
+    ATK_datastore *ds = ATK_datastore_new();
+    ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
 
     dbuff->declare(DataType::uint32(10));
     dbuff->allocate();
@@ -56,16 +52,16 @@ TEST(sidre_buffer,alloc_buffer_for_uint32_array)
               dbuff->getSchema().total_bytes());
   
     ds->print();
-    delete ds;
+    ATK_datastore_delete(ds);
     
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,init_buffer_for_uint32_array)
+TEST(C_sidre_buffer,init_buffer_for_uint32_array)
 {
-    DataStore *ds = new DataStore();
-    DataBuffer *dbuff = ds->createBuffer();
+    ATK_datastore *ds = ATK_datastore_new();
+    ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
 
     dbuff->allocate(DataType::uint32(10));
     uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();
@@ -79,17 +75,17 @@ TEST(sidre_buffer,init_buffer_for_uint32_array)
               dbuff->getSchema().total_bytes());
 
     ds->print();
-    delete ds;
+    ATK_datastore_delete(ds);
     
 }
 
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,realloc_buffer)
+TEST(C_sidre_buffer,realloc_buffer)
 {
-    DataStore *ds = new DataStore();
-    DataBuffer *dbuff = ds->createBuffer();
+    ATK_datastore *ds = ATK_datastore_new();
+    ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
 
     dbuff->allocate(DataType::int64(5));
     
@@ -128,9 +124,10 @@ TEST(sidre_buffer,realloc_buffer)
     dbuff->getNode().print_detailed();
     
     ds->print();
-    delete ds;
+    ATK_datastore_delete(ds);
     
 }
 
 
 
+#endif

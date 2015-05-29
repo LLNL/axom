@@ -16,6 +16,18 @@ options:
   C_prefix: ATK_
   namespace: asctoolkit sidre
 
+typedef:
+  IDType:
+# defined in SidreTypes.hpp
+    c : int
+    cpp : int
+    c_fortran : integer(C_INT)
+    fortran : integer(C_INT)
+
+# XXX
+# parameters:
+#  InvalidID: IDTYPE -1
+
 classes:
   - name: DataStore
     options:
@@ -24,7 +36,7 @@ classes:
     -  decl: DataStore *new+constructor
     -  decl: void delete+destructor
     -  decl: DataBuffer* createBuffer
-#    -  decl: void destroyBuffer( const IDType id )
+    -  decl: void destroyBuffer( const IDType id )
 #    -  decl: DataBuffer* detatchBuffer( const IDType id )
     -  decl: DataGroup *getRoot()
 #    -  decl: DataBuffer* getBuffer( const IDType id )
@@ -82,6 +94,25 @@ classes:
   - name: DataBuffer
     options:
       cpp_header: sidre/DataBuffer.hpp
+    methods:
+      - decl:     IDType getUID()
+# with const      - decl:     IDType getUID() const
+#      - decl:     size_t getNumViews() const
+#      - decl:     DataBuffer* declare(const Schema& schema)
+#      - decl:     DataBuffer* declare(const DataType& dtype)
+#      - decl:     DataBuffer* allocate();
+#      - decl:     DataBuffer* allocate(const Schema &schema);
+#      - decl:     DataBuffer* allocate(const DataType& dtype);
+#      - decl:     DataBuffer* reallocate(const Schema& schema);
+#      - decl:     DataBuffer* reallocate(const DataType& dtype);
+#      - decl:     void* getData()
+#      - decl:     Node& getNode()
+#      - decl:     const Node& getNode() const
+#      - decl:     const Schema& getSchema() const
+#      - decl:     DataView* getView(IDType idx)
+#      - decl:     void info(Node& n) const;
+#      - decl:     void print() const;
+
 
   - name: DataView
     options:

@@ -41,6 +41,15 @@ return rv;
 // splicer end
 }
 
+void ATK_datastore_destroy_buffer(ATK_datastore * self, const int id)
+{
+DataStore *selfobj = static_cast<DataStore *>(self);
+// splicer begin
+selfobj->destroyBuffer(id);
+return;
+// splicer end
+}
+
 ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
