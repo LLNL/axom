@@ -32,17 +32,17 @@
 #include "conduit/conduit.h"
 
 
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
-using conduit::DataType;
-
 
 
 namespace asctoolkit
 {
 namespace sidre
 {
+
+// using directives to make Conduit usage easier and less visible
+using conduit::Node;
+using conduit::Schema;
+using conduit::DataType;
 
 class DataBuffer;
 class DataGroup;
@@ -233,15 +233,6 @@ public:
        return m_is_applied;
     }
 
-    /*!
-     * \brief Return true if DataView describes externally-owned data (i.e.,
-     *        not in an associated buffer); false otherwise.
-     */
-    bool isExternal() const
-    {
-       return m_is_external;
-    }
-
 //@}
 
 
@@ -353,26 +344,6 @@ private:
               void* opaque_ptr);
 
     /*!
-     *  \brief Private ctor that creates an external DataView with given 
-     *         name in given parent group and which is described by given
-     *         Conduit data type.
-     */
-    DataView( const std::string& name,
-              DataGroup* const owning_group,
-              void* external_data,
-              const DataType& dtype );
-
-    /*!
-     *  \brief Private ctor that creates an external DataView with given      
-     *         name in given parent group and which is described by given
-     *         Conduit schema.
-     */
-    DataView( const std::string& name,
-              DataGroup* const owning_group,
-              void* external_data,
-              const Schema& schema );
-
-    /*!
      * \brief Private copy ctor.
      */
     DataView(const DataView& source);
@@ -401,10 +372,7 @@ private:
     /// Is this DataView opaque?
     bool        m_is_opaque;
 
-    /// Is this a DataView into external data?
-    bool        m_is_external;
-
-    /// Has Schema been applied to buffer data?
+    /// Has Schema been applied data?
     bool        m_is_applied;
 
     /*!

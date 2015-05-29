@@ -190,9 +190,16 @@ DataView *DataGroup::createExternalView( const std::string& name,
                                          const DataType& dtype)
 {
    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+   ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+                   "Attempting to create view to null external data" );
    
-   DataView* const view = new DataView(name, this, 
-                                       external_data, dtype);
+   DataBuffer* buff = this->getDataStore()->createBuffer();
+   buff->declareExternal(external_data, dtype);
+   
+   DataView* const view = new DataView( name, this, buff);
+   buff->attachView(view);
+   view->apply(dtype);
+
    return attachView(view);
 }
 
@@ -208,9 +215,16 @@ DataView *DataGroup::createExternalView( const std::string& name,
                                          const Schema& schema)
 {
    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+   ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+                   "Attempting to create view to null external data" );
+
+   DataBuffer* buff = this->getDataStore()->createBuffer();
+   buff->declareExternal(external_data, schema);
+   
+   DataView* const view = new DataView( name, this, buff);
+   buff->attachView(view);
+   view->apply(schema);
   
-   DataView* const view = new DataView(name, this, 
-                                       external_data, schema);
    return attachView(view);
 }
 
@@ -834,7 +848,6 @@ void DataGroup::copyToNode(Node& n,
         Node& n_view = n["views"].fetch(view->getName());
         n_view["schema"].set(view->getSchema().to_json());
         n_view["is_applied"].set(view->isApplied());
-        n_view["is_external"].set(view->isExternal());
 
         // if we have a buffer, simply add the id to the list
         if (view->hasBuffer())

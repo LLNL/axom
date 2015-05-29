@@ -44,6 +44,31 @@ namespace sidre
 /*
 *************************************************************************
 *
+* Allocate data previously declared.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::allocate()
+{
+   ATK_ASSERT_MSG( !m_is_data_external, 
+                  "Attempting to allocate buffer holding external data");
+
+   if ( !m_is_data_external ) { 
+      // cleanup old data
+      cleanup();
+      std::size_t alloc_size = m_schema.total_bytes();
+      ATK_ASSERT_MSG(alloc_size > 0,
+                     "Attempting to allocate buffer of size 0");
+      m_data = allocateBytes(alloc_size);
+      m_node.set_external(m_schema,m_data);
+   }
+
+   return this;
+}
+
+/*
+*************************************************************************
+*
 * Declare and allocate data described using a Conduit schema.
 *
 *************************************************************************
@@ -64,9 +89,15 @@ DataBuffer* DataBuffer::declare(ATK_TypeID type, long len)
 
 DataBuffer* DataBuffer::allocate(const Schema& schema)
 {
-    declare(schema);
-    allocate();
-    return this;
+   ATK_ASSERT_MSG( !m_is_data_external, 
+                  "Attempting to allocate buffer holding external data");
+
+   if ( !m_is_data_external ) {
+      declare(schema);
+      allocate();
+   }
+
+   return this;
 }
 
 /*
@@ -78,9 +109,15 @@ DataBuffer* DataBuffer::allocate(const Schema& schema)
 */
 DataBuffer* DataBuffer::allocate(const DataType& dtype)
 {
-    declare(dtype);
-    allocate();
-    return this;
+   ATK_ASSERT_MSG( !m_is_data_external, 
+                  "Attempting to allocate buffer holding external data");
+
+   if ( !m_is_data_external ) {
+      declare(dtype);
+      allocate();
+   }
+
+   return this;
 }
 
 /*
@@ -92,34 +129,41 @@ DataBuffer* DataBuffer::allocate(const DataType& dtype)
 */
 DataBuffer* DataBuffer::reallocate(const Schema& schema)
 {
-    //  make sure realloc actually makes sense
-    ATK_ASSERT_MSG(m_data != ATK_NULLPTR,
-                   "Attempting to reallocate an unallocated buffer");
+   ATK_ASSERT_MSG( !m_is_data_external, 
+                  "Attempting to re-allocate buffer holding external data");
 
-    std::size_t realloc_size = schema.total_bytes();
-    ATK_ASSERT_MSG(realloc_size > 0,
-                   "Attempting to reallocate buffer to size 0");
+   if ( !m_is_data_external ) {
 
-    void* realloc_data = allocateBytes(realloc_size);
+      //  make sure realloc actually makes sense
+      ATK_ASSERT_MSG(m_data != ATK_NULLPTR,
+                     "Attempting to reallocate an unallocated buffer");
 
-    // use conduit to get data from old to new schema.
-    Node n;
-    n.set_external(schema,realloc_data);
-    // use conduit update, need more error checking.
-    n.update(m_node);
+      std::size_t realloc_size = schema.total_bytes();
+      ATK_ASSERT_MSG(realloc_size > 0,
+                     "Attempting to reallocate buffer to size 0");
 
-    // cleanup old data
-    cleanup();
+      void* realloc_data = allocateBytes(realloc_size);
 
-    // set the buffer to use the new schema
-    m_schema = schema;
-    
-    // let the buffer hold the new data
-    m_data = realloc_data;
-    
-    // update the buffer's Conduit Node
-    m_node.set_external(m_schema,m_data);
-    return this;
+      // use conduit to get data from old to new schema.
+      Node n;
+      n.set_external(schema,realloc_data);
+      // use conduit update, need more error checking.
+      n.update(m_node);
+
+      // cleanup old data
+      cleanup();
+
+      // set the buffer to use the new schema
+      m_schema = schema;
+   
+      // let the buffer hold the new data
+      m_data = realloc_data;
+   
+      // update the buffer's Conduit Node
+      m_node.set_external(m_schema,m_data);
+   }
+
+   return this;
 }
 
 /*
@@ -131,28 +175,15 @@ DataBuffer* DataBuffer::reallocate(const Schema& schema)
 */
 DataBuffer* DataBuffer::reallocate(const DataType& dtype)
 {
-    Schema s(dtype);
-    reallocate(s);
-    return this;
-}
+   ATK_ASSERT_MSG( !m_is_data_external, 
+                  "Attempting to re-allocate buffer holding external data");
 
-/*
-*************************************************************************
-*
-* Allocate data previously declared.
-*
-*************************************************************************
-*/
-DataBuffer* DataBuffer::allocate()
-{
-    // cleanup old data
-    cleanup();
-    std::size_t alloc_size = m_schema.total_bytes();
-    ATK_ASSERT_MSG(alloc_size > 0,
-                   "Attempting to allocate buffer of size 0");
-    m_data = allocateBytes(alloc_size);
-    m_node.set_external(m_schema,m_data);
-    return this;
+   if ( !m_is_data_external ) {
+      Schema s(dtype);
+      reallocate(s);
+   }
+
+   return this;
 }
 
 
@@ -166,6 +197,7 @@ DataBuffer* DataBuffer::allocate()
 void DataBuffer::info(Node &n) const
 {
     n["uid"].set(m_uid);
+    n["is_data_external"].set(m_is_data_external);
     n["schema"].set(m_schema.to_json());
     n["node"].set(m_node.to_json());
 }
@@ -192,14 +224,14 @@ void DataBuffer::print() const
 *   
 *************************************************************************
 */
-DataBuffer::DataBuffer( IDType uid ) :
-    m_uid(uid),
-    m_views(),
-    m_data(ATK_NULLPTR),
-    m_node(),
-    m_schema()
+DataBuffer::DataBuffer( IDType uid ) 
+: m_uid(uid),
+  m_views(),
+  m_data(ATK_NULLPTR),
+  m_node(),
+  m_schema(),
+  m_is_data_external(false)
 {
-    
 }
 
 
@@ -210,12 +242,13 @@ DataBuffer::DataBuffer( IDType uid ) :
 *   
 *************************************************************************
 */
-DataBuffer::DataBuffer(const DataBuffer& source ) :
-    m_uid(source.m_uid),
-    m_views(source.m_views),
-    m_data(source.m_data),
-    m_node(source.m_node),
-    m_schema(source.m_schema)
+DataBuffer::DataBuffer(const DataBuffer& source ) 
+: m_uid(source.m_uid),
+  m_views(source.m_views),
+  m_data(source.m_data),
+  m_node(source.m_node),
+  m_schema(source.m_schema),
+  m_is_data_external(source.m_is_data_external)
 {
 // disallow?
 }
@@ -275,7 +308,7 @@ void DataBuffer::detachView( DataView* view )
 void DataBuffer::cleanup()
 {
     // cleanup alloced data
-    if(m_data != ATK_NULLPTR)
+    if ( m_data != ATK_NULLPTR && !m_is_data_external )
     {
         releaseBytes(m_data);
         m_data = ATK_NULLPTR;
@@ -307,7 +340,9 @@ void *DataBuffer::allocateBytes(std::size_t numBytes)
 */
 void DataBuffer::releaseBytes(void *ptr)
 {
-    delete [] ((char*)ptr);
+   if ( !m_is_data_external ) {
+      delete [] ((char*)ptr);
+   }
 }
 
 
