@@ -97,6 +97,13 @@ public:
 //!  @name Data declaration and allocation methods
  
     /*!
+     * \brief Declare a data object given type and number of elements.
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* declare(ATK_TypeID type, long len);
+    
+    /*!
      * \brief Declare a data object as a Conduit schema.
      *
      * \return pointer to this DataBuffer object.

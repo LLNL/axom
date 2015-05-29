@@ -17,6 +17,8 @@ typedef int IDType;
 
 const IDType InvalidID = -1;
 
+#include "sidre/DataTypes.h"
+
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
