@@ -28,6 +28,8 @@
 
 // Other toolkit component headers
 #include "conduit/conduit.h"
+#include "common/CommonTypes.hpp"
+#include "common/Utilities.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
@@ -75,6 +77,8 @@ public:
     friend class DataGroup;
     friend class DataView;
 
+//@{
+//!  @name Accessor methods
 
     /*!
      * \brief Return the unique id of this buffer object.
@@ -91,13 +95,67 @@ public:
     {
       return m_views.size();
     }
+
+    /*!
+     * \brief Return true if buffer holds externally-owned data, or
+     * false if buffer owns the data it holds (default case).
+     */
+    bool isExternal() const 
+    {
+       return m_is_data_external;
+    }
+
+    /*!
+     * \brief Return void-pointer to data held by DataBuffer.
+     */
+    void* getData()
+    {
+       return m_data;
+    }
+
+    /*!
+     * \brief Return non-const reference to Conduit node holding data.
+     */
+    Node& getNode()
+    {
+       return m_node;
+    }
+
+    /*!
+     * \brief Return const reference to Conduit node holding data.
+     */
+    const Node& getNode() const
+    {
+       return m_node;
+    }
+
+    /*!
+     * \brief Return const reference to Conduit schema describing data.
+     */
+    const Schema& getSchema() const
+    {
+       return m_schema;
+    }
+
+    /*!
+     * \brief Return pointer to view attached to this buffer identified
+     *        by the given index.
+     */
+    DataView* getView(IDType idx)
+    {
+       return m_views[idx];
+    }
+
+//@}
    
  
 //@{
 //!  @name Data declaration and allocation methods
  
     /*!
-     * \brief Declare a data object as a Conduit schema.
+     * \brief Declare a buffer to OWN data described as a Conduit schema.
+     *
+     * Note the data must be allocated by calling allocate().
      *
      * \return pointer to this DataBuffer object.
      */
@@ -108,7 +166,10 @@ public:
     }
     
     /*!
-     * \brief Declare a data object as a pre-defined Conduit data type.
+     * \brief Declare a buffer to OWN data described as a 
+     *        pre-defined Conduit data type.
+     *
+     * Note the data must be allocated by calling allocate().
      *
      * \return pointer to this DataBuffer object.
      */
@@ -117,6 +178,49 @@ public:
         m_schema.set(dtype);
         return this;
     }
+
+    /*!
+     * \brief Declare a buffer to hold external data described as a 
+     *        Conduit schema.
+     *
+     * The given pointer references the existing external data. The buffer
+     * cannot allocate or reallocate it, and it will not be deallocated when
+     * buffer is destroyed.
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* declareExternal(void* external_data, 
+                                const Schema& schema)
+    {
+        ATK_ASSERT_MSG( external_data != ATK_NULLPTR, 
+                        "Attempting to set buffer to null external data" );
+        m_schema.set(schema);
+        m_data = external_data;
+        m_is_data_external = true;
+        return this;
+    }
+   
+    /*!
+     * \brief Declare a buffer to own data described as a 
+     *        pre-defined Conduit data type.
+     *
+     * The given pointer references the existing external data. The buffer
+     * cannot allocate or reallocate it, and it will not be deallocated when
+     * buffer is destroyed.
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* declareExternal(void* external_data,
+                                const DataType& dtype)
+    {
+        ATK_ASSERT_MSG( external_data != ATK_NULLPTR, 
+                        "Attempting to set buffer to null external data" );
+        m_schema.set(dtype);
+        m_data = external_data;
+        m_is_data_external = true;
+        return this;
+    }
+
 
     /*!
      * \brief Allocate data previously declared using a Declare() method.
@@ -128,7 +232,7 @@ public:
     /*!
      * \brief Declare and allocate data described as a Conduit schema.
      *
-     *        Equivalent to calling Declare(schema), then Allocate().
+     *        Equivalent to calling Declare(schema), then allocate().
      *
      * \return pointer to this DataBuffer object.
      */
@@ -138,7 +242,7 @@ public:
      * \brief Declare and allocate data described as a pre-defined 
      *        Conduit data type.
      *
-     *        Equivalent to calling Declare(dtype), then Allocate().
+     *        Equivalent to calling Declare(dtype), then allocate().
      *
      * \return pointer to this DataBuffer object.
      */
@@ -163,53 +267,6 @@ public:
      */
     DataBuffer* reallocate(const DataType& dtype);
 
-
-//@}
-
-
-//@{
-//!  @name Accessor methods
- 
-    /*!
-     * \brief Return void-pointer to data held by DataBuffer.
-     */
-    void* getData()
-    { 
-       return m_data;
-    }
-
-    /*!
-     * \brief Return non-const reference to Conduit node holding data.
-     */
-    Node& getNode()
-    {
-       return m_node; 
-    }
-
-    /*!
-     * \brief Return const reference to Conduit node holding data.
-     */
-    const Node& getNode() const
-    { 
-       return m_node; 
-    }
-
-    /*!
-     * \brief Return const reference to Conduit schema describing data.
-     */
-    const Schema& getSchema() const
-    { 
-       return m_schema; 
-    }
-
-    /*!
-     * \brief Return pointer to view attached to this buffer identified
-     *        by the given index.
-     */
-    DataView* getView(IDType idx)
-    { 
-       return m_views[idx]; 
-    }
 
 //@}
 
@@ -253,13 +310,13 @@ private:
     
 
     /*!
-     * \brief Private methods allocate and deallocate bytes data view to buffer.
+     * \brief Private methods allocate and deallocate data owned by buffer.
      */
     void cleanup();
     ///
-    void *allocateBytes(std::size_t numBytes);
+    void* allocateBytes(std::size_t numBytes);
     ///
-    void  releaseBytes(void *);
+    void  releaseBytes(void* );
 
 
     /// Identifier - unique within a dataStore.
@@ -276,6 +333,9 @@ private:
 
     /// Conduit Schema that describes buffer data.
     Schema m_schema;
+
+    /// Is buffer holding externally-owned data?
+    bool m_is_data_external; 
 
     /*!
      *  Unimplemented ctors and copy-assignment operators.
