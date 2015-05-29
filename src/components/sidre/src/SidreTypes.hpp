@@ -90,6 +90,65 @@ inline TypeID getTypeID( const int typeID )
 
 }
 
+/*
+*************************************************************************
+*
+* Given a Sidre type enum create a Conduit DataType.
+*
+*************************************************************************
+*/
+inline conduit::DataType createConduitDataType( const ATK_TypeID type, long len )
+{
+ conduit::DataType rval;
+
+  switch( type )
+  {
+  case INT8_T:
+      rval = conduit::DataType::int8(len);
+      break;
+  case INT16_T:
+      rval = conduit::DataType::int16(len);
+      break;
+  case INT32_T:
+      rval = conduit::DataType::int32(len);
+      break;
+  case INT64_T:
+      rval = conduit::DataType::int64(len);
+      break;
+  case UINT8_T:
+      rval = conduit::DataType::uint8(len);
+      break;
+  case UINT16_T:
+      rval = conduit::DataType::uint16(len);
+      break;
+  case UINT32_T:
+      rval = conduit::DataType::uint32(len);
+      break;
+  case UINT64_T:
+      rval = conduit::DataType::uint64(len);
+      break;
+  case FLOAT32_T:
+      rval = conduit::DataType::float32(len);
+      break;
+  case FLOAT64_T:
+      rval = conduit::DataType::float64(len);
+      break;
+#if 0
+  case CHAR8_STR_T:
+      rval = conduit::DataType::c_char(len);
+      break;
+#endif
+    default:
+      break;
+//      ATK_ERROR( "getTypeID(int) passed invalid type" );
+
+
+  }
+
+  return rval;
+
+}
+
 
 
 } /* end namespace sidre */

@@ -44,6 +44,20 @@ namespace sidre
 /*
 *************************************************************************
 *
+* Declare and allocate data described using type enum and length.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::declare(ATK_TypeID type, long len)
+{
+    ATK_ASSERT_MSG(len >= 0, "Bad Length");
+    m_schema.set(createConduitDataType(type, len));
+    return this;
+}
+
+/*
+*************************************************************************
+*
 * Allocate data previously declared.
 *
 *************************************************************************
@@ -73,20 +87,6 @@ DataBuffer* DataBuffer::allocate()
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::declare(ATK_TypeID type, long len)
-{
-#if 0
-    conduit::index_t dtype_id = type;
-    conduit::index_t num_elements = len;
-    const DataType* dtype = DataType(dtype_id, num_elements, 0, 0, 0, 0);
-    //	const DataType& dtype = DataType(type, len, 0, 0, 0, 0, 0);
-    m_schema.set(dtype);
-#endif
-    ATK_ASSERT_MSG(type == 0, "Bad Type");
-    ATK_ASSERT_MSG(len < 0, "Bad Length");
-    return this;
-}
-
 DataBuffer* DataBuffer::allocate(const Schema& schema)
 {
    ATK_ASSERT_MSG( !m_is_data_external, 
