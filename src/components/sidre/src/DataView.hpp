@@ -32,17 +32,17 @@
 #include "conduit/conduit.h"
 
 
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
-using conduit::DataType;
-
 
 
 namespace asctoolkit
 {
 namespace sidre
 {
+
+// using directives to make Conduit usage easier and less visible
+using conduit::Node;
+using conduit::Schema;
+using conduit::DataType;
 
 class DataBuffer;
 class DataGroup;

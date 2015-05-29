@@ -32,14 +32,15 @@
 #include "SidreTypes.hpp"
 
 
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
 
 
 namespace asctoolkit
 {
 namespace sidre
 {
+
+// using directives to make Conduit usage easier and less visible
+using conduit::Node;
 
 class DataBuffer;
 class DataGroup;
