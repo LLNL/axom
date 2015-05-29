@@ -16,7 +16,7 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-DS_dataview * DS_datagroup_create_view_and_buffer(DS_datagroup * self, const char * name)
+ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin
@@ -25,7 +25,7 @@ return rv;
 // splicer end
 }
 
-DS_datagroup * DS_datagroup_create_group(DS_datagroup * self, const char * name)
+ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin

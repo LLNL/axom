@@ -13,7 +13,7 @@ copyright:
   -
 
 options:
-  C_prefix: DS_
+  C_prefix: ATK_
   namespace: asctoolkit sidre
 
 classes:

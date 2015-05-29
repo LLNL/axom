@@ -16,15 +16,15 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-DS_datastore * DS_datastore_new()
+ATK_datastore * ATK_datastore_new()
 {
 DataStore *selfobj = new DataStore();
 // splicer begin
-return (DS_datastore *) selfobj;
+return (ATK_datastore *) selfobj;
 // splicer end
 }
 
-void DS_datastore_delete(DS_datastore * self)
+void ATK_datastore_delete(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
 // splicer begin
@@ -32,7 +32,7 @@ delete selfobj;
 // splicer end
 }
 
-DS_databuffer * DS_datastore_create_buffer(DS_datastore * self)
+ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
 // splicer begin
@@ -41,7 +41,7 @@ return rv;
 // splicer end
 }
 
-DS_datagroup * DS_datastore_get_root(DS_datastore * self)
+ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
 // splicer begin

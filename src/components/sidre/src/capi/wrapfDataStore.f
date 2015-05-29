@@ -21,31 +21,31 @@ module datastore_mod
     
     interface
         
-        function ds_datastore_new() result(rv) bind(C, name="DS_datastore_new")
+        function atk_datastore_new() result(rv) bind(C, name="ATK_datastore_new")
             use iso_c_binding
             implicit none
             type(C_PTR) :: rv
-        end function ds_datastore_new
+        end function atk_datastore_new
         
-        subroutine ds_datastore_delete(self) bind(C, name="DS_datastore_delete")
+        subroutine atk_datastore_delete(self) bind(C, name="ATK_datastore_delete")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
-        end subroutine ds_datastore_delete
+        end subroutine atk_datastore_delete
         
-        function ds_datastore_create_buffer(self) result(rv) bind(C, name="DS_datastore_create_buffer")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: rv
-        end function ds_datastore_create_buffer
-        
-        function ds_datastore_get_root(self) result(rv) bind(C, name="DS_datastore_get_root")
+        function atk_datastore_create_buffer(self) result(rv) bind(C, name="ATK_datastore_create_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             type(C_PTR) :: rv
-        end function ds_datastore_get_root
+        end function atk_datastore_create_buffer
+        
+        function atk_datastore_get_root(self) result(rv) bind(C, name="ATK_datastore_get_root")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_datastore_get_root
     end interface
 
 contains
@@ -54,7 +54,7 @@ contains
         implicit none
         type(datastore) :: rv
         ! splicer begin
-        rv%obj = ds_datastore_new()
+        rv%obj = atk_datastore_new()
         ! splicer end
     end function datastore_new
     
@@ -62,7 +62,7 @@ contains
         implicit none
         type(datastore) :: obj
         ! splicer begin
-        call ds_datastore_delete(obj%obj)
+        call atk_datastore_delete(obj%obj)
         obj%obj = C_NULL_PTR
         ! splicer end
     end subroutine datastore_delete
@@ -72,7 +72,7 @@ contains
         class(datastore) :: obj
         type(databuffer) :: rv
         ! splicer begin
-        rv%obj = ds_datastore_create_buffer(obj%obj)
+        rv%obj = atk_datastore_create_buffer(obj%obj)
         ! splicer end
     end function datastore_create_buffer
     
@@ -81,7 +81,7 @@ contains
         class(datastore) :: obj
         type(datagroup) :: rv
         ! splicer begin
-        rv%obj = ds_datastore_get_root(obj%obj)
+        rv%obj = atk_datastore_get_root(obj%obj)
         ! splicer end
     end function datastore_get_root
 

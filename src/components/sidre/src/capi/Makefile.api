@@ -5,4 +5,4 @@
 
 gen : api.yaml
 	echo "shroud api.yaml"
-
+	$(HOME)/datastore/sprint3/build-debug/bin/shroud api.yaml

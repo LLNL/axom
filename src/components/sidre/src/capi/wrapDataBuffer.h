@@ -18,10 +18,10 @@ extern "C" {
 #endif
 
 #ifdef EXAMPLE_WRAPPER_IMPL
-typedef void DS_databuffer;
+typedef void ATK_databuffer;
 #else
-struct s_DS_databuffer;
-typedef struct s_DS_databuffer DS_databuffer;
+struct s_ATK_databuffer;
+typedef struct s_ATK_databuffer ATK_databuffer;
 #endif
 
 #ifdef __cplusplus

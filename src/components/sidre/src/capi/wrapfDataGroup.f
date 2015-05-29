@@ -20,21 +20,21 @@ module datagroup_mod
     
     interface
         
-        function ds_datagroup_create_view_and_buffer(self, name) result(rv) bind(C, name="DS_datagroup_create_view_and_buffer")
+        function atk_datagroup_create_view_and_buffer(self, name) result(rv) bind(C, name="ATK_datagroup_create_view_and_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
-        end function ds_datagroup_create_view_and_buffer
+        end function atk_datagroup_create_view_and_buffer
         
-        function ds_datagroup_create_group(self, name) result(rv) bind(C, name="DS_datagroup_create_group")
+        function atk_datagroup_create_group(self, name) result(rv) bind(C, name="ATK_datagroup_create_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
-        end function ds_datagroup_create_group
+        end function atk_datagroup_create_group
     end interface
 
 contains
@@ -45,7 +45,7 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin
-        rv%obj = ds_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
+        rv%obj = atk_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end function datagroup_create_view_and_buffer
     
@@ -55,7 +55,7 @@ contains
         character(*) :: name
         type(datagroup) :: rv
         ! splicer begin
-        rv%obj = ds_datagroup_create_group(obj%obj, trim(name) // C_NULL_CHAR)
+        rv%obj = atk_datagroup_create_group(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end function datagroup_create_group
 
