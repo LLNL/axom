@@ -124,8 +124,8 @@ DataView* DataView::allocate(const DataType& dtype)
 */
 DataView* DataView::reallocate(const Schema& schema)
 {
-    // in these cases the view does not have a buffer
-    ATK_ASSERT_MSG( !isExternal() && !isOpaque(),
+    // in this case the view does not have a buffer
+    ATK_ASSERT_MSG( !isOpaque(),
                    "Attempting to reallocate an external or opaque view");
     
     // following alloc,  we only force realloc if there is a 1-1 between 
@@ -149,8 +149,8 @@ DataView* DataView::reallocate(const Schema& schema)
 DataView* DataView::reallocate(const DataType& dtype)
 {
     
-    // in these cases the view does not have a buffer
-    ATK_ASSERT_MSG( !isExternal() && !isOpaque(),
+    // in this case the view does not have a buffer
+    ATK_ASSERT_MSG( !isOpaque(),
                    "Attempting to reallocate an external or opaque view");
 
     // following alloc,  we only force realloc if there is a 1-1 between 
@@ -234,7 +234,6 @@ void DataView::info(Node &n) const
     n["schema"] = m_schema.to_json();
     n["node"] = m_node.to_json();
     n["is_opaque"] = m_is_opaque;
-    n["is_external"] = m_is_external;
     n["is_applied"] = m_is_applied;
 }
 
@@ -270,7 +269,6 @@ DataView::DataView( const std::string& name,
     m_schema(),
     m_node(),
     m_is_opaque(false),
-    m_is_external(false),
     m_is_applied(false)
 {
 
@@ -292,66 +290,12 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(true),
-  m_is_external(false),
   m_is_applied(false)
 {
     // todo, conduit should provide a check for if uint64 is a
     // good enough type to rep void *
     m_node.set((conduit::uint64)opaque_ptr);
 }
-
-/*
-*************************************************************************
-*
-* PRIVATE ctor for DataView associated with external data described by
-*         given data type.
-*
-*************************************************************************
-*/
-DataView::DataView( const std::string& name,
-                    DataGroup* const owning_group,
-                    void* external_data,
-                    const DataType& dtype) 
-: m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(ATK_NULLPTR),
-  m_schema(),
-  m_node(),
-  m_is_opaque(false),
-  m_is_external(true),
-  m_is_applied(false)
-{
-    m_schema.set(dtype);
-    m_node.set_external(m_schema, external_data);
-    m_is_applied = true;
-}
-
-/*
-*************************************************************************
-*
-* PRIVATE ctor for DataView associated with external data described by
-*         given schema.
-*
-*************************************************************************
-*/
-DataView::DataView( const std::string& name,
-                    DataGroup* const owning_group,
-                    void* external_data,
-                    const Schema& schema)
-: m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(ATK_NULLPTR),
-  m_schema(),
-  m_node(),
-  m_is_opaque(false),
-  m_is_external(true),
-  m_is_applied(false)
-{
-    m_schema.set(schema);
-    m_node.set_external(m_schema, external_data);
-    m_is_applied = true;
-}
-
 
 /*
 *************************************************************************
