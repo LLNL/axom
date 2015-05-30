@@ -281,6 +281,11 @@ public:
      */
     void print() const;
 
+    /*!
+     * \brief Print JSON description of data buffer to an ostream.
+     */
+    void print(std::ostream &os) const;
+
 
 private:
 

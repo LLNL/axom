@@ -323,6 +323,10 @@ public:
      */
     void print() const;
 
+    /*!
+     * \brief Print JSON description of data view to an ostream.
+     */
+    void print(std::ostream &os) const;
 
 private:
 

@@ -567,6 +567,15 @@ public:
     void print() const;
 
     /*!
+     * \brief Print JSON description of data group to an ostream.
+     *
+     * Note that this will recursively print entire group (sub) tree
+     * starting at this DataGroup object.
+     */
+    void print(std::ostream &os) const;
+
+
+    /*!
      * \brief Print given number of levels of group (sub) tree 
      *        starting at this DataGroup object to stdout.
      */

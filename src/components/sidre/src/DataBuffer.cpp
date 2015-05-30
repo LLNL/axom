@@ -197,10 +197,26 @@ void DataBuffer::info(Node &n) const
 */
 void DataBuffer::print() const
 {
+    print(std::cout);
+}
+
+/*
+*************************************************************************
+*   
+* Print JSON description of data buffer to an ostream.
+*   
+*************************************************************************
+*/
+void DataBuffer::print(std::ostream &os) const
+{
     Node n;
     info(n);
-    n.print();
+    /// TODO: after conduit update, use new ostream variant of to_json.
+    std::ostringstream oss;
+    n.to_pure_json(oss);
+    os << oss.str();
 }
+
 
 
 /*
