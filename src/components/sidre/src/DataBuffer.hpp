@@ -27,7 +27,7 @@
 #include <vector>
 
 // Other toolkit component headers
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 #include "common/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 

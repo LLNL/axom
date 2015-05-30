@@ -29,7 +29,7 @@
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 
 
 

@@ -35,7 +35,7 @@
 
 // Other CS Toolkit headers
 #include "common/Utilities.hpp"
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 
 // SiDRe project headers
 #include "Collections.hpp"

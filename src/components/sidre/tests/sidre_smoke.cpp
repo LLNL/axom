@@ -13,7 +13,7 @@
 #include "sidre/sidre.hpp"
 
 
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 
 using asctoolkit::sidre::DataStore;
 

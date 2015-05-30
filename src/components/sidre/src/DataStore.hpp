@@ -26,7 +26,7 @@
 #include <stack>
 
 // Other CS Toolkit headers
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"

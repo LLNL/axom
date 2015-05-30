@@ -63,6 +63,27 @@ TEST(sidre_view,uint32_buffer_from_view)
 
 //------------------------------------------------------------------------------
 
+TEST(sidre_view,uint32_buffer_from_view_conduit_value)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+    
+    DataView *dv = root->createViewAndBuffer("u0",DataType::uint32(10));
+    uint32 *data_ptr = dv->getNode().value();
+    
+    for(int i=0;i<10;i++)
+        data_ptr[i] = i*i;
+
+    dv->getNode().print_detailed();
+
+    EXPECT_EQ(dv->getNode().schema().total_bytes(),
+              dv->getSchema().total_bytes());
+    delete ds;
+    
+}
+
+//------------------------------------------------------------------------------
+
 TEST(sidre_view,uint32_array_multi_view)
 {
     DataStore *ds = new DataStore();
