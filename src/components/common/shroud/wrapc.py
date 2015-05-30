@@ -215,6 +215,7 @@ class Wrapc(object):
         # return type
         result = node['result']
         result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
         result_typedef = self.typedef[result_type]
         C_this = node['options']['C_this']
         is_const = result['attrs'].get('const', False)
@@ -280,7 +281,7 @@ class Wrapc(object):
                 lines.append('return (%s) %sobj;' % (C_this_type, C_this))
             elif is_dtor:
                 lines.append('delete %sobj;' % C_this)
-            elif result_type == 'void':
+            elif result_type == 'void' and not result_is_ptr:
                 line = wformat('{cpp_this}->{cpp_name}({call_list});',
                                fmt_dict)
                 lines.append(line)

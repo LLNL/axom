@@ -116,7 +116,7 @@ classes:
 #      - decl: DataBuffer* allocate(const DataType& dtype)
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
-#      - decl: void* getData()
+      - decl: void* getData()
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
 #      - decl: const Schema& getSchema() const

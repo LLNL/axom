@@ -16,6 +16,7 @@ module databuffer_mod
         procedure :: get_uid => databuffer_get_uid
         procedure :: declare => databuffer_declare
         procedure :: allocate => databuffer_allocate
+        procedure :: get_data => databuffer_get_data
     end type databuffer
     
     interface
@@ -42,6 +43,13 @@ module databuffer_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_databuffer_allocate
+        
+        function atk_databuffer_get_data(self) result(rv) bind(C, name="ATK_databuffer_get_data")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_databuffer_get_data
     end interface
 
 contains
@@ -74,5 +82,14 @@ contains
         rv%obj = atk_databuffer_allocate(obj%obj)
         ! splicer end
     end function databuffer_allocate
+    
+    function databuffer_get_data(obj) result(rv)
+        implicit none
+        class(databuffer) :: obj
+        type(C_PTR) :: rv
+        ! splicer begin
+        rv = atk_databuffer_get_data(obj%obj)
+        ! splicer end
+    end function databuffer_get_data
 
 end module databuffer_mod

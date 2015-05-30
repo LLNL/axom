@@ -8,6 +8,8 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+#include <stdint.h>
+
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.h"
@@ -39,15 +41,16 @@ TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
 
     ATK_databuffer_declare(dbuff, ATK_UINT32_T, 10);
     ATK_databuffer_allocate(dbuff);
-#if 0
     
-    uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();
+    //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
+    uint32_t *data_ptr = static_cast<uint32_t *>(ATK_databuffer_get_data(dbuff));
     
     for(int i=0;i<10;i++)
     {
         data_ptr[i] = i*i;
     }
 
+#if 0
     dbuff->getNode().print_detailed();
 
     EXPECT_EQ(dbuff->getNode().schema().total_bytes(),

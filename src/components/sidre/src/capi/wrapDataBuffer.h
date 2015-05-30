@@ -32,6 +32,8 @@ ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeEnum type
 
 ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self);
 
+void * ATK_databuffer_get_data(ATK_databuffer * self);
+
 #ifdef __cplusplus
 }
 #endif

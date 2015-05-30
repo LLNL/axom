@@ -81,6 +81,8 @@ class Schema(object):
                 c       = 'void',
                 cpp     = 'void',
 #                fortran = 'subroutine',
+                c_fortran = 'type(C_PTR)',
+                fortran = 'type(C_PTR)',
                 ),
             int    = dict(
                 c       = 'int',

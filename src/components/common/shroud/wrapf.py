@@ -49,6 +49,8 @@ class Wrapf(object):
         typedef = self.typedef.get(arg['type'], None)
         if typedef is None:
             raise RuntimeError("No such type %s" % arg['type'])
+        is_ptr = (arg['attrs'].get('ptr', False) or
+                  arg['attrs'].get('reference', False))
 
         typ = typedef['c_fortran']
         if arg['type'] == 'string':
@@ -57,8 +59,7 @@ class Wrapf(object):
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
             t.append(typ)
-            if not (arg['attrs'].get('ptr', False) or
-                    arg['attrs'].get('reference', False)):
+            if not is_ptr:
                 t.append(', value')
             return (''.join(t), arg['attrs'].get('array', False))
 
@@ -186,6 +187,7 @@ class Wrapf(object):
 
         result = node['result']
         result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
         result_typedef = self.typedef[result_type]
         C_this = node['options']['C_this']
         F_result = node['options']['F_result']
@@ -224,7 +226,8 @@ class Wrapf(object):
         # compute first to get order of arguments correct.
         # Add 
         pure_clause = ''
-        if result_type == 'void':
+        if result_type == 'void' and not result_is_ptr:
+            #  void=subroutine   void *=function
             subprogram = 'subroutine'
             result_clause = ''
         else:
