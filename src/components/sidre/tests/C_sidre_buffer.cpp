@@ -87,7 +87,7 @@ TEST(C_sidre_buffer,init_buffer_for_uint32_array)
     ATK_datastore_delete(ds);
     
 }
-
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -96,31 +96,39 @@ TEST(C_sidre_buffer,realloc_buffer)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
 
-    dbuff->allocate(DataType::int64(5));
-    
+    //    dbuff->allocate(DataType::int64(5));
+    ATK_databuffer_declare(dbuff, ATK_INT64_T, 5);
+    ATK_databuffer_allocate(dbuff);    
 
+#if 0
     EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
               sizeof(int64)*5);
+#endif
     
-    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
+    //    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
+    int64_t *data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
     
     for(int i=0;i<5;i++)
     {
         data_ptr[i] = 5;
     }
 
+#if 0
     dbuff->getNode().print_detailed();
 
     dbuff->reallocate(DataType::int64(10));
+#endif
 
     // data buffer changes 
-    data_ptr = dbuff->getNode().as_int64_ptr();
+    //    data_ptr = dbuff->getNode().as_int64_ptr();
+    data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
 
     for(int i=0;i<5;i++)
     {
         EXPECT_EQ(data_ptr[i],5);
     }
 
+#if 0
     for(int i=5;i<10;i++)
     {
         data_ptr[i] = 10;
@@ -133,10 +141,7 @@ TEST(C_sidre_buffer,realloc_buffer)
     dbuff->getNode().print_detailed();
     
     ds->print();
+#endif
     ATK_datastore_delete(ds);
     
 }
-
-
-
-#endif
