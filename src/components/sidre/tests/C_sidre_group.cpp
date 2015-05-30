@@ -53,11 +53,11 @@ TEST(C_sidre_group,get_datastore)
 {
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
-    ATK_datagroup *group = root->createGroup("parent");
+    ATK_datagroup *group = ATK_datagroup_create_group(root, "parent");
  
-    EXPECT_TRUE( group->getDataStore() == ds );
+    EXPECT_TRUE( ATK_datagroup_get_data_store(group) == ds );
 
-    DataStore const * const_ds = group->getDataStore();
+    ATK_datastore const * const_ds = ATK_datagroup_get_data_store(group);
     EXPECT_TRUE( const_ds == ds );
 
     ATK_datastore_delete(ds);

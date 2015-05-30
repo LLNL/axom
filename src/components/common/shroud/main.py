@@ -170,6 +170,8 @@ class Schema(object):
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_this} = {F_C_name}({arg_c_call})',
 
+                # allow forward declarations to avoid recursive headers
+                forward = name,
                 )
 
         method_dict = {}
@@ -222,14 +224,6 @@ class Schema(object):
         used_types = {}
         for method in node['methods']:
             self.check_function_dependencies(method, used_types)
-
-
-        # start with values from C_header_dependencies
-        headers = {}
-        for typ in used_types.values():
-            if 'c_header' in typ:
-                headers[typ['c_header']] = True
-        node['C_header_dependencies'] = sorted(headers)
 
         modules = {}
         for typ in used_types.values():

@@ -13,17 +13,19 @@
 #ifndef WRAPDATAGROUP_H
 #define WRAPDATAGROUP_H
 
-#include "wrapDataView.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// declaration of wrapped types
 #ifdef EXAMPLE_WRAPPER_IMPL
 typedef void ATK_datagroup;
+typedef void ATK_dataview;
 #else
 struct s_ATK_datagroup;
 typedef struct s_ATK_datagroup ATK_datagroup;
+struct s_ATK_dataview;
+typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);

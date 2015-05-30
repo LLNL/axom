@@ -17,6 +17,7 @@
 extern "C" {
 #endif
 
+// declaration of wrapped types
 #ifdef EXAMPLE_WRAPPER_IMPL
 typedef void ATK_dataview;
 #else

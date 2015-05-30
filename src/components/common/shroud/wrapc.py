@@ -10,8 +10,6 @@ typedef struct s_{C_type_name} {C_type_name};
 #endif
 
 
-C_header_dependencies = [ filename* ]
-
 """
 from __future__ import print_function
 
@@ -30,9 +28,8 @@ class Wrapc(object):
 
     def _clear_class(self):
         """Start a new class for output"""
+        self.header_forward = {}          # forward declarations of C++ class as opaque C struct.
         self.header_typedef_include = {}  # include files required by typedefs
-        self.header_typedef_c = []
-        self.header_typedef_cpp = []
         self.header_proto_c = []
         self.impl = []
 
@@ -108,20 +105,11 @@ class Wrapc(object):
 
         # headers required by typedefs
         if self.header_typedef_include:
+#            fp.write('// header_typedef_include\n')
             fp.write('\n')
             headers = self.header_typedef_include.keys()
             headers.sort()
             for header in headers:
-                fp.write('#include "%s"\n' % header)
-
-        # Write dependent headers in sorted order
-        # XXX is C_header_dependencies required?
-        first = True
-        for header in node['C_header_dependencies']:
-            if header != fname:
-                if first:
-                    fp.write('\n')
-                    first = False
                 fp.write('#include "%s"\n' % header)
 
         fp.writelines([
@@ -130,11 +118,17 @@ class Wrapc(object):
                 'extern "C" {\n',
                 '#endif\n',
                 '\n',
+                '// declaration of wrapped types\n',
                 '#ifdef EXAMPLE_WRAPPER_IMPL\n',
                 ])
-        fp.writelines(self.header_typedef_cpp)
+        names = self.header_forward.keys()
+        names.sort()
+        for name in names:
+            fp.write('typedef void {C_type_name};\n'.format(C_type_name=name))
         fp.write('#else\n')
-        fp.writelines(self.header_typedef_c)
+        for name in names:
+            fp.write('struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};\n'.
+                     format(C_type_name=name))
         fp.write('#endif\n')
         fp.writelines(self.header_proto_c);
         fp.writelines([
@@ -192,11 +186,8 @@ class Wrapc(object):
             )
         fmt_dict = self.fmt_dict
 
-        self.header_typedef_cpp = [wformat(
-                'typedef void {C_type_name};\n', fmt_dict) ]
-        self.header_typedef_c = [wformat(
-                'struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};\n',
-                fmt_dict)]
+        # create a forward declaration for this type
+        self.header_forward[cname] = True
 
         for method in node['methods']:
             self.wrap_method(node, method)
@@ -221,6 +212,11 @@ class Wrapc(object):
         is_const = result['attrs'].get('const', False)
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
+
+        if 'forward' in result_typedef:
+            # create forward references for other types being wrapped
+            # i.e. This method returns a wrapped type
+            self.header_forward[result_typedef['c']] = True
 
         fmt_dict = dict(
             method_name=result['name'],
@@ -253,7 +249,12 @@ class Wrapc(object):
             # convert C argument to C++
             anames.append(arg_typedef.get('c_to_cpp', '{var}').format(var=arg['name']))
             if 'c_header' in arg_typedef:
+                # include any dependent header in generated header
                 self.header_typedef_include[arg_typedef['c_header']] = True
+            if 'forward' in arg_typedef:
+                # create forward references for other types being wrapped
+                # i.e. This argument is another wrapped type
+                self.header_forward[arg_typedef['c']] = True
         fmt_dict['call_list'] = ', '.join(anames)
 
         if 'C_name' not in node:
