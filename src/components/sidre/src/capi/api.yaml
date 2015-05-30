@@ -60,7 +60,9 @@ classes:
       cpp_header: sidre/DataGroup.hpp
 
     methods:
-#    -  decl: std::string getName() const
+#    -  decl:  const std::string& getName() const
+    -  decl:  const string& getName()
+#    -  decl: string getName() const
 #    -  decl: DataGroup  *getParent()
 #    -  decl: DataStore *getDataStore()
 #    -  decl: bool hasView( const std::string& name )

@@ -14,11 +14,19 @@ module datagroup_mod
     type datagroup
         type(C_PTR) obj
     contains
+        procedure :: get_name => datagroup_get_name
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_group => datagroup_create_group
     end type datagroup
     
     interface
+        
+        pure function atk_datagroup_get_name(self) result(rv) bind(C, name="ATK_datagroup_get_name")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) rv
+        end function atk_datagroup_get_name
         
         function atk_datagroup_create_view_and_buffer(self, name) result(rv) bind(C, name="ATK_datagroup_create_view_and_buffer")
             use iso_c_binding
@@ -38,6 +46,16 @@ module datagroup_mod
     end interface
 
 contains
+    
+    function datagroup_get_name(obj) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(kind=C_CHAR, len=1) :: rv
+        type(C_PTR) :: rv_ptr
+        ! splicer begin
+        rv = fstr(atk_datagroup_get_name(obj%obj))
+        ! splicer end
+    end function datagroup_get_name
     
     function datagroup_create_view_and_buffer(obj, name) result(rv)
         implicit none

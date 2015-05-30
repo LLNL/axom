@@ -16,6 +16,15 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
+const char * ATK_datagroup_get_name(const ATK_datagroup * self)
+{
+const DataGroup *selfobj = static_cast<const DataGroup *>(self);
+// splicer begin
+const std::string & rv = selfobj->getName();
+return rv.c_str();
+// splicer end
+}
+
 ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
