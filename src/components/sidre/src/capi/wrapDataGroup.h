@@ -28,6 +28,8 @@ typedef struct s_ATK_datagroup ATK_datagroup;
 
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);
 
+ATK_datagroup * ATK_datagroup_get_parent(ATK_datagroup * self);
+
 ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name);
 
 ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name);

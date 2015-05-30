@@ -15,6 +15,7 @@ module datagroup_mod
         type(C_PTR) obj
     contains
         procedure :: get_name => datagroup_get_name
+        procedure :: get_parent => datagroup_get_parent
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_group => datagroup_create_group
     end type datagroup
@@ -27,6 +28,13 @@ module datagroup_mod
             type(C_PTR), value :: self
             type(C_PTR) rv
         end function atk_datagroup_get_name
+        
+        function atk_datagroup_get_parent(self) result(rv) bind(C, name="ATK_datagroup_get_parent")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_parent
         
         function atk_datagroup_create_view_and_buffer(self, name) result(rv) bind(C, name="ATK_datagroup_create_view_and_buffer")
             use iso_c_binding
@@ -56,6 +64,15 @@ contains
         rv = fstr(atk_datagroup_get_name(obj%obj))
         ! splicer end
     end function datagroup_get_name
+    
+    function datagroup_get_parent(obj) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        type(datagroup) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_get_parent(obj%obj)
+        ! splicer end
+    end function datagroup_get_parent
     
     function datagroup_create_view_and_buffer(obj, name) result(rv)
         implicit none

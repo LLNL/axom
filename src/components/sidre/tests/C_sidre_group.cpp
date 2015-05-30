@@ -30,7 +30,6 @@ TEST(C_sidre_group,get_name)
     ATK_datastore_delete(ds);
 }
 
-#if 0
 //------------------------------------------------------------------------------
 // getParent()
 //------------------------------------------------------------------------------
@@ -38,13 +37,14 @@ TEST(C_sidre_group,get_parent)
 {
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
-    ATK_datagroup *parent = root->createGroup("parent");
-    ATK_datagroup *child = parent->createGroup("child");
+    ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
+    ATK_datagroup *child = ATK_datagroup_create_group(parent, "child");
  
-    EXPECT_TRUE( child->getParent() == parent );
+    EXPECT_TRUE( ATK_datagroup_get_parent(child) == parent );
 
     ATK_datastore_delete(ds);
 }
+#if 0
 
 //------------------------------------------------------------------------------
 // Verify getDatastore()
