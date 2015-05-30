@@ -34,6 +34,15 @@ return rv;
 // splicer end
 }
 
+ATK_datastore * ATK_datagroup_get_data_store(ATK_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+DataStore * rv = selfobj->getDataStore();
+return rv;
+// splicer end
+}
+
 ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

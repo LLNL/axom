@@ -9,6 +9,7 @@
 !
 module datagroup_mod
     use fstr_mod
+    use datastore_mod, only : datastore
     use dataview_mod, only : dataview
     
     type datagroup
@@ -16,6 +17,7 @@ module datagroup_mod
     contains
         procedure :: get_name => datagroup_get_name
         procedure :: get_parent => datagroup_get_parent
+        procedure :: get_data_store => datagroup_get_data_store
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_group => datagroup_create_group
     end type datagroup
@@ -35,6 +37,13 @@ module datagroup_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_datagroup_get_parent
+        
+        function atk_datagroup_get_data_store(self) result(rv) bind(C, name="ATK_datagroup_get_data_store")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_data_store
         
         function atk_datagroup_create_view_and_buffer(self, name) result(rv) bind(C, name="ATK_datagroup_create_view_and_buffer")
             use iso_c_binding
@@ -73,6 +82,15 @@ contains
         rv%obj = atk_datagroup_get_parent(obj%obj)
         ! splicer end
     end function datagroup_get_parent
+    
+    function datagroup_get_data_store(obj) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        type(datastore) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_get_data_store(obj%obj)
+        ! splicer end
+    end function datagroup_get_data_store
     
     function datagroup_create_view_and_buffer(obj, name) result(rv)
         implicit none

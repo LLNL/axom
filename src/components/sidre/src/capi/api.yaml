@@ -64,7 +64,7 @@ classes:
     -  decl:  const string& getName()
 #    -  decl: string getName() const
     -  decl: DataGroup  *getParent()
-##    -  decl: DataStore *getDataStore()
+    -  decl: DataStore *getDataStore()
 #    -  decl: bool hasView( const std::string& name )
     -  decl: DataView *createViewAndBuffer( const string& name )
 #    -  decl: DataView *createOpaqueView( const std::string& name, void *)

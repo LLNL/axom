@@ -44,7 +44,6 @@ TEST(C_sidre_group,get_parent)
 
     ATK_datastore_delete(ds);
 }
-#if 0
 
 //------------------------------------------------------------------------------
 // Verify getDatastore()
@@ -62,6 +61,7 @@ TEST(C_sidre_group,get_datastore)
 
     ATK_datastore_delete(ds);
 }
+#if 0
 
 //------------------------------------------------------------------------------
 // Verify hasGroup()

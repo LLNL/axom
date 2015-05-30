@@ -20,10 +20,13 @@ extern "C" {
 // declaration of wrapped types
 #ifdef EXAMPLE_WRAPPER_IMPL
 typedef void ATK_datagroup;
+typedef void ATK_datastore;
 typedef void ATK_dataview;
 #else
 struct s_ATK_datagroup;
 typedef struct s_ATK_datagroup ATK_datagroup;
+struct s_ATK_datastore;
+typedef struct s_ATK_datastore ATK_datastore;
 struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
 #endif
@@ -31,6 +34,8 @@ typedef struct s_ATK_dataview ATK_dataview;
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);
 
 ATK_datagroup * ATK_datagroup_get_parent(ATK_datagroup * self);
+
+ATK_datastore * ATK_datagroup_get_data_store(ATK_datagroup * self);
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name);
 
