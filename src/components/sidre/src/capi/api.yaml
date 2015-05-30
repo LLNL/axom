@@ -111,18 +111,18 @@ classes:
       - decl: DataBuffer* declare(TypeEnum type, long len)
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
-#      - decl: DataBuffer* allocate();
-#      - decl: DataBuffer* allocate(const Schema &schema);
-#      - decl: DataBuffer* allocate(const DataType& dtype);
-#      - decl: DataBuffer* reallocate(const Schema& schema);
-#      - decl: DataBuffer* reallocate(const DataType& dtype);
+      - decl: DataBuffer* allocate()
+#      - decl: DataBuffer* allocate(const Schema &schema)
+#      - decl: DataBuffer* allocate(const DataType& dtype)
+#      - decl: DataBuffer* reallocate(const Schema& schema)
+#      - decl: DataBuffer* reallocate(const DataType& dtype)
 #      - decl: void* getData()
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
 #      - decl: const Schema& getSchema() const
 #      - decl: DataView* getView(IDType idx)
-#      - decl: void info(Node& n) const;
-#      - decl: void print() const;
+#      - decl: void info(Node& n) const
+#      - decl: void print() const
 
 
   - name: DataView

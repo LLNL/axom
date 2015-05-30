@@ -38,8 +38,8 @@ TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
     ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
 
     ATK_databuffer_declare(dbuff, ATK_UINT32_T, 10);
+    ATK_databuffer_allocate(dbuff);
 #if 0
-    dbuff->allocate();
     
     uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();
     

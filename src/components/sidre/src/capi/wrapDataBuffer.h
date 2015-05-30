@@ -30,6 +30,8 @@ int ATK_databuffer_get_uid(ATK_databuffer * self);
 
 ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeEnum type, long len);
 
+ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self);
+
 #ifdef __cplusplus
 }
 #endif

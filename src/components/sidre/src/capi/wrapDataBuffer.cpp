@@ -34,6 +34,15 @@ return rv;
 // splicer end
 }
 
+ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+DataBuffer * rv = selfobj->allocate();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"
