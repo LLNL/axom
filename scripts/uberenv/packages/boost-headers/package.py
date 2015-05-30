@@ -14,11 +14,11 @@ class BoostHeaders(Package):
        encourages both commercial and non-commercial use.
     """
     homepage = "http://www.boost.org"
-    url      = "http://downloads.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2"
+    url      = "http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2"
     list_url = "http://sourceforge.net/projects/boost/files/boost/"
     list_depth = 2
 
-    version('1.55.0', 'd6eef4b4cacb2183f2bf265a5a03a354')
+    version('1.58.0', 'b8839650e61e9c1c0a89f371dd475546')    
 
     def url_for_version(self, version):
         """Handle Boost's weird URLs, which write the version two different ways."""
