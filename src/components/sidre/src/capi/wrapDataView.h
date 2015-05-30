@@ -19,11 +19,16 @@ extern "C" {
 
 // declaration of wrapped types
 #ifdef EXAMPLE_WRAPPER_IMPL
+typedef void ATK_datagroup;
 typedef void ATK_dataview;
 #else
+struct s_ATK_datagroup;
+typedef struct s_ATK_datagroup ATK_datagroup;
 struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
 #endif
+
+ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);
 
 #ifdef __cplusplus
 }

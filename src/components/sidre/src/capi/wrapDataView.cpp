@@ -16,6 +16,15 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
+ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+DataGroup * rv = selfobj->getOwningGroup();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

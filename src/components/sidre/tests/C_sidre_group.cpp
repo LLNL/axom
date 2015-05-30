@@ -78,7 +78,6 @@ TEST(C_sidre_group,has_group)
 
     ATK_datastore_delete(ds);
 }
-#if 0
 
 //------------------------------------------------------------------------------
 // Verify hasView()
@@ -89,15 +88,17 @@ TEST(C_sidre_group,has_view)
     ATK_datagroup *root = ATK_datastore_get_root(ds);
 
     ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
-    DataView *view = parent->createViewAndBuffer("view");
 
-    EXPECT_TRUE( view->getOwningGroup() == parent );
+    ATK_dataview *view = ATK_datagroup_create_view_and_buffer(parent, "view");
 
-    EXPECT_TRUE( parent->hasView("view") );
+    EXPECT_TRUE( ATK_dataview_get_owning_group(view) == parent );
+
+    EXPECT_TRUE( ATK_datagroup_has_view(parent, "view") );
 
     ATK_datastore_delete(ds);
 }
 
+#if 0
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------

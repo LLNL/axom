@@ -65,7 +65,7 @@ classes:
 #    -  decl: string getName() const
     -  decl: DataGroup  *getParent()
     -  decl: DataStore *getDataStore()
-#    -  decl: bool hasView( const std::string& name )
+    -  decl: bool hasView( const string& name )
     -  decl: DataView *createViewAndBuffer( const string& name )
 #    -  decl: DataView *createOpaqueView( const std::string& name, void *)
 #    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
@@ -130,4 +130,31 @@ classes:
   - name: DataView
     options:
       cpp_header: sidre/DataView.hpp
+
+    methods:
+#    - decl: DataView* declare(const Schema& schema)  
+#    - decl: DataView* declare(const DataType& dtype)
+#    - decl: DataView* allocate()
+#    - decl: DataView* allocate(const Schema& schema)
+#    - decl: DataView* allocate(const DataType& dtype)
+#    - decl: DataView* reallocate(const Schema& schema)
+#    - decl: DataView* reallocate(const DataType& dtype)
+#    - decl: DataView* apply()
+#    - decl: DataView* apply(const Schema& schema)
+#    - decl: DataView* apply(const DataType& dtype)
+#    - decl: bool  hasBuffer() const
+#    - decl: bool  isOpaque() const
+#    - decl: bool isApplied() const
+#    - decl: const std::string& getName() const
+#    - decl: void* getOpaque() const
+#    - decl: DataBuffer* getBuffer()
+#    - decl: DataBuffer const* getBuffer() const
+#    - decl: Node& getNode()
+#    - decl: const Node& getNode() const
+#    - decl: const Schema& getSchema() const
+    - decl: DataGroup* getOwningGroup()
+#    - decl: DataGroup const* getOwningGroup() const
+#    - decl: void info(Node& n) const
+#    - decl: void print() const
+
 
