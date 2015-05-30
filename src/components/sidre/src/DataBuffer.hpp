@@ -157,7 +157,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* declare(ATK_TypeID type, long len);
+    DataBuffer* declare(TypeEnum type, long len);
     
     /*!
      * \brief Declare a buffer to OWN data described as a Conduit schema.

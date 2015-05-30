@@ -238,7 +238,9 @@ class Wrapc(object):
 
         for arg in node.get('args', []):
             arguments.append(self._c_decl('c', arg))
-            anames.append(arg['name'])
+            arg_typedef = self.typedef[arg['type']]
+            # convert C argument to CPP
+            anames.append(arg_typedef.get('c_to_cpp', '{var}').format(var=arg['name']))
         fmt_dict['call_list'] = ', '.join(anames)
 
         if 'C_name' not in node:

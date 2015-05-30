@@ -22,7 +22,23 @@ typedef int IDType;
 
 const IDType InvalidID = -1;
 
-#include "sidre/DataTypes.h"
+typedef enum
+    {
+//        EMPTY_T = 0, // empty (default type)
+//        OBJECT_T,    // object
+//        LIST_T,      // list
+        INT8_T = 3,  // int8
+        INT16_T,     // int16
+        INT32_T,     // int32
+        INT64_T,     // int64
+        UINT8_T,     // int8
+        UINT16_T,    // uint16
+        UINT32_T,    // uint32
+        UINT64_T,    // uint64
+        FLOAT32_T,   // float32
+        FLOAT64_T,   // float64
+        CHAR8_STR_T, // char8 string (incore c-string)
+    } TypeEnum;
 
 
 template< int TYPEID >
@@ -97,7 +113,7 @@ inline TypeID getTypeID( const int typeID )
 *
 *************************************************************************
 */
-inline conduit::DataType createConduitDataType( const ATK_TypeID type, long len )
+inline conduit::DataType createConduitDataType( const TypeEnum type, long len )
 {
  conduit::DataType rval;
 

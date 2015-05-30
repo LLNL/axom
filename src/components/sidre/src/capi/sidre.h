@@ -7,6 +7,7 @@
 #ifndef C_DATASTORE_H_
 #define C_DATASTORE_H_
 
+#include "sidre/DataTypes.h"
 #include "sidre/wrapDataStore.h"
 #include "sidre/wrapDataBuffer.h"
 #include "sidre/wrapDataGroup.h"

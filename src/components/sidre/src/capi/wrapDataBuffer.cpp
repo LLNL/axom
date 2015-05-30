@@ -25,6 +25,15 @@ return rv;
 // splicer end
 }
 
+ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeID type, long len)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+DataBuffer * rv = selfobj->declare(static_cast<asctoolkit::sidre::TypeEnum>(type), len);
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

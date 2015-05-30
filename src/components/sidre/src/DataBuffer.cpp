@@ -48,7 +48,7 @@ namespace sidre
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::declare(ATK_TypeID type, long len)
+DataBuffer* DataBuffer::declare(TypeEnum type, long len)
 {
     ATK_ASSERT_MSG(len >= 0, "Bad Length");
     m_schema.set(createConduitDataType(type, len));
