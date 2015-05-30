@@ -25,6 +25,6 @@ typedef enum
         ATK_FLOAT32_T,   // float32
         ATK_FLOAT64_T,   // float64
         ATK_CHAR8_STR_T, // char8 string (incore c-string)
-    } ATK_TypeID;
+    } ATK_TypeEnum;
 
 #endif  // SIDRE_DATATYPES_H

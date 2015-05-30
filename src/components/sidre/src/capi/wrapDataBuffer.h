@@ -13,7 +13,7 @@
 #ifndef WRAPDATABUFFER_H
 #define WRAPDATABUFFER_H
 
-#include "sidre/DataTypes.h"  // this line needs to be generated
+#include "sidre/DataTypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,7 +28,7 @@ typedef struct s_ATK_databuffer ATK_databuffer;
 
 int ATK_databuffer_get_uid(ATK_databuffer * self);
 
-ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeID type, long len);
+ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeEnum type, long len);
 
 #ifdef __cplusplus
 }

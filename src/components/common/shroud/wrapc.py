@@ -30,6 +30,7 @@ class Wrapc(object):
 
     def _clear_class(self):
         """Start a new class for output"""
+        self.header_typedef_include = {}  # include files required by typedefs
         self.header_typedef_c = []
         self.header_typedef_cpp = []
         self.header_proto_c = []
@@ -105,7 +106,16 @@ class Wrapc(object):
                 '#define %s\n' % guard,
                 ])
 
+        # headers required by typedefs
+        if self.header_typedef_include:
+            fp.write('\n')
+            headers = self.header_typedef_include.keys()
+            headers.sort()
+            for header in headers:
+                fp.write('#include "%s"\n' % header)
+
         # Write dependent headers in sorted order
+        # XXX is C_header_dependencies required?
         first = True
         for header in node['C_header_dependencies']:
             if header != fname:
@@ -239,8 +249,10 @@ class Wrapc(object):
         for arg in node.get('args', []):
             arguments.append(self._c_decl('c', arg))
             arg_typedef = self.typedef[arg['type']]
-            # convert C argument to CPP
+            # convert C argument to C++
             anames.append(arg_typedef.get('c_to_cpp', '{var}').format(var=arg['name']))
+            if 'c_header' in arg_typedef:
+                self.header_typedef_include[arg_typedef['c_header']] = True
         fmt_dict['call_list'] = ', '.join(anames)
 
         if 'C_name' not in node:

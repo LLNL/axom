@@ -24,11 +24,11 @@ typedef:
     c_fortran : integer(C_INT)
     fortran : integer(C_INT)
 
-  ATK_TypeID:
+  TypeEnum:
     # enum for types
     c_header: sidre/DataTypes.h
-    c: ATK_TypeID
-#    cpp: sidre::ATK_TypeID
+    c: ATK_TypeEnum
+#    cpp: asctoolkit::sidre::TypeEnum
     c_to_cpp:  static_cast<asctoolkit::sidre::TypeEnum>({var})
     # XXX this is assuming enums are ints
     c_fortran: integer(C_INT)
@@ -108,7 +108,7 @@ classes:
       - decl: IDType getUID()
 # with const      - decl: IDType getUID() const
 #      - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(ATK_TypeID type, long len)
+      - decl: DataBuffer* declare(TypeEnum type, long len)
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
 #      - decl: DataBuffer* allocate();

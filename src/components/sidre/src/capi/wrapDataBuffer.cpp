@@ -25,7 +25,7 @@ return rv;
 // splicer end
 }
 
-ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeID type, long len)
+ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeEnum type, long len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
 // splicer begin
