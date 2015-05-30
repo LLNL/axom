@@ -52,6 +52,15 @@ return rv;
 // splicer end
 }
 
+bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+bool rv = selfobj->hasGroup(name);
+return rv;
+// splicer end
+}
+
 ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

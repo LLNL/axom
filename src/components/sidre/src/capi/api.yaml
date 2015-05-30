@@ -84,7 +84,7 @@ classes:
 #    -  decl: size_t countViews() const
 #    -  decl: void destroyViews()
 #    -  decl: void destroyViewsAndBuffers()
-#    -  decl: bool hasGroup( const std::string& name )
+    -  decl: bool hasGroup( const string& name )
 #    -  decl: DataGroup* createGroup( const std::string& name )
     -  decl: DataGroup *createGroup( const string& name )
 #    -  decl: DataGroup *moveGroup(DataGroup *grp)

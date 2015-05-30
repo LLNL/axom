@@ -61,7 +61,6 @@ TEST(C_sidre_group,get_datastore)
 
     ATK_datastore_delete(ds);
 }
-#if 0
 
 //------------------------------------------------------------------------------
 // Verify hasGroup()
@@ -71,14 +70,15 @@ TEST(C_sidre_group,has_group)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
  
-    ATK_datagroup *parent = root->createGroup("parent");
-    ATK_datagroup *child = parent->createGroup("child");
-    EXPECT_TRUE( child->getParent() == parent );
+    ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
+    ATK_datagroup *child = ATK_datagroup_create_group(parent, "child");
+    EXPECT_TRUE( ATK_datagroup_get_parent(child) == parent );
 
-    EXPECT_TRUE( parent->hasGroup("child") );
+    EXPECT_TRUE( ATK_datagroup_has_group(parent, "child") );
 
     ATK_datastore_delete(ds);
 }
+#if 0
 
 //------------------------------------------------------------------------------
 // Verify hasView()
@@ -88,7 +88,7 @@ TEST(C_sidre_group,has_view)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
 
-    ATK_datagroup *parent = root->createGroup("parent");
+    ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
     DataView *view = parent->createViewAndBuffer("view");
 
     EXPECT_TRUE( view->getOwningGroup() == parent );
@@ -106,7 +106,7 @@ TEST(C_sidre_group,get_view_name_index)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
 
-    ATK_datagroup *parent = root->createGroup("parent");
+    ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
     DataView *view1 = parent->createViewAndBuffer("view1");
     DataView *view2 = parent->createViewAndBuffer("view2");
 
@@ -143,9 +143,9 @@ TEST(C_sidre_group,get_group_name_index)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
 
-    ATK_datagroup *parent = root->createGroup("parent");
-    ATK_datagroup *group1 = parent->createGroup("group1");
-    ATK_datagroup *group2 = parent->createGroup("group2");
+    ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
+    ATK_datagroup *group1 = ATK_datagroup_create_group(parent, "group1");
+    ATK_datagroup *group2 = ATK_datagroup_create_group(parent, "group2");
 
     EXPECT_EQ(parent->getNumGroups(), 2u);
 
@@ -181,7 +181,7 @@ TEST(C_sidre_group,create_destroy_has_viewbuffer)
 {
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
-    ATK_datagroup *group = root->createGroup("parent");
+    ATK_datagroup *group = ATK_datagroup_create_group(root, "parent");
 
     DataView *view = group->createViewAndBuffer("view");
     EXPECT_TRUE( group->getParent() == root );
@@ -205,7 +205,7 @@ TEST(C_sidre_group,create_destroy_has_group)
 {
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
-    ATK_datagroup *group = root->createGroup("group");
+    ATK_datagroup *group = ATK_datagroup_create_group(root, "group");
     EXPECT_TRUE( group->getParent() == root );
     
     EXPECT_TRUE( root->hasGroup("group") );
@@ -221,7 +221,8 @@ TEST(C_sidre_group,create_destroy_has_group)
 TEST(C_sidre_group,group_name_collisions)
 {
     ATK_datastore *ds = ATK_datastore_new();
-    ATK_datagroup *flds = ATK_datastore_get_root(ds)->createGroup("fields");
+    ATK_datagroup *root = ATK_datastore_get_root(ds);
+    ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
     flds->createViewAndBuffer("a");
 
     EXPECT_TRUE(flds->hasView("a"));
@@ -232,7 +233,8 @@ TEST(C_sidre_group,group_name_collisions)
 TEST(C_sidre_group,view_copy_move)
 {
     ATK_datastore *ds = ATK_datastore_new();
-    ATK_datagroup *flds = ATK_datastore_get_root(ds)->createGroup("fields");
+    ATK_datagroup *root = ATK_datastore_get_root(ds);
+    ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
 
     flds->createViewAndBuffer("i0")->allocate(DataType::int32());
     flds->createViewAndBuffer("f0")->allocate(DataType::float32());
@@ -247,7 +249,9 @@ TEST(C_sidre_group,view_copy_move)
     EXPECT_TRUE(flds->hasView("d0"));
 
     // test moving a view form feds7 to sub
-    flds->createGroup("sub")->moveView(flds->getView("d0"));
+    //    flds->createGroup("sub")->moveView(flds->getView("d0"));
+    ATK_datagroup *sub = ATK_datagroup_create_group(flds, "sub");
+    AT_datagroup_move_view();
     flds->print();
     EXPECT_FALSE(flds->hasView("d0"));
     EXPECT_TRUE(flds->hasGroup("sub"));
@@ -278,11 +282,12 @@ TEST(C_sidre_group,view_copy_move)
 TEST(C_sidre_group,groups_move_copy)
 {
     ATK_datastore *ds = ATK_datastore_new();
-    ATK_datagroup *flds = ATK_datastore_get_root(ds)->createGroup("fields");
+    ATK_datagroup *root = ATK_datastore_get_root(ds);
+    ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
 
-    ATK_datagroup *ga = flds->createGroup("a");
-    ATK_datagroup *gb = flds->createGroup("b");
-    ATK_datagroup *gc = flds->createGroup("c");
+    ATK_datagroup *ga = ATK_datagroup_create_group(flds, "a");
+    ATK_datagroup *gb = ATK_datagroup_create_group(flds, "b");
+    ATK_datagroup *gc = ATK_datagroup_create_group(flds, "c");
 
     ga->createViewAndBuffer("i0")->allocate(DataType::int32());
     gb->createViewAndBuffer("f0")->allocate(DataType::float32());
@@ -298,7 +303,9 @@ TEST(C_sidre_group,groups_move_copy)
     EXPECT_TRUE(flds->hasGroup("c"));
 
     //move "b" to a child of "sub"
-    flds->createGroup("sub")->moveGroup(gb);
+    //    flds->createGroup("sub")->moveGroup(gb);
+    ATK_datagroup *sub = ATK_datagroup_create_group(flds, "sub");
+    ATK_datagroup_move_group(sub, gb);
 
     flds->print();
     
@@ -315,7 +322,8 @@ TEST(C_sidre_group,groups_move_copy)
 TEST(C_sidre_group,create_destroy_view_and_buffer)
 {
   ATK_datastore * const ds = ATK_datastore_new();
-  ATK_datagroup * const grp = ATK_datastore_get_root(ds)->createGroup("grp");
+  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  ATK_datagroup * const grp = ATK_datagroup_create_group(root, "grp");
 
   std::string const viewName1 = "viewBuffer1";
   std::string const viewName2 = "viewBuffer2";
@@ -354,7 +362,8 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
 TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 {
   ATK_datastore * const ds = ATK_datastore_new();
-  ATK_datagroup * const grp = ATK_datastore_get_root(ds)->createGroup("grp");
+  ATK_datagroup *root = ATK_datastore_get_root(ds);
+  ATK_datagroup * const grp = ATK_datagroup_create_group(root, "grp");
 
   std::string const viewName1 = "viewBuffer1";
   std::string const viewName2 = "viewBuffer2";
@@ -445,9 +454,10 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
 TEST(C_sidre_group,save_restore_simple)
 {
     ATK_datastore *ds = ATK_datastore_new();
-    ATK_datagroup *flds = ATK_datastore_get_root(ds)->createGroup("fields");
+    ATK_datagroup *root = ATK_datastore_get_root(ds);
+    ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
 
-    ATK_datagroup *ga = flds->createGroup("a");
+    ATK_datagroup *ga = ATK_datagroup_create_group(flds, "a");
 
     ga->createViewAndBuffer("i0")->allocate(DataType::int32());
 
@@ -484,11 +494,12 @@ TEST(C_sidre_group,save_restore_simple)
 TEST(C_sidre_group,save_restore_complex)
 {
     ATK_datastore *ds = ATK_datastore_new();
-    ATK_datagroup *flds = ATK_datastore_get_root(ds)->createGroup("fields");
+    ATK_datagroup *root = ATK_datastore_get_root(ds);
+    ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
 
-    ATK_datagroup *ga = flds->createGroup("a");
-    ATK_datagroup *gb = flds->createGroup("b");
-    ATK_datagroup *gc = flds->createGroup("c");
+    ATK_datagroup *ga = ATK_datagroup_create_group(flds, "a");
+    ATK_datagroup *gb = ATK_datagroup_create_group(flds, "b");
+    ATK_datagroup *gc = ATK_datagroup_create_group(flds, "c");
 
     ga->createViewAndBuffer("i0")->allocate(DataType::int32());
     gb->createViewAndBuffer("f0")->allocate(DataType::float32());

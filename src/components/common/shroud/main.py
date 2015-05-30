@@ -96,6 +96,13 @@ class Schema(object):
                 c_fortran = 'integer(C_LONG)',
                 fortran   = 'integer(C_LONG)',
                 ),
+            bool   = dict(
+                c       = 'bool',
+                cpp     = 'bool',
+                c_fortran = 'logical(C_BOOL)',
+                fortran   = 'logical',
+                f_return_code = '{F_result} = bool2logical({F_C_name}({arg_c_call}))',
+                ),
             string = dict(  # implies null terminated string
                 c   = 'char',    # XXX - char *
                 cpp = 'std::string',

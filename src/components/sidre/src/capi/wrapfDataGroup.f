@@ -19,6 +19,7 @@ module datagroup_mod
         procedure :: get_parent => datagroup_get_parent
         procedure :: get_data_store => datagroup_get_data_store
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
+        procedure :: has_group => datagroup_has_group
         procedure :: create_group => datagroup_create_group
     end type datagroup
     
@@ -52,6 +53,14 @@ module datagroup_mod
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer
+        
+        function atk_datagroup_has_group(self, name) result(rv) bind(C, name="ATK_datagroup_has_group")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            logical(C_BOOL) :: rv
+        end function atk_datagroup_has_group
         
         function atk_datagroup_create_group(self, name) result(rv) bind(C, name="ATK_datagroup_create_group")
             use iso_c_binding
@@ -101,6 +110,16 @@ contains
         rv%obj = atk_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end function datagroup_create_view_and_buffer
+    
+    function datagroup_has_group(obj, name) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        logical :: rv
+        ! splicer begin
+        rv = bool2logical(atk_datagroup_has_group(obj%obj, trim(name) // C_NULL_CHAR))
+        ! splicer end
+    end function datagroup_has_group
     
     function datagroup_create_group(obj, name) result(rv)
         implicit none
