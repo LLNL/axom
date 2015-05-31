@@ -54,7 +54,7 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name )
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
     DataBuffer *buff = this->getDataStore()->createBuffer();
-    DataView* const view = new DataView( name, this,buff);
+    DataView* const view = new DataView( name, this, buff);
     buff->attachView(view);
 
     return attachView(view);
@@ -74,7 +74,7 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name,
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
     DataBuffer *buff = this->getDataStore()->createBuffer();
-    DataView* const view = new DataView( name, this,buff);
+    DataView* const view = new DataView( name, this, buff);
     buff->attachView(view);
     view->allocate(dtype);
     return attachView(view);

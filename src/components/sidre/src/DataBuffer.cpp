@@ -40,6 +40,47 @@ namespace asctoolkit
 namespace sidre
 {
 
+/*
+*************************************************************************
+*
+* Set buffer to externally-owned data.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::declareExternal(void* external_data,
+                                        const Schema& schema)
+{
+    ATK_ASSERT_MSG( m_data == ATK_NULLPTR,
+                    "Attempting to declare buffer external, but buffer has already been allocated" );
+    ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+                    "Attempting to set buffer to null external data" );
+    m_schema.set(schema);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+    return this;
+}
+
+/*
+*************************************************************************
+*
+* Set buffer to externally-owned data.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::declareExternal(void* external_data,
+                                        const DataType& dtype)
+{
+    ATK_ASSERT_MSG( m_data == ATK_NULLPTR,
+                    "Attempting to declare buffer external, but buffer has already been allocated" );
+    ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+                    "Attempting to set buffer to null external data" );
+    m_schema.set(dtype);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+    return this;
+}
 
 /*
 *************************************************************************

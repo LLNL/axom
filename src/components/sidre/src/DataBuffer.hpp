@@ -190,15 +190,7 @@ public:
      * \return pointer to this DataBuffer object.
      */
     DataBuffer* declareExternal(void* external_data, 
-                                const Schema& schema)
-    {
-        ATK_ASSERT_MSG( external_data != ATK_NULLPTR, 
-                        "Attempting to set buffer to null external data" );
-        m_schema.set(schema);
-        m_data = external_data;
-        m_is_data_external = true;
-        return this;
-    }
+                                const Schema& schema);
    
     /*!
      * \brief Declare a buffer to own data described as a 
@@ -211,16 +203,7 @@ public:
      * \return pointer to this DataBuffer object.
      */
     DataBuffer* declareExternal(void* external_data,
-                                const DataType& dtype)
-    {
-        ATK_ASSERT_MSG( external_data != ATK_NULLPTR, 
-                        "Attempting to set buffer to null external data" );
-        m_schema.set(dtype);
-        m_data = external_data;
-        m_is_data_external = true;
-        return this;
-    }
-
+                                const DataType& dtype);
 
     /*!
      * \brief Allocate data previously declared using a Declare() method.
