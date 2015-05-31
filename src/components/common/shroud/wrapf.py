@@ -53,7 +53,7 @@ class Wrapf(object):
                   arg['attrs'].get('reference', False))
 
         typ = typedef['c_fortran']
-        if arg['type'] == 'string':
+        if typedef['base'] == 'string':
             return (typ, True)   # is array
         else:
             #        if arg['attrs'].get('const', False):
@@ -92,7 +92,7 @@ class Wrapf(object):
             raise RuntimeError("No such type %s" % arg['type'])
 
         typ = typedef['fortran']
-        if arg['type'] == 'string':
+        if typedef['base'] == 'string':
             return (typ, False)  # not array
         else:
             #        if arg['attrs'].get('const', False):
@@ -267,7 +267,7 @@ class Wrapf(object):
         # since arguments may be used to compute return value
         # (for example, string lengths)
         if subprogram == 'function':
-            if result_type == 'string':
+            if result_typedef['base'] == 'string':
                 # special case returning a string
                 rvlen = result['attrs'].get('len', '1')
                 fmt_dict['rvlen'] = rvlen

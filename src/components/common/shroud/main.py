@@ -3,6 +3,7 @@
 """
 generate language bindings
 """
+from __future__ import print_function
 
 import copy
 import os
@@ -96,6 +97,12 @@ class Schema(object):
                 c_fortran = 'integer(C_LONG)',
                 fortran   = 'integer(C_LONG)',
                 ),
+            size_t   = dict(
+                c       = 'size_t',
+                cpp     = 'size_t',
+                c_fortran = 'integer(C_SIZE_T)',
+                fortran   = 'integer(C_SIZE_T)',
+                ),
             bool   = dict(
                 c       = 'bool',
                 cpp     = 'bool',
@@ -113,10 +120,18 @@ class Schema(object):
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({arg_c_call}))',
+                base = 'string',
                 ),
             )
+        def_types['std::string'] = def_types['string']
         if 'typedef' in node:
             def_types.update(node['typedef'])
+
+        # set some default members
+        for typ in def_types.values():
+            if 'base' not in typ:
+                typ['base'] = 'unknown'
+
         node['typedef'] = def_types
         self.typedef = node['typedef']
 
@@ -179,6 +194,7 @@ class Schema(object):
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
+                base = 'wrapped',
                 )
 
         method_dict = {}
@@ -254,7 +270,7 @@ class Schema(object):
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
         for arg in node.get('args', []):
-            used_types[arg['type']] = arg
+            used_types[arg['type']] = self.typedef[arg['type']]
 
 
 if __name__ == '__main__':

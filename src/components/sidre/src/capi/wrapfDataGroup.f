@@ -11,6 +11,7 @@ module datagroup_mod
     use fstr_mod
     use datastore_mod, only : datastore
     use dataview_mod, only : dataview
+    use iso_c_binding
     
     type datagroup
         type(C_PTR) obj

@@ -20,7 +20,7 @@ def add_to_dict(d, key, value):
     return d
 
 x = parsley.makeGrammar("""
-name = < (letter | '_') (letter | digit | '_')* >
+name = < (letter | '_') (letter | digit | '_' | ':')* >
 
 #type = name:t ?( t in types ) ^(C-type) -> t
 type = name:t
@@ -51,7 +51,7 @@ parameter_list = declarator:first ( ws ',' ws declarator)*:rest -> [first] + res
 argument_list = ( '(' ws parameter_list:l ws ')' ) -> l
                 | -> []
 
-decl = declarator:dd ws argument_list:args
+decl = declarator:dd ws argument_list:args ws qualifier
         -> dict( result=dd, args=args)
 """, {})
 
@@ -114,6 +114,7 @@ if __name__ == '__main__':
         'int arg +in',
         'int arg +in +value',
         'const string& getName',
+        'std::string getName',
         ]:
         r = x(test).parameter_list()
         print('parameter_list: "{0}"'.format(test))
@@ -134,8 +135,10 @@ if __name__ == '__main__':
         "void foo",
         "void foo +alias=junk",
         "void foo()",
+        "void foo() const",
         "void foo(int arg1)",
         "void foo(int arg1, double arg2)",
+        "const std::string& getName() const",
         "const void foo(int arg1+in, double arg2+out)",
         ]:
         r = x(test).decl()
