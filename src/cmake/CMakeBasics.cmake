@@ -130,6 +130,7 @@ option(ENABLE_MPI "ENABLE MPI" OFF)
 if (ENABLE_MPI)
   find_package(MPI REQUIRED)
   include_directories(${MPI_C_INCLUDE_PATH})
+  add_definitions(-DUSE_MPI )
 endif()
 
 
