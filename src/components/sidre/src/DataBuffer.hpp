@@ -81,11 +81,11 @@ public:
 //!  @name Accessor methods
 
     /*!
-     * \brief Return the unique id of this buffer object.
+     * \brief Return the unique index of this buffer object.
      */
-    IDType getUID() const
+    IndexType getIndex() const
     {
-        return m_uid;
+        return m_index;
     }
 
     /*!
@@ -141,7 +141,7 @@ public:
      * \brief Return pointer to view attached to this buffer identified
      *        by the given index.
      */
-    DataView* getView(IDType idx)
+    DataView* getView(IndexType idx)
     {
        return m_views[idx];
     }
@@ -275,7 +275,7 @@ private:
     /*!
      *  \brief Private ctor that assigns unique id.
      */
-    DataBuffer( IDType uid );
+    DataBuffer( IndexType uid );
 
     /*!
      * \brief Private copy ctor.
@@ -307,8 +307,8 @@ private:
     void  releaseBytes(void* );
 
 
-    /// Identifier - unique within a dataStore.
-    IDType m_uid;
+    /// Index Identifier - unique within a dataStore.
+    IndexType m_index;
 
     /// Container of DataViews attached to this buffer.
     std::vector<DataView *> m_views;

@@ -18,9 +18,9 @@ typedef conduit::DataType::TypeID TypeID;
 
 
 
-typedef int IDType;
+typedef int IndexType;
 
-const IDType InvalidID = -1;
+const IndexType InvalidIndex = -1;
 
 
 template< int TYPEID >

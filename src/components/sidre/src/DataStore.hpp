@@ -77,29 +77,29 @@ public:
 //!  @name DataBuffer methods
 
   /*!
-   * \brief Return (non-const) pointer to data buffer object with given id.
+   * \brief Return (non-const) pointer to data buffer object with given index.
    */
-  DataBuffer* getBuffer( IDType id ) 
+  DataBuffer* getBuffer( IndexType idx ) 
   { 
-     return m_DataBuffers[id]; 
+     return m_DataBuffers[idx]; 
   }
 
   /*!
    * \brief Create a data buffer object and return a pointer to it.
    *
-   *    The buffer object is assigned a unique id when created and the 
+   *    The buffer object is assigned a unique index when created and the 
    *    buffer object is owned by the data store.
    */
   DataBuffer* createBuffer();
 
   /*!
-   * \brief Remove data buffer with given id from the datastore and 
+   * \brief Remove data buffer with given index from the datastore and 
    *        destroy it (including its data if data buffer owns it).
    *
    *   Note that buffer destruction detaches it from all groups and views 
    *   it was associated with.
    */
-  void destroyBuffer( IDType id );
+  void destroyBuffer( IndexType idx );
 
   /*!
    * \brief Remove all data buffers from the datastore and destroy them 
@@ -111,12 +111,12 @@ public:
   void destroyBuffers();
 
   /*!
-   * \brief Remove data buffer with given id from the datastore, but leave
+   * \brief Remove data buffer with given index from the datastore, but leave
    *        it intact.
    *
    * \return pointer to DataBuffer object that was datached.
    */
-  DataBuffer* detachBuffer( IDType id );
+  DataBuffer* detachBuffer( IndexType idx );
 
   /*!
    * \brief Return number of buffers in the datastore.
@@ -177,8 +177,8 @@ private:
   /// Collection of DataBuffers holding data in DataStore instance.
   std::vector<DataBuffer*> m_DataBuffers;
 
-  /// Collection of unused unique buffer ids (they can be recycled).
-  std::stack< IDType > m_AvailableDataBuffers;
+  /// Collection of unused unique buffer indices (they can be recycled).
+  std::stack< IndexType > m_AvailableDataBuffers;
 
 };
 
