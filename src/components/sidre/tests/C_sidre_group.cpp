@@ -108,26 +108,26 @@ TEST(C_sidre_group,get_view_name_index)
     ATK_datagroup *root = ATK_datastore_get_root(ds);
 
     ATK_datagroup *parent = ATK_datagroup_create_group(root, "parent");
-    DataView *view1 = parent->createViewAndBuffer("view1");
-    DataView *view2 = parent->createViewAndBuffer("view2");
+    ATK_dataview *view1 = ATK_datagroup_create_view_and_buffer(parent, "view1");
+    ATK_dataview *view2 = ATK_datagroup_create_view_and_buffer(parent, "view2");
 
-    EXPECT_EQ(parent->getNumViews(), 2u);
+    EXPECT_EQ(ATK_datagroup_get_num_views(parent), 2u);
 
-    IDType idx1 = parent->getViewIndex("view1");
-    IDType idx2 = parent->getViewIndex("view2");
+    IDType idx1 = ATK_datagroup_get_view_index(parent, "view1");
+    IDType idx2 = ATK_datagroup_get_view_index(parent, "view2");
 
-    std::string name1(parent->getViewName(idx1));
-    std::string name2(parent->getViewName(idx2));
+    char *name1 = ATK_datagroup_getv_iew_name(parent, idx1);
+    char *name2 = ATK_datagroup_get_view_name(parent, idx2);
    
-    EXPECT_EQ(name1, std::string("view1")); 
-    EXPECT_EQ(view1->getName(), name1); 
+    EXPECT_EQ(strcmp(name1, "view1") == 0);
+    EXPECT_EQ(strcmp(ATK_dataview_get_name(view1), name1) == 0);
 
-    EXPECT_EQ(name2, std::string("view2")); 
-    EXPECT_EQ(view2->getName(), name2); 
+    EXPECT_EQ(strcmp(name2, "view2") == 0);
+    EXPECT_EQ(strcmp(ATK_dataview_get_name(view2), name2) == 0);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    IDType idx3 = parent->getViewIndex("view3");
-    std::string name3(parent->getViewName(idx3));
+    IDType idx3 = ATK_datagroup_get_view_index(parent, "view3");
+    char *name3 = ATK_datagroup_get_view_name(parent, idx3);
 
     EXPECT_EQ(idx3, InvalidID);
     EXPECT_TRUE(name3.empty());
@@ -150,11 +150,11 @@ TEST(C_sidre_group,get_group_name_index)
 
     EXPECT_EQ(parent->getNumGroups(), 2u);
 
-    IDType idx1 = parent->getGroupIndex("group1");
-    IDType idx2 = parent->getGroupIndex("group2");
+    IDType idx1 = parent->get_group_index("group1");
+    IDType idx2 = parent->get_group_index("group2");
 
-    std::string name1(parent->getGroupName(idx1));
-    std::string name2(parent->getGroupName(idx2));
+    std::string name1(parent->get_group_name(idx1));
+    std::string name2(parent->get_group_name(idx2));
 
     EXPECT_EQ(name1, std::string("group1"));
     EXPECT_EQ(group1->getName(), name1);
@@ -163,8 +163,8 @@ TEST(C_sidre_group,get_group_name_index)
     EXPECT_EQ(group2->getName(), name2);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    IDType idx3 = parent->getGroupIndex("group3");
-    std::string name3(parent->getGroupName(idx3));
+    IDType idx3 = parent->get_group_index("group3");
+    std::string name3(parent->get_group_name(idx3));
 
     EXPECT_EQ(idx3, InvalidID);
     EXPECT_TRUE(name3.empty());
@@ -184,15 +184,15 @@ TEST(C_sidre_group,create_destroy_has_viewbuffer)
     ATK_datagroup *root = ATK_datastore_get_root(ds);
     ATK_datagroup *group = ATK_datagroup_create_group(root, "parent");
 
-    DataView *view = group->createViewAndBuffer("view");
-    EXPECT_TRUE( group->getParent() == root );
-    EXPECT_TRUE( view->hasBuffer() );
+    ATK_dataview *view = group->create_view_and_buffer("view");
+    EXPECT_TRUE( group->get_parent() == root );
+    EXPECT_TRUE( view->has_buffer() );
  
-    EXPECT_TRUE( group->hasView("view") );
+    EXPECT_TRUE( group->has_view("view") );
 
     group->destroyViewAndBuffer("view");
 
-    EXPECT_FALSE( group->hasView("view") );
+    EXPECT_FALSE( group->has_view("view") );
 
     ATK_datastore_delete(ds);
 }
@@ -207,13 +207,13 @@ TEST(C_sidre_group,create_destroy_has_group)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
     ATK_datagroup *group = ATK_datagroup_create_group(root, "group");
-    EXPECT_TRUE( group->getParent() == root );
+    EXPECT_TRUE( group->get_parent() == root );
     
-    EXPECT_TRUE( root->hasGroup("group") );
+    EXPECT_TRUE( root->has_group("group") );
 
 
     root->destroyGroup("group");
-    EXPECT_FALSE( root->hasGroup("group") );
+    EXPECT_FALSE( root->has_group("group") );
 
     ATK_datastore_delete(ds);
 }
@@ -224,9 +224,9 @@ TEST(C_sidre_group,group_name_collisions)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
     ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
-    flds->createViewAndBuffer("a");
+    flds->create_view_and_buffer("a");
 
-    EXPECT_TRUE(flds->hasView("a"));
+    EXPECT_TRUE(flds->has_view("a"));
 
     ATK_datastore_delete(ds);
 }
@@ -237,44 +237,44 @@ TEST(C_sidre_group,view_copy_move)
     ATK_datagroup *root = ATK_datastore_get_root(ds);
     ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
 
-    flds->createViewAndBuffer("i0")->allocate(DataType::int32());
-    flds->createViewAndBuffer("f0")->allocate(DataType::float32());
-    flds->createViewAndBuffer("d0")->allocate(DataType::float64());
+    flds->create_view_and_buffer("i0")->allocate(DataType::int32());
+    flds->create_view_and_buffer("f0")->allocate(DataType::float32());
+    flds->create_view_and_buffer("d0")->allocate(DataType::float64());
 
-    (*flds->getView("i0")->getNode().as_int32_ptr())   = 1;
-    (*flds->getView("f0")->getNode().as_float32_ptr()) = 100.0;
-    (*flds->getView("d0")->getNode().as_float64_ptr()) = 3000.0;
+    (*flds->get_view("i0")->getNode().as_int32_ptr())   = 1;
+    (*flds->get_view("f0")->getNode().as_float32_ptr()) = 100.0;
+    (*flds->get_view("d0")->getNode().as_float64_ptr()) = 3000.0;
 
-    EXPECT_TRUE(flds->hasView("i0"));
-    EXPECT_TRUE(flds->hasView("f0"));
-    EXPECT_TRUE(flds->hasView("d0"));
+    EXPECT_TRUE(flds->has_view("i0"));
+    EXPECT_TRUE(flds->has_view("f0"));
+    EXPECT_TRUE(flds->has_view("d0"));
 
     // test moving a view form feds7 to sub
-    //    flds->createGroup("sub")->moveView(flds->getView("d0"));
+    //    flds->createGroup("sub")->moveView(flds->get_view("d0"));
     ATK_datagroup *sub = ATK_datagroup_create_group(flds, "sub");
     AT_datagroup_move_view();
     flds->print();
-    EXPECT_FALSE(flds->hasView("d0"));
-    EXPECT_TRUE(flds->hasGroup("sub"));
-    EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
+    EXPECT_FALSE(flds->has_view("d0"));
+    EXPECT_TRUE(flds->has_group("sub"));
+    EXPECT_TRUE(flds->get_group("sub")->has_view("d0"));
 
     // check the data value
-    float64 *d0_data =  flds->getGroup("sub")
-                            ->getView("d0")
+    float64 *d0_data =  flds->get_group("sub")
+                            ->get_view("d0")
                             ->getNode().as_float64_ptr();
     EXPECT_NEAR(d0_data[0],3000.0,1e-12);
     
     // test copying a view from flds top sub
-    flds->getGroup("sub")->copyView(flds->getView("i0"));
+    flds->get_group("sub")->copyView(flds->get_view("i0"));
 
     flds->print();
     
-    EXPECT_TRUE(flds->hasView("i0"));    
-    EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
+    EXPECT_TRUE(flds->has_view("i0"));    
+    EXPECT_TRUE(flds->get_group("sub")->has_view("i0"));
 
     // we expect the actual data  pointers to be the same
-    EXPECT_EQ(flds->getView("i0")->getNode().data_pointer(),
-              flds->getGroup("sub")->getView("i0")->getNode().data_pointer());
+    EXPECT_EQ(flds->get_view("i0")->getNode().data_pointer(),
+              flds->get_group("sub")->get_view("i0")->getNode().data_pointer());
 
     ATK_datastore_delete(ds);
 }
@@ -290,18 +290,18 @@ TEST(C_sidre_group,groups_move_copy)
     ATK_datagroup *gb = ATK_datagroup_create_group(flds, "b");
     ATK_datagroup *gc = ATK_datagroup_create_group(flds, "c");
 
-    ga->createViewAndBuffer("i0")->allocate(DataType::int32());
-    gb->createViewAndBuffer("f0")->allocate(DataType::float32());
-    gc->createViewAndBuffer("d0")->allocate(DataType::float64());
+    ga->create_view_and_buffer("i0")->allocate(DataType::int32());
+    gb->create_view_and_buffer("f0")->allocate(DataType::float32());
+    gc->create_view_and_buffer("d0")->allocate(DataType::float64());
 
-    (*ga->getView("i0")->getNode().as_int32_ptr())   = 1;
-    (*gb->getView("f0")->getNode().as_float32_ptr()) = 100.0;
-    (*gc->getView("d0")->getNode().as_float64_ptr()) = 3000.0;
+    (*ga->get_view("i0")->getNode().as_int32_ptr())   = 1;
+    (*gb->get_view("f0")->getNode().as_float32_ptr()) = 100.0;
+    (*gc->get_view("d0")->getNode().as_float64_ptr()) = 3000.0;
 
     // check that all sub groups exist
-    EXPECT_TRUE(flds->hasGroup("a"));
-    EXPECT_TRUE(flds->hasGroup("b"));
-    EXPECT_TRUE(flds->hasGroup("c"));
+    EXPECT_TRUE(flds->has_group("a"));
+    EXPECT_TRUE(flds->has_group("b"));
+    EXPECT_TRUE(flds->has_group("c"));
 
     //move "b" to a child of "sub"
     //    flds->createGroup("sub")->moveGroup(gb);
@@ -310,11 +310,11 @@ TEST(C_sidre_group,groups_move_copy)
 
     flds->print();
     
-    EXPECT_TRUE(flds->hasGroup("a"));
-    EXPECT_TRUE(flds->hasGroup("sub"));
-    EXPECT_TRUE(flds->hasGroup("c"));
+    EXPECT_TRUE(flds->has_group("a"));
+    EXPECT_TRUE(flds->has_group("sub"));
+    EXPECT_TRUE(flds->has_group("c"));
 
-    EXPECT_EQ(flds->getGroup("sub")->getGroup("b"),gb);
+    EXPECT_EQ(flds->get_group("sub")->get_group("b"),gb);
 
     ATK_datastore_delete(ds);
 }
@@ -329,21 +329,21 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   std::string const viewName1 = "viewBuffer1";
   std::string const viewName2 = "viewBuffer2";
 
-  DataView const * const view1 = grp->createViewAndBuffer(viewName1);
-  DataView const * const view2 = grp->createViewAndBuffer(viewName2);
+  DataView const * const view1 = grp->create_view_and_buffer(viewName1);
+  DataView const * const view2 = grp->create_view_and_buffer(viewName2);
 
-  EXPECT_TRUE(grp->hasView(viewName1));
-  EXPECT_EQ( grp->getView(viewName1), view1 );
+  EXPECT_TRUE(grp->has_view(viewName1));
+  EXPECT_EQ( grp->get_view(viewName1), view1 );
 
-  EXPECT_TRUE(grp->hasView(viewName2));
-  EXPECT_EQ( grp->getView(viewName2), view2 );
+  EXPECT_TRUE(grp->has_view(viewName2));
+  EXPECT_EQ( grp->get_view(viewName2), view2 );
 
   IDType const bufferId1 = view1->getBuffer()->getUID();
 
   grp->destroyViewAndBuffer(viewName1);
 
 
-  EXPECT_FALSE(grp->hasView(viewName1));
+  EXPECT_FALSE(grp->has_view(viewName1));
   EXPECT_EQ(ds->getNumBuffers(), 1u);
 
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
@@ -371,19 +371,19 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * const view1 = grp->createViewAndBuffer(viewName1,
+  ATK_dataview * const view1 = grp->create_view_and_buffer(viewName1,
                                                           DataType::uint32(10));
   // this one is the Schema & method
   Schema s;
   s.set(DataType::float64(10));
-  DataView * const view2 = grp->createViewAndBuffer(viewName2,
+  ATk_dataview * const view2 = grp->create_view_and_buffer(viewName2,
                                                           s);
 
-  EXPECT_TRUE(grp->hasView(viewName1));
-  EXPECT_EQ( grp->getView(viewName1), view1 );
+  EXPECT_TRUE(grp->has_view(viewName1));
+  EXPECT_EQ( grp->get_view(viewName1), view1 );
 
-  EXPECT_TRUE(grp->hasView(viewName2));
-  EXPECT_EQ( grp->getView(viewName2), view2 );
+  EXPECT_TRUE(grp->has_view(viewName2));
+  EXPECT_EQ( grp->get_view(viewName2), view2 );
 
   
   uint32  *v1_vals = view1->getNode().as_uint32_ptr();
@@ -412,7 +412,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView *  base =  root->createViewAndBuffer("base",
+  ATK_dataview *  base =  root->create_view_and_buffer("base",
                                                 DataType::uint32(10)); 
   uint32 *base_vals = base->getNode().as_uint32_ptr();
   for(int i=0;i<10;i++)
@@ -436,8 +436,8 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   Schema s(DataType::uint32(5,5*sizeof(uint32)));
   root->createView("sub_b",base_buff,s);
 
-  uint32 *sub_a_vals = root->getView("sub_a")->getNode().as_uint32_ptr();
-  uint32 *sub_b_vals = root->getView("sub_b")->getNode().as_uint32_ptr();
+  uint32 *sub_a_vals = root->get_view("sub_a")->getNode().as_uint32_ptr();
+  uint32 *sub_b_vals = root->get_view("sub_b")->getNode().as_uint32_ptr();
 
   for(int i=0;i<5;i++)
   {
@@ -460,13 +460,13 @@ TEST(C_sidre_group,save_restore_simple)
 
     ATK_datagroup *ga = ATK_datagroup_create_group(flds, "a");
 
-    ga->createViewAndBuffer("i0")->allocate(DataType::int32());
+    ga->create_view_and_buffer("i0")->allocate(DataType::int32());
 
-    (*ga->getView("i0")->getNode().as_int32_ptr())   = 1;
+    (*ga->get_view("i0")->getNode().as_int32_ptr())   = 1;
 
-    EXPECT_TRUE(ATK_datastore_get_root(ds)->hasGroup("fields"));
-    EXPECT_TRUE(ATK_datastore_get_root(ds)->getGroup("fields")->hasGroup("a"));
-    EXPECT_TRUE(ATK_datastore_get_root(ds)->getGroup("fields")->getGroup("a")->hasView("i0"));
+    EXPECT_TRUE(ATK_datastore_get_root(ds)->has_group("fields"));
+    EXPECT_TRUE(ATK_datastore_get_root(ds)->get_group("fields")->has_group("a"));
+    EXPECT_TRUE(ATK_datastore_get_root(ds)->get_group("fields")->get_group("a")->has_view("i0"));
         
         
     ATK_datastore_get_root(ds)->save("out_sidre_group_save_restore_simple","conduit");
@@ -479,10 +479,10 @@ TEST(C_sidre_group,save_restore_simple)
     
     ds2->print();
 
-    flds = ds2->getRoot()->getGroup("fields");
+    flds = ds2->getRoot()->get_group("fields");
     // check that all sub groups exist
-    EXPECT_TRUE(flds->hasGroup("a"));
-    EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int32(),1);
+    EXPECT_TRUE(flds->has_group("a"));
+    EXPECT_EQ(flds->get_group("a")->get_view("i0")->getNode().as_int32(),1);
     
     ds2->print();
     
@@ -502,18 +502,18 @@ TEST(C_sidre_group,save_restore_complex)
     ATK_datagroup *gb = ATK_datagroup_create_group(flds, "b");
     ATK_datagroup *gc = ATK_datagroup_create_group(flds, "c");
 
-    ga->createViewAndBuffer("i0")->allocate(DataType::int32());
-    gb->createViewAndBuffer("f0")->allocate(DataType::float32());
-    gc->createViewAndBuffer("d0")->allocate(DataType::float64());
+    ga->create_view_and_buffer("i0")->allocate(DataType::int32());
+    gb->create_view_and_buffer("f0")->allocate(DataType::float32());
+    gc->create_view_and_buffer("d0")->allocate(DataType::float64());
 
-    (*ga->getView("i0")->getNode().as_int32_ptr())   = 1;
-    (*gb->getView("f0")->getNode().as_float32_ptr()) = 100.0;
-    (*gc->getView("d0")->getNode().as_float64_ptr()) = 3000.0;
+    (*ga->get_view("i0")->getNode().as_int32_ptr())   = 1;
+    (*gb->get_view("f0")->getNode().as_float32_ptr()) = 100.0;
+    (*gc->get_view("d0")->getNode().as_float64_ptr()) = 3000.0;
 
     // check that all sub groups exist
-    EXPECT_TRUE(flds->hasGroup("a"));
-    EXPECT_TRUE(flds->hasGroup("b"));
-    EXPECT_TRUE(flds->hasGroup("c"));
+    EXPECT_TRUE(flds->has_group("a"));
+    EXPECT_TRUE(flds->has_group("b"));
+    EXPECT_TRUE(flds->has_group("c"));
 
     ATK_datastore_get_root(ds)->save("out_sidre_group_save_restore_complex","conduit");
 
@@ -524,15 +524,15 @@ TEST(C_sidre_group,save_restore_complex)
 
     ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
 
-    flds = ds2->getRoot()->getGroup("fields");
+    flds = ds2->getRoot()->get_group("fields");
     // check that all sub groups exist
-    EXPECT_TRUE(flds->hasGroup("a"));
-    EXPECT_TRUE(flds->hasGroup("b"));
-    EXPECT_TRUE(flds->hasGroup("c"));
+    EXPECT_TRUE(flds->has_group("a"));
+    EXPECT_TRUE(flds->has_group("b"));
+    EXPECT_TRUE(flds->has_group("c"));
 
-    EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int32(),1);
-    EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getNode().as_float32(),100.0,  1e-12);
-    EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getNode().as_float64(),3000.0, 1e-12);
+    EXPECT_EQ(flds->get_group("a")->get_view("i0")->getNode().as_int32(),1);
+    EXPECT_NEAR(flds->get_group("b")->get_view("f0")->getNode().as_float32(),100.0,  1e-12);
+    EXPECT_NEAR(flds->get_group("c")->get_view("d0")->getNode().as_float64(),3000.0, 1e-12);
 
     ds2->print();
 
