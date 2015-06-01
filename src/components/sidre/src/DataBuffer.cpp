@@ -124,6 +124,26 @@ DataBuffer* DataBuffer::allocate()
 /*
 *************************************************************************
 *
+* Declare and allocate data described using type and length.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::allocate(TypeEnum type, long len)
+{
+   ATK_ASSERT_MSG( !m_is_data_external, 
+                  "Attempting to allocate buffer holding external data");
+
+   if ( !m_is_data_external ) {
+       declare(type, len);
+      allocate();
+   }
+
+   return this;
+}
+
+/*
+*************************************************************************
+*
 * Declare and allocate data described using a Conduit schema.
 *
 *************************************************************************

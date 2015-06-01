@@ -113,6 +113,7 @@ classes:
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
+#      - decl: DataBuffer* allocate(TypeEnum type, long len)
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
 #      - decl: DataBuffer* reallocate(const Schema& schema)

@@ -220,6 +220,16 @@ public:
     DataBuffer* allocate();
   
     /*!
+     * \brief Declare and allocate data described with type and length.
+     *
+     * This is equivalent to calling declare(type, len), then allocate(),
+     * and then calling apply() on this DataView object.  
+     *
+     * \return pointer to this DataBuffer object.
+     */
+    DataBuffer* allocate(TypeEnum type, long len);
+
+    /*!
      * \brief Declare and allocate data described as a Conduit schema.
      *
      *        Equivalent to calling Declare(schema), then allocate().
