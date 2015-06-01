@@ -20,13 +20,23 @@ typedef conduit::DataType DataType;
 typedef conduit::DataType::TypeID TypeID;
 
 
-
+/*!
+ * \brief IndexType is used for any labeling of a sidre object by an 
+ *        integer identifier.
+ */
 typedef int IndexType;
 
+/*!
+ * \brief Common invalid index identifier used in sidre.
+ */
 const IndexType InvalidIndex = -1;
 
-const std::string InvalidName;
 
+/*!
+ * \brief Common invalid name (string) identifier used in sidre.
+ */
+const std::string InvalidName;
+///
 inline bool isNameValid(const std::string& name)
 {
    return name != InvalidName;

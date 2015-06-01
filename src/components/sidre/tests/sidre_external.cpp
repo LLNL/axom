@@ -109,7 +109,7 @@ TEST(sidre_external, create_external_view)
 //------------------------------------------------------------------------------
 // Test DataGroup::save(), DataGroup::load() with external buffers
 //------------------------------------------------------------------------------
-TEST(sidre_external, save_restore_external_view)
+TEST(sidre_external, save_load_external_view)
 {
     DataStore* ds   = new DataStore();
     DataGroup* root = ds->getRoot();
@@ -163,6 +163,7 @@ TEST(sidre_external, save_restore_external_view)
     }
 
     delete ds;
+    delete ds2;
     delete [] idata;
     delete [] ddata;
 }
