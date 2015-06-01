@@ -16,6 +16,15 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
+bool ATK_dataview_has_buffer(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+bool rv = selfobj->hasBuffer();
+return rv;
+// splicer end
+}
+
 const char * ATK_dataview_get_name(const ATK_dataview * self)
 {
 const DataView *selfobj = static_cast<const DataView *>(self);

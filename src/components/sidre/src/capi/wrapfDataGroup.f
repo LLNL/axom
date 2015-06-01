@@ -21,6 +21,7 @@ module datagroup_mod
         procedure :: get_data_store => datagroup_get_data_store
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
+        procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
         procedure :: get_view_index => datagroup_get_view_index
         procedure :: get_num_views => datagroup_get_num_views
         procedure :: has_group => datagroup_has_group
@@ -67,6 +68,12 @@ module datagroup_mod
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer
+        
+        subroutine atk_datagroup_destroy_view_and_buffer(name) bind(C, name="ATK_datagroup_destroy_view_and_buffer")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR) :: name(*)
+        end subroutine atk_datagroup_destroy_view_and_buffer
         
         function atk_datagroup_get_view_index(self, name) result(rv) bind(C, name="ATK_datagroup_get_view_index")
             use iso_c_binding
@@ -164,6 +171,14 @@ contains
         rv%obj = atk_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end function datagroup_create_view_and_buffer
+    
+    subroutine datagroup_destroy_view_and_buffer(name)
+        implicit none
+        character(*) :: name
+        ! splicer begin
+        call atk_datagroup_destroy_view_and_buffer(trim(name) // C_NULL_CHAR)
+        ! splicer end
+    end subroutine datagroup_destroy_view_and_buffer
     
     function datagroup_get_view_index(obj, name) result(rv)
         implicit none

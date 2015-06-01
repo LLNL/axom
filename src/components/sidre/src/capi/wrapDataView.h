@@ -28,6 +28,8 @@ struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
+bool ATK_dataview_has_buffer(ATK_dataview * self);
+
 const char * ATK_dataview_get_name(const ATK_dataview * self);
 
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);

@@ -61,6 +61,15 @@ return rv;
 // splicer end
 }
 
+void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+selfobj->destroyViewAndBuffer(name);
+return;
+// splicer end
+}
+
 ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

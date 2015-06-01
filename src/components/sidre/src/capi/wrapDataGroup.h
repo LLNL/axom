@@ -44,6 +44,8 @@ bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name);
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name);
 
+void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name);
+
 ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name);
 
 size_t ATK_datagroup_get_num_views(ATK_datagroup * self);

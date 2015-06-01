@@ -71,7 +71,7 @@ classes:
 #    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
 #    -  decl: DataView *moveView(DataView *view)
 #    -  decl: DataView *copyView(DataView *view)
-#    -  decl: void destroyViewAndBuffer(const std::string &name)
+    -  decl: void destroyViewAndBuffer(const std::string &name)
 #    -  decl: void destroyViewAndBuffer(IndexType idx)
 #    -  decl: void destroyView(const std::string &name)
 #    -  decl: void destroyView(IndexType idx)
@@ -141,7 +141,7 @@ classes:
 #    - decl: DataView* apply()
 #    - decl: DataView* apply(const Schema& schema)
 #    - decl: DataView* apply(const DataType& dtype)
-#    - decl: bool  hasBuffer() const
+    - decl: bool  hasBuffer() const
 #    - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const
     - decl: const std::string& getName() const

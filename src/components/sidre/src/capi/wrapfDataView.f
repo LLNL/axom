@@ -15,11 +15,19 @@ module dataview_mod
     type dataview
         type(C_PTR) obj
     contains
+        procedure :: has_buffer => dataview_has_buffer
         procedure :: get_name => dataview_get_name
         procedure :: get_owning_group => dataview_get_owning_group
     end type dataview
     
     interface
+        
+        function atk_dataview_has_buffer(self) result(rv) bind(C, name="ATK_dataview_has_buffer")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            logical(C_BOOL) :: rv
+        end function atk_dataview_has_buffer
         
         pure function atk_dataview_get_name(self) result(rv) bind(C, name="ATK_dataview_get_name")
             use iso_c_binding
@@ -37,6 +45,15 @@ module dataview_mod
     end interface
 
 contains
+    
+    function dataview_has_buffer(obj) result(rv)
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin
+        rv = bool2logical(atk_dataview_has_buffer(obj%obj))
+        ! splicer end
+    end function dataview_has_buffer
     
     function dataview_get_name(obj) result(rv)
         implicit none
