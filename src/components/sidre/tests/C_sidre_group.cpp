@@ -12,6 +12,9 @@
 
 #include "sidre/sidre.h"
 
+typedef float  float32_t;
+typedef double float64_t;
+
 // API coverage tests
 // Each test should be documented with the interface functions being tested
 
@@ -139,7 +142,6 @@ TEST(C_sidre_group,get_view_name_index)
 //------------------------------------------------------------------------------
 // Verify getGroupName(), getGroupIndex()
 //------------------------------------------------------------------------------
-#if 0
 TEST(C_sidre_group,get_group_name_index)
 {
     ATK_datastore *ds = ATK_datastore_new();
@@ -160,8 +162,8 @@ TEST(C_sidre_group,get_group_name_index)
     EXPECT_TRUE(strcmp(name1, "group1") == 0);
     EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group1), name1) == 0);
 
-    EXPECT_EQ(name2, std::string("group2"));
-    EXPECT_EQ(ATK_datagroup_get_name(group1), name2);
+    EXPECT_TRUE(strcmp(name2, "group2") == 0);
+    EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group2), name2) == 0);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
     ATK_IndexType idx3 = ATK_datagroup_get_group_index(parent, "group3");
@@ -173,7 +175,6 @@ TEST(C_sidre_group,get_group_name_index)
 
     ATK_datastore_delete(ds);
 }
-#endif
 
 //------------------------------------------------------------------------------
 // createViewAndBuffer()
@@ -233,7 +234,7 @@ TEST(C_sidre_group,group_name_collisions)
     ATK_datastore_delete(ds);
 }
 
-#if 0
+#if 1
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,view_copy_move)
 {
@@ -243,11 +244,11 @@ TEST(C_sidre_group,view_copy_move)
 
     ATK_dataview *tmpview;
     tmpview = ATK_datagroup_create_view_and_buffer(flds, "i0");
-    ATK_dataview_allocate(tmpview, ATK_INT32_T);
+    ATK_dataview_allocate(tmpview, ATK_INT32_T, 1);
     tmpview = ATK_datagroup_create_view_and_buffer(flds, "f0");
-    ATK_dataview_allocate(tmpview, ATK_FLOAT32_T);
+    ATK_dataview_allocate(tmpview, ATK_FLOAT32_T, 1);
     tmpview = ATK_datagroup_create_view_and_buffer(flds, "d0");
-    ATK_dataview_allocate(tmpview, ATK_FLOAT64_T);
+    ATK_dataview_allocate(tmpview, ATK_FLOAT64_T, 1);
 
 #if 0
     (*ATK_datagroup_get_view(flds, "i0")->getNode().as_int32_ptr())   = 1;
@@ -255,9 +256,22 @@ TEST(C_sidre_group,view_copy_move)
     (*ATK_datagroup_get_view(flds, "d0")->getNode().as_float64_ptr()) = 3000.0;
 #else
     {
-	ATKdataview *tmpview = ATK_datagroup_get_view(flds, "i0");
-	int32_t *v = ATK_dataview_get_data(tmpview);
+	ATK_dataview *tmpview = ATK_datagroup_get_view(flds, "i0");
+	ATK_databuffer *tmpbuf = ATK_dataview_get_buffer(tmpview);
+	int32_t *v = static_cast<int32_t *>(ATK_databuffer_get_data(tmpbuf));
 	*v = 1;
+    }
+    {
+	ATK_dataview *tmpview = ATK_datagroup_get_view(flds, "f0");
+	ATK_databuffer *tmpbuf = ATK_dataview_get_buffer(tmpview);
+	float32_t *v = static_cast<float32_t *>(ATK_databuffer_get_data(tmpbuf));
+	*v = 100.0;
+    }
+    {
+	ATK_dataview *tmpview = ATK_datagroup_get_view(flds, "d0");
+	ATK_databuffer *tmpbuf = ATK_dataview_get_buffer(tmpview);
+	float64_t *v = static_cast<float64_t *>(ATK_databuffer_get_data(tmpbuf));
+	*v = 3000;
     }
 #endif
 
@@ -265,10 +279,11 @@ TEST(C_sidre_group,view_copy_move)
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "f0"));
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "d0"));
 
+#if 0
     // test moving a view form feds7 to sub
     //    ATK_datagroup_createGroup(flds, "sub")->moveView(ATK_datagroup_get_view(flds, "d0"));
     ATK_datagroup *sub = ATK_datagroup_create_group(flds, "sub");
-    AT_datagroup_move_view();
+    ATK_datagroup_move_view();
     ATK_datagroup_print();
     EXPECT_FALSE(ATK_datagroup_has_view(flds, "d0"));
     EXPECT_TRUE(ATK_datagroup_has_group(flds, "sub"));
@@ -291,6 +306,7 @@ TEST(C_sidre_group,view_copy_move)
     // we expect the actual data  pointers to be the same
     EXPECT_EQ(ATK_datagroup_get_view(flds, "i0")->getNode().data_pointer(),
               ATK_datagroup_get_group("sub")->get_view("i0")->getNode().data_pointer());
+#endif
 
     ATK_datastore_delete(ds);
 }

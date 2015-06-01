@@ -40,6 +40,20 @@ namespace sidre
 /*
 *************************************************************************
 *
+* Declare a data view from sidre type and length.
+*
+*************************************************************************
+*/
+DataView* DataView::declare(TypeEnum type, long len)
+{
+    m_schema.set(createConduitDataType(type, len));
+    m_is_applied = false;
+    return this;
+}
+
+/*
+*************************************************************************
+*
 * Declare a data view as a Conduit schema.
 *
 *************************************************************************
@@ -79,6 +93,21 @@ DataView* DataView::allocate()
                     "Data allocation on a view allowed only if it's the only view associated with its buffer");
     
     m_data_buffer->allocate(m_schema);
+    apply();
+    return this;
+}
+
+/*
+*************************************************************************
+*
+* Declare a data view using sidre type and length.
+*
+*************************************************************************
+*/
+DataView* DataView::allocate(TypeEnum type, long len)
+{
+    declare(createConduitDataType(type, len));
+    allocate();
     apply();
     return this;
 }

@@ -28,6 +28,7 @@
 #include <vector>
 
 // Other CS Toolkit headers
+#include "sidre/SidreTypes.hpp"
 #include "common/CommonTypes.hpp"
 #include "conduit/conduit.hpp"
 
@@ -103,6 +104,13 @@ public:
     ////////////////////////////////////////////////////////////////
 
     /*!
+     * \brief Declare a data view from sidre type and length.
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* declare(TypeEnum type, long len);
+
+    /*!
      * \brief Declare a data view as a Conduit schema.
      *
      * \return pointer to this DataView object.
@@ -128,7 +136,17 @@ public:
     DataView* allocate();
 
     /*!
-     * \brief Declare a data view as a Conduit schema and allocate the data.
+     * \brief Declare a data view from a sidre type and length then allocate the data.
+     *
+     * This is equivalent to calling declare(Schema), then allocate(),
+     * and then calling apply() on this DataView object.  
+     *
+     * \return pointer to this DataView object.
+     */
+    DataView* allocate(TypeEnum type, long len);
+
+    /*!
+     * \brief Declare a data view as a Conduit schema then allocate the data.
      *
      * This is equivalent to calling declare(Schema), then allocate(),
      * and then calling apply() on this DataView object.  
@@ -139,7 +157,7 @@ public:
 
     /*!
      * \brief Declare a data view as a Conduit pre-defined data type
-     *        and allocate the data.
+     *        then allocate the data.
      *
      * This is equivalent to calling declare(DataType), then allocate(),
      * and then calling apply() on this DataView object.
@@ -269,6 +287,22 @@ public:
        return m_data_buffer; 
     }
 
+    /*!
+     * \brief Return void-pointer to data associated with DataView.
+     */
+    void* getData()
+    {
+#if 0
+	// invalid use of incomplete type, discuss.
+	if (hasBuffer()) {
+	    return m_data_buffer->getData();
+	} else {
+	    return ATK_NULLPTR;
+	}
+#else
+	return ATK_NULLPTR;
+#endif
+    }
 
     /*!
      * \brief Return non-const reference to Conduit node holding data.
@@ -287,7 +321,7 @@ public:
     }
 
     /*!
-     * \brief Return Conduit Node Value instance that can be used to 
+     * \brief Return Conduit Node Value instance that can be used
      *  to easily access an array or scalar value.
      */
     Node::Value getValue()

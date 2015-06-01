@@ -182,6 +182,7 @@ class Schema(object):
             self.typedef[name] = dict(
                 cpp = name,
                 c = cname,
+                c_to_cpp='static_cast<%s{ptr}>({var})' % name,
                 c_fortran = 'type(C_PTR)',
                 fortran = 'type(%s)' % unname,
                 fortran_type = unname,

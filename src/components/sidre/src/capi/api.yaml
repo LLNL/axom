@@ -69,13 +69,13 @@ classes:
     -  decl: DataView *createViewAndBuffer( const string& name )
 #    -  decl: DataView *createOpaqueView( const std::string& name, void *)
 #    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
-#    -  decl: DataView *moveView(DataView *view)
+    -  decl: DataView *moveView(DataView *view)
 #    -  decl: DataView *copyView(DataView *view)
     -  decl: void destroyViewAndBuffer(const std::string &name)
 #    -  decl: void destroyViewAndBuffer(IndexType idx)
 #    -  decl: void destroyView(const std::string &name)
 #    -  decl: void destroyView(IndexType idx)
-#    -  decl: DataView *getView( const std::string& name )
+    -  decl: DataView *getView( const std::string& name )
 #    -  decl: DataView const * getView( const std::string& name ) const
 #    -  decl: DataView *getView( const IndexType idx )
 #    -  decl: DataView const *getView( const IndexType idx ) const
@@ -96,11 +96,11 @@ classes:
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
-#    -  decl: std::string getGroupName(IndexType idx) const
+    -  decl: const std::string& getGroupName(IndexType idx) const
     -  decl: size_t getNumGroups() const
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
-#    -  decl: void print() const
+    -  decl: void print() const
 #    -  decl: void printTree( const int level ) const
 
   - name: DataBuffer
@@ -131,8 +131,10 @@ classes:
       cpp_header: sidre/DataView.hpp
 
     methods:
+    - decl: DataView* declare(TypeEnum type, long len)
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
+    - decl: DataView* allocate(TypeEnum type, long len)
 #    - decl: DataView* allocate()
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
@@ -146,8 +148,9 @@ classes:
 #    - decl: bool isApplied() const
     - decl: const std::string& getName() const
 #    - decl: void* getOpaque() const
-#    - decl: DataBuffer* getBuffer()
+    - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
+#    - decl: void* getData()
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
 #    - decl: const Schema& getSchema() const

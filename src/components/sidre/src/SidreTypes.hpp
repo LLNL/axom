@@ -8,6 +8,9 @@
 #ifndef SIDRETYPES_HPP_
 #define SIDRETYPES_HPP_
 
+// Other CS Toolkit headers
+#include "conduit/conduit.hpp"
+
 namespace asctoolkit
 {
 namespace sidre

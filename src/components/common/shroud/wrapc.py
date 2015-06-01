@@ -250,7 +250,9 @@ class Wrapc(object):
             arguments.append(self._c_decl('c', arg))
             arg_typedef = self.typedef[arg['type']]
             # convert C argument to C++
-            anames.append(arg_typedef.get('c_to_cpp', '{var}').format(var=arg['name']))
+            anames.append(arg_typedef.get('c_to_cpp', '{var}').format(
+                    var=arg['name'],
+                    ptr=' *' if arg['attrs'].get('ptr', False) else ''))
             if 'c_header' in arg_typedef:
                 # include any dependent header in generated header
                 self.header_typedef_include[arg_typedef['c_header']] = True

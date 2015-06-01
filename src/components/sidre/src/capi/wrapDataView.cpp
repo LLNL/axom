@@ -16,6 +16,24 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
+ATK_dataview * ATK_dataview_declare(ATK_dataview * self, ATK_TypeEnum type, long len)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+DataView * rv = selfobj->declare(static_cast<asctoolkit::sidre::TypeEnum>(type), len);
+return rv;
+// splicer end
+}
+
+ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, ATK_TypeEnum type, long len)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+DataView * rv = selfobj->allocate(static_cast<asctoolkit::sidre::TypeEnum>(type), len);
+return rv;
+// splicer end
+}
+
 bool ATK_dataview_has_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);
@@ -31,6 +49,15 @@ const DataView *selfobj = static_cast<const DataView *>(self);
 // splicer begin
 const std::string & rv = selfobj->getName();
 return rv.c_str();
+// splicer end
+}
+
+ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+DataBuffer * rv = selfobj->getBuffer();
+return rv;
 // splicer end
 }
 
