@@ -226,7 +226,7 @@ public:
      *
      *        If none, return empty string.
      */
-    std::string getViewName(IndexType idx) const
+    const std::string& getViewName(IndexType idx) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 

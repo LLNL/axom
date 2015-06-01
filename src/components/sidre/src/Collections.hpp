@@ -41,7 +41,7 @@
  *                     checking of return values to calling code.
  *
  *          IMPORTANT: Template parameter type must provide a method 
- *                     "getName()" that returns a string object.
+ *                     "getName()" that returns a reference to a string object.
  *
  *          IMPORTANT: The common interface each collection class provides
  *                     is as follows:
@@ -207,9 +207,9 @@ public:
    }
 
    ///
-   std::string getItemName(IndexType idx) const
+   const std::string& getItemName(IndexType idx) const
    { 
-      return ( hasItem(idx) ? m_items[idx]->getName() : std::string() );
+      return ( hasItem(idx) ? m_items[idx]->getName() : InvalidName );
    }
 
    ///
