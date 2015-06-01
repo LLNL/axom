@@ -10,14 +10,23 @@
 module dataview_mod
     use fstr_mod
     use datagroup_mod, only : datagroup
+    use iso_c_binding
     
     type dataview
         type(C_PTR) obj
     contains
+        procedure :: get_name => dataview_get_name
         procedure :: get_owning_group => dataview_get_owning_group
     end type dataview
     
     interface
+        
+        pure function atk_dataview_get_name(self) result(rv) bind(C, name="ATK_dataview_get_name")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) rv
+        end function atk_dataview_get_name
         
         function atk_dataview_get_owning_group(self) result(rv) bind(C, name="ATK_dataview_get_owning_group")
             use iso_c_binding
@@ -28,6 +37,16 @@ module dataview_mod
     end interface
 
 contains
+    
+    function dataview_get_name(obj) result(rv)
+        implicit none
+        class(dataview) :: obj
+        character(kind=C_CHAR, len=1) :: rv
+        type(C_PTR) :: rv_ptr
+        ! splicer begin
+        rv = fstr(atk_dataview_get_name(obj%obj))
+        ! splicer end
+    end function dataview_get_name
     
     function dataview_get_owning_group(obj) result(rv)
         implicit none

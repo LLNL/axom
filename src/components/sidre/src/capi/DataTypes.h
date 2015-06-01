@@ -9,6 +9,11 @@
 // Copied from src/components/conduit/src/conduit/DataType.h
 //  Must be kept in sync with datatypes.h
 
+typedef int ATK_IDType;
+
+const ATK_IDType ATK_InvalidID = -1;
+
+
 typedef enum
     {
 //        EMPTY_T = 0, // empty (default type)

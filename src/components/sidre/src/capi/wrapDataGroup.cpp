@@ -61,6 +61,24 @@ return rv;
 // splicer end
 }
 
+ATK_IDType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+IDType rv = selfobj->getViewIndex(name);
+return rv;
+// splicer end
+}
+
+size_t ATK_datagroup_get_num_views(ATK_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+size_t rv = selfobj->getNumViews();
+return rv;
+// splicer end
+}
+
 bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

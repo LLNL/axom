@@ -100,6 +100,7 @@ class Schema(object):
             size_t   = dict(
                 c       = 'size_t',
                 cpp     = 'size_t',
+                c_header = 'stdlib.h',
                 c_fortran = 'integer(C_SIZE_T)',
                 fortran   = 'integer(C_SIZE_T)',
                 ),
@@ -181,7 +182,6 @@ class Schema(object):
             self.typedef[name] = dict(
                 cpp = name,
                 c = cname,
-                c_header = node['C_header_filename'], # header which defines type
                 c_fortran = 'type(C_PTR)',
                 fortran = 'type(%s)' % unname,
                 fortran_type = unname,

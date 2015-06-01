@@ -19,8 +19,9 @@ options:
 typedef:
   IDType:
 # defined in SidreTypes.hpp
-    c : int
-    cpp : int
+    c_header : sidre/DataTypes.h
+    c : ATK_IDType
+    cpp : IDType
     c_fortran : integer(C_INT)
     fortran : integer(C_INT)
 
@@ -60,8 +61,7 @@ classes:
       cpp_header: sidre/DataGroup.hpp
 
     methods:
-    -  decl:  const std::string& getName() const
-#    -  decl: string getName() const
+    -  decl: const std::string& getName() const
     -  decl: DataGroup  *getParent()
     -  decl: DataStore *getDataStore()
     -  decl: bool hasView( const string& name )
@@ -79,9 +79,9 @@ classes:
 #    -  decl: DataView const * getView( const std::string& name ) const
 #    -  decl: DataView *getView( const IDType idx )
 #    -  decl: DataView const *getView( const IDType idx ) const
-#    -  decl: IDType getViewIndex(const std::string &name) const
+    -  decl: IDType getViewIndex(const std::string &name) const
 #    -  decl: std::string getViewName(IDType idx) const
-#    - decl: size_t getNumViews() const
+    -  decl: size_t getNumViews() const
 #    -  decl: void destroyViews()
 #    -  decl: void destroyViewsAndBuffers()
     -  decl: bool hasGroup( const string& name )
@@ -145,7 +145,7 @@ classes:
 #    - decl: bool  hasBuffer() const
 #    - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const
-#    - decl: const std::string& getName() const
+    - decl: const std::string& getName() const
 #    - decl: void* getOpaque() const
 #    - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const

@@ -113,20 +113,20 @@ TEST(C_sidre_group,get_view_name_index)
 
     EXPECT_EQ(ATK_datagroup_get_num_views(parent), 2u);
 
-    IDType idx1 = ATK_datagroup_get_view_index(parent, "view1");
-    IDType idx2 = ATK_datagroup_get_view_index(parent, "view2");
+    ATK_IDType idx1 = ATK_datagroup_get_view_index(parent, "view1");
+    ATK_IDType idx2 = ATK_datagroup_get_view_index(parent, "view2");
 
-    char *name1 = ATK_datagroup_getv_iew_name(parent, idx1);
+    char *name1 = ATK_datagroup_get_view_name(parent, idx1);
     char *name2 = ATK_datagroup_get_view_name(parent, idx2);
    
-    EXPECT_EQ(strcmp(name1, "view1") == 0);
-    EXPECT_EQ(strcmp(ATK_dataview_get_name(view1), name1) == 0);
+    EXPECT_TRUE(strcmp(name1, "view1") == 0);
+    EXPECT_TRUE(strcmp(ATK_dataview_get_name(view1), name1) == 0);
 
-    EXPECT_EQ(strcmp(name2, "view2") == 0);
-    EXPECT_EQ(strcmp(ATK_dataview_get_name(view2), name2) == 0);
+    EXPECT_TRUE(strcmp(name2, "view2") == 0);
+    EXPECT_TRUE(strcmp(ATK_dataview_get_name(view2), name2) == 0);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    IDType idx3 = ATK_datagroup_get_view_index(parent, "view3");
+    ATK_IDType idx3 = ATK_datagroup_get_view_index(parent, "view3");
     char *name3 = ATK_datagroup_get_view_name(parent, idx3);
 
     EXPECT_EQ(idx3, InvalidID);

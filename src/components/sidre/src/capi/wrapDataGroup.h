@@ -13,6 +13,9 @@
 #ifndef WRAPDATAGROUP_H
 #define WRAPDATAGROUP_H
 
+#include "sidre/DataTypes.h"
+#include "stdlib.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,6 +43,10 @@ ATK_datastore * ATK_datagroup_get_data_store(ATK_datagroup * self);
 bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name);
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name);
+
+ATK_IDType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name);
+
+size_t ATK_datagroup_get_num_views(ATK_datagroup * self);
 
 bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name);
 

@@ -213,6 +213,9 @@ class Wrapc(object):
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
 
+        if 'c_header' in result_typedef:
+            # include any dependent header in generated header
+            self.header_typedef_include[result_typedef['c_header']] = True
         if 'forward' in result_typedef:
             # create forward references for other types being wrapped
             # i.e. This method returns a wrapped type

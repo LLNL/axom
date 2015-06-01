@@ -27,7 +27,7 @@ struct s_ATK_databuffer;
 typedef struct s_ATK_databuffer ATK_databuffer;
 #endif
 
-int ATK_databuffer_get_uid(ATK_databuffer * self);
+ATK_IDType ATK_databuffer_get_uid(ATK_databuffer * self);
 
 ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeEnum type, long len);
 

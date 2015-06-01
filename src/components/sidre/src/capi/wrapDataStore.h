@@ -13,6 +13,8 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
+#include "sidre/DataTypes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,7 +39,7 @@ void ATK_datastore_delete(ATK_datastore * self);
 
 ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self);
 
-void ATK_datastore_destroy_buffer(ATK_datastore * self, const int id);
+void ATK_datastore_destroy_buffer(ATK_datastore * self, const ATK_IDType id);
 
 ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
 
