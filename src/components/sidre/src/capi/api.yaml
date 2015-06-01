@@ -70,7 +70,7 @@ classes:
 #    -  decl: DataView *createOpaqueView( const std::string& name, void *)
 #    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
     -  decl: DataView *moveView(DataView *view)
-#    -  decl: DataView *copyView(DataView *view)
+    -  decl: DataView *copyView(DataView *view)
     -  decl: void destroyViewAndBuffer(const std::string &name)
 #    -  decl: void destroyViewAndBuffer(IndexType idx)
 #    -  decl: void destroyView(const std::string &name)

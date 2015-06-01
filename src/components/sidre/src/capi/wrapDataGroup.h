@@ -46,6 +46,8 @@ ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const 
 
 ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view);
 
+ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view);
+
 void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name);
 
 ATK_dataview * ATK_datagroup_get_view(ATK_datagroup * self, const char * name);

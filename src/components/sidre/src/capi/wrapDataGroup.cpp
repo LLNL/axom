@@ -70,6 +70,15 @@ return rv;
 // splicer end
 }
 
+ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+DataView * rv = selfobj->copyView(static_cast<DataView *>(view));
+return rv;
+// splicer end
+}
+
 void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

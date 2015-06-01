@@ -234,7 +234,6 @@ TEST(C_sidre_group,group_name_collisions)
     ATK_datastore_delete(ds);
 }
 
-#if 1
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,view_copy_move)
 {
@@ -279,30 +278,36 @@ TEST(C_sidre_group,view_copy_move)
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "f0"));
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "d0"));
 
-#if 0
     // test moving a view form feds7 to sub
-    //    ATK_datagroup_createGroup(flds, "sub")->moveView(ATK_datagroup_get_view(flds, "d0"));
+    // flds->createGroup("sub")->moveView(flds->getView("d0"));
     ATK_datagroup *sub = ATK_datagroup_create_group(flds, "sub");
-    ATK_datagroup_move_view();
-    ATK_datagroup_print();
+    ATK_datagroup_move_view(sub, ATK_datagroup_get_view(flds, "d0"));
+    ATK_datagroup_print(flds);
     EXPECT_FALSE(ATK_datagroup_has_view(flds, "d0"));
     EXPECT_TRUE(ATK_datagroup_has_group(flds, "sub"));
-    EXPECT_TRUE(ATK_datagroup_get_group(flds, "sub")->has_view("d0"));
+    EXPECT_TRUE(ATK_datagroup_has_view(sub, "d0"));
 
     // check the data value
-    float64 *d0_data =  ATK_datagroup_get_group(flds, "sub")
-                            ->get_view("d0")
-                            ->getNode().as_float64_ptr();
+    // float64 *d0_data =  flds->getGroup("sub")
+    //                         ->getView("d0")
+    //                         ->getNode().as_float64_ptr();
+    float64_t *d0_data;
+    {
+	ATK_dataview *tmpview = ATK_datagroup_get_view(sub, "d0");
+	ATK_databuffer *tmpbuf = ATK_dataview_get_buffer(tmpview);
+	d0_data = static_cast<float64_t *>(ATK_databuffer_get_data(tmpbuf));
+    }
     EXPECT_NEAR(d0_data[0],3000.0,1e-12);
     
     // test copying a view from flds top sub
-    ATK_datagroup_get_group(flds, "sub")->copyView(ATK_datagroup_get_view("i0"));
+    ATK_datagroup_copy_view(sub, ATK_datagroup_get_view(flds, "i0"));
 
-    ATK_datagroup_print();
+    ATK_datagroup_print(flds);
     
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "i0"));    
-    EXPECT_TRUE(ATK_datagroup_get_group(flds, "sub")->has_view("i0"));
+    EXPECT_TRUE(ATK_datagroup_has_view(sub, "i0"));
 
+#ifdef XXX
     // we expect the actual data  pointers to be the same
     EXPECT_EQ(ATK_datagroup_get_view(flds, "i0")->getNode().data_pointer(),
               ATK_datagroup_get_group("sub")->get_view("i0")->getNode().data_pointer());
@@ -310,7 +315,6 @@ TEST(C_sidre_group,view_copy_move)
 
     ATK_datastore_delete(ds);
 }
-#endif
 
 #if 0
 //------------------------------------------------------------------------------

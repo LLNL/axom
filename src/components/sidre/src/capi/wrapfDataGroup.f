@@ -22,6 +22,7 @@ module datagroup_mod
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: move_view => datagroup_move_view
+        procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
         procedure :: get_view => datagroup_get_view
         procedure :: get_view_index => datagroup_get_view_index
@@ -82,6 +83,14 @@ module datagroup_mod
             type(C_PTR) :: view
             type(C_PTR) :: rv
         end function atk_datagroup_move_view
+        
+        function atk_datagroup_copy_view(self, view) result(rv) bind(C, name="ATK_datagroup_copy_view")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: view
+            type(C_PTR) :: rv
+        end function atk_datagroup_copy_view
         
         subroutine atk_datagroup_destroy_view_and_buffer(name) bind(C, name="ATK_datagroup_destroy_view_and_buffer")
             use iso_c_binding
@@ -230,6 +239,16 @@ contains
         rv%obj = atk_datagroup_move_view(obj%obj, view)
         ! splicer end
     end function datagroup_move_view
+    
+    function datagroup_copy_view(obj, view) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        type(dataview) :: view
+        type(dataview) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_copy_view(obj%obj, view)
+        ! splicer end
+    end function datagroup_copy_view
     
     subroutine datagroup_destroy_view_and_buffer(name)
         implicit none
