@@ -25,20 +25,20 @@ return rv.c_str();
 // splicer end
 }
 
-ATK_datagroup * ATK_datagroup_get_parent(ATK_datagroup * self)
+const ATK_datagroup * ATK_datagroup_get_parent(const ATK_datagroup * self)
 {
-DataGroup *selfobj = static_cast<DataGroup *>(self);
+const DataGroup *selfobj = static_cast<const DataGroup *>(self);
 // splicer begin
-DataGroup * rv = selfobj->getParent();
+const DataGroup * rv = selfobj->getParent();
 return rv;
 // splicer end
 }
 
-ATK_datastore * ATK_datagroup_get_data_store(ATK_datagroup * self)
+const ATK_datastore * ATK_datagroup_get_data_store(const ATK_datagroup * self)
 {
-DataGroup *selfobj = static_cast<DataGroup *>(self);
+const DataGroup *selfobj = static_cast<const DataGroup *>(self);
 // splicer begin
-DataStore * rv = selfobj->getDataStore();
+const DataStore * rv = selfobj->getDataStore();
 return rv;
 // splicer end
 }
@@ -79,6 +79,15 @@ return rv;
 // splicer end
 }
 
+const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx)
+{
+const DataGroup *selfobj = static_cast<const DataGroup *>(self);
+// splicer begin
+const std::string & rv = selfobj->getViewName(idx);
+return rv.c_str();
+// splicer end
+}
+
 size_t ATK_datagroup_get_num_views(ATK_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -103,6 +112,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin
 DataGroup * rv = selfobj->createGroup(name);
 return rv;
+// splicer end
+}
+
+void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+selfobj->destroyGroup(name);
+return;
 // splicer end
 }
 

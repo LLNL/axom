@@ -101,7 +101,6 @@ TEST(C_sidre_group,has_view)
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------
-#if 0
 TEST(C_sidre_group,get_view_name_index)
 {
     ATK_datastore *ds = ATK_datastore_new();
@@ -116,8 +115,8 @@ TEST(C_sidre_group,get_view_name_index)
     ATK_IndexType idx1 = ATK_datagroup_get_view_index(parent, "view1");
     ATK_IndexType idx2 = ATK_datagroup_get_view_index(parent, "view2");
 
-    char *name1 = ATK_datagroup_get_view_name(parent, idx1);
-    char *name2 = ATK_datagroup_get_view_name(parent, idx2);
+    const char *name1 = ATK_datagroup_get_view_name(parent, idx1);
+    const char *name2 = ATK_datagroup_get_view_name(parent, idx2);
    
     EXPECT_TRUE(strcmp(name1, "view1") == 0);
     EXPECT_TRUE(strcmp(ATK_dataview_get_name(view1), name1) == 0);
@@ -127,15 +126,16 @@ TEST(C_sidre_group,get_view_name_index)
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
     ATK_IndexType idx3 = ATK_datagroup_get_view_index(parent, "view3");
-    char *name3 = ATK_datagroup_get_view_name(parent, idx3);
+    const char *name3 = ATK_datagroup_get_view_name(parent, idx3);
 
     EXPECT_EQ(idx3, InvalidID);
-    EXPECT_TRUE(name3.empty());
+    EXPECT_TRUE(name3 == NULL);
+    EXPECT_FALSE(ATK_isNameValid(name3));
 #endif
 
     ATK_datastore_delete(ds);
 }
-#endif
+
 //------------------------------------------------------------------------------
 // Verify getGroupName(), getGroupIndex()
 //------------------------------------------------------------------------------
@@ -198,7 +198,6 @@ TEST(C_sidre_group,create_destroy_has_viewbuffer)
 
     ATK_datastore_delete(ds);
 }
-#if 0
 
 //------------------------------------------------------------------------------
 // createGroup()
@@ -210,7 +209,7 @@ TEST(C_sidre_group,create_destroy_has_group)
     ATK_datastore *ds = ATK_datastore_new();
     ATK_datagroup *root = ATK_datastore_get_root(ds);
     ATK_datagroup *group = ATK_datagroup_create_group(root, "group");
-    EXPECT_TRUE( ATK_datagroup_get_parent(group, ) == root );
+    EXPECT_TRUE( ATK_datagroup_get_parent(group) == root );
     
     EXPECT_TRUE( ATK_datagroup_has_group(root, "group") );
 
@@ -233,6 +232,8 @@ TEST(C_sidre_group,group_name_collisions)
 
     ATK_datastore_delete(ds);
 }
+
+#if 0
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,view_copy_move)
 {
@@ -240,13 +241,25 @@ TEST(C_sidre_group,view_copy_move)
     ATK_datagroup *root = ATK_datastore_get_root(ds);
     ATK_datagroup *flds = ATK_datagroup_create_group(root, "fields");
 
-    ATK_datagroup_create_view_and_buffer(flds, "i0")->allocate(DataType::int32());
-    ATK_datagroup_create_view_and_buffer(flds, "f0")->allocate(DataType::float32());
-    ATK_datagroup_create_view_and_buffer(flds, "d0")->allocate(DataType::float64());
+    ATK_dataview *tmpview;
+    tmpview = ATK_datagroup_create_view_and_buffer(flds, "i0");
+    ATK_dataview_allocate(tmpview, ATK_INT32_T);
+    tmpview = ATK_datagroup_create_view_and_buffer(flds, "f0");
+    ATK_dataview_allocate(tmpview, ATK_FLOAT32_T);
+    tmpview = ATK_datagroup_create_view_and_buffer(flds, "d0");
+    ATK_dataview_allocate(tmpview, ATK_FLOAT64_T);
 
+#if 0
     (*ATK_datagroup_get_view(flds, "i0")->getNode().as_int32_ptr())   = 1;
     (*ATK_datagroup_get_view(flds, "f0")->getNode().as_float32_ptr()) = 100.0;
     (*ATK_datagroup_get_view(flds, "d0")->getNode().as_float64_ptr()) = 3000.0;
+#else
+    {
+	ATKdataview *tmpview = ATK_datagroup_get_view(flds, "i0");
+	int32_t *v = ATK_dataview_get_data(tmpview);
+	*v = 1;
+    }
+#endif
 
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "i0"));
     EXPECT_TRUE(ATK_datagroup_has_view(flds, "f0"));
@@ -281,7 +294,9 @@ TEST(C_sidre_group,view_copy_move)
 
     ATK_datastore_delete(ds);
 }
+#endif
 
+#if 0
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,groups_move_copy)
 {

@@ -36,9 +36,9 @@ typedef struct s_ATK_dataview ATK_dataview;
 
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);
 
-ATK_datagroup * ATK_datagroup_get_parent(ATK_datagroup * self);
+const ATK_datagroup * ATK_datagroup_get_parent(const ATK_datagroup * self);
 
-ATK_datastore * ATK_datagroup_get_data_store(ATK_datagroup * self);
+const ATK_datastore * ATK_datagroup_get_data_store(const ATK_datagroup * self);
 
 bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name);
 
@@ -48,11 +48,15 @@ void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * na
 
 ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name);
 
+const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx);
+
 size_t ATK_datagroup_get_num_views(ATK_datagroup * self);
 
 bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name);
 
 ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name);
+
+void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name);
 
 ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name);
 
