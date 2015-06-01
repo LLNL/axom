@@ -81,11 +81,11 @@ public:
 //!  @name Accessor methods
 
     /*!
-     * \brief Return the unique id of this buffer object.
+     * \brief Return the unique index of this buffer object.
      */
-    IDType getUID() const
+    IndexType getIndex() const
     {
-        return m_uid;
+        return m_index;
     }
 
     /*!
@@ -141,7 +141,7 @@ public:
      * \brief Return pointer to view attached to this buffer identified
      *        by the given index.
      */
-    DataView* getView(IDType idx)
+    DataView* getView(IndexType idx)
     {
        return m_views[idx];
     }
@@ -190,15 +190,7 @@ public:
      * \return pointer to this DataBuffer object.
      */
     DataBuffer* declareExternal(void* external_data, 
-                                const Schema& schema)
-    {
-        ATK_ASSERT_MSG( external_data != ATK_NULLPTR, 
-                        "Attempting to set buffer to null external data" );
-        m_schema.set(schema);
-        m_data = external_data;
-        m_is_data_external = true;
-        return this;
-    }
+                                const Schema& schema);
    
     /*!
      * \brief Declare a buffer to own data described as a 
@@ -211,16 +203,7 @@ public:
      * \return pointer to this DataBuffer object.
      */
     DataBuffer* declareExternal(void* external_data,
-                                const DataType& dtype)
-    {
-        ATK_ASSERT_MSG( external_data != ATK_NULLPTR, 
-                        "Attempting to set buffer to null external data" );
-        m_schema.set(dtype);
-        m_data = external_data;
-        m_is_data_external = true;
-        return this;
-    }
-
+                                const DataType& dtype);
 
     /*!
      * \brief Allocate data previously declared using a Declare() method.
@@ -292,7 +275,7 @@ private:
     /*!
      *  \brief Private ctor that assigns unique id.
      */
-    DataBuffer( IDType uid );
+    DataBuffer( IndexType uid );
 
     /*!
      * \brief Private copy ctor.
@@ -324,8 +307,8 @@ private:
     void  releaseBytes(void* );
 
 
-    /// Identifier - unique within a dataStore.
-    IDType m_uid;
+    /// Index Identifier - unique within a dataStore.
+    IndexType m_index;
 
     /// Container of DataViews attached to this buffer.
     std::vector<DataView *> m_views;

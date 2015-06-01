@@ -136,8 +136,6 @@ do {                                                                   \
 
 #else  // ASSERTION CHECKS TURNED OFF....
 
-#define ATK_ERROR( ignore_message ) ((void) 0) 
-#define ATK_WARNING( ignore_message ) ((void) 0) 
 #define ATK_ASSERT( ignore_EXP ) ((void) 0) 
 #define ATK_ASSERT_MSG( ignore_EXP, ignore_message ) ((void) 0) 
 

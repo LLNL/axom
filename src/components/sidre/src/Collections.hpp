@@ -16,7 +16,7 @@
  * \brief   Header file for Collection classes.
  *
  *          Each of these classes holds a collection of items of a fixed 
- *          type that can be accessed by string name or sidre::IDType index.
+ *          type that can be accessed by string name or sidre::IndexType.
  *
  *          The primary intent is to decouple the implementation of the
  *          collections from the DataGroup class which owns collections of 
@@ -58,7 +58,7 @@
  *
  *          - // Return true if item with given index in collection; else false.
  *       
- *               bool hasItem(sidre::IDType idx) const;
+ *               bool hasItem(IndexType idx) const;
  *
  *          - // Return pointer to item with given name (ATK_NULLPTR if none).
  *
@@ -67,17 +67,16 @@
  *
  *          - // Return pointer to item with given index (ATK_NULLPTR if none).
  *
- *               TYPE* getItem(sidre::IDType idx);
- *               TYPE const* getItem(sidre::IDType idx) const;
+ *               TYPE* getItem(IndexType idx);
+ *               TYPE const* getItem(IndexType idx) const;
  *
  *          - // Return name of object with given index (empty string if none).
  *
- *               std::string getItemName(sidre::IDType idx) const;
+ *               std::string getItemName(IndexType idx) const;
  *
- *          - // Return index of object with given index 
- *               (sidre::InvalidID if none).
+ *          - // Return index of object with given name (InvalidIndex if none).
  *
- *               sidre::IDType getItemIndex(const std::string& name) const;
+ *               IndexType getItemIndex(const std::string& name) const;
  *
  *          - // Insert item with given name; return true if insertion 
  *               succeeded, and false otherwise.
@@ -92,7 +91,7 @@
  *          - // Remove item with given name if it exists and return a 
  *               pointer to it. If it doesn't exist, return ATK_NULLPTR.
  *
- *               TYPE* removeItem(sidre::IDType idx);
+ *               TYPE* removeItem(IndexType idx);
  *
  *          - // Remove all items (items not destroyed).
  *
@@ -172,7 +171,7 @@ public:
    }
 
    ///
-   bool hasItem(IDType idx) const 
+   bool hasItem(IndexType idx) const 
    { 
        return (idx >= 0 && 
                static_cast<unsigned>(idx) < getNumItems() &&
@@ -196,29 +195,29 @@ public:
    }
 
    ///
-   TYPE* getItem(IDType idx)
+   TYPE* getItem(IndexType idx)
    {
       return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
    }
 
    ///
-   TYPE const* getItem(IDType idx) const
+   TYPE const* getItem(IndexType idx) const
    {
       return ( hasItem(idx) ? m_items[idx] : ATK_NULLPTR );
    }
 
    ///
-   std::string getItemName(sidre::IDType idx) const
+   std::string getItemName(IndexType idx) const
    { 
       return ( hasItem(idx) ? m_items[idx]->getName() : std::string() );
    }
 
    ///
-   IDType getItemIndex(const std::string& name) const
+   IndexType getItemIndex(const std::string& name) const
    {
       typename MAP_TYPE::const_iterator mit = m_name2idx_map.find(name);
       return ( mit != m_name2idx_map.end() ? 
-               mit->second : InvalidID );
+               mit->second : InvalidIndex );
    }
 
    ///
@@ -228,7 +227,7 @@ public:
    TYPE* removeItem(const std::string& name);
 
    ///
-   TYPE* removeItem(IDType idx);
+   TYPE* removeItem(IndexType idx);
 
    ///
    void removeAllItems()
@@ -263,7 +262,7 @@ TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 
    typename MAP_TYPE::iterator mit = m_name2idx_map.find(name);
    if ( mit != m_name2idx_map.end() ) {
-      IDType idx = mit->second;
+      IndexType idx = mit->second;
 
       ret_val = m_items[idx];
 
@@ -284,7 +283,7 @@ TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(const std::string& name)
 }
 
 template <typename TYPE, typename MAP_TYPE>
-TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(IDType idx)
+TYPE* MapCollection<TYPE, MAP_TYPE>::removeItem(IndexType idx)
 {
    if ( hasItem(idx) ) {
       TYPE* item = removeItem( m_items[idx]->getName() );

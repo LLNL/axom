@@ -164,7 +164,7 @@ public:
      * \brief Return true if DataGroup owns a DataView with given index;
      *        else false.
      */
-    bool hasView( IDType idx ) const
+    bool hasView( IndexType idx ) const
     {
        return m_view_coll.hasItem(idx);
     }
@@ -192,7 +192,7 @@ public:
     /*!
      * \brief Return (non-const) pointer to DataView with given index.
      */
-    DataView* getView( IDType idx )
+    DataView* getView( IndexType idx )
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -202,7 +202,7 @@ public:
     /*!
      * \brief Return (const) pointer to DataView with given index.
      */
-    DataView const* getView( IDType idx ) const
+    DataView const* getView( IndexType idx ) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -212,9 +212,9 @@ public:
     /*!
      * \brief Return the index of DataView with given name.
      *
-     *        If none, return sidre::InvalidID;
+     *        If none, return sidre::InvalidIndex;
      */
-    IDType getViewIndex(const std::string &name) const
+    IndexType getViewIndex(const std::string &name) const
     {  
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
@@ -226,7 +226,7 @@ public:
      *
      *        If none, return empty string.
      */
-    std::string getViewName(IDType idx) const
+    std::string getViewName(IndexType idx) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -360,7 +360,7 @@ public:
      * \brief Destroy view in this DataGroup with given index and leave its
      *        associated DataBuffer intact.
      */
-    void destroyView(IDType idx);
+    void destroyView(IndexType idx);
 
     /*!
      * \brief Destroy all views in this DataGroup and leave all associated
@@ -378,7 +378,7 @@ public:
      * \brief Destroy view in this DataGroup with given index AND destroy 
      *        its associated DataBuffer object.
      */
-    void destroyViewAndBuffer(IDType idx);
+    void destroyViewAndBuffer(IndexType idx);
  
     /*!
      * \brief Destroy all views in this DataGroup AND destroy their 
@@ -421,7 +421,7 @@ public:
      * \brief Return true if DataGroup has an (immediate) child DataGroup 
      *        with given index; else false.
      */
-    bool hasGroup( IDType idx ) const
+    bool hasGroup( IndexType idx ) const
     {
        return m_group_coll.hasItem(idx);
     }
@@ -449,7 +449,7 @@ public:
     /*!
      * \brief Return (non-const) pointer to child DataGroup with given index.
      */
-    DataGroup* getGroup( IDType idx ) 
+    DataGroup* getGroup( IndexType idx ) 
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -459,7 +459,7 @@ public:
     /*!
      * \brief Return (const) pointer to child DataGroup with given index.
      */
-    DataGroup const* getGroup( IDType idx ) const
+    DataGroup const* getGroup( IndexType idx ) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -469,9 +469,9 @@ public:
     /*!
      * \brief Return the index of child DataGroup with given name.
      *
-     *        If none, return sidre::InvalidID;
+     *        If none, return sidre::InvalidIndex;
      */
-    IDType getGroupIndex(const std::string &name) const
+    IndexType getGroupIndex(const std::string &name) const
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
@@ -483,7 +483,7 @@ public:
      *
      *        If none, return empty string.
      */
-    std::string getGroupName(IDType idx) const
+    std::string getGroupName(IndexType idx) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -519,7 +519,7 @@ public:
     /*!
      * \brief Destroy child group in this DataGroup with given index.
      */
-    void destroyGroup(IDType idx); 
+    void destroyGroup(IndexType idx); 
 
     /*!
      * \brief Destroy all DataGroups in this DataGroup.
@@ -640,7 +640,7 @@ private:
     ///
     DataView* detachView(const std::string& name);
     ///
-    DataView* detachView(IDType idx);
+    DataView* detachView(IndexType idx);
 
     /*!
      * \brief Private methods to attach/detach DataGroup object to DataGroup.
@@ -649,7 +649,7 @@ private:
     ///
     DataGroup* detachGroup(const std::string& name);
     ///
-    DataGroup* detachGroup(IDType idx);
+    DataGroup* detachGroup(IndexType idx);
 
     /*!
      * \brief Private methods to copy DataGroup to/from Conduit Node.
@@ -665,7 +665,7 @@ private:
      * to DataViews......???? punt!
      */  
     void copyToNode(Node& n,
-                    std::vector<IDType>& buffer_ids) const;
+                    std::vector<IndexType>& buffer_ids) const;
 
     /*!
      * \brief Private methods to copy DataGroup from Conduit Node.
@@ -674,7 +674,7 @@ private:
      * to DataViews......???? punt!
      */  
     void copyFromNode(Node& n,
-                      std::map<IDType, IDType>& id_map);
+                      std::map<IndexType, IndexType>& id_map);
 
 
    
@@ -702,12 +702,12 @@ private:
     //
     // Current options are std::map and boost/std::unordered_map
     //
-       typedef std::map<std::string, IDType> MapType;
+       typedef std::map<std::string, IndexType> MapType;
     //
 #if defined(USE_CXX11)
-    // typedef std::unordered_map<std::string, IDType> MapType;
+    // typedef std::unordered_map<std::string, IndexType> MapType;
 #else
-    // typedef boost::unordered_map<std::string, IDType> MapType;
+    // typedef boost::unordered_map<std::string, IndexType> MapType;
 #endif
     ///
     typedef MapCollection<DataView, MapType> DataViewCollection;

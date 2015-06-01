@@ -33,8 +33,8 @@ TEST(sidre_view,create_views)
     DataBuffer *db_0 = dv_0->getBuffer();
     DataBuffer *db_1 = dv_1->getBuffer();
         
-    EXPECT_EQ(db_0->getUID(), 0);
-    EXPECT_EQ(db_1->getUID(), 1);
+    EXPECT_EQ(db_0->getIndex(), 0);
+    EXPECT_EQ(db_1->getIndex(), 1);
     delete ds;
 }
 

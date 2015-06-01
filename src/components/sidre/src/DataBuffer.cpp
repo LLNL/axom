@@ -40,6 +40,47 @@ namespace asctoolkit
 namespace sidre
 {
 
+/*
+*************************************************************************
+*
+* Set buffer to externally-owned data.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::declareExternal(void* external_data,
+                                        const Schema& schema)
+{
+    ATK_ASSERT_MSG( m_data == ATK_NULLPTR,
+                    "Attempting to declare buffer external, but buffer has already been allocated" );
+    ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+                    "Attempting to set buffer to null external data" );
+    m_schema.set(schema);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+    return this;
+}
+
+/*
+*************************************************************************
+*
+* Set buffer to externally-owned data.
+*
+*************************************************************************
+*/
+DataBuffer* DataBuffer::declareExternal(void* external_data,
+                                        const DataType& dtype)
+{
+    ATK_ASSERT_MSG( m_data == ATK_NULLPTR,
+                    "Attempting to declare buffer external, but buffer has already been allocated" );
+    ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+                    "Attempting to set buffer to null external data" );
+    m_schema.set(dtype);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+    return this;
+}
 
 /*
 *************************************************************************
@@ -182,7 +223,7 @@ DataBuffer* DataBuffer::reallocate(const DataType& dtype)
 */
 void DataBuffer::info(Node &n) const
 {
-    n["uid"].set(m_uid);
+    n["index"].set(m_index);
     n["is_data_external"].set(m_is_data_external);
     n["schema"].set(m_schema.to_json());
     n["node"].set(m_node.to_json());
@@ -222,12 +263,12 @@ void DataBuffer::print(std::ostream &os) const
 /*
 *************************************************************************
 *   
-* PRIVATE ctor taking unique id.
+* PRIVATE ctor taking unique index.
 *   
 *************************************************************************
 */
-DataBuffer::DataBuffer( IDType uid ) 
-: m_uid(uid),
+DataBuffer::DataBuffer( IndexType index ) 
+: m_index(index),
   m_views(),
   m_data(ATK_NULLPTR),
   m_node(),
@@ -245,7 +286,7 @@ DataBuffer::DataBuffer( IDType uid )
 *************************************************************************
 */
 DataBuffer::DataBuffer(const DataBuffer& source ) 
-: m_uid(source.m_uid),
+: m_index(source.m_index),
   m_views(source.m_views),
   m_data(source.m_data),
   m_node(source.m_node),
