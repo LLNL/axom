@@ -483,7 +483,7 @@ public:
      *
      *        If none, return empty string.
      */
-    std::string getGroupName(IndexType idx) const
+    const std::string& getGroupName(IndexType idx) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
