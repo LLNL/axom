@@ -22,6 +22,14 @@ typedef int IndexType;
 
 const IndexType InvalidIndex = -1;
 
+const std::string InvalidName;
+
+inline bool isNameValid(const std::string& name)
+{
+   return name != InvalidName;
+}
+
+
 
 template< int TYPEID >
 inline TypeID getTypeID()
