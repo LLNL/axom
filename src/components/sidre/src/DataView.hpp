@@ -287,6 +287,15 @@ public:
     }
 
     /*!
+     * \brief Return Conduit Node Value instance that can be used to 
+     *  to easily access an array or scalar value.
+     */
+    Node::Value getValue()
+    {
+       return m_node.value();
+    }
+
+    /*!
      * \brief Return const reference to Conduit schema describing data.
      */
     const Schema& getSchema() const

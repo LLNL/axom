@@ -69,7 +69,7 @@ TEST(sidre_view,uint32_buffer_from_view_conduit_value)
     DataGroup *root = ds->getRoot();
     
     DataView *dv = root->createViewAndBuffer("u0",DataType::uint32(10));
-    uint32 *data_ptr = dv->getNode().value();
+    uint32 *data_ptr = dv->getValue();
     
     for(int i=0;i<10;i++)
         data_ptr[i] = i*i;
