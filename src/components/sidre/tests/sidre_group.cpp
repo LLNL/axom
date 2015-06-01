@@ -160,8 +160,8 @@ TEST(sidre_group,get_group_name_index)
     IndexType idx1 = parent->getGroupIndex("group1");
     IndexType idx2 = parent->getGroupIndex("group2");
 
-    std::string name1(parent->getGroupName(idx1));
-    std::string name2(parent->getGroupName(idx2));
+    const std::string& name1 = parent->getGroupName(idx1);
+    const std::string& name2 = parent->getGroupName(idx2);
 
     EXPECT_EQ(name1, std::string("group1"));
     EXPECT_EQ(group1->getName(), name1);
@@ -171,7 +171,7 @@ TEST(sidre_group,get_group_name_index)
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
     IndexType idx3 = parent->getGroupIndex("group3");
-    std::string name3(parent->getGroupName(idx3));
+    const std::string& name3 = parent->getGroupName(idx3);
 
     EXPECT_EQ(idx3, InvalidIndex);
     EXPECT_TRUE(name3.empty());
