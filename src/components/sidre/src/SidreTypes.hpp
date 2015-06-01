@@ -22,6 +22,13 @@ typedef int IndexType;
 
 const IndexType InvalidIndex = -1;
 
+const std::string InvalidName;
+
+inline bool isNameValid(const std::string& name)
+{
+   return name != InvalidName;
+}
+
 typedef enum
     {
 //        EMPTY_T = 0, // empty (default type)

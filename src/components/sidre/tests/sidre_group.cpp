@@ -122,8 +122,8 @@ TEST(sidre_group,get_view_name_index)
     IndexType idx1 = parent->getViewIndex("view1");
     IndexType idx2 = parent->getViewIndex("view2");
 
-    std::string name1(parent->getViewName(idx1));
-    std::string name2(parent->getViewName(idx2));
+    const std::string& name1 = parent->getViewName(idx1);
+    const std::string& name2 = parent->getViewName(idx2);
    
     EXPECT_EQ(name1, std::string("view1")); 
     EXPECT_EQ(view1->getName(), name1); 
@@ -133,10 +133,11 @@ TEST(sidre_group,get_view_name_index)
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
     IndexType idx3 = parent->getViewIndex("view3");
-    std::string name3(parent->getViewName(idx3));
+    const std::string& name3 = parent->getViewName(idx3);
 
     EXPECT_EQ(idx3, InvalidIndex);
     EXPECT_TRUE(name3.empty());
+    EXPECT_FALSE(isNameValid(name3));
 #endif
 
     delete ds;
