@@ -117,7 +117,7 @@ class Schema(object):
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
                 fortran = 'character(*)',
-                f_to_c = 'trim({var}) // C_NULL_CHAR',
+                fortran_to_c = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({arg_c_call}))',
@@ -182,10 +182,11 @@ class Schema(object):
             self.typedef[name] = dict(
                 cpp = name,
                 c = cname,
-                c_to_cpp='static_cast<%s{ptr}>({var})' % name,
+                c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
                 c_fortran = 'type(C_PTR)',
                 fortran = 'type(%s)' % unname,
                 fortran_type = unname,
+                fortran_to_c = '{var}%obj',
                 # XXX module name may not conflict with type name
                 f_module = {node['F_module_name']:[unname]},
 

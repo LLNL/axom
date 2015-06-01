@@ -236,7 +236,7 @@ contains
         type(dataview) :: view
         type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_datagroup_move_view(obj%obj, view)
+        rv%obj = atk_datagroup_move_view(obj%obj, view%obj)
         ! splicer end
     end function datagroup_move_view
     
@@ -246,7 +246,7 @@ contains
         type(dataview) :: view
         type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_datagroup_copy_view(obj%obj, view)
+        rv%obj = atk_datagroup_copy_view(obj%obj, view%obj)
         ! splicer end
     end function datagroup_copy_view
     

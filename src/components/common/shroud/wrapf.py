@@ -258,7 +258,7 @@ class Wrapf(object):
             arg_c_names.append(arg['name'])
             arg_c_decl.append(self._c_decl(arg))
 
-            rrr = self.typedef[arg['type']].get('f_to_c', '{var}')
+            rrr = self.typedef[arg['type']].get('fortran_to_c', '{var}')
             arg_c_call.append(rrr.format(var=arg['name']))
             arg_f_names.append(arg['name'])
             arg_f_decl.append(self._f_decl(arg))
