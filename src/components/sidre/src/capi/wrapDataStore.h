@@ -13,7 +13,7 @@
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
 
-#include "sidre/DataTypes.h"
+#include "sidre/SidreTypes.h"
 
 #ifdef __cplusplus
 extern "C" {

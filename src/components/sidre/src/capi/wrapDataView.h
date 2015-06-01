@@ -13,7 +13,7 @@
 #ifndef WRAPDATAVIEW_H
 #define WRAPDATAVIEW_H
 
-#include "sidre/DataTypes.h"
+#include "sidre/SidreTypes.h"
 
 #ifdef __cplusplus
 extern "C" {

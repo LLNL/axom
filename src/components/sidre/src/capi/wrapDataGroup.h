@@ -13,7 +13,7 @@
 #ifndef WRAPDATAGROUP_H
 #define WRAPDATAGROUP_H
 
-#include "sidre/DataTypes.h"
+#include "sidre/SidreTypes.h"
 #include "stdlib.h"
 
 #ifdef __cplusplus

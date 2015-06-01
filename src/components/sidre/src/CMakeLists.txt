@@ -11,7 +11,7 @@ set(sidre_headers
     sidre.hpp
 
     capi/sidre.h
-    capi/DataTypes.h
+    capi/SidreTypes.h
     capi/wrapDataStore.h
     capi/wrapDataGroup.h
     capi/wrapDataBuffer.h

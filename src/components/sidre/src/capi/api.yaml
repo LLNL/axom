@@ -19,7 +19,7 @@ options:
 typedef:
   IndexType:
 # defined in SidreTypes.hpp
-    c_header : sidre/DataTypes.h
+    c_header : sidre/SidreTypes.h
     c : ATK_IndexType
     cpp : IndexType
     c_fortran : integer(C_INT)
@@ -27,7 +27,7 @@ typedef:
 
   TypeEnum:
     # enum for types
-    c_header: sidre/DataTypes.h
+    c_header: sidre/SidreTypes.h
     c: ATK_TypeEnum
 #    cpp: asctoolkit::sidre::TypeEnum
     c_to_cpp:  static_cast<asctoolkit::sidre::TypeEnum>({var})
