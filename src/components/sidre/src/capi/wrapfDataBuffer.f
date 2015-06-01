@@ -13,7 +13,7 @@ module databuffer_mod
     type databuffer
         type(C_PTR) obj
     contains
-        procedure :: get_uid => databuffer_get_uid
+        procedure :: get_index => databuffer_get_index
         procedure :: declare => databuffer_declare
         procedure :: allocate => databuffer_allocate
         procedure :: get_data => databuffer_get_data
@@ -21,12 +21,12 @@ module databuffer_mod
     
     interface
         
-        function atk_databuffer_get_uid(self) result(rv) bind(C, name="ATK_databuffer_get_uid")
+        function atk_databuffer_get_index(self) result(rv) bind(C, name="ATK_databuffer_get_index")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT) :: rv
-        end function atk_databuffer_get_uid
+        end function atk_databuffer_get_index
         
         function atk_databuffer_declare(self, type, len) result(rv) bind(C, name="ATK_databuffer_declare")
             use iso_c_binding
@@ -54,14 +54,14 @@ module databuffer_mod
 
 contains
     
-    function databuffer_get_uid(obj) result(rv)
+    function databuffer_get_index(obj) result(rv)
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: rv
         ! splicer begin
-        rv = atk_databuffer_get_uid(obj%obj)
+        rv = atk_databuffer_get_index(obj%obj)
         ! splicer end
-    end function databuffer_get_uid
+    end function databuffer_get_index
     
     function databuffer_declare(obj, type, len) result(rv)
         implicit none

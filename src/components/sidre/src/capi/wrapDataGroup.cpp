@@ -61,11 +61,11 @@ return rv;
 // splicer end
 }
 
-ATK_IDType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
+ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin
-IDType rv = selfobj->getViewIndex(name);
+IndexType rv = selfobj->getViewIndex(name);
 return rv;
 // splicer end
 }

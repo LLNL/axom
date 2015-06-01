@@ -17,11 +17,11 @@ options:
   namespace: asctoolkit sidre
 
 typedef:
-  IDType:
+  IndexType:
 # defined in SidreTypes.hpp
     c_header : sidre/DataTypes.h
-    c : ATK_IDType
-    cpp : IDType
+    c : ATK_IndexType
+    cpp : IndexType
     c_fortran : integer(C_INT)
     fortran : integer(C_INT)
 
@@ -47,14 +47,14 @@ classes:
     -  decl: DataStore *new+constructor
     -  decl: void delete+destructor
     -  decl: DataBuffer* createBuffer
-    -  decl: void destroyBuffer( const IDType id )
-#    -  decl: DataBuffer* detatchBuffer( const IDType id )
+    -  decl: void destroyBuffer( const IndexType id )
+#    -  decl: DataBuffer* detatchBuffer( const IndexType id )
     -  decl: DataGroup *getRoot()
-#    -  decl: DataBuffer* getBuffer( const IDType id )
+#    -  decl: DataBuffer* getBuffer( const IndexType id )
 #    -  decl: void Destroybuffers()
 #    -  decl: void print() const
 #    -  decl: void info(Node &) const
-#    -  decl: IDType getNumberOfBuffers() const
+#    -  decl: IndexType getNumberOfBuffers() const
 
   - name: DataGroup
     options:
@@ -65,22 +65,22 @@ classes:
     -  decl: DataGroup  *getParent()
     -  decl: DataStore *getDataStore()
     -  decl: bool hasView( const string& name )
-#    -  decl: bool hasView( IDType idx ) const
+#    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *createViewAndBuffer( const string& name )
 #    -  decl: DataView *createOpaqueView( const std::string& name, void *)
 #    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
 #    -  decl: DataView *moveView(DataView *view)
 #    -  decl: DataView *copyView(DataView *view)
 #    -  decl: void destroyViewAndBuffer(const std::string &name)
-#    -  decl: void destroyViewAndBuffer(IDType idx)
+#    -  decl: void destroyViewAndBuffer(IndexType idx)
 #    -  decl: void destroyView(const std::string &name)
-#    -  decl: void destroyView(IDType idx)
+#    -  decl: void destroyView(IndexType idx)
 #    -  decl: DataView *getView( const std::string& name )
 #    -  decl: DataView const * getView( const std::string& name ) const
-#    -  decl: DataView *getView( const IDType idx )
-#    -  decl: DataView const *getView( const IDType idx ) const
-    -  decl: IDType getViewIndex(const std::string &name) const
-#    -  decl: std::string getViewName(IDType idx) const
+#    -  decl: DataView *getView( const IndexType idx )
+#    -  decl: DataView const *getView( const IndexType idx ) const
+    -  decl: IndexType getViewIndex(const std::string &name) const
+#    -  decl: std::string getViewName(IndexType idx) const
     -  decl: size_t getNumViews() const
 #    -  decl: void destroyViews()
 #    -  decl: void destroyViewsAndBuffers()
@@ -90,13 +90,13 @@ classes:
 #    -  decl: DataGroup *moveGroup(DataGroup *grp)
 #    -  decl: DataGroup *copyGroup(DataGroup *grp)
 #    -  decl: void destroyGroup(const std::string &name)
-#    -  decl: void destroyGroup(IDType idx)
+#    -  decl: void destroyGroup(IndexType idx)
 #    -  decl: DataGroup const * getGroup( const std::string& name ) const
 #    -  decl: DataGroup * getGroup( const std::string& name )
-#    -  decl: DataGroup const * getGroup(IDType idx) const
-#    -  decl: DataGroup * getGroup( IDType idx)
-#    -  decl: IDType getGroupIndex(const std::string &name) const
-#    -  decl: std::string getGroupName(IDType idx) const
+#    -  decl: DataGroup const * getGroup(IndexType idx) const
+#    -  decl: DataGroup * getGroup( IndexType idx)
+#    -  decl: IndexType getGroupIndex(const std::string &name) const
+#    -  decl: std::string getGroupName(IndexType idx) const
 #    -  decl: size_t countGroups() const
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
@@ -107,8 +107,7 @@ classes:
     options:
       cpp_header: sidre/DataBuffer.hpp
     methods:
-      - decl: IDType getUID()
-# with const      - decl: IDType getUID() const
+      - decl: IndexType getIndex() const
 #      - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeEnum type, long len)
 #      - decl: DataBuffer* declare(const Schema& schema)
@@ -122,7 +121,7 @@ classes:
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
 #      - decl: const Schema& getSchema() const
-#      - decl: DataView* getView(IDType idx)
+#      - decl: DataView* getView(IndexType idx)
 #      - decl: void info(Node& n) const
 #      - decl: void print() const
 

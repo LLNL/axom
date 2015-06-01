@@ -22,12 +22,12 @@ TEST(C_sidre_buffer,create_buffers)
     ATK_databuffer *dbuff_0 = ATK_datastore_create_buffer(ds);
     ATK_databuffer *dbuff_1 = ATK_datastore_create_buffer(ds);
     
-    EXPECT_EQ(ATK_databuffer_get_uid(dbuff_0), 0);
-    EXPECT_EQ(ATK_databuffer_get_uid(dbuff_1), 1);
+    EXPECT_EQ(ATK_databuffer_get_index(dbuff_0), 0);
+    EXPECT_EQ(ATK_databuffer_get_index(dbuff_1), 1);
     ATK_datastore_destroy_buffer(ds, 0);
     
     ATK_databuffer *dbuff_3 = ATK_datastore_create_buffer(ds);
-    EXPECT_EQ(ATK_databuffer_get_uid(dbuff_3), 0);
+    EXPECT_EQ(ATK_databuffer_get_index(dbuff_3), 0);
     //    ds->print();
     ATK_datastore_delete(ds);
 }

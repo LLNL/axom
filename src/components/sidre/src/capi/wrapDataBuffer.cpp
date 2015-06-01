@@ -16,11 +16,11 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-ATK_IDType ATK_databuffer_get_uid(ATK_databuffer * self)
+ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
 // splicer begin
-IDType rv = selfobj->getUID();
+IndexType rv = selfobj->getIndex();
 return rv;
 // splicer end
 }

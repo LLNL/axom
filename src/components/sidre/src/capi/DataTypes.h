@@ -5,14 +5,14 @@
 #ifndef SIDRE_DATATYPES_H
 #define SIDRE_DATATYPES_H
 
+typedef int ATK_IndexType;
+
+const ATK_IndexType ATK_InvalidID = -1;
+
+
 //
 // Copied from src/components/conduit/src/conduit/DataType.h
 //  Must be kept in sync with datatypes.h
-
-typedef int ATK_IDType;
-
-const ATK_IDType ATK_InvalidID = -1;
-
 
 typedef enum
     {
