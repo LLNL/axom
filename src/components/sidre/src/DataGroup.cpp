@@ -54,7 +54,7 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name )
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
     DataBuffer *buff = this->getDataStore()->createBuffer();
-    DataView* const view = new DataView( name, this,buff);
+    DataView* const view = new DataView( name, this, buff);
     buff->attachView(view);
 
     return attachView(view);
@@ -74,7 +74,7 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name,
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
     DataBuffer *buff = this->getDataStore()->createBuffer();
-    DataView* const view = new DataView( name, this,buff);
+    DataView* const view = new DataView( name, this, buff);
     buff->attachView(view);
     view->allocate(dtype);
     return attachView(view);
@@ -252,7 +252,7 @@ void DataGroup::destroyView( const std::string& name )
 *
 *************************************************************************
 */
-void DataGroup::destroyView( IDType idx )
+void DataGroup::destroyView( IndexType idx )
 {
     delete detachView(idx);
 }
@@ -295,7 +295,7 @@ void DataGroup::destroyViewAndBuffer( const std::string& name )
     delete view;
 
     // there should be a better way?
-    getDataStore()->destroyBuffer(buffer->getUID());
+    getDataStore()->destroyBuffer(buffer->getIndex());
 
 }
 
@@ -308,11 +308,11 @@ void DataGroup::destroyViewAndBuffer( const std::string& name )
 *
 *************************************************************************
 */
-void DataGroup::destroyViewAndBuffer( IDType idx )
+void DataGroup::destroyViewAndBuffer( IndexType idx )
 {
     DataView* view = detachView(idx);
     // there should be a better way?
-    getDataStore()->destroyBuffer(view->getBuffer()->getUID());
+    getDataStore()->destroyBuffer(view->getBuffer()->getIndex());
     delete view;
 }
 
@@ -332,7 +332,7 @@ void DataGroup::destroyViewsAndBuffers()
     for (size_t i=0; i<nviews; ++i)
     {
         DataView *view = this->getView(i);
-        getDataStore()->destroyBuffer(view->getBuffer()->getUID());
+        getDataStore()->destroyBuffer(view->getBuffer()->getIndex());
         delete view;
     }
 
@@ -427,7 +427,7 @@ void DataGroup::destroyGroup( const std::string& name )
 *
 *************************************************************************
 */
-void DataGroup::destroyGroup( IDType idx )
+void DataGroup::destroyGroup( IndexType idx )
 {
     delete detachGroup(idx);
 }
@@ -544,9 +544,24 @@ void DataGroup::info(Node& n) const
 */
 void DataGroup::print() const
 {
+    print(std::cout);
+}
+
+/*
+*************************************************************************
+*
+* Print JSON description of data group to an ostream.
+*
+*************************************************************************
+*/
+void DataGroup::print(std::ostream &os) const
+{
     Node n;
     info(n);
-    n.print();
+    /// TODO: after conduit update, use new ostream variant of to_json.
+    std::ostringstream oss;
+    n.to_pure_json(oss);
+    os << oss.str();
 }
 
 /*
@@ -723,7 +738,7 @@ DataView* DataGroup::detachView(const std::string& name )
 *
 *************************************************************************
 */
-DataView* DataGroup::detachView(IDType idx)
+DataView* DataGroup::detachView(IndexType idx)
 {
    DataView* view = m_view_coll.removeItem(idx);
    if (view) {
@@ -776,7 +791,7 @@ DataGroup* DataGroup::detachGroup(const std::string& name )
 *
 *************************************************************************
 */
-DataGroup* DataGroup::detachGroup(IDType idx)
+DataGroup* DataGroup::detachGroup(IndexType idx)
 {
    DataGroup* group = m_group_coll.removeItem(idx);
    if (group) {
@@ -796,14 +811,14 @@ DataGroup* DataGroup::detachGroup(IDType idx)
 */
 void DataGroup::copyToNode(Node& n) const
 {
-    std::vector<IDType> buffer_ids;
+    std::vector<IndexType> buffer_ids;
     copyToNode(n,buffer_ids);
 
     // save the buffers discovered by buffer_ids
     for (size_t i=0; i < buffer_ids.size(); i++)
     {
         Node& buff = n["buffers"].append();
-        IDType buffer_id = buffer_ids[i];
+        IndexType buffer_id = buffer_ids[i];
         DataBuffer *ds_buff =  m_datastore->getBuffer(buffer_id);
         buff["id"].set(buffer_id);
         buff["schema"].set(ds_buff->getSchema().to_json());
@@ -826,7 +841,7 @@ void DataGroup::copyToNode(Node& n) const
 */
 void DataGroup::copyFromNode(Node& n)
 {
-     std::map<IDType, IDType> id_map;
+     std::map<IndexType, IndexType> id_map;
      copyFromNode(n, id_map);
 }
     
@@ -840,7 +855,7 @@ void DataGroup::copyFromNode(Node& n)
 *************************************************************************
 */
 void DataGroup::copyToNode(Node& n,
-                           std::vector<IDType>& buffer_ids) const
+                           std::vector<IndexType>& buffer_ids) const
 {
     for (size_t i=0; i < this->getNumViews(); ++i)
     {
@@ -849,12 +864,12 @@ void DataGroup::copyToNode(Node& n,
         n_view["schema"].set(view->getSchema().to_json());
         n_view["is_applied"].set(view->isApplied());
 
-        // if we have a buffer, simply add the id to the list
+        // if we have a buffer, simply add the index to the list
         if (view->hasBuffer())
         {
-            IDType buffer_id = view->getBuffer()->getUID();
+            IndexType buffer_id = view->getBuffer()->getIndex();
             n_view["buffer_id"].set(buffer_id);
-            buffer_ids.push_back(view->getBuffer()->getUID());
+            buffer_ids.push_back(view->getBuffer()->getIndex());
         }
     }
     
@@ -876,7 +891,7 @@ void DataGroup::copyToNode(Node& n,
 *************************************************************************
 */
 void DataGroup::copyFromNode(Node& n,
-                             std::map<IDType, IDType>& id_map)
+                             std::map<IndexType, IndexType>& id_map)
 {
     /// for restore each group contains:
     /// buffers, views, and groups
@@ -888,14 +903,14 @@ void DataGroup::copyFromNode(Node& n,
         while (buffs_itr.has_next())
         {
             Node& n_buff = buffs_itr.next();
-            IDType buffer_id = n_buff["id"].as_int32();
+            IndexType buffer_id = n_buff["id"].as_int32();
 
             // create a new mapping and buffer if necessary
             if ( id_map.find(buffer_id) == id_map.end())
             {
                 DataBuffer* ds_buff = this->getDataStore()->createBuffer();
-                // map "id" to whatever new id the data store gives us.
-                IDType buffer_ds_id = ds_buff->getUID();
+                // map "id" to whatever new index the data store gives us.
+                IndexType buffer_ds_id = ds_buff->getIndex();
                 id_map[buffer_id] = buffer_ds_id;
                 // setup the new data store buffer
                 Schema schema(n_buff["schema"].as_string());
@@ -919,11 +934,11 @@ void DataGroup::copyFromNode(Node& n,
         {
             std::string view_name = views_itr.path();
             
-            IDType buffer_id = n_view["buffer_id"].as_int32();
+            IndexType buffer_id = n_view["buffer_id"].as_int32();
             // get the mapped buffer id
             if( id_map.find(buffer_id) == id_map.end() )
             {
-                ATK_ERROR("Invalid buffer id mapping.");
+                ATK_ERROR("Invalid buffer index mapping.");
             }
             
             buffer_id = id_map[buffer_id];

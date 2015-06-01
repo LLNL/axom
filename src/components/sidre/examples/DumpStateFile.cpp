@@ -19,7 +19,7 @@
  ******************************************************************************************************************************/
 
 // Other CS Toolkit headers
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 
 // SiDRe component headers
 #include "sidre/sidre.hpp"

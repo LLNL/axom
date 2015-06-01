@@ -33,8 +33,8 @@ TEST(sidre_view,create_views)
     DataBuffer *db_0 = dv_0->getBuffer();
     DataBuffer *db_1 = dv_1->getBuffer();
         
-    EXPECT_EQ(db_0->getUID(), 0);
-    EXPECT_EQ(db_1->getUID(), 1);
+    EXPECT_EQ(db_0->getIndex(), 0);
+    EXPECT_EQ(db_1->getIndex(), 1);
     delete ds;
 }
 
@@ -49,6 +49,27 @@ TEST(sidre_view,uint32_buffer_from_view)
 
     dv->allocate(DataType::uint32(10));
     uint32 *data_ptr = dv->getNode().as_uint32_ptr();
+    
+    for(int i=0;i<10;i++)
+        data_ptr[i] = i*i;
+
+    dv->getNode().print_detailed();
+
+    EXPECT_EQ(dv->getNode().schema().total_bytes(),
+              dv->getSchema().total_bytes());
+    delete ds;
+    
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,uint32_buffer_from_view_conduit_value)
+{
+    DataStore *ds = new DataStore();
+    DataGroup *root = ds->getRoot();
+    
+    DataView *dv = root->createViewAndBuffer("u0",DataType::uint32(10));
+    uint32 *data_ptr = dv->getValue();
     
     for(int i=0;i<10;i++)
         data_ptr[i] = i*i;

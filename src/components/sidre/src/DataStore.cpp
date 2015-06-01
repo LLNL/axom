@@ -74,7 +74,7 @@ DataStore::~DataStore()
 DataBuffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  IDType newIndex = m_DataBuffers.size();
+  IndexType newIndex = m_DataBuffers.size();
   m_DataBuffers.push_back( ATK_NULLPTR );
   if( !m_AvailableDataBuffers.empty() )
   {
@@ -92,34 +92,32 @@ DataBuffer* DataStore::createBuffer()
 /*
 *************************************************************************
 *
-* Remove data buffer with given id from the datastore and destroy it,
+* Remove data buffer with given index from the datastore and destroy it,
 * recover its id for reuse.
 *
 *************************************************************************
 */
-void DataStore::destroyBuffer( IDType id )
+void DataStore::destroyBuffer( IndexType idx )
 {
-  delete m_DataBuffers[id];
-  m_DataBuffers[id] = ATK_NULLPTR;
-  m_AvailableDataBuffers.push(id);
+  delete m_DataBuffers[idx];
+  m_DataBuffers[idx] = ATK_NULLPTR;
+  m_AvailableDataBuffers.push(idx);
 }
 
 
 /*
 *************************************************************************
 *
-* Destroy all buffers in datastore.
-*
-* Should we recover the ids for potential reuse???
+* Destroy all buffers in datastore and reclaim indices.
 *
 *************************************************************************
 */
 void DataStore::destroyBuffers()
 {
-    for( std::vector<DataBuffer*>::iterator iter=m_DataBuffers.begin() ;
-         iter!=m_DataBuffers.end() ; ++iter )
-    {
-      delete *iter;
+    for ( IndexType idx = 0; 
+          static_cast<unsigned>(idx) < m_DataBuffers.size(); ++idx) 
+    { 
+       destroyBuffer( idx );
     }
 }
 
@@ -127,16 +125,16 @@ void DataStore::destroyBuffers()
 /*
 *************************************************************************
 *
-* Remove data buffer with given id from the datastore leaving it intact,
-* and return a pointer to it. Its id is recovered for reuse.
+* Remove data buffer with given index from the datastore leaving it intact,
+* and return a pointer to it. Its index is recovered for reuse.
 *
 *************************************************************************
 */
-DataBuffer* DataStore::detachBuffer( IDType id )
+DataBuffer* DataStore::detachBuffer( IndexType idx )
 {
-  DataBuffer* const rval = m_DataBuffers[id];
-  m_DataBuffers[id] = ATK_NULLPTR;
-  m_AvailableDataBuffers.push(id);
+  DataBuffer* const rval = m_DataBuffers[idx];
+  m_DataBuffers[idx] = ATK_NULLPTR;
+  m_AvailableDataBuffers.push(idx);
 
   return rval;
 }
@@ -153,14 +151,13 @@ DataBuffer* DataStore::detachBuffer( IDType id )
 void DataStore::info(Node &n) const
 {
     m_RootGroup->info(n["DataStore/root"]);
-    for( std::vector<DataBuffer*>::const_iterator iter=m_DataBuffers.begin() ;
-         iter!=m_DataBuffers.end() ;
-         ++iter )
+    for ( IndexType idx = 0;
+          static_cast<unsigned>(idx) < m_DataBuffers.size(); ++idx) 
     {
         Node &b = n["DataStore/buffers"].append();
-        if (*iter != ATK_NULLPTR)
+        if (m_DataBuffers[idx] != ATK_NULLPTR)
         {
-            (*iter)->info(b);
+            m_DataBuffers[idx]->info(b);
         }
     }
 }
@@ -176,9 +173,25 @@ void DataStore::info(Node &n) const
 */
 void DataStore::print() const
 {
+    print(std::cout);
+}
+
+/*
+*************************************************************************
+*
+* Print JSON description of data buffers and group tree, starting at root, 
+* to an ostream.
+*
+*************************************************************************
+*/
+void DataStore::print(std::ostream &os) const
+{
     Node n;
     info(n);
-    n.print();
+    /// TODO: after conduit update, use new ostream variant of to_json.
+    std::ostringstream oss;
+    n.to_pure_json(oss);
+    os << oss.str();
 }
 
 

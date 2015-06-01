@@ -29,7 +29,7 @@
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
-#include "conduit/conduit.h"
+#include "conduit/conduit.hpp"
 
 
 
@@ -287,6 +287,15 @@ public:
     }
 
     /*!
+     * \brief Return Conduit Node Value instance that can be used to 
+     *  to easily access an array or scalar value.
+     */
+    Node::Value getValue()
+    {
+       return m_node.value();
+    }
+
+    /*!
      * \brief Return const reference to Conduit schema describing data.
      */
     const Schema& getSchema() const
@@ -323,6 +332,10 @@ public:
      */
     void print() const;
 
+    /*!
+     * \brief Print JSON description of data view to an ostream.
+     */
+    void print(std::ostream &os) const;
 
 private:
 

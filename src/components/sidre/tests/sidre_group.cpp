@@ -16,8 +16,8 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::IDType;
-using asctoolkit::sidre::InvalidID;
+using asctoolkit::sidre::IndexType;
+using asctoolkit::sidre::InvalidIndex;
 
 using namespace conduit;
 
@@ -119,8 +119,8 @@ TEST(sidre_group,get_view_name_index)
 
     EXPECT_EQ(parent->getNumViews(), 2u);
 
-    IDType idx1 = parent->getViewIndex("view1");
-    IDType idx2 = parent->getViewIndex("view2");
+    IndexType idx1 = parent->getViewIndex("view1");
+    IndexType idx2 = parent->getViewIndex("view2");
 
     std::string name1(parent->getViewName(idx1));
     std::string name2(parent->getViewName(idx2));
@@ -132,10 +132,10 @@ TEST(sidre_group,get_view_name_index)
     EXPECT_EQ(view2->getName(), name2); 
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    IDType idx3 = parent->getViewIndex("view3");
+    IndexType idx3 = parent->getViewIndex("view3");
     std::string name3(parent->getViewName(idx3));
 
-    EXPECT_EQ(idx3, InvalidID);
+    EXPECT_EQ(idx3, InvalidIndex);
     EXPECT_TRUE(name3.empty());
 #endif
 
@@ -156,8 +156,8 @@ TEST(sidre_group,get_group_name_index)
 
     EXPECT_EQ(parent->getNumGroups(), 2u);
 
-    IDType idx1 = parent->getGroupIndex("group1");
-    IDType idx2 = parent->getGroupIndex("group2");
+    IndexType idx1 = parent->getGroupIndex("group1");
+    IndexType idx2 = parent->getGroupIndex("group2");
 
     std::string name1(parent->getGroupName(idx1));
     std::string name2(parent->getGroupName(idx2));
@@ -169,10 +169,10 @@ TEST(sidre_group,get_group_name_index)
     EXPECT_EQ(group2->getName(), name2);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    IDType idx3 = parent->getGroupIndex("group3");
+    IndexType idx3 = parent->getGroupIndex("group3");
     std::string name3(parent->getGroupName(idx3));
 
-    EXPECT_EQ(idx3, InvalidID);
+    EXPECT_EQ(idx3, InvalidIndex);
     EXPECT_TRUE(name3.empty());
 #endif
 
@@ -336,7 +336,7 @@ TEST(sidre_group,create_destroy_view_and_buffer)
   EXPECT_TRUE(grp->hasView(viewName2));
   EXPECT_EQ( grp->getView(viewName2), view2 );
 
-  IDType const bufferId1 = view1->getBuffer()->getUID();
+  IndexType const bufferId1 = view1->getBuffer()->getIndex();
 
   grp->destroyViewAndBuffer(viewName1);
 
