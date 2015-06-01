@@ -224,7 +224,7 @@ public:
     /*!
      * \brief Return the name of DataView with given index.
      *
-     *        If none, return empty string.
+     *        If none, return InvalidName.
      */
     const std::string& getViewName(IndexType idx) const
     {
@@ -481,7 +481,7 @@ public:
     /*!
      * \brief Return the name of child DataGroup with given index.
      *
-     *        If none, return empty string.
+     *        If none, return InvalidName.
      */
     const std::string& getGroupName(IndexType idx) const
     {

@@ -70,7 +70,7 @@
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
  *
- *          - // Return name of object with given index (empty string if none).
+ *          - // Return name of object with given index (InvalidName if none).
  *
  *               std::string getItemName(IndexType idx) const;
  *
