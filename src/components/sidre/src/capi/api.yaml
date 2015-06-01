@@ -95,9 +95,9 @@ classes:
 #    -  decl: DataGroup * getGroup( const std::string& name )
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
-#    -  decl: IndexType getGroupIndex(const std::string &name) const
+    -  decl: IndexType getGroupIndex(const std::string &name) const
 #    -  decl: std::string getGroupName(IndexType idx) const
-#    -  decl: size_t countGroups() const
+    -  decl: size_t getNumGroups() const
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
 #    -  decl: void print() const

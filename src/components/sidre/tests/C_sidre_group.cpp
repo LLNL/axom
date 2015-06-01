@@ -98,10 +98,10 @@ TEST(C_sidre_group,has_view)
     ATK_datastore_delete(ds);
 }
 
-#if 0
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------
+#if 0
 TEST(C_sidre_group,get_view_name_index)
 {
     ATK_datastore *ds = ATK_datastore_new();
@@ -113,8 +113,8 @@ TEST(C_sidre_group,get_view_name_index)
 
     EXPECT_EQ(ATK_datagroup_get_num_views(parent), 2u);
 
-    ATK_IDType idx1 = ATK_datagroup_get_view_index(parent, "view1");
-    ATK_IDType idx2 = ATK_datagroup_get_view_index(parent, "view2");
+    ATK_IndexType idx1 = ATK_datagroup_get_view_index(parent, "view1");
+    ATK_IndexType idx2 = ATK_datagroup_get_view_index(parent, "view2");
 
     char *name1 = ATK_datagroup_get_view_name(parent, idx1);
     char *name2 = ATK_datagroup_get_view_name(parent, idx2);
@@ -126,7 +126,7 @@ TEST(C_sidre_group,get_view_name_index)
     EXPECT_TRUE(strcmp(ATK_dataview_get_name(view2), name2) == 0);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    ATK_IDType idx3 = ATK_datagroup_get_view_index(parent, "view3");
+    ATK_IndexType idx3 = ATK_datagroup_get_view_index(parent, "view3");
     char *name3 = ATK_datagroup_get_view_name(parent, idx3);
 
     EXPECT_EQ(idx3, InvalidID);
@@ -135,10 +135,11 @@ TEST(C_sidre_group,get_view_name_index)
 
     ATK_datastore_delete(ds);
 }
-
+#endif
 //------------------------------------------------------------------------------
 // Verify getGroupName(), getGroupIndex()
 //------------------------------------------------------------------------------
+#if 0
 TEST(C_sidre_group,get_group_name_index)
 {
     ATK_datastore *ds = ATK_datastore_new();
@@ -148,23 +149,23 @@ TEST(C_sidre_group,get_group_name_index)
     ATK_datagroup *group1 = ATK_datagroup_create_group(parent, "group1");
     ATK_datagroup *group2 = ATK_datagroup_create_group(parent, "group2");
 
-    EXPECT_EQ(parent->getNumGroups(), 2u);
+    EXPECT_EQ(ATK_datagroup_get_num_groups(parent), 2u);
 
-    IDType idx1 = parent->get_group_index("group1");
-    IDType idx2 = parent->get_group_index("group2");
+    ATK_IndexType idx1 = ATK_datagroup_get_group_index(parent, "group1");
+    ATK_IndexType idx2 = ATK_datagroup_get_group_index(parent, "group2");
 
-    std::string name1(parent->get_group_name(idx1));
-    std::string name2(parent->get_group_name(idx2));
+    const char *name1 = ATK_datagroup_get_group_name(parent, idx1);
+    const char *name2 = ATK_datagroup_get_group_name(parent, idx2);
 
-    EXPECT_EQ(name1, std::string("group1"));
-    EXPECT_EQ(group1->getName(), name1);
+    EXPECT_TRUE(strcmp(name1, "group1") == 0);
+    EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group1), name1) == 0);
 
     EXPECT_EQ(name2, std::string("group2"));
-    EXPECT_EQ(group2->getName(), name2);
+    EXPECT_EQ(ATK_datagroup_get_name(group1), name2);
 
 #if 0 // Leave out for now until we resolve error/warning/assert macro usage
-    IDType idx3 = parent->get_group_index("group3");
-    std::string name3(parent->get_group_name(idx3));
+    ATK_IndexType idx3 = ATK_datagroup_get_group_index(parent, "group3");
+    std::string name3(ATK_datagroup_get_group_name(parent, idx3));
 
     EXPECT_EQ(idx3, InvalidID);
     EXPECT_TRUE(name3.empty());
@@ -172,7 +173,9 @@ TEST(C_sidre_group,get_group_name_index)
 
     ATK_datastore_delete(ds);
 }
+#endif
 
+#if 0
 //------------------------------------------------------------------------------
 // createViewAndBuffer()
 // destroyViewAndBuffer()
@@ -338,7 +341,7 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   EXPECT_TRUE(grp->has_view(viewName2));
   EXPECT_EQ( grp->get_view(viewName2), view2 );
 
-  IDType const bufferId1 = view1->getBuffer()->getUID();
+  ATK_IndexType const bufferId1 = view1->getBuffer()->getUID();
 
   grp->destroyViewAndBuffer(viewName1);
 

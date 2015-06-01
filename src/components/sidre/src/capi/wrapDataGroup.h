@@ -52,6 +52,10 @@ bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name);
 
 ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name);
 
+ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name);
+
+size_t ATK_datagroup_get_num_groups(ATK_datagroup * self);
+
 #ifdef __cplusplus
 }
 #endif

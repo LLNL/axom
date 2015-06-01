@@ -97,6 +97,24 @@ return rv;
 // splicer end
 }
 
+ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+IndexType rv = selfobj->getGroupIndex(name);
+return rv;
+// splicer end
+}
+
+size_t ATK_datagroup_get_num_groups(ATK_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+size_t rv = selfobj->getNumGroups();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

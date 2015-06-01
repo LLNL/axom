@@ -25,6 +25,8 @@ module datagroup_mod
         procedure :: get_num_views => datagroup_get_num_views
         procedure :: has_group => datagroup_has_group
         procedure :: create_group => datagroup_create_group
+        procedure :: get_group_index => datagroup_get_group_index
+        procedure :: get_num_groups => datagroup_get_num_groups
     end type datagroup
     
     interface
@@ -96,6 +98,21 @@ module datagroup_mod
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_group
+        
+        function atk_datagroup_get_group_index(self, name) result(rv) bind(C, name="ATK_datagroup_get_group_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            integer(C_INT) :: rv
+        end function atk_datagroup_get_group_index
+        
+        function atk_datagroup_get_num_groups(self) result(rv) bind(C, name="ATK_datagroup_get_num_groups")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_datagroup_get_num_groups
     end interface
 
 contains
@@ -186,5 +203,24 @@ contains
         rv%obj = atk_datagroup_create_group(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end function datagroup_create_group
+    
+    function datagroup_get_group_index(obj, name) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        integer(C_INT) :: rv
+        ! splicer begin
+        rv = atk_datagroup_get_group_index(obj%obj, trim(name) // C_NULL_CHAR)
+        ! splicer end
+    end function datagroup_get_group_index
+    
+    function datagroup_get_num_groups(obj) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin
+        rv = atk_datagroup_get_num_groups(obj%obj)
+        ! splicer end
+    end function datagroup_get_num_groups
 
 end module datagroup_mod
