@@ -38,8 +38,31 @@ endif()
 #
 # make the library
 #
-make_library(slic "${slic_sources}" "${slic_headers}")
-add_dependencies(slic copy_headers_slic)
+if ( ENABLE_MPI )
+
+    make_library( LIBRARY_NAME
+                      slic
+                  LIBRARY_SOURCES
+                      "${slic_sources}"
+                      "${slic_headers}"
+                  WITH_MPI
+                  )
+
+    add_dependencies(slic copy_headers_slic)
+
+else()
+
+    make_library( LIBRARY_NAME
+                      slic
+                  LIBRARY_SOURCES
+                      "${slic_sources}"
+                      "${slic_headers}"
+                  )
+
+    add_dependencies(slic copy_headers_slic)
+
+endif()
+
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 #

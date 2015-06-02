@@ -14,10 +14,12 @@ make_executable( EXECUTABLE_SOURCE logging_example.cc DEPENDS_ON slic )
 ## Build MPI examples using logapi
 if (ENABLE_MPI)
 
-   make_executable( EXECUTABLE_SOURCE parallel_logging_example.cc
-                    DEPENDS_ON slic ${MPI_C_LIBRARIES}  )
+   make_executable( LINK_MPI
+                    EXECUTABLE_SOURCE parallel_logging_example.cc
+                    DEPENDS_ON slic )
 
-   make_executable( EXECUTABLE_SOURCE seperate_file_per_rank.cc
-                    DEPENDS_ON slic ${MPI_C_LIBRARIES} )
+   make_executable( LINK_MPI
+                    EXECUTABLE_SOURCE seperate_file_per_rank.cc
+                    DEPENDS_ON slic )
 
 endif()
