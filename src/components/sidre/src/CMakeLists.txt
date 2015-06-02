@@ -1,6 +1,9 @@
 #
 # Specify all headers
 #
+
+add_subdirectory(capi)
+
 set(sidre_headers
     Collections.hpp
     DataBuffer.hpp
@@ -9,14 +12,8 @@ set(sidre_headers
     DataView.hpp
     SidreTypes.hpp
     sidre.hpp
-
-    capi/sidre.h
-    capi/SidreTypes.h
-    capi/wrapDataStore.h
-    capi/wrapDataGroup.h
-    capi/wrapDataBuffer.h
-    capi/wrapDataView.h
-    )
+    ${capi_headers}
+)
 
 #
 # Specify all sources
@@ -26,15 +23,8 @@ set(sidre_sources
     DataGroup.cpp
     DataStore.cpp
     DataView.cpp
-
-    capi/wrapDataStore.cpp
-    capi/wrapDataGroup.cpp
-    capi/wrapDataBuffer.cpp
-    capi/wrapDataView.cpp
-#    capi/fstr_mod.f
-#    capi/wrapfDataStore.f
-    )
-
+    ${capi_source}
+)
 
 #
 # make the library
