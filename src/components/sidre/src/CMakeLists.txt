@@ -29,7 +29,7 @@ set(sidre_sources
 #
 # make the library
 #
-make_library(sidre "${sidre_sources}" "${sidre_headers}")
+make_library(sidre "${sidre_sources}")
 add_dependencies(sidre sidre_generate)
 add_dependencies(sidre copy_headers_sidre)
 add_dependencies(sidre copy_headers_common)
@@ -42,3 +42,4 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #
 copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
+add_dependencies(copy_headers_sidre sidre_generate)

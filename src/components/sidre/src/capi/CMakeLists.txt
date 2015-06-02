@@ -31,9 +31,9 @@ set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #
 # Generate source
 #
-add_custom_target(sidre_generate
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/capi.time
-)
+#add_custom_target(sidre_generate
+#    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+#)
 
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capi.time
@@ -47,11 +47,20 @@ add_custom_command(
 #
 # Tell parent about our files.
 #
-#set(generated_list)
+
+set(generated_list)
 set(parent_list)
+
+# static files
 foreach(file ${sidre_headers})
-  list(APPEND parent_list capi/${file} )
+  list(APPEND parent_list ${CMAKE_CURRENT_SOURCE_DIR}/${file} )
+
+#  add_custom_command(
+#      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${file}
+#  )
 endforeach(file)
+
+# generated files
 foreach(file ${sidre_generated_headers})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
 
@@ -64,9 +73,11 @@ foreach(file ${sidre_generated_headers})
 #  ) 
 endforeach(file)
 set (capi_headers ${parent_list} PARENT_SCOPE)
-#list(APPEND generated_list ${parent_list})
+list(APPEND generated_list ${parent_list})
+
 
 set(parent_list)
+# generated files
 foreach(file ${sidre_source} ${sidre_generated_source})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
 
@@ -79,9 +90,9 @@ foreach(file ${sidre_source} ${sidre_generated_source})
 #  ) 
 endforeach(file)
 set (capi_source ${parent_list} PARENT_SCOPE)
-#list(APPEND generated_list ${parent_list})
+list(APPEND generated_list ${parent_list})
 
 
-#ADD_CUSTOM_TARGET(generate_foo
-#     DEPENDS ${generated_list}
-#)
+ADD_CUSTOM_TARGET(sidre_generate
+     DEPENDS ${generated_list}
+)
