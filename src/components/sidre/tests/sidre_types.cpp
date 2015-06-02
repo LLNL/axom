@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.hpp"
+#include "sidre/SidreTypes.h"
 
 //#include "conduit/conduit.h"
 
@@ -21,6 +22,7 @@ using asctoolkit::sidre::getTypeID;
 
 TEST(sidre_types,get_sidre_type)
 {
+#if 0
   TypeID EMPTY_T = getTypeID<0>();
   EXPECT_EQ(EMPTY_T, DataType::EMPTY_T);
   EMPTY_T = getTypeID(0);
@@ -35,60 +37,61 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(LIST_T, DataType::LIST_T);
   LIST_T = getTypeID(2);
   EXPECT_EQ(LIST_T, DataType::LIST_T);
+#endif
 
-  TypeID INT8_T = getTypeID<3>();
+  TypeID INT8_T = getTypeID<ATK_INT8_T>();
   EXPECT_EQ(INT8_T, DataType::INT8_T);
-  INT8_T = getTypeID(3);
+  INT8_T = getTypeID(ATK_INT8_T);
   EXPECT_EQ(INT8_T, DataType::INT8_T);
 
-  TypeID INT16_T = getTypeID<4>();
+  TypeID INT16_T = getTypeID<ATK_INT16_T>();
   EXPECT_EQ(INT16_T, DataType::INT16_T);
-  INT16_T = getTypeID(4);
+  INT16_T = getTypeID(ATK_INT16_T);
   EXPECT_EQ(INT16_T, DataType::INT16_T);
 
-  TypeID INT32_T = getTypeID<5>();
+  TypeID INT32_T = getTypeID<ATK_INT32_T>();
   EXPECT_EQ(INT32_T, DataType::INT32_T);
-  INT32_T = getTypeID(5);
+  INT32_T = getTypeID(ATK_INT32_T);
   EXPECT_EQ(INT32_T, DataType::INT32_T);
 
-  TypeID INT64_T = getTypeID<6>();
+  TypeID INT64_T = getTypeID<ATK_INT64_T>();
   EXPECT_EQ(INT64_T, DataType::INT64_T);
-  INT64_T = getTypeID(6);
+  INT64_T = getTypeID(ATK_INT64_T);
   EXPECT_EQ(INT64_T, DataType::INT64_T);
 
-  TypeID UINT8_T = getTypeID<7>();
+  TypeID UINT8_T = getTypeID<ATK_UINT8_T>();
   EXPECT_EQ(UINT8_T, DataType::UINT8_T);
-//  UINT8_T = getTypeID(7);
+//  UINT8_T = getTypeID(ATK_UINT8_T);
   EXPECT_EQ(UINT8_T, DataType::UINT8_T);
 
-  TypeID UINT16_T = getTypeID<8>();
+  TypeID UINT16_T = getTypeID<ATK_UINT16_T>();
   EXPECT_EQ(UINT16_T, DataType::UINT16_T);
-//  UINT16_T = getTypeID(8);
+//  UINT16_T = getTypeID(ATK_UINT16_T);
   EXPECT_EQ(UINT16_T, DataType::UINT16_T);
 
-  TypeID UINT32_T = getTypeID<9>();
+  TypeID UINT32_T = getTypeID<ATK_UINT32_T>();
   EXPECT_EQ(UINT32_T, DataType::UINT32_T);
-//  UINT32_T = getTypeID(9);
+//  UINT32_T = getTypeID(ATK_UINT32_T);
   EXPECT_EQ(UINT32_T, DataType::UINT32_T);
 
-  TypeID UINT64_T = getTypeID<10>();
+  TypeID UINT64_T = getTypeID<ATK_UINT64_T>();
   EXPECT_EQ(UINT64_T, DataType::UINT64_T);
-//  UINT64_T = getTypeID(10);
+//  UINT64_T = getTypeID(ATK_UINT64_T);
   EXPECT_EQ(UINT64_T, DataType::UINT64_T);
 
-  TypeID FLOAT32_T = getTypeID<11>();
+  TypeID FLOAT32_T = getTypeID<ATK_FLOAT32_T>();
   EXPECT_EQ(FLOAT32_T, DataType::FLOAT32_T);
-//  FLOAT32_T = getTypeID(11);
+//  FLOAT32_T = getTypeID(ATK_FLOAT32_T);
   EXPECT_EQ(FLOAT32_T, DataType::FLOAT32_T);
 
-  TypeID FLOAT64_T = getTypeID<12>();
+  TypeID FLOAT64_T = getTypeID<ATK_FLOAT64_T>();
   EXPECT_EQ(FLOAT64_T, DataType::FLOAT64_T);
-//  FLOAT64_T = getTypeID(12);
+//  FLOAT64_T = getTypeID(ATK_FLOAT64_T);
   EXPECT_EQ(FLOAT64_T, DataType::FLOAT64_T);
 
-  TypeID CHAR8_STR_T = getTypeID<13>();
+  TypeID CHAR8_STR_T = getTypeID<ATK_CHAR8_STR_T>();
   EXPECT_EQ(CHAR8_STR_T, DataType::CHAR8_STR_T);
-//  CHAR8_STR_T = getTypeID(13);
+//  CHAR8_STR_T = getTypeID(ATK_CHAR8_STR_T);
   EXPECT_EQ(CHAR8_STR_T, DataType::CHAR8_STR_T);
 
 
