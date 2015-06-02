@@ -53,7 +53,7 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name )
 {
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
-    DataBuffer *buff = this->getDataStore()->createBuffer();
+    DataBuffer* buff = this->getDataStore()->createBuffer();
     DataView* const view = new DataView( name, this, buff);
     buff->attachView(view);
 
@@ -69,11 +69,11 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name )
 *************************************************************************
 */
 DataView* DataGroup::createViewAndBuffer( const std::string& name,
-                                          const DataType &dtype)
+                                          const DataType& dtype)
 {
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
-    DataBuffer *buff = this->getDataStore()->createBuffer();
+    DataBuffer* buff = this->getDataStore()->createBuffer();
     DataView* const view = new DataView( name, this, buff);
     buff->attachView(view);
     view->allocate(dtype);
@@ -90,11 +90,11 @@ DataView* DataGroup::createViewAndBuffer( const std::string& name,
 *************************************************************************
 */
 DataView* DataGroup::createViewAndBuffer( const std::string& name,
-                                          const Schema &schema)
+                                          const Schema& schema)
 {
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
-    DataBuffer *buff = this->getDataStore()->createBuffer();
+    DataBuffer* buff = this->getDataStore()->createBuffer();
     DataView* const view = new DataView( name, this,buff);
     buff->attachView(view);
     view->allocate(schema);
@@ -129,7 +129,7 @@ DataView* DataGroup::createView( const std::string& name,
 */
 DataView* DataGroup::createView( const std::string& name,
                                  DataBuffer* buff,
-                                 const DataType &dtype)
+                                 const DataType& dtype)
 {
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
     ATK_ASSERT( buff != 0 );
@@ -150,7 +150,7 @@ DataView* DataGroup::createView( const std::string& name,
 */
 DataView* DataGroup::createView( const std::string& name,
                                  DataBuffer* buff,
-                                 const Schema &schema)
+                                 const Schema& schema)
 {
     ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
     ATK_ASSERT( buff != 0 );
@@ -168,7 +168,7 @@ DataView* DataGroup::createView( const std::string& name,
 *
 *************************************************************************
 */
-DataView *DataGroup::createOpaqueView( const std::string& name,
+DataView* DataGroup::createOpaqueView( const std::string& name,
                                        void* opaque_ptr)
 {
    ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
@@ -185,7 +185,7 @@ DataView *DataGroup::createOpaqueView( const std::string& name,
 *
 *************************************************************************
 */
-DataView *DataGroup::createExternalView( const std::string& name,
+DataView* DataGroup::createExternalView( const std::string& name,
                                          void* external_data,
                                          const DataType& dtype)
 {
@@ -210,7 +210,7 @@ DataView *DataGroup::createExternalView( const std::string& name,
 *
 *************************************************************************
 */
-DataView *DataGroup::createExternalView( const std::string& name,
+DataView* DataGroup::createExternalView( const std::string& name,
                                          void* external_data,
                                          const Schema& schema)
 {
@@ -272,7 +272,7 @@ void DataGroup::destroyViews()
                      
     for (size_t i=0; i<nviews; ++i)
     {
-        DataView *view = this->getView(i);
+        DataView* view = this->getView(i);
         delete view;
     }
 
@@ -331,7 +331,7 @@ void DataGroup::destroyViewsAndBuffers()
 
     for (size_t i=0; i<nviews; ++i)
     {
-        DataView *view = this->getView(i);
+        DataView* view = this->getView(i);
         getDataStore()->destroyBuffer(view->getBuffer()->getIndex());
         delete view;
     }
@@ -378,7 +378,7 @@ DataView* DataGroup::copyView(DataView* view)
     ATK_ASSERT_MSG( hasView(view->getName()) == false, \
                     "view->getName() == " << view->getName() );
 
-    DataView *res = createView(view->getName(), view->getBuffer());
+    DataView* res = createView(view->getName(), view->getBuffer());
     res->declare(view->getSchema());
     if (view->isApplied())
     {
@@ -466,7 +466,7 @@ DataGroup* DataGroup::moveGroup(DataGroup* group)
                     "group->getName() == " << group->getName() );
 
     // remove this group from its current parent
-    DataGroup *curr_group = group->getParent();
+    DataGroup* curr_group = group->getParent();
 
     curr_group->detachGroup(group->getName());
 
@@ -491,7 +491,7 @@ DataGroup* DataGroup::copyGroup(DataGroup* group)
     ATK_ASSERT_MSG( hasGroup(group->getName()) == false, \
                     "group->getName() == " << group->getName() );
 
-    DataGroup *res = createGroup(group->getName());
+    DataGroup* res = createGroup(group->getName());
 
     // copy all groups
     size_t nchild_groups = group->getNumGroups();
@@ -522,14 +522,14 @@ void DataGroup::info(Node& n) const
     n["name"] = m_name;
     for (size_t i=0; i < this->getNumViews(); ++i)
     {
-        DataView const *view = this->getView(i);
+        const DataView* view = this->getView(i);
         Node& v = n["views"].fetch(view->getName());
         view->info(v);
 
     }
     for (size_t i=0; i<this->getNumGroups(); ++i)
     {
-        DataGroup const* group =  this->getGroup(i);
+        const DataGroup* group =  this->getGroup(i);
         Node& g = n["groups"].fetch(group->getName());
         group->info(g);
     }
@@ -554,7 +554,7 @@ void DataGroup::print() const
 *
 *************************************************************************
 */
-void DataGroup::print(std::ostream &os) const
+void DataGroup::print(std::ostream& os) const
 {
     Node n;
     info(n);
@@ -610,7 +610,7 @@ void DataGroup::printTree( const int nlevels ) const
 void DataGroup::save(const std::string& obase,
                      const std::string& protocol) const
 {
-    if(protocol == "conduit")
+    if (protocol == "conduit")
     {
         Node n;
         copyToNode(n);
@@ -632,7 +632,7 @@ void DataGroup::save(const std::string& obase,
 void DataGroup::load(const std::string& obase,
                      const std::string& protocol)
 {
-    if(protocol == "conduit")
+    if (protocol == "conduit")
     {
         destroyGroups();
         destroyViews();
@@ -819,7 +819,7 @@ void DataGroup::copyToNode(Node& n) const
     {
         Node& buff = n["buffers"].append();
         IndexType buffer_id = buffer_ids[i];
-        DataBuffer *ds_buff =  m_datastore->getBuffer(buffer_id);
+        DataBuffer* ds_buff =  m_datastore->getBuffer(buffer_id);
         buff["id"].set(buffer_id);
         buff["schema"].set(ds_buff->getSchema().to_json());
         
@@ -859,7 +859,7 @@ void DataGroup::copyToNode(Node& n,
 {
     for (size_t i=0; i < this->getNumViews(); ++i)
     {
-        DataView const* view = this->getView(i);
+        const DataView* view = this->getView(i);
         Node& n_view = n["views"].fetch(view->getName());
         n_view["schema"].set(view->getSchema().to_json());
         n_view["is_applied"].set(view->isApplied());
@@ -875,7 +875,7 @@ void DataGroup::copyToNode(Node& n,
     
     for (size_t i=0; i < this->getNumGroups(); ++i)
     {
-        DataGroup const* group =  this->getGroup(i);
+        const DataGroup* group =  this->getGroup(i);
         Node& n_group = n["groups"].fetch(group->getName());
         group->copyToNode(n_group, buffer_ids);
     }
@@ -945,7 +945,7 @@ void DataGroup::copyFromNode(Node& n,
             DataBuffer* ds_buff = m_datastore->getBuffer(buffer_id);
 
             // create a new view with the buffer
-            DataView* ds_view = createView(view_name,ds_buff);
+            DataView* ds_view = createView(view_name, ds_buff);
             // declare using the schema
             Schema schema(n_view["schema"].as_string());
             ds_view->declare(schema);

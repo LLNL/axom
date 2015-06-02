@@ -284,7 +284,7 @@ public:
     /*!
      * \brief Print JSON description of data buffer to an ostream.
      */
-    void print(std::ostream &os) const;
+    void print(std::ostream& os) const;
 
 
 private:
@@ -319,7 +319,7 @@ private:
      */
     void cleanup();
     ///
-    void* allocateBytes(std::size_t numBytes);
+    void* allocateBytes(std::size_t num_bytes);
     ///
     void  releaseBytes(void* );
 

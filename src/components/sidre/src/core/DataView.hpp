@@ -282,7 +282,7 @@ public:
     /*!
      * \brief Return pointer to const DataBuffer associated with DataView.
      */
-    DataBuffer const* getBuffer() const
+    const DataBuffer* getBuffer() const
     { 
        return m_data_buffer; 
     }
@@ -348,7 +348,7 @@ public:
     /*!
      * \brief Return pointer to const DataGroup that owns DataView object.
      */
-    DataGroup const* getOwningGroup() const
+    const DataGroup* getOwningGroup() const
     {
        return m_owning_group;
     }
@@ -369,7 +369,7 @@ public:
     /*!
      * \brief Print JSON description of data view to an ostream.
      */
-    void print(std::ostream &os) const;
+    void print(std::ostream& os) const;
 
 private:
 
@@ -425,16 +425,16 @@ private:
     /*!
      *  Unimplemented ctors and copy-assignment operators.
      */
-  #ifdef USE_CXX11
+#ifdef USE_CXX11
     DataView() = delete;
     DataView( DataView&& ) = delete;
 
     DataView& operator=( const DataView& ) = delete;
     DataView& operator=( DataView&& ) = delete;
-  #else
+#else
     DataView();
     DataView& operator=( const DataView& );
-  #endif
+#endif
 
 };
 

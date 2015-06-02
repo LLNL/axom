@@ -207,7 +207,7 @@ DataBuffer* DataBuffer::reallocate(const Schema& schema)
 
       // use conduit to get data from old to new schema.
       Node n;
-      n.set_external(schema,realloc_data);
+      n.set_external(schema, realloc_data);
       // use conduit update, need more error checking.
       n.update(m_node);
 
@@ -221,7 +221,7 @@ DataBuffer* DataBuffer::reallocate(const Schema& schema)
       m_data = realloc_data;
    
       // update the buffer's Conduit Node
-      m_node.set_external(m_schema,m_data);
+      m_node.set_external(m_schema, m_data);
    }
 
    return this;
@@ -282,7 +282,7 @@ void DataBuffer::print() const
 *   
 *************************************************************************
 */
-void DataBuffer::print(std::ostream &os) const
+void DataBuffer::print(std::ostream& os) const
 {
     Node n;
     info(n);
@@ -399,12 +399,12 @@ void DataBuffer::cleanup()
 *   
 *************************************************************************
 */
-void *DataBuffer::allocateBytes(std::size_t numBytes)
+void* DataBuffer::allocateBytes(std::size_t num_bytes)
 {
-    ATK_ASSERT_MSG(numBytes > 0,
+    ATK_ASSERT_MSG(num_bytes > 0,
                    "Attempting to allocate 0 bytes");
 
-    char *data = new char[numBytes];
+    char* data = new char[num_bytes];
     return ((void *)data);
 }
 
@@ -415,7 +415,7 @@ void *DataBuffer::allocateBytes(std::size_t numBytes)
 *   
 *************************************************************************
 */
-void DataBuffer::releaseBytes(void *ptr)
+void DataBuffer::releaseBytes(void* ptr)
 {
    if ( !m_is_data_external ) {
       delete [] ((char*)ptr);

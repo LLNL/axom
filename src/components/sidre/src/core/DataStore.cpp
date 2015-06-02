@@ -74,16 +74,16 @@ DataStore::~DataStore()
 DataBuffer* DataStore::createBuffer()
 {
   // TODO: implement pool, look for free nodes.  Allocate in blocks.
-  IndexType newIndex = m_DataBuffers.size();
-  m_DataBuffers.push_back( ATK_NULLPTR );
-  if( !m_AvailableDataBuffers.empty() )
+  IndexType newIndex = m_data_buffers.size();
+  m_data_buffers.push_back( ATK_NULLPTR );
+  if( !m_free_buffer_ids.empty() )
   {
-    newIndex = m_AvailableDataBuffers.top();
-    m_AvailableDataBuffers.pop();
+    newIndex = m_free_buffer_ids.top();
+    m_free_buffer_ids.pop();
   }
   DataBuffer* const obj = new DataBuffer( newIndex );
 
-  m_DataBuffers[newIndex] = obj ;
+  m_data_buffers[newIndex] = obj ;
 
   return obj;
 }
@@ -99,9 +99,9 @@ DataBuffer* DataStore::createBuffer()
 */
 void DataStore::destroyBuffer( IndexType idx )
 {
-  delete m_DataBuffers[idx];
-  m_DataBuffers[idx] = ATK_NULLPTR;
-  m_AvailableDataBuffers.push(idx);
+  delete m_data_buffers[idx];
+  m_data_buffers[idx] = ATK_NULLPTR;
+  m_free_buffer_ids.push(idx);
 }
 
 
@@ -115,7 +115,7 @@ void DataStore::destroyBuffer( IndexType idx )
 void DataStore::destroyBuffers()
 {
     for ( IndexType idx = 0; 
-          static_cast<unsigned>(idx) < m_DataBuffers.size(); ++idx) 
+          static_cast<unsigned>(idx) < m_data_buffers.size(); ++idx) 
     { 
        destroyBuffer( idx );
     }
@@ -132,9 +132,9 @@ void DataStore::destroyBuffers()
 */
 DataBuffer* DataStore::detachBuffer( IndexType idx )
 {
-  DataBuffer* const rval = m_DataBuffers[idx];
-  m_DataBuffers[idx] = ATK_NULLPTR;
-  m_AvailableDataBuffers.push(idx);
+  DataBuffer* const rval = m_data_buffers[idx];
+  m_data_buffers[idx] = ATK_NULLPTR;
+  m_free_buffer_ids.push(idx);
 
   return rval;
 }
@@ -148,16 +148,16 @@ DataBuffer* DataStore::detachBuffer( IndexType idx )
 *
 *************************************************************************
 */
-void DataStore::info(Node &n) const
+void DataStore::info(Node& n) const
 {
     m_RootGroup->info(n["DataStore/root"]);
     for ( IndexType idx = 0;
-          static_cast<unsigned>(idx) < m_DataBuffers.size(); ++idx) 
+          static_cast<unsigned>(idx) < m_data_buffers.size(); ++idx) 
     {
-        Node &b = n["DataStore/buffers"].append();
-        if (m_DataBuffers[idx] != ATK_NULLPTR)
+        Node& b = n["DataStore/buffers"].append();
+        if (m_data_buffers[idx] != ATK_NULLPTR)
         {
-            m_DataBuffers[idx]->info(b);
+            m_data_buffers[idx]->info(b);
         }
     }
 }
@@ -184,7 +184,7 @@ void DataStore::print() const
 *
 *************************************************************************
 */
-void DataStore::print(std::ostream &os) const
+void DataStore::print(std::ostream& os) const
 {
     Node n;
     info(n);

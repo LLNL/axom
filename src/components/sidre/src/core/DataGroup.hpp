@@ -122,7 +122,7 @@ public:
     /*!
      * \brief Return pointer to const DataGroup parent of group.
      */
-    DataGroup const* getParent() const
+    const DataGroup* getParent() const
     {
        return m_parent;
     }
@@ -140,7 +140,7 @@ public:
      * \brief Return pointer to const DataStore that owns group hierarchy
      *        to which DataGroup instance belongs.
      */
-    DataStore const* getDataStore() const
+    const DataStore* getDataStore() const
     {
        return m_datastore;
     }
@@ -182,7 +182,7 @@ public:
     /*!
      * \brief Return (const) pointer to DataView with given name.
      */
-    DataView const* getView( const std::string& name ) const
+    const DataView* getView( const std::string& name ) const
     {
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
@@ -202,7 +202,7 @@ public:
     /*!
      * \brief Return (const) pointer to DataView with given index.
      */
-    DataView const* getView( IndexType idx ) const
+    const DataView* getView( IndexType idx ) const
     {
         ATK_ASSERT_MSG( hasView(idx), "no view found with idx == " << idx );
 
@@ -214,7 +214,7 @@ public:
      *
      *        If none, return sidre::InvalidIndex;
      */
-    IndexType getViewIndex(const std::string &name) const
+    IndexType getViewIndex(const std::string& name) const
     {  
         ATK_ASSERT_MSG( hasView(name), "no view found with name == " << name);
 
@@ -268,7 +268,7 @@ public:
      * \return pointer to created DataView object.
      */ 
     DataView* createViewAndBuffer( const std::string& name, 
-                                   const DataType &dtype);
+                                   const DataType& dtype);
 
     /*!
      * \brief Create a DataView object (and buffer) with given name,
@@ -303,7 +303,7 @@ public:
      */ 
     DataView* createView( const std::string& name,
                           DataBuffer* buff, 
-                          const DataType &dtype);
+                          const DataType& dtype);
 
 
     /*!
@@ -354,7 +354,7 @@ public:
      * \brief Destroy view in this DataGroup with given name and leave its
      *        associated DataBuffer intact.
      */
-    void destroyView(const std::string &name);
+    void destroyView(const std::string& name);
 
     /*!
      * \brief Destroy view in this DataGroup with given index and leave its
@@ -372,7 +372,7 @@ public:
      * \brief Destroy views in this DataGroup with given name AND destroy 
      *        its associated DataBuffer object.
      */
-    void destroyViewAndBuffer(const std::string &name);
+    void destroyViewAndBuffer(const std::string& name);
 
     /*! 
      * \brief Destroy view in this DataGroup with given index AND destroy 
@@ -404,7 +404,7 @@ public:
      *
      * \return pointer to created DataView object.
      */ 
-    DataView* copyView(DataView *view);
+    DataView* copyView(DataView* view);
     
 //@}
 
@@ -459,7 +459,7 @@ public:
     /*!
      * \brief Return (const) pointer to child DataGroup with given index.
      */
-    DataGroup const* getGroup( IndexType idx ) const
+    const DataGroup* getGroup( IndexType idx ) const
     {
         ATK_ASSERT_MSG( hasGroup(idx), "no group found with idx == " << idx );
 
@@ -471,7 +471,7 @@ public:
      *
      *        If none, return sidre::InvalidIndex;
      */
-    IndexType getGroupIndex(const std::string &name) const
+    IndexType getGroupIndex(const std::string& name) const
     {
         ATK_ASSERT_MSG( hasGroup(name), "no group found with name == " << name);
 
@@ -514,7 +514,7 @@ public:
     /*!
      * \brief Destroy child group in this DataGroup with given name.
      */
-    void destroyGroup(const std::string &name);
+    void destroyGroup(const std::string& name);
 
     /*!
      * \brief Destroy child group in this DataGroup with given index.
@@ -556,7 +556,7 @@ public:
     /*!
      * \brief Copy data group description to given Conduit node.
      */  
-    void info(Node &n) const;
+    void info(Node& n) const;
 
     /*!
      * \brief Print JSON description of data group to stdout.
@@ -572,7 +572,7 @@ public:
      * Note that this will recursively print entire group (sub) tree
      * starting at this DataGroup object.
      */
-    void print(std::ostream &os) const;
+    void print(std::ostream& os) const;
 
 
     /*!

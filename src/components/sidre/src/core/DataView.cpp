@@ -243,7 +243,7 @@ DataView* DataView::apply(const DataType &dtype)
 *
 *************************************************************************
 */
-void *DataView::getOpaque() const
+void* DataView::getOpaque() const
 {
     // if (!m_is_opaque) error?
     return (void*)(getNode().as_uint64());
@@ -282,11 +282,11 @@ void DataView::print() const
 /*
 *************************************************************************
 *
-* Print JSON description of data view to an ostream.
+* Print JSON description of data view to an  ostream.
 *
 *************************************************************************
 */
-void DataView::print(std::ostream &os) const
+void DataView::print(std::ostream& os) const
 {
     Node n;
     info(n);

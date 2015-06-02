@@ -81,7 +81,7 @@ public:
    */
   DataBuffer* getBuffer( IndexType idx ) 
   { 
-     return m_DataBuffers[idx]; 
+     return m_data_buffers[idx]; 
   }
 
   /*!
@@ -123,7 +123,7 @@ public:
    */
   size_t getNumBuffers() const
   {
-    return m_DataBuffers.size() - m_AvailableDataBuffers.size();
+    return m_data_buffers.size() - m_free_buffer_ids.size();
   }
 
 //@}
@@ -153,7 +153,7 @@ public:
    * \brief Print JSON description of data buffers and group tree,
    *        starting at root, to an ostream.
    */
-  void print(std::ostream &os) const;
+  void print(std::ostream& os) const;
 
 
 private:
@@ -175,10 +175,10 @@ private:
   DataGroup *m_RootGroup;
 
   /// Collection of DataBuffers holding data in DataStore instance.
-  std::vector<DataBuffer*> m_DataBuffers;
+  std::vector<DataBuffer*> m_data_buffers;
 
   /// Collection of unused unique buffer indices (they can be recycled).
-  std::stack< IndexType > m_AvailableDataBuffers;
+  std::stack< IndexType > m_free_buffer_ids;
 
 };
 
