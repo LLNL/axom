@@ -5,13 +5,13 @@
 add_subdirectory(capi)
 
 set(sidre_headers
-    Collections.hpp
-    DataBuffer.hpp
-    DataGroup.hpp
-    DataStore.hpp
-    DataView.hpp
-    SidreTypes.hpp
-    sidre.hpp
+    core/Collections.hpp
+    core/DataBuffer.hpp
+    core/DataGroup.hpp
+    core/DataStore.hpp
+    core/DataView.hpp
+    core/SidreTypes.hpp
+    core/sidre.hpp
     ${capi_headers}
 )
 
@@ -19,10 +19,10 @@ set(sidre_headers
 # Specify all sources
 #
 set(sidre_sources
-    DataBuffer.cpp
-    DataGroup.cpp
-    DataStore.cpp
-    DataView.cpp
+    core/DataBuffer.cpp
+    core/DataGroup.cpp
+    core/DataStore.cpp
+    core/DataView.cpp
     ${capi_source}
 )
 
