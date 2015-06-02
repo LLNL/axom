@@ -33,7 +33,6 @@ set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #
 add_custom_target(sidre_generate
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/capi.time
-    COMMENT "Running shroud api.yaml"
 )
 
 add_custom_command(
@@ -41,6 +40,7 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     COMMAND sh ${EXECUTABLE_OUTPUT_PATH}/shroud ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+    COMMENT "Running shroud api.yaml"
     WORKING_DIRECTORY ${API_OUTPUT_DIR}
 )
 
