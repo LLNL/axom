@@ -47,17 +47,41 @@ add_custom_command(
 #
 # Tell parent about our files.
 #
+#set(generated_list)
 set(parent_list)
 foreach(file ${sidre_headers})
   list(APPEND parent_list capi/${file} )
 endforeach(file)
 foreach(file ${sidre_generated_headers})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
+
+  add_custom_command(
+      OUTPUT ${API_OUTPUT_DIR}/${file}
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+  )
+#  SET_SOURCE_FILES_PROPERTIES(${API_OUTPUT_DIR}/${file}
+#       PROPERTIES GENERATED TRUE
+#  ) 
 endforeach(file)
 set (capi_headers ${parent_list} PARENT_SCOPE)
+#list(APPEND generated_list ${parent_list})
 
 set(parent_list)
 foreach(file ${sidre_source} ${sidre_generated_source})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
+
+  add_custom_command(
+      OUTPUT ${API_OUTPUT_DIR}/${file}
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+  )
+#  SET_SOURCE_FILES_PROPERTIES(${API_OUTPUT_DIR}/${file}
+#       PROPERTIES GENERATED TRUE
+#  ) 
 endforeach(file)
 set (capi_source ${parent_list} PARENT_SCOPE)
+#list(APPEND generated_list ${parent_list})
+
+
+#ADD_CUSTOM_TARGET(generate_foo
+#     DEPENDS ${generated_list}
+#)
