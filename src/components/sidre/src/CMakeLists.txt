@@ -30,6 +30,7 @@ set(sidre_sources
 # make the library
 #
 make_library(sidre "${sidre_sources}" "${sidre_headers}")
+add_dependencies(sidre sidre_generate)
 add_dependencies(sidre copy_headers_sidre)
 add_dependencies(sidre copy_headers_common)
 add_dependencies(sidre copy_headers_conduit)
