@@ -282,16 +282,30 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog=appname)
     parser.add_argument('--version', action='version', version=appver)
+    parser.add_argument('--indir', default='',
+                        help='directory for input source files')
+    parser.add_argument('--outdir', default='',
+                        help='directory for output files')
+    parser.add_argument('--logdir', default='',
+                        help='directory for log files')
     parser.add_argument('filename', nargs='*',
                         help='Input file to process')
 
     args = parser.parse_args()
 
+    # check options
     if len(args.filename) == 0:
-        raise RuntimeError("Must give at least one input file")
+        raise SystemExit("Must give at least one input file")
+    if args.indir and not os.path.isdir(args.indir):
+        raise SystemExit("indir %s does not exist" % args.indir)
+    if args.outdir and not os.path.isdir(args.outdir):
+        raise SystemExit("outdir %s does not exist" % args.outdir)
+    if args.logdir and not os.path.isdir(args.logdir):
+        raise SystemExit("logdir %s does not exist" % args.logdir)
 
     basename = os.path.splitext(os.path.basename(args.filename[0]))[0]
-    log = open(basename + '.log', 'w')
+    logpath = os.path.join(args.logdir, basename + '.log')
+    log = open(logpath, 'w')
 
     # accumulated input
     all = {}
@@ -304,7 +318,7 @@ if __name__ == '__main__':
             fp.close()
             all.update(d)
         else:
-            raise RuntimeError("File must end in .yaml for now")
+            raise SystemExit("File must end in .yaml for now")
 
 #    print(all)
 
@@ -316,7 +330,8 @@ if __name__ == '__main__':
 
     wrapf.Wrapf(all, log).wrap()
 
-    fp = open(basename + '.json', 'w')
+    jsonpath = os.path.join(args.logdir, basename + '.json')
+    fp = open(jsonpath, 'w')
     json.dump(all, fp, sort_keys=True, indent=4)
     fp.close()
 
