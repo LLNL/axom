@@ -96,4 +96,3 @@ TEST(sidre_types,get_sidre_type)
 
 
 }
-

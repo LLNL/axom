@@ -16,9 +16,9 @@
 
 TEST(C_sidre_smoke,create_datastore)
 {
-    ATK_datastore *ds = ATK_datastore_new();
-    ATK_datastore_delete(ds);
-    EXPECT_TRUE( true );
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_datastore_delete(ds);
+  EXPECT_TRUE( true );
 }
 
 //------------------------------------------------------------------------------

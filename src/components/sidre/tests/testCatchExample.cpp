@@ -14,7 +14,8 @@
 
 //------------------------------------------------------------------------------
 
-TEST_CASE( "This basic catch test should pass") {
+TEST_CASE( "This basic catch test should pass")
+{
 
   int one = 1;
   REQUIRE_FALSE( one == 2 );

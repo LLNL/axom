@@ -18,48 +18,48 @@
 
 TEST(C_sidre_buffer,create_buffers)
 {
-    ATK_datastore *ds = ATK_datastore_new();
-    ATK_databuffer *dbuff_0 = ATK_datastore_create_buffer(ds);
-    ATK_databuffer *dbuff_1 = ATK_datastore_create_buffer(ds);
-    
-    EXPECT_EQ(ATK_databuffer_get_index(dbuff_0), 0);
-    EXPECT_EQ(ATK_databuffer_get_index(dbuff_1), 1);
-    ATK_datastore_destroy_buffer(ds, 0);
-    
-    ATK_databuffer *dbuff_3 = ATK_datastore_create_buffer(ds);
-    EXPECT_EQ(ATK_databuffer_get_index(dbuff_3), 0);
-    //    ds->print();
-    ATK_datastore_delete(ds);
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_databuffer * dbuff_0 = ATK_datastore_create_buffer(ds);
+  ATK_databuffer * dbuff_1 = ATK_datastore_create_buffer(ds);
+
+  EXPECT_EQ(ATK_databuffer_get_index(dbuff_0), 0);
+  EXPECT_EQ(ATK_databuffer_get_index(dbuff_1), 1);
+  ATK_datastore_destroy_buffer(ds, 0);
+
+  ATK_databuffer * dbuff_3 = ATK_datastore_create_buffer(ds);
+  EXPECT_EQ(ATK_databuffer_get_index(dbuff_3), 0);
+  //    ds->print();
+  ATK_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
 {
-    ATK_datastore *ds = ATK_datastore_new();
-    ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-    ATK_databuffer_declare(dbuff, ATK_UINT32_T, 10);
-    ATK_databuffer_allocate(dbuff);
-    
-    //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
-    uint32_t *data_ptr = static_cast<uint32_t *>(ATK_databuffer_get_data(dbuff));
-    
-    for(int i=0;i<10;i++)
-    {
-        data_ptr[i] = i*i;
-    }
+  ATK_databuffer_declare(dbuff, ATK_UINT32_T, 10);
+  ATK_databuffer_allocate(dbuff);
+
+  //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
+  uint32_t * data_ptr = static_cast<uint32_t *>(ATK_databuffer_get_data(dbuff));
+
+  for(int i=0 ; i<10 ; i++)
+  {
+    data_ptr[i] = i*i;
+  }
 
 #if 0
-    dbuff->getNode().print_detailed();
+  dbuff->getNode().print_detailed();
 
-    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              dbuff->getSchema().total_bytes());
-  
-    ds->print();
+  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
+            dbuff->getSchema().total_bytes());
+
+  ds->print();
 #endif
-    ATK_datastore_delete(ds);
-    
+  ATK_datastore_delete(ds);
+
 }
 
 #if 0
@@ -67,25 +67,25 @@ TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
 
 TEST(C_sidre_buffer,init_buffer_for_uint32_array)
 {
-    ATK_datastore *ds = ATK_datastore_new();
-    ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-    dbuff->allocate(DataType::uint32(10));
-    uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();
-    
-    for(int i=0;i<10;i++)
-    {
-        data_ptr[i] = i*i;
-    }
+  dbuff->allocate(DataType::uint32(10));
+  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
 
-    dbuff->getNode().print_detailed();
+  for(int i=0 ; i<10 ; i++)
+  {
+    data_ptr[i] = i*i;
+  }
 
-    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              dbuff->getSchema().total_bytes());
+  dbuff->getNode().print_detailed();
 
-    ds->print();
-    ATK_datastore_delete(ds);
-    
+  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
+            dbuff->getSchema().total_bytes());
+
+  ds->print();
+  ATK_datastore_delete(ds);
+
 }
 #endif
 
@@ -93,55 +93,55 @@ TEST(C_sidre_buffer,init_buffer_for_uint32_array)
 
 TEST(C_sidre_buffer,realloc_buffer)
 {
-    ATK_datastore *ds = ATK_datastore_new();
-    ATK_databuffer *dbuff = ATK_datastore_create_buffer(ds);
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-    //    dbuff->allocate(DataType::int64(5));
-    ATK_databuffer_declare(dbuff, ATK_INT64_T, 5);
-    ATK_databuffer_allocate(dbuff);    
-
-#if 0
-    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              sizeof(int64)*5);
-#endif
-    
-    //    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
-    int64_t *data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
-    
-    for(int i=0;i<5;i++)
-    {
-        data_ptr[i] = 5;
-    }
+  //    dbuff->allocate(DataType::int64(5));
+  ATK_databuffer_declare(dbuff, ATK_INT64_T, 5);
+  ATK_databuffer_allocate(dbuff);
 
 #if 0
-    dbuff->getNode().print_detailed();
-
-    dbuff->reallocate(DataType::int64(10));
+  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
+            sizeof(int64)*5);
 #endif
 
-    // data buffer changes 
-    //    data_ptr = dbuff->getNode().as_int64_ptr();
-    data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
+  //    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
+  int64_t * data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
 
-    for(int i=0;i<5;i++)
-    {
-        EXPECT_EQ(data_ptr[i],5);
-    }
+  for(int i=0 ; i<5 ; i++)
+  {
+    data_ptr[i] = 5;
+  }
 
 #if 0
-    for(int i=5;i<10;i++)
-    {
-        data_ptr[i] = 10;
-    }
+  dbuff->getNode().print_detailed();
 
-
-    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-              sizeof(int64)*10);
-    
-    dbuff->getNode().print_detailed();
-    
-    ds->print();
+  dbuff->reallocate(DataType::int64(10));
 #endif
-    ATK_datastore_delete(ds);
-    
+
+  // data buffer changes
+  //    data_ptr = dbuff->getNode().as_int64_ptr();
+  data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
+
+  for(int i=0 ; i<5 ; i++)
+  {
+    EXPECT_EQ(data_ptr[i],5);
+  }
+
+#if 0
+  for(int i=5 ; i<10 ; i++)
+  {
+    data_ptr[i] = 10;
+  }
+
+
+  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
+            sizeof(int64)*10);
+
+  dbuff->getNode().print_detailed();
+
+  ds->print();
+#endif
+  ATK_datastore_delete(ds);
+
 }

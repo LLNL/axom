@@ -55,27 +55,27 @@ const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
 
-void CreateScalarIntBufferViewAndSetVal( DataGroup* const grp, const std::string& name, int32 const value )
+void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
 {
-  DataBuffer* const buffer = grp->getDataStore()->createBuffer()
-                                                ->declare(DataType::int32())
-                                                ->allocate();
+  DataBuffer * const buffer = grp->getDataStore()->createBuffer()
+                              ->declare(DataType::int32())
+                              ->allocate();
 
 
-    DataView* const view = grp->createView(name, buffer)->apply(DataType::int32());
+  DataView * const view = grp->createView(name, buffer)->apply(DataType::int32());
   *(view->getNode().as_int32_ptr()) = value;
 
 }
 
 
-void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::string& name, float64 const value )
+void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp, const std::string& name, float64 const value )
 {
-  DataBuffer* const buffer = grp->getDataStore()->createBuffer()
-                                                ->declare(DataType::float64())
-                                                ->allocate();
+  DataBuffer * const buffer = grp->getDataStore()->createBuffer()
+                              ->declare(DataType::float64())
+                              ->allocate();
 
 
-  DataView* const view = grp->createView(name,buffer)->apply(DataType::float64());
+  DataView * const view = grp->createView(name,buffer)->apply(DataType::float64());
   *(view->getNode().as_float64_ptr()) = value;
 
 }
@@ -88,7 +88,7 @@ void CreateScalarFloatBufferViewAndSetVal( DataGroup* const grp, const std::stri
  * Purpose   :  Ask for control and output information
  *************************************************************************/
 
-void GetUserInput(DataGroup* const problem)
+void GetUserInput(DataGroup * const problem)
 {
   /**********************************/
   /* Get mesh info, and create mesh */
@@ -176,9 +176,9 @@ void GetUserInput(DataGroup* const problem)
  * Purpose   :  Build an empty mesh for the shock tube
 
 
- Gaps between elements are faces
+   Gaps between elements are faces
  |
- -------------------------------
+   -------------------------------
  |   |   |             |   |   |
 
  ### ### ### ###       ### ### ### ###
@@ -187,8 +187,8 @@ void GetUserInput(DataGroup* const problem)
 
  |  |                           |  |
  |  -----------------------------  |
- Inflow           |               Outflow
- Element      Tube Elements       Element
+   Inflow           |               Outflow
+   Element      Tube Elements       Element
 
 
  *************************************************************************/
@@ -204,8 +204,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* create element and face classes */
 
-  DataGroup* const elem = prob->createGroup("elem");
-  DataGroup* const face = prob->createGroup("face");
+  DataGroup * const elem = prob->createGroup("elem");
+  DataGroup * const face = prob->createGroup("face");
 
   /* set up some important views */
 
@@ -220,20 +220,20 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
 
   std::size_t numTubeElems = (numElems - 2);
-  DataGroup* const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
+  DataGroup * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
-  DataBuffer* const mapToElemsBuffer = elem->getDataStore()->createBuffer()
-                                                           ->declare(DataType::int32(numTubeElems))
-                                                           ->allocate();
-
-
-  DataView* const mapToElemsView = tube->createView("mapToElems", mapToElemsBuffer)
-                                       ->apply(DataType::int32(numTubeElems));
-
-  uint32* const mapToElems = mapToElemsView->getNode().as_uint32_ptr();
+  DataBuffer * const mapToElemsBuffer = elem->getDataStore()->createBuffer()
+                                        ->declare(DataType::int32(numTubeElems))
+                                        ->allocate();
 
 
-  for ( unsigned int k = 0u; k < numTubeElems; ++k)
+  DataView * const mapToElemsView = tube->createView("mapToElems", mapToElemsBuffer)
+                                    ->apply(DataType::int32(numTubeElems));
+
+  uint32 * const mapToElems = mapToElemsView->getNode().as_uint32_ptr();
+
+
+  for ( unsigned int k = 0u ; k < numTubeElems ; ++k)
   {
     mapToElems[k] = k + 1;
   }
@@ -242,15 +242,15 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each face connects to two elements */
 
-  DataBuffer* const faceToElemBuffer = face->getDataStore()->createBuffer()
-                                                           ->declare(DataType::int32(2*numFaces,0,8))
-                                                           ->allocate();
+  DataBuffer * const faceToElemBuffer = face->getDataStore()->createBuffer()
+                                        ->declare(DataType::int32(2*numFaces,0,8))
+                                        ->allocate();
 
-  int32* const faceToElem = face->createView("faceToElem", faceToElemBuffer)
-                                              ->apply(DataType::int32(2*numFaces,0,8))
-                                              ->getNode().as_int32_ptr();
+  int32 * const faceToElem = face->createView("faceToElem", faceToElemBuffer)
+                             ->apply(DataType::int32(2*numFaces,0,8))
+                             ->getNode().as_int32_ptr();
 
-  for (i = 0; i < numFaces; ++i)
+  for (i = 0 ; i < numFaces ; ++i)
   {
     faceToElem[i * 2 + UPWIND] = i;
     faceToElem[i * 2 + DOWNWIND] = i + 1;
@@ -258,16 +258,16 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
-  DataBuffer* const elemToFaceBuffer = tube->getDataStore()->createBuffer()
-                                                           ->declare(DataType::int32(2*numElems,0,8))
-                                                           ->allocate();
+  DataBuffer * const elemToFaceBuffer = tube->getDataStore()->createBuffer()
+                                        ->declare(DataType::int32(2*numElems,0,8))
+                                        ->allocate();
 
 
-  int32* elemToFace = tube->createView("elemToFace", elemToFaceBuffer)
-                                       ->apply(DataType::int32(2*numElems,0,8))
-                                       ->getNode().as_int32_ptr();
+  int32 * elemToFace = tube->createView("elemToFace", elemToFaceBuffer)
+                       ->apply(DataType::int32(2*numElems,0,8))
+                       ->getNode().as_int32_ptr();
 
-  for (i = 0; i < numElems; ++i)
+  for (i = 0 ; i < numElems ; ++i)
   {
     elemToFace[i * 2 + UPWIND] = i; /* same map as above by coincidence */
     elemToFace[i * 2 + DOWNWIND] = i + 1;
@@ -286,76 +286,76 @@ void InitializeShockTube(DataGroup * const prob)
   int i;
 
   /* These were created in GetUserInput() */
-  DataGroup* const elem = (prob->getGroup("elem"));
-  DataGroup* const face = (prob->getGroup("face"));
+  DataGroup * const elem = (prob->getGroup("elem"));
+  DataGroup * const face = (prob->getGroup("face"));
 
   /* Create element centered quantities */
 
 
-  DataBuffer* buffer = ATK_NULLPTR;
+  DataBuffer * buffer = ATK_NULLPTR;
 
   int32 const numElems = prob->getView("numElems")->getNode().as_int32();
   int32 const numFaces = prob->getView("numFaces")->getNode().as_int32();
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numElems))
-                               ->allocate();
+           ->declare(DataType::float64(numElems))
+           ->allocate();
 
 
-  float64* const mass = elem->createView("mass", buffer)
+  float64 * const mass = elem->createView("mass", buffer)
+                         ->apply(DataType::float64(numElems))
+                         ->getNode().as_float64_ptr();
+
+
+  buffer = elem->getDataStore()->createBuffer()
+           ->declare(DataType::float64(numElems))
+           ->allocate();
+
+  float64 * const momentum = elem->createView("momentum", buffer)
                              ->apply(DataType::float64(numElems))
-                            ->getNode().as_float64_ptr();
+                             ->getNode().as_float64_ptr();
 
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numElems))
-                               ->allocate();
+           ->declare(DataType::float64(numElems))
+           ->allocate();
 
-  float64* const momentum = elem->createView("momentum", buffer)
-                                ->apply(DataType::float64(numElems))
-                                ->getNode().as_float64_ptr();
-
-
-  buffer = elem->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numElems))
-                               ->allocate();
-
-  float64* const energy = elem->createView("energy", buffer)
-                              ->apply(DataType::float64(numElems))
-                              ->getNode().as_float64_ptr();
+  float64 * const energy = elem->createView("energy", buffer)
+                           ->apply(DataType::float64(numElems))
+                           ->getNode().as_float64_ptr();
 
 
   buffer = elem->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numElems))
-                               ->allocate();
+           ->declare(DataType::float64(numElems))
+           ->allocate();
 
-  float64* const pressure = elem->createView("pressure", buffer)
-                                ->apply(DataType::float64(numElems))
-                                ->getNode().as_float64_ptr();
+  float64 * const pressure = elem->createView("pressure", buffer)
+                             ->apply(DataType::float64(numElems))
+                             ->getNode().as_float64_ptr();
 
 
   /* Create face centered quantities */
 
   buffer = face->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numFaces))
-                               ->allocate();
+           ->declare(DataType::float64(numFaces))
+           ->allocate();
 
   face->createView("F0", buffer)
-      ->apply(DataType::float64(numFaces));
+  ->apply(DataType::float64(numFaces));
 
   buffer = face->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numFaces))
-                               ->allocate();
+           ->declare(DataType::float64(numFaces))
+           ->allocate();
 
   face->createView("F1", buffer)
-       ->apply(DataType::float64(numFaces));
+  ->apply(DataType::float64(numFaces));
 
   buffer = face->getDataStore()->createBuffer()
-                               ->declare(DataType::float64(numFaces))
-                               ->allocate();
+           ->declare(DataType::float64(numFaces))
+           ->allocate();
 
   face->createView("F2", buffer)
-    ->apply(DataType::float64(numFaces));
+  ->apply(DataType::float64(numFaces));
 
 
 //  face->fieldCreateReal("F", 3); /* mv, mv^2+P, and v(E+P) */
@@ -372,7 +372,7 @@ void InitializeShockTube(DataGroup * const prob)
   double energyInitial = pressureInitial / (gammaa - 1.0);
 
   /* Initialize zonal quantities*/
-  for (i = startTube; i < midTube; ++i)
+  for (i = startTube ; i < midTube ; ++i)
   {
     mass[i] = massInitial;
     momentum[i] = momentumInitial;
@@ -388,7 +388,7 @@ void InitializeShockTube(DataGroup * const prob)
   pressureInitial *= pratio;
   energyInitial = pressureInitial / (gammaa - 1.0);
 
-  for (i = midTube; i < endTube; ++i)
+  for (i = midTube ; i < endTube ; ++i)
   {
     mass[i] = massInitial;
     momentum[i] = momentumInitial;
@@ -425,21 +425,21 @@ void InitializeShockTube(DataGroup * const prob)
 void ComputeFaceInfo(DataGroup * const problem)
 {
   int i;
-  DataGroup* const face = problem->getGroup("face");
+  DataGroup * const face = problem->getGroup("face");
 //  Relation &faceToElem = *face->relation("faceToElem");
-  int32 const* const faceToElem = face->getView("faceToElem")->getNode().as_int32_ptr();
+  int32 const * const faceToElem = face->getView("faceToElem")->getNode().as_int32_ptr();
 
-  float64* const F0 = face->getView("F0")->getNode().as_float64_ptr();
-  float64* const F1 = face->getView("F1")->getNode().as_float64_ptr();
-  float64* const F2 = face->getView("F2")->getNode().as_float64_ptr();
+  float64 * const F0 = face->getView("F0")->getNode().as_float64_ptr();
+  float64 * const F1 = face->getView("F1")->getNode().as_float64_ptr();
+  float64 * const F2 = face->getView("F2")->getNode().as_float64_ptr();
   int numFaces = face->getView("F0")->getNode().as_float64_array().number_of_elements();
 
-  DataGroup* const elem = problem->getGroup("elem");
-  float64* const mass = elem->getView("mass")->getNode().as_float64_ptr();
-  float64* const momentum = elem->getView("momentum")->getNode().as_float64_ptr();
-  float64* const energy = elem->getView("energy")->getNode().as_float64_ptr();
+  DataGroup * const elem = problem->getGroup("elem");
+  float64 * const mass = elem->getView("mass")->getNode().as_float64_ptr();
+  float64 * const momentum = elem->getView("momentum")->getNode().as_float64_ptr();
+  float64 * const energy = elem->getView("energy")->getNode().as_float64_ptr();
 
-  for (i = 0; i < numFaces; ++i)
+  for (i = 0 ; i < numFaces ; ++i)
   {
     /* each face has an upwind and downwind element. */
     int upWind = faceToElem[i * 2 + UPWIND]; /* upwind element */
@@ -517,35 +517,35 @@ void UpdateElemInfo(DataGroup * const problem)
   int i;
 
   /* get the element quantities we want to update */
-  DataGroup* const elem = problem->getGroup("elem");
+  DataGroup * const elem = problem->getGroup("elem");
   float64 * const mass = elem->getView("mass")->getNode().as_float64_ptr();
   float64 * const momentum = elem->getView("momentum")->getNode().as_float64_ptr();
   float64 * const energy = elem->getView("energy")->getNode().as_float64_ptr();
   float64 * const pressure = elem->getView("pressure")->getNode().as_float64_ptr();
 
   /* focus on just the elements within the shock tube */
-  DataGroup* const tube = elem->getGroup("tube");
+  DataGroup * const tube = elem->getGroup("tube");
   int32 * const elemToFace = tube->getView("elemToFace")->getNode().as_int32_ptr();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
   int numTubeElems = tube->getView("mapToElems")->getNode().as_int32_array().number_of_elements();
 
 //  int *is = tube->map();
-  int32* const is = tube->getView("mapToElems")->getNode().as_int32_ptr();
+  int32 * const is = tube->getView("mapToElems")->getNode().as_int32_ptr();
 
 
 
   /* The element update is calculated as the flux between faces */
-  DataGroup* const face = problem->getGroup("face");
-  float64* const F0 = face->getView("F0")->getNode().as_float64_ptr();
-  float64* const F1 = face->getView("F1")->getNode().as_float64_ptr();
-  float64* const F2 = face->getView("F2")->getNode().as_float64_ptr();
+  DataGroup * const face = problem->getGroup("face");
+  float64 * const F0 = face->getView("F0")->getNode().as_float64_ptr();
+  float64 * const F1 = face->getView("F1")->getNode().as_float64_ptr();
+  float64 * const F2 = face->getView("F2")->getNode().as_float64_ptr();
 
   double const dx = *(problem->getView("dx")->getNode().as_float64_ptr());
   double const dt = *(problem->getView("dt")->getNode().as_float64_ptr());
   float64& time = *(problem->getView("time")->getNode().as_float64_ptr());
 
-  for (i = 0; i < numTubeElems; ++i)
+  for (i = 0 ; i < numTubeElems ; ++i)
   {
     /* recalculate elements in the shocktube, don't touch inflow/outflow */
     int elemIdx = is[i];
@@ -574,86 +574,87 @@ void UpdateElemInfo(DataGroup * const problem)
 void DumpUltra( DataGroup * const prob)
 {
 #if 1
-   FILE *fp ;
-   char fname[100] ;
-   char *tail ;
+  FILE * fp;
+  char fname[100];
+  char * tail;
 
 //   VHashTraverse_t content ;
 
-   DataGroup* const elem = prob->getGroup("elem") ;
+  DataGroup * const elem = prob->getGroup("elem");
 
-   strcpy(fname, "problem" ) ;
+  strcpy(fname, "problem" );
 
-   /* Skip past the junk */
-   for (tail=fname; isalpha(*tail); ++tail) ;
+  /* Skip past the junk */
+  for (tail=fname ; isalpha(*tail) ; ++tail)
+    ;
 
-   sprintf(tail, "_%04d.ult", *(prob->getView("cycle")->getNode().as_int32_ptr()) ) ;
+  sprintf(tail, "_%04d.ult", *(prob->getView("cycle")->getNode().as_int32_ptr()) );
 
-   if ((fp = fopen(fname, "w")) == NULL)
-   {
-      printf("Could not open file %s. Aborting.\n", fname) ;
-      exit (-1) ;
-   }
+  if ((fp = fopen(fname, "w")) == NULL)
+  {
+    printf("Could not open file %s. Aborting.\n", fname);
+    exit (-1);
+  }
 
-   fprintf(fp, "# Ultra Plot File\n") ;
-   fprintf(fp, "# Problem: %s\n", "problem" ) ;
-
-
-     for(size_t i=0;i<prob->getNumViews();i++)
-     {
-         DataView * const view = prob->getView(i);
-         const int length = view->getSchema().dtype().number_of_elements();
-         const std::string& name = view->getName();
-         if( length <= 1 )
-         {
-             if( view->getSchema().dtype().id() == DataType::INT32_T )
-             {
-                 fprintf(fp, "# %s = %d\n",
-                         name.c_str(),
-                         view->getNode().as_int32());
-             }
-             else if( view->getSchema().dtype().id() == 
-                      DataType::FLOAT64_T )
-             {
-                 fprintf(fp, "# %s = %f\n",
-                         name.c_str(),
-                         view->getNode().as_float64());
-            }
-        }
-    }
+  fprintf(fp, "# Ultra Plot File\n");
+  fprintf(fp, "# Problem: %s\n", "problem" );
 
 
-    for(size_t i=0;i<elem->getNumViews();i++)
+  for(size_t i=0 ; i<prob->getNumViews() ; i++)
+  {
+    DataView * const view = prob->getView(i);
+    const int length = view->getSchema().dtype().number_of_elements();
+    const std::string& name = view->getName();
+    if( length <= 1 )
     {
-         DataView * const view = elem->getView(i);
-         const int length = view->getSchema().dtype().number_of_elements();
-         const std::string& name = view->getName();
-         fprintf(fp, "# %s\n", name.c_str() ) ;
-         
-         if( view->getSchema().dtype().id() == DataType::INT32_T )
-         {
-             int32 const * const data = view->getNode().as_int32_ptr();
-             for ( int i=0; i<length; ++i)
-             {
-                 fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
-             }
-             fprintf(fp, "\n") ;
-         }
-         else if( view->getSchema().dtype().id() == DataType::FLOAT64_T )
-         {
-             float64 const * const data = view->getNode().as_float64_ptr();
-             for ( int i=0; i<length; ++i)
-             {
-                 fprintf(fp, "%f %f\n", (double) i, (double) data[i]) ;
-             }
-             fprintf(fp, "\n") ;
-         }
-   }
+      if( view->getSchema().dtype().id() == DataType::INT32_T )
+      {
+        fprintf(fp, "# %s = %d\n",
+                name.c_str(),
+                view->getNode().as_int32());
+      }
+      else if( view->getSchema().dtype().id() ==
+               DataType::FLOAT64_T )
+      {
+        fprintf(fp, "# %s = %f\n",
+                name.c_str(),
+                view->getNode().as_float64());
+      }
+    }
+  }
 
 
-   fclose(fp) ;
+  for(size_t i=0 ; i<elem->getNumViews() ; i++)
+  {
+    DataView * const view = elem->getView(i);
+    const int length = view->getSchema().dtype().number_of_elements();
+    const std::string& name = view->getName();
+    fprintf(fp, "# %s\n", name.c_str() );
+
+    if( view->getSchema().dtype().id() == DataType::INT32_T )
+    {
+      int32 const * const data = view->getNode().as_int32_ptr();
+      for ( int i=0 ; i<length ; ++i)
+      {
+        fprintf(fp, "%f %f\n", (double) i, (double) data[i]);
+      }
+      fprintf(fp, "\n");
+    }
+    else if( view->getSchema().dtype().id() == DataType::FLOAT64_T )
+    {
+      float64 const * const data = view->getNode().as_float64_ptr();
+      for ( int i=0 ; i<length ; ++i)
+      {
+        fprintf(fp, "%f %f\n", (double) i, (double) data[i]);
+      }
+      fprintf(fp, "\n");
+    }
+  }
+
+
+  fclose(fp);
 #endif
-   return ;
+  return;
 }
 /**************************************************************************
  * Subroutine:  main
@@ -662,7 +663,7 @@ void DumpUltra( DataGroup * const prob)
 
 int main(void)
 {
- // extern void DumpUltra(DataGroup * const prob);
+  // extern void DumpUltra(DataGroup * const prob);
 
   /* We should be able to parallelize pretty easily by */
   /* adding an MPI_Init() here, modifying the setup slightly, */
@@ -670,21 +671,21 @@ int main(void)
   /* and calling MPI_Finalize() at the end of main() */
 
   DataStore DATASTORE;
-  DataStore* const dataStore = &DATASTORE;
-  DataGroup* const rootGroup = dataStore->getRoot();
-  DataGroup* const problem = rootGroup->createGroup("problem");
+  DataStore * const dataStore = &DATASTORE;
+  DataGroup * const rootGroup = dataStore->getRoot();
+  DataGroup * const problem = rootGroup->createGroup("problem");
 
   GetUserInput(problem);
   CreateShockTubeMesh(problem);
   InitializeShockTube(problem);
 
   /* use a reference when you want to update the param directly */
-  int* const currCycle = problem->getView("cycle")->getNode().as_int32_ptr();
+  int * const currCycle = problem->getView("cycle")->getNode().as_int32_ptr();
 
   int numTotalCycles = *(problem->getView("numTotalCycles")->getNode().as_int32_ptr());
   int dumpInterval = *(problem->getView("numCyclesPerDump")->getNode().as_int32_ptr());
 
-  for (*currCycle = 0; *currCycle < numTotalCycles; ++(*currCycle) )
+  for (*currCycle = 0 ; *currCycle < numTotalCycles ; ++(*currCycle) )
   {
     /* dump the ultra file, based on the user chosen attribute mask */
     if ( (*currCycle) % dumpInterval == 0)
@@ -698,4 +699,3 @@ int main(void)
 
   return 0;
 }
-

@@ -24,7 +24,7 @@ typedef conduit::DataType::TypeID TypeID;
 
 
 /*!
- * \brief IndexType is used for any labeling of a sidre object by an 
+ * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
  */
 typedef int IndexType;
@@ -42,7 +42,7 @@ const std::string InvalidName;
 ///
 inline bool isNameValid(const std::string& name)
 {
-   return name != InvalidName;
+  return name != InvalidName;
 }
 
 template< int TYPEID >
@@ -58,52 +58,52 @@ inline TypeID getTypeID( const ATK_TypeEnum typeID )
   switch( typeID )
   {
 #if 0
-    case 0:
-      rval = DataType::EMPTY_T;
-      break;
-    case 1:
-      rval = DataType::OBJECT_T;
-      break;
-    case 2:
-      rval = DataType::LIST_T;
-      break;
+  case 0:
+    rval = DataType::EMPTY_T;
+    break;
+  case 1:
+    rval = DataType::OBJECT_T;
+    break;
+  case 2:
+    rval = DataType::LIST_T;
+    break;
 #endif
-    case ATK_INT8_T:
-      rval = DataType::INT8_T;
-      break;
-    case ATK_INT16_T:
-      rval = DataType::INT16_T;
-      break;
-    case ATK_INT32_T:
-      rval = DataType::INT32_T;
-      break;
-    case ATK_INT64_T:
-      rval = DataType::INT64_T;
-      break;
-    case ATK_UINT8_T:
-      rval = DataType::UINT8_T;
-      break;
-    case ATK_UINT16_T:
-      rval = DataType::UINT16_T;
-      break;
-    case ATK_UINT32_T:
-      rval = DataType::UINT32_T;
-      break;
-    case ATK_UINT64_T:
-      rval = DataType::UINT64_T;
-      break;
-    case ATK_FLOAT32_T:
-      rval = DataType::FLOAT32_T;
-      break;
-    case ATK_FLOAT64_T:
-      rval = DataType::FLOAT64_T;
-      break;
-    case ATK_CHAR8_STR_T:
-      rval = DataType::CHAR8_STR_T;
-      break;
-    default:
-      rval = DataType::EMPTY_T;
-      break;
+  case ATK_INT8_T:
+    rval = DataType::INT8_T;
+    break;
+  case ATK_INT16_T:
+    rval = DataType::INT16_T;
+    break;
+  case ATK_INT32_T:
+    rval = DataType::INT32_T;
+    break;
+  case ATK_INT64_T:
+    rval = DataType::INT64_T;
+    break;
+  case ATK_UINT8_T:
+    rval = DataType::UINT8_T;
+    break;
+  case ATK_UINT16_T:
+    rval = DataType::UINT16_T;
+    break;
+  case ATK_UINT32_T:
+    rval = DataType::UINT32_T;
+    break;
+  case ATK_UINT64_T:
+    rval = DataType::UINT64_T;
+    break;
+  case ATK_FLOAT32_T:
+    rval = DataType::FLOAT32_T;
+    break;
+  case ATK_FLOAT64_T:
+    rval = DataType::FLOAT64_T;
+    break;
+  case ATK_CHAR8_STR_T:
+    rval = DataType::CHAR8_STR_T;
+    break;
+  default:
+    rval = DataType::EMPTY_T;
+    break;
 //      ATK_ERROR( "getTypeID(int) passed invalid type" );
 
 
@@ -114,55 +114,55 @@ inline TypeID getTypeID( const ATK_TypeEnum typeID )
 }
 
 /*
-*************************************************************************
-*
-* Given a Sidre type enum create a Conduit DataType.
-*
-*************************************************************************
-*/
+ *************************************************************************
+ *
+ * Given a Sidre type enum create a Conduit DataType.
+ *
+ *************************************************************************
+ */
 inline conduit::DataType createConduitDataType( const TypeID type, long len )
 {
- conduit::DataType rval;
+  conduit::DataType rval;
 
   switch( type )
   {
   case DataType::INT8_T:
-      rval = conduit::DataType::int8(len);
-      break;
+    rval = conduit::DataType::int8(len);
+    break;
   case DataType::INT16_T:
-      rval = conduit::DataType::int16(len);
-      break;
+    rval = conduit::DataType::int16(len);
+    break;
   case DataType::INT32_T:
-      rval = conduit::DataType::int32(len);
-      break;
+    rval = conduit::DataType::int32(len);
+    break;
   case DataType::INT64_T:
-      rval = conduit::DataType::int64(len);
-      break;
+    rval = conduit::DataType::int64(len);
+    break;
   case DataType::UINT8_T:
-      rval = conduit::DataType::uint8(len);
-      break;
+    rval = conduit::DataType::uint8(len);
+    break;
   case DataType::UINT16_T:
-      rval = conduit::DataType::uint16(len);
-      break;
+    rval = conduit::DataType::uint16(len);
+    break;
   case DataType::UINT32_T:
-      rval = conduit::DataType::uint32(len);
-      break;
+    rval = conduit::DataType::uint32(len);
+    break;
   case DataType::UINT64_T:
-      rval = conduit::DataType::uint64(len);
-      break;
+    rval = conduit::DataType::uint64(len);
+    break;
   case DataType::FLOAT32_T:
-      rval = conduit::DataType::float32(len);
-      break;
+    rval = conduit::DataType::float32(len);
+    break;
   case DataType::FLOAT64_T:
-      rval = conduit::DataType::float64(len);
-      break;
+    rval = conduit::DataType::float64(len);
+    break;
 #if 0
   case DataType::CHAR8_STR_T:
-      rval = conduit::DataType::c_char(len);
-      break;
+    rval = conduit::DataType::c_char(len);
+    break;
 #endif
-    default:
-      break;
+  default:
+    break;
 //      ATK_ERROR( "getTypeID(int) passed invalid type" );
 
 

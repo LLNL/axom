@@ -51,8 +51,8 @@ class DataGroup;
  * \brief DataStore is the main interface for creating and accessing
  *        DataBuffer objects.
  *
- * It maintains a collection of DataBuffer objects and owns the "root" 
- * DataGroup, called "/". A DataGroup hierachy (a tree) is created by 
+ * It maintains a collection of DataBuffer objects and owns the "root"
+ * DataGroup, called "/". A DataGroup hierachy (a tree) is created by
  * creating (sub) DataGroups withing the root group and (sub) DataGroups
  * within child DataGroups.
  *
@@ -79,30 +79,30 @@ public:
   /*!
    * \brief Return (non-const) pointer to data buffer object with given index.
    */
-  DataBuffer* getBuffer( IndexType idx ) 
-  { 
-     return m_data_buffers[idx]; 
+  DataBuffer * getBuffer( IndexType idx )
+  {
+    return m_data_buffers[idx];
   }
 
   /*!
    * \brief Create a data buffer object and return a pointer to it.
    *
-   *    The buffer object is assigned a unique index when created and the 
+   *    The buffer object is assigned a unique index when created and the
    *    buffer object is owned by the data store.
    */
-  DataBuffer* createBuffer();
+  DataBuffer * createBuffer();
 
   /*!
-   * \brief Remove data buffer with given index from the datastore and 
+   * \brief Remove data buffer with given index from the datastore and
    *        destroy it (including its data if data buffer owns it).
    *
-   *   Note that buffer destruction detaches it from all groups and views 
+   *   Note that buffer destruction detaches it from all groups and views
    *   it was associated with.
    */
   void destroyBuffer( IndexType idx );
 
   /*!
-   * \brief Remove all data buffers from the datastore and destroy them 
+   * \brief Remove all data buffers from the datastore and destroy them
    *        (including data they own).
    *
    *   Note that buffer destruction detaches it from all groups and views
@@ -116,7 +116,7 @@ public:
    *
    * \return pointer to DataBuffer object that was datached.
    */
-  DataBuffer* detachBuffer( IndexType idx );
+  DataBuffer * detachBuffer( IndexType idx );
 
   /*!
    * \brief Return number of buffers in the datastore.
@@ -131,16 +131,16 @@ public:
   /*!
    * \brief Return pointer to the root DataGroup.
    */
-  DataGroup* getRoot() 
-  { 
-      return m_RootGroup; 
+  DataGroup * getRoot()
+  {
+    return m_RootGroup;
   };
 
 
   /*!
    * \brief Copy buffer descriptions and group tree, starting at root,
-   *        to given Conduit node. 
-   */ 
+   *        to given Conduit node.
+   */
   void info(Node& n) const;
 
   /*!
@@ -172,10 +172,10 @@ private:
 #endif
 
   /// Root data group, created when DataStore instance is created.
-  DataGroup *m_RootGroup;
+  DataGroup * m_RootGroup;
 
   /// Collection of DataBuffers holding data in DataStore instance.
-  std::vector<DataBuffer*> m_data_buffers;
+  std::vector<DataBuffer *> m_data_buffers;
 
   /// Collection of unused unique buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;
