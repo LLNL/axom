@@ -702,12 +702,12 @@ private:
     //
     // Current options are std::map and boost/std::unordered_map
     //
-       typedef std::map<std::string, IndexType> MapType;
+    // typedef std::map<std::string, IndexType> MapType;
     //
 #if defined(USE_CXX11)
-    // typedef std::unordered_map<std::string, IndexType> MapType;
+       typedef std::unordered_map<std::string, IndexType> MapType;
 #else
-    // typedef boost::unordered_map<std::string, IndexType> MapType;
+       typedef boost::unordered_map<std::string, IndexType> MapType;
 #endif
     ///
     typedef MapCollection<DataView, MapType> DataViewCollection;
