@@ -89,7 +89,7 @@ DataBuffer* DataBuffer::declareExternal(void* external_data,
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::declare(TypeEnum type, long len)
+DataBuffer* DataBuffer::declare(TypeID type, long len)
 {
     ATK_ASSERT_MSG(len >= 0, "Bad Length");
     m_schema.set(createConduitDataType(type, len));
@@ -128,7 +128,7 @@ DataBuffer* DataBuffer::allocate()
 *
 *************************************************************************
 */
-DataBuffer* DataBuffer::allocate(TypeEnum type, long len)
+DataBuffer* DataBuffer::allocate(TypeID type, long len)
 {
    ATK_ASSERT_MSG( !m_is_data_external, 
                   "Attempting to allocate buffer holding external data");

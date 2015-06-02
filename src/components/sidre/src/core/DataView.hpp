@@ -108,7 +108,7 @@ public:
      *
      * \return pointer to this DataView object.
      */
-    DataView* declare(TypeEnum type, long len);
+    DataView* declare(TypeID type, long len);
 
     /*!
      * \brief Declare a data view as a Conduit schema.
@@ -143,7 +143,7 @@ public:
      *
      * \return pointer to this DataView object.
      */
-    DataView* allocate(TypeEnum type, long len);
+    DataView* allocate(TypeID type, long len);
 
     /*!
      * \brief Declare a data view as a Conduit schema then allocate the data.

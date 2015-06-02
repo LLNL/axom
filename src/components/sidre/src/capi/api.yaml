@@ -29,8 +29,8 @@ typedef:
     # enum for types
     c_header: sidre/SidreTypes.h
     c: ATK_TypeEnum
-#    cpp: asctoolkit::sidre::TypeEnum
-    c_to_cpp:  static_cast<asctoolkit::sidre::TypeEnum>({var})
+#    cpp: DataType::
+    c_to_cpp:  getTypeID({var})
     # XXX this is assuming enums are ints
     c_fortran: integer(C_INT)
     fortran: integer(C_INT)

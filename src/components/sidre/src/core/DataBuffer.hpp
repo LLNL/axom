@@ -157,7 +157,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* declare(TypeEnum type, long len);
+    DataBuffer* declare(TypeID type, long len);
     
     /*!
      * \brief Declare a buffer to OWN data described as a Conduit schema.
@@ -227,7 +227,7 @@ public:
      *
      * \return pointer to this DataBuffer object.
      */
-    DataBuffer* allocate(TypeEnum type, long len);
+    DataBuffer* allocate(TypeID type, long len);
 
     /*!
      * \brief Declare and allocate data described as a Conduit schema.

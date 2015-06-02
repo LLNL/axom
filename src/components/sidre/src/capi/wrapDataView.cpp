@@ -20,7 +20,7 @@ ATK_dataview * ATK_dataview_declare(ATK_dataview * self, ATK_TypeEnum type, long
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-DataView * rv = selfobj->declare(static_cast<asctoolkit::sidre::TypeEnum>(type), len);
+DataView * rv = selfobj->declare(getTypeID(type), len);
 return rv;
 // splicer end
 }
@@ -29,7 +29,7 @@ ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, ATK_TypeEnum type, lon
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-DataView * rv = selfobj->allocate(static_cast<asctoolkit::sidre::TypeEnum>(type), len);
+DataView * rv = selfobj->allocate(getTypeID(type), len);
 return rv;
 // splicer end
 }

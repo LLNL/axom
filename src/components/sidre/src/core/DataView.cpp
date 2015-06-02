@@ -44,7 +44,7 @@ namespace sidre
 *
 *************************************************************************
 */
-DataView* DataView::declare(TypeEnum type, long len)
+DataView* DataView::declare(TypeID type, long len)
 {
     m_schema.set(createConduitDataType(type, len));
     m_is_applied = false;
@@ -104,7 +104,7 @@ DataView* DataView::allocate()
 *
 *************************************************************************
 */
-DataView* DataView::allocate(TypeEnum type, long len)
+DataView* DataView::allocate(TypeID type, long len)
 {
     declare(createConduitDataType(type, len));
     allocate();

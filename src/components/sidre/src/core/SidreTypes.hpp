@@ -45,25 +45,6 @@ inline bool isNameValid(const std::string& name)
    return name != InvalidName;
 }
 
-typedef enum
-    {
-//        EMPTY_T = 0, // empty (default type)
-//        OBJECT_T,    // object
-//        LIST_T,      // list
-        INT8_T = 3,  // int8
-        INT16_T,     // int16
-        INT32_T,     // int32
-        INT64_T,     // int64
-        UINT8_T,     // int8
-        UINT16_T,    // uint16
-        UINT32_T,    // uint32
-        UINT64_T,    // uint64
-        FLOAT32_T,   // float32
-        FLOAT64_T,   // float64
-        CHAR8_STR_T, // char8 string (incore c-string)
-    } TypeEnum;
-
-
 template< int TYPEID >
 inline TypeID getTypeID()
 {
@@ -139,44 +120,44 @@ inline TypeID getTypeID( const ATK_TypeEnum typeID )
 *
 *************************************************************************
 */
-inline conduit::DataType createConduitDataType( const TypeEnum type, long len )
+inline conduit::DataType createConduitDataType( const TypeID type, long len )
 {
  conduit::DataType rval;
 
   switch( type )
   {
-  case INT8_T:
+  case DataType::INT8_T:
       rval = conduit::DataType::int8(len);
       break;
-  case INT16_T:
+  case DataType::INT16_T:
       rval = conduit::DataType::int16(len);
       break;
-  case INT32_T:
+  case DataType::INT32_T:
       rval = conduit::DataType::int32(len);
       break;
-  case INT64_T:
+  case DataType::INT64_T:
       rval = conduit::DataType::int64(len);
       break;
-  case UINT8_T:
+  case DataType::UINT8_T:
       rval = conduit::DataType::uint8(len);
       break;
-  case UINT16_T:
+  case DataType::UINT16_T:
       rval = conduit::DataType::uint16(len);
       break;
-  case UINT32_T:
+  case DataType::UINT32_T:
       rval = conduit::DataType::uint32(len);
       break;
-  case UINT64_T:
+  case DataType::UINT64_T:
       rval = conduit::DataType::uint64(len);
       break;
-  case FLOAT32_T:
+  case DataType::FLOAT32_T:
       rval = conduit::DataType::float32(len);
       break;
-  case FLOAT64_T:
+  case DataType::FLOAT64_T:
       rval = conduit::DataType::float64(len);
       break;
 #if 0
-  case CHAR8_STR_T:
+  case DataType::CHAR8_STR_T:
       rval = conduit::DataType::c_char(len);
       break;
 #endif

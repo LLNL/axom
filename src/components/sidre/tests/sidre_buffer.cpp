@@ -43,7 +43,7 @@ TEST(sidre_buffer,alloc_buffer_for_uint32_array)
     DataBuffer *dbuff = ds->createBuffer();
 
     //dbuff->declare(DataType::uint32(10));
-    dbuff->declare(asctoolkit::sidre::UINT32_T, 10);
+    dbuff->declare(DataType::UINT32_T, 10);
     dbuff->allocate();
     
     uint32 *data_ptr = dbuff->getNode().as_uint32_ptr();

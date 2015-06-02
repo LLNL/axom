@@ -29,7 +29,7 @@ ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeEnum type
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
 // splicer begin
-DataBuffer * rv = selfobj->declare(static_cast<asctoolkit::sidre::TypeEnum>(type), len);
+DataBuffer * rv = selfobj->declare(getTypeID(type), len);
 return rv;
 // splicer end
 }
