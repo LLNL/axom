@@ -70,26 +70,28 @@
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
  *
- *          - // Return name of object with given index (InvalidName if none).
+ *          - // Return name of object with given index 
+ *            // (sidre::InvalidName if none).
  *
  *               std::string getItemName(IndexType idx) const;
  *
- *          - // Return index of object with given name (InvalidIndex if none).
+ *          - // Return index of object with given name 
+ *            // (sidre::InvalidName if none).
  *
  *               IndexType getItemIndex(const std::string& name) const;
  *
  *          - // Insert item with given name; return true if insertion
- *               succeeded, and false otherwise.
+ *            // succeeded, and false otherwise.
  *
  *               bool insertItem(TYPE* item, const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
- *               pointer to it. If it doesn't exist, return ATK_NULLPTR.
+ *            // pointer to it. If it doesn't exist, return ATK_NULLPTR.
  *
  *               TYPE* removeItem(const std::string& name);
  *
  *          - // Remove item with given name if it exists and return a
- *               pointer to it. If it doesn't exist, return ATK_NULLPTR.
+ *            // pointer to it. If it doesn't exist, return ATK_NULLPTR.
  *
  *               TYPE* removeItem(IndexType idx);
  *
