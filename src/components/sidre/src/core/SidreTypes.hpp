@@ -120,45 +120,45 @@ inline TypeID getTypeID( const ATK_TypeEnum typeID )
  *
  *************************************************************************
  */
-inline conduit::DataType createConduitDataType( const TypeID type, long len )
+inline DataType createDataType( const TypeID type, long len )
 {
-  conduit::DataType rval;
+  DataType rval;
 
   switch( type )
   {
   case DataType::INT8_T:
-    rval = conduit::DataType::int8(len);
+    rval = DataType::int8(len);
     break;
   case DataType::INT16_T:
-    rval = conduit::DataType::int16(len);
+    rval = DataType::int16(len);
     break;
   case DataType::INT32_T:
-    rval = conduit::DataType::int32(len);
+    rval = DataType::int32(len);
     break;
   case DataType::INT64_T:
-    rval = conduit::DataType::int64(len);
+    rval = DataType::int64(len);
     break;
   case DataType::UINT8_T:
-    rval = conduit::DataType::uint8(len);
+    rval = DataType::uint8(len);
     break;
   case DataType::UINT16_T:
-    rval = conduit::DataType::uint16(len);
+    rval = DataType::uint16(len);
     break;
   case DataType::UINT32_T:
-    rval = conduit::DataType::uint32(len);
+    rval = DataType::uint32(len);
     break;
   case DataType::UINT64_T:
-    rval = conduit::DataType::uint64(len);
+    rval = DataType::uint64(len);
     break;
   case DataType::FLOAT32_T:
-    rval = conduit::DataType::float32(len);
+    rval = DataType::float32(len);
     break;
   case DataType::FLOAT64_T:
-    rval = conduit::DataType::float64(len);
+    rval = DataType::float64(len);
     break;
 #if 0
   case DataType::CHAR8_STR_T:
-    rval = conduit::DataType::c_char(len);
+    rval = DataType::c_char(len);
     break;
 #endif
   default:
