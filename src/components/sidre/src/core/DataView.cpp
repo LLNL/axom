@@ -106,7 +106,7 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate(TypeID type, long len)
 {
-  declare(createDataType(type, len));
+  declare(type, len);
   allocate();
   apply();
   return this;
