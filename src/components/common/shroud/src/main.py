@@ -10,6 +10,7 @@ import os
 import json
 import argparse
 import yaml
+import sys
 
 import util
 import parse_decl
@@ -336,3 +337,12 @@ if __name__ == '__main__':
     fp.close()
 
     log.close()
+
+# This helps when running with a pipe, like CMake's execute_process
+# It doesn't fix the error, but it does report a better error message
+# http://www.thecodingforums.com/threads/help-with-a-piping-error.749747/
+    sys.stdout.flush()
+
+#    sys.stderr.write("Some useful message")  # example error message
+    sys.exit(0)  # set status for errors
+

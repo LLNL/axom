@@ -26,8 +26,8 @@ set(sidre_generated_source
 #    wrapfDataStore.f
     )
 
-#set(API_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(API_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+#set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #
 # Generate source
 #
@@ -38,7 +38,7 @@ set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
-    COMMAND sh ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     COMMENT "Running shroud api.yaml"
     WORKING_DIRECTORY ${API_OUTPUT_DIR}
@@ -96,3 +96,20 @@ list(APPEND generated_list ${parent_list})
 ADD_CUSTOM_TARGET(sidre_generate
      DEPENDS ${generated_list}
 )
+
+#
+# Create the wrappers during config
+#
+execute_process(
+    COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+    RESULT_VARIABLE capi_result
+    ERROR_VARIABLE capi_stderr
+    OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.output
+    WORKING_DIRECTORY ${API_OUTPUT_DIR}
+)
+if(capi_result)
+  message(FATAL_ERROR "Error creating sidre wrappers:\n${capi_stderr}")
+else()
+  message(STATUS "Created sidre wrappers")
+endif()

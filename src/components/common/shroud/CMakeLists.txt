@@ -4,7 +4,18 @@
 
 #
 # Write the driver script
+# configure into CMakeFiles directory, because it must be in a different directory
+# since file(COPY) does rename files
+set(tmp_file ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/shroud)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/shroud.in
-               ${EXECUTABLE_OUTPUT_PATH}/shroud
+               ${tmp_file}
                @ONLY)
-# TODO: shroud also needs to be executable
+# now copy the temporary into the final destination, setting the permissions
+file(COPY ${tmp_file}
+    DESTINATION ${EXECUTABLE_OUTPUT_PATH}
+    FILE_PERMISSIONS
+        OWNER_READ OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE)
+file(REMOVE ${tmp_file})
+
