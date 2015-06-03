@@ -92,7 +92,7 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
 DataBuffer * DataBuffer::declare(TypeID type, long len)
 {
   ATK_ASSERT_MSG(len >= 0, "Bad Length");
-  m_schema.set(createConduitDataType(type, len));
+  m_schema.set(createDataType(type, len));
   return this;
 }
 
