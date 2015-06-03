@@ -21,6 +21,7 @@ using asctoolkit::meshapi::DynamicVariableRelation;
 
 typedef asctoolkit::meshapi::MeshIndexType IndexType;
 typedef asctoolkit::meshapi::MeshSizeType SizeType;
+// typedef asctoolkit::meshapi::Set::SetPosition PositionType;
 
 const IndexType FROMSET_SIZE = 5;
 const IndexType TOSET_SIZE = 8;
@@ -82,7 +83,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,simple_relation)
     DynamicVariableRelation incrementingRel(&fromSet, &toSet);
     generateIncrementingRelations(&incrementingRel);
 
-    for(IndexType idx=0; idx< fromSet.size(); ++idx)
+    for(IndexType idx=0; idx< static_cast<IndexType>(fromSet.size()); ++idx)
     {
         std::stringstream sstr;
         sstr << "Related to index " << idx;
@@ -134,7 +135,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,test_iterator_range)
     DynamicVariableRelation incrementingRel(&fromSet, &toSet);
     generateIncrementingRelations(&incrementingRel);
 
-    for(IndexType idx=0; idx< fromSet.size(); ++idx)
+    for(IndexType idx=0; idx< static_cast<IndexType>(fromSet.size()); ++idx)
     {
         std::stringstream sstr;
         sstr << "Related to index " << idx;
@@ -179,7 +180,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
     DynamicVariableRelation incrementingRel(&fromSet, &toSet);
     generateIncrementingRelations(&incrementingRel);
 
-    for(IndexType idx=0; idx< fromSet.size(); ++idx)
+    for(IndexType idx=0; idx< static_cast<IndexType>(fromSet.size()); ++idx)
     {
         std::stringstream sstr;
         sstr << "Related to index " << idx;
@@ -196,7 +197,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
-        for(IndexType idx=0; idx< incrementingRel.size(*sIt); ++idx)
+        for(IndexType idx=0; idx< static_cast<IndexType>(incrementingRel.size(*sIt)); ++idx)
         {
             EXPECT_EQ( idx, incrementingRel[*sIt][idx]) << "incrementing relation's value was incorrect";
         }

@@ -76,7 +76,7 @@ public:
     typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
     typedef NodeToZoneRelation::SetIndex      IndexType;
-    typedef NodeToZoneRelation::size_type     SizeType;
+    typedef NodeToZoneRelation::SizeType     SizeType;
 
     // types for maps
     // TODO: Convert to meshapi::Map

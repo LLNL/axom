@@ -14,7 +14,7 @@
 
 typedef asctoolkit::meshapi::OrderedSet SetType;
 typedef SetType::iterator SetIterator;
-static SetType::size_type const MAX_SET_SIZE = 10;
+static SetType::SizeType const MAX_SET_SIZE = 10;
 
 
 TEST(gtest_meshapi_ordered_set,construct_ordered_set)
@@ -37,40 +37,31 @@ TEST(gtest_meshapi_ordered_set,construct_ordered_set)
     }
 
     std::cout<<"\n --Using random access -- operator[]" << std::endl;
-    for(SetType::size_type i = SetType::size_type(); i < s.size(); ++i)
+    for(SetType::SetPosition pos = SetType::SetPosition(); pos < static_cast<SetType::SetPosition>(s.size()); ++pos)
     {
-        EXPECT_EQ(i,s[i])
+        SetType::SetIndex idx = static_cast<SetType::SetIndex>(pos);
+        EXPECT_EQ(idx,s[pos])
                 <<"Random access iterator dereference to equal its position in the set";
-        std::cout << "\t" << s[i] <<"\n";
+        std::cout << "\t" << s[pos] <<"\n";
     }
 
     std::cout<<"\n --Using checked random access -- at()" << std::endl;
-    for(SetType::size_type i = SetType::size_type(); i < s.size(); ++i)
+    for(SetType::SetPosition pos = SetType::SetPosition(); pos < static_cast<SetType::SetPosition>(s.size()); ++pos)
     {
-        EXPECT_EQ(i,s.at(i))
+        SetType::SetIndex idx = static_cast<SetType::SetIndex>(pos);
+        EXPECT_EQ(idx,s.at(pos))
                 <<"Expected checked random access iterator dereference to equal its position in the set";
 
-        std::cout << "\t" << s.at(i) <<"\n";
+        std::cout << "\t" << s.at(pos) <<"\n";
     }
 
 
     std::cout<<"\n --Using checked random access -- at() with invalid address" << std::endl;
-    try{
 
-        s.at(MAX_SET_SIZE);
+    // add this line to avoid a warning in the output about thread safety
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+    ASSERT_DEATH(s.at(MAX_SET_SIZE),"") << "tried to access out of range element";
 
-
-        EXPECT_TRUE(false)  << "OrderedSet should have thrown an out_of_order exception when accessing element "
-                            << MAX_SET_SIZE <<".";
-    }
-    catch(std::out_of_range oor)
-    {
-        EXPECT_TRUE(true);
-    }
-    catch(...)
-    {
-        EXPECT_TRUE(false) <<" Unexpected exception with message when accessing out of range element using checked access at()";
-    }
 
     std::cout << "--\ndone." << std::endl;
 

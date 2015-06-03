@@ -236,7 +236,7 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
-        for(IndexType idx=0; idx< incrementingRel.size(*sIt); ++idx)
+        for(IndexType idx=0; idx< static_cast<IndexType>(incrementingRel.size(*sIt)); ++idx)
         {
             IndexType expectedVal =  (*sIt + idx) % TOSET_SIZE;
             IndexType actualVal = incrementingRel[*sIt][idx];

@@ -7,8 +7,8 @@
 namespace asctoolkit{
 namespace meshapi{
 
-    typedef unsigned int        MeshIndexType;
-    typedef unsigned long long  MeshSizeType;
+    typedef int        MeshIndexType;
+    typedef unsigned int        MeshSizeType;
 
     class NotImplementedException{};
 

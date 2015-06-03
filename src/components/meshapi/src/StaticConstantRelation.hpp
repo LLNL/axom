@@ -44,8 +44,9 @@ namespace meshapi    {
 
     public:
 
+        typedef Relation::SetPosition                                           SetPosition;
         typedef Relation::SetIndex                                              SetIndex;
-        typedef Relation::size_type                                            size_type;
+        typedef Relation::SizeType                                              SizeType;
 
         typedef std::vector<SetIndex>                                           RelationVec;
         typedef RelationVec::iterator                                           RelationVecIterator;
@@ -84,7 +85,7 @@ namespace meshapi    {
             return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
         }
 
-        size_type size(SetIndex fromSetIndex = 0)                  const
+        SizeType size(SetIndex fromSetIndex = 0)                  const
         {
             verifyIndex(fromSetIndex);        
             return m_stride;
@@ -93,7 +94,7 @@ namespace meshapi    {
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetIndex>(m_fromSet->size() ) ); }
         inline SetIndex toSetBeginIndex(SetIndex fromSetIndex)   const { return m_stride * (fromSetIndex); }
         inline SetIndex toSetEndIndex(SetIndex fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
 

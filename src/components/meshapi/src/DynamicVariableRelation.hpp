@@ -25,8 +25,9 @@ namespace meshapi    {
     class DynamicVariableRelation : public Relation
     {
     public:
+        typedef Relation::SetPosition                                           SetPosition;
         typedef Relation::SetIndex                                              SetIndex;
-        typedef Relation::size_type                                             size_type;
+        typedef Relation::SizeType                                             SizeType;
 
         typedef std::vector<SetIndex>                                           RelationVec;
         typedef RelationVec::iterator                                           RelationVecIterator;
@@ -67,7 +68,7 @@ namespace meshapi    {
             return m_relationsVec[fromSetIndex];
         }
 
-        size_type size(SetIndex fromSetIndex)                  const
+        SizeType size(SetIndex fromSetIndex)                  const
         {
             verifyIndex(fromSetIndex);
             return fromSetRelationsVec(fromSetIndex).size();
@@ -93,7 +94,7 @@ namespace meshapi    {
 
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetIndex>(m_fromSet->size() ) ); }
         inline RelationVec      & fromSetRelationsVec(SetIndex fromSetIndex)           { return m_relationsVec[fromSetIndex]; }
         inline RelationVec const& fromSetRelationsVec(SetIndex fromSetIndex)   const   { return m_relationsVec[fromSetIndex]; }
 

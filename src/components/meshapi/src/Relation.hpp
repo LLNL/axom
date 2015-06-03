@@ -21,15 +21,16 @@ namespace meshapi    {
     class Relation
     {
     public:
-        typedef Set::SetIndex                                          SetIndex;
-        typedef Set::size_type                                           size_type;
+        typedef Set::SetPosition                                                SetPosition;
+        typedef Set::SetIndex                                                   SetIndex;
+        typedef Set::SizeType                                                   SizeType;
 
-        typedef std::vector<SetIndex>                                     RelationVec;
-        typedef RelationVec::iterator                         RelationVecIterator;
-        typedef std::pair<RelationVecIterator,RelationVecIterator>     RelationVecIteratorPair;
+        typedef std::vector<SetIndex>                                           RelationVec;
+        typedef RelationVec::iterator                                           RelationVecIterator;
+        typedef std::pair<RelationVecIterator,RelationVecIterator>              RelationVecIteratorPair;
 
-        typedef RelationVec::const_iterator                   RelationVecConstIterator;
-        typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>     RelationVecConstIteratorPair;
+        typedef RelationVec::const_iterator                                     RelationVecConstIterator;
+        typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>    RelationVecConstIteratorPair;
 
         static NullSet s_nullSet;
 
@@ -44,7 +45,7 @@ namespace meshapi    {
 
         virtual RelationVecConstIteratorPair range(SetIndex fromSetIndex)   const  = 0;
 
-        virtual size_type size(SetIndex fromSetIndex)                       const  = 0;
+        virtual SizeType size(SetIndex fromSetIndex)                       const  = 0;
 
         virtual bool isValid(bool verboseOutput = false)                const = 0;
 

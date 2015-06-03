@@ -62,16 +62,9 @@ namespace meshapi{
   class Set
   {
   public:
-    typedef MeshIndexType                 SetIndex;
-    typedef std::vector<SetIndex>         ArrType;
-
-    typedef ArrType::const_iterator       ArrCIter;
-    typedef std::pair<ArrCIter, ArrCIter> ArrCIterPair;
-
-    typedef ArrType::iterator             ArrIter;
-    typedef std::pair<ArrIter, ArrIter>   ArrIterPair;
-
-    typedef ArrType::size_type            size_type;
+    typedef MeshIndexType                 SetIndex;         // Index into a set
+    typedef MeshSizeType                 SetPosition;      // Position in which we are indexing
+    typedef MeshSizeType                  SizeType;         // Size of a set
 
 
   public:
@@ -85,44 +78,13 @@ namespace meshapi{
        * @return A const reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      virtual SetIndex operator[](SetIndex idx) const  =0;
+      virtual SetIndex at(SetPosition) const  =0;
 
       /**
        * \brief Get the number of entities in the set
        * @return The number of entities in the set.
        */
-      virtual size_type size() const      =0;
-
-#if 0
-      /**
-       * @return An iterator to the beginning of the entities
-       */
-      virtual ArrIter  begin()            =0;
-
-      /**
-       * @return A const iterator to the beginning of the entities
-       */
-      virtual ArrCIter begin() const      =0;
-
-      /**
-       * @return An iterator to the end of the entities.
-       */
-      virtual ArrIter  end()              =0;
-
-      /**
-       * @return A const iterator to the end of the entities
-       */
-      virtual ArrCIter end() const        =0;
-
-      /**
-        * @return A pair of begin/end iterators
-       */
-      virtual ArrIterPair  range()        =0;
-
-      /**
-        * @return A pair of const begin/end iterators (const version)
-       */
-      virtual ArrCIterPair range() const  =0;
+      virtual SizeType size() const      =0;
 
       /**
        * \brief Determines if the Set is a Subset of another set.
@@ -133,8 +95,25 @@ namespace meshapi{
       /**
        * @return A pointer to the parent set.  NULL if there is no parent
        */
-      virtual Set* parentSet()            =0;
+      virtual const Set* parentSet() const           =0;
+
+      /**
+       * \brief Checks whether the set is valid.
+       * \return true if the underlying indices are valid, false otherwise.
+       */
+      virtual bool isValid(bool verboseOutput = false)  const    =0;
+
+#if 0
+      //Possible other useful functions
+      void reset(size_type) { throw NotImplementedException(); }
 #endif
+
+
+  private:
+      /**
+       * \brief Utility function to verify that the given SetPosition is in a valid range.
+       */
+      virtual void verifyPosition(SetPosition) const =0;
   };
 
 
@@ -145,17 +124,19 @@ namespace meshapi{
    */
   inline bool operator==(Set const& set1, Set const& set2)
   {
-      typedef Set::SetIndex SetIndex;
-      SetIndex const numElts = set1.size();
+      typedef Set::SetPosition SetPosition;
+      typedef Set::SizeType SizeType;
+
+      SizeType const numElts = set1.size();
 
       // Sets are different if they have a different size
       if(set2.size() != numElts)
           return false;
 
       // Otherwise, compare the indices element wise
-      for(SetIndex idx= SetIndex(); idx < numElts; ++idx)
+      for(SetPosition pos= SetPosition(); pos < static_cast<SetPosition>(numElts); ++pos)
       {
-          if(set1[idx] != set2[idx])
+          if(set1.at(pos) != set2.at(pos))
               return false;
       }
       return true;

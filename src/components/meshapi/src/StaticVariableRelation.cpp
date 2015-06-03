@@ -85,7 +85,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         // Check that no element of the fromSetBegins vector points outside of the toSetIndices vector
         for(RelationVecConstIterator it = m_fromSetBeginsVec.begin(), itEnd = m_fromSetBeginsVec.end(); it != itEnd; ++it)
         {
-            if( *it > m_toSetIndicesVec.size() )
+            if( *it > static_cast<SetIndex>(m_toSetIndicesVec.size()) )
             {
                 if(verboseOutput)
                 {
@@ -101,7 +101,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         // Check that all elements of the toSetIndices vector point to valid set elements
         for(RelationVecConstIterator it = m_toSetIndicesVec.begin(), itEnd = m_toSetIndicesVec.end(); it != itEnd; ++it)
         {
-            if( *it >= m_toSet->size() )
+            if( *it >= static_cast<SetIndex>(m_toSet->size() ) )
             {
                 if(verboseOutput)
                 {

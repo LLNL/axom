@@ -72,7 +72,7 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
         // Check that all elements of the toSetIndices vector point to valid set elements
         for(RelationVecConstIterator it = m_toSetIndicesVec.begin(), itEnd = m_toSetIndicesVec.end(); it != itEnd; ++it)
         {
-            if( *it >= m_toSet->size() )
+            if( *it >= static_cast<SetIndex>(m_toSet->size() ) )
             {
                 if(verboseOutput)
                 {

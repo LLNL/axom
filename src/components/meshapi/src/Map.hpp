@@ -27,7 +27,7 @@ namespace meshapi    {
     {
     public:
         typedef Set::SetIndex                                          SetIndex;
-        typedef Set::size_type                                         size_type;
+        typedef Set::SizeType                                          SizeType;
 
         typedef std::vector<DataType>                                  OrderedMap;
 
@@ -68,12 +68,12 @@ namespace meshapi    {
         OrderedMap const& data() const  { return m_data; }
 
 
-        size_type size() const { return m_set->size(); }
+        SizeType size() const { return m_set->size(); }
 
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex setIndex)       const { ATK_ASSERT( setIndex < m_set->size() ); }
+        inline void  verifyIndex(SetIndex setIndex)       const { ATK_ASSERT( setIndex < static_cast<SetIndex>(m_set->size() ) ); }
 
     private:
         Set const*  m_set;
@@ -151,7 +151,7 @@ namespace meshapi    {
                 sstr<< "\n** underlying set has size " << m_set->size() <<": ";
 
                 sstr<< "\n** Mapped data:";
-                for(SetIndex idx = 0; idx < this->size(); ++idx)
+                for(SetIndex idx = 0; idx < static_cast<SetIndex>(this->size()); ++idx)
                 {
                     sstr<<"\n\telt[" << idx << "]:\t" << (*this)[idx];
                 }

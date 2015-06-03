@@ -62,12 +62,12 @@ namespace meshapi {
             }
 
             // Check that all elements of the relations vector point to valid set elements in the toSet
-            for(SetIndex fromIdx=0; fromIdx < m_fromSet->size(); ++fromIdx)
+            for(SetIndex fromIdx=0; fromIdx < static_cast<SetIndex>(m_fromSet->size()); ++fromIdx)
             {
-                SetIndex idx = (*m_fromSet)[fromIdx];
+                SetIndex idx = m_fromSet->at(fromIdx);
                 for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx); rIt < rEnd; ++rIt)
                 {
-                    if( *rIt >= m_toSet->size() )
+                    if( *rIt >= static_cast<SetIndex>(m_toSet->size() ) )
                     {
                         if(verboseOutput)
                         {
@@ -107,12 +107,12 @@ namespace meshapi {
             }
             else
             {
-                size_type overallCount = 0;
+                SizeType overallCount = 0;
                 std::cout<< "\n** relations vec elements:";
 
-                for(SetIndex fromIdx=0; fromIdx < m_fromSet->size(); ++fromIdx)
+                for(SetIndex fromIdx=0; fromIdx < static_cast<SetIndex>(m_fromSet->size()); ++fromIdx)
                 {
-                    SetIndex idx = (*m_fromSet)[fromIdx];
+                    SetIndex idx = m_fromSet->at(fromIdx);
                     std::cout<<"\n\telt[" << fromIdx << "] (" <<size(idx)  << "):\t";
                     std::copy(begin(idx), end(idx), std::ostream_iterator<SetIndex>(std::cout, " "));
                     overallCount += size(idx);

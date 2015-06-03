@@ -30,21 +30,22 @@ namespace meshapi    {
          */
         class SubscriptProxy{
         public:
-            SubscriptProxy(RelationVecConstIterator it, size_type size): m_iter(it), m_size(size) {}
+            SubscriptProxy(RelationVecConstIterator it, SizeType size): m_iter(it), m_size(size) {}
             SetIndex const& operator[](SetIndex index) const
             {
-                ATK_ASSERT_MSG( index < m_size, "Inner array access out of bounds."
+                ATK_ASSERT_MSG( index < static_cast<SetIndex>(m_size), "Inner array access out of bounds."
                                              <<"\n\tPresented value: "<< index
                                              <<"\n\tMax allowed value: " << static_cast<int>(m_size -1));
                 return m_iter[index];
             }
         private:
             RelationVecConstIterator m_iter;
-            size_type m_size;
+            SizeType m_size;
         };
     public:
         typedef Relation::SetIndex                                      SetIndex;
-        typedef Relation::size_type                                     size_type;
+        typedef Relation::SizeType                                      SizeType;
+        typedef Relation::SetPosition                                   SetPosition;
 
         typedef std::vector<SetIndex>                                   RelationVec;
         typedef RelationVec::iterator                                   RelationVecIterator;
@@ -85,7 +86,7 @@ namespace meshapi    {
             return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
         }
 
-        size_type size(SetIndex fromSetIndex)                  const
+        SizeType size(SetIndex fromSetIndex)                  const
         {
             verifyIndex(fromSetIndex);
             return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
@@ -94,7 +95,7 @@ namespace meshapi    {
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
+        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex <  static_cast<SetIndex>(m_fromSet->size() ) ); }
         inline SetIndex toSetBeginIndex(SetIndex fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
         inline SetIndex toSetEndIndex(SetIndex fromSetIndex)     const { return m_fromSetBeginsVec[fromSetIndex+1]; }
 

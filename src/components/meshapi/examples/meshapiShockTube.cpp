@@ -4,7 +4,7 @@
  * \brief 1D shock tube, split flux Euler equations
  *
  * \author J. Keasler (original)
- * \author K. Weiss (modified to use the asc toolkit mesh API)
+ * \author K. Weiss (modified to use the ASC Toolkit Mesh API)
  *
  * \details
  * \verbatim
@@ -88,7 +88,8 @@ namespace shocktube {
         typedef asctoolkit::meshapi::StaticConstantRelation FaceToElemRelation;
 
         // other types
-        typedef asctoolkit::meshapi::MeshIndexType IndexType;
+        typedef asctoolkit::meshapi::Set::SetIndex IndexType;
+        typedef asctoolkit::meshapi::Set::SizeType SizeType;
 
     public:
         ElemSet elems;
@@ -240,7 +241,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    /// Setup the face -> elem relation
    IndexVec relVec( STRIDE * mesh->faces.size());
    IndexVec::iterator relIt = relVec.begin();
-   for(ShockTubeMesh::IndexType idx =0; idx < mesh->faces.size(); ++idx)
+   for(ShockTubeMesh::IndexType idx =0; idx < static_cast<ShockTubeMesh::IndexType>(mesh->faces.size()); ++idx)
    {
        *relIt++ = idx;
        *relIt++ = idx+1;
@@ -258,15 +259,15 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    //       Question -- how are we planning to handle indexes that are out or range (accidentally)?
    //                   how are we planning to handle indexes that are intentionally out of range
    //                   (e.g. to indicate a problem, or a missing element etc..)?
-   unsigned int const elemSize = mesh->elems.size();
+   ShockTubeMesh::SizeType elemSize = mesh->elems.size();
    relVec.clear();
    relVec.resize( STRIDE * elemSize);
    relIt = relVec.begin();
-   for(ShockTubeMesh::IndexType idx =0; idx < elemSize; ++idx)
+   for(ShockTubeMesh::IndexType idx =0; idx < static_cast<ShockTubeMesh::IndexType>(elemSize); ++idx)
    {
        // HACK -- these indexes should be over the tube subset -- skipping the first and last elem
        *relIt++ = (idx == 0)? 0 : idx-1;
-       *relIt++ = (idx == elemSize-1)? 0 : idx;
+       *relIt++ = (idx == static_cast<ShockTubeMesh::IndexType>(elemSize-1 ))? 0 : idx;
    }
 
    mesh->relationElemFace = ShockTubeMesh::ElemToFaceRelation(&mesh->elems, &mesh->faces);
@@ -375,7 +376,7 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
    RealField const& energy   = realsRegistry.getField("energy") ;
 
    // Update face data using element data using the face->elem relation
-   for (ShockTubeMesh::IndexType fIdx=0; fIdx< mesh.faces.size() ; ++fIdx)
+   for (ShockTubeMesh::IndexType fIdx=0; fIdx< static_cast<ShockTubeMesh::IndexType>(mesh.faces.size() ); ++fIdx)
    {
       // each face has an upwind and downwind element.
       IndexType upWind   = mesh.relationFaceElem[fIdx][UPWIND] ;   // upwind element
@@ -495,7 +496,7 @@ void dumpData(ShockTubeMesh const& mesh)
     RealField const& energy   = realsRegistry.getField("energy") ;
     RealField const& pressure = realsRegistry.getField("pressure") ;
 
-    static const ShockTubeMesh::ElemSet::size_type MAX_ELEM_DUMP = 10;
+    static const ShockTubeMesh::ElemSet::SizeType MAX_ELEM_DUMP = 10;
     const int maxDump = std::min(mesh.elems.size(), MAX_ELEM_DUMP);
     const int rmaxDump = std::min(MAX_ELEM_DUMP, mesh.elems.size() - maxDump);
 
@@ -568,17 +569,13 @@ int main(void)
     {
         if( currCycle % dumpInterval == 0)
         {
-            //   DumpUltra(problem) ;
-            std::cout<< "\n\tStarting cycle " << currCycle
-                 << " at time " << realsRegistry.getScalar("time");
+            std::cout<< "\n\tStarting cycle " << currCycle << " at time " << realsRegistry.getScalar("time");
             dumpData(mesh);
         }
-
 
         ComputeFaceInfo(mesh) ;
         UpdateElemInfo(mesh) ;
     }
-
 
     std::cout<< "\n\tFinished cycle " << currCycle << " at time " << realsRegistry.getScalar("time");
     dumpData(mesh);

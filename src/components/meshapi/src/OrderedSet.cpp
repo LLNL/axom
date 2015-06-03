@@ -13,17 +13,8 @@
 namespace asctoolkit {
 namespace meshapi {
 
-OrderedSet::SetIndex OrderedSet::at( SetIndex idx ) const
-{
-  if(idx >= size())
-  {
-    std::stringstream sstr;
-    sstr<< "MeshAPI::OrderedSet -- requested out of range element at position "
-        << idx << ", but set only has " << size() << " elements.";
-    throw std::out_of_range(sstr.str());
-  }
-  return idx;
-}
+
+const NullSet OrderedSet::s_nullSet;
 
 bool OrderedSet::isValid(bool verboseOutput) const
 {

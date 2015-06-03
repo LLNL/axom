@@ -19,7 +19,7 @@ typedef asctoolkit::meshapi::Map<double> RealMap;
 typedef SetType::SetIndex  SetIndex;
 
 typedef SetType::iterator SetIterator;
-static SetType::size_type const MAX_SET_SIZE = 10;
+static SetType::SizeType const MAX_SET_SIZE = 10;
 
 TEST(gtest_meshapi_map,construct_empty_map)
 {
@@ -43,13 +43,13 @@ bool constructAndTestMap()
 
     std::cout<<"\nSetting the elements.";
     double multFac = 1.0001;
-    for(SetIndex idx=0; idx < m.size(); ++idx)
+    for(SetIndex idx=0; idx < static_cast<SetIndex>(m.size()); ++idx)
     {
         m[idx] = static_cast<T>(idx * multFac);
     }
 
     std::cout<<"\nChecking the elements.";
-    for(SetIndex idx=0; idx < m.size(); ++idx)
+    for(SetIndex idx=0; idx < static_cast<SetIndex>(m.size()); ++idx)
     {
         EXPECT_EQ(m[idx], static_cast<T>(idx * multFac) );
     }

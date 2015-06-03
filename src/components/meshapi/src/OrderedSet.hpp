@@ -15,6 +15,7 @@
 
 #include "Utilities.hpp"
 #include "Set.hpp"
+#include "NullSet.hpp"
 
 namespace asctoolkit{
 namespace meshapi{
@@ -24,31 +25,44 @@ namespace meshapi{
     {
     public:
       typedef Set::SetIndex     SetIndex;
-      typedef Set::size_type    size_type;
+      typedef Set::SizeType     SizeType;
+      typedef Set::SetPosition  SetPosition;
+
 
       typedef boost::counting_iterator<SetIndex> iterator;
       typedef std::pair<iterator,iterator> iterator_pair;
 
-    public:
-      OrderedSet(size_type size = size_type()): m_size(size) {}
+      static const NullSet s_nullSet;
 
-      size_type size()  const { return m_size; }
+    public:
+      OrderedSet(SizeType size = SizeType(), const Set* parentSet = &s_nullSet ): m_size(size), m_parentSet(parentSet) {}
+
+      SizeType size()  const { return m_size; }
 
       iterator  begin() const  { return iterator(0); }
       iterator  end()   const  { return iterator(m_size); }
       iterator_pair  range() const  { return std::make_pair(begin(), end()); }
 
-      SetIndex     operator[](SetIndex idx) const { verifyIndex(idx); return idx;}
-      SetIndex     at(SetIndex idx)   const ;
-
-      void reset(size_type) { throw NotImplementedException(); }
+      SetIndex     operator[](SetPosition pos) const { verifyPosition(pos); return pos;}
+      SetIndex     at(SetPosition pos)         const { return operator[](pos); }
 
       bool isValid(bool verboseOutput = false) const;
 
+      bool isSubset() const { return *m_parentSet != s_nullSet; }
+      const Set * parentSet() const { return m_parentSet; }
+
+
     private:
-      inline void  verifyIndex(SetIndex idx)       const { ATK_ASSERT( idx < size() ); }
+      inline void  verifyPosition(SetPosition pos)       const
+      {
+          ATK_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
+                          , "MeshAPI::OrderedSet -- requested out of range element at position "
+                          << pos << ", but set only has " << size() << " elements." );
+      }
+
     private:
-      SetIndex m_size;
+      SizeType m_size;
+      const Set * m_parentSet;
 
     };
 
