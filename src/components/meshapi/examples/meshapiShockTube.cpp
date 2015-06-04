@@ -1,12 +1,16 @@
 /**
- * \file meshapiShockTube.cc
+ * \file meshapiShockTube.cpp
  *
  * \brief 1D shock tube, split flux Euler equations
  *
  * \author J. Keasler (original)
  * \author K. Weiss (modified to use the ASC Toolkit Mesh API)
  *
- * \details
+ * \details  Developing example to use and demo features of Mesh API on shock tube example over structured 1D mesh.
+ *           Tests: Sets and subsets.
+ *                  Implicit relations over regular grid (currently implemented as explicit static constant relations) 5/2015
+ *                  Fields/maps over the data -- and access to sidre/local datastore.
+ *
  * \verbatim
  *         | m  |            |    mv    |
  *     Q = | mv |        F = | mv^2 + P |
@@ -37,7 +41,7 @@
 
 #include "common/Utilities.hpp"
 #include "meshapi/FieldRegistry.hpp"
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/RangeSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
 
 
@@ -53,26 +57,26 @@ namespace shocktube {
     const double gammaaInverse = M_SQRT1_2 ;
 
     const int INIT_NUM_ELEMS = 100;
-    const int INIT_NUM_ULTRA_DUMPS = 5;
-    const int INIT_NUM_ULTRA_CYCLES_PER_DUMP = 200;
+    const int INIT_NUM_OUTPUT_DUMPS = 5;
+    const int INIT_NUM_CYCLES_PER_DUMP = 200;
 
     const double INIT_P_RATIO = 0.5;
     const double INIT_D_RATIO = 0.5;
 
+    const bool verboseOutput = false;
+
     /**
      * \brief Simple representation of the mesh for this 1D example
      *
-     * \details Mesh contains a set of elements and a set of faces between elements
-     *         as well as the relations from elements to faces and vice versa.
+     * \details Mesh contains a set of elements and a set of faces between elements.
+     *         It also contains three subsets: a single inflow; a single outflow element; all internal 'tube' elements. (added 5/2015)
+     *         The mesh contains the relations from faces to elements and from tube elements to faces.
      *
-     * \note The mesh is currently missing a few subsets on the element set
-     *       Specifically, we want the 'tube' to skip the first and last element
-     *       ('inflow' and 'outflow' in the code below)
+     * \note (5/2015) We are currently missing an implicit constant grid relation.
      *
-     * \note We are also missing an implicit constant grid relation.
      * \note For current implementation with explicit static (constant) relations.
-     *       We are missing a nice way to set the relation elements.
-     *       It should not have to be done explicitly in user code
+     * \note We are missing a nice way to set the relation elements.
+     *       It should not have to be done explicitly in each user code -- especially in common use cases
      *       Idea: We could have a relationInverter function that takes a relation from sets A to B
      *             and generates a relation from set B to set A with all the arrows reversed.
      */
@@ -80,8 +84,8 @@ namespace shocktube {
     {
     public:
         // types for sets
-        typedef asctoolkit::meshapi::OrderedSet ElemSet;
-        typedef asctoolkit::meshapi::OrderedSet FaceSet;
+        typedef asctoolkit::meshapi::RangeSet ElemSet;
+        typedef asctoolkit::meshapi::RangeSet FaceSet;
 
         // types for relations
         typedef asctoolkit::meshapi::StaticConstantRelation ElemToFaceRelation;
@@ -90,18 +94,23 @@ namespace shocktube {
         // other types
         typedef asctoolkit::meshapi::Set::SetIndex IndexType;
         typedef asctoolkit::meshapi::Set::SizeType SizeType;
+        typedef asctoolkit::meshapi::Set::SetPosition PositionType;
 
     public:
-        ElemSet elems;
-        FaceSet faces;
+        ElemSet elems;          // The entire set of elements
+        ElemSet tubeElems;      // Subset of internal elements
+        ElemSet inFlowElems;    // Subset of inflow elements (not used in this example)
+        ElemSet outFlowElems;   // Subset of outflow elements (not used in this example)
 
-        FaceToElemRelation relationFaceElem;
-        ElemToFaceRelation relationElemFace;
+        FaceSet faces;          // Faces between adjacent pairs of elements
 
+        FaceToElemRelation relationFaceElem;    // co-boundary relation of faces to their elements
+        ElemToFaceRelation relationTubeFace;    // boundary relation of internal 'tube' elements
     };
 
 
-    // Define the explicit instances for int and double
+    // Define the explicit instances of our local (key/value) datastore for int and double
+    // TODO: Might need an additional uint version for mesh data
     FieldRegistry<int>    intsRegistry;
     FieldRegistry<double> realsRegistry;
 
@@ -136,7 +145,7 @@ void GetUserInput()
    }
 
    /********************/
-   /* Get pyhsics info */
+   /* Get physics info */
    /********************/
    {
       double pratio = -1.0;
@@ -162,21 +171,21 @@ void GetUserInput()
    /* Get output  info */
    /********************/
    {
-      int numUltraDumps;
+      int numOutputDumps;
       int numCyclesPerDump ;
 
-      std::cout << "How many Ultra dumps would you like? ";
-      numUltraDumps = INIT_NUM_ULTRA_DUMPS;
-      std::cout << numUltraDumps <<std::endl;
+      std::cout << "How many dumps would you like? ";
+      numOutputDumps = INIT_NUM_OUTPUT_DUMPS;
+      std::cout << numOutputDumps <<std::endl;
 
-      std::cout << "How many cycles per Ultra dump would you like? ";
-      numCyclesPerDump = INIT_NUM_ULTRA_CYCLES_PER_DUMP;
+      std::cout << "How many cycles between dumps would you like? ";
+      numCyclesPerDump = INIT_NUM_CYCLES_PER_DUMP;
       std::cout << numCyclesPerDump <<std::endl;
 
-      int numTotalCycles = numUltraDumps*numCyclesPerDump;
+      int numTotalCycles = numOutputDumps*numCyclesPerDump;
       std::cout << "\nSimulation will run for " << numTotalCycles <<" cycles."<<std::endl;
 
-      intsRegistry.addScalar("numUltraDumps", numUltraDumps) ;
+      intsRegistry.addScalar("numOutputDumps", numOutputDumps) ;
       intsRegistry.addScalar("numCyclesPerDump", numCyclesPerDump) ;
       intsRegistry.addScalar("numTotalCycles", numTotalCycles) ;
    }
@@ -210,24 +219,11 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    mesh->elems = ShockTubeMesh::ElemSet( intsRegistry.getScalar("numElems") );
    mesh->faces = ShockTubeMesh::FaceSet( intsRegistry.getScalar("numFaces") );
 
-   // TODO: Need to define subsets for inflow, outflow and tube
-
-   /*
-       int inflow[1]  ;
-       int outflow[1] ;
-       inflow[0] = 0 ;              // identify inflow elements
-       elem->viewCreate("inflow", new IndexSet(1, inflow)) ;
-
-       outflow[0] = numElems - 1 ;  // identify outflow elements
-       elem->viewCreate("outflow", new IndexSet(1, outflow)) ;
-
-       // identify shock tube elements - set up basic map
-       View *tube = elem->viewCreate("tube", new IndexSet(numElems-2)) ;
-
-       // Shift IndexSet indices to identify shocktube elements
-       // (shocktube element numbers are one through numElems-1 inclusive)
-       tube->indexSet()->shift(1) ;
-   */
+   // define the subsets
+   ShockTubeMesh::ElemSet::SizeType numElems = mesh->elems.size();
+   mesh->inFlowElems    = ShockTubeMesh::ElemSet( 0,1, &(mesh->elems) );
+   mesh->tubeElems      = ShockTubeMesh::ElemSet( 1,numElems-1, &(mesh->elems) );
+   mesh->outFlowElems   = ShockTubeMesh::ElemSet( numElems-1,numElems, &(mesh->elems) );
 
    // ------------ Set up relations
 
@@ -249,30 +245,30 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
 
    mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
    mesh->relationFaceElem.setRelation(relVec, STRIDE);
-   ATK_ASSERT(mesh->relationFaceElem.isValid());
+   ATK_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
-   /// Setup the elem -> face relation
+   /// Setup the tube element -> face relation
    // Note: This relation needs to be on the TUBE subset of the elements (i.e. skip the first and last elt
    //       It is currently on all elements, which necessitates a workaround below.
    //       And the first and last elements of the relation are set to 0 which is wrong.
    //       Question -- how are we planning to handle indexes that are out or range (accidentally)?
    //                   how are we planning to handle indexes that are intentionally out of range
    //                   (e.g. to indicate a problem, or a missing element etc..)?
-   ShockTubeMesh::SizeType elemSize = mesh->elems.size();
+
+   ShockTubeMesh::ElemSet::SizeType numTubeElems = mesh->tubeElems.size();
    relVec.clear();
-   relVec.resize( STRIDE * elemSize);
+   relVec.resize( STRIDE * numTubeElems);
    relIt = relVec.begin();
-   for(ShockTubeMesh::IndexType idx =0; idx < static_cast<ShockTubeMesh::IndexType>(elemSize); ++idx)
+   for(ShockTubeMesh::IndexType idx =0; idx < static_cast<ShockTubeMesh::IndexType>(numTubeElems); ++idx)
    {
-       // HACK -- these indexes should be over the tube subset -- skipping the first and last elem
-       *relIt++ = (idx == 0)? 0 : idx-1;
-       *relIt++ = (idx == static_cast<ShockTubeMesh::IndexType>(elemSize-1 ))? 0 : idx;
+       *relIt++ = mesh->tubeElems[idx]-1;
+       *relIt++ = mesh->tubeElems[idx];
    }
 
-   mesh->relationElemFace = ShockTubeMesh::ElemToFaceRelation(&mesh->elems, &mesh->faces);
-   mesh->relationElemFace.setRelation(relVec, STRIDE);
-   ATK_ASSERT(mesh->relationElemFace.isValid());
+   mesh->relationTubeFace = ShockTubeMesh::ElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
+   mesh->relationTubeFace.setRelation(relVec, STRIDE);
+   ATK_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
 }
 
@@ -464,20 +460,15 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
    double   dt   = realsRegistry.getScalar("dt") ;
    double & time = realsRegistry.getScalar("time") ;
 
-
    /// Update the element fields based on the face data using the elem->face relation
-   ShockTubeMesh::ElemSet::iterator_pair elemItPair = mesh.elems.range();
-   // HACK: We must update the iterator ranges to match the tube.
-   // TODO: Switch to relation on tube element set once Subsets are defined.
-   elemItPair.first++;    elemItPair.second--;
-
-   for (; elemItPair.first < elemItPair.second; ++elemItPair.first)
+   for (ShockTubeMesh::PositionType tPos=0; tPos < static_cast<ShockTubeMesh::PositionType>(mesh.tubeElems.size() ); ++tPos)
    {
-      ShockTubeMesh::IndexType elemIdx = *elemItPair.first;
+       // Relation is over tube elements.
+       ShockTubeMesh::IndexType elemIdx = mesh.tubeElems[tPos];
 
       // Each element inside the tube has an upwind and downwind face
-      ShockTubeMesh::IndexType upWind   = mesh.relationElemFace[elemIdx][UPWIND] ;      // upwind face
-      ShockTubeMesh::IndexType downWind = mesh.relationElemFace[elemIdx][DOWNWIND] ;    // downwind face
+      ShockTubeMesh::IndexType upWind   = mesh.relationTubeFace[tPos][UPWIND] ;      // upwind face
+      ShockTubeMesh::IndexType downWind = mesh.relationTubeFace[tPos][DOWNWIND] ;    // downwind face
 
       mass[elemIdx]     -= gammaaInverse*(F0[downWind] - F0[upWind])*dt/dx ;
       momentum[elemIdx] -= gammaaInverse*(F1[downWind] - F1[upWind])*dt/dx ;
@@ -544,14 +535,10 @@ int main(void)
 {
     using namespace asctoolkit::meshapi::examples::shocktube;
 
-   //extern void DumpUltra(View *prob) ;
-
    // We should be able to parallelize pretty easily by
    // adding an MPI_Init() here, modifying the setup slightly,
    // adding a communication subroutine in the main loop,
    // and calling MPI_Finalize() at the end of main()
-
-   //View *problem = new View("ShockTube, 1D Split Flux Euler") ;
 
     ShockTubeMesh mesh;
 

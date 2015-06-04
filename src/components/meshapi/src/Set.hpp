@@ -120,7 +120,7 @@ namespace meshapi{
 
   /**
    * \brief General equality operator for two sets.
-   * \detail Two sets are considered equal if they have the same number of elements, and their ordered indices agree.
+   * \details Two sets are considered equal if they have the same number of elements, and their ordered indices agree.
    */
   inline bool operator==(Set const& set1, Set const& set2)
   {

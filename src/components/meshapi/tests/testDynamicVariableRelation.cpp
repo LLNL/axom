@@ -12,11 +12,11 @@
 #include "gtest/gtest.h"
 
 
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/RangeSet.hpp"
 #include "meshapi/Relation.hpp"
 #include "meshapi/DynamicVariableRelation.hpp"
 
-using asctoolkit::meshapi::OrderedSet;
+using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::DynamicVariableRelation;
 
 typedef asctoolkit::meshapi::MeshIndexType IndexType;
@@ -42,8 +42,8 @@ TEST(gtest_meshapi_dynamic_variable_relation,test_uninitialized_relation)
 {
     std::cout<<"\n****** Testing uninitialized relation.  isValid() should be false." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     DynamicVariableRelation emptyRel(&fromSet, &toSet);
 
@@ -77,8 +77,8 @@ TEST(gtest_meshapi_dynamic_variable_relation,simple_relation)
 {
     std::cout<<"\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     DynamicVariableRelation incrementingRel(&fromSet, &toSet);
     generateIncrementingRelations(&incrementingRel);
@@ -92,7 +92,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,simple_relation)
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-    typedef OrderedSet::iterator SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";
@@ -129,8 +129,8 @@ TEST(gtest_meshapi_dynamic_variable_relation,test_iterator_range)
 {
     std::cout<<"\n****** Testing range function on incrementing relation." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     DynamicVariableRelation incrementingRel(&fromSet, &toSet);
     generateIncrementingRelations(&incrementingRel);
@@ -144,7 +144,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,test_iterator_range)
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-    typedef OrderedSet::iterator SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
     typedef DynamicVariableRelation::RelationVecConstIteratorPair RelSetConstIterPair;
 
@@ -174,8 +174,8 @@ TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
 {
     std::cout<<"\n****** Testing access via double subscript." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     DynamicVariableRelation incrementingRel(&fromSet, &toSet);
     generateIncrementingRelations(&incrementingRel);
@@ -189,7 +189,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-    typedef OrderedSet::iterator SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";

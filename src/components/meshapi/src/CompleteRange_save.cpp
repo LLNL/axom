@@ -8,15 +8,15 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
-#include "OrderedSet.hpp"
+#include "RangeSet.hpp"
 
 namespace asctoolkit {
 namespace meshapi {
 
 
-const NullSet OrderedSet::s_nullSet;
+const NullSet RangeSet::s_nullSet;
 
-bool OrderedSet::isValid(bool verboseOutput) const
+bool RangeSet::isValid(bool verboseOutput) const
 {
     bool bValid = true;
 

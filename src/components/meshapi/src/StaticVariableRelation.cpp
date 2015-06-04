@@ -37,7 +37,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
 {
     bool bValid = true;
 
-    std::stringstream sstr;
+    std::stringstream errSstr;
 
 
     if( *m_fromSet == s_nullSet || *m_toSet == s_nullSet)
@@ -46,7 +46,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         {
             if(verboseOutput)
             {
-                sstr << "\n\t* fromSetBeginsVec was not empty "
+                errSstr << "\n\t* fromSetBeginsVec was not empty "
                     <<" -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
                     <<" , toSet was " << (*m_toSet == s_nullSet ? "" : " not ") << "null";
             }
@@ -57,7 +57,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         {
             if(verboseOutput)
             {
-                sstr << "\n\t* toSetIndicesVec was not empty "
+                errSstr << "\n\t* toSetIndicesVec was not empty "
                     <<" -- fromSet was " << (*m_fromSet == s_nullSet? "" : " not ") << "null"
                     <<" , toSet was " << (*m_toSet == s_nullSet? "" : " not ") << "null";
             }
@@ -68,14 +68,14 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
     else
     {
         if(verboseOutput)
-            sstr << "\n\t* Neither set was null";
+            errSstr << "\n\t* Neither set was null";
 
         // Check that the fromSet vector has the correct size
         if( m_fromSetBeginsVec.size() != (m_fromSet->size() +1) )
         {
             if(verboseOutput)
             {
-                sstr << "\n\t* fromSetBeginsVec was the wrong size."
+                errSstr << "\n\t* fromSetBeginsVec was the wrong size."
                  << " -- expected " << (m_fromSet->size() +1) << ", actual " << m_fromSetBeginsVec.size() << ")";
             }
 
@@ -89,7 +89,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
             {
                 if(verboseOutput)
                 {
-                    sstr << "\n\t* fromSetBeginsVec had an out-of-range element."
+                    errSstr << "\n\t* fromSetBeginsVec had an out-of-range element."
                          << " -- value of element " << std::distance(m_fromSetBeginsVec.begin(), it) << " was " << *it
                          << ". Max possible value should be " << m_toSetIndicesVec.size() <<"." ;
                 }
@@ -105,7 +105,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
             {
                 if(verboseOutput)
                 {
-                    sstr << "\n\t* toSetIndices had an out-of-range element."
+                    errSstr << "\n\t* toSetIndices had an out-of-range element."
                          << " -- value of element " << std::distance(m_toSetIndicesVec.begin(), it) << " was " << *it
                          << ". Max possible value should be " << m_toSet->size() <<"." ;
                 }
@@ -118,23 +118,27 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
 
     if(verboseOutput)
     {
-        std::cout<<"\n*** Detailed results of isValid on the relation.\n";
+        std::stringstream sstr;
+
+        sstr<<"\n*** Detailed results of isValid on the relation.\n";
         if(bValid)
         {
-            std::cout<<"Relation was valid."<< std::endl;
+            sstr<<"Relation was valid."<< std::endl;
         }
         else
         {
-            std::cout<<"Relation was NOT valid.\n"
-                     << sstr.str()
+            sstr<<"Relation was NOT valid.\n"
+                     << errSstr.str()
                      << std::endl;
         }
 
-        std::cout<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
-        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<SetIndex>(std::cout, " "));
+        sstr<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
+        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<SetIndex>(sstr, " "));
 
-        std::cout<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
-        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetIndex>(std::cout, " "));
+        sstr<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
+        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetIndex>(sstr, " "));
+
+        std::cout << sstr.str() << std::endl;
 
     }
 

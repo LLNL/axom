@@ -12,11 +12,11 @@
 #include "gtest/gtest.h"
 
 
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/RangeSet.hpp"
 #include "meshapi/Relation.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
 
-using asctoolkit::meshapi::OrderedSet;
+using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::StaticConstantRelation;
 
 typedef asctoolkit::meshapi::MeshIndexType IndexType;
@@ -51,8 +51,8 @@ TEST(gtest_meshapi_static_constant_relation,test_uninitialized_relation)
 {
     std::cout<<"\n****** Testing uninitialized relation.  isValid() should be TRUE since stride is 0 by default." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     StaticConstantRelation emptyRel(&fromSet, &toSet);
 
@@ -89,8 +89,8 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
 {
     std::cout<<"\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     StaticConstantRelation incrementingRel(&fromSet, &toSet);
 
@@ -111,7 +111,7 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-    typedef OrderedSet::iterator SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";
@@ -151,8 +151,8 @@ TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
 
     std::cout<<"\n****** Testing out of bounds access on initialized relation.  Code is expected to assert and die." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
     StaticConstantRelation incrementingRel(&fromSet, &toSet);
 
     typedef StaticConstantRelation::RelationVec IndexVec;
@@ -170,8 +170,8 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
 {
     std::cout<<"\n****** Testing range function on incrementing relation." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     StaticConstantRelation incrementingRel(&fromSet, &toSet);
 
@@ -184,7 +184,7 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-    typedef OrderedSet::iterator SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
     typedef StaticConstantRelation::RelationVecConstIteratorPair RelSetConstIterPair;
 
@@ -214,8 +214,8 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
 {
     std::cout<<"\n****** Testing access via double subscript." << std::endl;
 
-    OrderedSet fromSet(FROMSET_SIZE);
-    OrderedSet toSet(TOSET_SIZE);
+    RangeSet fromSet(FROMSET_SIZE);
+    RangeSet toSet(TOSET_SIZE);
 
     StaticConstantRelation incrementingRel(&fromSet, &toSet);
 
@@ -228,7 +228,7 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-    typedef OrderedSet::iterator SetIter;
+    typedef RangeSet::iterator SetIter;
     typedef StaticConstantRelation::RelationVecConstIterator RelSetConstIter;
 
     std::cout<<"\n\tLooking at relation's stored values...";

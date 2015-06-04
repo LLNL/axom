@@ -1,5 +1,5 @@
 /**
- * \file UnstructMeshField.cc
+ * \file UnstructMeshField.cpp
  *
  * \brief Simple user of the mesh api class.
  *
@@ -22,7 +22,7 @@
 #include "meshapi/FileUtilities.hpp"
 
 #include "meshapi/Set.hpp"
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/RangeSet.hpp"
 #include "meshapi/StaticVariableRelation.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
 #include "meshapi/DynamicVariableRelation.hpp"
@@ -61,8 +61,8 @@ public:
     enum { NODES_PER_ZONE = 8 };
 
     // types for sets
-    typedef asctoolkit::meshapi::OrderedSet NodeSet;
-    typedef asctoolkit::meshapi::OrderedSet ZoneSet;
+    typedef asctoolkit::meshapi::RangeSet NodeSet;
+    typedef asctoolkit::meshapi::RangeSet ZoneSet;
 
     // types for relations
     typedef asctoolkit::meshapi::StaticVariableRelation NodeToZoneRelation;

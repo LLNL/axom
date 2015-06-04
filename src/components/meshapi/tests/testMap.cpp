@@ -9,11 +9,11 @@
 #include "gtest/gtest.h"
 
 #include "meshapi/Utilities.hpp"
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/RangeSet.hpp"
 #include "meshapi/Map.hpp"
 
 
-typedef asctoolkit::meshapi::OrderedSet SetType;
+typedef asctoolkit::meshapi::RangeSet SetType;
 typedef asctoolkit::meshapi::Map<int> IntMap;
 typedef asctoolkit::meshapi::Map<double> RealMap;
 typedef SetType::SetIndex  SetIndex;
