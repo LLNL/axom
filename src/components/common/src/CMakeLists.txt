@@ -3,7 +3,7 @@
 #
 set(common_headers
     Utilities.hpp
-    Types.hpp
+    CommonTypes.hpp
     )
 
 #

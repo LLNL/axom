@@ -1,8 +1,9 @@
+
 ################################
 # documentation targets
 ################################
 
-#add_subdirectory(source)
+# add a target to generate documentation with Sphinx
 
-
+add_sphinx_target( coding_guidlines_docs )
 

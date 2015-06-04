@@ -1,0 +1,199 @@
+/*
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Implementation file for DataStore class.
+ *
+ ******************************************************************************
+ */
+
+// Associated header file
+#include "DataStore.hpp"
+
+// Other toolkit component headers
+#include "common/CommonTypes.hpp"
+
+// SiDRe project headers
+#include "DataBuffer.hpp"
+#include "DataGroup.hpp"
+#include "SidreTypes.hpp"
+
+
+namespace asctoolkit
+{
+namespace sidre
+{
+
+
+/*
+ *************************************************************************
+ *
+ * Datastore ctor creates root group.
+ *
+ *************************************************************************
+ */
+DataStore::DataStore()
+{
+  m_RootGroup = new DataGroup("/", this);
+};
+
+
+/*
+ *************************************************************************
+ *
+ * Datastore dtor destroys all contents.
+ *
+ *************************************************************************
+ */
+DataStore::~DataStore()
+{
+  // clean up groups and views before we destroy buffers
+  delete m_RootGroup;
+  destroyBuffers();
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Create new data buffer and assign unique id.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataStore::createBuffer()
+{
+  // TODO: implement pool, look for free nodes.  Allocate in blocks.
+  IndexType newIndex = m_data_buffers.size();
+  m_data_buffers.push_back( ATK_NULLPTR );
+  if( !m_free_buffer_ids.empty() )
+  {
+    newIndex = m_free_buffer_ids.top();
+    m_free_buffer_ids.pop();
+  }
+  DataBuffer * const obj = new DataBuffer( newIndex );
+
+  m_data_buffers[newIndex] = obj;
+
+  return obj;
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Remove data buffer with given index from the datastore and destroy it,
+ * recover its id for reuse.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyBuffer( IndexType idx )
+{
+  delete m_data_buffers[idx];
+  m_data_buffers[idx] = ATK_NULLPTR;
+  m_free_buffer_ids.push(idx);
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Destroy all buffers in datastore and reclaim indices.
+ *
+ *************************************************************************
+ */
+void DataStore::destroyBuffers()
+{
+  for ( IndexType idx = 0 ;
+        static_cast<unsigned>(idx) < m_data_buffers.size() ; ++idx)
+  {
+    destroyBuffer( idx );
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Remove data buffer with given index from the datastore leaving it intact,
+ * and return a pointer to it. Its index is recovered for reuse.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataStore::detachBuffer( IndexType idx )
+{
+  DataBuffer * const rval = m_data_buffers[idx];
+  m_data_buffers[idx] = ATK_NULLPTR;
+  m_free_buffer_ids.push(idx);
+
+  return rval;
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Copy buffer descriptions and group tree, starting at root, to given
+ * Conduit node.
+ *
+ *************************************************************************
+ */
+void DataStore::info(Node& n) const
+{
+  m_RootGroup->info(n["DataStore/root"]);
+  for ( IndexType idx = 0 ;
+        static_cast<unsigned>(idx) < m_data_buffers.size() ; ++idx)
+  {
+    Node& b = n["DataStore/buffers"].append();
+    if (m_data_buffers[idx] != ATK_NULLPTR)
+    {
+      m_data_buffers[idx]->info(b);
+    }
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Print JSON description of data buffers and group tree, starting at root,
+ * to stdout.
+ *
+ *************************************************************************
+ */
+void DataStore::print() const
+{
+  print(std::cout);
+}
+
+/*
+ *************************************************************************
+ *
+ * Print JSON description of data buffers and group tree, starting at root,
+ * to an ostream.
+ *
+ *************************************************************************
+ */
+void DataStore::print(std::ostream& os) const
+{
+  Node n;
+  info(n);
+  /// TODO: after conduit update, use new ostream variant of to_json.
+  std::ostringstream oss;
+  n.to_pure_json(oss);
+  os << oss.str();
+}
+
+
+} /* end namespace sidre */
+} /* end namespace asctoolkit */

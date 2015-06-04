@@ -93,7 +93,7 @@ do {                                                                \
 } while (0)
 
 
-#if defined(ATK_DEBUG) || 1
+#if defined(ATK_DEBUG) 
 //-----------------------------------------------------------------------------
 //
 /// The ATK_ASSERT macro can be used to capture an assertion when
@@ -136,8 +136,6 @@ do {                                                                   \
 
 #else  // ASSERTION CHECKS TURNED OFF....
 
-#define ATK_ERROR( ignore_message ) ((void) 0) 
-#define ATK_WARNING( ignore_message ) ((void) 0) 
 #define ATK_ASSERT( ignore_EXP ) ((void) 0) 
 #define ATK_ASSERT_MSG( ignore_EXP, ignore_message ) ((void) 0) 
 

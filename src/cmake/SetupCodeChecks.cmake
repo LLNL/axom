@@ -20,8 +20,10 @@ endif()
 ##
 ##------------------------------------------------------------------------------
 macro(add_code_check_targets cfg_file)
-    add_uncrustify_check(${cfg_file})
-    add_uncrustify_inplace(${cfg_file})
+    if(UNCRUSTIFY_FOUND)
+        add_uncrustify_check(${cfg_file})
+        add_uncrustify_inplace(${cfg_file})
+    endif()
 endmacro()
     
 
