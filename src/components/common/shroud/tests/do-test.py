@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import os
 import argparse
+import filecmp
 import subprocess
 
 #subprocess.call("ls -l", shell=True)
@@ -30,8 +31,9 @@ code_path = ''
 
 def do_test(name):
     # XXX make sure input file exists
+    ref_dir = os.path.join(test_source_dir, name)
     # make sure output directory exists
-    result_dir = os.path.join(test_binary_dir, 'test', name)
+    result_dir = os.path.join(test_binary_dir, 'tests', name)
     makedirs(result_dir)
     # XXX remove old generated files
 
@@ -49,15 +51,54 @@ def do_test(name):
             cmd,
             stderr=subprocess.STDOUT,
             universal_newlines=True)
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as exc:
+        print("Status : FAIL", exc.returncode, exc.output)
         raise SystemExit("shroud failed")
+#    except subprocess.CalledProcessError:
+#        print(output)
+
+
+    """
+    pipes = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    std_out, std_err = pipes.communicate()
+
+    if pipes.returncode != 0:
+        // an error happened!
+        err_msg = "%s. Code: %s" % (std_err.strip(), pipes.returncode)
+        raise Exception(err_msg)
+
+    elif len(std_err):
+        // return code is 0 (no error), but we may want to
+        // do something with the info on std_err
+        // i.e. logger.warning(std_err)
+
+    // do whatever you want with std_out
+    // i.e. json.loads(std_out)
+"""
 
     # collect output file names
-    outfiles = []
-    for line in output.splitlines():
-        if line.startswith('Wrote '):
-            outfiles.append( line[6:] )
-    print("XXXX", outfiles)
+#    outfiles = []
+#    for line in output.splitlines():
+#        if line.startswith('Wrote '):
+#            outfiles.append( line[6:] )
+#    print("XXXX", outfiles)
+
+    print("Comparing", ref_dir, result_dir)
+    cmp = filecmp.dircmp(ref_dir, result_dir)
+    print("COMMON", cmp.common)
+    match, mismatch, errors = filecmp.cmpfiles(ref_dir, result_dir, cmp.common)
+    print("MATCH", match)
+    print("MISMATCH", mismatch)
+    print("ERRORS", errors)
+    
+
+        
+
+    print("REF_ONLY", cmp.left_only)
+    print("RESULT_ONLY", cmp.right_only)
+
+    raise SystemExit
+
 
 
 
@@ -93,7 +134,7 @@ if __name__ == '__main__':
 
     code_path = os.path.join(executable_output_path, 'shroud')
 
-    result_dir = os.path.join(test_binary_dir, 'test')
+    result_dir = os.path.join(test_binary_dir, 'tests')
     makedirs(result_dir)
     
     do_test('example')

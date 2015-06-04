@@ -3,6 +3,7 @@ Hide some literal Fortran code in this module
 """
 from __future__ import print_function
 
+import os
 
 fstr_module = """
 module fstr_mod
@@ -71,9 +72,9 @@ contains
 end module fstr_mod
 """
 
-def write_runtime(tree):
+def write_runtime(tree, config):
     fname = 'fstr_mod.f'
-    fp = open(fname, 'w')
+    fp = open(os.path.join(config.binary_dir, fname), 'w')
 
     for line in tree.get('copyright', []):
         if line:

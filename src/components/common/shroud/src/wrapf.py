@@ -137,7 +137,7 @@ class Wrapf(object):
         for node in self.tree['functions']:
             self.wrap_function(node)
 
-        fwrap_util.write_runtime(self.tree)
+        fwrap_util.write_runtime(self.tree, self.config)
 
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
