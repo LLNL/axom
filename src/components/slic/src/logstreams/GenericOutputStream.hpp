@@ -23,7 +23,7 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/Types.hpp" // for ATK_NULLPTR
+#include "common/CommonTypes.hpp" // for ATK_NULLPTR
 
 // C/C++ includes
 #include <iostream> // for ostream

@@ -22,7 +22,7 @@
 
 #include "LogStream.hpp"
 
-#include "common/Types.hpp"
+#include "common/CommonTypes.hpp"
 
 // C/C++ includes
 #include <iostream> // for std::cout, std::cerr
