@@ -254,7 +254,7 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->hasView("f0"));
   EXPECT_TRUE(flds->hasView("d0"));
 
-  // test moving a view form feds7 to sub
+  // test moving a view from flds to sub
   flds->createGroup("sub")->moveView(flds->getView("d0"));
   flds->print();
   EXPECT_FALSE(flds->hasView("d0"));
@@ -267,7 +267,7 @@ TEST(sidre_group,view_copy_move)
                       ->getNode().as_float64_ptr();
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
-  // test copying a view from flds top sub
+  // test copying a view from flds to sub
   flds->getGroup("sub")->copyView(flds->getView("i0"));
 
   flds->print();
