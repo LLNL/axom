@@ -9,11 +9,18 @@
 #
 #  bin-dir/test/name/     generated files
 
+# logging.debug('This is a debug message')
+# logging.info('This is an info message')
+# logging.warning('This is a warning message')
+# logging.error('This is an error message')
+# logging.critical('This is a critical error message')
+
 from __future__ import print_function
 
-import os
 import argparse
 import filecmp
+import logging
+import os
 import subprocess
 
 #subprocess.call("ls -l", shell=True)
@@ -30,21 +37,36 @@ executable_output_path = ''
 code_path = ''
 
 def do_test(name):
-    # XXX make sure input file exists
+    """ Run test, return True/False for pass/fail.
+    Files must compare, with no extra or missing files.
+    """
+    status = True  # assume it passes
+    logging.info('--------------------------------------------------')
+    logging.info('Testing ' + name)
+
+    testyaml = os.path.join(test_source_dir, name + '.yaml')
+    logging.info('Input file: ' + testyaml)
+    if not os.path.isfile(testyaml):
+        logging.error('Input file does not exist')
+        return False
+
     ref_dir = os.path.join(test_source_dir, name)
+    logging.info('Reference directory: ' + ref_dir)
+
     # make sure output directory exists
     result_dir = os.path.join(test_binary_dir, 'tests', name)
+    logging.info('Result directory: ' + result_dir)
+
     makedirs(result_dir)
-    # XXX remove old generated files
+    clear_files(result_dir)
 
     cmd = [
         code_path,
         '--logdir', result_dir,
         '--outdir', result_dir,
-        os.path.join(test_source_dir, name + '.yaml'),
+        testyaml,
         ]
-    print("LOG", ' '.join(cmd))
-
+    logging.debug(' '.join(cmd))
 
     try:
         output = subprocess.check_output(
@@ -52,11 +74,9 @@ def do_test(name):
             stderr=subprocess.STDOUT,
             universal_newlines=True)
     except subprocess.CalledProcessError as exc:
-        print("Status : FAIL", exc.returncode, exc.output)
-        raise SystemExit("shroud failed")
-#    except subprocess.CalledProcessError:
-#        print(output)
-
+        logging.error('Exit status: %d' % exc.returncode)
+        logging.error(exc.output)
+        return False
 
     """
     pipes = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -83,40 +103,38 @@ def do_test(name):
 #            outfiles.append( line[6:] )
 #    print("XXXX", outfiles)
 
-    print("Comparing", ref_dir, result_dir)
     cmp = filecmp.dircmp(ref_dir, result_dir)
-    print("COMMON", cmp.common)
     match, mismatch, errors = filecmp.cmpfiles(ref_dir, result_dir, cmp.common)
-    print("MATCH", match)
-    print("MISMATCH", mismatch)
-    print("ERRORS", errors)
-    
+    for file in cmp.common:
+        logging.info('Compare: ' + file)
+    if mismatch:
+        status = False
+        for file in cmp.mismatch:
+            logging.warn('Does not compare: '+ file)
+    if errors:
+        status = False
+        for file in cmp.errors:
+            logging.warn('Unable to compare: ' + file)
 
-        
+    if cmp.left_only:
+        status = False
+        for file in cmp.left_only:
+            logging.warn('Only in reference: ' + file)
+    if cmp.right_only:
+        status = False
+        for file in cmp.right_only:
+            logging.warn('Only in result: ' + file)
 
-    print("REF_ONLY", cmp.left_only)
-    print("RESULT_ONLY", cmp.right_only)
-
-    raise SystemExit
-
-
-
-
-def call_command(command):
-    process = subprocess.Popen(command.split(' '),
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    return process.communicate()
-
-def call_commandlst(command):
-    print("call_commandlst", command)
-    process = subprocess.Popen(command,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    return process.communicate()
+    if status:
+        logging.info('Test {} pass'.format(name))
+    else:
+        logging.info('Test {} fail'.format(name))
+    return status
 
 
 def makedirs(path):
+    """ Make sure directory exists.
+    """
     try: 
         os.makedirs(path)
     except OSError:
@@ -125,16 +143,77 @@ def makedirs(path):
     # os.makedirs(path,exist_ok=True) python3  3.2
 
 
+def clear_files(path):
+    """Remove all files in a directory.
+    """
+    for file in os.listdir(path):
+        full_path = os.path.join(path, file)
+        try:
+            if os.path.isfile(full_path):
+                os.unlink(full_path)
+        except Exception, e:
+            logging.warning('Unable to remove file: ' + full_path)
+            logging.warning(e)
+
+
 if __name__ == '__main__':
     # XXX raise KeyError(key)
+
+    parser = argparse.ArgumentParser(prog='do-test')
+    parser.add_argument('testname', nargs='*',
+                        help='test to run')
+    args = parser.parse_args()
+
+    # XXX - get directories from environment or command line options
+
     test_binary_dir = os.environ['TEST_BINARY_DIR']
     test_source_dir = os.environ['TEST_SOURCE_DIR']
     executable_output_path = os.environ['EXECUTABLE_OUTPUT_PATH']
     # XXX check existence of directories
 
+    if not os.path.isdir(test_binary_dir):
+        raise SystemExit('Missing binary directory: ' + test_binary_dir)
+    if not os.path.isdir(test_source_dir):
+        raise SystemExit('Missing source directory: ' + test_source_dir)
+    if not os.path.isdir(executable_output_path):
+        raise SystemExit('Missing executable directory: ' + executable_output_path)
+
+    logname = 'test.log'
+    logging.basicConfig(filename=os.path.join(test_binary_dir, logname),
+                        filemode='w',
+                        level=logging.DEBUG,
+                        )
+
+    if args.testname:
+        test_names = args.testname
+    else:
+        test_names = [ 'example' ]
+
+    logging.info('Tests to run: {}'.format( ' '.join(test_names)))
+
+
     code_path = os.path.join(executable_output_path, 'shroud')
+    logging.info('Code to test: ' + code_path)
 
     result_dir = os.path.join(test_binary_dir, 'tests')
     makedirs(result_dir)
-    
-    do_test('example')
+
+    pass_names = []
+    fail_names = []
+    for name in test_names:
+        status = do_test(name)
+        if status:
+            pass_names.append(name)
+            print('{} pass'.format(name))
+        else:
+            fail_names.append(name)
+            print('{} failed'.format(name))
+
+    if fail_names:
+        msg = "Not all tests passed"
+    else:
+        msg = "All tests passed"
+    print(msg)
+    logging.info(msg)
+
+    logging.shutdown()
