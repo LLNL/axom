@@ -12,14 +12,16 @@ class Logger {
 		void finalize();
 
 		void setOutputStream();
+		void setErrorStream();
+
+		void flushOutputStream();
+		void flushErrorStream();
 
 		void addMessage(const std::string& message);
-		void addMessage(const std::string& message, const std::string& fileName, int lineNumber);
+		void addMessage(const std::string& message, const std::string& fileName, const int lineNumber);
 
-		void pushMessagesOnceUpTree();
-		void pushMessagesFullyUpTree();
-
-		void outputMessages();
+		void pushMessagesOnce();
+		void pushMessagesFully();
 };
 
 }
