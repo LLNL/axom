@@ -22,6 +22,7 @@ import filecmp
 import logging
 import os
 import subprocess
+import sys
 
 #subprocess.call("ls -l", shell=True)
 
@@ -218,11 +219,15 @@ if __name__ == '__main__':
             fail_names.append(name)
             print('{} failed'.format(name))
 
+    # summarize results
     if fail_names:
+        exit_status = 1
         msg = "Not all tests passed"
     else:
+        exit_status = 0
         msg = "All tests passed"
     print(msg)
     logging.info(msg)
 
     logging.shutdown()
+    sys.exit(exit_status)
