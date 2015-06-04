@@ -276,6 +276,11 @@ TEST(sidre_view,uint32_array_multi_view_resize)
   // alloc our buffer
   // create a buffer to hold larger subarrays
   base_new->allocate(DataType::uint32(4 * 12));
+  uint32* base_new_data = base_new->getNode().as_uint32_ptr();
+  for (int i = 0; i < 4 * 12; ++i) 
+  {
+     base_new_data[i] = 0u;
+  } 
 
   DataBuffer * buff_new = base_new->getBuffer();
   buff_new->getNode().print();
