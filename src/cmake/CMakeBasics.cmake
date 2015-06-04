@@ -459,6 +459,11 @@ macro(make_executable)
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
 
+    if ( ENABLE_CXX11 )
+      ## Note, this requires cmake 3.1 and above
+      set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
+    endif()
+
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
@@ -499,6 +504,7 @@ macro(add_gtest)
           list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
                       "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
     endif()
+
 
     set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
