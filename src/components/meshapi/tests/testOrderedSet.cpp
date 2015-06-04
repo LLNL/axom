@@ -9,10 +9,10 @@
 #include "gtest/gtest.h"
 
 #include "meshapi/Utilities.hpp"
-#include "meshapi/OrderedSet.hpp"
+#include "meshapi/RangeSet.hpp"
 
 
-typedef asctoolkit::meshapi::OrderedSet SetType;
+typedef asctoolkit::meshapi::RangeSet SetType;
 typedef SetType::iterator SetIterator;
 static SetType::SizeType const MAX_SET_SIZE = 10;
 

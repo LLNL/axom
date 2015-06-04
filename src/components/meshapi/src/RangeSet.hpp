@@ -21,7 +21,7 @@ namespace asctoolkit{
 namespace meshapi{
 
 
-    class OrderedSet  : public Set
+    class RangeSet  : public Set
     {
     public:
       typedef Set::SetIndex     SetIndex;
@@ -35,15 +35,26 @@ namespace meshapi{
       static const NullSet s_nullSet;
 
     public:
-      OrderedSet(SizeType size = SizeType(), const Set* parentSet = &s_nullSet ): m_size(size), m_parentSet(parentSet) {}
+      RangeSet(SizeType size = SizeType(), const Set* parentSet = &s_nullSet )
+            : m_lowerIdx(SizeType())
+            , m_upperIdx(size)
+            , m_parentSet(parentSet) {}
 
-      SizeType size()  const { return m_size; }
+      RangeSet(  SizeType lowerIndex, SizeType upperIndex, const Set* parentSet = &s_nullSet )
+            : m_lowerIdx(lowerIndex)
+            , m_upperIdx(upperIndex)
+            , m_parentSet(parentSet) {}
 
-      iterator  begin() const  { return iterator(0); }
-      iterator  end()   const  { return iterator(m_size); }
+      SizeType size()  const { return (m_upperIdx - m_lowerIdx); }
+
+      iterator  begin() const  { return iterator(m_lowerIdx); }
+      iterator  end()   const  { return iterator(m_upperIdx); }
       iterator_pair  range() const  { return std::make_pair(begin(), end()); }
 
-      SetIndex     operator[](SetPosition pos) const { verifyPosition(pos); return pos;}
+      /**
+       * \brief Given a position in the Set, return a position in the larger index space
+       */
+      SetIndex     operator[](SetPosition pos) const { verifyPosition(pos); return pos + m_lowerIdx;}
       SetIndex     at(SetPosition pos)         const { return operator[](pos); }
 
       bool isValid(bool verboseOutput = false) const;
@@ -56,29 +67,31 @@ namespace meshapi{
       inline void  verifyPosition(SetPosition pos)       const
       {
           ATK_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
-                          , "MeshAPI::OrderedSet -- requested out of range element at position "
+                          , "MeshAPI::RangeSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }
 
     private:
-      SizeType m_size;
+      SizeType m_lowerIdx;
+      SizeType m_upperIdx;
       const Set * m_parentSet;
 
     };
 
 
+#if 0
     /**
      * \brief Two OrderedSets are equal if they have the same cardinality
      * \note Two sets of different types are (currently) considered to be unequal
      */
-    inline bool operator==(OrderedSet const& firstSet, OrderedSet const& otherSet) { return firstSet.size() == otherSet.size();}
+    inline bool operator==(RangeSet const& firstSet, RangeSet const& otherSet) { return firstSet.size() == otherSet.size();}
 
     /**
      * \brief Two OrderedSets are equal if they have the same cardinality
      * \note Two sets of different types are (currently) considered to be unequal
      */
-    inline bool operator!=(OrderedSet const& firstSet, OrderedSet const& otherSet) { return !(firstSet==otherSet); }
-
+    inline bool operator!=(RangeSet const& firstSet, RangeSet const& otherSet) { return !(firstSet==otherSet); }
+#endif
 
 } // end namespace meshapi
 } // end namespace asctoolkit
