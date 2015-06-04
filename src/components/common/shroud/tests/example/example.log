@@ -1,0 +1,36 @@
+class ExClass1
+method ExClass1 *new+constructor ( const string *name )
+method void delete+destructor
+method int incrementCount(int incr)
+method const string& getName()
+method get_name_length
+method ExClass2 *getRoot()
+method int  getValue(int value)
+method long getValue(long value)
+Close wrapExClass1.h
+Close wrapExClass1.cpp
+class ExClass2
+method ExClass2 *ExClass2+constructor (const string *name)
+method void ExClass1+destructor
+method const string& getName
+method get_name_length
+Close wrapExClass2.h
+Close wrapExClass2.cpp
+function void local_function1
+class ExClass1
+method ExClass1 *new+constructor ( const string *name )
+method void delete+destructor
+method int incrementCount(int incr)
+method const string& getName()
+method get_name_length
+method ExClass2 *getRoot()
+method int  getValue(int value)
+method long getValue(long value)
+Close wrapfExClass1.f
+class ExClass2
+method ExClass2 *ExClass2+constructor (const string *name)
+method void ExClass1+destructor
+method const string& getName
+method get_name_length
+Close wrapfExClass2.f
+function void local_function1

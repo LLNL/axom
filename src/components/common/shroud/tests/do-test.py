@@ -36,7 +36,7 @@ test_binary_dir = ''
 executable_output_path = ''
 code_path = ''
 
-def do_test(name):
+def do_test(name, replace_ref):
     """ Run test, return True/False for pass/fail.
     Files must compare, with no extra or missing files.
     """
@@ -53,12 +53,14 @@ def do_test(name):
     ref_dir = os.path.join(test_source_dir, name)
     logging.info('Reference directory: ' + ref_dir)
 
-    # make sure output directory exists
-    result_dir = os.path.join(test_binary_dir, 'tests', name)
-    logging.info('Result directory: ' + result_dir)
-
-    makedirs(result_dir)
-    clear_files(result_dir)
+    if replace_ref:
+        # replacing reference, just create directly in ref directory
+        result_dir = ref_dir
+    else:
+        result_dir = os.path.join(test_binary_dir, 'tests', name)
+        logging.info('Result directory: ' + result_dir)
+        makedirs(result_dir)
+        clear_files(result_dir)
 
     cmd = [
         code_path,
@@ -102,6 +104,9 @@ def do_test(name):
 #        if line.startswith('Wrote '):
 #            outfiles.append( line[6:] )
 #    print("XXXX", outfiles)
+
+    if replace_ref:
+        return True
 
     cmp = filecmp.dircmp(ref_dir, result_dir)
     match, mismatch, errors = filecmp.cmpfiles(ref_dir, result_dir, cmp.common)
@@ -160,9 +165,13 @@ if __name__ == '__main__':
     # XXX raise KeyError(key)
 
     parser = argparse.ArgumentParser(prog='do-test')
+    parser.add_argument('-r', action='store_true',
+                        help='Replace test results')
     parser.add_argument('testname', nargs='*',
                         help='test to run')
     args = parser.parse_args()
+
+    replace_ref = args.r
 
     # XXX - get directories from environment or command line options
 
@@ -201,7 +210,7 @@ if __name__ == '__main__':
     pass_names = []
     fail_names = []
     for name in test_names:
-        status = do_test(name)
+        status = do_test(name, replace_ref)
         if status:
             pass_names.append(name)
             print('{} pass'.format(name))

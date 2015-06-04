@@ -1,0 +1,742 @@
+{
+    "classes": [
+        {
+            "C_header_filename": "wrapExClass1.h", 
+            "C_impl_filename": "wrapExClass1.cpp", 
+            "F_impl_filename": "wrapfExClass1.f", 
+            "F_module_dependencies": [
+                [
+                    "exclass1_mod", 
+                    [
+                        "exclass1"
+                    ]
+                ], 
+                [
+                    "exclass2_mod", 
+                    [
+                        "exclass2"
+                    ]
+                ], 
+                [
+                    "iso_c_binding", 
+                    []
+                ]
+            ], 
+            "F_module_name": "exclass1_mod", 
+            "methods": [
+                {
+                    "C_arguments": "const char * name", 
+                    "C_code": "return (AA_exclass1 *) selfobj;", 
+                    "C_name": "AA_exclass1_new", 
+                    "C_object": "ExClass1 *selfobj = new ExClass1(name);", 
+                    "C_return_type": "AA_exclass1 *", 
+                    "F_C_arguments": "name", 
+                    "F_C_name": "aa_exclass1_new", 
+                    "F_arguments": "name", 
+                    "F_code": "rv%obj = aa_exclass1_new(trim(name) // C_NULL_CHAR)", 
+                    "F_name_generic": "new", 
+                    "F_name_impl": "exclass1_new", 
+                    "F_name_method": "new", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "ptr": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "decl": "ExClass1 *new+constructor ( const string *name )", 
+                    "docs": "constructor", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "ExClass1"
+                    }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self", 
+                    "C_code": "delete selfobj;", 
+                    "C_name": "AA_exclass1_delete", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "void", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass1_delete", 
+                    "F_arguments": "obj", 
+                    "F_code": "call aa_exclass1_delete(obj%obj)\nobj%obj = C_NULL_PTR", 
+                    "F_name_generic": "delete", 
+                    "F_name_impl": "exclass1_delete", 
+                    "F_name_method": "delete", 
+                    "args": [], 
+                    "decl": "void delete+destructor", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "destructor": true
+                        }, 
+                        "name": "delete", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self, int incr", 
+                    "C_code": "int rv = selfobj->incrementCount(incr);\nreturn rv;", 
+                    "C_name": "AA_exclass1_increment_count", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "int", 
+                    "F_C_arguments": "self, incr", 
+                    "F_C_name": "aa_exclass1_increment_count", 
+                    "F_arguments": "obj, incr", 
+                    "F_code": "rv = aa_exclass1_increment_count(obj%obj, incr)", 
+                    "F_name_generic": "increment_count", 
+                    "F_name_impl": "exclass1_increment_count", 
+                    "F_name_method": "increment_count", 
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "incr", 
+                            "type": "int"
+                        }
+                    ], 
+                    "decl": "int incrementCount(int incr)", 
+                    "docs": "blah blah", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "incrementCount", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "C_arguments": "const AA_exclass1 * self", 
+                    "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
+                    "C_name": "AA_exclass1_get_name", 
+                    "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                    "C_return_type": "const char *", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass1_get_name", 
+                    "F_arguments": "obj", 
+                    "F_code": "rv = fstr(aa_exclass1_get_name(obj%obj))", 
+                    "F_name_generic": "get_name", 
+                    "F_name_impl": "exclass1_get_name", 
+                    "F_name_method": "get_name", 
+                    "args": [], 
+                    "decl": "const string& getName()", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "len": "aa_exclass1_get_name_length(obj%obj)", 
+                            "reference": true
+                        }, 
+                        "name": "getName", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "C_arguments": "const AA_exclass1 * self", 
+                    "C_code": "return selfobj->getName().length();", 
+                    "C_name": "AA_exclass1_get_name_length", 
+                    "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                    "C_return_type": "const int", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass1_get_name_length", 
+                    "F_arguments": "obj", 
+                    "F_code": "rv = aa_exclass1_get_name_length(obj%obj)", 
+                    "F_name_generic": "get_name_length", 
+                    "F_name_impl": "exclass1_get_name_length", 
+                    "F_name_method": "get_name_length", 
+                    "docs": "helper function for Fortran", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "len": "aa_get_exclass2_name_length(obj%obj)"
+                        }, 
+                        "name": "get_name_length", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self", 
+                    "C_code": "ExClass2 * rv = selfobj->getRoot();\nreturn rv;", 
+                    "C_name": "AA_exclass1_get_root", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "AA_exclass2 *", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass1_get_root", 
+                    "F_arguments": "obj", 
+                    "F_code": "rv%obj = aa_exclass1_get_root(obj%obj)", 
+                    "F_name_generic": "get_root", 
+                    "F_name_impl": "exclass1_get_root", 
+                    "F_name_method": "get_root", 
+                    "args": [], 
+                    "decl": "ExClass2 *getRoot()", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "getRoot", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self, int value", 
+                    "C_code": "int rv = selfobj->getValue(value);\nreturn rv;", 
+                    "C_name": "AA_exclass1_get_value_from_int", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "int", 
+                    "F_C_arguments": "self, value", 
+                    "F_C_name": "aa_exclass1_get_value_from_int", 
+                    "F_arguments": "obj, value", 
+                    "F_code": "rv = aa_exclass1_get_value_from_int(obj%obj, value)", 
+                    "F_name_generic": "get_value", 
+                    "F_name_impl": "exclass1_get_value_from_int", 
+                    "F_name_method": "get_value_from_int", 
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "value", 
+                            "type": "int"
+                        }
+                    ], 
+                    "decl": "int  getValue(int value)", 
+                    "method_suffix": "_from_int", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self, long value", 
+                    "C_code": "long rv = selfobj->getValue(value);\nreturn rv;", 
+                    "C_name": "AA_exclass1_get_value_1", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "long", 
+                    "F_C_arguments": "self, value", 
+                    "F_C_name": "aa_exclass1_get_value_1", 
+                    "F_arguments": "obj, value", 
+                    "F_code": "rv = aa_exclass1_get_value_1(obj%obj, value)", 
+                    "F_name_generic": "get_value", 
+                    "F_name_impl": "exclass1_get_value_1", 
+                    "F_name_method": "get_value_1", 
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "value", 
+                            "type": "long"
+                        }
+                    ], 
+                    "decl": "long getValue(long value)", 
+                    "method_suffix": "_1", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass1.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "long"
+                    }
+                }
+            ], 
+            "name": "ExClass1", 
+            "options": {
+                "C_header_filename_template": "wrap{cpp_class}.h", 
+                "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                "C_prefix": "AA_", 
+                "C_this": "self", 
+                "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                "F_module_name_template": "{lower_class}_mod", 
+                "F_name_generic_template": "{underscore_name}", 
+                "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                "F_name_method_template": "{underscore_name}{method_suffix}", 
+                "F_result": "rv", 
+                "F_this": "obj", 
+                "cpp_header": "ExClass1.hpp", 
+                "namespace": "example nested"
+            }
+        }, 
+        {
+            "C_header_filename": "wrapExClass2.h", 
+            "C_impl_filename": "wrapExClass2.cpp", 
+            "F_impl_filename": "wrapfExClass2.f", 
+            "F_module_dependencies": [
+                [
+                    "exclass2_mod", 
+                    [
+                        "exclass2"
+                    ]
+                ], 
+                [
+                    "iso_c_binding", 
+                    []
+                ]
+            ], 
+            "F_module_name": "exclass2_mod", 
+            "methods": [
+                {
+                    "C_arguments": "const char * name", 
+                    "C_code": "return (AA_exclass2 *) selfobj;", 
+                    "C_name": "AA_exclass2_ex_class2", 
+                    "C_object": "ExClass2 *selfobj = new ExClass2(name);", 
+                    "C_return_type": "AA_exclass2 *", 
+                    "F_C_arguments": "name", 
+                    "F_C_name": "aa_exclass2_ex_class2", 
+                    "F_arguments": "name", 
+                    "F_code": "rv%obj = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)", 
+                    "F_name_generic": "ex_class2", 
+                    "F_name_impl": "exclass2_ex_class2", 
+                    "F_name_method": "ex_class2", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "ptr": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass2.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "ExClass2", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
+                    "C_arguments": "AA_exclass2 * self", 
+                    "C_code": "delete selfobj;", 
+                    "C_name": "AA_exclass2_ex_class1", 
+                    "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                    "C_return_type": "void", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass2_ex_class1", 
+                    "F_arguments": "obj", 
+                    "F_code": "call aa_exclass2_ex_class1(obj%obj)\nobj%obj = C_NULL_PTR", 
+                    "F_name_generic": "ex_class1", 
+                    "F_name_impl": "exclass2_ex_class1", 
+                    "F_name_method": "ex_class1", 
+                    "args": [], 
+                    "decl": "void ExClass1+destructor", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass2.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "destructor": true
+                        }, 
+                        "name": "ExClass1", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "C_arguments": "const AA_exclass2 * self", 
+                    "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
+                    "C_name": "AA_exclass2_get_name", 
+                    "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
+                    "C_return_type": "const char *", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass2_get_name", 
+                    "F_arguments": "obj", 
+                    "F_code": "rv = fstr(aa_exclass2_get_name(obj%obj))", 
+                    "F_name_generic": "get_name", 
+                    "F_name_impl": "exclass2_get_name", 
+                    "F_name_method": "get_name", 
+                    "args": [], 
+                    "decl": "const string& getName", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass2.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "len": "aa_exclass2_get_name_length(obj%obj)", 
+                            "reference": true
+                        }, 
+                        "name": "getName", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "C_arguments": "const AA_exclass2 * self", 
+                    "C_code": "return selfobj->getName().length();", 
+                    "C_name": "AA_exclass2_get_name_length", 
+                    "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
+                    "C_return_type": "const int", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass2_get_name_length", 
+                    "F_arguments": "obj", 
+                    "F_code": "rv = aa_exclass2_get_name_length(obj%obj)", 
+                    "F_name_generic": "get_name_length", 
+                    "F_name_impl": "exclass2_get_name_length", 
+                    "F_name_method": "get_name_length", 
+                    "docs": "helper function for Fortran", 
+                    "options": {
+                        "C_header_filename_template": "wrap{cpp_class}.h", 
+                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                        "C_prefix": "AA_", 
+                        "C_this": "self", 
+                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                        "F_module_name_template": "{lower_class}_mod", 
+                        "F_name_generic_template": "{underscore_name}", 
+                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                        "F_name_method_template": "{underscore_name}{method_suffix}", 
+                        "F_result": "rv", 
+                        "F_this": "obj", 
+                        "cpp_header": "ExClass2.hpp", 
+                        "namespace": "example nested"
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "len": "exclass2_get_name_length(obj%obj)"
+                        }, 
+                        "name": "get_name_length", 
+                        "type": "int"
+                    }
+                }
+            ], 
+            "name": "ExClass2", 
+            "options": {
+                "C_header_filename_template": "wrap{cpp_class}.h", 
+                "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                "C_prefix": "AA_", 
+                "C_this": "self", 
+                "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                "F_module_name_template": "{lower_class}_mod", 
+                "F_name_generic_template": "{underscore_name}", 
+                "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                "F_name_method_template": "{underscore_name}{method_suffix}", 
+                "F_result": "rv", 
+                "F_this": "obj", 
+                "cpp_header": "ExClass2.hpp", 
+                "namespace": "example nested"
+            }
+        }
+    ], 
+    "copyright": [
+        "blah blah", 
+        "yada yada", 
+        null
+    ], 
+    "functions": [
+        {
+            "args": [], 
+            "decl": "void local_function1", 
+            "docs": "yada yada yada", 
+            "options": {
+                "C_header_filename_template": "wrap{cpp_class}.h", 
+                "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+                "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+                "C_prefix": "AA_", 
+                "C_this": "self", 
+                "F_impl_filename_template": "wrapf{cpp_class}.f", 
+                "F_module_name_template": "{lower_class}_mod", 
+                "F_name_generic_template": "{underscore_name}", 
+                "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+                "F_name_method_template": "{underscore_name}{method_suffix}", 
+                "F_result": "rv", 
+                "F_this": "obj", 
+                "namespace": "example nested"
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "local_function1", 
+                "type": "void"
+            }
+        }
+    ], 
+    "options": {
+        "C_header_filename_template": "wrap{cpp_class}.h", 
+        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
+        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
+        "C_prefix": "AA_", 
+        "C_this": "self", 
+        "F_impl_filename_template": "wrapf{cpp_class}.f", 
+        "F_module_name_template": "{lower_class}_mod", 
+        "F_name_generic_template": "{underscore_name}", 
+        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
+        "F_name_method_template": "{underscore_name}{method_suffix}", 
+        "F_result": "rv", 
+        "F_this": "obj", 
+        "namespace": "example nested"
+    }, 
+    "typedef": {
+        "ExClass1": {
+            "base": "wrapped", 
+            "c": "AA_exclass1", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<ExClass1{ptr}>({var})", 
+            "cpp": "ExClass1", 
+            "f_module": {
+                "exclass1_mod": [
+                    "exclass1"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_this} = {F_C_name}({arg_c_call})", 
+            "fortran": "type(exclass1)", 
+            "fortran_to_c": "{var}%obj", 
+            "fortran_type": "exclass1", 
+            "forward": "ExClass1"
+        }, 
+        "ExClass2": {
+            "base": "wrapped", 
+            "c": "AA_exclass2", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<ExClass2{ptr}>({var})", 
+            "cpp": "ExClass2", 
+            "f_module": {
+                "exclass2_mod": [
+                    "exclass2"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_this} = {F_C_name}({arg_c_call})", 
+            "fortran": "type(exclass2)", 
+            "fortran_to_c": "{var}%obj", 
+            "fortran_type": "exclass2", 
+            "forward": "ExClass2"
+        }, 
+        "bool": {
+            "base": "unknown", 
+            "c": "bool", 
+            "c_fortran": "logical(C_BOOL)", 
+            "cpp": "bool", 
+            "f_return_code": "{F_result} = bool2logical({F_C_name}({arg_c_call}))", 
+            "fortran": "logical"
+        }, 
+        "int": {
+            "base": "unknown", 
+            "c": "int", 
+            "c_fortran": "integer(C_INT)", 
+            "cpp": "int", 
+            "fortran": "integer(C_INT)"
+        }, 
+        "long": {
+            "base": "unknown", 
+            "c": "long", 
+            "c_fortran": "integer(C_LONG)", 
+            "cpp": "long", 
+            "fortran": "integer(C_LONG)"
+        }, 
+        "other": {
+            "base": "unknown", 
+            "cpp": "junk"
+        }, 
+        "size_t": {
+            "base": "unknown", 
+            "c": "size_t", 
+            "c_fortran": "integer(C_SIZE_T)", 
+            "c_header": "stdlib.h", 
+            "cpp": "size_t", 
+            "fortran": "integer(C_SIZE_T)"
+        }, 
+        "std::string": {
+            "base": "string", 
+            "c": "char", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "cpp": "std::string", 
+            "cpp_to_c": "{var}.c_str()", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({arg_c_call}))", 
+            "fortran": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "string": {
+            "base": "string", 
+            "c": "char", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "cpp": "std::string", 
+            "cpp_to_c": "{var}.c_str()", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({arg_c_call}))", 
+            "fortran": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "void": {
+            "base": "unknown", 
+            "c": "void", 
+            "c_fortran": "type(C_PTR)", 
+            "cpp": "void", 
+            "fortran": "type(C_PTR)"
+        }
+    }
+}
