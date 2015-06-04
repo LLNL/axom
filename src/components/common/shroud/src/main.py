@@ -17,6 +17,11 @@ import parse_decl
 import wrapc
 import wrapf
 
+class Config(object):
+    """A class to stash configuration values.
+    """
+    pass
+
 
 class Schema(object):
     """
@@ -308,6 +313,12 @@ if __name__ == '__main__':
     logpath = os.path.join(args.logdir, basename + '.log')
     log = open(logpath, 'w')
 
+    # pass around an option dictionary
+    config = Config()
+    config.binary_dir = args.outdir
+    config.source_dir = args.indir
+    config.log = log
+
     # accumulated input
     all = {}
 
@@ -327,9 +338,9 @@ if __name__ == '__main__':
 
     Schema(all).check_schema()
 
-    wrapc.Wrapc(all, log).wrap()
+    wrapc.Wrapc(all, config).wrap()
 
-    wrapf.Wrapf(all, log).wrap()
+    wrapf.Wrapf(all, config).wrap()
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')

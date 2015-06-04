@@ -102,11 +102,13 @@ ADD_CUSTOM_TARGET(sidre_generate
 #
 execute_process(
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
-    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
+         --logdir ${CMAKE_CURRENT_BINARY_DIR}
+         --outdir ${API_OUTPUT_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     RESULT_VARIABLE capi_result
     ERROR_VARIABLE capi_stderr
     OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.output
-    WORKING_DIRECTORY ${API_OUTPUT_DIR}
 )
 if(capi_result)
   message(FATAL_ERROR "Error creating sidre wrappers:\n${capi_stderr}")

@@ -15,15 +15,18 @@ from __future__ import print_function
 
 import util
 
+import os
+
 wformat = util.wformat
 
 class Wrapc(object):
     """Generate C bindings for C++ classes
 
     """
-    def __init__(self, tree, log):
+    def __init__(self, tree, config):
         self.tree = tree    # json tree
-        self.log = log
+        self.config = config
+        self.log = config.log
         self.typedef = tree['typedef']
 
     def _clear_class(self):
@@ -90,7 +93,7 @@ class Wrapc(object):
                 fp.write('//\n')
 
     def write_header(self, node, fname):
-        fp = open(fname, 'w')
+        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
 
         guard = fname.replace(".", "_").upper()
@@ -146,7 +149,7 @@ class Wrapc(object):
     def write_impl(self, node, hname, fname):
         # node = class node
         namespace = node['options'].get('namespace',None)
-        fp = open(fname, "w")
+        fp = open(os.path.join(self.config.binary_dir, fname), "w")
         self.write_copyright(fp)
         fp.write('// {}\n'.format(fname))
         fp.write('#define EXAMPLE_WRAPPER_IMPL\n')

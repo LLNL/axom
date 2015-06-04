@@ -17,15 +17,18 @@ from __future__ import print_function
 import util
 import fwrap_util
 
+import os
+
 wformat = util.wformat
 
 class Wrapf(object):
     """Generate Fortran bindings.
     """
 
-    def __init__(self, tree, log):
+    def __init__(self, tree, config):
         self.tree = tree    # json tree
-        self.log = log
+        self.config = config
+        self.log = config.log
         self.typedef = tree['typedef']
 
     def _clear_class(self):
@@ -361,7 +364,7 @@ class Wrapf(object):
     def write_module(self, node):
         fname = node['F_impl_filename']
         module_name = node['F_module_name']
-        fp = open(fname, 'w')
+        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
 
         output = []
