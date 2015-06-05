@@ -43,7 +43,7 @@ TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
   ATK_databuffer_allocate(dbuff);
 
   //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
-  uint32_t * data_ptr = static_cast<uint32_t *>(ATK_databuffer_get_data(dbuff));
+  uint32_t * data_ptr = (uint32_t *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -106,7 +106,7 @@ TEST(C_sidre_buffer,realloc_buffer)
 #endif
 
   //    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
-  int64_t * data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
+  int64_t * data_ptr = (int64_t *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -121,7 +121,7 @@ TEST(C_sidre_buffer,realloc_buffer)
 
   // data buffer changes
   //    data_ptr = dbuff->getNode().as_int64_ptr();
-  data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
+  data_ptr = (int64_t *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {

@@ -257,19 +257,19 @@ TEST(C_sidre_group,view_copy_move)
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "i0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    int32_t * v = static_cast<int32_t *>(ATK_databuffer_get_data(tmpbuf));
+    int32_t * v = (int32_t *) ATK_databuffer_get_data(tmpbuf);
     *v = 1;
   }
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "f0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    float32_t * v = static_cast<float32_t *>(ATK_databuffer_get_data(tmpbuf));
+    float32_t * v = (float32_t *) ATK_databuffer_get_data(tmpbuf);
     *v = 100.0;
   }
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "d0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    float64_t * v = static_cast<float64_t *>(ATK_databuffer_get_data(tmpbuf));
+    float64_t * v = (float64_t *) ATK_databuffer_get_data(tmpbuf);
     *v = 3000;
   }
 #endif
@@ -295,7 +295,7 @@ TEST(C_sidre_group,view_copy_move)
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(sub, "d0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    d0_data = static_cast<float64_t *>(ATK_databuffer_get_data(tmpbuf));
+    d0_data = (float64_t *) ATK_databuffer_get_data(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
