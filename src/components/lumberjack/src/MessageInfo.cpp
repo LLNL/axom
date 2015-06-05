@@ -18,7 +18,7 @@ std::vector<int> MessageInfo::ranks() const
 	return m_ranks;
 }
 
-int MessageInfo::rankCount() const
+std::vector<int>::size_type MessageInfo::rankCount() const
 {
 	return m_rankCount;
 }
@@ -43,7 +43,7 @@ void MessageInfo::lineNumber(int newLineNumber)
 	m_lineNumber = newLineNumber;
 }
 
-void MessageInfo::addRank(int newRank, int ranksLimit)
+void MessageInfo::addRank(int newRank, std::vector<int>::size_type ranksLimit)
 {
 	if (m_ranks.size() < ranksLimit){
 		m_ranks.push_back(newRank);
@@ -51,7 +51,7 @@ void MessageInfo::addRank(int newRank, int ranksLimit)
 	m_rankCount++;
 }
 
-void MessageInfo::addRanks(const std::vector<int>& newRanks, int ranksLimit)
+void MessageInfo::addRanks(const std::vector<int>& newRanks, std::vector<int>::size_type ranksLimit)
 {
 	int newRanksSize = newRanks.size();
 	for(int i=0; i<newRanksSize; ++i){

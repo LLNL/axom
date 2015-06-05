@@ -26,7 +26,7 @@ TEST(lumberjack_MessageEqualityCombiner, case01)
 
 	EXPECT_EQ(shouldMessageInfosBeCombined, true);
 	EXPECT_EQ(m1.message().compare(message), 0);
-	EXPECT_EQ(m1.rankCount(), 2);
+	EXPECT_EQ(m1.rankCount(), (std::vector<int>::size_type)2);
 	EXPECT_EQ(m1.ranks()[0], 13);
 	EXPECT_EQ(m1.ranks()[1], 14);
 }
@@ -54,10 +54,10 @@ TEST(lumberjack_MessageEqualityCombiner, case02)
 
 	EXPECT_EQ(shouldMessageInfosBeCombined, false);
 	EXPECT_EQ(m1.message().compare(message1), 0);
-	EXPECT_EQ(m1.rankCount(), 1);
+	EXPECT_EQ(m1.rankCount(), (std::vector<int>::size_type)1);
 	EXPECT_EQ(m1.ranks()[0], 13);
 
 	EXPECT_EQ(m2.message().compare(message2), 0);
-	EXPECT_EQ(m2.rankCount(), 1);
+	EXPECT_EQ(m2.rankCount(), (std::vector<int>::size_type)1);
 	EXPECT_EQ(m2.ranks()[0], 14);
 }

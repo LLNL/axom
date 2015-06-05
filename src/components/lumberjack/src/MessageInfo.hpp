@@ -37,7 +37,7 @@ class MessageInfo {
 		// Getters
 		std::string message() const;
 		std::vector<int> ranks() const;
-		int rankCount() const;
+		std::vector<int>::size_type rankCount() const;
 		std::string fileName() const;
 		int lineNumber() const;
 
@@ -45,12 +45,12 @@ class MessageInfo {
 		void message(const std::string& newMessage);
 		void fileName(const std::string& newFileName);
 		void lineNumber(int newLineNumber);
-		void addRank(int newRank, int ranksLimit);
-		void addRanks(const std::vector<int>& newRanks, int ranksLimit);
+		void addRank(int newRank, std::vector<int>::size_type ranksLimit);
+		void addRanks(const std::vector<int>& newRanks, std::vector<int>::size_type ranksLimit);
 	private:
 		std::string m_message;
 		std::vector<int> m_ranks;
-		int m_rankCount;
+		std::vector<int>::size_type m_rankCount;
 		std::string m_fileName;
 		int m_lineNumber;
 };

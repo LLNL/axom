@@ -1,5 +1,5 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef BINARYTREECOMMUNICATOR_HPP
+#define BINARYTREECOMMUNICATOR_HPP
 
 #include <string>
 

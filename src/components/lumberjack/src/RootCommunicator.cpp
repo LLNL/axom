@@ -1,12 +1,14 @@
 #include "lumberjack/RootCommunicator.hpp"
 
+#include "common/CommonTypes.hpp"
+
 namespace asctoolkit {
 namespace lumberjack {
 
-void RootCommunicator::setCommunicator(MPI_Comm* comm)
+void RootCommunicator::setCommunicator(MPI_Comm comm)
 {
 	m_comm = comm;
-	MPI_Comm_rank(&m_comm, &m_commRank)
+	MPI_Comm_rank(m_comm, &m_commRank);
 }
 
 void RootCommunicator::pushMessagesOnce()
@@ -29,14 +31,14 @@ void RootCommunicator::pushMessagesFully()
 	pushMessagesOnce();
 }
 
-std::vector<MessageInfos> RootCommunicator::getMessages()
+std::vector<MessageInfo>* RootCommunicator::getMessages()
 {
 	if (m_commRank == 0){
-		std::vector<MessageInfos>* returnedVector = new std::vector<MessageInfos>;
-		returnedVector.swap(m_messages);
+		std::vector<MessageInfo>* returnedVector = new std::vector<MessageInfo>;
+		returnedVector->swap(m_messages);
 		return returnedVector;
 	}
-	return nullptr;
+	return ATK_NULLPTR;
 }
 
 }

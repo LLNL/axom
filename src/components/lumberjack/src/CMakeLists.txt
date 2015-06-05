@@ -23,8 +23,17 @@ set(lumberjack_sources
 #
 # make the library
 #
-make_library(lumberjack "${lumberjack_sources}" "${lumberjack_headers}")
+make_library( LIBRARY_NAME
+                  lumberjack
+              LIBRARY_SOURCES
+                  "${lumberjack_sources}"
+                  "${lumberjack_headers}"
+              WITH_MPI
+              )
+
 add_dependencies(lumberjack copy_headers_lumberjack)
+add_dependencies(lumberjack copy_headers_common)
+
 install(TARGETS lumberjack DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 #
