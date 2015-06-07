@@ -33,17 +33,22 @@ typedef int IndexType;
  * \brief Common invalid index identifier used in sidre.
  */
 const IndexType InvalidIndex = -1;
-
+///
+inline bool indexIsValid(IndexType idx)
+{ 
+  return  idx != InvalidIndex;
+}
 
 /*!
  * \brief Common invalid name (string) identifier used in sidre.
  */
 const std::string InvalidName;
 ///
-inline bool isNameValid(const std::string& name)
+inline bool nameIsValid(const std::string& name)
 {
   return name != InvalidName;
 }
+
 
 template< int TYPEID >
 inline TypeID getTypeID()

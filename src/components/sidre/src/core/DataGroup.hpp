@@ -233,6 +233,12 @@ public:
     return m_view_coll.getItemName(idx);
   }
 
+//@}
+
+
+//@{
+//!  @name DataView iteration methods
+
   /*!
    * \brief Return number of DataViews contained in this DataGroup.
    */
@@ -241,7 +247,29 @@ public:
     return m_view_coll.getNumItems();
   }
 
-//@}
+  /*!
+   * \brief Return first valid DataView index (i.e., smallest index
+   *        over all DataViews).
+   *
+   * sidre::InvalidIndex is returned if group has no views.
+   */
+  IndexType getFirstValidViewIndex() const
+  {
+    return m_view_coll.getFirstValidIndex();
+  }
+
+  /*!
+   * \brief Return next valid DataView index after given index (i.e., 
+   *        smallest index over all view indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if no valid index greater than given one.
+   */
+  IndexType getNextValidViewIndex(IndexType idx) const
+  {
+    return m_view_coll.getNextValidIndex(idx);
+  }
+
+//@} 
 
 
 //@{
@@ -490,12 +518,41 @@ public:
     return m_group_coll.getItemName(idx);
   }
 
+//@}
+
+
+//@{
+//!  @name (child) DataGroup iteration methods
+
   /*!
-   * \brief Return number of child DataGroups contained in this DataGroup.
+   * \brief Return number of (child) DataGroups contained in this DataGroup.
    */
   size_t getNumGroups() const
   {
     return m_group_coll.getNumItems();
+  }
+
+  /*!
+   * \brief Return first valid (child) DataGroup index (i.e., smallest 
+   *        index over all (child) DataGroups).
+   *
+   * sidre::InvalidIndex is returned if group has no child groups.
+   */
+  IndexType getFirstValidGroupIndex() const
+  {
+    return m_group_coll.getFirstValidIndex();
+  }
+
+  /*!
+   * \brief Return next valid (child) DataGroup index after given index 
+   *        (i.e., smallest index over all chid group indices larger 
+   *        than given one).
+   *
+   * sidre::InvalidIndex is returned if no valid index greater than given one.
+   */
+  IndexType getNextValidGroupIndex(IndexType idx) const
+  {
+    return m_group_coll.getNextValidIndex(idx);
   }
 
 //@}
@@ -695,25 +752,45 @@ private:
   ///
   ///////////////////////////////////////////////////////////////////
   //
-  // Map container options
+  // Associative container options
   //
   // To try a different container, set the "MapType" typedef to
   // what you want.  Note: only one typedef should be active!!!
   //
   // Current options are std::map and boost/std::unordered_map
-  //
+  ///
   // typedef std::map<std::string, IndexType> MapType;
-  //
+  ///
 #if defined(USE_CXX11)
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
   typedef boost::unordered_map<std::string, IndexType> MapType;
 #endif
-  ///
-  typedef MapCollection<DataView, MapType> DataViewCollection;
-  ///
-  typedef MapCollection<DataGroup, MapType> DataGroupCollection;
   //
+  ///////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////
+  // Collection options (API between DataGroup and assoc. container)
+  ///////////////////////////////////////////////////////////////////
+  //
+  ///////////////////////////////////////////////////////////////////
+  // Original implementation (no holes in index sequence)
+  ///////////////////////////////////////////////////////////////////
+  //
+    typedef MapCollection<DataView, MapType> DataViewCollection;
+  //
+    typedef MapCollection<DataGroup, MapType> DataGroupCollection;
+  //
+  ///////////////////////////////////////////////////////////////////
+  //
+  ///////////////////////////////////////////////////////////////////
+  // Improved implementation (index-item association constant as long
+  // as item is in collection, but holes in index sequence)
+  ///////////////////////////////////////////////////////////////////
+  //
+  // typedef NewMapCollection<DataView, MapType> DataViewCollection;
+  //
+  // typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
   ///////////////////////////////////////////////////////////////////
 
 
