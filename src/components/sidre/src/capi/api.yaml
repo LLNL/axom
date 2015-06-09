@@ -28,7 +28,7 @@ typedef:
   TypeEnum:
     # enum for types
     c_header: sidre/SidreTypes.h
-    c: ATK_TypeEnum
+    c: ATK_TypeID
 #    cpp: DataType::
     c_to_cpp:  getTypeID({var})
     # XXX this is assuming enums are ints

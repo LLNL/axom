@@ -56,7 +56,7 @@ inline TypeID getTypeID()
   return static_cast<TypeID>(TYPEID);
 }
 
-inline TypeID getTypeID( const ATK_TypeEnum typeID )
+inline TypeID getTypeID( const ATK_TypeID typeID )
 {
   TypeID rval = DataType::EMPTY_T;
 
