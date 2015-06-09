@@ -114,6 +114,20 @@ inline TypeID getTypeID( const int typeID )
   case ATK_CHAR8_STR_T:
     rval = DataType::CHAR8_STR_T;
     break;
+
+  case ATK_C_INT_T:
+    rval = CONDUIT_NATIVE_INT_DATATYPE_ID;
+    break;
+  case ATK_C_LONG_T:
+    rval = CONDUIT_NATIVE_LONG_DATATYPE_ID;
+    break;
+  case ATK_C_FLOAT_T:
+    rval = CONDUIT_NATIVE_FLOAT_DATATYPE_ID;
+    break;
+  case ATK_C_DOUBLE_T:
+    rval = CONDUIT_NATIVE_DOUBLE_DATATYPE_ID;
+    break;
+
   default:
     rval = DataType::EMPTY_T;
     break;

@@ -12,8 +12,6 @@
 
 #include "sidre/sidre.h"
 
-typedef float float32_t;
-typedef double float64_t;
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -243,11 +241,11 @@ TEST(C_sidre_group,view_copy_move)
 
   ATK_dataview * tmpview;
   tmpview = ATK_datagroup_create_view_and_buffer(flds, "i0");
-  ATK_dataview_allocate(tmpview, ATK_INT32_T, 1);
+  ATK_dataview_allocate(tmpview, ATK_C_INT_T, 1);
   tmpview = ATK_datagroup_create_view_and_buffer(flds, "f0");
-  ATK_dataview_allocate(tmpview, ATK_FLOAT32_T, 1);
+  ATK_dataview_allocate(tmpview, ATK_C_FLOAT_T, 1);
   tmpview = ATK_datagroup_create_view_and_buffer(flds, "d0");
-  ATK_dataview_allocate(tmpview, ATK_FLOAT64_T, 1);
+  ATK_dataview_allocate(tmpview, ATK_C_DOUBLE_T, 1);
 
 #if 0
   (*ATK_datagroup_get_view(flds, "i0")->getNode().as_int32_ptr())   = 1;
@@ -257,20 +255,20 @@ TEST(C_sidre_group,view_copy_move)
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "i0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    int32_t * v = (int32_t *) ATK_databuffer_get_data(tmpbuf);
+    int * v = (int *) ATK_databuffer_get_data(tmpbuf);
     *v = 1;
   }
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "f0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    float32_t * v = (float32_t *) ATK_databuffer_get_data(tmpbuf);
+    float * v = (float *) ATK_databuffer_get_data(tmpbuf);
     *v = 100.0;
   }
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "d0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    float64_t * v = (float64_t *) ATK_databuffer_get_data(tmpbuf);
-    *v = 3000;
+    double * v = (double *) ATK_databuffer_get_data(tmpbuf);
+    *v = 3000.0;
   }
 #endif
 
@@ -291,11 +289,11 @@ TEST(C_sidre_group,view_copy_move)
   // float64 *d0_data =  flds->getGroup("sub")
   //                         ->getView("d0")
   //                         ->getNode().as_float64_ptr();
-  float64_t * d0_data;
+  double * d0_data;
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(sub, "d0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    d0_data = (float64_t *) ATK_databuffer_get_data(tmpbuf);
+    d0_data = (double *) ATK_databuffer_get_data(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
