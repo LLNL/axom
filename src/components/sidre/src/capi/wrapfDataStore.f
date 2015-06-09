@@ -18,6 +18,8 @@ module datastore_mod
         procedure :: create_buffer => datastore_create_buffer
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_root => datastore_get_root
+        procedure :: get_buffer => datastore_get_buffer
+        procedure :: get_num_buffers => datastore_get_num_buffers
     end type datastore
     
     interface
@@ -53,6 +55,21 @@ module datastore_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_datastore_get_root
+        
+        function atk_datastore_get_buffer(self, id) result(rv) bind(C, name="ATK_datastore_get_buffer")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_INT), value :: id
+            type(C_PTR) :: rv
+        end function atk_datastore_get_buffer
+        
+        function atk_datastore_get_num_buffers(self) result(rv) bind(C, name="ATK_datastore_get_num_buffers")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_datastore_get_num_buffers
     end interface
 
 contains
@@ -99,5 +116,24 @@ contains
         rv%obj = atk_datastore_get_root(obj%obj)
         ! splicer end
     end function datastore_get_root
+    
+    function datastore_get_buffer(obj, id) result(rv)
+        implicit none
+        class(datastore) :: obj
+        integer(C_INT) :: id
+        type(databuffer) :: rv
+        ! splicer begin
+        rv%obj = atk_datastore_get_buffer(obj%obj, id)
+        ! splicer end
+    end function datastore_get_buffer
+    
+    function datastore_get_num_buffers(obj) result(rv)
+        implicit none
+        class(datastore) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin
+        rv = atk_datastore_get_num_buffers(obj%obj)
+        ! splicer end
+    end function datastore_get_num_buffers
 
 end module datastore_mod

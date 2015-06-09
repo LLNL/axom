@@ -49,11 +49,11 @@ classes:
     -  decl: void destroyBuffer( const IndexType id )
 #    -  decl: DataBuffer* detatchBuffer( const IndexType id )
     -  decl: DataGroup *getRoot()
-#    -  decl: DataBuffer* getBuffer( const IndexType id )
+    -  decl: DataBuffer* getBuffer( const IndexType id )
 #    -  decl: void Destroybuffers()
 #    -  decl: void print() const
 #    -  decl: void info(Node &) const
-#    -  decl: IndexType getNumberOfBuffers() const
+    -  decl: size_t getNumBuffers() const
 
   - name: DataGroup
     options:

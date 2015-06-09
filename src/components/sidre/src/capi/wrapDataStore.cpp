@@ -59,6 +59,24 @@ return rv;
 // splicer end
 }
 
+ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, const ATK_IndexType id)
+{
+DataStore *selfobj = static_cast<DataStore *>(self);
+// splicer begin
+DataBuffer * rv = selfobj->getBuffer(id);
+return rv;
+// splicer end
+}
+
+size_t ATK_datastore_get_num_buffers(ATK_datastore * self)
+{
+DataStore *selfobj = static_cast<DataStore *>(self);
+// splicer begin
+size_t rv = selfobj->getNumBuffers();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

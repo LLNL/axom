@@ -385,7 +385,6 @@ TEST(C_sidre_group,groups_move_copy)
   ATK_datastore_delete(ds);
 }
 
-#if 0
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_view_and_buffer)
 {
@@ -393,29 +392,31 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_datagroup * const grp = ATK_datagroup_create_group(root, "grp");
 
-  std::string const viewName1 = "viewBuffer1";
-  std::string const viewName2 = "viewBuffer2";
+  const char * viewName1 = "viewBuffer1";
+  const char * viewName2 = "viewBuffer2";
 
-  DataView const * const view1 = grp->create_view_and_buffer(grp, viewName1);
-  DataView const * const view2 = grp->create_view_and_buffer(grp, viewName2);
+  // XXX const
+  ATK_dataview * view1 = ATK_datagroup_create_view_and_buffer(grp, viewName1);
+  ATK_dataview * view2 = ATK_datagroup_create_view_and_buffer(grp, viewName2);
 
-  EXPECT_TRUE(grp->has_view(grp, viewName1));
-  EXPECT_EQ( grp->get_view(grp, viewName1), view1 );
+  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
+  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName1), view1 );
 
-  EXPECT_TRUE(grp->has_view(grp, viewName2));
-  EXPECT_EQ( grp->get_view(grp, viewName2), view2 );
+  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
+  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName2), view2 );
 
-  ATK_IndexType const bufferId1 = view1->getBuffer(view1)->getUID();
+  ATK_databuffer *tmpbuf = ATK_dataview_get_buffer(view1);
+  ATK_IndexType bufferId1 = ATK_databuffer_get_index(tmpbuf);
 
-  grp->destroy_view_and_buffer(grp, viewName1);
+  ATK_datagroup_destroy_view_and_buffer(grp, viewName1);
 
 
-  EXPECT_FALSE(grp->has_view(grp, viewName1));
-  EXPECT_EQ(ds->getNumBuffers(ds), 1u);
+  EXPECT_FALSE(ATK_datagroup_has_view(grp, viewName1));
+  EXPECT_EQ(ATK_datastore_get_num_buffers(ds), 1u);
 
-  DataBuffer const * const buffer1 = ds->getBuffer(ds, bufferId1);
+  ATK_databuffer * buffer1 = ATK_datastore_get_buffer(ds, bufferId1);
   bool buffValid = true;
-  if( buffer1 == ATK_NULLPTR )
+  if( buffer1 == NULL )
   {
     buffValid = false;
   }
@@ -425,6 +426,7 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   ATK_datastore_delete(ds);
 }
 
+#if 0
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
@@ -438,19 +440,19 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  ATK_dataview * const view1 = grp->create_view_and_buffer(grp, viewName1,
+  ATK_dataview * const view1 = ATK_datagroup_create_view_and_buffer(grp, viewName1,
                                                            DataType::uint32(10));
   // this one is the Schema & method
   Schema s;
   s.set(DataType::float64(10));
-  ATk_dataview * const view2 = grp->create_view_and_buffer(grp, viewName2,
+  ATk_dataview * const view2 = ATK_datagroup_create_view_and_buffer(grp, viewName2,
                                                            s);
 
-  EXPECT_TRUE(grp->has_view(grp, viewName1));
-  EXPECT_EQ( grp->get_view(grp, viewName1), view1 );
+  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
+  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName1), view1 );
 
-  EXPECT_TRUE(grp->has_view(grp, viewName2));
-  EXPECT_EQ( grp->get_view(grp, viewName2), view2 );
+  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
+  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName2), view2 );
 
 
   uint32 * v1_vals = view1->getNode().as_uint32_ptr();
@@ -466,8 +468,8 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   EXPECT_EQ(view1->getSchema().total_bytes(), 10 * sizeof(uint32));
   EXPECT_EQ(view2->getSchema().total_bytes(), 10 * sizeof(float64));
 
-  grp->destroy_view_and_buffer(grp, viewName1);
-  grp->destroy_view_and_buffer(grp, viewName2);
+  ATK_datagroup_destroy_view_and_buffer(grp, viewName1);
+  ATK_datagroup_destroy_view_and_buffer(grp, viewName2);
 
   ATK_datastore_delete(ds);
 }
