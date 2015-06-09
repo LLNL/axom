@@ -61,6 +61,15 @@ return rv;
 // splicer end
 }
 
+void * ATK_dataview_get_data(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+void * rv = selfobj->getData();
+return rv;
+// splicer end
+}
+
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);

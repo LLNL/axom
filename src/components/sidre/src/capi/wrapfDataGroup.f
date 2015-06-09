@@ -30,7 +30,9 @@ module datagroup_mod
         procedure :: get_num_views => datagroup_get_num_views
         procedure :: has_group => datagroup_has_group
         procedure :: create_group => datagroup_create_group
+        procedure :: move_group => datagroup_move_group
         procedure :: destroy_group => datagroup_destroy_group
+        procedure :: get_group => datagroup_get_group
         procedure :: get_group_index => datagroup_get_group_index
         procedure :: get_group_name => datagroup_get_group_name
         procedure :: get_num_groups => datagroup_get_num_groups
@@ -145,11 +147,27 @@ module datagroup_mod
             type(C_PTR) :: rv
         end function atk_datagroup_create_group
         
+        function atk_datagroup_move_group(self, grp) result(rv) bind(C, name="ATK_datagroup_move_group")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: grp
+            type(C_PTR) :: rv
+        end function atk_datagroup_move_group
+        
         subroutine atk_datagroup_destroy_group(name) bind(C, name="ATK_datagroup_destroy_group")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR) :: name(*)
         end subroutine atk_datagroup_destroy_group
+        
+        function atk_datagroup_get_group(self, name) result(rv) bind(C, name="ATK_datagroup_get_group")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_group
         
         function atk_datagroup_get_group_index(self, name) result(rv) bind(C, name="ATK_datagroup_get_group_index")
             use iso_c_binding
@@ -318,6 +336,16 @@ contains
         ! splicer end
     end function datagroup_create_group
     
+    function datagroup_move_group(obj, grp) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        type(datagroup) :: grp
+        type(datagroup) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_move_group(obj%obj, grp%obj)
+        ! splicer end
+    end function datagroup_move_group
+    
     subroutine datagroup_destroy_group(name)
         implicit none
         character(*) :: name
@@ -325,6 +353,16 @@ contains
         call atk_datagroup_destroy_group(trim(name) // C_NULL_CHAR)
         ! splicer end
     end subroutine datagroup_destroy_group
+    
+    function datagroup_get_group(obj, name) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        type(datagroup) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_get_group(obj%obj, trim(name) // C_NULL_CHAR)
+        ! splicer end
+    end function datagroup_get_group
     
     function datagroup_get_group_index(obj, name) result(rv)
         implicit none

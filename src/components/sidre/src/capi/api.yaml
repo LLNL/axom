@@ -86,12 +86,12 @@ classes:
     -  decl: bool hasGroup( const string& name )
 #    -  decl: DataGroup* createGroup( const std::string& name )
     -  decl: DataGroup *createGroup( const string& name )
-#    -  decl: DataGroup *moveGroup(DataGroup *grp)
+    -  decl: DataGroup *moveGroup(DataGroup *grp)
 #    -  decl: DataGroup *copyGroup(DataGroup *grp)
     -  decl: void destroyGroup(const std::string &name)
 #    -  decl: void destroyGroup(IndexType idx)
 #    -  decl: DataGroup const * getGroup( const std::string& name ) const
-#    -  decl: DataGroup * getGroup( const std::string& name )
+    -  decl: DataGroup * getGroup( const std::string& name )
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
@@ -150,7 +150,7 @@ classes:
 #    - decl: void* getOpaque() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
-#    - decl: void* getData()
+    - decl: void* getData()
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
 #    - decl: const Schema& getSchema() const

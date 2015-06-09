@@ -21,6 +21,7 @@ module dataview_mod
         procedure :: has_buffer => dataview_has_buffer
         procedure :: get_name => dataview_get_name
         procedure :: get_buffer => dataview_get_buffer
+        procedure :: get_data => dataview_get_data
         procedure :: get_owning_group => dataview_get_owning_group
     end type dataview
     
@@ -64,6 +65,13 @@ module dataview_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_buffer
+        
+        function atk_dataview_get_data(self) result(rv) bind(C, name="ATK_dataview_get_data")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_dataview_get_data
         
         function atk_dataview_get_owning_group(self) result(rv) bind(C, name="ATK_dataview_get_owning_group")
             use iso_c_binding
@@ -124,6 +132,15 @@ contains
         rv%obj = atk_dataview_get_buffer(obj%obj)
         ! splicer end
     end function dataview_get_buffer
+    
+    function dataview_get_data(obj) result(rv)
+        implicit none
+        class(dataview) :: obj
+        type(C_PTR) :: rv
+        ! splicer begin
+        rv = atk_dataview_get_data(obj%obj)
+        ! splicer end
+    end function dataview_get_data
     
     function dataview_get_owning_group(obj) result(rv)
         implicit none

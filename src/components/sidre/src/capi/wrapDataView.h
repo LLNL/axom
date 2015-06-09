@@ -43,6 +43,8 @@ const char * ATK_dataview_get_name(const ATK_dataview * self);
 
 ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self);
 
+void * ATK_dataview_get_data(ATK_dataview * self);
+
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);
 
 #ifdef __cplusplus

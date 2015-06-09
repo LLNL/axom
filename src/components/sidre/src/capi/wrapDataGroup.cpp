@@ -142,12 +142,30 @@ return rv;
 // splicer end
 }
 
+ATK_datagroup * ATK_datagroup_move_group(ATK_datagroup * self, ATK_datagroup * grp)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+DataGroup * rv = selfobj->moveGroup(static_cast<DataGroup *>(grp));
+return rv;
+// splicer end
+}
+
 void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin
 selfobj->destroyGroup(name);
 return;
+// splicer end
+}
+
+ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+DataGroup * rv = selfobj->getGroup(name);
+return rv;
 // splicer end
 }
 

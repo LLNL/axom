@@ -62,7 +62,11 @@ bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name);
 
 ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name);
 
+ATK_datagroup * ATK_datagroup_move_group(ATK_datagroup * self, ATK_datagroup * grp);
+
 void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name);
+
+ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name);
 
 ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name);
 
