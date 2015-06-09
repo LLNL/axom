@@ -33,9 +33,9 @@ struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
-ATK_dataview * ATK_dataview_declare(ATK_dataview * self, ATK_TypeID type, long len);
+ATK_dataview * ATK_dataview_declare(ATK_dataview * self, int type, long len);
 
-ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, ATK_TypeID type, long len);
+ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, int type, long len);
 
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 

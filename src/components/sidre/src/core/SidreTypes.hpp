@@ -56,7 +56,15 @@ inline TypeID getTypeID()
   return static_cast<TypeID>(TYPEID);
 }
 
-inline TypeID getTypeID( const ATK_TypeID typeID )
+/*
+ *************************************************************************
+ *
+ * Convert C #define value to TypeID.
+ * Used with C wrappers.
+ *
+ *************************************************************************
+ */
+inline TypeID getTypeID( const int typeID )
 {
   TypeID rval = DataType::EMPTY_T;
 

@@ -25,13 +25,12 @@ typedef:
     c_fortran : integer(C_INT)
     fortran : integer(C_INT)
 
-  TypeEnum:
+  TypeID:
     # enum for types
     c_header: sidre/SidreTypes.h
-    c: ATK_TypeID
+    c: int
 #    cpp: DataType::
     c_to_cpp:  getTypeID({var})
-    # XXX this is assuming enums are ints
     c_fortran: integer(C_INT)
     fortran: integer(C_INT)
 
@@ -109,11 +108,11 @@ classes:
     methods:
       - decl: IndexType getIndex() const
 #      - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeEnum type, long len)
+      - decl: DataBuffer* declare(TypeID type, long len)
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
-#      - decl: DataBuffer* allocate(TypeEnum type, long len)
+#      - decl: DataBuffer* allocate(TypeID type, long len)
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
 #      - decl: DataBuffer* reallocate(const Schema& schema)
@@ -132,10 +131,10 @@ classes:
       cpp_header: sidre/DataView.hpp
 
     methods:
-    - decl: DataView* declare(TypeEnum type, long len)
+    - decl: DataView* declare(TypeID type, long len)
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
-    - decl: DataView* allocate(TypeEnum type, long len)
+    - decl: DataView* allocate(TypeID type, long len)
 #    - decl: DataView* allocate()
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)

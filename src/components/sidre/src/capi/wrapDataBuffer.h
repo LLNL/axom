@@ -29,7 +29,7 @@ typedef struct s_ATK_databuffer ATK_databuffer;
 
 ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
-ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, ATK_TypeID type, long len);
+ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, int type, long len);
 
 ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self);
 
