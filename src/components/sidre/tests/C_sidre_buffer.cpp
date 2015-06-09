@@ -145,3 +145,22 @@ TEST(C_sidre_buffer,realloc_buffer)
   ATK_datastore_delete(ds);
 
 }
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char* argv[])
+{
+   int result = 0;
+
+   ::testing::InitGoogleTest(&argc, argv);
+
+   UnitTestLogger logger;  // create & initialize test logger,
+                       // finalized when exiting main scope
+
+   result = RUN_ALL_TESTS();
+
+   return result;
+}

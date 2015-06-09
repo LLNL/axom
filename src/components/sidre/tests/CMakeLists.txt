@@ -30,14 +30,14 @@ set(gtest_sidre_tests
 # Add catch based tests
 #
 foreach(test ${catch_sidre_tests})
-    add_catch_test( TEST_SOURCE ${test} DEPENDS_ON sidre )
+    add_catch_test( TEST_SOURCE ${test} DEPENDS_ON sidre conduit slic)
 endforeach()
 
 #
 # Add gtest based tests
 #
 foreach(test ${gtest_sidre_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit )
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON sidre conduit slic)
 endforeach()
 
 
