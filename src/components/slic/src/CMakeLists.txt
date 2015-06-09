@@ -15,6 +15,7 @@ set(slic_headers
     Logger.hpp
     LogStream.hpp
     MessageLevel.h
+    UnitTestLogger.hpp
     slic.hpp
 
     logstreams/GenericOutputStream.hpp
