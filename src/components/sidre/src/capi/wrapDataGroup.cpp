@@ -61,6 +61,15 @@ return rv;
 // splicer end
 }
 
+ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, long len)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+DataView * rv = selfobj->createViewAndBuffer(name, getTypeID(type), len);
+return rv;
+// splicer end
+}
+
 ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

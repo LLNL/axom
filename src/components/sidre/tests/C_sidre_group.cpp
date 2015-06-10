@@ -337,7 +337,7 @@ TEST(C_sidre_group,groups_move_copy)
   (*ATK_datagroup_get_view(gb, "f0")->getNode().as_float32_ptr()) = 100.0;
   (*ATK_datagroup_get_view(gc, "d0")->getNode().as_float64_ptr()) = 3000.0;
 #endif
-#if 0   // ATK_dataview_get_data always returns NULL
+#ifdef XXX   // ATK_dataview_get_data always returns NULL
   {
     tmpview = ATK_datagroup_get_view(ga, "i0");
     int * v = (int *) ATK_dataview_get_data(tmpview);
@@ -426,8 +426,6 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   ATK_datastore_delete(ds);
 }
 
-#if 0
-
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 {
@@ -435,18 +433,17 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_datagroup * const grp = ATK_datagroup_create_group(root, "grp");
 
-  std::string const viewName1 = "viewBuffer1";
-  std::string const viewName2 = "viewBuffer2";
+  const char * viewName1 = "viewBuffer1";
+  const char * viewName2 = "viewBuffer2";
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  ATK_dataview * const view1 = ATK_datagroup_create_view_and_buffer(grp, viewName1,
-                                                           DataType::uint32(10));
+  ATK_dataview * const view1 = ATK_datagroup_create_view_and_buffer_from_type
+      (grp, viewName1, ATK_C_INT_T, 10);
+
   // this one is the Schema & method
-  Schema s;
-  s.set(DataType::float64(10));
-  ATk_dataview * const view2 = ATK_datagroup_create_view_and_buffer(grp, viewName2,
-                                                           s);
+  ATK_dataview * const view2 = ATK_datagroup_create_view_and_buffer_from_type
+      (grp, viewName2, ATK_C_DOUBLE_T, 10);
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
   EXPECT_EQ( ATK_datagroup_get_view(grp, viewName1), view1 );
@@ -454,9 +451,9 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
   EXPECT_EQ( ATK_datagroup_get_view(grp, viewName2), view2 );
 
-
-  uint32 * v1_vals = view1->getNode().as_uint32_ptr();
-  float64 * v2_vals = view2->getNode().as_float64_ptr();
+#ifdef XXX
+  int * v1_vals = (int *) ATK_dataview_get_data(view1);
+  double * v2_vals = (double *)  ATK_dataview_get_data(view1);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -464,15 +461,17 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
     v2_vals[i] = i * 3.1415;
   }
 
-
-  EXPECT_EQ(view1->getSchema().total_bytes(), 10 * sizeof(uint32));
-  EXPECT_EQ(view2->getSchema().total_bytes(), 10 * sizeof(float64));
+  EXPECT_EQ(view1->getSchema().total_bytes(), 10 * sizeof(int));
+  EXPECT_EQ(view2->getSchema().total_bytes(), 10 * sizeof(double));
+#endif
 
   ATK_datagroup_destroy_view_and_buffer(grp, viewName1);
   ATK_datagroup_destroy_view_and_buffer(grp, viewName2);
 
   ATK_datastore_delete(ds);
 }
+#if 0
+
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_view_of_buffer_with_schema)

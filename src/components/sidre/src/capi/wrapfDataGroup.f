@@ -21,6 +21,7 @@ module datagroup_mod
         procedure :: get_data_store => datagroup_get_data_store
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
+        procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
@@ -37,6 +38,7 @@ module datagroup_mod
         procedure :: get_group_name => datagroup_get_group_name
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: print => datagroup_print
+        generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
     end type datagroup
     
     interface
@@ -77,6 +79,16 @@ module datagroup_mod
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer
+        
+        function atk_datagroup_create_view_and_buffer_from_type(self, name, type, len) result(rv) bind(C, name="ATK_datagroup_create_view_and_buffer_from_type")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            integer(C_INT), value :: type
+            integer(C_LONG), value :: len
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_and_buffer_from_type
         
         function atk_datagroup_move_view(self, view) result(rv) bind(C, name="ATK_datagroup_move_view")
             use iso_c_binding
@@ -247,6 +259,18 @@ contains
         rv%obj = atk_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end function datagroup_create_view_and_buffer
+    
+    function datagroup_create_view_and_buffer_from_type(obj, name, type, len) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(dataview) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_create_view_and_buffer_from_type(obj%obj, trim(name) // C_NULL_CHAR, type, len)
+        ! splicer end
+    end function datagroup_create_view_and_buffer_from_type
     
     function datagroup_move_view(obj, view) result(rv)
         implicit none

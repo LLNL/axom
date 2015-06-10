@@ -229,6 +229,9 @@ class Schema(object):
             # parse decl and add to dictionary
             values = parse_decl.check_decl(node['decl'])
             util.update(node, values)  # recursive update
+        if 'method_suffix' in node and node['method_suffix'] is None:
+            # YAML turns blanks strings to None
+            node['method_suffix'] = ''
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
