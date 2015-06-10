@@ -356,6 +356,14 @@ public:
     return m_owning_group;
   }
 
+  /*!
+   * \brief Return total number of bytes allocated by this DataView object.
+   */
+  size_t getTotalBytes() const
+  {
+    return m_schema.total_bytes();
+  }
+
 //@}
 
 

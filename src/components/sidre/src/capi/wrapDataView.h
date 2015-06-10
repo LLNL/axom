@@ -14,6 +14,7 @@
 #define WRAPDATAVIEW_H
 
 #include "sidre/SidreTypes.h"
+#include "stdlib.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,8 @@ ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self);
 void * ATK_dataview_get_data(ATK_dataview * self);
 
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);
+
+size_t ATK_dataview_get_total_bytes(ATK_dataview * self);
 
 #ifdef __cplusplus
 }

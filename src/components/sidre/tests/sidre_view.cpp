@@ -56,8 +56,7 @@ TEST(sidre_view,int_buffer_from_view)
 
   dv->getNode().print_detailed();
 
-  EXPECT_EQ(dv->getNode().schema().total_bytes(),
-            dv->getSchema().total_bytes());
+  EXPECT_EQ(dv->getTotalBytes(), dv->getSchema().total_bytes());
   delete ds;
 
 }
@@ -78,8 +77,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
 
   dv->getNode().print_detailed();
 
-  EXPECT_EQ(dv->getNode().schema().total_bytes(),
-            dv->getSchema().total_bytes());
+  EXPECT_EQ(dv->getTotalBytes(), dv->getSchema().total_bytes());
   delete ds;
 
 }
@@ -378,8 +376,8 @@ TEST(sidre_view,int_array_realloc)
     a2_ptr[i] = -5;
   }
 
-  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(float)*5);
-  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int)*5);
+  EXPECT_EQ(a1->getTotalBytes(), sizeof(float)*5);
+  EXPECT_EQ(a2->getTotalBytes(), sizeof(int)*5);
 
 
   a1->reallocate(DataType::c_float(10));
@@ -405,8 +403,8 @@ TEST(sidre_view,int_array_realloc)
     a2_ptr[i] = -15;
   }
 
-  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(float)*10);
-  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int)*15);
+  EXPECT_EQ(a1->getTotalBytes(), sizeof(float)*10);
+  EXPECT_EQ(a2->getTotalBytes(), sizeof(int)*15);
 
 
   ds->print();

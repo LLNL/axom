@@ -460,10 +460,10 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
     v1_vals[i] = i;
     v2_vals[i] = i * 3.1415;
   }
-
-  EXPECT_EQ(view1->getSchema().total_bytes(), 10 * sizeof(int));
-  EXPECT_EQ(view2->getSchema().total_bytes(), 10 * sizeof(double));
 #endif
+
+  EXPECT_EQ(ATK_dataview_get_total_bytes(view1), 10 * sizeof(int));
+  EXPECT_EQ(ATK_dataview_get_total_bytes(view2), 10 * sizeof(double));
 
   ATK_datagroup_destroy_view_and_buffer(grp, viewName1);
   ATK_datagroup_destroy_view_and_buffer(grp, viewName2);

@@ -79,6 +79,15 @@ return rv;
 // splicer end
 }
 
+size_t ATK_dataview_get_total_bytes(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+size_t rv = selfobj->getTotalBytes();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

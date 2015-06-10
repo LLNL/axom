@@ -394,8 +394,8 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   }
 
 
-  EXPECT_EQ(view1->getSchema().total_bytes(), 10 * sizeof(uint32));
-  EXPECT_EQ(view2->getSchema().total_bytes(), 10 * sizeof(float64));
+  EXPECT_EQ(view1->getTotalBytes(), 10 * sizeof(uint32));
+  EXPECT_EQ(view2->getTotalBytes(), 10 * sizeof(float64));
 
   grp->destroyViewAndBuffer(viewName1);
   grp->destroyViewAndBuffer(viewName2);
