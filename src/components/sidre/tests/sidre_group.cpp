@@ -511,9 +511,9 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
-
   ds->print();
+
+  ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
 
   DataStore * ds2 = new DataStore();
 

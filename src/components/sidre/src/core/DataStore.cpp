@@ -67,6 +67,27 @@ DataStore::~DataStore()
 /*
  *************************************************************************
  *
+ * Return non-cost pointer to buffer with given index or null ptr.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataStore::getBuffer( IndexType idx )
+{
+  SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
+
+  if ( 0 <= idx && (static_cast<unsigned>(idx) < m_data_buffers.size()) )
+  { 
+    return m_data_buffers[idx];
+  }
+  else 
+  { 
+    return ATK_NULLPTR;
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Create new data buffer and assign unique id.
  *
  *************************************************************************
@@ -99,9 +120,14 @@ DataBuffer * DataStore::createBuffer()
  */
 void DataStore::destroyBuffer( IndexType idx )
 {
-  delete m_data_buffers[idx];
-  m_data_buffers[idx] = ATK_NULLPTR;
-  m_free_buffer_ids.push(idx);
+  SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
+
+  if ( hasBuffer(idx) ) 
+  {
+    delete m_data_buffers[idx];
+    m_data_buffers[idx] = ATK_NULLPTR;
+    m_free_buffer_ids.push(idx);
+  }
 }
 
 
@@ -132,9 +158,16 @@ void DataStore::destroyBuffers()
  */
 DataBuffer * DataStore::detachBuffer( IndexType idx )
 {
-  DataBuffer * const rval = m_data_buffers[idx];
-  m_data_buffers[idx] = ATK_NULLPTR;
-  m_free_buffer_ids.push(idx);
+  SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
+
+  DataBuffer * rval = ATK_NULLPTR;
+
+  if ( hasBuffer(idx) ) 
+  {
+    rval = m_data_buffers[idx];
+    m_data_buffers[idx] = ATK_NULLPTR;
+    m_free_buffer_ids.push(idx);
+  }
 
   return rval;
 }

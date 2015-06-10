@@ -26,7 +26,9 @@
 #include <stack>
 
 // Other CS Toolkit headers
+#include "common/CommonTypes.hpp"
 #include "conduit/conduit.hpp"
+#include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
@@ -77,12 +79,20 @@ public:
 //!  @name DataBuffer methods
 
   /*!
-   * \brief Return (non-const) pointer to data buffer object with given index.
+   * \brief Return true if DataStore owns a DataBuffer with given index;
+   *        else false.
    */
-  DataBuffer * getBuffer( IndexType idx )
+  bool hasBuffer( IndexType idx ) const
   {
-    return m_data_buffers[idx];
+    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() && 
+             m_data_buffers[idx] != ATK_NULLPTR ); 
   }
+
+  /*!
+   * \brief Return (non-const) pointer to data buffer object with given index,
+   *        or ATK_NULLPTR if none exists.
+   */
+  DataBuffer * getBuffer( IndexType idx );
 
   /*!
    * \brief Create a data buffer object and return a pointer to it.
