@@ -10,7 +10,7 @@
   extern "C" {
 #endif
 #include "silo.h"
-#if USE_MPI
+#ifdef USE_MPI
 # include "pmpio.h"
 #endif
 #ifdef __cplusplus
@@ -23,7 +23,7 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank);
 static
 
 
-#if USE_MPI
+#ifdef USE_MPI
 // For some reason, earlier versions of g++ (e.g. 4.2) won't let me
 // put the 'static' qualifier on this prototype, even if it's done
 // consistently in the prototype and definition
@@ -62,7 +62,7 @@ void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks)
   sprintf(basename, "lulesh_plot_c%d", domain.cycle());
   sprintf(subdirName, "data_%d", myRank);
 
-#if USE_MPI
+#ifdef USE_MPI
 
   PMPIO_baton_t *bat = PMPIO_Init(numFiles,
 				  PMPIO_WRITE,
@@ -258,7 +258,7 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
 
 /**********************************************************************/
 
-#if USE_MPI     
+#ifdef USE_MPI
 void
    DumpMultiblockObjects(DBfile *db, PMPIO_baton_t *bat, 
                          char basename[], int numRanks)
@@ -304,7 +304,7 @@ void
       
   // Build up the multiobject names
   for(int i=0 ; i<numRanks ; ++i) {
-#if USE_MPI     
+#ifdef USE_MPI
     int iorank = PMPIO_GroupRank(bat, i);
 #else
     int iorank = 0;
@@ -364,7 +364,7 @@ void
   }
 }
 
-# if USE_MPI
+#ifdef USE_MPI
 
 /**********************************************************************/
 

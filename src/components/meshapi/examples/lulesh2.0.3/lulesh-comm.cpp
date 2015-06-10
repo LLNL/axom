@@ -1,7 +1,7 @@
 #include "lulesh.hpp"
 
 // If no MPI, then this whole file is stubbed out
-#if USE_MPI
+#ifdef USE_MPI
 
 #include <mpi.h>
 #include <string.h>

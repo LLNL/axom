@@ -1,13 +1,9 @@
-#if !defined(USE_MPI)
-# error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
-#endif
-
 
 // OpenMP will be compiled in if this flag is set to 1 AND the compiler being
 // used supports it (i.e. the _OPENMP symbol is defined)
 #define USE_OMP 1
 
-#if USE_MPI
+#ifdef USE_MPI
 #include <mpi.h>
 
 /*
@@ -23,6 +19,8 @@
 
 #include <math.h>
 #include <vector>
+
+#include "meshapi/RangeSet.hpp"
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -403,7 +401,7 @@ class Domain {
    // MPI-Related additional data
    //
 
-#if USE_MPI   
+#ifdef USE_MPI
    // Communication Work space 
    Real_t *commDataSend ;
    Real_t *commDataRecv ;
