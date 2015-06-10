@@ -564,7 +564,7 @@ TEST(C_sidre_group,save_restore_simple)
 
 }
 
-#if 0
+#ifdef XXX
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_complex)
 {
@@ -575,47 +575,55 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
   ATK_datagroup * gb = ATK_datagroup_create_group(flds, "b");
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
+  
+  ATK_dataview *tmpview;
+  tmpview = ATK_datagroup_create_view_and_buffer(ga, "i0");
+  ATK_dataview_allocate(tmpview, ATK_C_INT_T, 1);
+  int * ival = (int *) ATK_dataview_get_data(tmpview);
+  *ival = 1;
 
-  ATK_datagroup_create_view_and_buffer(ga, "i0")->allocate(DataType::int32());
-  ATK_datagroup_create_view_and_buffer(gb, "f0")->allocate(DataType::float32());
-  ATK_datagroup_create_view_and_buffer(gc, "d0")->allocate(DataType::float64());
+  tmpview = ATK_datagroup_create_view_and_buffer(gb, "f0");
+  ATK_dataview_allocate(tmpview, ATK_C_FLOAT_T, 1);
+  float * fval = (float *) ATK_dataview_get_data(tmpview);
+  *fval = 100.0;
 
-  (*ATK_datagroup_get_view(ga, "i0")->getNode().as_int32_ptr())   = 1;
-  (*ATK_datagroup_get_view(gb, "f0")->getNode().as_float32_ptr()) = 100.0;
-  (*ATK_datagroup_get_view(gc, "d0")->getNode().as_float64_ptr()) = 3000.0;
+  tmpview = ATK_datagroup_create_view_and_buffer(gc, "d0");
+  ATK_dataview_allocate(tmpview, ATK_C_DOUBLE_T, 1);
+  double * dval = (double *) ATK_dataview_get_data(tmpview);
+  *dval = 3000.0;
 
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
 
-  ATK_datastore_get_root(ds)->save("out_sidre_group_save_restore_complex","conduit");
+  ATK_datagroup_save(root, "out_sidre_group_save_restore_complex","conduit");
 
-  ds->print();
+  ATK_datastore_print(ds);
 
   ATK_datastore * ds2 = ATK_datastore_new();
+  root = ATK_datastore_get_root(ds2);
 
+  ATK_datagroup_load(root, "out_sidre_group_save_restore_complex","conduit");
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
-
-  flds = ds2->getRoot(ds2)->get_group("fields");
+  flds = ATK_datagroup_get_group(root, "fields");
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
 
+#ifdef XXX
   EXPECT_EQ(ATK_datagroup_get_group(flds, "a")->get_view("i0")->getNode().as_int32(),1);
   EXPECT_NEAR(ATK_datagroup_get_group(flds, "b")->get_view("f0")->getNode().as_float32(),100.0,  1e-12);
   EXPECT_NEAR(ATK_datagroup_get_group(flds, "c")->get_view("d0")->getNode().as_float64(),3000.0, 1e-12);
+#endif
 
-  ds2->print();
+  ATK_datastore_print(ds2);
 
   ATK_datastore_delete(ds);
   ATK_datastore_delete(ds2);
 
 }
-
-
 #endif
 
 //----------------------------------------------------------------------
