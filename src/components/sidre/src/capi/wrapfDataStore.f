@@ -19,6 +19,7 @@ module datastore_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
+        procedure :: print => datastore_print
         procedure :: get_num_buffers => datastore_get_num_buffers
     end type datastore
     
@@ -63,6 +64,11 @@ module datastore_mod
             integer(C_INT), value :: id
             type(C_PTR) :: rv
         end function atk_datastore_get_buffer
+        
+        subroutine atk_datastore_print() bind(C, name="ATK_datastore_print")
+            use iso_c_binding
+            implicit none
+        end subroutine atk_datastore_print
         
         function atk_datastore_get_num_buffers(self) result(rv) bind(C, name="ATK_datastore_get_num_buffers")
             use iso_c_binding
@@ -126,6 +132,13 @@ contains
         rv%obj = atk_datastore_get_buffer(obj%obj, id)
         ! splicer end
     end function datastore_get_buffer
+    
+    subroutine datastore_print()
+        implicit none
+        ! splicer begin
+        call atk_datastore_print()
+        ! splicer end
+    end subroutine datastore_print
     
     function datastore_get_num_buffers(obj) result(rv)
         implicit none

@@ -68,6 +68,15 @@ return rv;
 // splicer end
 }
 
+void ATK_datastore_print(ATK_datastore * self)
+{
+DataStore *selfobj = static_cast<DataStore *>(self);
+// splicer begin
+selfobj->print();
+return;
+// splicer end
+}
+
 size_t ATK_datastore_get_num_buffers(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);

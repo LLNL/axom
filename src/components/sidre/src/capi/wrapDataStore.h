@@ -46,6 +46,8 @@ ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
 
 ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, const ATK_IndexType id);
 
+void ATK_datastore_print(ATK_datastore * self);
+
 size_t ATK_datastore_get_num_buffers(ATK_datastore * self);
 
 #ifdef __cplusplus

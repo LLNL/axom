@@ -214,6 +214,24 @@ return;
 // splicer end
 }
 
+void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+selfobj->save(obase, protocol);
+return;
+// splicer end
+}
+
+void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+selfobj->load(obase, protocol);
+return;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

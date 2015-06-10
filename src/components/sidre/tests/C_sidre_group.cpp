@@ -470,9 +470,8 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 
   ATK_datastore_delete(ds);
 }
-#if 0
 
-
+#ifdef XXX
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_view_of_buffer_with_schema)
 {
@@ -480,9 +479,10 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   // use create + alloc convenience methods
   // this one is the DataType & method
-  ATK_dataview * base =  ATK_datagroup_create_view_and_buffer(root, "base",
-                                                              DataType::uint32(10));
-  uint32 * base_vals = base->getNode().as_uint32_ptr();
+  ATK_dataview * base =  ATK_datagroup_create_view_and_buffer_from_type(root, "base",
+									ATK_C_INT_T, 10);
+#ifdef XXX
+  int * base_vals = (int *) ATK_dataview_get_data(base);
   for(int i=0 ; i<10 ; i++)
   {
     if(i < 5)
@@ -494,30 +494,29 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
       base_vals[i] = 20;
     }
   }
+#endif
 
-  DataBuffer * base_buff = base->getBuffer(base);
+  ATK_databuffer * base_buff = ATK_dataview_get_buffer(base);
   // create two views into this buffer
   // view for the first 5 values
-  ATK_datagroup_createView(root, "sub_a",base_buff,DataType::uint32(5));
+  ATK_datagroup_createView(root, "sub_a", base_buff, DataType::uint32(5));
   // view for the second 5 values
   //  (schema call path case)
   Schema s(DataType::uint32(5,5*sizeof(uint32)));
-  ATK_datagroup_createView(root, "sub_b",base_buff,s);
+  ATK_datagroup_createView(root, "sub_b", base_buff, s);
 
-  uint32 * sub_a_vals = ATK_datagroup_get_view(root, "sub_a")->getNode().as_uint32_ptr();
-  uint32 * sub_b_vals = ATK_datagroup_get_view(root, "sub_b")->getNode().as_uint32_ptr();
+  int * sub_a_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(root, "sub_a"));
+  int * sub_b_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(root, "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {
-    EXPECT_EQ(sub_a_vals[i], 10u);
-    EXPECT_EQ(sub_b_vals[i], 20u);
+    EXPECT_EQ(sub_a_vals[i], 10);
+    EXPECT_EQ(sub_b_vals[i], 20);
   }
 
   ATK_datastore_delete(ds);
 }
-
-
-
+#endif
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_simple)
@@ -528,37 +527,44 @@ TEST(C_sidre_group,save_restore_simple)
 
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
 
-  ATK_datagroup_create_view_and_buffer(ga, "i0")->allocate(DataType::int32());
+  ATK_dataview_allocate(ATK_datagroup_create_view_and_buffer(ga, "i0"), ATK_C_INT_T, 1);
 
-  (*ATK_datagroup_get_view(ga, "i0")->getNode().as_int32_ptr())   = 1;
+#ifdef XXX
+  int * ival = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(ga, "i0"));
+  *ival = 1;
+#endif
 
-  EXPECT_TRUE(ATK_datastore_get_root(ds)->has_group("fields"));
-  EXPECT_TRUE(ATK_datastore_get_root(ds)->get_group("fields")->has_group("a"));
-  EXPECT_TRUE(ATK_datastore_get_root(ds)->get_group("fields")->get_group("a")->has_view("i0"));
+  EXPECT_TRUE(ATK_datagroup_has_group(root, "fields"));
+  EXPECT_TRUE(ATK_datagroup_has_group(ATK_datagroup_get_group(root, "fields"), "a"));
+  EXPECT_TRUE(ATK_datagroup_has_view(ATK_datagroup_get_group(ATK_datagroup_get_group(root, "fields"), "a"), "i0"));
 
 
-  ATK_datastore_get_root(ds)->save("out_sidre_group_save_restore_simple","conduit");
+  ATK_datagroup_save(root, "out_sidre_group_save_restore_simple","conduit");
 
-  ds->print();
+  ATK_datastore_print(ds);
 
   ATK_datastore * ds2 = ATK_datastore_new();
 
-  ds2->getRoot(ds2)->load("out_sidre_group_save_restore_simple","conduit");
+  ATK_datagroup_load(ATK_datastore_get_root(ds2), "out_sidre_group_save_restore_simple","conduit");
 
-  ds2->print();
+  ATK_datastore_print(ds2);
 
-  flds = ds2->getRoot(ds2)->get_group("fields");
+  flds = ATK_datagroup_get_group(ATK_datastore_get_root(ds2), "fields");
+	      
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
+#ifdef XXX
   EXPECT_EQ(ATK_datagroup_get_group(flds, "a")->get_view("i0")->getNode().as_int32(),1);
+#endif
 
-  ds2->print();
+  ATK_datastore_print(ds2);
 
   ATK_datastore_delete(ds);
   ATK_datastore_delete(ds2);
 
 }
 
+#if 0
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_complex)
 {

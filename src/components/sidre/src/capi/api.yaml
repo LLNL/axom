@@ -51,7 +51,7 @@ classes:
     -  decl: DataGroup *getRoot()
     -  decl: DataBuffer* getBuffer( const IndexType id )
 #    -  decl: void Destroybuffers()
-#    -  decl: void print() const
+    -  decl: void print() const
 #    -  decl: void info(Node &) const
     -  decl: size_t getNumBuffers() const
 
@@ -104,6 +104,8 @@ classes:
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
 #    -  decl: void printTree( const int level ) const
+    -  decl: void save(const std::string& obase, const std::string& protocol) const
+    -  decl: void load(const std::string& obase,  const std::string& protocol)
 
   - name: DataBuffer
     options:

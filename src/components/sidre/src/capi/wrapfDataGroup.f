@@ -38,6 +38,8 @@ module datagroup_mod
         procedure :: get_group_name => datagroup_get_group_name
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: print => datagroup_print
+        procedure :: save => datagroup_save
+        procedure :: load => datagroup_load
         generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
     end type datagroup
     
@@ -208,6 +210,20 @@ module datagroup_mod
             use iso_c_binding
             implicit none
         end subroutine atk_datagroup_print
+        
+        subroutine atk_datagroup_save(obase, protocol) bind(C, name="ATK_datagroup_save")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR) :: obase(*)
+            character(kind=C_CHAR) :: protocol(*)
+        end subroutine atk_datagroup_save
+        
+        subroutine atk_datagroup_load(obase, protocol) bind(C, name="ATK_datagroup_load")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR) :: obase(*)
+            character(kind=C_CHAR) :: protocol(*)
+        end subroutine atk_datagroup_load
     end interface
 
 contains
@@ -424,5 +440,23 @@ contains
         call atk_datagroup_print()
         ! splicer end
     end subroutine datagroup_print
+    
+    subroutine datagroup_save(obase, protocol)
+        implicit none
+        character(*) :: obase
+        character(*) :: protocol
+        ! splicer begin
+        call atk_datagroup_save(trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
+        ! splicer end
+    end subroutine datagroup_save
+    
+    subroutine datagroup_load(obase, protocol)
+        implicit none
+        character(*) :: obase
+        character(*) :: protocol
+        ! splicer begin
+        call atk_datagroup_load(trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
+        ! splicer end
+    end subroutine datagroup_load
 
 end module datagroup_mod

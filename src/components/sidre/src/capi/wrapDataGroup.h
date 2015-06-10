@@ -78,6 +78,10 @@ size_t ATK_datagroup_get_num_groups(ATK_datagroup * self);
 
 void ATK_datagroup_print(ATK_datagroup * self);
 
+void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol);
+
+void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol);
+
 #ifdef __cplusplus
 }
 #endif
