@@ -195,7 +195,7 @@ void GetUserInput()
 
 /**
  * \brief Build an empty mesh for the shock tube
- * \details
+ * \details Shocktube mesh layout
  * \verbatim
  *      Gaps between elements are faces
  *                     |
@@ -234,7 +234,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    const int STRIDE = 2;
    typedef std::vector<ShockTubeMesh::IndexType> IndexVec;
 
-   /// Setup the face -> elem relation
+   /// Setup the FaceToElem relation
    IndexVec relVec( STRIDE * mesh->faces.size());
    IndexVec::iterator relIt = relVec.begin();
    for(ShockTubeMesh::IndexType idx =0; idx < static_cast<ShockTubeMesh::IndexType>(mesh->faces.size()); ++idx)
@@ -248,14 +248,8 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    ATK_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
-   /// Setup the tube element -> face relation
-   // Note: This relation needs to be on the TUBE subset of the elements (i.e. skip the first and last elt
-   //       It is currently on all elements, which necessitates a workaround below.
-   //       And the first and last elements of the relation are set to 0 which is wrong.
-   //       Question -- how are we planning to handle indexes that are out or range (accidentally)?
-   //                   how are we planning to handle indexes that are intentionally out of range
-   //                   (e.g. to indicate a problem, or a missing element etc..)?
-
+   /// Setup the TubeElementToFace relation: A relation from the tubes subset of the elements to their incident faces
+   //  For convenience, we can reuse the relVec container
    ShockTubeMesh::ElemSet::SizeType numTubeElems = mesh->tubeElems.size();
    relVec.clear();
    relVec.resize( STRIDE * numTubeElems);
@@ -291,15 +285,13 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    RealField& pressure  = realsRegistry.addField("pressure", &mesh.elems );
 
    // Create face centered fields
-   // mv, mv^2+P, and v(E+P)
-   realsRegistry.addField("F0", &mesh.faces );
-   realsRegistry.addField("F1", &mesh.faces );
-   realsRegistry.addField("F2", &mesh.faces );
+   realsRegistry.addField("F0", &mesh.faces );      // mv
+   realsRegistry.addField("F1", &mesh.faces );      // mv^2+P
+   realsRegistry.addField("F2", &mesh.faces );      // v(E+P)
 
    // Fill left half with high pressure, right half with low pressure
-   IndexType startTube  = 0 ;
    IndexType endTube    = mesh.elems.size();
-   IndexType midTube    = endTube / 2 ;
+   IndexType midTube    = endTube / 2;
 
    // Non-dimensionalized reference values
    double massInitial       = 1.0 ;
@@ -308,28 +300,27 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
    double energyInitial     = pressureInitial/(gammaa-1.0) ;
 
    // Initialize zonal quantities
-   for (IndexType idx=startTube; idx<midTube; ++idx)
+   RangeSet lowerTube(0, midTube);
+   for (RangeSet::iterator elemIt=lowerTube.begin(); elemIt < lowerTube.end(); ++elemIt)
    {
-      mass[idx]     = massInitial ;
-      momentum[idx] = momentumInitial ;
-      pressure[idx] = pressureInitial ;
-      energy[idx]   = energyInitial ;
+      mass[*elemIt]     = massInitial ;
+      momentum[*elemIt] = momentumInitial ;
+      pressure[*elemIt] = pressureInitial ;
+      energy[*elemIt]   = energyInitial ;
    }
 
    // adjust parameters for low pressure portion of tube
-   double dratio = realsRegistry.getScalar("densityRatio") ;
-   double pratio = realsRegistry.getScalar("pressureRatio") ;
-
-   massInitial      *= dratio ;
-   pressureInitial  *= pratio ;
+   massInitial      *= realsRegistry.getScalar("densityRatio") ;
+   pressureInitial  *= realsRegistry.getScalar("pressureRatio") ;
    energyInitial     = pressureInitial/(gammaa - 1.0) ;
 
-   for (IndexType idx=midTube; idx<endTube; ++idx)
+   RangeSet upperTube(midTube, mesh.elems.size());
+   for (RangeSet::iterator elemIt=upperTube.begin(); elemIt < upperTube.end(); ++elemIt)
    {
-      mass[idx]     = massInitial ;
-      momentum[idx] = momentumInitial ;
-      pressure[idx] = pressureInitial ;
-      energy[idx]   = energyInitial ;
+       mass[*elemIt]     = massInitial ;
+       momentum[*elemIt] = momentumInitial ;
+       pressure[*elemIt] = pressureInitial ;
+       energy[*elemIt]   = energyInitial ;
    }
 
    // Create needed time info
@@ -352,7 +343,7 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
  *  @F   @F0   @F1   @F2
  *  -- = --- + --- + ---  
  *  @x   @x    @x    @x
- *  \endverbatime
+ *  \endverbatim
  *
  *  Calculate F0, F1 and F2 at the face centers.
  *
@@ -367,12 +358,13 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
    RealField & F2 = realsRegistry.getField("F2") ;
 
    // Element fields
-   RealField const& mass     = realsRegistry.getField("mass") ;
-   RealField const& momentum = realsRegistry.getField("momentum") ;
-   RealField const& energy   = realsRegistry.getField("energy") ;
+   const RealField & mass     = realsRegistry.getField("mass") ;
+   const RealField & momentum = realsRegistry.getField("momentum") ;
+   const RealField & energy   = realsRegistry.getField("energy") ;
 
    // Update face data using element data using the face->elem relation
-   for (ShockTubeMesh::IndexType fIdx=0; fIdx< static_cast<ShockTubeMesh::IndexType>(mesh.faces.size() ); ++fIdx)
+   ShockTubeMesh::PositionType numFaceElems = static_cast<ShockTubeMesh::PositionType>(mesh.faces.size() );
+   for (ShockTubeMesh::PositionType fIdx = 0; fIdx < numFaceElems; ++fIdx)
    {
       // each face has an upwind and downwind element.
       IndexType upWind   = mesh.relationFaceElem[fIdx][UPWIND] ;   // upwind element
@@ -389,13 +381,11 @@ void ComputeFaceInfo(ShockTubeMesh const& mesh)
       double ev ; 
       double cLocal ;
 
-
       // Now that we have the wave speeds, we might want to
       // look for the max wave speed here, and update dt
       // appropriately right before leaving this function.
 
       // OK, calculate face quantities
-
       F0[fIdx] = F1[fIdx] = F2[fIdx] = 0.0 ;
 
       IndexType contributor = ((v >= 0.0) ? upWind : downWind) ;
@@ -452,19 +442,20 @@ void UpdateElemInfo(ShockTubeMesh const& mesh)
     RealField & pressure = realsRegistry.getField("pressure") ;
 
    // The element update is calculated as the flux between faces
-   RealField const& F0 = realsRegistry.getField("F0") ;
-   RealField const& F1 = realsRegistry.getField("F1") ;
-   RealField const& F2 = realsRegistry.getField("F2") ;
+   const RealField & F0 = realsRegistry.getField("F0") ;
+   const RealField & F1 = realsRegistry.getField("F1") ;
+   const RealField & F2 = realsRegistry.getField("F2") ;
 
    double   dx   = realsRegistry.getScalar("dx") ;
    double   dt   = realsRegistry.getScalar("dt") ;
    double & time = realsRegistry.getScalar("time") ;
 
    /// Update the element fields based on the face data using the elem->face relation
-   for (ShockTubeMesh::PositionType tPos=0; tPos < static_cast<ShockTubeMesh::PositionType>(mesh.tubeElems.size() ); ++tPos)
+   ShockTubeMesh::PositionType numTubeElems = static_cast<ShockTubeMesh::PositionType>(mesh.tubeElems.size() );
+   for (ShockTubeMesh::PositionType tPos=0; tPos < numTubeElems; ++tPos)
    {
-       // Relation is over tube elements.
-       ShockTubeMesh::IndexType elemIdx = mesh.tubeElems[tPos];
+      // Relation is over tube elements.
+      ShockTubeMesh::IndexType elemIdx = mesh.tubeElems[tPos];
 
       // Each element inside the tube has an upwind and downwind face
       ShockTubeMesh::IndexType upWind   = mesh.relationTubeFace[tPos][UPWIND] ;      // upwind face
@@ -493,6 +484,7 @@ void dumpData(ShockTubeMesh const& mesh)
 
     // TODO: The following is currently grabbing the raw data from the Map and spitting out at most MAX_ELEM_DUMP elements
     // I would like to create a subset with a stride to only print every n_th element
+    // Alternatively -- it can use an indirection map to grab the values, and write out to an sstream
     std::cout<<"\n\t\tElem idx: ";
     std::copy(mesh.elems.begin(), mesh.elems.begin()+maxDump, std::ostream_iterator<ShockTubeMesh::IndexType>(std::cout, "\t"));
     std::cout<<"...\t";

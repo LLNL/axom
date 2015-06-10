@@ -73,10 +73,13 @@ namespace meshapi{
 
 
       /**
-       * \brief Unchecked random access to the entities of the set (const version)
+       * \brief Random access to the entities of the set
        * @param idx The index of the desired element
-       * @return A const reference to the encoded index
+       * @return The value of the element at the given position
        * \pre idx must be less than the number of elements in the set ( size() )
+       * \note How are we planning to handle indexes that are out or range (accidentally)?
+       *       How are we planning to handle indexes that are intentionally out of range
+       *       (e.g. to indicate a problem, or a missing element etc..)?
        */
       virtual SetIndex at(SetPosition) const  =0;
 
@@ -93,7 +96,7 @@ namespace meshapi{
       virtual bool isSubset() const       =0;
 
       /**
-       * @return A pointer to the parent set.  NULL if there is no parent
+       * @return A pointer to the parent set.  NullSet / NULL if there is no parent.
        */
       virtual const Set* parentSet() const           =0;
 

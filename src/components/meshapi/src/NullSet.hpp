@@ -1,7 +1,7 @@
 /**
  * \file NullSet.h
  *
- * \brief Basic API for a set of entities in a simulation
+ * \brief Sentinel set type indicating an empty set.
  *
  */
 
