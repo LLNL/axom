@@ -287,6 +287,19 @@ public:
 
   /*!
    * \brief Create a DataView object (and buffer) with given name,
+   *        and use the Sidre DataType and length to allocate the
+   *        underlying buffer and initialize the view.
+   *        Attach the new view to this DataGroup object.
+   *
+   * Note that created DataBuffer will be owned by associated DataStore.
+   *
+   * \return pointer to created DataView object.
+   */
+  DataView * createViewAndBuffer( const std::string& name,
+				  TypeID type, long len);
+
+  /*!
+   * \brief Create a DataView object (and buffer) with given name,
    *        and use the Conduit DataType to allocate the
    *        underlying buffer and initialize the view.
    *        Attach the new view to this DataGroup object.

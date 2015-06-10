@@ -63,7 +63,27 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name )
 /*
  *************************************************************************
  *
- * Create view and buffer with given name, use the data type to
+ * Create view and buffer with given name, use the data type and length to
+ * allocate the buffer and initialize the view. Attach new view to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createViewAndBuffer( const std::string& name,
+					   TypeID type, long len)
+{
+  ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
+
+  DataBuffer * buff = this->getDataStore()->createBuffer();
+  DataView * const view = new DataView( name, this, buff);
+  buff->attachView(view);
+  view->allocate(type, len);
+  return attachView(view);
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view and buffer with given name, use the Sidre data type to
  * allocate the buffer and initialize the view. Attach new view to group.
  *
  *************************************************************************
@@ -79,7 +99,6 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name,
   view->allocate(dtype);
   return attachView(view);
 }
-
 
 /*
  *************************************************************************
