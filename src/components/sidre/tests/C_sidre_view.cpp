@@ -243,13 +243,13 @@ TEST(sidre_view,uint32_array_multi_view_resize)
   index_t offset =0;
   r0_old->apply(r0_old, DataType::uint32(10,offset));
 
-  offset += sizeof(uint32) * 10;
+  offset += sizeof(int) * 10;
   r1_old->apply(r1_old, DataType::uint32(10,offset));
 
-  offset += sizeof(uint32) * 10;
+  offset += sizeof(int) * 10;
   r2_old->apply(r2_old, DataType::uint32(10,offset));
 
-  offset += sizeof(uint32) * 10;
+  offset += sizeof(int) * 10;
   r3_old->apply(r3_old, DataType::uint32(10,offset));
 
   /// check that our views actually point to the expected data
@@ -300,13 +300,13 @@ TEST(sidre_view,uint32_array_multi_view_resize)
   offset =0;
   r0_new->apply(DataType::uint32(12,offset));
 
-  offset += sizeof(uint32) * 12;
+  offset += sizeof(int) * 12;
   r1_new->apply(DataType::uint32(12,offset));
 
-  offset += sizeof(uint32) * 12;
+  offset += sizeof(int) * 12;
   r2_new->apply(DataType::uint32(12,offset));
 
-  offset += sizeof(uint32) * 12;
+  offset += sizeof(int) * 12;
   r3_new->apply(DataType::uint32(12,offset));
 
   /// update r2 as an example first
@@ -361,37 +361,37 @@ TEST(sidre_view,uint32_array_realloc)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
   // create a view to hold the base buffer
-  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer(root, "a1",DataType::uint32(5));
-  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer(root, "a2",DataType::int32(5));
+  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer(root, "a1", ATK_C_FLOAT_T, 5);
+  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer(root, "a2", ATK_C_INT_T, 5);
 
-  uint32 * a1_ptr = a1->getNode().as_uint32_ptr();
-  int32 * a2_ptr = a2->getNode().as_int32_ptr();
+  float * a1_ptr = (float *)  a1->getNode().as_uint32_ptr();
+  int * a2_ptr = (int *) a2->getNode().as_int32_ptr();
 
   for(int i=0 ; i<5 ; i++)
   {
-    a1_ptr[i] =  5u;
+    a1_ptr[i] =  5.0;
     a2_ptr[i] = -5;
   }
 
-  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(uint32)*5);
-  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int32)*5);
+  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(float)*5);
+  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int)*5);
 
 
-  a1->reallocate(a1, DataType::uint32(10));
-  a2->reallocate(a2, DataType::int32(15));
+  a1->reallocate(a1, ATK_C_FLOAT_T, 10);
+  a2->reallocate(a2, ATK_C_INT_T, 15);
 
-  a1_ptr = a1->getNode().as_uint32_ptr();
-  a2_ptr = a2->getNode().as_int32_ptr();
+  a1_ptr = (float *) a1->getNode().as_uint32_ptr();
+  a2_ptr = (int *) a2->getNode().as_int32_ptr();
 
   for(int i=0 ; i<5 ; i++)
   {
-    EXPECT_EQ(a1_ptr[i],5u);
+    EXPECT_EQ(a1_ptr[i],5.0);
     EXPECT_EQ(a2_ptr[i],-5);
   }
 
   for(int i=5 ; i<10 ; i++)
   {
-    a1_ptr[i] = 10u;
+    a1_ptr[i] = 10.0;
     a2_ptr[i] = -10;
   }
 
@@ -400,8 +400,8 @@ TEST(sidre_view,uint32_array_realloc)
     a2_ptr[i] = -15;
   }
 
-  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(uint32)*10);
-  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int32)*15);
+  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(float)*10);
+  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int)*15);
 
 
   ATK_datastore_print(ds);
