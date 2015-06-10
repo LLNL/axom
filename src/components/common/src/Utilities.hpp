@@ -19,6 +19,9 @@
 #include <cstdlib>
 #include <cmath>
 
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 
 /*******************************************************************************
 *
@@ -96,7 +99,7 @@ do {                                                                \
 } while (0)
 
 
-#if defined(ATK_DEBUG) || 1
+#if defined(ATK_DEBUG) 
 //-----------------------------------------------------------------------------
 //
 /// The ATK_ASSERT macro can be used to capture an assertion when
@@ -139,8 +142,6 @@ do {                                                                   \
 
 #else  // ASSERTION CHECKS TURNED OFF....
 
-#define ATK_ERROR( ignore_message ) ((void) 0) 
-#define ATK_WARNING( ignore_message ) ((void) 0) 
 #define ATK_ASSERT( ignore_EXP ) ((void) 0) 
 #define ATK_ASSERT_MSG( ignore_EXP, ignore_message ) ((void) 0) 
 
@@ -170,6 +171,28 @@ namespace utilities
    {
       std::cout << "File ``" << filename << "'' at line " << line << std::endl;
       std::cout << "MESSAGE: " << std::endl << message << std::endl;
+   }
+
+   /*!
+    * \brief Gracefully aborts the application
+    */
+   inline void processAbort()
+   {
+#ifndef USE_MPI
+     exit( -1 );
+#else
+     int mpi = 0;
+     MPI_Initialized( &mpi );
+     if ( mpi ) {
+
+       MPI_Abort( MPI_COMM_WORLD, -1 );
+
+     } else {
+
+       exit( -1 );
+
+     }
+#endif
    }
 
    /*!

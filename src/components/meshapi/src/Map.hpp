@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "common/Types.hpp"
+#include "common/CommonTypes.hpp"
 #include "common/Utilities.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/NullSet.hpp"

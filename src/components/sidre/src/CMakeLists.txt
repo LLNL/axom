@@ -1,32 +1,43 @@
 #
 # Specify all headers
 #
+
+add_subdirectory(capi)
+
 set(sidre_headers
-    Collections.hpp
-    DataBuffer.hpp
-    DataGroup.hpp
-    DataStore.hpp
-    DataView.hpp
-    sidre.hpp
-    )
+    core/Collections.hpp
+    core/DataBuffer.hpp
+    core/DataGroup.hpp
+    core/DataStore.hpp
+    core/DataView.hpp
+    core/SidreTypes.hpp
+    core/sidre.hpp
+    ${capi_headers}
+)
 
 #
 # Specify all sources
 #
 set(sidre_sources
-    DataBuffer.cpp
-    DataGroup.cpp
-    DataStore.cpp
-    DataView.cpp
-    )
-
+    core/DataBuffer.cpp
+    core/DataGroup.cpp
+    core/DataStore.cpp
+    core/DataView.cpp
+    ${capi_source}
+)
 
 #
 # make the library
 #
-make_library(sidre "${sidre_sources}" "${sidre_headers}")
+make_library( LIBRARY_NAME
+                   sidre
+              LIBRARY_SOURCES
+                "${sidre_sources}"
+                "${sidre_headers}"
+             )
 add_dependencies(sidre copy_headers_sidre)
 add_dependencies(sidre copy_headers_common)
+add_dependencies(sidre copy_headers_conduit)
 add_dependencies(sidre conduit)
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
@@ -35,3 +46,4 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #
 copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
+add_dependencies(copy_headers_sidre sidre_generate)

@@ -5,7 +5,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ################################
 # ASCTK ToolKit
 ################################
-project(asctk)
+project(asctk LANGUAGES C CXX)
+
+enable_language(Fortran OPTIONAL)
 
 ################################
 # Prevent in-source builds

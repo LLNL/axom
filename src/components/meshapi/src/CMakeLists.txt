@@ -48,7 +48,13 @@ set(meshapi_sources
 #
 # make the library
 #
-make_library(meshapi "${meshapi_sources}" "${meshapi_headers}")
+make_library( LIBRARY_NAME
+                meshapi
+              LIBRARY_SOURCES
+                "${meshapi_sources}"
+                "${meshapi_headers}"
+            )
+
 add_dependencies(meshapi copy_headers_common)
 add_dependencies(meshapi copy_headers_meshapi)
 add_dependencies(meshapi sidre)
