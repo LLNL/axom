@@ -48,7 +48,7 @@ TEST(sidre_view,int_buffer_from_view)
   DataView * dv = root->createViewAndBuffer("u0");
 
   dv->allocate(DataType::c_int(10));
-  int * data_ptr = dv->getNode().as_int_ptr();
+  int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++) {
     data_ptr[i] = i*i;
@@ -144,8 +144,9 @@ TEST(sidre_view,init_int_array_multi_view)
   dbuff->allocate(DataType::c_int(10));
   int * data_ptr = dbuff->getNode().as_int_ptr();
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i=0 ; i<10 ; i++) {
     data_ptr[i] = i;
+  }
 
   dbuff->getNode().print_detailed();
 
@@ -214,7 +215,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   // alloc our buffer
   // we will create 4 sub views of this array
   base_old->allocate(DataType::c_int(40));
-  int * data_ptr = base_old->getNode().as_int_ptr();
+  int * data_ptr = base_old->getValue();
 
 
   // init the buff with values that align with the
@@ -257,7 +258,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   /// check that our views actually point to the expected data
   //
-  int * r0_ptr = r0_old->getNode().as_int_ptr();
+  int * r0_ptr = r0_old->getValue();
   for(int i=0 ; i<10 ; i++)
   {
     EXPECT_EQ(r0_ptr[i], 1);
@@ -265,7 +266,7 @@ TEST(sidre_view,int_array_multi_view_resize)
     EXPECT_EQ(&r0_ptr[i], &data_ptr[i]);
   }
 
-  int * r3_ptr = r3_old->getNode().as_int_ptr();
+  int * r3_ptr = r3_old->getValue();
   for(int i=0 ; i<10 ; i++)
   {
     EXPECT_EQ(r3_ptr[i], 4);
@@ -281,7 +282,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   // alloc our buffer
   // create a buffer to hold larger subarrays
   base_new->allocate(DataType::c_int(4 * 12));
-  int * base_new_data = base_new->getNode().as_int_ptr();
+  int * base_new_data = base_new->getValue();
   for (int i = 0; i < 4 * 12; ++i) 
   {
      base_new_data[i] = 0;
@@ -323,7 +324,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
 
   /// check pointer values
-  int * r2_new_ptr = r2_new->getNode().as_int_ptr();
+  int * r2_new_ptr = r2_new->getValue();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -367,8 +368,8 @@ TEST(sidre_view,int_array_realloc)
   DataView * a1 = root->createViewAndBuffer("a1",DataType::c_float(5));
   DataView * a2 = root->createViewAndBuffer("a2",DataType::c_int(5));
 
-  float * a1_ptr = a1->getNode().as_float_ptr();
-  int * a2_ptr = a2->getNode().as_int_ptr();
+  float * a1_ptr = a1->getValue();
+  int * a2_ptr = a2->getValue();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -383,8 +384,8 @@ TEST(sidre_view,int_array_realloc)
   a1->reallocate(DataType::c_float(10));
   a2->reallocate(DataType::c_int(15));
 
-  a1_ptr = a1->getNode().as_float_ptr();
-  a2_ptr = a2->getNode().as_int_ptr();
+  a1_ptr = a1->getValue();
+  a2_ptr = a2->getValue();
 
   for(int i=0 ; i<5 ; i++)
   {

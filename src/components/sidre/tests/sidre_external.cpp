@@ -93,13 +93,13 @@ TEST(sidre_external, create_external_view)
   root->getView("idata")->getNode().print_detailed();
   root->getView("ddata")->getNode().print_detailed();
 
-  int * idata_chk = root->getView("idata")->getNode().as_int_ptr();
+  int * idata_chk = root->getView("idata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = root->getView("ddata")->getNode().as_double_ptr();
+  double * ddata_chk = root->getView("ddata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -157,13 +157,13 @@ TEST(sidre_external, save_load_external_view)
   EXPECT_EQ(root2->getView("idata")->getBuffer()->isExternal(), false);
   EXPECT_EQ(root2->getView("ddata")->getBuffer()->isExternal(), false);
 
-  int * idata_chk = root2->getView("idata")->getNode().as_int_ptr();
+  int * idata_chk = root2->getView("idata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = root2->getView("ddata")->getNode().as_double_ptr();
+  double * ddata_chk = root2->getView("ddata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);

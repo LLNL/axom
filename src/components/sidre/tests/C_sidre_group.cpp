@@ -499,10 +499,10 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   ATK_databuffer * base_buff = ATK_dataview_get_buffer(base);
   // create two views into this buffer
   // view for the first 5 values
-  ATK_datagroup_createView(root, "sub_a", base_buff, DataType::uint32(5));
+  ATK_datagroup_createView(root, "sub_a", base_buff, ATK_C_INT_T, 5);
   // view for the second 5 values
   //  (schema call path case)
-  Schema s(DataType::uint32(5,5*sizeof(uint32)));
+  Schema s(DataType::uint32(5, 5*sizeof(int)));
   ATK_datagroup_createView(root, "sub_b", base_buff, s);
 
   int * sub_a_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(root, "sub_a"));
