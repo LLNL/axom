@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# CMake Cache Seed file for chaos_5_x86_64_ib machines using gcc 4.7
+# CMake Cache Seed file for chaos_5_x86_64_ib machines using icc/icpc
 #
 ###############################################################################
 
