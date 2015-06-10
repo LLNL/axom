@@ -11,7 +11,11 @@ project(meshapi)
 ### -Wno-missing-braces added to avoid warnings from boost
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_11} -Wall -Wno-missing-braces -fno-strict-aliasing " CACHE INTERNAL "meshapi") # -Wextra
 
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter " CACHE INTERNAL "meshapi") # -Wextra
+### Need to add some extra flags to allow parameters and variables that are only used in ATK_WARNINGs
+SET(EXTRA_FLAGS_WHEN_NO_DEBUG "-Wno-unused-parameter -Wno-unused-variable")
+SET(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "meshapi") # -Wextra
+SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "meshapi") # -Wextra
+SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "meshapi") # -Wextra
 
 
 #SET(CMAKE_CXX_VECTORIZER_FLAGS "-ftree-vectorize -fdump-tree-vect -ftree-vectorizer-verbose=7 -fdump-tree-optimized-details ") #-march=native "
@@ -23,7 +27,7 @@ project(meshapi)
 ################################
 # Add the boost headers
 ################################
-FIND_PACKAGE(Boost)
+#FIND_PACKAGE(Boost)
 MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
 MESSAGE(STATUS "Boost libraries dir: " ${BOOST_LIBRARY_DIR} )
 MESSAGE(STATUS "Boost version: " ${BOOST_VERSION} )

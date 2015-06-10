@@ -281,7 +281,7 @@ endmacro(add_component)
 ## Adds pre-processor definitions to a particular. This macro provides very
 ## similar functionality to cmake's native "add_definitions" command, but,
 ## it provides more fine-grained scoping for the compile definitions on a
-## per target basis. Given a list of defintions, e.g., FOO and BAR, this macro
+## per target basis. Given a list of definitions, e.g., FOO and BAR, this macro
 ## adds compiler definitions to the compiler command for the given target, i.e.,
 ## it will pass -DFOO and -DBAR.
 ##
