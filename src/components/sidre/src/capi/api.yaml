@@ -154,6 +154,7 @@ classes:
 #    - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const
     - decl: const std::string& getName() const
+    - decl: void * getDataBuffer()
 #    - decl: void* getOpaque() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const

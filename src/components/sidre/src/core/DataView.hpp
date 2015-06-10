@@ -266,7 +266,15 @@ public:
   }
 
   /*!
-   * \brief Return void* pointer to data in view.
+   * \brief Return void* pointer to data in view's buffer.
+   */
+    void * getDataBuffer() // const
+  {
+    return static_cast<void *>(getNode().data_pointer());
+  }
+
+  /*!
+   * \brief Return void* pointer to opaque data in view.
    */
   void * getOpaque() const;
 
