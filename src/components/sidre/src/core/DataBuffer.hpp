@@ -141,7 +141,7 @@ public:
    * \brief Return pointer to view attached to this buffer identified
    *        by the given index.
    */
-  DataView * getView(IndexType idx)
+  DataView * getView( const IndexType idx)
   {
     return m_views[idx];
   }
@@ -157,7 +157,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, long len);
+  DataBuffer * declare( const TypeID type, const SidreLength len);
 
   /*!
    * \brief Declare a buffer to OWN data described as a Conduit schema.
@@ -227,7 +227,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(TypeID type, long len);
+  DataBuffer * allocate(const TypeID type, const SidreLength len);
 
   /*!
    * \brief Declare and allocate data described as a Conduit schema.
@@ -255,7 +255,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-   DataBuffer * reallocate(TypeID type, long len);
+   DataBuffer * reallocate(TypeID type, const SidreLength len);
 
   /*!
    * \brief Reallocate data described as a Conduit schema.

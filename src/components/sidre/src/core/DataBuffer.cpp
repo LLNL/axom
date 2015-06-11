@@ -89,10 +89,12 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare(TypeID type, long len)
+DataBuffer * DataBuffer::declare( const TypeID type, const SidreLength len)
 {
   ATK_ASSERT_MSG(len >= 0, "Bad Length");
-  m_schema.set(createDataType(type, len));
+  DataType dtype = conduit::DataType::default_dtype(type);
+  dtype.set_number_of_elements(len);
+  m_schema.set(dtype);
   return this;
 }
 
@@ -129,7 +131,7 @@ DataBuffer * DataBuffer::allocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(TypeID type, long len)
+DataBuffer * DataBuffer::allocate(TypeID type, const SidreLength len)
 {
   ATK_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
@@ -192,14 +194,17 @@ DataBuffer * DataBuffer::allocate(const DataType& dtype)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::reallocate(TypeID type, long len)
+DataBuffer * DataBuffer::reallocate( const TypeID type, const SidreLength len)
 {
   ATK_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
   if ( !m_is_data_external )
   {
-    Schema s(createDataType(type, len));
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+
+    Schema s(dtype);
     reallocate(s);
   }
 

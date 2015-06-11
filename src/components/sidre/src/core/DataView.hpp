@@ -108,7 +108,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * declare(TypeID type, long len);
+  DataView * declare( const TypeID type, const SidreLength len);
 
   /*!
    * \brief Declare a data view as a Conduit schema.
@@ -143,7 +143,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * allocate(TypeID type, long len);
+  DataView * allocate( const TypeID type, const SidreLength len);
 
   /*!
    * \brief Declare a data view as a Conduit schema then allocate the data.
@@ -173,7 +173,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * reallocate(TypeID type, long len);
+  DataView * reallocate(TypeID type, const SidreLength len);
 
   /*!
    * \brief  Reallocate the views' underlying buffer using a Conduit

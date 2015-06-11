@@ -69,7 +69,8 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name )
  *************************************************************************
  */
 DataView * DataGroup::createViewAndBuffer( const std::string& name,
-					   TypeID type, long len)
+                                           const TypeID type,
+                                           const SidreLength len )
 {
   ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 

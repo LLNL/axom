@@ -296,7 +296,8 @@ public:
    * \return pointer to created DataView object.
    */
   DataView * createViewAndBuffer( const std::string& name,
-				  TypeID type, long len);
+                                  const TypeID type,
+                                  const SidreLength len );
 
   /*!
    * \brief Create a DataView object (and buffer) with given name,
