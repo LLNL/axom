@@ -44,9 +44,12 @@ namespace sidre
  *
  *************************************************************************
  */
-DataView * DataView::declare(TypeID type, long len)
+DataView * DataView::declare(TypeID type, const SidreLength len)
 {
-  m_schema.set(createDataType(type, len));
+  DataType dtype = conduit::DataType::default_dtype(type);
+  dtype.set_number_of_elements(len);
+
+  m_schema.set(dtype);
   m_is_applied = false;
   return this;
 }
@@ -104,7 +107,7 @@ DataView * DataView::allocate()
  *
  *************************************************************************
  */
-DataView * DataView::allocate(TypeID type, long len)
+DataView * DataView::allocate( const TypeID type, const SidreLength len)
 {
   declare(type, len);
   allocate();
@@ -151,7 +154,7 @@ DataView * DataView::allocate(const DataType& dtype)
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(TypeID type, long len)
+DataView * DataView::reallocate(TypeID type, const SidreLength len)
 {
   // in this case the view does not have a buffer
   ATK_ASSERT_MSG( !isOpaque(),

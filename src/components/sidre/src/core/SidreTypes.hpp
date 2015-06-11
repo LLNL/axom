@@ -29,6 +29,8 @@ typedef conduit::DataType::TypeID TypeID;
  */
 typedef int IndexType;
 
+typedef long int SidreLength;
+
 /*!
  * \brief Common invalid index identifier used in sidre.
  */
@@ -146,7 +148,6 @@ inline TypeID getTypeID( const int typeID )
  * Given a Sidre type enum create a Conduit DataType.
  *
  *************************************************************************
- */
 inline DataType createDataType( const TypeID type, long len )
 {
   DataType rval;
@@ -198,6 +199,7 @@ inline DataType createDataType( const TypeID type, long len )
   return rval;
 
 }
+ */
 
 
 
