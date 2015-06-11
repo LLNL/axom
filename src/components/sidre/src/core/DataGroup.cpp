@@ -288,7 +288,6 @@ void DataGroup::destroyView( IndexType idx )
  */
 void DataGroup::destroyViews()
 {
-#if 1 // RDH FIX
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
@@ -297,16 +296,6 @@ void DataGroup::destroyViews()
 
     vidx = getNextValidViewIndex(vidx);
   }
-
-#else
-  size_t nviews = getNumViews();
-
-  for (size_t i=0 ; i<nviews ; ++i)
-  {
-    DataView * view = this->getView(i);
-    delete view;
-  }
-#endif
 
   m_view_coll.removeAllItems();
 }
@@ -359,7 +348,6 @@ void DataGroup::destroyViewAndBuffer( IndexType idx )
  */
 void DataGroup::destroyViewsAndBuffers()
 {
-#if 1 // RDH FIX
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
@@ -369,17 +357,6 @@ void DataGroup::destroyViewsAndBuffers()
 
     vidx = getNextValidViewIndex(vidx);
   }
-
-#else
-  size_t nviews = getNumViews();
-
-  for (size_t i=0 ; i<nviews ; ++i)
-  {
-    DataView * view = this->getView(i);
-    getDataStore()->destroyBuffer(view->getBuffer()->getIndex());
-    delete view;
-  }
-#endif
 
   m_view_coll.removeAllItems();
 }
@@ -486,7 +463,6 @@ void DataGroup::destroyGroup( IndexType idx )
  */
 void DataGroup::destroyGroups()
 {
-#if 1 // RDH FIX
   IndexType gidx = getFirstValidGroupIndex();
   while ( indexIsValid(gidx) ) 
   {
@@ -495,15 +471,6 @@ void DataGroup::destroyGroups()
 
     gidx = getNextValidGroupIndex(gidx);
   } 
-#else
-  size_t ngroups = getNumGroups();
-
-  for (size_t i=0 ; i<ngroups ; ++i)
-  {
-    DataGroup * group = this->getGroup(i);
-    delete group;
-  }
-#endif
 
   m_group_coll.removeAllItems();
 }
@@ -549,12 +516,10 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
 
   DataGroup * res = createGroup(group->getName());
 
-#if 1 // RDH FIX
   IndexType gidx = group->getFirstValidGroupIndex();
   while ( indexIsValid(gidx) )
   {
     res->copyGroup(group->getGroup(gidx));
-
     gidx = group->getNextValidGroupIndex(gidx);
   }
 
@@ -562,25 +527,8 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
   while ( indexIsValid(vidx) )
   {
     res->copyView(group->getView(vidx));
-
     vidx = group->getNextValidViewIndex(vidx);
   }
-
-#else
-  // copy all child groups
-  size_t nchild_groups = group->getNumGroups();
-  for (size_t i=0 ; i < nchild_groups ; ++i)
-  {
-    res->copyGroup(group->getGroup(i));
-  }
-
-  // copy all views
-  size_t nchild_views = group->getNumViews();
-  for (size_t i=0 ; i < nchild_views ; ++i)
-  {
-    res->copyView(group->getView(i));
-  }
-#endif
 
   return res;
 }
@@ -594,7 +542,6 @@ DataGroup * DataGroup::copyGroup(DataGroup * group)
  */
 void DataGroup::info(Node& n) const
 {
-#if 1 // RDH FIX
   n["name"] = m_name;
 
   IndexType vidx = getFirstValidViewIndex();
@@ -616,23 +563,6 @@ void DataGroup::info(Node& n) const
 
     gidx = getNextValidGroupIndex(gidx);
   }
-
-#else
-  n["name"] = m_name;
-  for (size_t i=0 ; i < this->getNumViews() ; ++i)
-  {
-    const DataView * view = this->getView(i);
-    Node& v = n["views"].fetch(view->getName());
-    view->info(v);
-
-  }
-  for (size_t i=0 ; i<this->getNumGroups() ; ++i)
-  {
-    const DataGroup * group =  this->getGroup(i);
-    Node& g = n["groups"].fetch(group->getName());
-    group->info(g);
-  }
-#endif
 }
 
 /*
@@ -678,7 +608,6 @@ void DataGroup::printTree( const int nlevels ) const
     std::cout<<"    ";
   std::cout<<"DataGroup "<<this->getName()<<std::endl;
 
-#if 1 // RDH FIX
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
@@ -700,27 +629,6 @@ void DataGroup::printTree( const int nlevels ) const
 
     gidx = getNextValidGroupIndex(gidx);
   }
-
-#else
-  size_t nviews = getNumViews();
-  for (size_t idx = 0 ; idx < nviews ; ++idx)
-  {
-    const DataView * view = getView(idx);
-
-    for ( int i=0 ; i<nlevels+1 ; ++i )
-      std::cout<<"    ";
-    std::cout<< "DataView " << view->getName() << std::endl;
-  }
-
-  size_t ngroups = getNumGroups();
-  for (size_t idx = 0 ; idx < ngroups ; ++idx)
-  {
-    const DataGroup * group = getGroup(idx);
-
-    group->printTree( nlevels + 1 );
-  }
-#endif
-
 }
 
 
@@ -986,7 +894,6 @@ void DataGroup::copyFromNode(Node& n)
 void DataGroup::copyToNode(Node& n,
                            std::vector<IndexType>& buffer_ids) const
 {
-#if 1 // RDH FIX
   IndexType vidx = getFirstValidViewIndex();
   while ( indexIsValid(vidx) )
   {
@@ -1015,32 +922,6 @@ void DataGroup::copyToNode(Node& n,
 
     gidx = getNextValidGroupIndex(gidx);
   }
-
-#else
-
-  for (size_t i=0 ; i < this->getNumViews() ; ++i)
-  {
-    const DataView * view = this->getView(i);
-    Node& n_view = n["views"].fetch(view->getName());
-    n_view["schema"].set(view->getSchema().to_json());
-    n_view["is_applied"].set(view->isApplied());
-
-    // if we have a buffer, simply add the index to the list
-    if (view->hasBuffer())
-    {
-      IndexType buffer_id = view->getBuffer()->getIndex();
-      n_view["buffer_id"].set(buffer_id);
-      buffer_ids.push_back(view->getBuffer()->getIndex());
-    }
-  }
-
-  for (size_t i=0 ; i < this->getNumGroups() ; ++i)
-  {
-    const DataGroup * group =  this->getGroup(i);
-    Node& n_group = n["groups"].fetch(group->getName());
-    group->copyToNode(n_group, buffer_ids);
-  }
-#endif
 }
 
 /*
