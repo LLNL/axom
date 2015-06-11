@@ -17,6 +17,7 @@ module databuffer_mod
         procedure :: declare => databuffer_declare
         procedure :: allocate => databuffer_allocate
         procedure :: allocate_from_type => databuffer_allocate_from_type
+        procedure :: reallocate => databuffer_reallocate
         procedure :: get_data => databuffer_get_data
         generic :: allocate => allocate, allocate_from_type
     end type databuffer
@@ -54,6 +55,15 @@ module databuffer_mod
             integer(C_LONG), value :: len
             type(C_PTR) :: rv
         end function atk_databuffer_allocate_from_type
+        
+        function atk_databuffer_reallocate(self, type, len) result(rv) bind(C, name="ATK_databuffer_reallocate")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_INT), value :: type
+            integer(C_LONG), value :: len
+            type(C_PTR) :: rv
+        end function atk_databuffer_reallocate
         
         function atk_databuffer_get_data(self) result(rv) bind(C, name="ATK_databuffer_get_data")
             use iso_c_binding
@@ -104,6 +114,17 @@ contains
         rv%obj = atk_databuffer_allocate_from_type(obj%obj, type, len)
         ! splicer end
     end function databuffer_allocate_from_type
+    
+    function databuffer_reallocate(obj, type, len) result(rv)
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(databuffer) :: rv
+        ! splicer begin
+        rv%obj = atk_databuffer_reallocate(obj%obj, type, len)
+        ! splicer end
+    end function databuffer_reallocate
     
     function databuffer_get_data(obj) result(rv)
         implicit none

@@ -242,13 +242,13 @@ TEST(sidre_group,view_copy_move)
   DataStore * ds = new DataStore();
   DataGroup * flds = ds->getRoot()->createGroup("fields");
 
-  flds->createViewAndBuffer("i0")->allocate(DataType::int32());
-  flds->createViewAndBuffer("f0")->allocate(DataType::float32());
-  flds->createViewAndBuffer("d0")->allocate(DataType::float64());
+  flds->createViewAndBuffer("i0")->allocate(DataType::c_int());
+  flds->createViewAndBuffer("f0")->allocate(DataType::c_float());
+  flds->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
-  (*flds->getView("i0")->getNode().as_int32_ptr())   = 1;
-  (*flds->getView("f0")->getNode().as_float32_ptr()) = 100.0;
-  (*flds->getView("d0")->getNode().as_float64_ptr()) = 3000.0;
+  (*flds->getView("i0")->getNode().as_int_ptr())   = 1;
+  (*flds->getView("f0")->getNode().as_float_ptr()) = 100.0;
+  (*flds->getView("d0")->getNode().as_double_ptr()) = 3000.0;
 
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->hasView("f0"));
@@ -262,9 +262,9 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
 
   // check the data value
-  float64 * d0_data =  flds->getGroup("sub")
+  double * d0_data =  flds->getGroup("sub")
                       ->getView("d0")
-                      ->getNode().as_float64_ptr();
+                      ->getValue();
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds to sub
@@ -276,8 +276,8 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
 
   // we expect the actual data  pointers to be the same
-  EXPECT_EQ(flds->getView("i0")->getNode().data_pointer(),
-            flds->getGroup("sub")->getView("i0")->getNode().data_pointer());
+  EXPECT_EQ(flds->getView("i0")->getDataBuffer(),
+            flds->getGroup("sub")->getView("i0")->getDataBuffer());
 
   delete ds;
 }
@@ -292,13 +292,13 @@ TEST(sidre_group,groups_move_copy)
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
 
-  ga->createViewAndBuffer("i0")->allocate(DataType::int32());
-  gb->createViewAndBuffer("f0")->allocate(DataType::float32());
-  gc->createViewAndBuffer("d0")->allocate(DataType::float64());
+  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
+  gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
+  gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
-  (*ga->getView("i0")->getNode().as_int32_ptr())   = 1;
-  (*gb->getView("f0")->getNode().as_float32_ptr()) = 100.0;
-  (*gc->getView("d0")->getNode().as_float64_ptr()) = 3000.0;
+  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
+  (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
+  (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
 
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
@@ -461,7 +461,7 @@ TEST(sidre_group,save_restore_simple)
 
   ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
 
-  (*ga->getView("i0")->getNode().as_int32_ptr())   = 1;
+  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
 
   EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
   EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
@@ -481,7 +481,7 @@ TEST(sidre_group,save_restore_simple)
   flds = ds2->getRoot()->getGroup("fields");
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int32(),1);
+  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
 
   ds2->print();
 

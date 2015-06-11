@@ -247,10 +247,10 @@ TEST(C_sidre_group,view_copy_move)
   tmpview = ATK_datagroup_create_view_and_buffer(flds, "d0");
   ATK_dataview_allocate(tmpview, ATK_C_DOUBLE_T, 1);
 
-#if 0
-  (*ATK_datagroup_get_view(flds, "i0")->getNode().as_int32_ptr())   = 1;
-  (*ATK_datagroup_get_view(flds, "f0")->getNode().as_float32_ptr()) = 100.0;
-  (*ATK_datagroup_get_view(flds, "d0")->getNode().as_float64_ptr()) = 3000.0;
+#ifdef XXX
+  (*ATK_datagroup_get_view(flds, "i0")->getNode().as_int_ptr())   = 1;
+  (*ATK_datagroup_get_view(flds, "f0")->getNode().as_float_ptr()) = 100.0;
+  (*ATK_datagroup_get_view(flds, "d0")->getNode().as_double_ptr()) = 3000.0;
 #endif
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(flds, "i0");
@@ -285,9 +285,9 @@ TEST(C_sidre_group,view_copy_move)
   EXPECT_TRUE(ATK_datagroup_has_view(sub, "d0"));
 
   // check the data value
-  // float64 *d0_data =  flds->getGroup("sub")
-  //                         ->getView("d0")
-  //                         ->getNode().as_float64_ptr();
+  // double *d0_data =  flds->getGroup("sub")
+  //                        ->getView("d0")
+  //                        ->getNode().as_double_ptr();
   double * d0_data;
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view(sub, "d0");
@@ -332,15 +332,14 @@ TEST(C_sidre_group,groups_move_copy)
   tmpview = ATK_datagroup_create_view_and_buffer(gc, "d0");
   ATK_dataview_allocate(tmpview, ATK_C_DOUBLE_T, 1);
 
-#if 0
-  (*ATK_datagroup_get_view(ga, "i0")->getNode().as_int32_ptr())   = 1;
-  (*ATK_datagroup_get_view(gb, "f0")->getNode().as_float32_ptr()) = 100.0;
-  (*ATK_datagroup_get_view(gc, "d0")->getNode().as_float64_ptr()) = 3000.0;
+#ifdef XXX
+  (*ATK_datagroup_get_view(ga, "i0")->getNode().as_int_ptr())   = 1;
+  (*ATK_datagroup_get_view(gb, "f0")->getNode().as_float_ptr()) = 100.0;
+  (*ATK_datagroup_get_view(gc, "d0")->getNode().as_double_ptr()) = 3000.0;
 #endif
-#ifdef XXX   // ATK_dataview_get_data always returns NULL
   {
     tmpview = ATK_datagroup_get_view(ga, "i0");
-    int * v = (int *) ATK_dataview_get_data(tmpview);
+    int * v = (int *) ATK_dataview_get_data_buffer(tmpview);
     EXPECT_TRUE(v != NULL);
     if (v != NULL) {
       *v = 1;
@@ -348,7 +347,7 @@ TEST(C_sidre_group,groups_move_copy)
   }
   {
     tmpview = ATK_datagroup_get_view(gb, "f0");
-    float * v = (float *) ATK_dataview_get_data(tmpview);
+    float * v = (float *) ATK_dataview_get_data_buffer(tmpview);
     EXPECT_TRUE(v != NULL);
     if (v != NULL) {
       *v = 100.0;
@@ -356,13 +355,12 @@ TEST(C_sidre_group,groups_move_copy)
   }
   {
     tmpview = ATK_datagroup_get_view(gc, "d0");
-    double * v = (double *) ATK_dataview_get_data(tmpview);
+    double * v = (double *) ATK_dataview_get_data_buffer(tmpview);
     EXPECT_TRUE(v != NULL);
     if (v != NULL) {
       *v = 3000.0;
     }
   }
-#endif
 
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
@@ -615,9 +613,9 @@ TEST(C_sidre_group,save_restore_complex)
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
 
 #ifdef XXX
-  EXPECT_EQ(ATK_datagroup_get_group(flds, "a")->get_view("i0")->getNode().as_int32(),1);
-  EXPECT_NEAR(ATK_datagroup_get_group(flds, "b")->get_view("f0")->getNode().as_float32(),100.0,  1e-12);
-  EXPECT_NEAR(ATK_datagroup_get_group(flds, "c")->get_view("d0")->getNode().as_float64(),3000.0, 1e-12);
+  EXPECT_EQ(ATK_datagroup_get_group(flds, "a")->get_view("i0")->getNode().as_int(),1);
+  EXPECT_NEAR(ATK_datagroup_get_group(flds, "b")->get_view("f0")->getNode().as_float(),100.0,  1e-12);
+  EXPECT_NEAR(ATK_datagroup_get_group(flds, "c")->get_view("d0")->getNode().as_double(),3000.0, 1e-12);
 #endif
 
   ATK_datastore_print(ds2);

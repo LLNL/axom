@@ -96,13 +96,13 @@ TEST(sidre_buffer,realloc_buffer)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::int64(5));
+  dbuff->allocate(DataType::c_long(5));
 
 
   EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(int64)*5);
+            sizeof(long)*5);
 
-  int64 * data_ptr = dbuff->getNode().as_int64_ptr();
+  long * data_ptr = dbuff->getNode().as_long_ptr();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -111,10 +111,10 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->getNode().print_detailed();
 
-  dbuff->reallocate(DataType::int64(10));
+  dbuff->reallocate(DataType::c_long(10));
 
   // data buffer changes
-  data_ptr = dbuff->getNode().as_int64_ptr();
+  data_ptr = dbuff->getNode().as_long_ptr();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -128,7 +128,7 @@ TEST(sidre_buffer,realloc_buffer)
 
 
   EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(int64)*10);
+            sizeof(long)*10);
 
   dbuff->getNode().print_detailed();
 

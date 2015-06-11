@@ -195,12 +195,12 @@ TEST(sidre_opaque,meshvar)
     DataView * dom_zone_view = dom_gp->createViewAndBuffer("zone_data");
     MeshVar * zonemv = static_cast<MeshVar *>(
       mv_gp->getView("zone_mv")->getOpaque() );
-    dom_zone_view->allocate( DataType::int32(zonemv->getNumVals(dom_ext)) );
+    dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
     DataView * dom_node_view = dom_gp->createViewAndBuffer("node_data");
     MeshVar * nodemv = static_cast<MeshVar *>(
       mv_gp->getView("node_mv")->getOpaque() );
-    dom_node_view->allocate( DataType::float64(nodemv->getNumVals(dom_ext)) );
+    dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }
 
@@ -227,13 +227,11 @@ TEST(sidre_opaque,meshvar)
       mv_gp->getView("node_mv")->getOpaque() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
-    int test_num_zone_vals = dom_gp->getView("zone_data")->getBuffer()->
-                             getSchema().dtype().number_of_elements();
+    int test_num_zone_vals = dom_gp->getView("zone_data")->getNumberOfElements();
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = nodemv->getNumVals(dom_ext);
-    int test_num_node_vals = dom_gp->getView("node_data")->getBuffer()->
-                             getSchema().dtype().number_of_elements();
+    int test_num_node_vals = dom_gp->getView("node_data")->getNumberOfElements();
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }

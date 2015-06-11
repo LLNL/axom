@@ -124,7 +124,7 @@ classes:
         method_suffix: _from_type
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
-#      - decl: DataBuffer * reallocate(TypeID type, long len)
+      - decl: DataBuffer * reallocate(TypeID type, long len)
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
       - decl: void* getData()
