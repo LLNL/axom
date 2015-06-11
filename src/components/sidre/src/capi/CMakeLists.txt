@@ -97,11 +97,12 @@ ADD_CUSTOM_TARGET(sidre_generate
      DEPENDS ${generated_list}
 )
 
-#--#
-#--# Create the wrappers during config
-#--#
-#--execute_process(
-#--    COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+#
+# Mark the wappers as done by touching capi.time
+# This should avoid generating the wrappers unless api.yaml is changed.
+#
+execute_process(
+    COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
 #--    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
 #--         --logdir ${CMAKE_CURRENT_BINARY_DIR}
 #--         --outdir ${API_OUTPUT_DIR}
@@ -109,7 +110,8 @@ ADD_CUSTOM_TARGET(sidre_generate
 #--    RESULT_VARIABLE capi_result
 #--    ERROR_VARIABLE capi_stderr
 #--    OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.output
-#--)
+    OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+)
 #--if(capi_result)
 #--  message(FATAL_ERROR "Error creating sidre wrappers:\n${capi_stderr}")
 #--else()
