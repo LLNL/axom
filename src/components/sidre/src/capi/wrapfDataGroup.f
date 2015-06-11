@@ -23,6 +23,7 @@ module datagroup_mod
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
+        procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_view => datagroup_create_view
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
@@ -93,6 +94,15 @@ module datagroup_mod
             integer(C_LONG), value :: len
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_from_type
+        
+        function atk_datagroup_create_opaque_view(self, name, opaque_ptr) result(rv) bind(C, name="ATK_datagroup_create_opaque_view")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            type(C_PTR) :: opaque_ptr
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_opaque_view
         
         function atk_datagroup_create_view(self, name, buff) result(rv) bind(C, name="ATK_datagroup_create_view")
             use iso_c_binding
@@ -298,6 +308,17 @@ contains
         rv%obj = atk_datagroup_create_view_and_buffer_from_type(obj%obj, trim(name) // C_NULL_CHAR, type, len)
         ! splicer end
     end function datagroup_create_view_and_buffer_from_type
+    
+    function datagroup_create_opaque_view(obj, name, opaque_ptr) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        type(C_PTR) :: opaque_ptr
+        type(dataview) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_create_opaque_view(obj%obj, trim(name) // C_NULL_CHAR, opaque_ptr)
+        ! splicer end
+    end function datagroup_create_opaque_view
     
     function datagroup_create_view(obj, name, buff) result(rv)
         implicit none

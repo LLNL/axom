@@ -71,7 +71,7 @@ classes:
        method_suffix:
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, long len)
        method_suffix: _from_type
-#    -  decl: DataView *createOpaqueView( const std::string& name, void *)
+    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
     -  decl: DataView *moveView(DataView *view)
     -  decl: DataView *copyView(DataView *view)
@@ -155,11 +155,11 @@ classes:
 #    - decl: DataView* apply(const Schema& schema)
 #    - decl: DataView* apply(const DataType& dtype)
     - decl: bool  hasBuffer() const
-#    - decl: bool  isOpaque() const
+    - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const
     - decl: const std::string& getName() const
     - decl: void * getDataBuffer()
-#    - decl: void* getOpaque() const
+    - decl: void* getOpaque() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
     - decl: void* getData()

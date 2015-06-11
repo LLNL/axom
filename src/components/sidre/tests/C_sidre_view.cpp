@@ -363,7 +363,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,uint32_array_realloc)
+TEST(C_sidre_view,int_array_realloc)
 {
   ///
   /// info
@@ -422,8 +422,6 @@ TEST(C_sidre_view,uint32_array_realloc)
   ATK_datastore_delete(ds);
 
 }
-#if 0
-
 
 //------------------------------------------------------------------------------
 
@@ -433,7 +431,7 @@ TEST(C_sidre_view,simple_opaque)
   ATK_datastore * ds = ATK_datastore_new();
   // get access to our root data Group
   ATK_datagroup * root = ATK_datastore_get_root(ds);
-  int * src_data = new int[1];
+  int * src_data = (int *) malloc(sizeof(int));
 
   src_data[0] = 42;
 
@@ -444,9 +442,9 @@ TEST(C_sidre_view,simple_opaque)
   // we shouldn't have any buffers
   EXPECT_EQ(ATK_datastore_get_num_buffers(ds), 0u);
 
-  EXPECT_TRUE(opq_view->isOpaque(opq_view));
+  EXPECT_TRUE(ATK_dataview_is_opaque(opq_view));
 
-  void * opq_ptr = opq_view->getOpaque(opq_view);
+  void * opq_ptr = ATK_dataview_get_opaque(opq_view);
 
   int * out_data = (int *)opq_ptr;
   EXPECT_EQ(opq_ptr,src_ptr);
@@ -454,9 +452,8 @@ TEST(C_sidre_view,simple_opaque)
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
-  delete [] src_data;
+  free(src_data);
 }
-#endif
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

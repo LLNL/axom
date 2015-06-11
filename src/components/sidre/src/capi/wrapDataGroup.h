@@ -49,6 +49,8 @@ ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const 
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, long len);
 
+ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr);
+
 ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name, ATK_databuffer * buff);
 
 ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view);

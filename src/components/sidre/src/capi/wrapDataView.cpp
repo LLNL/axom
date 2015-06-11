@@ -52,6 +52,15 @@ return rv;
 // splicer end
 }
 
+bool ATK_dataview_is_opaque(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+bool rv = selfobj->isOpaque();
+return rv;
+// splicer end
+}
+
 const char * ATK_dataview_get_name(const ATK_dataview * self)
 {
 const DataView *selfobj = static_cast<const DataView *>(self);
@@ -66,6 +75,15 @@ void * ATK_dataview_get_data_buffer(ATK_dataview * self)
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
 void * rv = selfobj->getDataBuffer();
+return rv;
+// splicer end
+}
+
+void * ATK_dataview_get_opaque(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+void * rv = selfobj->getOpaque();
 return rv;
 // splicer end
 }

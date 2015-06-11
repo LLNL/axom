@@ -70,6 +70,15 @@ return rv;
 // splicer end
 }
 
+ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+DataView * rv = selfobj->createOpaqueView(name, opaque_ptr);
+return rv;
+// splicer end
+}
+
 ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name, ATK_databuffer * buff)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

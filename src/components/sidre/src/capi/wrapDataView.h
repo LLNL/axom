@@ -42,9 +42,13 @@ ATK_dataview * ATK_dataview_reallocate(ATK_dataview * self, int type, long len);
 
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 
+bool ATK_dataview_is_opaque(ATK_dataview * self);
+
 const char * ATK_dataview_get_name(const ATK_dataview * self);
 
 void * ATK_dataview_get_data_buffer(ATK_dataview * self);
+
+void * ATK_dataview_get_opaque(ATK_dataview * self);
 
 ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self);
 

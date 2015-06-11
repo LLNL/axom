@@ -20,8 +20,10 @@ module dataview_mod
         procedure :: allocate => dataview_allocate
         procedure :: reallocate => dataview_reallocate
         procedure :: has_buffer => dataview_has_buffer
+        procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
         procedure :: get_data_buffer => dataview_get_data_buffer
+        procedure :: get_opaque => dataview_get_opaque
         procedure :: get_buffer => dataview_get_buffer
         procedure :: get_data => dataview_get_data
         procedure :: get_owning_group => dataview_get_owning_group
@@ -64,6 +66,13 @@ module dataview_mod
             logical(C_BOOL) :: rv
         end function atk_dataview_has_buffer
         
+        function atk_dataview_is_opaque(self) result(rv) bind(C, name="ATK_dataview_is_opaque")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            logical(C_BOOL) :: rv
+        end function atk_dataview_is_opaque
+        
         pure function atk_dataview_get_name(self) result(rv) bind(C, name="ATK_dataview_get_name")
             use iso_c_binding
             implicit none
@@ -77,6 +86,13 @@ module dataview_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_data_buffer
+        
+        function atk_dataview_get_opaque(self) result(rv) bind(C, name="ATK_dataview_get_opaque")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_dataview_get_opaque
         
         function atk_dataview_get_buffer(self) result(rv) bind(C, name="ATK_dataview_get_buffer")
             use iso_c_binding
@@ -151,6 +167,15 @@ contains
         ! splicer end
     end function dataview_has_buffer
     
+    function dataview_is_opaque(obj) result(rv)
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin
+        rv = bool2logical(atk_dataview_is_opaque(obj%obj))
+        ! splicer end
+    end function dataview_is_opaque
+    
     function dataview_get_name(obj) result(rv)
         implicit none
         class(dataview) :: obj
@@ -169,6 +194,15 @@ contains
         rv = atk_dataview_get_data_buffer(obj%obj)
         ! splicer end
     end function dataview_get_data_buffer
+    
+    function dataview_get_opaque(obj) result(rv)
+        implicit none
+        class(dataview) :: obj
+        type(C_PTR) :: rv
+        ! splicer begin
+        rv = atk_dataview_get_opaque(obj%obj)
+        ! splicer end
+    end function dataview_get_opaque
     
     function dataview_get_buffer(obj) result(rv)
         implicit none
