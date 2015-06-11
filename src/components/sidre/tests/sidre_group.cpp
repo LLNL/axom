@@ -394,6 +394,8 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   }
 
 
+  EXPECT_EQ(view1->getNumberOfElements(), 10u);
+  EXPECT_EQ(view2->getNumberOfElements(), 10u);
   EXPECT_EQ(view1->getTotalBytes(), 10 * sizeof(int));
   EXPECT_EQ(view2->getTotalBytes(), 10 * sizeof(double));
 

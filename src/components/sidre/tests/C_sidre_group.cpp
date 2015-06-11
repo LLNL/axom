@@ -462,6 +462,8 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   }
 #endif
 
+  EXPECT_EQ(ATK_dataview_get_number_of_elements(view1), 10u);
+  EXPECT_EQ(ATK_dataview_get_number_of_elements(view2), 10u);
   EXPECT_EQ(ATK_dataview_get_total_bytes(view1), 10 * sizeof(int));
   EXPECT_EQ(ATK_dataview_get_total_bytes(view2), 10 * sizeof(double));
 

@@ -28,6 +28,7 @@ module dataview_mod
         procedure :: get_data => dataview_get_data
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_total_bytes => dataview_get_total_bytes
+        procedure :: get_number_of_elements => dataview_get_number_of_elements
     end type dataview
     
     interface
@@ -121,6 +122,13 @@ module dataview_mod
             type(C_PTR), value :: self
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_total_bytes
+        
+        function atk_dataview_get_number_of_elements(self) result(rv) bind(C, name="ATK_dataview_get_number_of_elements")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_dataview_get_number_of_elements
     end interface
 
 contains
@@ -239,5 +247,14 @@ contains
         rv = atk_dataview_get_total_bytes(obj%obj)
         ! splicer end
     end function dataview_get_total_bytes
+    
+    function dataview_get_number_of_elements(obj) result(rv)
+        implicit none
+        class(dataview) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin
+        rv = atk_dataview_get_number_of_elements(obj%obj)
+        ! splicer end
+    end function dataview_get_number_of_elements
 
 end module dataview_mod

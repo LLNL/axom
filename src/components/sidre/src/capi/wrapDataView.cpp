@@ -124,6 +124,15 @@ return rv;
 // splicer end
 }
 
+size_t ATK_dataview_get_number_of_elements(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+size_t rv = selfobj->getNumberOfElements();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"
