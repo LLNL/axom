@@ -249,6 +249,15 @@ public:
   DataBuffer * allocate(const DataType& dtype);
 
   /*!
+   * \brief Reallocate data described with Sidre type and length.
+   *
+   *        Leverages Conduit Node::update() semantics.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+   DataBuffer * reallocate(TypeID type, long len);
+
+  /*!
    * \brief Reallocate data described as a Conduit schema.
    *
    *        Leverages Conduit Node::update() semantics.

@@ -18,6 +18,7 @@ module dataview_mod
     contains
         procedure :: declare => dataview_declare
         procedure :: allocate => dataview_allocate
+        procedure :: reallocate => dataview_reallocate
         procedure :: has_buffer => dataview_has_buffer
         procedure :: get_name => dataview_get_name
         procedure :: get_data_buffer => dataview_get_data_buffer
@@ -46,6 +47,15 @@ module dataview_mod
             integer(C_LONG), value :: len
             type(C_PTR) :: rv
         end function atk_dataview_allocate
+        
+        function atk_dataview_reallocate(self, type, len) result(rv) bind(C, name="ATK_dataview_reallocate")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_INT), value :: type
+            integer(C_LONG), value :: len
+            type(C_PTR) :: rv
+        end function atk_dataview_reallocate
         
         function atk_dataview_has_buffer(self) result(rv) bind(C, name="ATK_dataview_has_buffer")
             use iso_c_binding
@@ -120,6 +130,17 @@ contains
         rv%obj = atk_dataview_allocate(obj%obj, type, len)
         ! splicer end
     end function dataview_allocate
+    
+    function dataview_reallocate(obj, type, len) result(rv)
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(dataview) :: rv
+        ! splicer begin
+        rv%obj = atk_dataview_reallocate(obj%obj, type, len)
+        ! splicer end
+    end function dataview_reallocate
     
     function dataview_has_buffer(obj) result(rv)
         implicit none

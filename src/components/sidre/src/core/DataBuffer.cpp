@@ -188,6 +188,27 @@ DataBuffer * DataBuffer::allocate(const DataType& dtype)
 /*
  *************************************************************************
  *
+ * Reallocate data using a Sidre type and length.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::reallocate(TypeID type, long len)
+{
+  ATK_ASSERT_MSG( !m_is_data_external,
+                  "Attempting to re-allocate buffer holding external data");
+
+  if ( !m_is_data_external )
+  {
+    Schema s(createDataType(type, len));
+    reallocate(s);
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Reallocate data using a Conduit schema.
  *
  *************************************************************************

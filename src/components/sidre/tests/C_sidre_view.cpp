@@ -361,8 +361,6 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 }
 
-#if 0
-
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_view,uint32_array_realloc)
@@ -377,8 +375,8 @@ TEST(C_sidre_view,uint32_array_realloc)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
   // create a view to hold the base buffer
-  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer(root, "a1", ATK_C_FLOAT_T, 5);
-  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer(root, "a2", ATK_C_INT_T, 5);
+  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", ATK_C_FLOAT_T, 5);
+  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", ATK_C_INT_T, 5);
 
   float * a1_ptr = (float *) ATK_dataview_get_data_buffer(a1);
   int * a2_ptr = (int *)  ATK_dataview_get_data_buffer(a2);
@@ -393,11 +391,11 @@ TEST(C_sidre_view,uint32_array_realloc)
   EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5);
 
 
-  a1->reallocate(a1, ATK_C_FLOAT_T, 10);
-  a2->reallocate(a2, ATK_C_INT_T, 15);
+  ATK_dataview_reallocate(a1, ATK_C_FLOAT_T, 10);
+  ATK_dataview_reallocate(a2, ATK_C_INT_T, 15);
 
-  a1_ptr = (float *) a1->getNode().as_uint32_ptr();
-  a2_ptr = (int *) a2->getNode().as_int32_ptr();
+  a1_ptr = (float *) ATK_dataview_get_data_buffer(a1);
+  a2_ptr = (int *) ATK_dataview_get_data_buffer(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -424,6 +422,8 @@ TEST(C_sidre_view,uint32_array_realloc)
   ATK_datastore_delete(ds);
 
 }
+#if 0
+
 
 //------------------------------------------------------------------------------
 

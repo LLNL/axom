@@ -38,6 +38,8 @@ ATK_dataview * ATK_dataview_declare(ATK_dataview * self, int type, long len);
 
 ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, int type, long len);
 
+ATK_dataview * ATK_dataview_reallocate(ATK_dataview * self, int type, long len);
+
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 
 const char * ATK_dataview_get_name(const ATK_dataview * self);

@@ -34,6 +34,15 @@ return rv;
 // splicer end
 }
 
+ATK_dataview * ATK_dataview_reallocate(ATK_dataview * self, int type, long len)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+DataView * rv = selfobj->reallocate(getTypeID(type), len);
+return rv;
+// splicer end
+}
+
 bool ATK_dataview_has_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);

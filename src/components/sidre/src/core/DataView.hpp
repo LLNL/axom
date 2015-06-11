@@ -167,6 +167,15 @@ public:
   DataView * allocate(const DataType& dtype);
 
   /*!
+   * \brief  Reallocate the views' underlying buffer using a Sidre type and length.
+   *
+   *  Uses conduit's update semantics();
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * reallocate(TypeID type, long len);
+
+  /*!
    * \brief  Reallocate the views' underlying buffer using a Conduit
    *         schema.
    *
