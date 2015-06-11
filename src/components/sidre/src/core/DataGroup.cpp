@@ -72,13 +72,9 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name,
                                            const TypeID type,
                                            const SidreLength len )
 {
-  ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  DataBuffer * buff = this->getDataStore()->createBuffer();
-  DataView * const view = new DataView( name, this, buff);
-  buff->attachView(view);
+  DataView * const view = createViewAndBuffer(name);
   view->allocate(type, len);
-  return attachView(view);
+  return view;
 }
 
 /*
@@ -92,13 +88,9 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name,
 DataView * DataGroup::createViewAndBuffer( const std::string& name,
                                            const DataType& dtype)
 {
-  ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  DataBuffer * buff = this->getDataStore()->createBuffer();
-  DataView * const view = new DataView( name, this, buff);
-  buff->attachView(view);
+  DataView * const view = createViewAndBuffer(name);
   view->allocate(dtype);
-  return attachView(view);
+  return view;
 }
 
 /*
@@ -114,11 +106,9 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name,
 {
   ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
-  DataBuffer * buff = this->getDataStore()->createBuffer();
-  DataView * const view = new DataView( name, this,buff);
-  buff->attachView(view);
+  DataView * const view = createViewAndBuffer(name);
   view->allocate(schema);
-  return attachView(view);
+  return view;
 }
 
 /*
@@ -135,6 +125,7 @@ DataView * DataGroup::createView( const std::string& name,
   ATK_ASSERT( buff != 0 );
 
   DataView * const view = new DataView( name, this, buff );
+
   return attachView(view);
 }
 
@@ -151,12 +142,10 @@ DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff,
                                   const DataType& dtype)
 {
-  ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  ATK_ASSERT( buff != 0 );
+  DataView * const view = createView( name, buff );
 
-  DataView * const view = new DataView( name, this, buff );
   view->apply(dtype);
-  return attachView(view);
+  return view;
 }
 
 
@@ -172,12 +161,10 @@ DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff,
                                   const Schema& schema)
 {
-  ATK_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  ATK_ASSERT( buff != 0 );
+  DataView * const view = createView( name, buff );
 
-  DataView * const view = new DataView( name, this, buff );
   view->apply(schema);
-  return attachView(view);
+  return view;
 }
 
 
