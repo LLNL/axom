@@ -9,6 +9,7 @@
 !
 module datagroup_mod
     use fstr_mod
+    use databuffer_mod, only : databuffer
     use datastore_mod, only : datastore
     use dataview_mod, only : dataview
     use iso_c_binding
@@ -22,6 +23,7 @@ module datagroup_mod
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
+        procedure :: create_view => datagroup_create_view
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
@@ -91,6 +93,15 @@ module datagroup_mod
             integer(C_LONG), value :: len
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_from_type
+        
+        function atk_datagroup_create_view(self, name, buff) result(rv) bind(C, name="ATK_datagroup_create_view")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            type(C_PTR) :: buff
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view
         
         function atk_datagroup_move_view(self, view) result(rv) bind(C, name="ATK_datagroup_move_view")
             use iso_c_binding
@@ -287,6 +298,17 @@ contains
         rv%obj = atk_datagroup_create_view_and_buffer_from_type(obj%obj, trim(name) // C_NULL_CHAR, type, len)
         ! splicer end
     end function datagroup_create_view_and_buffer_from_type
+    
+    function datagroup_create_view(obj, name, buff) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        type(databuffer) :: buff
+        type(dataview) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_create_view(obj%obj, trim(name) // C_NULL_CHAR, buff%obj)
+        ! splicer end
+    end function datagroup_create_view
     
     function datagroup_move_view(obj, view) result(rv)
         implicit none

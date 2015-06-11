@@ -72,7 +72,7 @@ classes:
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, long len)
        method_suffix: _from_type
 #    -  decl: DataView *createOpaqueView( const std::string& name, void *)
-#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
+    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
     -  decl: DataView *moveView(DataView *view)
     -  decl: DataView *copyView(DataView *view)
     -  decl: void destroyViewAndBuffer(const std::string &name)
@@ -119,7 +119,9 @@ classes:
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
-#      - decl: DataBuffer* allocate(TypeID type, long len)
+        method_suffix:
+      - decl: DataBuffer* allocate(TypeID type, long len)
+        method_suffix: _from_type
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
 #      - decl: DataBuffer* reallocate(const Schema& schema)

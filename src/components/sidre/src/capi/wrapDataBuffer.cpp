@@ -43,6 +43,15 @@ return rv;
 // splicer end
 }
 
+ATK_databuffer * ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, long len)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+DataBuffer * rv = selfobj->allocate(getTypeID(type), len);
+return rv;
+// splicer end
+}
+
 void * ATK_databuffer_get_data(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);

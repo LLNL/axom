@@ -56,7 +56,7 @@ TEST(sidre_view,int_buffer_from_view)
 
   dv->getNode().print_detailed();
 
-  EXPECT_EQ(dv->getTotalBytes(), dv->getSchema().total_bytes());
+  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
 
 }
@@ -77,7 +77,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
 
   dv->getNode().print_detailed();
 
-  EXPECT_EQ(dv->getTotalBytes(), dv->getSchema().total_bytes());
+  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
 
 }

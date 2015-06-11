@@ -57,31 +57,32 @@ TEST(C_sidre_view,int_buffer_from_view)
 
 }
 
-#if 0
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,uint32_buffer_from_view_conduit_value)
+TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer(root, "u0",DataType::uint32(10));
-  int * data_ptr = (int *) ATK_dataview_get_data(dv);
+  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10);
+  int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv);
 
   for(int i=0 ; i<10 ; i++) {
     data_ptr[i] = i*i;
   }
 
+#ifdef XXX
   dv->getNode().print_detailed();
+#endif
 
-  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), dv->getSchema().total_bytes());
+  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10);
   ATK_datastore_delete(ds);
 
 }
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,uint32_array_multi_view)
+TEST(C_sidre_view,int_array_multi_view)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
@@ -95,15 +96,20 @@ TEST(C_sidre_view,uint32_array_multi_view)
     data_ptr[i] = i;
   }
 
+#ifdef XXX
   dbuff->getNode().print_detailed();
 
   EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
             dbuff->getSchema().total_bytes());
+#endif
 
 
   ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even", dbuff);
   ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd", dbuff);
+  EXPECT_TRUE(dv_e != NULL);
+  EXPECT_TRUE(dv_o != NULL);
 
+#ifdef XXX
   dv_e->apply(DataType::uint32(5,0,8));
 
   dv_o->apply(DataType::uint32(5,4,8));
@@ -125,6 +131,7 @@ TEST(C_sidre_view,uint32_array_multi_view)
     EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
     EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
   }
+#endif
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
@@ -132,13 +139,13 @@ TEST(C_sidre_view,uint32_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,init_uint32_array_multi_view)
+TEST(C_sidre_view,init_int_array_multi_view)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++) {
@@ -147,14 +154,16 @@ TEST(C_sidre_view,init_uint32_array_multi_view)
 
 #ifdef XXX
   dbuff->getNode().print_detailed();
-#endif
 
   EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
             dbuff->getSchema().total_bytes());
+#endif
 
 
   ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even",dbuff);
   ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd",dbuff);
+  EXPECT_TRUE(dv_e != NULL);
+  EXPECT_TRUE(dv_o != NULL);
 
 #ifdef XXX
   // uint32(num_elems, offset, stride)
@@ -191,7 +200,7 @@ TEST(C_sidre_view,init_uint32_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,uint32_array_multi_view_resize)
+TEST(C_sidre_view,int_array_multi_view_resize)
 {
   ///
   /// This example creates a 4 * 10 buffer of ints,
@@ -216,8 +225,8 @@ TEST(C_sidre_view,uint32_array_multi_view_resize)
 
   // alloc our buffer
   // we will create 4 sub views of this array
-  base_old->allocate(base_old, DataType::uint32(40));
-  uint32 * data_ptr = base_old->getNode().as_uint32_ptr();
+  ATK_dataview_allocate(base_old, ATK_C_INT_T, 40);
+  int * data_ptr = (int *) ATK_dataview_get_data_buffer(base_old);
 
 
   // init the buff with values that align with the
@@ -235,7 +244,7 @@ TEST(C_sidre_view,uint32_array_multi_view_resize)
     data_ptr[i] = 4;
   }
 
-
+#ifdef XXX
   /// setup our 4 views
   ATK_databuffer * buff_old = ATK_dataview_get_buffer(base_old);
   buff_old->getNode().print();
@@ -287,7 +296,7 @@ TEST(C_sidre_view,uint32_array_multi_view_resize)
   int* base_new_data = (int *) ATK_databuffer_det_data(base_new);
   for (int i = 0; i < 4 * 12; ++i) 
   {
-     base_new_data[i] = 0u;
+     base_new_data[i] = 0;
   } 
 
   ATK_databuffer * buff_new = ATK_dataview_get_buffer(base_new);
@@ -326,16 +335,16 @@ TEST(C_sidre_view,uint32_array_multi_view_resize)
 
 
   /// check pointer values
-  uint32 * r2_new_ptr = r2_new->getNode().as_uint32_ptr();
+  int * r2_new_ptr = (int *) ATK_dataview_get_data_buffer(r2_new);
 
   for(int i=0 ; i<10 ; i++)
   {
-    EXPECT_EQ(r2_new_ptr[i], 3u);
+    EXPECT_EQ(r2_new_ptr[i], 3);
   }
 
   for(int i=10 ; i<12 ; i++)
   {
-    EXPECT_EQ(r2_new_ptr[i], 0u);     // assumes zero-ed alloc
+    EXPECT_EQ(r2_new_ptr[i], 0);     // assumes zero-ed alloc
   }
 
 
@@ -345,13 +354,14 @@ TEST(C_sidre_view,uint32_array_multi_view_resize)
   r3_new->getNode().update(r3_old->getNode());
 
   buff_new->getNode().print();
-
+#endif
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
 }
 
+#if 0
 
 //------------------------------------------------------------------------------
 
@@ -370,8 +380,8 @@ TEST(C_sidre_view,uint32_array_realloc)
   ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer(root, "a1", ATK_C_FLOAT_T, 5);
   ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer(root, "a2", ATK_C_INT_T, 5);
 
-  float * a1_ptr = (float *)  a1->getNode().as_uint32_ptr();
-  int * a2_ptr = (int *) a2->getNode().as_int32_ptr();
+  float * a1_ptr = (float *) ATK_dataview_get_data_buffer(a1);
+  int * a2_ptr = (int *)  ATK_dataview_get_data_buffer(a2);
 
   for(int i=0 ; i<5 ; i++)
   {

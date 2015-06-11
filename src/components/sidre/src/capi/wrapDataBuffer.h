@@ -33,6 +33,8 @@ ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, int type, long le
 
 ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self);
 
+ATK_databuffer * ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, long len);
+
 void * ATK_databuffer_get_data(ATK_databuffer * self);
 
 #ifdef __cplusplus
