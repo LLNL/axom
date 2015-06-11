@@ -22,7 +22,7 @@ set(sidre_generated_source
     wrapDataGroup.cpp
     wrapDataBuffer.cpp
     wrapDataView.cpp
-#    fstr_mod.f
+    fstr_mod.f
 #    wrapfDataStore.f
     )
 
