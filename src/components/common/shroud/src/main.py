@@ -35,14 +35,12 @@ class Schema(object):
         """ Push a new set of options.
         Copy current options, then update with new options.
         """
+        new = util.Options(parent=self.options_stack[-1])
         if 'options' in node and \
                 node['options'] is not None:
             if not isinstance(node['options'], dict):
                 raise TypeError("options must be a dictionary")
-            new = copy.deepcopy(self.options_stack[-1])
             new.update(node['options'])
-        else:
-            new = self.options_stack[-1]
         self.options_stack.append(new)
         node['options'] = new
         return new
@@ -50,19 +48,16 @@ class Schema(object):
     def pop_options(self):
         self.options_stack.pop()
 
-    def update_options(self, options, d):
-        """ update options with values from d,
-        if key is not already in options.
-        """
-        for key in d:
-            if key not in options:
-                options[key] = d[key]
-
     def check_schema(self):
         node = self.config
 
         # default options
-        def_options = dict(
+        def_options = util.Options(
+            parent=None,
+
+            namespace='',
+            cpp_header='',
+
             C_prefix='',
             C_this='self',   # object argument name
             F_this='obj',    # object argument name
@@ -170,7 +165,7 @@ class Schema(object):
             cpp_class = name,
             lower_class = name.lower(),
             upper_class = name.upper(),
-            C_prefix = options['C_prefix'],
+            C_prefix = options.C_prefix,
             )
         util.eval_templates(
             ['C_header_filename',
@@ -184,7 +179,7 @@ class Schema(object):
         if name not in self.typedef:
 #            unname = util.un_camel(name)
             unname = name.lower()
-            cname = node['options']['C_prefix'] + unname
+            cname = node['options'].C_prefix + unname
             self.typedef[name] = dict(
                 cpp = name,
                 c = cname,
@@ -302,7 +297,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # check options
+    # check command line options
     if len(args.filename) == 0:
         raise SystemExit("Must give at least one input file")
     if args.indir and not os.path.isdir(args.indir):
@@ -316,7 +311,7 @@ if __name__ == '__main__':
     logpath = os.path.join(args.logdir, basename + '.log')
     log = open(logpath, 'w')
 
-    # pass around an option dictionary
+    # pass around a configuration object
     config = Config()
     config.binary_dir = args.outdir
     config.source_dir = args.indir
@@ -347,7 +342,7 @@ if __name__ == '__main__':
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')
-    json.dump(all, fp, sort_keys=True, indent=4)
+    json.dump(all, fp, cls=util.ExpandedEncoder, sort_keys=True, indent=4)
     fp.close()
 
     log.close()

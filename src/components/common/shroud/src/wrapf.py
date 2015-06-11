@@ -149,7 +149,7 @@ class Wrapf(object):
             lower_class = name.lower(),
             upper_class = name.upper(),
             F_type_name = typedef['fortran_type'],
-            F_this = node['options']['F_this'],
+            F_this = node['options'].F_this,
             )
         fmt_dict = self.fmt_dict
 
@@ -192,8 +192,8 @@ class Wrapf(object):
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
         result_typedef = self.typedef[result_type]
-        C_this = node['options']['C_this']
-        F_result = node['options']['F_result']
+        C_this = node['options'].C_this
+        F_result = node['options'].F_result
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
@@ -203,7 +203,7 @@ class Wrapf(object):
             underscore_name=util.un_camel(result['name']),
             method_suffix = node.get('method_suffix', ''),
 
-            F_this=node['options']['F_this'],
+            F_this=node['options'].F_this,
             F_result=F_result,
             C_name=node['C_name'],
             )

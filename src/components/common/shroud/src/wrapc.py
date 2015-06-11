@@ -148,14 +148,15 @@ class Wrapc(object):
 
     def write_impl(self, node, hname, fname):
         # node = class node
-        namespace = node['options'].get('namespace',None)
+        options = node['options']
+        namespace = options.namespace
         fp = open(os.path.join(self.config.binary_dir, fname), "w")
         self.write_copyright(fp)
         fp.write('// {}\n'.format(fname))
         fp.write('#define EXAMPLE_WRAPPER_IMPL\n')
         fp.write('#include "%s"\n' % hname)
-        if 'cpp_header' in node['options']:
-            fp.write('#include "%s"\n' % node['options']['cpp_header'])
+        if node['options'].cpp_header:
+            fp.write('#include "%s"\n' % options.cpp_header)
         fp.write('\nextern "C" {\n')
         for name in namespace.split():
             fp.write('namespace %s {\n' % name)
@@ -184,7 +185,7 @@ class Wrapc(object):
             cpp_class = name,
             lower_class = name.lower(),
             upper_class = name.upper(),
-            C_prefix = node['options']['C_prefix'],
+            C_prefix = node['options'].C_prefix,
             C_type_name = cname,
             )
         fmt_dict = self.fmt_dict
@@ -207,11 +208,12 @@ class Wrapc(object):
         # assume a C++ method
 
         # return type
+        options = node['options']
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
         result_typedef = self.typedef[result_type]
-        C_this = node['options']['C_this']
+        C_this = options.C_this
         is_const = result['attrs'].get('const', False)
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
@@ -267,7 +269,7 @@ class Wrapc(object):
 
         if 'C_name' not in node:
             node['C_name'] = wformat(
-                node['options']['C_name_method_template'],
+                options.C_name_method_template,
                 fmt_dict)
 
         if 'C_return_type' not in node:

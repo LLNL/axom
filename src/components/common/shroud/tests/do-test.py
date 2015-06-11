@@ -115,11 +115,11 @@ def do_test(name, replace_ref):
         logging.info('Compare: ' + file)
     if mismatch:
         status = False
-        for file in cmp.mismatch:
+        for file in mismatch:
             logging.warn('Does not compare: '+ file)
     if errors:
         status = False
-        for file in cmp.errors:
+        for file in errors:
             logging.warn('Unable to compare: ' + file)
 
     if cmp.left_only:

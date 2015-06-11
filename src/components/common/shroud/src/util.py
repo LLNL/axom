@@ -20,7 +20,7 @@ def eval_templates(templates, node, fmt_dict):
     for tname in ( templates ) :
         if tname not in node:
             node[tname] = fmt.vformat(
-                node['options'][tname + '_template'],
+                getattr(node['options'], tname + '_template'),
                 None, fmt_dict)
         fmt_dict[tname] = node[tname]
 
@@ -99,7 +99,7 @@ class ExpandedEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class Option(object):
+class Options(object):
     """
     If attribute is not found, look in parent's.
     A replacement for a dictionary to allow obj.name syntax.
@@ -110,8 +110,7 @@ class Option(object):
     def __init__(self, parent, **kw):
         self.__parent = parent
         self.__hidden = 43
-        for key, value in kw.items():
-            setattr(self, key, value)
+        self.update(kw)
 
     def __getattr__(self, name):
         # we get here if the attribute does not exist in current instance
@@ -120,6 +119,13 @@ class Option(object):
         else:
             raise AttributeError("%r object has no attribute %r" %
                                  (self.__class__.__name__, name))
+
+
+    def update(self, d):
+        """Add options from dictionary to self.
+        """
+        for key, value in d.items():
+            setattr(self, key, value)
 
     def _to_dict(self):
         d = {}
@@ -154,8 +160,8 @@ if __name__ == '__main__':
 
     # Option
     print("Test Option")
-    lev0 = Option(None, a=1, b=2, c=3)
-    lev1 = Option(lev0, x=100, y=01, z=102)
+    lev0 = Options(None, a=1, b=2, c=3)
+    lev1 = Options(lev0, x=100, y=01, z=102)
     lev0.c2 = 32
     lev1.z2 = 103
 
