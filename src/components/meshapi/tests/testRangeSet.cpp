@@ -14,10 +14,13 @@
 
 typedef asctoolkit::meshapi::RangeSet SetType;
 typedef SetType::iterator SetIterator;
-static SetType::SizeType const MAX_SET_SIZE = 10;
+typedef SetType::SetPosition SetPosition;
+typedef SetType::SetElement SetElement;
+
+static const SetPosition MAX_SET_SIZE = 10;
 
 
-TEST(gtest_meshapi_ordered_set,construct_ordered_set)
+TEST(gtest_meshapi_range_set,construct_range_set)
 {
 
     SetType s(MAX_SET_SIZE);
@@ -37,19 +40,19 @@ TEST(gtest_meshapi_ordered_set,construct_ordered_set)
     }
 
     std::cout<<"\n --Using random access -- operator[]" << std::endl;
-    for(SetType::SetPosition pos = SetType::SetPosition(); pos < static_cast<SetType::SetPosition>(s.size()); ++pos)
+    for(SetPosition pos = SetPosition(); pos < s.size(); ++pos)
     {
-        SetType::SetIndex idx = static_cast<SetType::SetIndex>(pos);
-        EXPECT_EQ(idx,s[pos])
+        SetElement elt = static_cast<SetElement>(pos);
+        EXPECT_EQ(elt,s[pos])
                 <<"Random access iterator dereference to equal its position in the set";
         std::cout << "\t" << s[pos] <<"\n";
     }
 
     std::cout<<"\n --Using checked random access -- at()" << std::endl;
-    for(SetType::SetPosition pos = SetType::SetPosition(); pos < static_cast<SetType::SetPosition>(s.size()); ++pos)
+    for(SetPosition pos = SetPosition(); pos < s.size(); ++pos)
     {
-        SetType::SetIndex idx = static_cast<SetType::SetIndex>(pos);
-        EXPECT_EQ(idx,s.at(pos))
+        SetElement elt = static_cast<SetElement>(pos);
+        EXPECT_EQ(elt,s.at(pos))
                 <<"Expected checked random access iterator dereference to equal its position in the set";
 
         std::cout << "\t" << s.at(pos) <<"\n";
@@ -67,7 +70,7 @@ TEST(gtest_meshapi_ordered_set,construct_ordered_set)
 
 }
 
-TEST(gtest_meshapi_ordered_set,test_ordered_set_out_of_bounds)
+TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
 {
     std::cout<<"\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;
 

@@ -19,11 +19,11 @@
 using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::StaticConstantRelation;
 
-typedef asctoolkit::meshapi::MeshIndexType IndexType;
-typedef asctoolkit::meshapi::MeshSizeType SizeType;
+typedef RangeSet::SetElement ElementType;
+typedef RangeSet::SetPosition PositionType;
 
-const IndexType FROMSET_SIZE = 5;
-const IndexType TOSET_SIZE = 6;
+const PositionType FROMSET_SIZE = 5;
+const PositionType TOSET_SIZE = 6;
 
 
 TEST(gtest_meshapi_static_constant_relation,empty_relation)
@@ -66,18 +66,18 @@ void printVector(StrType const& msg, VecType const& vec)
 {
     std::cout<< "\n** " << msg << "\n\t";
     std::cout<<"Array of size " << vec.size() <<": ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<IndexType>(std::cout, " "));
+    std::copy(vec.begin(), vec.end(), std::ostream_iterator<ElementType>(std::cout, " "));
 }
 
 template<typename VecType>
-void generateIncrementingRelations(IndexType stride, VecType* offsets)
+void generateIncrementingRelations(PositionType stride, VecType* offsets)
 {
     VecType& offsetsVec = *offsets;
 
-    IndexType curIdx = IndexType();
-    for(IndexType i=0; i < FROMSET_SIZE; ++i)
+    PositionType curIdx = PositionType();
+    for(PositionType i=0; i < FROMSET_SIZE; ++i)
     {
-        for(IndexType j=0; j < stride; ++j)
+        for(PositionType j=0; j < stride; ++j)
         {
             offsetsVec.push_back( (i+j) % TOSET_SIZE );
             ++curIdx;
@@ -99,7 +99,7 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
 
     printVector("offsets vector", offsets);
 
-    IndexType const ELEM_STRIDE = 5;
+    PositionType const ELEM_STRIDE = 5;
 
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
 
@@ -119,26 +119,26 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
-        SizeType actualSize = incrementingRel.size( *sIt);
-        SizeType expectedSize = ELEM_STRIDE;
+        PositionType actualSize = incrementingRel.size( *sIt);
+        PositionType expectedSize = ELEM_STRIDE;
 
         std::cout <<"\n\t\tExpected: " << expectedSize;
         std::cout <<"\n\t\tActual: " <<  actualSize <<"\n";
 
         EXPECT_EQ( expectedSize, actualSize ) << "relation for this element was incorrect size.";
 
-        IndexType fromSetEltNum = std::distance(fromSet.begin(), sIt);
+        PositionType fromSetEltNum = std::distance(fromSet.begin(), sIt);
 
         RelSetConstIter toSetBegin = incrementingRel.begin(*sIt);
         RelSetConstIter toSetEnd = incrementingRel.end(*sIt);
         for(RelSetConstIter innerIt = toSetBegin; innerIt != toSetEnd; ++innerIt)
         {
-            IndexType toSetEltNum = std::distance(toSetBegin, innerIt);
+            PositionType toSetEltNum = std::distance(toSetBegin, innerIt);
 
             std::cout <<"\n\t\t " << toSetEltNum <<": " << *innerIt ;
 
-            IndexType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
-            IndexType actualVal = *innerIt;
+            PositionType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
+            PositionType actualVal = *innerIt;
             ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }
@@ -158,7 +158,7 @@ TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
     typedef StaticConstantRelation::RelationVec IndexVec;
     IndexVec offsets;
 
-    IndexType const ELEM_STRIDE = 5;
+    PositionType const ELEM_STRIDE = 5;
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
     incrementingRel.setRelation(offsets, ELEM_STRIDE);
 
@@ -178,7 +178,7 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
     typedef StaticConstantRelation::RelationVec IndexVec;
     IndexVec offsets;
 
-    IndexType const ELEM_STRIDE = 5;
+    PositionType const ELEM_STRIDE = 5;
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
     incrementingRel.setRelation(offsets, ELEM_STRIDE);
 
@@ -192,16 +192,16 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
-        IndexType fromSetEltNum = std::distance(fromSet.begin(), sIt);
+        PositionType fromSetEltNum = std::distance(fromSet.begin(), sIt);
 
         RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
         for(RelSetConstIter it = toSetItPair.first; it < toSetItPair.second; ++it)
         {
-            IndexType toSetEltNum = std::distance(toSetItPair.first, it);
+            PositionType toSetEltNum = std::distance(toSetItPair.first, it);
 
             std::cout <<"\n\t\t " << toSetEltNum <<": " << *it ;
 
-            IndexType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
+            PositionType expectedVal =  (fromSetEltNum + toSetEltNum) % TOSET_SIZE;
             ASSERT_EQ( expectedVal, *it) << "incrementing relation's value was incorrect";
         }
     }
@@ -222,7 +222,7 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
     typedef StaticConstantRelation::RelationVec IndexVec;
     IndexVec offsets;
 
-    IndexType const ELEM_STRIDE = 5;
+    PositionType const ELEM_STRIDE = 5;
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
     incrementingRel.setRelation(offsets, ELEM_STRIDE);
 
@@ -236,10 +236,10 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
-        for(IndexType idx=0; idx< static_cast<IndexType>(incrementingRel.size(*sIt)); ++idx)
+        for(PositionType idx=0; idx< incrementingRel.size(*sIt); ++idx)
         {
-            IndexType expectedVal =  (*sIt + idx) % TOSET_SIZE;
-            IndexType actualVal = incrementingRel[*sIt][idx];
+            PositionType expectedVal =  (*sIt + idx) % TOSET_SIZE;
+            PositionType actualVal = incrementingRel[*sIt][idx];
             EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }

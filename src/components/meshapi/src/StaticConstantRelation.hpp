@@ -29,8 +29,8 @@ namespace meshapi    {
          */
         class SubscriptProxy{
         public:
-            SubscriptProxy(RelationVecConstIterator it, SetIndex stride): m_iter(it), m_stride(stride) {}
-            SetIndex const& operator[](SetIndex index) const
+            SubscriptProxy(RelationVecConstIterator it, SetPosition stride): m_iter(it), m_stride(stride) {}
+            SetPosition const& operator[](SetPosition index) const
             {
                 ATK_ASSERT_MSG( index < m_stride, "Inner array access out of bounds."
                                              <<"\n\tPresented value: "<< index
@@ -39,16 +39,14 @@ namespace meshapi    {
             }
         private:
             RelationVecConstIterator m_iter;
-            SetIndex m_stride;
+            SetPosition m_stride;
         };
 
     public:
 
         typedef Relation::SetPosition                                           SetPosition;
-        typedef Relation::SetIndex                                              SetIndex;
-        typedef Relation::SizeType                                              SizeType;
 
-        typedef std::vector<SetIndex>                                           RelationVec;
+        typedef std::vector<SetPosition>                                           RelationVec;
         typedef RelationVec::iterator                                           RelationVecIterator;
         typedef std::pair<RelationVecIterator,RelationVecIterator>              RelationVecIteratorPair;
 
@@ -61,48 +59,48 @@ namespace meshapi    {
         /**
          * \note TODO: swap this out for data in the datastore
          */
-        void setRelation(RelationVec const& toOffsets, SetIndex stride = 0);
+        void setRelation(const RelationVec & toOffsets, const SetPosition stride = 0);
 
-        RelationVecConstIterator begin(SetIndex fromSetIndex)       const
+        RelationVecConstIterator begin(SetPosition fromSetIndex)       const
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return m_toSetIndicesVec.begin() + toSetBeginIndex(fromSetIndex);
         }
 
-        RelationVecConstIterator end(SetIndex fromSetIndex)         const
+        RelationVecConstIterator end(SetPosition fromSetIndex)         const
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return m_toSetIndicesVec.begin() + toSetEndIndex(fromSetIndex);
         }
 
-        RelationVecConstIteratorPair range(SetIndex fromSetIndex)   const
+        RelationVecConstIteratorPair range(SetPosition fromSetIndex)   const
         {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
-        SubscriptProxy const operator[](SetIndex fromSetElt) const
+        SubscriptProxy const operator[](SetPosition fromSetElt) const
         {
             return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
         }
 
-        SizeType size(SetIndex fromSetIndex = 0)                  const
+        SetPosition size(SetPosition fromSetIndex = 0)                  const
         {
-            verifyIndex(fromSetIndex);        
+            verifyPosition(fromSetIndex);
             return m_stride;
         }
 
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetIndex>(m_fromSet->size() ) ); }
-        inline SetIndex toSetBeginIndex(SetIndex fromSetIndex)   const { return m_stride * (fromSetIndex); }
-        inline SetIndex toSetEndIndex(SetIndex fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
+        inline void  verifyPosition(SetPosition fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
+        inline SetPosition toSetBeginIndex(SetPosition fromSetIndex)   const { return m_stride * (fromSetIndex); }
+        inline SetPosition toSetEndIndex(SetPosition fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
 
 
 
     private:
 
-        SetIndex       m_stride;
+        SetPosition       m_stride;
 
         Set* m_fromSet;
         Set* m_toSet;

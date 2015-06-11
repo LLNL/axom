@@ -93,7 +93,6 @@ namespace shocktube {
 
         // other types
         typedef asctoolkit::meshapi::Set::SetIndex IndexType;
-        typedef asctoolkit::meshapi::Set::SizeType SizeType;
         typedef asctoolkit::meshapi::Set::SetPosition PositionType;
 
     public:
@@ -220,7 +219,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    mesh->faces = ShockTubeMesh::FaceSet( intsRegistry.getScalar("numFaces") );
 
    // define the subsets
-   ShockTubeMesh::ElemSet::SizeType numElems = mesh->elems.size();
+   ShockTubeMesh::PositionType numElems = mesh->elems.size();
    mesh->inFlowElems    = ShockTubeMesh::ElemSet( 0,1, &(mesh->elems) );
    mesh->tubeElems      = ShockTubeMesh::ElemSet( 1,numElems-1, &(mesh->elems) );
    mesh->outFlowElems   = ShockTubeMesh::ElemSet( numElems-1,numElems, &(mesh->elems) );
@@ -231,8 +230,8 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    // TODO: Need to define ImplicitConstantRelation -- since the relations are actually implicit
    //       -- no storage should be necessary for regular grid neighbors
    // For now, we will have to do this explicitly...
-   const int STRIDE = 2;
-   typedef std::vector<ShockTubeMesh::IndexType> IndexVec;
+   const ShockTubeMesh::PositionType STRIDE = 2;
+   typedef std::vector<ShockTubeMesh::PositionType> IndexVec;
 
    /// Setup the FaceToElem relation
    IndexVec relVec( STRIDE * mesh->faces.size());
@@ -250,7 +249,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
 
    /// Setup the TubeElementToFace relation: A relation from the tubes subset of the elements to their incident faces
    //  For convenience, we can reuse the relVec container
-   ShockTubeMesh::ElemSet::SizeType numTubeElems = mesh->tubeElems.size();
+   ShockTubeMesh::PositionType numTubeElems = mesh->tubeElems.size();
    relVec.clear();
    relVec.resize( STRIDE * numTubeElems);
    relIt = relVec.begin();
@@ -478,7 +477,7 @@ void dumpData(ShockTubeMesh const& mesh)
     RealField const& energy   = realsRegistry.getField("energy") ;
     RealField const& pressure = realsRegistry.getField("pressure") ;
 
-    static const ShockTubeMesh::ElemSet::SizeType MAX_ELEM_DUMP = 10;
+    static const ShockTubeMesh::PositionType MAX_ELEM_DUMP = 10;
     const int maxDump = std::min(mesh.elems.size(), MAX_ELEM_DUMP);
     const int rmaxDump = std::min(MAX_ELEM_DUMP, mesh.elems.size() - maxDump);
 

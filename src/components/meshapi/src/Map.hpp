@@ -27,7 +27,7 @@ namespace meshapi    {
     {
     public:
         typedef Set::SetIndex                                          SetIndex;
-        typedef Set::SizeType                                          SizeType;
+        typedef Set::SetPosition                                       SetPosition;
 
         typedef std::vector<DataType>                                  OrderedMap;
 
@@ -46,15 +46,15 @@ namespace meshapi    {
 
         ~Map(){}
 
-        DataType const& operator[](SetIndex setIndex) const
+        DataType const& operator[](SetPosition setIndex) const
         {
-            verifyIndex(setIndex);
+            verifyPosition(setIndex);
             return m_data[setIndex];
         }
 
-        DataType & operator[](SetIndex setIndex)
+        DataType & operator[](SetPosition setIndex)
         {
-            verifyIndex(setIndex);
+            verifyPosition(setIndex);
             return m_data[setIndex];
         }
 
@@ -65,15 +65,15 @@ namespace meshapi    {
         //* Placeholder for function that returns the (pointer to) underlying data **/
         OrderedMap      & data()        { return m_data; }
         //* Placeholder for function that returns the (const pointer to) underlying data **/
-        OrderedMap const& data() const  { return m_data; }
+        const OrderedMap & data() const  { return m_data; }
 
 
-        SizeType size() const { return m_set->size(); }
+        SetPosition size() const { return m_set->size(); }
 
         bool isValid(bool verboseOutput = false) const;
 
     private:
-        inline void  verifyIndex(SetIndex setIndex)       const { ATK_ASSERT( setIndex < static_cast<SetIndex>(m_set->size() ) ); }
+        inline void  verifyPosition(SetPosition setIndex)       const { ATK_ASSERT( setIndex < m_set->size()  ); }
 
     private:
         Set const*  m_set;
@@ -151,7 +151,7 @@ namespace meshapi    {
                 sstr<< "\n** underlying set has size " << m_set->size() <<": ";
 
                 sstr<< "\n** Mapped data:";
-                for(SetIndex idx = 0; idx < static_cast<SetIndex>(this->size()); ++idx)
+                for(SetPosition idx = 0; idx < this->size(); ++idx)
                 {
                     sstr<<"\n\telt[" << idx << "]:\t" << (*this)[idx];
                 }

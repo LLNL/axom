@@ -25,27 +25,27 @@ namespace meshapi{
     {
     public:
       typedef Set::SetIndex     SetIndex;
-      typedef Set::SizeType     SizeType;
       typedef Set::SetPosition  SetPosition;
+      typedef SetIndex          SetElement;
 
 
-      typedef boost::counting_iterator<SetIndex> iterator;
+      typedef boost::counting_iterator<SetElement> iterator;
       typedef std::pair<iterator,iterator> iterator_pair;
 
       static const NullSet s_nullSet;
 
     public:
-      RangeSet(SizeType size = SizeType(), const Set* parentSet = &s_nullSet )
-            : m_lowerIdx(SizeType())
+      RangeSet(SetElement size = SetElement(), const Set* parentSet = &s_nullSet )
+            : m_lowerIdx(SetElement())
             , m_upperIdx(size)
             , m_parentSet(parentSet) {}
 
-      RangeSet(  SizeType lowerIndex, SizeType upperIndex, const Set* parentSet = &s_nullSet )
+      RangeSet(SetElement lowerIndex, SetElement upperIndex, const Set* parentSet = &s_nullSet )
             : m_lowerIdx(lowerIndex)
             , m_upperIdx(upperIndex)
             , m_parentSet(parentSet) {}
 
-      SizeType size()  const { return (m_upperIdx - m_lowerIdx); }
+      SetPosition size()  const { return (m_upperIdx - m_lowerIdx); }
 
       iterator  begin() const  { return iterator(m_lowerIdx); }
       iterator  end()   const  { return iterator(m_upperIdx); }
@@ -54,8 +54,8 @@ namespace meshapi{
       /**
        * \brief Given a position in the Set, return a position in the larger index space
        */
-      SetIndex     operator[](SetPosition pos) const { verifyPosition(pos); return pos + m_lowerIdx;}
-      SetIndex     at(SetPosition pos)         const { return operator[](pos); }
+      SetElement     operator[](SetPosition pos) const { verifyPosition(pos); return pos + m_lowerIdx;}
+      SetElement     at(SetPosition pos)         const { return operator[](pos); }
 
       bool isValid(bool verboseOutput = false) const;
 
@@ -72,8 +72,8 @@ namespace meshapi{
       }
 
     private:
-      SizeType m_lowerIdx;
-      SizeType m_upperIdx;
+      SetElement m_lowerIdx;
+      SetElement m_upperIdx;
       const Set * m_parentSet;
 
     };

@@ -75,8 +75,8 @@ public:
 #endif
     typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
-    typedef NodeToZoneRelation::SetIndex      IndexType;
-    typedef NodeToZoneRelation::SizeType     SizeType;
+    typedef NodeSet::SetIndex      IndexType;
+    typedef NodeSet::SetPosition   PositionType;
 
     // types for maps
     // TODO: Convert to meshapi::Map
@@ -86,10 +86,10 @@ public:
 
 public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
-    SizeType  numNodes() const { return nodes.size(); }
+    PositionType  numNodes() const { return nodes.size(); }
 
     /** \brief Simple accessor for the number of zones in the mesh */
-    SizeType  numZones() const { return zones.size(); }
+    PositionType  numZones() const { return zones.size(); }
 
 public:
     /// Sets in the mesh

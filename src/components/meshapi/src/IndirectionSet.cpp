@@ -13,31 +13,27 @@
 namespace asctoolkit {
 namespace meshapi {
 
-IndirectionSet::Index& Set::at( size_type idx )
+bool IndirectionSet::isValid(bool verboseOutput)
 {
-  if(idx >= m_entities.size())
-  {
-    std::stringstream sstr;
-    sstr<< "MeshAPI::Set -- requested out of range element at position "
-        << idx << ", but set only has " << m_entities.size() << " elements.";
-    throw std::out_of_range(sstr.str());
-  }
-  return m_entities[idx];
+    bool valid;
+
+    std::stringstream errStr;
+
+    if(verboseOutput)
+    {
+        errStr << "hello";
+    }
+
+
+
+    if(verboseOutput)
+    {
+        if( !valid)
+            std::cout<<" There was a problem: " << errStr.str() << std::endl;
+    }
+
+    return valid;
 }
-
-IndirectionSet::Index const& Set::at( size_type idx ) const
-{
-  if(idx >= m_entities.size())
-  {
-    std::stringstream sstr;
-    sstr<< "MeshAPI::Set -- requested out of range element at position "
-        << idx << ", but set only has " << m_entities.size() << " elements.";
-    throw std::out_of_range(sstr.str());
-  }
-  return m_entities[idx];
-}
-
-
 
 } /* namespace meshapi */
 } /* namespace asctoolkit */

@@ -6,7 +6,7 @@ set(gtest_meshapi_tests
    # test sets
    testSet.cpp
    testNullSet.cpp
-   testOrderedSet.cpp
+   testRangeSet.cpp
 
    # test relations
    testDynamicVariableRelation.cpp

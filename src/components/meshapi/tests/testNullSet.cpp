@@ -19,12 +19,12 @@ TEST(gtest_meshapi_set,construct_nullset)
 
 TEST(gtest_meshapi_set,subscript_fails_nullset)
 {
-    std::cout<<"\n****** Testing subscipt access on NullSet -- code is expected to assert and die." << std::endl;
+    std::cout<<"\n****** Testing subscript access on NullSet -- code is expected to assert and die." << std::endl;
 
-    typedef asctoolkit::meshapi::Set::SizeType SizeType;
+    typedef asctoolkit::meshapi::Set::SetPosition SetPosition;
     asctoolkit::meshapi::NullSet n;
 
-    EXPECT_EQ(n.size(), SizeType()) <<"size of null set is defined to be zero";
+    EXPECT_EQ(n.size(), SetPosition()) <<"size of null set is defined to be zero";
 
     // add this line to avoid a warning in the output about thread safety
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";

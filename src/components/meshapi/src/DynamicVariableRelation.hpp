@@ -26,10 +26,8 @@ namespace meshapi    {
     {
     public:
         typedef Relation::SetPosition                                           SetPosition;
-        typedef Relation::SetIndex                                              SetIndex;
-        typedef Relation::SizeType                                             SizeType;
 
-        typedef std::vector<SetIndex>                                           RelationVec;
+        typedef std::vector<SetPosition>                                           RelationVec;
         typedef RelationVec::iterator                                           RelationVecIterator;
         typedef std::pair<RelationVecIterator,RelationVecIterator>              RelationVecIteratorPair;
 
@@ -44,33 +42,33 @@ namespace meshapi    {
         DynamicVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
         virtual ~DynamicVariableRelation(){}
 
-        RelationVecConstIterator begin(SetIndex fromSetIndex)       const
+        RelationVecConstIterator begin(SetPosition fromSetIndex)       const
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return fromSetRelationsVec(fromSetIndex).begin();
         }
 
-        RelationVecConstIterator end(SetIndex fromSetIndex)         const
+        RelationVecConstIterator end(SetPosition fromSetIndex)         const
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return fromSetRelationsVec(fromSetIndex).end();
         }
 
-        RelationVecConstIteratorPair range(SetIndex fromSetIndex)   const
+        RelationVecConstIteratorPair range(SetPosition fromSetIndex)   const
         {
             return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
         }
 
 
-        RelationVec const& operator[](SetIndex fromSetIndex) const
+        RelationVec const& operator[](SetPosition fromSetIndex) const
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return m_relationsVec[fromSetIndex];
         }
 
-        SizeType size(SetIndex fromSetIndex)                  const
+        SetPosition size(SetPosition fromSetIndex)                  const
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return fromSetRelationsVec(fromSetIndex).size();
         }
 
@@ -79,24 +77,24 @@ namespace meshapi    {
 
     public: // Modifying functions
 
-        void insert(SetIndex fromSetIndex, SetIndex toSetIndex)
+        void insert(SetPosition fromSetIndex, SetPosition toSetIndex)
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             m_relationsVec[fromSetIndex].push_back(toSetIndex);
 
         }
 
-        RelationVec& operator[](SetIndex fromSetIndex)
+        RelationVec& operator[](SetPosition fromSetIndex)
         {
-            verifyIndex(fromSetIndex);
+            verifyPosition(fromSetIndex);
             return m_relationsVec[fromSetIndex];
         }
 
 
     private:
-        inline void  verifyIndex(SetIndex fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetIndex>(m_fromSet->size() ) ); }
-        inline RelationVec      & fromSetRelationsVec(SetIndex fromSetIndex)           { return m_relationsVec[fromSetIndex]; }
-        inline RelationVec const& fromSetRelationsVec(SetIndex fromSetIndex)   const   { return m_relationsVec[fromSetIndex]; }
+        inline void  verifyPosition(SetPosition fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) ); }
+        inline RelationVec      & fromSetRelationsVec(SetPosition fromSetIndex)           { return m_relationsVec[fromSetIndex]; }
+        inline RelationVec const& fromSetRelationsVec(SetPosition fromSetIndex)   const   { return m_relationsVec[fromSetIndex]; }
 
 
 

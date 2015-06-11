@@ -257,7 +257,7 @@ class Domain {
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
 
-   // Nodes on symmertry planes
+   // Nodes on symmetry planes
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
    Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
    Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }

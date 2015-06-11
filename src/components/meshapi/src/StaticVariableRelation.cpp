@@ -76,7 +76,8 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
             if(verboseOutput)
             {
                 errSstr << "\n\t* fromSetBeginsVec was the wrong size."
-                 << " -- expected " << (m_fromSet->size() +1) << ", actual " << m_fromSetBeginsVec.size() << ")";
+                        << " -- expected " << (m_fromSet->size() +1)
+                        << ", actual " << m_fromSetBeginsVec.size() << ")";
             }
 
             bValid = false;
@@ -85,7 +86,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         // Check that no element of the fromSetBegins vector points outside of the toSetIndices vector
         for(RelationVecConstIterator it = m_fromSetBeginsVec.begin(), itEnd = m_fromSetBeginsVec.end(); it != itEnd; ++it)
         {
-            if( *it > static_cast<SetIndex>(m_toSetIndicesVec.size()) )
+            if( *it > m_toSetIndicesVec.size() )
             {
                 if(verboseOutput)
                 {
@@ -101,7 +102,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         // Check that all elements of the toSetIndices vector point to valid set elements
         for(RelationVecConstIterator it = m_toSetIndicesVec.begin(), itEnd = m_toSetIndicesVec.end(); it != itEnd; ++it)
         {
-            if( *it >= static_cast<SetIndex>(m_toSet->size() ) )
+            if( *it >= m_toSet->size() )
             {
                 if(verboseOutput)
                 {
@@ -133,10 +134,10 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         }
 
         sstr<< "\n** fromSetBeginsVec vec w/ size " << m_fromSetBeginsVec.size() <<": ";
-        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<SetIndex>(sstr, " "));
+        std::copy(m_fromSetBeginsVec.begin(), m_fromSetBeginsVec.end(), std::ostream_iterator<SetPosition>(sstr, " "));
 
         sstr<< "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() <<": ";
-        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetIndex>(sstr, " "));
+        std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetPosition>(sstr, " "));
 
         std::cout << sstr.str() << std::endl;
 

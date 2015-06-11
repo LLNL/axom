@@ -64,7 +64,7 @@ namespace meshapi{
   public:
     typedef MeshIndexType                 SetIndex;         // Index into a set
     typedef MeshSizeType                 SetPosition;      // Position in which we are indexing
-    typedef MeshSizeType                  SizeType;         // Size of a set
+    typedef MeshIndexType                 SetElement;
 
 
   public:
@@ -81,13 +81,13 @@ namespace meshapi{
        *       How are we planning to handle indexes that are intentionally out of range
        *       (e.g. to indicate a problem, or a missing element etc..)?
        */
-      virtual SetIndex at(SetPosition) const  =0;
+      virtual SetElement at(SetPosition) const  =0;
 
       /**
        * \brief Get the number of entities in the set
        * @return The number of entities in the set.
        */
-      virtual SizeType size() const      =0;
+      virtual SetPosition size() const      =0;
 
       /**
        * \brief Determines if the Set is a Subset of another set.
@@ -128,16 +128,15 @@ namespace meshapi{
   inline bool operator==(Set const& set1, Set const& set2)
   {
       typedef Set::SetPosition SetPosition;
-      typedef Set::SizeType SizeType;
 
-      SizeType const numElts = set1.size();
+      SetPosition const numElts = set1.size();
 
       // Sets are different if they have a different size
       if(set2.size() != numElts)
           return false;
 
       // Otherwise, compare the indices element wise
-      for(SetPosition pos= SetPosition(); pos < static_cast<SetPosition>(numElts); ++pos)
+      for(SetPosition pos= SetPosition(); pos < numElts; ++pos)
       {
           if(set1.at(pos) != set2.at(pos))
               return false;

@@ -19,11 +19,11 @@
 using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::StaticVariableRelation;
 
-typedef asctoolkit::meshapi::MeshIndexType IndexType;
-typedef asctoolkit::meshapi::MeshSizeType SizeType;
+typedef RangeSet::SetElement ElementType;
+typedef RangeSet::SetPosition PositionType;
 
-const IndexType FROMSET_SIZE = 5;
-const IndexType TOSET_SIZE = 8;
+const PositionType FROMSET_SIZE = 5;
+const PositionType TOSET_SIZE = 8;
 
 
 TEST(gtest_meshapi_static_variable_relation,empty_relation)
@@ -69,7 +69,7 @@ void printVector(StrType const& msg, VecType const& vec)
 {
     std::cout<< "\n** " << msg << "\n\t";
     std::cout<<"Array of size " << vec.size() <<": ";
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<IndexType>(std::cout, " "));
+    std::copy(vec.begin(), vec.end(), std::ostream_iterator<PositionType>(std::cout, " "));
 }
 
 template<typename VecType>
@@ -78,11 +78,11 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
     VecType& beginsVec = *begins;
     VecType& offsetsVec = *offsets;
 
-    IndexType curIdx = IndexType();
-    for(IndexType i=0; i < FROMSET_SIZE; ++i)
+    PositionType curIdx = PositionType();
+    for(PositionType i=0; i < FROMSET_SIZE; ++i)
     {
         beginsVec[i] = curIdx;
-        for(IndexType j=0; j <= i; ++j)
+        for(PositionType j=0; j <= i; ++j)
         {
             offsetsVec.push_back( j % TOSET_SIZE );
             ++curIdx;
@@ -126,8 +126,8 @@ TEST(gtest_meshapi_static_variable_relation,simple_relation)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
-        SizeType actualSize = incrementingRel.size( *sIt);
-        SizeType expectedSize = std::distance(fromSet.begin(), sIt) +1;
+        PositionType actualSize = incrementingRel.size( *sIt);
+        PositionType expectedSize = std::distance(fromSet.begin(), sIt) +1;
 
         std::cout <<"\n\t\tExpected: " << expectedSize;
         std::cout <<"\n\t\tActual: " <<  actualSize <<"\n";
@@ -138,12 +138,12 @@ TEST(gtest_meshapi_static_variable_relation,simple_relation)
         RelSetConstIter toSetEnd = incrementingRel.end(*sIt);
         for(RelSetConstIter innerIt = toSetBegin; innerIt != toSetEnd; ++innerIt)
         {
-            IndexType eltNum = std::distance(toSetBegin, innerIt);
+            PositionType eltNum = std::distance(toSetBegin, innerIt);
 
             std::cout <<"\n\t\t " << eltNum <<": " << *innerIt ;
 
-            IndexType expectedVal =  (eltNum ) % TOSET_SIZE;
-            IndexType actualVal = *innerIt;
+            PositionType expectedVal =  (eltNum ) % TOSET_SIZE;
+            PositionType actualVal = *innerIt;
             ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }
@@ -200,12 +200,12 @@ TEST(gtest_meshapi_static_variable_relation,test_iterator_range)
         RelSetConstIterPair toSetItPair = incrementingRel.range(*sIt);
         for(RelSetConstIter it = toSetItPair.first; it < toSetItPair.second; ++it)
         {
-            IndexType eltNum = std::distance(toSetItPair.first, it);
+            PositionType eltNum = std::distance(toSetItPair.first, it);
 
             std::cout <<"\n\t\t " << eltNum <<": " << *it ;
 
-            IndexType expectedVal =  (eltNum ) % TOSET_SIZE;
-            IndexType actualVal = *it;
+            PositionType expectedVal =  (eltNum ) % TOSET_SIZE;
+            PositionType actualVal = *it;
             ASSERT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }
@@ -239,10 +239,10 @@ TEST(gtest_meshapi_static_variable_relation,double_subscript_test)
     {
         std::cout<<"\n\tInspecting element " << *sIt << " of first set.";
 
-        for(IndexType idx=0; idx< static_cast<IndexType>(incrementingRel.size(*sIt ) ); ++idx)
+        for(PositionType idx=0; idx< incrementingRel.size(*sIt  ); ++idx)
         {
-            IndexType actualVal = incrementingRel[*sIt][idx];
-            IndexType expectedVal = idx;
+            PositionType actualVal = incrementingRel[*sIt][idx];
+            PositionType expectedVal = idx;
             EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
         }
     }

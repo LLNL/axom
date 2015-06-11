@@ -2,7 +2,6 @@
  * \file IndirectionSet.h
  *
  * \brief Basic API for a set of entities in a simulation
- *
  */
 
 #ifndef MESHAPI_INDIRECTION_SET_H_
@@ -22,72 +21,32 @@ namespace meshapi{
    *
    * \brief An indexed set (a tuple) of entities in a simulation
    *
-   * A container class for a set of entities in a simulation.
-   * Each entity has an index.
-   *
-   * Examples of sets include:
-   * <ol>
-   *  <li> Mesh elements: vertices, edges, faces, cells
-   *  <li> Subzonal elements: sides, corners, finite element degrees of freedom
-   *  <li> Boundary elements: external surfaces and springs
-   *  <li> Elements of a space partition: e.g. Domains in a block structured mesh, leaf nodes of an octree/kd-tree
-   *  <li> AMR bricks / tiles
-   *  <li> Thread ids, MPI ranks, warps, thread groups, etc...
-   *  <li> particles
-   *  <li> boundary conditions
-   *  <li> ...
-   * </ol>
-   *
-   * Examples of subsets include:
-   * <ol>
-   *  <li> Regions
-   *  <li> Ghost cells -- send, receive
-   *  <li> Boundary cells -- external surface
-   * </ol>
-   *
-   * Note: Elements of a set do not necessarily need explicit indices.
-   * E.g. if we have a contiguous range of elements (or slices of contiguous ranges),
-   * they can be implicitly encoded.
-   *
-   * Thus, we can have
-   * <ol>
-   *  <li> Implicit indexes -- all we need here is a size operator
-   *  <li> Sliced indices -- here we need the dimension and the striding
-   *  <li> Explicit indices -- for a subset, we need the indices with respect to some other indexing scheme
-   * </ol>
+   * A container class for a set of entities in a simulation. Each entity has an index.
    *
    * Below is an initial implementation for a set with explicit indexes (encoded here using a vector).
-   *
-   * The interface is for constant access to the elements.
    */
   class IndirectionSet: public Set
   {
   public:
-    typedef unsigned int                  Index;
-    typedef std::vector<Index>            ArrType;
 
-    typedef ArrType::const_iterator       ArrCIter;
-    typedef std::pair<ArrCIter, ArrCIter> ArrCIterPair;
+    typedef Set::SetIndex                               SetIndex;
+    typedef Set::SizeType                               SizeType;
+    typedef Set::SetPosition                            SetPosition;
+    typedef SetPosition                                 SetElement;
 
-    typedef ArrType::iterator             ArrIter;
-    typedef std::pair<ArrIter, ArrIter>   ArrIterPair;
+    typedef std::vector<SetElement>                     ArrType;
+    typedef ArrType::iterator                           iterator;
+    typedef std::pair<iterator, iterator>               iterator_pair;
 
-    typedef ArrType::size_type            size_type;
+    typedef ArrType::const_iterator                     const_iterator;
+    typedef std::pair<const_iterator, const_iterator>   const_iterator_pair;
 
+
+    static const NullSet s_nullSet;
 
   public:
-      IndirectionSet () : m_parentSet(NULL) {}
+      IndirectionSet (const Set* parentSet = &s_nullSet) : m_parentSet(parentSet) {}
       ~IndirectionSet () {}
-
-
-      /**
-       * \brief A function to initialize the indices of the set
-       * \note Not yet implemented.
-       * @param begin An iterator to the beginning of the desired range
-       * @param end An iterator to the end of the desired range
-       */
-      template<typename IteratorType>
-      void setupEntities(IteratorType begin, IteratorType end) { throw NotImplementedException(); }
 
       /**
        * \brief Unchecked random access to the entities of the set
@@ -95,7 +54,7 @@ namespace meshapi{
        * @return A reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      Index&       operator[](size_type idx)        { return m_entities[idx];}
+      SetElement&       operator[](SetPosition idx)        { return m_entities[idx];}
 
       /**
        * \brief Unchecked random access to the entities of the set (const version)
@@ -103,7 +62,7 @@ namespace meshapi{
        * @return A const reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      Index const& operator[](size_type idx) const  { return m_entities[idx];}
+      SetElement const& operator[](SetPosition idx) const  { return m_entities[idx];}
 
       /**
        * \brief Checked random access to the entities of the set
@@ -112,7 +71,7 @@ namespace meshapi{
        * @return A reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      Index&       at(size_type idx);
+      SetElement&       at(SetPosition idx);
 
       /**
        * \brief Checked random access to the entities of the set (const version)
@@ -121,56 +80,46 @@ namespace meshapi{
        * @return A const reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      Index const& at(size_type idx) const;
+      SetElement const& at(SetPosition idx) const;
 
       /**
        * \brief Get the number of entities in the set
        * @return The number of entities in the set.
        */
-      size_type size() const      { return m_entities.size(); }
+      SetPosition size() const      { return m_entities.size(); }
 
       /**
        * @return An iterator to the beginning of the entities
        */
-      ArrIter  begin()            { return m_entities.begin(); }
+      iterator  begin()            { return m_entities.begin(); }
 
       /**
        * @return A const iterator to the beginning of the entities
        */
-      ArrCIter begin() const      { return m_entities.begin(); }
-
-      /**
-       * \note This duplicates the functionality of begin() to ensure we get a const iterator
-       * @return A const iterator to the beginning of the elements.
-       */
-      ArrCIter cbegin() const     { return m_entities.begin(); }
+      iterator begin() const      { return m_entities.begin(); }
 
       /**
        * @return An iterator to the end of the entities.
        */
-      ArrIter  end()              { return m_entities.end(); }
+      iterator end()              { return m_entities.end(); }
 
       /**
        * @return A const iterator to the end of the entities
        */
-      ArrCIter end() const        { return m_entities.end(); }
-
-      /**
-       * \note This duplicates the functionality of end() to ensure we get a const iterator
-       * @return A const iterator to the end of the entities
-       */
-      ArrCIter cend() const       { return m_entities.end(); }
+      iterator end() const        { return m_entities.end(); }
 
       /**
         * @return A pair of begin/end iterators
        */
-      ArrIterPair  range()        { return std::make_pair(begin(), end()); }
+      iterator_pair  range()        { return std::make_pair(begin(), end()); }
 
       /**
-        * @return A pair of const begin/end iterators (const version)
+        * @return A pair of begin/end iterators
        */
-      ArrCIterPair range() const  { return std::make_pair(begin(), end()); }
+      iterator_pair range() const { return std::make_pair(begin(), end()); }
 
+
+      bool isValid(bool verboseOutput = false) const;
 
       /**
        * \brief Determines if the Set is a Subset of another set.
@@ -182,6 +131,10 @@ namespace meshapi{
        * @return A pointer to the parent set.  NULL if there is no parent
        */
       Set* parentSet()            { return m_parentSet;}
+
+
+      ArrType       & data()        { return m_entities; }
+      const ArrType & data() const  { return m_entities; }
 
   private:
 

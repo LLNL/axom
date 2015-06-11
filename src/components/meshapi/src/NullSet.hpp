@@ -25,10 +25,10 @@ namespace meshapi{
     public:
         NullSet() {}
 
-        inline SizeType size() const { return SizeType();}
+        inline SetPosition size() const { return SetPosition();}
 
-        inline SetIndex at(SetPosition pos) const { verifyPosition(pos); return SetPosition();}
-        inline SetIndex operator[](SetPosition pos) const { return at(pos);}
+        inline SetElement at(SetPosition pos) const { verifyPosition(pos); return SetPosition();}
+        inline SetElement operator[](SetPosition pos) const { return at(pos);}
 
         inline bool isSubset() const { return false; }
         const Set* parentSet() const { return this; }
