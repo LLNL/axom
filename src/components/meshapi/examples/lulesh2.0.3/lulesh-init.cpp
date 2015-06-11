@@ -58,9 +58,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_sizeX = edgeElems ;
    m_sizeY = edgeElems ;
    m_sizeZ = edgeElems ;
-   m_numElem = edgeElems*edgeElems*edgeElems ;
+   m_elemSet = asctoolkit::meshapi::RangeSet(edgeElems*edgeElems*edgeElems);
 
-   m_numNode = edgeNodes*edgeNodes*edgeNodes ;
+   m_nodeSet = asctoolkit::meshapi::RangeSet(edgeNodes*edgeNodes*edgeNodes);
 
    m_regNumList = new Index_t[numElem()] ;  // material indexset
 

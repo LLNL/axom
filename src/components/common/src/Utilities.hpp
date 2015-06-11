@@ -233,6 +233,24 @@ namespace utilities
        return std::fabs(a-b) < thresh;
    }
 
+   /*!
+    * \brief Fuzzy comparison of two real valued quantities
+    *
+    * \param thresh The threshold of the fuzzy comparison.  Default is 1e-8
+    * \return \c true if the absolute value of the difference is less than \param thresh, else false
+    */
+   template<typename RealType>
+   bool compareRealsRelative(RealType a, RealType b, RealType relThresh = 1e-6, RealType absThresh = 1e-8)
+   {
+       RealType absDiff = std::fabs(a-b);
+       if( absDiff > absThresh)
+           return false;
+
+       RealType dividend = (std::fabs(a) < std::fabs(b) ) ? b : a ;
+       return (absDiff / dividend) <= relThresh;
+   }
+
+
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace
 #endif

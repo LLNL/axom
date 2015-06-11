@@ -390,9 +390,10 @@ class Domain {
    Index_t&  sizeY()              { return m_sizeY ; }
    Index_t&  sizeZ()              { return m_sizeZ ; }
    Index_t&  numReg()             { return m_numReg ; }
-   Int_t&  cost()             { return m_cost ; }
-   Index_t&  numElem()            { return m_numElem ; }
-   Index_t&  numNode()            { return m_numNode ; }
+   Int_t&  cost()                 { return m_cost ; }
+
+   Index_t  numElem()  const      { return m_elemSet.size() ; }
+   Index_t  numNode()  const      { return m_nodeSet.size() ; }
    
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
@@ -546,8 +547,9 @@ class Domain {
    Index_t m_sizeX ;
    Index_t m_sizeY ;
    Index_t m_sizeZ ;
-   Index_t m_numElem ;
-   Index_t m_numNode ;
+
+   asctoolkit::meshapi::RangeSet m_nodeSet;
+   asctoolkit::meshapi::RangeSet m_elemSet;
 
    Index_t m_maxPlaneSize ;
    Index_t m_maxEdgeSize ;

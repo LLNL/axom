@@ -2,10 +2,15 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
+
+#include <map>
+
 #ifdef USE_MPI
 #include <mpi.h>
 #endif
 #include "lulesh.hpp"
+
+#include "common/Utilities.hpp"
 
 /* Helper function for converting strings to ints, with error checking */
 int StrToInt(const char *token, int *retVal)
@@ -175,7 +180,7 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
                                Int_t numRanks)
 {
    // GrindTime1 only takes a single domain into account, and is thus a good way to measure
-   // processor speed indepdendent of MPI parallelism.
+   // processor speed independent of MPI parallelism.
    // GrindTime2 takes into account speedups from MPI parallelism 
    Real_t grindTime1 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx);
    Real_t grindTime2 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx*numRanks);
@@ -214,6 +219,43 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
    printf("\nElapsed time         = %10.2f (s)\n", elapsed_time);
    printf("Grind time (us/z/c)  = %10.8g (per dom)  (%10.8g overall)\n", grindTime1, grindTime2);
    printf("FOM                  = %10.8g (z/s)\n\n", 1000.0/grindTime2); // zones per second
+
+   /// Compare to given values for cycles and origin energy from lulesh 2.0 paper:
+   std::map<Int_t, Index_t> cycleCheckMap;
+   std::map<Int_t, Real_t>  energyCheckMap;
+
+   cycleCheckMap[ 5] =   72;
+   cycleCheckMap[10] =  231;
+   cycleCheckMap[30] =  932;
+   cycleCheckMap[45] = 1477;
+   cycleCheckMap[50] = 1662;
+   cycleCheckMap[70] = 2402;
+   cycleCheckMap[90] = 3145;
+
+   energyCheckMap[ 5] = 7.853665e+03;
+   energyCheckMap[10] = 2.720531e+04;
+   energyCheckMap[30] = 2.025075e+05;
+   energyCheckMap[45] = 4.234875e+05;
+   energyCheckMap[50] = 5.124778e+05;
+   energyCheckMap[70] = 9.417145e+05;
+   energyCheckMap[90] = 1.482403e+06;
+
+   if(cycleCheckMap.find(nx) != cycleCheckMap.end() )
+   {
+       ATK_ASSERT_MSG( cycleCheckMap[nx] == locDom.cycle()
+                 , "Specs state that num cycles should be " << cycleCheckMap[nx]
+                 << " actual number of cycles was " << locDom.cycle() <<"." );
+
+       ATK_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( energyCheckMap[nx], locDom.e(ElemId), 1e-6, 10e10 )
+                 , "Specs state that final energy at origing must be " << energyCheckMap[nx]
+                 << " actual energy at origin was " << locDom.e(ElemId) <<"."
+                 << " Difference was " << fabs(energyCheckMap[nx] - locDom.e(ElemId) )
+       );
+
+   }
+
+
+
 
    return ;
 }
