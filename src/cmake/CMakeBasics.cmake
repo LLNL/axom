@@ -71,7 +71,7 @@
 
  ## Set the Fortran module directory
  set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib
+     ${PROJECT_BINARY_DIR}/lib/fortran
      CACHE PATH
      "Directory where all Fortran modules will go in the build tree"
      )
@@ -118,6 +118,9 @@ if (BUILD_TESTING)
             CACHE INTERNAL "GoogleTest include directories" FORCE)
   set(GTEST_LIBS gtest_main gtest
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
+
+  ## Add Fruit   FortRan UuIT test
+  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/fruit-3.3.9)
 
   enable_testing()
 

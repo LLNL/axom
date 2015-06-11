@@ -44,7 +44,21 @@ endforeach()
 #
 # Add fortran tests
 #
-add_fortran_test(TEST_SOURCE testfortran.f DEPENDS_ON sidre)
+#add_fortran_test(TEST_SOURCE testfortran.f DEPENDS_ON sidre)
+
+
+#add_executable(calculator calculator.f90 calculator_test.f90 fruit_driver.f90)
+#target_link_libraries(calculator fruit)
+#add_test( NAME calculator
+#          COMMAND calculator
+#          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+#)
+
+
+add_fortran_test(
+    TEST_SOURCE F_sidre_smoke.f
+    DEPENDS_ON fruit slic conduit sidre
+)
 
 
 
