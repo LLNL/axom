@@ -38,6 +38,8 @@ ATK_datastore * ATK_datastore_new();
 
 void ATK_datastore_delete(ATK_datastore * self);
 
+ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
+
 ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, ATK_IndexType idx);
 
 ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self);
@@ -45,8 +47,6 @@ ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self);
 void ATK_datastore_destroy_buffer(ATK_datastore * self, ATK_IndexType id);
 
 size_t ATK_datastore_get_num_buffers(ATK_datastore * self);
-
-ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
 
 void ATK_datastore_print(ATK_datastore * self);
 

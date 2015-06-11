@@ -32,6 +32,15 @@ delete selfobj;
 // splicer end
 }
 
+ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self)
+{
+DataStore *selfobj = static_cast<DataStore *>(self);
+// splicer begin
+DataGroup * rv = selfobj->getRoot();
+return rv;
+// splicer end
+}
+
 ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, ATK_IndexType idx)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
@@ -64,15 +73,6 @@ size_t ATK_datastore_get_num_buffers(ATK_datastore * self)
 DataStore *selfobj = static_cast<DataStore *>(self);
 // splicer begin
 size_t rv = selfobj->getNumBuffers();
-return rv;
-// splicer end
-}
-
-ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self)
-{
-DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin
-DataGroup * rv = selfobj->getRoot();
 return rv;
 // splicer end
 }

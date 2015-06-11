@@ -15,11 +15,11 @@ module datastore_mod
     type datastore
         type(C_PTR) obj
     contains
+        procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
         procedure :: create_buffer => datastore_create_buffer
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
-        procedure :: get_root => datastore_get_root
         procedure :: print => datastore_print
     end type datastore
     
@@ -36,6 +36,13 @@ module datastore_mod
             implicit none
             type(C_PTR), value :: self
         end subroutine atk_datastore_delete
+        
+        function atk_datastore_get_root(self) result(rv) bind(C, name="ATK_datastore_get_root")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_datastore_get_root
         
         function atk_datastore_get_buffer(self, idx) result(rv) bind(C, name="ATK_datastore_get_buffer")
             use iso_c_binding
@@ -65,13 +72,6 @@ module datastore_mod
             integer(C_SIZE_T) :: rv
         end function atk_datastore_get_num_buffers
         
-        function atk_datastore_get_root(self) result(rv) bind(C, name="ATK_datastore_get_root")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: rv
-        end function atk_datastore_get_root
-        
         subroutine atk_datastore_print() bind(C, name="ATK_datastore_print")
             use iso_c_binding
             implicit none
@@ -96,6 +96,15 @@ contains
         obj%obj = C_NULL_PTR
         ! splicer end
     end subroutine datastore_delete
+    
+    function datastore_get_root(obj) result(rv)
+        implicit none
+        class(datastore) :: obj
+        type(datagroup) :: rv
+        ! splicer begin
+        rv%obj = atk_datastore_get_root(obj%obj)
+        ! splicer end
+    end function datastore_get_root
     
     function datastore_get_buffer(obj, idx) result(rv)
         implicit none
@@ -132,15 +141,6 @@ contains
         rv = atk_datastore_get_num_buffers(obj%obj)
         ! splicer end
     end function datastore_get_num_buffers
-    
-    function datastore_get_root(obj) result(rv)
-        implicit none
-        class(datastore) :: obj
-        type(datagroup) :: rv
-        ! splicer begin
-        rv%obj = atk_datastore_get_root(obj%obj)
-        ! splicer end
-    end function datastore_get_root
     
     subroutine datastore_print()
         implicit none

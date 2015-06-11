@@ -53,6 +53,7 @@ classes:
     methods:
     -  decl: DataStore * new+constructor
     -  decl: void delete+destructor
+    -  decl: DataGroup * getRoot()
 #    -  decl: bool hasBuffer( IndexType idx ) const
     - decl:  DataBuffer * getBuffer( IndexType idx )
     -  decl: DataBuffer * createBuffer()
@@ -60,7 +61,9 @@ classes:
 #    -  decl: void Destroybuffers()
 #    -  decl: DataBuffer * detatchBuffer( const IndexType id )
     -  decl: size_t getNumBuffers() const
-    -  decl: DataGroup * getRoot()
+#    -  decl: IndexType getFirstValidBufferIndex() const
+#    -  decl: IndexType getNextValidBufferIndex(IndexType idx) const;
+
 #    -  decl: void info(Node &) const
     -  decl: void print() const
 #    -  decl: void print(std::ostream& os) const
@@ -73,6 +76,8 @@ classes:
     -  decl: const std::string& getName() const
     -  decl: const DataGroup* getParent() const
     -  decl: const DataStore* getDataStore() const
+    -  decl: size_t getNumViews() const
+    -  decl: size_t getNumGroups() const
     -  decl: bool hasView( const string& name )
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *createViewAndBuffer( const string& name )
@@ -93,7 +98,8 @@ classes:
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
-    -  decl: size_t getNumViews() const
+#    -  decl: IndexType getFirstValidViewIndex() const
+#    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
 #    -  decl: void destroyViews()
 #    -  decl: void destroyViewsAndBuffers()
     -  decl: bool hasGroup( const string& name )
@@ -109,7 +115,6 @@ classes:
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
     -  decl: const std::string& getGroupName(IndexType idx) const
-    -  decl: size_t getNumGroups() const
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
     -  decl: void print() const

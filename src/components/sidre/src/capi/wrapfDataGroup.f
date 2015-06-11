@@ -20,6 +20,8 @@ module datagroup_mod
         procedure :: get_name => datagroup_get_name
         procedure :: get_parent => datagroup_get_parent
         procedure :: get_data_store => datagroup_get_data_store
+        procedure :: get_num_views => datagroup_get_num_views
+        procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
@@ -31,7 +33,6 @@ module datagroup_mod
         procedure :: get_view => datagroup_get_view
         procedure :: get_view_index => datagroup_get_view_index
         procedure :: get_view_name => datagroup_get_view_name
-        procedure :: get_num_views => datagroup_get_num_views
         procedure :: has_group => datagroup_has_group
         procedure :: create_group => datagroup_create_group
         procedure :: move_group => datagroup_move_group
@@ -39,7 +40,6 @@ module datagroup_mod
         procedure :: get_group => datagroup_get_group
         procedure :: get_group_index => datagroup_get_group_index
         procedure :: get_group_name => datagroup_get_group_name
-        procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
@@ -68,6 +68,20 @@ module datagroup_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_datagroup_get_data_store
+        
+        function atk_datagroup_get_num_views(self) result(rv) bind(C, name="ATK_datagroup_get_num_views")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_datagroup_get_num_views
+        
+        function atk_datagroup_get_num_groups(self) result(rv) bind(C, name="ATK_datagroup_get_num_groups")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_datagroup_get_num_groups
         
         function atk_datagroup_has_view(self, name) result(rv) bind(C, name="ATK_datagroup_has_view")
             use iso_c_binding
@@ -159,13 +173,6 @@ module datagroup_mod
             type(C_PTR) rv
         end function atk_datagroup_get_view_name
         
-        function atk_datagroup_get_num_views(self) result(rv) bind(C, name="ATK_datagroup_get_num_views")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value :: self
-            integer(C_SIZE_T) :: rv
-        end function atk_datagroup_get_num_views
-        
         function atk_datagroup_has_group(self, name) result(rv) bind(C, name="ATK_datagroup_has_group")
             use iso_c_binding
             implicit none
@@ -220,13 +227,6 @@ module datagroup_mod
             type(C_PTR) rv
         end function atk_datagroup_get_group_name
         
-        function atk_datagroup_get_num_groups(self) result(rv) bind(C, name="ATK_datagroup_get_num_groups")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value :: self
-            integer(C_SIZE_T) :: rv
-        end function atk_datagroup_get_num_groups
-        
         subroutine atk_datagroup_print() bind(C, name="ATK_datagroup_print")
             use iso_c_binding
             implicit none
@@ -276,6 +276,24 @@ contains
         rv%obj = atk_datagroup_get_data_store(obj%obj)
         ! splicer end
     end function datagroup_get_data_store
+    
+    function datagroup_get_num_views(obj) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin
+        rv = atk_datagroup_get_num_views(obj%obj)
+        ! splicer end
+    end function datagroup_get_num_views
+    
+    function datagroup_get_num_groups(obj) result(rv)
+        implicit none
+        class(datagroup) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin
+        rv = atk_datagroup_get_num_groups(obj%obj)
+        ! splicer end
+    end function datagroup_get_num_groups
     
     function datagroup_has_view(obj, name) result(rv)
         implicit none
@@ -390,15 +408,6 @@ contains
         ! splicer end
     end function datagroup_get_view_name
     
-    function datagroup_get_num_views(obj) result(rv)
-        implicit none
-        class(datagroup) :: obj
-        integer(C_SIZE_T) :: rv
-        ! splicer begin
-        rv = atk_datagroup_get_num_views(obj%obj)
-        ! splicer end
-    end function datagroup_get_num_views
-    
     function datagroup_has_group(obj, name) result(rv)
         implicit none
         class(datagroup) :: obj
@@ -467,15 +476,6 @@ contains
         rv = fstr(atk_datagroup_get_group_name(obj%obj, idx))
         ! splicer end
     end function datagroup_get_group_name
-    
-    function datagroup_get_num_groups(obj) result(rv)
-        implicit none
-        class(datagroup) :: obj
-        integer(C_SIZE_T) :: rv
-        ! splicer begin
-        rv = atk_datagroup_get_num_groups(obj%obj)
-        ! splicer end
-    end function datagroup_get_num_groups
     
     subroutine datagroup_print()
         implicit none

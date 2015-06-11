@@ -43,6 +43,24 @@ return rv;
 // splicer end
 }
 
+size_t ATK_datagroup_get_num_views(ATK_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+size_t rv = selfobj->getNumViews();
+return rv;
+// splicer end
+}
+
+size_t ATK_datagroup_get_num_groups(ATK_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin
+size_t rv = selfobj->getNumGroups();
+return rv;
+// splicer end
+}
+
 bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -142,15 +160,6 @@ return rv.c_str();
 // splicer end
 }
 
-size_t ATK_datagroup_get_num_views(ATK_datagroup * self)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-size_t rv = selfobj->getNumViews();
-return rv;
-// splicer end
-}
-
 bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -211,15 +220,6 @@ const DataGroup *selfobj = static_cast<const DataGroup *>(self);
 // splicer begin
 const std::string & rv = selfobj->getGroupName(idx);
 return rv.c_str();
-// splicer end
-}
-
-size_t ATK_datagroup_get_num_groups(ATK_datagroup * self)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-size_t rv = selfobj->getNumGroups();
-return rv;
 // splicer end
 }
 
