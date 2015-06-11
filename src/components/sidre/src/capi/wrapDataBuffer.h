@@ -29,13 +29,13 @@ typedef struct s_ATK_databuffer ATK_databuffer;
 
 ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
-ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, int type, long len);
+ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, const int type, const ATK_SidreLength len);
 
 ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self);
 
-ATK_databuffer * ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, long len);
+ATK_databuffer * ATK_databuffer_allocate_from_type(ATK_databuffer * self, const int type, const ATK_SidreLength len);
 
-ATK_databuffer * ATK_databuffer_reallocate(ATK_databuffer * self, int type, long len);
+ATK_databuffer * ATK_databuffer_reallocate(ATK_databuffer * self, const int type, const ATK_SidreLength len);
 
 void * ATK_databuffer_get_data(ATK_databuffer * self);
 

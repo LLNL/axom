@@ -172,6 +172,36 @@ DataBuffer * DataStore::detachBuffer( IndexType idx )
   return rval;
 }
 
+/*
+ *************************************************************************
+ *
+ * Return first valid buffer index, or InvalidIndex if there is none.
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getFirstValidBufferIndex() const
+{
+  return getNextValidBufferIndex(-1);
+}
+
+/*
+ *************************************************************************
+ *
+ * Return first valid buffer index, or InvalidIndex if there is none.
+ *
+ *************************************************************************
+ */
+IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
+{
+  idx++;
+  while ( static_cast<unsigned>(idx) < m_data_buffers.size() &&
+          m_data_buffers[idx] == ATK_NULLPTR )
+  {
+    idx++;
+  }
+  return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx 
+                                                               : InvalidIndex);
+}
 
 /*
  *************************************************************************

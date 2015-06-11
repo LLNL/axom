@@ -60,7 +60,7 @@ foreach(file ${sidre_headers})
 #  )
 endforeach(file)
 
-# generated files
+# generated headers
 foreach(file ${sidre_generated_headers})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
 
@@ -77,7 +77,7 @@ list(APPEND generated_list ${parent_list})
 
 
 set(parent_list)
-# generated files
+# generated source
 foreach(file ${sidre_source} ${sidre_generated_source})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
 
@@ -87,7 +87,8 @@ foreach(file ${sidre_source} ${sidre_generated_source})
   )
 #  SET_SOURCE_FILES_PROPERTIES(${API_OUTPUT_DIR}/${file}
 #       PROPERTIES GENERATED TRUE
-#  ) 
+#  )
+
 endforeach(file)
 set (capi_source ${parent_list} PARENT_SCOPE)
 list(APPEND generated_list ${parent_list})

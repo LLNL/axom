@@ -89,7 +89,7 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare( const TypeID type, const SidreLength len)
+DataBuffer * DataBuffer::declare(const TypeID type, const SidreLength len)
 {
   ATK_ASSERT_MSG(len >= 0, "Bad Length");
   DataType dtype = conduit::DataType::default_dtype(type);
@@ -131,7 +131,7 @@ DataBuffer * DataBuffer::allocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(TypeID type, const SidreLength len)
+DataBuffer * DataBuffer::allocate(const TypeID type, const SidreLength len)
 {
   ATK_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");

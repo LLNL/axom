@@ -43,6 +43,7 @@ add_dependencies(sidre copy_headers_slic)
 
 add_dependencies(sidre conduit)
 add_dependencies(sidre slic)
+set_target_properties(sidre  PROPERTIES Fortran_FORMAT "FREE")
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 

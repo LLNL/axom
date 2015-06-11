@@ -182,7 +182,7 @@ public:
   /// 
   IndexType getFirstValidIndex() const
   {
-    return hasItem(0) ? 0 : InvalidIndex;
+    return getNextValidIndex(-1);
   }
 
   ///
@@ -463,13 +463,7 @@ private:
 template <typename TYPE, typename MAP_TYPE>
 IndexType NewMapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
 {
-  IndexType idx = 0;
-  while ( static_cast<unsigned>(idx) < m_items.size() && 
-          m_items[idx] == ATK_NULLPTR )
-  {
-    idx++; 
-  }
-  return hasItem(idx) ? idx : InvalidIndex;
+  return getNextValidIndex(-1);
 }
 
 template <typename TYPE, typename MAP_TYPE>
@@ -481,7 +475,7 @@ IndexType NewMapCollection<TYPE, MAP_TYPE>::getNextValidIndex(IndexType idx) con
   {
     idx++;
   } 
-  return hasItem(idx) ? idx : InvalidIndex;
+  return ( (static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex );
 }
 
 

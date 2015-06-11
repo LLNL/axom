@@ -148,6 +148,8 @@ inline TypeID getTypeID( const int typeID )
  * Given a Sidre type enum create a Conduit DataType.
  *
  *************************************************************************
+ */
+#if 0
 inline DataType createDataType( const TypeID type, long len )
 {
   DataType rval;
@@ -199,7 +201,7 @@ inline DataType createDataType( const TypeID type, long len )
   return rval;
 
 }
- */
+#endif
 
 
 
