@@ -255,7 +255,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-   DataBuffer * reallocate(TypeID type, const SidreLength len);
+   DataBuffer * reallocate(const TypeID type, const SidreLength len);
 
   /*!
    * \brief Reallocate data described as a Conduit schema.
