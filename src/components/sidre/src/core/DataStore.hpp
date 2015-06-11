@@ -74,6 +74,14 @@ public:
    */
   ~DataStore();
 
+  /*!
+   * \brief Return pointer to the root DataGroup.
+   */
+  DataGroup * getRoot()
+  {
+    return m_RootGroup;
+  };
+
 
 //@{
 //!  @name DataBuffer methods
@@ -138,14 +146,27 @@ public:
 
 //@}
 
-  /*!
-   * \brief Return pointer to the root DataGroup.
-   */
-  DataGroup * getRoot()
-  {
-    return m_RootGroup;
-  };
+//@{
+//!  @name DataBuffer iteration methods
 
+  /*!
+   * \brief Return first valid DataBuffer index (i.e., smallest index
+   *        over all DataBuffers).
+   *
+   * sidre::InvalidIndex is returned if group has no buffers.
+   */
+  IndexType getFirstValidBufferIndex() const;
+
+  /*!
+   * \brief Return next valid DataBuffer index after given index (i.e.,
+   *        smallest index over all buffer indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater 
+   * than given one.
+   */
+  IndexType getNextValidBufferIndex(IndexType idx) const;
+
+//@}
 
   /*!
    * \brief Copy buffer descriptions and group tree, starting at root,

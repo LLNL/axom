@@ -145,6 +145,22 @@ public:
     return m_datastore;
   }
 
+  /*!
+   * \brief Return number of DataViews contained in this DataGroup.
+   */
+  size_t getNumViews() const
+  {
+    return m_view_coll.getNumItems();
+  }
+
+  /*!
+   * \brief Return number of (child) DataGroups contained in this DataGroup.
+   */
+  size_t getNumGroups() const
+  {
+    return m_group_coll.getNumItems();
+  }
+
 //@}
 
 
@@ -240,14 +256,6 @@ public:
 //!  @name DataView iteration methods
 
   /*!
-   * \brief Return number of DataViews contained in this DataGroup.
-   */
-  size_t getNumViews() const
-  {
-    return m_view_coll.getNumItems();
-  }
-
-  /*!
    * \brief Return first valid DataView index (i.e., smallest index
    *        over all DataViews).
    *
@@ -262,7 +270,8 @@ public:
    * \brief Return next valid DataView index after given index (i.e., 
    *        smallest index over all view indices larger than given one).
    *
-   * sidre::InvalidIndex is returned if no valid index greater than given one.
+   * sidre::InvalidIndex is returned if there is no valid index greater 
+   * than given one.
    */
   IndexType getNextValidViewIndex(IndexType idx) const
   {
@@ -539,14 +548,6 @@ public:
 //!  @name (child) DataGroup iteration methods
 
   /*!
-   * \brief Return number of (child) DataGroups contained in this DataGroup.
-   */
-  size_t getNumGroups() const
-  {
-    return m_group_coll.getNumItems();
-  }
-
-  /*!
    * \brief Return first valid (child) DataGroup index (i.e., smallest 
    *        index over all (child) DataGroups).
    *
@@ -562,7 +563,8 @@ public:
    *        (i.e., smallest index over all chid group indices larger 
    *        than given one).
    *
-   * sidre::InvalidIndex is returned if no valid index greater than given one.
+   * sidre::InvalidIndex is returned if there is no valid index greater 
+   * than given one.
    */
   IndexType getNextValidGroupIndex(IndexType idx) const
   {
