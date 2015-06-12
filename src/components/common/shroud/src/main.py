@@ -77,9 +77,9 @@ class Schema(object):
             F_module_per_class=True,
 
             C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
-            F_name_method_template='{underscore_name}{method_suffix}',
-            F_name_generic_template='{underscore_name}',
-            F_name_impl_template  ='{lower_class}_{underscore_name}{method_suffix}',
+#            F_name_method_template='{underscore_name}{method_suffix}',
+#            F_name_generic_template='{underscore_name}',
+#            F_name_impl_template  ='{lower_class}_{underscore_name}{method_suffix}',
             )
         if 'options' in node:
             def_options.update(node['options'])
@@ -88,6 +88,7 @@ class Schema(object):
         fmt2_library = node['fmt'] = util.Options(None)
         fmt2_library.library       = def_options.get('library', 'default_library')
         fmt2_library.lower_library = fmt2_library.library.lower()
+        fmt2_library.method_suffix = ''   # assume no suffix
         self.fmt_stack.append(fmt2_library)
 
         # default some options based on other options
@@ -257,6 +258,7 @@ class Schema(object):
                 for i, method in enumerate(methods):
                     if 'method_suffix' not in method:
                         method['method_suffix'] = '_%d' % i
+                        method['fmt'].method_suffix =  '_%d' % i
 
         self.pop_fmt()
         self.pop_options()

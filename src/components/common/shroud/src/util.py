@@ -32,6 +32,12 @@ def eval_template2(options, tname, fmt, vname, default):
     """
     setattr(fmt, vname, wformat(options.get(tname, default), fmt))
 
+def eval_template3(options, fmt, name, default):
+    """ If a tname exists in options, use it; else use default.
+    fmt[vname] = option[tname]
+    """
+    setattr(fmt, name, wformat(options.get(name + '_template', default), fmt))
+
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case
 def un_camel(text):
