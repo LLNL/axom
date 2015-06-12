@@ -147,6 +147,10 @@ class Options(object):
             raise AttributeError("%r object has no attribute %r" %
                                  (self.__class__.__name__, name))
 
+    def __getitem__(self, key):
+        """ Treat as dictionary for format command.
+        """
+        return getattr(self, key)
 
     def update(self, d, replace=True):
         """Add options from dictionary to self.
@@ -258,8 +262,8 @@ if __name__ == '__main__':
 
 
     # Argument
-    print("Test Argument")
-    a = Argument('abc', type='def') #, bird='abcd')
+    print("Test Typedef")
+    a = Typedef('top', base='new_base') #, bird='abcd')
     print(json.dumps(a, cls=ExpandedEncoder, sort_keys=True))
 
     # Option
@@ -280,6 +284,8 @@ if __name__ == '__main__':
         print(lev1.nosuch)
     except AttributeError:
         print("Passed nosuch attribute")
+
+    print("FORMAT:", wformat("{a} {z} {c2} {z2}", lev1))
 
     print(json.dumps(lev0, cls=ExpandedEncoder, sort_keys=True))
     print(json.dumps(lev1, cls=ExpandedEncoder, sort_keys=True))
