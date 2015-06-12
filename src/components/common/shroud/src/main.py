@@ -65,8 +65,6 @@ class Schema(object):
 #            module_name='gen_module',  # Fortran module name
             C_header_filename_template='wrap{cpp_class}.h',
             C_impl_filename_template='wrap{cpp_class}.cpp',
-            F_impl_filename_template='wrapf{cpp_class}.f',
-            F_module_name_template='{lower_class}_mod',
             F_module_per_class=True,
 
             C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
@@ -77,6 +75,18 @@ class Schema(object):
         if 'options' in node:
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
+
+        # default some options based on other options
+        computed = {}
+        if def_options.F_module_per_class:
+            computed['F_module_name_template']   = '{lower_class}_mod'
+            computed['F_impl_filename_template'] = 'wrapf{cpp_class}.f'
+        else:
+            computed['F_module_name_template']   = '{lower_library}_mod'
+            computed['F_impl_filename_template'] = 'wrapf{lower_library}.f'
+        def_options.update(computed, replace=False) # do not replace user's values
+
+
         node['options'] = def_options
 
         def_types = dict(

@@ -148,11 +148,14 @@ class Options(object):
                                  (self.__class__.__name__, name))
 
 
-    def update(self, d):
+    def update(self, d, replace=True):
         """Add options from dictionary to self.
         """
         for key, value in d.items():
-            setattr(self, key, value)
+            if replace:
+                setattr(self, key, value)
+            elif not hasattr(self, key):
+                setattr(self, key, value)
 
     def _to_dict(self):
         d = {}
