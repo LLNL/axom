@@ -138,13 +138,20 @@ public:
   }
 
   /*!
-   * \brief Return pointer to view attached to this buffer identified
-   *        by the given index.
+   * \brief Return true if DataBuffer has an associated DataView with given 
+   *        index; else false.
    */
-  DataView * getView( const IndexType idx)
+  bool hasView( IndexType idx ) const
   {
-    return m_views[idx];
+    return ( 0 <= idx && static_cast<unsigned>(idx) < m_views.size() &&
+             m_views[idx] != ATK_NULLPTR );
   }
+
+  /*!
+   * \brief Return (non-const) pointer to data view object with given index
+   *        associated with buffer, or ATK_NULLPTR if none exists.
+   */
+  DataView * getView( IndexType idx);
 
 //@}
 
@@ -153,11 +160,11 @@ public:
 //!  @name Data declaration and allocation methods
 
   /*!
-   * \brief Declare a data object given type and number of elements.
+   * \brief Declare a buffer to OWN data of given type and number of elements.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare( const TypeID type, const SidreLength len);
+  DataBuffer * declare( TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to OWN data described as a Conduit schema.
@@ -166,25 +173,17 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(const Schema& schema)
-  {
-    m_schema.set(schema);
-    return this;
-  }
+  DataBuffer * declare(const Schema& schema);
 
   /*!
-   * \brief Declare a buffer to OWN data described as a
-   *        pre-defined Conduit data type.
+   * \brief Declare a buffer to OWN data described as a pre-defined 
+   *        Conduit data type.
    *
    * Note the data must be allocated by calling allocate().
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(const DataType& dtype)
-  {
-    m_schema.set(dtype);
-    return this;
-  }
+  DataBuffer * declare(const DataType& dtype);
 
   /*!
    * \brief Declare a buffer to hold external data described as a
@@ -227,7 +226,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(const TypeID type, const SidreLength len);
+  DataBuffer * allocate(TypeID type, SidreLength len);
 
   /*!
    * \brief Declare and allocate data described as a Conduit schema.
@@ -255,7 +254,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-   DataBuffer * reallocate(const TypeID type, const SidreLength len);
+   DataBuffer * reallocate(TypeID type, SidreLength len);
 
   /*!
    * \brief Reallocate data described as a Conduit schema.
@@ -354,16 +353,16 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-  #ifdef USE_CXX11
+#ifdef USE_CXX11
   DataBuffer() = delete;
   DataBuffer( DataBuffer&& ) = delete;
 
   DataBuffer& operator=( const DataBuffer& ) = delete;
   DataBuffer& operator=( DataBuffer&& ) = delete;
-  #else
+#else
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
-  #endif
+#endif
 
 };
 
