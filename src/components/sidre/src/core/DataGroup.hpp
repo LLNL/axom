@@ -778,9 +778,9 @@ private:
   // typedef std::map<std::string, IndexType> MapType;
   ///
 #if defined(USE_CXX11)
-  typedef std::unordered_map<std::string, IndexType> MapType;
+     typedef std::unordered_map<std::string, IndexType> MapType;
 #else
-  typedef boost::unordered_map<std::string, IndexType> MapType;
+     typedef boost::unordered_map<std::string, IndexType> MapType;
 #endif
   //
   ///////////////////////////////////////////////////////////////////
