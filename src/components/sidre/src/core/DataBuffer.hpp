@@ -29,7 +29,6 @@
 // Other toolkit component headers
 #include "conduit/conduit.hpp"
 #include "common/CommonTypes.hpp"
-#include "common/Utilities.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
