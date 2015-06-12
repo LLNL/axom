@@ -219,7 +219,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
 
 
-  std::size_t numTubeElems = (numElems - 2);
+  int32 numTubeElems = (numElems - 2);
   DataGroup * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
   DataBuffer * const mapToElemsBuffer = elem->getDataStore()->createBuffer()
@@ -230,10 +230,10 @@ void CreateShockTubeMesh(DataGroup * const prob)
   DataView * const mapToElemsView = tube->createView("mapToElems", mapToElemsBuffer)
                                     ->apply(DataType::int32(numTubeElems));
 
-  uint32 * const mapToElems = mapToElemsView->getNode().as_uint32_ptr();
+  int32 * const mapToElems = mapToElemsView->getNode().as_int32_ptr();
 
 
-  for ( unsigned int k = 0u ; k < numTubeElems ; ++k)
+  for ( int k = 0u ; k < numTubeElems ; ++k)
   {
     mapToElems[k] = k + 1;
   }
