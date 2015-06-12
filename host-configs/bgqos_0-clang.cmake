@@ -9,6 +9,7 @@
 ###############################################################################
 set(CMAKE_C_COMPILER "/usr/local/bin/bgclang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/bin/bgclang++" CACHE PATH "")
+set(ENABLE_FORTRAN OFF CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit
