@@ -200,7 +200,7 @@ class Wrapc(object):
             )
         fmt_class.update(self.fmt_library)
         util.eval_templates(
-            ['F_impl_filename',
+            [#'F_impl_filename',
              'C_header_filename'],
             node, fmt_class)
 

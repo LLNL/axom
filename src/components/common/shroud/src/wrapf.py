@@ -373,8 +373,9 @@ class Wrapf(object):
                 fp.write('!\n')
 
     def write_module(self, node):
-        fname = node['fmt']['F_impl_filename']
-        module_name = node['fmt'].F_module_name
+        fmt_class = node['fmt']
+        fname = fmt_class.F_impl_filename
+        module_name = fmt_class.F_module_name
         fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
 

@@ -94,22 +94,13 @@ class Schema(object):
         self.fmt_stack.append(fmt2_library)
 
         # default some options based on other options
-        computed = {}
-        if def_options.F_module_per_class:
-            computed['F_module_name_template']   = '{lower_class}_mod'
-            computed['F_impl_filename_template'] = 'wrapf{cpp_class}.f'
-        else:
+        if not def_options.F_module_per_class:
             util.eval_template2(def_options, 'F_module_name_template',
                                 fmt2_library, 'F_module_name',
                                 '{lower_library}_mod')
             util.eval_template2(def_options, 'F_impl_filename_template',
                                 fmt2_library, 'F_impl_filename',
                                 'wrapf{lower_library}.f')
-            computed['F_module_name_template']   = '{lower_library}_mod'
-            computed['F_impl_filename_template'] = 'wrapf{lower_library}.f'
-#--            computed['F_module_name'] = wformat(computed['F_module_name_template'], computed)
-        def_options.update(computed, replace=False) # do not replace user's values
-
 
         node['options'] = def_options
 
@@ -215,14 +206,7 @@ class Schema(object):
                                 '{lower_class}_mod')
             util.eval_template2(options, 'F_impl_filename_template',
                                 fmt2_class, 'F_impl_filename',
-                                'wrapf{lower_class}.f')
-
-
-#--        if options.F_module_per_class:
-#            # set module name for each class
-#            options.setdefault('F_module_name',
-#                               wformat(options.F_module_name_template, options))
-#            print("XXXXXXXXXXYYY", options)
+                                'wrapf{cpp_class}.f')   # XXX lower_class
 
         util.eval_templates(
             [
