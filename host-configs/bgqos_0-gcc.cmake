@@ -9,6 +9,7 @@
 ###############################################################################
 set(CMAKE_C_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit
