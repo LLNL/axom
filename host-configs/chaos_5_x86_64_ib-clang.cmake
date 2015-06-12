@@ -1,38 +1,33 @@
 ###############################################################################
 #
-# CMake Cache Seed file for bgqos_0 machines using gcc/g++ 4.7.2.
+# CMake Cache Seed file for chaos_5_x86_64_ib machines using clang
 #
 ###############################################################################
 
 ###############################################################################
 # Select the c and c++ compiler though the standard CMake Variables.
 ###############################################################################
-set(CMAKE_C_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/apps/gnu/clang/bin/clang" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/apps/gnu/clang/bin/clang++" CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit
 #######
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/cmake@3.2.2/bin/cmake
+# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/cmake@3.2.2/bin/cmake
 
 # python from uberenv
-#set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/python@2.7.8/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/python@2.7.8/bin/python" CACHE PATH "")
 
 # sphinx from uberenv
-#set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/python@2.7.8/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/python@2.7.8/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-#set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
 
 # boost headers from uberenv
 set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.55.0" CACHE PATH "")
 
-###############################################################################
-# Set location for boost library
-# Need to provide your own boost and set this by hand, no boost 1.57 on BG/Q.
-###############################################################################
-#set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
 
 ###############################################################################
 # Additional Compiler Flags
