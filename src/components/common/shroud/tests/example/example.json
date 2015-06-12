@@ -23,6 +23,7 @@
                 "C_header_filename": "wrapExClass1.h", 
                 "C_impl_filename": "wrapExClass1.cpp", 
                 "C_prefix": "AA_", 
+                "C_type_name": "AA_exclass1", 
                 "F_impl_filename": "wrapfExClass1.f", 
                 "F_module_name": "exclass1_mod", 
                 "cpp_class": "ExClass1", 
@@ -55,6 +56,11 @@
                     ], 
                     "decl": "ExClass1 *new+constructor ( const string *name )", 
                     "docs": "constructor", 
+                    "fmt": {
+                        "method_name": "new", 
+                        "method_suffix": "", 
+                        "underscore_name": "new"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -80,6 +86,11 @@
                     "F_name_method": "delete", 
                     "args": [], 
                     "decl": "void delete+destructor", 
+                    "fmt": {
+                        "method_name": "delete", 
+                        "method_suffix": "", 
+                        "underscore_name": "delete"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -111,6 +122,11 @@
                     ], 
                     "decl": "int incrementCount(int incr)", 
                     "docs": "blah blah", 
+                    "fmt": {
+                        "method_name": "incrementCount", 
+                        "method_suffix": "", 
+                        "underscore_name": "increment_count"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -133,6 +149,11 @@
                     "F_name_method": "get_name", 
                     "args": [], 
                     "decl": "const string& getName()", 
+                    "fmt": {
+                        "method_name": "getName", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_name"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -158,6 +179,11 @@
                     "F_name_impl": "exclass1_get_name_length", 
                     "F_name_method": "get_name_length", 
                     "docs": "helper function for Fortran", 
+                    "fmt": {
+                        "method_name": "get_name_length", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_name_length"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -183,6 +209,11 @@
                     "F_name_method": "get_root", 
                     "args": [], 
                     "decl": "ExClass2 *getRoot()", 
+                    "fmt": {
+                        "method_name": "getRoot", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_root"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -213,6 +244,11 @@
                         }
                     ], 
                     "decl": "int  getValue(int value)", 
+                    "fmt": {
+                        "method_name": "getValue", 
+                        "method_suffix": "_from_int", 
+                        "underscore_name": "get_value"
+                    }, 
                     "method_suffix": "_from_int", 
                     "options": {}, 
                     "result": {
@@ -242,6 +278,11 @@
                         }
                     ], 
                     "decl": "long getValue(long value)", 
+                    "fmt": {
+                        "method_name": "getValue", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_value"
+                    }, 
                     "method_suffix": "_1", 
                     "options": {}, 
                     "result": {
@@ -265,6 +306,11 @@
                     "F_name_method": "get_addr", 
                     "args": [], 
                     "decl": "void *getAddr()", 
+                    "fmt": {
+                        "method_name": "getAddr", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_addr"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -295,6 +341,11 @@
                         }
                     ], 
                     "decl": "bool hasAddr(bool in)", 
+                    "fmt": {
+                        "method_name": "hasAddr", 
+                        "method_suffix": "", 
+                        "underscore_name": "has_addr"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -331,6 +382,7 @@
                 "C_header_filename": "wrapExClass2.h", 
                 "C_impl_filename": "wrapExClass2.cpp", 
                 "C_prefix": "AA_", 
+                "C_type_name": "AA_exclass2", 
                 "F_impl_filename": "wrapfExClass2.f", 
                 "F_module_name": "exclass2_mod", 
                 "cpp_class": "ExClass2", 
@@ -362,6 +414,11 @@
                         }
                     ], 
                     "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
+                    "fmt": {
+                        "method_name": "ExClass2", 
+                        "method_suffix": "", 
+                        "underscore_name": "ex_class2"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -387,6 +444,11 @@
                     "F_name_method": "ex_class1", 
                     "args": [], 
                     "decl": "void ExClass1+destructor", 
+                    "fmt": {
+                        "method_name": "ExClass1", 
+                        "method_suffix": "", 
+                        "underscore_name": "ex_class1"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -411,6 +473,11 @@
                     "F_name_method": "get_name", 
                     "args": [], 
                     "decl": "const string& getName", 
+                    "fmt": {
+                        "method_name": "getName", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_name"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -436,6 +503,11 @@
                     "F_name_impl": "exclass2_get_name_length", 
                     "F_name_method": "get_name_length", 
                     "docs": "helper function for Fortran", 
+                    "fmt": {
+                        "method_name": "get_name_length", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_name_length"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -469,6 +541,11 @@
                         }
                     ], 
                     "decl": "ExClass1 *get_class1(ExClass1 *in)", 
+                    "fmt": {
+                        "method_name": "get_class1", 
+                        "method_suffix": "", 
+                        "underscore_name": "get_class1"
+                    }, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -499,6 +576,11 @@
             "args": [], 
             "decl": "void local_function1", 
             "docs": "yada yada yada", 
+            "fmt": {
+                "method_name": "local_function1", 
+                "method_suffix": "", 
+                "underscore_name": "local_function1"
+            }, 
             "options": {}, 
             "result": {
                 "attrs": {}, 

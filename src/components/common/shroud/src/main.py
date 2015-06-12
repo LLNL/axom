@@ -240,6 +240,9 @@ class Schema(object):
                 base = 'wrapped',
                 )
 
+        typedef = self.typedef[name]
+        fmt2_class.C_type_name = typedef.c_type
+
         overloaded_methods = {}
         methods = node.setdefault('methods', [])
         for method in methods:
@@ -260,6 +263,7 @@ class Schema(object):
 
     def check_function(self, node):
         self.push_options(node)
+        fmt2_func = self.push_fmt(node)
 
 #        func = util.FunctionNode()
 #        func.update(node)
@@ -280,7 +284,14 @@ class Schema(object):
         if 'type' not in result:
             raise RuntimeError("Missing result.type")
 
+        result = node['result']
+
+        fmt2_func.method_name =     result['name']
+        fmt2_func.underscore_name = util.un_camel(result['name'])
+        fmt2_func.method_suffix =   node.get('method_suffix', '')
+
         # docs
+        self.pop_fmt()
         self.pop_options()
 
     def check_functions(self, node):
