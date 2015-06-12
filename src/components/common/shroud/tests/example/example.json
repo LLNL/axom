@@ -23,6 +23,13 @@
                 ]
             ], 
             "F_module_name": "exclass1_mod", 
+            "fmt": {
+                "C_prefix": "AA_", 
+                "F_module_name": "exclass1_mod", 
+                "cpp_class": "ExClass1", 
+                "lower_class": "exclass1", 
+                "upper_class": "EXCLASS1"
+            }, 
             "methods": [
                 {
                     "C_arguments": "const char * name", 
@@ -325,6 +332,13 @@
                 ]
             ], 
             "F_module_name": "exclass2_mod", 
+            "fmt": {
+                "C_prefix": "AA_", 
+                "F_module_name": "exclass2_mod", 
+                "cpp_class": "ExClass2", 
+                "lower_class": "exclass2", 
+                "upper_class": "EXCLASS2"
+            }, 
             "methods": [
                 {
                     "C_arguments": "const char * name", 
@@ -478,6 +492,10 @@
         "yada yada", 
         null
     ], 
+    "fmt": {
+        "library": "UserLibrary", 
+        "lower_library": "userlibrary"
+    }, 
     "functions": [
         {
             "args": [], 

@@ -152,6 +152,14 @@ class Options(object):
         """
         return getattr(self, key)
 
+    def get(self, key, value=None):
+        """ D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            return value
+
     def setdefault(self, key, value=None):
         """ D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D
         """
@@ -291,6 +299,12 @@ if __name__ == '__main__':
         print(lev1.nosuch)
     except AttributeError:
         print("Passed nosuch attribute")
+
+    lev1.setdefault('yyy', 'yyyvalue')
+
+    print("GET",  lev1.get('a', 'notfound'))
+    print("GET",  lev1.get('nosuch', 'notfound'))
+
 
     print("FORMAT:", wformat("{a} {z} {c2} {z2}", lev1))
 

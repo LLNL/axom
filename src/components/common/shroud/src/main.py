@@ -32,6 +32,7 @@ class Schema(object):
     """
     def __init__(self, config):
         self.config = config
+        self.fmt_stack = []
 
     def push_options(self, node):
         """ Push a new set of options.
@@ -50,6 +51,15 @@ class Schema(object):
     def pop_options(self):
         self.options_stack.pop()
 
+    def push_fmt(self, node):
+        fmt = util.Options(self.fmt_stack[-1])
+        self.fmt_stack.append(fmt)
+        node['fmt'] = fmt
+        return fmt
+
+    def pop_fmt(self):
+        self.fmt_stack.pop()
+
     def check_schema(self):
         node = self.config
 
@@ -57,11 +67,10 @@ class Schema(object):
         def_options = util.Options(
             parent=None,
 
-            library='default_library',
+#            library='default_library',
             namespace='',
             cpp_header='',
 
-            C_prefix='',
             C_this='self',   # object argument name
             F_this='obj',    # object argument name
             F_result='rv',   # function result
@@ -79,12 +88,19 @@ class Schema(object):
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
 
+        fmt2_library = node['fmt'] = util.Options(None)
+        fmt2_library.library       = def_options.get('library', 'default_library')
+        fmt2_library.lower_library = fmt2_library.library.lower()
+        self.fmt_stack.append(fmt2_library)
+
         # default some options based on other options
         computed = {}
         if def_options.F_module_per_class:
             computed['F_module_name_template']   = '{lower_class}_mod'
             computed['F_impl_filename_template'] = 'wrapf{cpp_class}.f'
         else:
+            fmt2_library.F_module_name = def_options.get('F_module_name',
+                    wformat(def_options.get('F_module_name_template', '{lower_library}_mod'), fmt2_library))
             computed['F_module_name_template']   = '{lower_library}_mod'
             computed['F_impl_filename_template'] = 'wrapf{lower_library}.f'
 #--            computed['F_module_name'] = wformat(computed['F_module_name_template'], computed)
@@ -180,6 +196,19 @@ class Schema(object):
         name = node['name']
 
         options = self.push_options(node)
+        fmt2_class = self.push_fmt(node)
+        fmt_class = dict(
+            cpp_class = name,
+            lower_class = name.lower(),
+            upper_class = name.upper(),
+            C_prefix = options.get('C_prefix', ''),
+            )
+        fmt2_class.update(fmt_class)
+
+        if options.F_module_per_class:
+            fmt2_class.F_module_name = options.get('F_module_name',
+                    wformat(options.get('F_module_name_template', '{lower_class}_mod'), fmt2_class))
+
 
 #--        if options.F_module_per_class:
 #            # set module name for each class
@@ -187,17 +216,13 @@ class Schema(object):
 #                               wformat(options.F_module_name_template, options))
 #            print("XXXXXXXXXXYYY", options)
 
-        fmt_class = dict(
-            cpp_class = name,
-            lower_class = name.lower(),
-            upper_class = name.upper(),
-            C_prefix = options.C_prefix,
-            )
         util.eval_templates(
-            ['C_header_filename',
-             'C_impl_filename',
-             'F_impl_filename',
-             'F_module_name'],
+            [
+                'C_header_filename',
+                'C_impl_filename',
+                'F_impl_filename',
+                'F_module_name',
+                ],
             node, fmt_class)
 
         # create typedef for each class before generating code
@@ -242,6 +267,7 @@ class Schema(object):
                     if 'method_suffix' not in method:
                         method['method_suffix'] = '_%d' % i
 
+        self.pop_fmt()
         self.pop_options()
 
     def check_function(self, node):
