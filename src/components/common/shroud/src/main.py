@@ -357,9 +357,9 @@ if __name__ == '__main__':
 
     Schema(all).check_schema()
 
-    wrapc.Wrapc(all, config).wrap_tree()
+    wrapc.Wrapc(all, config).wrap_library()
 
-    wrapf.Wrapf(all, config).wrap_tree()
+    wrapf.Wrapf(all, config).wrap_library()
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')
