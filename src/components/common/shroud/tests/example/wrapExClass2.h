@@ -13,8 +13,11 @@ extern "C" {
 
 // declaration of wrapped types
 #ifdef EXAMPLE_WRAPPER_IMPL
+typedef void AA_exclass1;
 typedef void AA_exclass2;
 #else
+struct s_AA_exclass1;
+typedef struct s_AA_exclass1 AA_exclass1;
 struct s_AA_exclass2;
 typedef struct s_AA_exclass2 AA_exclass2;
 #endif
@@ -26,6 +29,8 @@ void AA_exclass2_ex_class1(AA_exclass2 * self);
 const char * AA_exclass2_get_name(const AA_exclass2 * self);
 
 const int AA_exclass2_get_name_length(const AA_exclass2 * self);
+
+AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in);
 
 #ifdef __cplusplus
 }

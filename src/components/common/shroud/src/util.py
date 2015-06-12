@@ -71,15 +71,15 @@ class Typedef(object):
         base='unknown',       # base type: 'string'
         forward=None,         # forward declaration
 
-        cpp=None,             # name of type in C++
+        cpp_type=None,        # name of type in C++
         cpp_to_c='{var}',     # expression to convert from C++ to C
 
-        c=None,               # name of type in C
+        c_type=None,          # name of type in C
         c_header=None,        # Name of C header file required for type
         c_to_cpp='{var}',     # expression to convert from C to C++
         c_fortran=None,       # expression to convert from C to Fortran
 
-        fortran=None,         # name of type in Fortran
+        f_type=None,         # name of type in Fortran
         fortran_derived=None,    # Fortran derived type name
         fortran_to_c='{var}', # expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)

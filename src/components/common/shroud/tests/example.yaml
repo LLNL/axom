@@ -11,7 +11,7 @@ options:
 
 typedef:
   other:
-    cpp: junk
+    cpp_type: junk
 
 classes:
   - name: ExClass1
@@ -83,6 +83,8 @@ classes:
             len: exclass2_get_name_length(obj%obj)
       C_code: return selfobj->getName().length();
 
+    # test forward declarations
+    - decl: ExClass1 *get_class1(ExClass1 *in)
 
 
 functions:

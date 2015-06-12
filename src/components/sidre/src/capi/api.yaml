@@ -20,27 +20,27 @@ typedef:
   IndexType:
 # defined in SidreTypes.hpp
     c_header : sidre/SidreTypes.h
-    c : ATK_IndexType
-    cpp : IndexType
-    c_fortran : integer(C_INT)
-    fortran : integer(C_INT)
+    c_type   : ATK_IndexType
+    cpp_type : IndexType
+    c_fortran: integer(C_INT)
+    f_type   : integer(C_INT)
 
   SidreLength:
 # defined in SidreTypes.hpp
     c_header : sidre/SidreTypes.h
-    c : ATK_SidreLength
-    cpp : SidreLength
-    c_fortran : integer(C_LONG)
-    fortran : integer(C_LONG)
+    c_type   : ATK_SidreLength
+    cpp_type : SidreLength
+    c_fortran: integer(C_LONG)
+    f_type   : integer(C_LONG)
 
   TypeID:
     # enum for types
-    c_header: sidre/SidreTypes.h
-    c: int
-#    cpp: DataType::
-    c_to_cpp:  getTypeID({var})
+    c_header : sidre/SidreTypes.h
+    c_type   : int
+#    cpp_type: DataType::
+    c_to_cpp :  getTypeID({var})
     c_fortran: integer(C_INT)
-    fortran: integer(C_INT)
+    f_type   : integer(C_INT)
 
 # XXX
 # parameters:

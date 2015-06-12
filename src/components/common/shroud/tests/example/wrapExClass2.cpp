@@ -43,6 +43,15 @@ return selfobj->getName().length();
 // splicer end
 }
 
+AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin
+ExClass1 * rv = selfobj->get_class1(static_cast<ExClass1 *>(in));
+return rv;
+// splicer end
+}
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

@@ -94,7 +94,7 @@ class Wrapf(object):
         if typedef is None:
             raise RuntimeError("No such type %s" % arg['type'])
 
-        typ = typedef.fortran
+        typ = typedef.f_type
         if typedef.base == 'string':
             return (typ, False)  # not array
         else:

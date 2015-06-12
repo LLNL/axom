@@ -308,6 +308,12 @@
             "F_impl_filename": "wrapfExClass2.f", 
             "F_module_dependencies": [
                 [
+                    "exclass1_mod", 
+                    [
+                        "exclass1"
+                    ]
+                ], 
+                [
                     "exclass2_mod", 
                     [
                         "exclass2"
@@ -427,6 +433,38 @@
                         "name": "get_name_length", 
                         "type": "int"
                     }
+                }, 
+                {
+                    "C_arguments": "AA_exclass2 * self, AA_exclass1 * in", 
+                    "C_code": "ExClass1 * rv = selfobj->get_class1(static_cast<ExClass1 *>(in));\nreturn rv;", 
+                    "C_name": "AA_exclass2_get_class1", 
+                    "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                    "C_return_type": "AA_exclass1 *", 
+                    "F_C_arguments": "self, in", 
+                    "F_C_name": "aa_exclass2_get_class1", 
+                    "F_arguments": "obj, in", 
+                    "F_code": "rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)", 
+                    "F_name_generic": "get_class1", 
+                    "F_name_impl": "exclass2_get_class1", 
+                    "F_name_method": "get_class1", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "ptr": true
+                            }, 
+                            "name": "in", 
+                            "type": "ExClass1"
+                        }
+                    ], 
+                    "decl": "ExClass1 *get_class1(ExClass1 *in)", 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "get_class1", 
+                        "type": "ExClass1"
+                    }
                 }
             ], 
             "name": "ExClass2", 
@@ -472,99 +510,99 @@
     "typedef": {
         "ExClass1": {
             "base": "wrapped", 
-            "c": "AA_exclass1", 
             "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<ExClass1{ptr}>({var})", 
-            "cpp": "ExClass1", 
+            "c_type": "AA_exclass1", 
+            "cpp_type": "ExClass1", 
             "f_module": {
                 "exclass1_mod": [
                     "exclass1"
                 ]
             }, 
             "f_return_code": "{F_result}%{F_this} = {F_C_name}({arg_c_call})", 
-            "fortran": "type(exclass1)", 
+            "f_type": "type(exclass1)", 
             "fortran_derived": "exclass1", 
             "fortran_to_c": "{var}%obj", 
             "forward": "ExClass1"
         }, 
         "ExClass2": {
             "base": "wrapped", 
-            "c": "AA_exclass2", 
             "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<ExClass2{ptr}>({var})", 
-            "cpp": "ExClass2", 
+            "c_type": "AA_exclass2", 
+            "cpp_type": "ExClass2", 
             "f_module": {
                 "exclass2_mod": [
                     "exclass2"
                 ]
             }, 
             "f_return_code": "{F_result}%{F_this} = {F_C_name}({arg_c_call})", 
-            "fortran": "type(exclass2)", 
+            "f_type": "type(exclass2)", 
             "fortran_derived": "exclass2", 
             "fortran_to_c": "{var}%obj", 
             "forward": "ExClass2"
         }, 
         "bool": {
-            "c": "bool", 
             "c_fortran": "logical(C_BOOL)", 
-            "cpp": "bool", 
+            "c_type": "bool", 
+            "cpp_type": "bool", 
             "f_return_code": "{F_result} = bool2logical({F_C_name}({arg_c_call}))", 
-            "fortran": "logical", 
+            "f_type": "logical", 
             "fortran_to_c": "logical2bool({var})"
         }, 
         "int": {
-            "c": "int", 
             "c_fortran": "integer(C_INT)", 
-            "cpp": "int", 
-            "fortran": "integer(C_INT)"
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_type": "integer(C_INT)"
         }, 
         "long": {
-            "c": "long", 
             "c_fortran": "integer(C_LONG)", 
-            "cpp": "long", 
-            "fortran": "integer(C_LONG)"
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_type": "integer(C_LONG)"
         }, 
         "other": {
-            "cpp": "junk"
+            "cpp_type": "junk"
         }, 
         "size_t": {
-            "c": "size_t", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
-            "cpp": "size_t", 
-            "fortran": "integer(C_SIZE_T)"
+            "c_type": "size_t", 
+            "cpp_type": "size_t", 
+            "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
             "base": "string", 
-            "c": "char", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "cpp": "std::string", 
+            "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({arg_c_call}))", 
-            "fortran": "character(*)", 
+            "f_type": "character(*)", 
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 
         "string": {
             "base": "string", 
-            "c": "char", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "cpp": "std::string", 
+            "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({arg_c_call}))", 
-            "fortran": "character(*)", 
+            "f_type": "character(*)", 
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 
         "void": {
-            "c": "void", 
             "c_fortran": "type(C_PTR)", 
-            "cpp": "void", 
-            "fortran": "type(C_PTR)"
+            "c_type": "void", 
+            "cpp_type": "void", 
+            "f_type": "type(C_PTR)"
         }
     }
 }

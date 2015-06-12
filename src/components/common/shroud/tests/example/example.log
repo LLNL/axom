@@ -16,6 +16,7 @@ method ExClass2 *ExClass2+constructor (const string *name)
 method void ExClass1+destructor
 method const string& getName
 method get_name_length
+method ExClass1 *get_class1(ExClass1 *in)
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 function void local_function1
@@ -36,5 +37,6 @@ method ExClass2 *ExClass2+constructor (const string *name)
 method void ExClass1+destructor
 method const string& getName
 method get_name_length
+method ExClass1 *get_class1(ExClass1 *in)
 Close wrapfExClass2.f
 function void local_function1

@@ -46,6 +46,8 @@ class Wrapc(object):
         reference - True = pass-by-reference
 
         """
+#        if lang not in [ 'c_type', 'cpp_type' ]:
+#            raise RuntimeError
         t = []
         typedef = self.typedef.get(arg['type'], None)
         if typedef is None:
@@ -56,7 +58,7 @@ class Wrapc(object):
         if arg['attrs'].get('ptr', False):
             t.append('*')
         elif arg['attrs'].get('reference', False):
-            if lang == 'cpp':
+            if lang == 'cpp_type':
                 t.append('&')
             else:
                 t.append('*')
@@ -69,6 +71,8 @@ class Wrapc(object):
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
+#        if lang not in [ 'c_type', 'cpp_type' ]:
+#            raise RuntimeError
         typ = self._c_type(lang, arg)
         return typ + ' ' + ( name or arg['name'] )
 
@@ -179,7 +183,7 @@ class Wrapc(object):
         self.log.write("class {1[name]}\n".format(self, node))
         name = node['name']
         typedef = self.typedef[name]
-        cname = typedef.c
+        cname = typedef.c_type
 
         self.fmt_dict = dict(
             cpp_class = name,
@@ -224,7 +228,7 @@ class Wrapc(object):
         if result_typedef.forward:
             # create forward references for other types being wrapped
             # i.e. This method returns a wrapped type
-            self.header_forward[result_typedef.c] = True
+            self.header_forward[result_typedef.c_type] = True
 
         fmt_dict = dict(
             method_name=result['name'],
@@ -235,7 +239,7 @@ class Wrapc(object):
             this=C_this,
             cpp_this = C_this + 'obj',
             cpp_name = result['name'],
-            rv_decl = self._c_decl('cpp', result, name='rv'),  # return value
+            rv_decl = self._c_decl('cpp_type', result, name='rv'),  # return value
             )
         fmt_dict.update(self.fmt_dict)
 
@@ -246,13 +250,13 @@ class Wrapc(object):
                         type=cls['name'], 
                         attrs=dict(ptr=True,
                                    const=is_const))
-        C_this_type = self._c_type('c', arg_dict)
+        C_this_type = self._c_type('c_type', arg_dict)
         if not is_ctor:
-            arg = self._c_decl('c', arg_dict)
+            arg = self._c_decl('c_type', arg_dict)
             arguments.append(arg)
 
         for arg in node.get('args', []):
-            arguments.append(self._c_decl('c', arg))
+            arguments.append(self._c_decl('c_type', arg))
             arg_typedef = self.typedef[arg['type']]
             # convert C argument to C++
             anames.append(arg_typedef.c_to_cpp.format(
@@ -264,7 +268,7 @@ class Wrapc(object):
             if arg_typedef.forward:
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
-                self.header_forward[arg_typedef.c] = True
+                self.header_forward[arg_typedef.c_type] = True
         fmt_dict['call_list'] = ', '.join(anames)
 
         if 'C_name' not in node:
@@ -273,7 +277,7 @@ class Wrapc(object):
                 fmt_dict)
 
         if 'C_return_type' not in node:
-            node['C_return_type'] = self._c_type('c', result)
+            node['C_return_type'] = self._c_type('c_type', result)
 
         if 'C_arguments' not in node:
             node['C_arguments'] = ', '.join(arguments)
