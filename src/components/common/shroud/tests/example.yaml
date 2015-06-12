@@ -58,9 +58,18 @@ classes:
     methods:
     - decl: ExClass2 *ExClass2+constructor (const string *name)
 
+      # test annotating arguments
+      args:
+      -  name: name
+         random: 1
+         attrs:
+           random: 2
+      -  name: extra
+
     - decl: void ExClass1+destructor
 
     - decl: const string& getName
+      # test annotating result
       result:
          attrs:
             len: aa_exclass2_get_name_length(obj%obj)

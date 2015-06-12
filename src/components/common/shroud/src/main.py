@@ -206,16 +206,16 @@ class Schema(object):
                 base = 'wrapped',
                 )
 
-        method_dict = {}
+        overloaded_methods = {}
         methods = node.setdefault('methods', [])
         for method in methods:
             if not isinstance(method, dict):
                 raise TypeError("classes[n]['methods'] must be a dictionary")
             self.check_function(method)
-            method_dict.setdefault(method['result']['name'], []).append(method)
+            overloaded_methods.setdefault(method['result']['name'], []).append(method)
 
         # look for function overload and compute method_suffix
-        for mname, methods in method_dict.items():
+        for mname, methods in overloaded_methods.items():
             if len(methods) > 1:
                 for i, method in enumerate(methods):
                     if 'method_suffix' not in method:
@@ -225,6 +225,10 @@ class Schema(object):
 
     def check_function(self, node):
         self.push_options(node)
+
+#        func = util.FunctionNode()
+#        func.update(node)
+#        func.dump()
 
         if 'decl' in node:
             # parse decl and add to dictionary

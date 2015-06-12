@@ -6,6 +6,8 @@ import collections
 import string
 import json
 
+import parse_decl
+
 fmt = string.Formatter()
 
 def wformat(template, d):
@@ -154,11 +156,75 @@ class Options(object):
 
     def _to_dict(self):
         d = {}
-        skip = '_' + self.__class__.__name__ + '__'
+        skip = '_' + self.__class__.__name__ + '__'   # __name is skipped
         for key, value in self.__dict__.items():
             if not key.startswith(skip):
                 d[key] = value
         return d
+
+
+class XXXClassNode(object):
+    """Represent a class.  Usually a C++ class.
+    It'd be nice if a group of related function which are used in an o-o manner
+    would also be treated as a class.
+    """
+    def __init__(self, name):
+        self.name = name
+        self.options = None
+        self.methods = []
+
+
+class FunctionNode(object):
+    def __init__(self):
+        self.decl = None
+        self.result = {}
+        self.args = []
+        self.method_suffix = ''
+        self.arg_map = {}
+
+    def set_decl(self, decl):
+        """decl will compute result and args
+        """
+        self.decl = decl
+        values = parse_decl.check_decl(decl)
+        self._update_result_args(values)
+
+    def update(self, d):
+        """Update from a dictionary.
+        """
+        if 'decl' in d:
+            self.set_decl(d['decl'])
+        self._update_result_args(d)
+
+    def _update_result_args(self, d):
+        # Just assign if no value yet.
+        if 'result' in d:
+            if self.result:
+                update(self.result, d['result'])
+            else:
+                self.result = d['result']
+        if 'args' in d:
+            if self.args:
+                for arg in d['args']:
+                    name = arg['name']
+                    if name in self.arg_map:
+                        # update existing arg
+                        update(self.arg_map[name], arg)
+                    else:
+                        # append to current args
+                        self.args.append(arg)
+                        self.arg_map[name] = arg
+            else:
+                self.args = d['args']
+                for arg in self.args:
+                    name = arg['name']
+                    self.arg_map[name] = arg
+
+    def dump(self):
+        print('FunctionNode:', self.decl)
+        print(self.result)
+        print(self.args)
+        
 
 
 class ExpandedEncoder(json.JSONEncoder):
