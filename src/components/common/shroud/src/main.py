@@ -192,7 +192,7 @@ class Schema(object):
                 c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
                 c_fortran = 'type(C_PTR)',
                 fortran = 'type(%s)' % unname,
-                fortran_type = unname,
+                fortran_derived = unname,
                 fortran_to_c = '{var}%obj',
                 # XXX module name may not conflict with type name
                 f_module = {node['F_module_name']:[unname]},

@@ -483,8 +483,8 @@
             }, 
             "f_return_code": "{F_result}%{F_this} = {F_C_name}({arg_c_call})", 
             "fortran": "type(exclass1)", 
+            "fortran_derived": "exclass1", 
             "fortran_to_c": "{var}%obj", 
-            "fortran_type": "exclass1", 
             "forward": "ExClass1"
         }, 
         "ExClass2": {
@@ -500,8 +500,8 @@
             }, 
             "f_return_code": "{F_result}%{F_this} = {F_C_name}({arg_c_call})", 
             "fortran": "type(exclass2)", 
+            "fortran_derived": "exclass2", 
             "fortran_to_c": "{var}%obj", 
-            "fortran_type": "exclass2", 
             "forward": "ExClass2"
         }, 
         "bool": {

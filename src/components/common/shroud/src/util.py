@@ -80,7 +80,7 @@ class Typedef(object):
         c_fortran=None,       # expression to convert from C to Fortran
 
         fortran=None,         # name of type in Fortran
-        fortran_type=None,    # Fortran derived type name
+        fortran_derived=None,    # Fortran derived type name
         fortran_to_c='{var}', # expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code='{F_result} = {F_C_name}({arg_c_call})',

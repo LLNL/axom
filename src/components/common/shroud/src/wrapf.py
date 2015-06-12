@@ -4,7 +4,7 @@ Generate Fortran bindings for C++ code.
 
 module {F_module_name}
 
-type {F_type_name}
+type {F_derived_name}
   type(C_PTR) {F_this}
 constains
   procedure :: {F_name_method} => {F_name_impl}
@@ -148,7 +148,7 @@ class Wrapf(object):
             cpp_class = name,
             lower_class = name.lower(),
             upper_class = name.upper(),
-            F_type_name = typedef.fortran_type,
+            F_derived_name = typedef.fortran_derived,
             F_this = node['options'].F_this,
             )
         fmt_dict = self.fmt_dict
@@ -156,7 +156,7 @@ class Wrapf(object):
         unname = util.un_camel(name)
         self.f_type.extend([
                 '',
-                wformat('type {F_type_name}', fmt_dict),
+                wformat('type {F_derived_name}', fmt_dict),
                 1,
                 wformat('type(C_PTR) {F_this}', fmt_dict),
                 -1, 'contains', 1,
@@ -174,7 +174,7 @@ class Wrapf(object):
 
         self.f_type.extend([
                 -1,
-                 wformat('end type {F_type_name}', fmt_dict),
+                 wformat('end type {F_derived_name}', fmt_dict),
                  ''
                  ])
 
@@ -250,11 +250,11 @@ class Wrapf(object):
             arg_f_names.append(fmt_dict['F_this'])
             if is_dtor:
                 arg_f_decl.append(wformat(
-                        'type({F_type_name}) :: {F_this}',
+                        'type({F_derived_name}) :: {F_this}',
                         fmt_dict))
             else:
                 arg_f_decl.append(wformat(
-                        'class({F_type_name}) :: {F_this}',
+                        'class({F_derived_name}) :: {F_this}',
                         fmt_dict))
 
         for arg in node.get('args', []):
