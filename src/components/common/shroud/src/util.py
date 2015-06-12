@@ -11,7 +11,7 @@ import parse_decl
 fmt = string.Formatter()
 
 def wformat(template, d):
-    # shorthand, wrap format
+    # shorthand, wrap fmt.vformat
     return fmt.vformat(template, None, d)
 
 def eval_templates(templates, node, fmt_dict):
@@ -151,6 +151,13 @@ class Options(object):
         """ Treat as dictionary for format command.
         """
         return getattr(self, key)
+
+    def setdefault(self, key, value=None):
+        """ D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D
+        """
+        if key not in self.__dict__:
+            self.__dict__[key] = value
+        return self.__dict__.get(key, value)
 
     def update(self, d, replace=True):
         """Add options from dictionary to self.

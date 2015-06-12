@@ -5,9 +5,10 @@ copyright:
 
 options:
 #  module_name: exclass1_mod
+  library: UserLibrary
   C_prefix: AA_
   namespace: example nested
-#  F_module_per_class: True
+#  F_module_per_class: False
 
 typedef:
   other:

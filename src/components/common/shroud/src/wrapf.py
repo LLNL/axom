@@ -123,8 +123,8 @@ class Wrapf(object):
         options = self.tree['options']
 
         self.fmt_library = dict(
+            lower_library = options.library.lower()
             )
-
 
         self._begin_file()
         for node in self.tree['classes']:

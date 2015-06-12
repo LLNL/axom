@@ -506,6 +506,7 @@
         "F_result": "rv", 
         "F_this": "obj", 
         "cpp_header": "", 
+        "library": "UserLibrary", 
         "namespace": "example nested"
     }, 
     "typedef": {

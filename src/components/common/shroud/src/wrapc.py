@@ -77,6 +77,12 @@ class Wrapc(object):
         return typ + ' ' + ( name or arg['name'] )
 
     def wrap_library(self):
+        options = self.tree['options']
+
+        self.fmt_library = dict(
+            lower_library = options.library.lower()
+            )
+
         for node in self.tree['classes']:
             self._clear_class()
             name = node['name']
@@ -185,14 +191,18 @@ class Wrapc(object):
         typedef = self.typedef[name]
         cname = typedef.c_type
 
-        self.fmt_dict = dict(
+        fmt_class = self.fmt_class = dict(
             cpp_class = name,
             lower_class = name.lower(),
             upper_class = name.upper(),
             C_prefix = node['options'].C_prefix,
             C_type_name = cname,
             )
-        fmt_dict = self.fmt_dict
+        fmt_class.update(self.fmt_library)
+        util.eval_templates(
+            ['F_impl_filename',
+             'C_header_filename'],
+            node, fmt_class)
 
         # create a forward declaration for this type
         self.header_forward[cname] = True
@@ -230,7 +240,7 @@ class Wrapc(object):
             # i.e. This method returns a wrapped type
             self.header_forward[result_typedef.c_type] = True
 
-        fmt_dict = dict(
+        fmt_func = dict(
             method_name=result['name'],
             underscore_name=util.un_camel(result['name']),
             method_suffix = node.get('method_suffix', ''),
@@ -241,7 +251,7 @@ class Wrapc(object):
             cpp_name = result['name'],
             rv_decl = self._c_decl('cpp_type', result, name='rv'),  # return value
             )
-        fmt_dict.update(self.fmt_dict)
+        fmt_func.update(self.fmt_class)
 
         arguments = []
         anames = []
@@ -269,12 +279,12 @@ class Wrapc(object):
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
                 self.header_forward[arg_typedef.c_type] = True
-        fmt_dict['call_list'] = ', '.join(anames)
+        fmt_func['call_list'] = ', '.join(anames)
 
         if 'C_name' not in node:
             node['C_name'] = wformat(
                 options.C_name_method_template,
-                fmt_dict)
+                fmt_func)
 
         if 'C_return_type' not in node:
             node['C_return_type'] = self._c_type('c_type', result)
@@ -287,7 +297,7 @@ class Wrapc(object):
                 template = '{const}{cpp_class} *{this}obj = new {cpp_class}({call_list});'
             else:
                 template = '{const}{cpp_class} *{this}obj = static_cast<{const}{cpp_class} *>({this});'
-            node['C_object'] = wformat(template, fmt_dict)
+            node['C_object'] = wformat(template, fmt_func)
 
         if 'C_code' not in node:
             # generate the C body
@@ -298,12 +308,12 @@ class Wrapc(object):
                 lines.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
                 line = wformat('{cpp_this}->{cpp_name}({call_list});',
-                               fmt_dict)
+                               fmt_func)
                 lines.append(line)
                 lines.append('return;')
             else:
                 line = wformat('{rv_decl} = {cpp_this}->{cpp_name}({call_list});',
-                               fmt_dict)
+                               fmt_func)
                 lines.append(line)
 
                 ret = result_typedef.cpp_to_c

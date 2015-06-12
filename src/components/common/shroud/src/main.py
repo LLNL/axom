@@ -17,6 +17,8 @@ import parse_decl
 import wrapc
 import wrapf
 
+wformat = util.wformat
+
 class Config(object):
     """A class to stash configuration values.
     """
@@ -55,6 +57,7 @@ class Schema(object):
         def_options = util.Options(
             parent=None,
 
+            library='default_library',
             namespace='',
             cpp_header='',
 
@@ -84,6 +87,7 @@ class Schema(object):
         else:
             computed['F_module_name_template']   = '{lower_library}_mod'
             computed['F_impl_filename_template'] = 'wrapf{lower_library}.f'
+#--            computed['F_module_name'] = wformat(computed['F_module_name_template'], computed)
         def_options.update(computed, replace=False) # do not replace user's values
 
 
@@ -177,7 +181,13 @@ class Schema(object):
 
         options = self.push_options(node)
 
-        fmt_dict = dict(
+#--        if options.F_module_per_class:
+#            # set module name for each class
+#            options.setdefault('F_module_name',
+#                               wformat(options.F_module_name_template, options))
+#            print("XXXXXXXXXXYYY", options)
+
+        fmt_class = dict(
             cpp_class = name,
             lower_class = name.lower(),
             upper_class = name.upper(),
@@ -188,7 +198,7 @@ class Schema(object):
              'C_impl_filename',
              'F_impl_filename',
              'F_module_name'],
-            node, fmt_dict)
+            node, fmt_class)
 
         # create typedef for each class before generating code
         # this allows classes to reference each other
