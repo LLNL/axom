@@ -76,7 +76,7 @@ class Wrapc(object):
         typ = self._c_type(lang, arg)
         return typ + ' ' + ( name or arg['name'] )
 
-    def wrap(self):
+    def wrap_tree(self):
         for node in self.tree['classes']:
             self._clear_class()
             name = node['name']

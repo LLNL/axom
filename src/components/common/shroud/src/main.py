@@ -67,6 +67,7 @@ class Schema(object):
             C_impl_filename_template='wrap{cpp_class}.cpp',
             F_impl_filename_template='wrapf{cpp_class}.f',
             F_module_name_template='{lower_class}_mod',
+            F_module_per_class=True,
 
             C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
             F_name_method_template='{underscore_name}{method_suffix}',
@@ -346,9 +347,9 @@ if __name__ == '__main__':
 
     Schema(all).check_schema()
 
-    wrapc.Wrapc(all, config).wrap()
+    wrapc.Wrapc(all, config).wrap_tree()
 
-    wrapf.Wrapf(all, config).wrap()
+    wrapf.Wrapf(all, config).wrap_tree()
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')

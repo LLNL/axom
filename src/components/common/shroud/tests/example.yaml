@@ -7,7 +7,7 @@ options:
 #  module_name: exclass1_mod
   C_prefix: AA_
   namespace: example nested
-#  impl_file_per_class: True
+#  F_module_per_class: True
 
 typedef:
   other:

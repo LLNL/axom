@@ -499,6 +499,7 @@
         "C_this": "self", 
         "F_impl_filename_template": "wrapf{cpp_class}.f", 
         "F_module_name_template": "{lower_class}_mod", 
+        "F_module_per_class": true, 
         "F_name_generic_template": "{underscore_name}", 
         "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
         "F_name_method_template": "{underscore_name}{method_suffix}", 

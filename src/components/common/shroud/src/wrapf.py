@@ -31,7 +31,7 @@ class Wrapf(object):
         self.log = config.log
         self.typedef = tree['typedef']
 
-    def _clear_class(self):
+    def _clear_output(self):
         """Start a new class for output"""
         self.f_type = []
         self.f_type_generic = {} # look for generic methods
@@ -119,10 +119,11 @@ class Wrapf(object):
             rv += '(*)'
         return rv
 
-    def wrap(self):
+    def wrap_tree(self):
+        options = self.tree['options']
 
+        self._clear_output()
         for node in self.tree['classes']:
-            self._clear_class()
             self.c_interface.append('interface')
             self.c_interface.append(1)
 
@@ -132,7 +133,16 @@ class Wrapf(object):
             self.wrap_class(node)
             self.c_interface.append(-1)
             self.c_interface.append('end interface')
-            self.write_module(node)
+            if options.F_module_per_class:
+                self.write_module(node)
+                self._clear_output()
+
+        if not options.F_module_per_class:
+            # put all classes into one module
+            self.tree['F_impl_filename'] = 'aaaa'
+            self.tree['F_module_name'] = 'bbbb'
+            self.tree['F_module_dependencies'] = []
+            self.write_module(self.tree)
 
         for node in self.tree['functions']:
             self.wrap_function(node)
