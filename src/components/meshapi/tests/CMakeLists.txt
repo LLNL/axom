@@ -16,6 +16,9 @@ set(gtest_meshapi_tests
    
    # test maps
    testMap.cpp
+   
+   # test integration of sets, relations and maps
+   testAccessingRelationDataInMap.cpp
    )
 
 

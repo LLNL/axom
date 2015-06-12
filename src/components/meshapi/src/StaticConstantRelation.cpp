@@ -19,7 +19,7 @@ namespace meshapi {
 {
 }
 
-void StaticConstantRelation::setRelation(const RelationVec & toOffsets, const SetPosition stride)
+void StaticConstantRelation::bindRelationData(const RelationVec & toOffsets, const SetPosition stride)
 {
     m_stride = stride;
 

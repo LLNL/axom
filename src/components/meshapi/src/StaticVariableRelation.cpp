@@ -22,7 +22,7 @@ StaticVariableRelation::StaticVariableRelation (Set* fromSet, Set* toSet)
 {
 }
 
-void StaticVariableRelation::setRelation(RelationVec const& beginsVec, RelationVec const& toOffsets)
+void StaticVariableRelation::bindRelationData(RelationVec const& beginsVec, RelationVec const& toOffsets)
 {
     m_fromSetBeginsVec.clear();
     m_fromSetBeginsVec.reserve(beginsVec.size());

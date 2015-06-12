@@ -59,7 +59,7 @@ namespace meshapi    {
         /**
          * \note TODO: swap this out for data in the datastore
          */
-        void setRelation(const RelationVec & toOffsets, const SetPosition stride = 0);
+        void bindRelationData(const RelationVec & toOffsets, const SetPosition stride = 0);
 
         RelationVecConstIterator begin(SetPosition fromSetIndex)       const
         {

@@ -106,7 +106,7 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
     printVector("offsets vector", offsets);
 
 
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+    incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
@@ -160,7 +160,7 @@ TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
 
     PositionType const ELEM_STRIDE = 5;
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+    incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
     ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
 }
@@ -180,7 +180,7 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
 
     PositionType const ELEM_STRIDE = 5;
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+    incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
@@ -224,7 +224,7 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
 
     PositionType const ELEM_STRIDE = 5;
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
-    incrementingRel.setRelation(offsets, ELEM_STRIDE);
+    incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 

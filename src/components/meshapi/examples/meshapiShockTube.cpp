@@ -243,7 +243,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    }
 
    mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
-   mesh->relationFaceElem.setRelation(relVec, STRIDE);
+   mesh->relationFaceElem.bindRelationData(relVec, STRIDE);
    ATK_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
@@ -260,7 +260,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
    }
 
    mesh->relationTubeFace = ShockTubeMesh::ElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
-   mesh->relationTubeFace.setRelation(relVec, STRIDE);
+   mesh->relationTubeFace.bindRelationData(relVec, STRIDE);
    ATK_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
 }

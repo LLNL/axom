@@ -220,9 +220,9 @@ public:
 
         // Set the relation here by copying over the data buffers
     #ifdef USE_CONSTANT_RELATION
-        mesh->relationZoneNode.setRelation(offsetsVec, STRIDE);
+        mesh->relationZoneNode.bindRelationData(offsetsVec, STRIDE);
     #else
-        mesh->relationZoneNode.setRelation(beginsVec, offsetsVec);
+        mesh->relationZoneNode.bindRelationData(beginsVec, offsetsVec);
     #endif
 
         // Check that the relation is valid
@@ -299,7 +299,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
     beginsVec[mesh->nodes.size()] = count;
 
     // Send the data buffers over to the relation now and check the validity
-    mesh->relationNodeZone.setRelation(beginsVec, offsetsVec);
+    mesh->relationNodeZone.bindRelationData(beginsVec, offsetsVec);
 
     ATK_ASSERT_MSG( mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
     ATK_ASSERT_MSG( count == numZonesOfNode, "Error creating zones of Node list!\n");

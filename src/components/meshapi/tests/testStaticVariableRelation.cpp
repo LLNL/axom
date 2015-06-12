@@ -113,7 +113,7 @@ TEST(gtest_meshapi_static_variable_relation,simple_relation)
     printVector("offsets vector", offsets);
 
 
-    incrementingRel.setRelation(begins, offsets);
+    incrementingRel.bindRelationData(begins, offsets);
 
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
@@ -166,7 +166,7 @@ TEST(gtest_meshapi_static_variable_relation,initialized_rel_out_of_bounds)
     IndexVec offsets;
 
     generateIncrementingRelations(&begins, &offsets);
-    incrementingRel.setRelation(begins, offsets);
+    incrementingRel.bindRelationData(begins, offsets);
 
     ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
 }
@@ -184,7 +184,7 @@ TEST(gtest_meshapi_static_variable_relation,test_iterator_range)
     IndexVec begins(FROMSET_SIZE +1);
     IndexVec offsets;
     generateIncrementingRelations(&begins, &offsets);
-    incrementingRel.setRelation(begins, offsets);
+    incrementingRel.bindRelationData(begins, offsets);
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
@@ -227,7 +227,7 @@ TEST(gtest_meshapi_static_variable_relation,double_subscript_test)
     IndexVec begins(FROMSET_SIZE +1);
     IndexVec offsets;
     generateIncrementingRelations(&begins, &offsets);
-    incrementingRel.setRelation(begins, offsets);
+    incrementingRel.bindRelationData(begins, offsets);
 
     EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
