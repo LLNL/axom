@@ -79,6 +79,15 @@ return rv;
 // splicer end
 }
 
+void * AA_exclass1_get_addr(AA_exclass1 * self)
+{
+ExClass1 *selfobj = static_cast<ExClass1 *>(self);
+// splicer begin
+void * rv = selfobj->getAddr();
+return rv;
+// splicer end
+}
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

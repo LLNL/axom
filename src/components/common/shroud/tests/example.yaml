@@ -48,6 +48,8 @@ classes:
       method_suffix: _from_int
     - decl: long getValue(long value)
 
+    - decl: void *getAddr()
+
 
   - name: ExClass2
     options:

@@ -38,6 +38,8 @@ int AA_exclass1_get_value_from_int(AA_exclass1 * self, int value);
 
 long AA_exclass1_get_value_1(AA_exclass1 * self, long value);
 
+void * AA_exclass1_get_addr(AA_exclass1 * self);
+
 #ifdef __cplusplus
 }
 #endif

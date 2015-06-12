@@ -15,6 +15,7 @@ module exclass1_mod
         procedure :: get_root => exclass1_get_root
         procedure :: get_value_from_int => exclass1_get_value_from_int
         procedure :: get_value_1 => exclass1_get_value_1
+        procedure :: get_addr => exclass1_get_addr
         generic :: get_value => get_value_from_int, get_value_1
     end type exclass1
     
@@ -77,6 +78,13 @@ module exclass1_mod
             integer(C_LONG), value :: value
             integer(C_LONG) :: rv
         end function aa_exclass1_get_value_1
+        
+        function aa_exclass1_get_addr(self) result(rv) bind(C, name="AA_exclass1_get_addr")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function aa_exclass1_get_addr
     end interface
 
 contains
@@ -156,5 +164,14 @@ contains
         rv = aa_exclass1_get_value_1(obj%obj, value)
         ! splicer end
     end function exclass1_get_value_1
+    
+    function exclass1_get_addr(obj) result(rv)
+        implicit none
+        class(exclass1) :: obj
+        type(C_PTR) :: rv
+        ! splicer begin
+        rv = aa_exclass1_get_addr(obj%obj)
+        ! splicer end
+    end function exclass1_get_addr
 
 end module exclass1_mod

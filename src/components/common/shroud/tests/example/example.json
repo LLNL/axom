@@ -243,6 +243,30 @@
                         "name": "getValue", 
                         "type": "long"
                     }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self", 
+                    "C_code": "void * rv = selfobj->getAddr();\nreturn rv;", 
+                    "C_name": "AA_exclass1_get_addr", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "void *", 
+                    "F_C_arguments": "self", 
+                    "F_C_name": "aa_exclass1_get_addr", 
+                    "F_arguments": "obj", 
+                    "F_code": "rv = aa_exclass1_get_addr(obj%obj)", 
+                    "F_name_generic": "get_addr", 
+                    "F_name_impl": "exclass1_get_addr", 
+                    "F_name_method": "get_addr", 
+                    "args": [], 
+                    "decl": "void *getAddr()", 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "getAddr", 
+                        "type": "void"
+                    }
                 }
             ], 
             "name": "ExClass1", 
