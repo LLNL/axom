@@ -109,6 +109,7 @@ class Schema(object):
                 c       = 'bool',
                 cpp     = 'bool',
                 c_fortran = 'logical(C_BOOL)',
+                fortran_to_c  = 'logical2bool({var})',
                 fortran   = 'logical',
                 f_return_code = '{F_result} = bool2logical({F_C_name}({arg_c_call}))',
                 ),

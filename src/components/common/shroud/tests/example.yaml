@@ -49,6 +49,7 @@ classes:
     - decl: long getValue(long value)
 
     - decl: void *getAddr()
+    - decl: bool hasAddr(bool in)
 
 
   - name: ExClass2

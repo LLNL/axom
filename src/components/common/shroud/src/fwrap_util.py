@@ -69,6 +69,25 @@ contains
     cstr(len_trim(s)+1) = c_null_char
   end function cstr
 
+
+  pure function booltological(value) result(rv)
+     use, intrinsic ::  iso_c_binding, only : C_BOOL
+     implicit none
+     logical :: rv
+     logical(C_BOOL), intent(IN) :: value
+     rv = value
+     return
+  end function booltological
+
+  pure function logicaltobool(value) result(rv)
+     use, intrinsic ::  iso_c_binding, only : C_BOOL
+     implicit none
+     logical(C_BOOL) :: rv
+     logical, intent(IN) :: value
+     rv = value
+     return
+  end function logicaltobool
+
 end module fstr_mod
 """
 

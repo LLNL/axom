@@ -267,6 +267,34 @@
                         "name": "getAddr", 
                         "type": "void"
                     }
+                }, 
+                {
+                    "C_arguments": "AA_exclass1 * self, bool in", 
+                    "C_code": "bool rv = selfobj->hasAddr(in);\nreturn rv;", 
+                    "C_name": "AA_exclass1_has_addr", 
+                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                    "C_return_type": "bool", 
+                    "F_C_arguments": "self, in", 
+                    "F_C_name": "aa_exclass1_has_addr", 
+                    "F_arguments": "obj, in", 
+                    "F_code": "rv = bool2logical(aa_exclass1_has_addr(obj%obj, logical2bool(in)))", 
+                    "F_name_generic": "has_addr", 
+                    "F_name_impl": "exclass1_has_addr", 
+                    "F_name_method": "has_addr", 
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "in", 
+                            "type": "bool"
+                        }
+                    ], 
+                    "decl": "bool hasAddr(bool in)", 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "hasAddr", 
+                        "type": "bool"
+                    }
                 }
             ], 
             "name": "ExClass1", 
@@ -481,7 +509,8 @@
             "c_fortran": "logical(C_BOOL)", 
             "cpp": "bool", 
             "f_return_code": "{F_result} = bool2logical({F_C_name}({arg_c_call}))", 
-            "fortran": "logical"
+            "fortran": "logical", 
+            "fortran_to_c": "logical2bool({var})"
         }, 
         "int": {
             "c": "int", 

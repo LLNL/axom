@@ -88,6 +88,15 @@ return rv;
 // splicer end
 }
 
+bool AA_exclass1_has_addr(AA_exclass1 * self, bool in)
+{
+ExClass1 *selfobj = static_cast<ExClass1 *>(self);
+// splicer begin
+bool rv = selfobj->hasAddr(in);
+return rv;
+// splicer end
+}
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

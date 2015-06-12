@@ -8,6 +8,7 @@ method ExClass2 *getRoot()
 method int  getValue(int value)
 method long getValue(long value)
 method void *getAddr()
+method bool hasAddr(bool in)
 Close wrapExClass1.h
 Close wrapExClass1.cpp
 class ExClass2
@@ -28,6 +29,7 @@ method ExClass2 *getRoot()
 method int  getValue(int value)
 method long getValue(long value)
 method void *getAddr()
+method bool hasAddr(bool in)
 Close wrapfExClass1.f
 class ExClass2
 method ExClass2 *ExClass2+constructor (const string *name)
