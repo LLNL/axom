@@ -4,9 +4,10 @@ configure_file(config.hpp.in "${HEADER_INCLUDES_DIRECTORY}/lumberjack/config.hpp
 # Specify all headers
 #
 set(lumberjack_headers
-	Combiner.hpp
-	Communicator.hpp
-	MessageEqualityCombiner.hpp
+    Combiner.hpp
+    Communicator.hpp
+    Logger.hpp
+    MessageEqualityCombiner.hpp
     MessageInfo.hpp
     RootCommunicator.hpp
     )
@@ -15,6 +16,7 @@ set(lumberjack_headers
 # Specify all sources
 #
 set(lumberjack_sources
+    Logger.cpp
     MessageInfo.cpp
     RootCommunicator.cpp
     )

@@ -5,6 +5,7 @@
 set(gtest_lumberjack_tests
    lumberjack_MessageInfo.cpp
    lumberjack_MessageEqualityCombiner.cpp
+   lumberjack_RootCommunicator.cpp
    )
 
 #

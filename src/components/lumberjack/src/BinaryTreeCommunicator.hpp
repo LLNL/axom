@@ -14,6 +14,10 @@ class BinaryTreeCommunicator: public Communicator {
 		void pushMessagesOnceUpTree();
 		void pushMessagesFullyUpTree();
 		std::vector<MessageInfos> getMessages();
+		void queueMessage(const std::string& message,
+			              const std::string& fileName,
+			              const int lineNumber);
+		void queueMessage(const std::string& message);
 	private:
 		MPI_Comm m_comm;
 		std::vector<int> m_ranks;

@@ -12,16 +12,16 @@ namespace lumberjack {
 
 class RootCommunicator: public Communicator {
 	public:
-		void setCommunicator(MPI_Comm comm);
+		void initialize(MPI_Comm comm);
+		void finalize();
 		void pushMessagesOnce();
 		void pushMessagesFully();
 		std::vector<MessageInfo>* getMessages();
+		void queueMessage(MessageInfo messageInfo);
 	private:
-		void receiveMessages();
-		
-		MPI_Comm m_comm;
-		int m_commRank;
-		std::vector<int> m_ranks;
+		MPI_Comm m_mpiComm;
+		int m_mpiCommRank;
+		int m_mpiCommSize;
 		std::vector<MessageInfo> m_messages;
 };
 
