@@ -84,11 +84,12 @@ class Wrapc(object):
             )
 
         for node in self.tree['classes']:
+            fmt2_class = node['fmt']
             self._clear_class()
             name = node['name']
             self.wrap_class(node)
-            c_header = node['C_header_filename']
-            c_impl   = node['C_impl_filename']
+            c_header = fmt2_class.C_header_filename
+            c_impl   = fmt2_class.C_impl_filename
             self.write_header(node, c_header)
             self.write_impl(node, c_header, c_impl)
 
@@ -199,10 +200,6 @@ class Wrapc(object):
             C_type_name = cname,
             )
         fmt_class.update(self.fmt_library)
-        util.eval_templates(
-            [#'F_impl_filename',
-             'C_header_filename'],
-            node, fmt_class)
 
         # create a forward declaration for this type
         self.header_forward[cname] = True

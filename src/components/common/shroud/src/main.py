@@ -74,9 +74,6 @@ class Schema(object):
             C_this='self',   # object argument name
             F_this='obj',    # object argument name
             F_result='rv',   # function result
-#            module_name='gen_module',  # Fortran module name
-            C_header_filename_template='wrap{cpp_class}.h',
-            C_impl_filename_template='wrap{cpp_class}.cpp',
             F_module_per_class=True,
 
             C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
@@ -208,14 +205,13 @@ class Schema(object):
                                 fmt2_class, 'F_impl_filename',
                                 'wrapf{cpp_class}.f')   # XXX lower_class
 
-        util.eval_templates(
-            [
-                'C_header_filename',
-                'C_impl_filename',
-#                'F_impl_filename',
-#                'F_module_name',
-                ],
-            node, fmt_class)
+        # Only one file per class for C.
+        util.eval_template2(options, 'C_header_filename_template',
+                            fmt2_class, 'C_header_filename',
+                            'wrap{cpp_class}.h')
+        util.eval_template2(options, 'C_impl_filename_template',
+                            fmt2_class, 'C_impl_filename',
+                            'wrap{cpp_class}.cpp')
 
         # create typedef for each class before generating code
         # this allows classes to reference each other

@@ -1,8 +1,6 @@
 {
     "classes": [
         {
-            "C_header_filename": "wrapExClass1.h", 
-            "C_impl_filename": "wrapExClass1.cpp", 
             "F_module_dependencies": [
                 [
                     "exclass1_mod", 
@@ -22,6 +20,8 @@
                 ]
             ], 
             "fmt": {
+                "C_header_filename": "wrapExClass1.h", 
+                "C_impl_filename": "wrapExClass1.cpp", 
                 "C_prefix": "AA_", 
                 "F_impl_filename": "wrapfExClass1.f", 
                 "F_module_name": "exclass1_mod", 
@@ -309,8 +309,6 @@
             }
         }, 
         {
-            "C_header_filename": "wrapExClass2.h", 
-            "C_impl_filename": "wrapExClass2.cpp", 
             "F_module_dependencies": [
                 [
                     "exclass1_mod", 
@@ -330,6 +328,8 @@
                 ]
             ], 
             "fmt": {
+                "C_header_filename": "wrapExClass2.h", 
+                "C_impl_filename": "wrapExClass2.cpp", 
                 "C_prefix": "AA_", 
                 "F_impl_filename": "wrapfExClass2.f", 
                 "F_module_name": "exclass2_mod", 
@@ -508,8 +508,6 @@
         }
     ], 
     "options": {
-        "C_header_filename_template": "wrap{cpp_class}.h", 
-        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
         "C_prefix": "AA_", 
         "C_this": "self", 
