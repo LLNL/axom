@@ -201,6 +201,10 @@ class Wrapc(object):
             )
         fmt_class.update(self.fmt_library)
 
+#        fmt2_class = node['fmt']
+#        fmt2_class.update(dict(
+#                ))
+
         # create a forward declaration for this type
         self.header_forward[cname] = True
 
@@ -217,6 +221,8 @@ class Wrapc(object):
         else:
             self.log.write("method {1[result][name]}\n".format(self, node))
         # assume a C++ method
+
+        fmt2_func = node['fmt']
 
         # return type
         options = node['options']
@@ -249,6 +255,13 @@ class Wrapc(object):
             rv_decl = self._c_decl('cpp_type', result, name='rv'),  # return value
             )
         fmt_func.update(self.fmt_class)
+        fmt2_func.update(dict(
+                const='const ' if is_const else '',
+                this=C_this,
+                cpp_this = C_this + 'obj',
+                cpp_name = result['name'],
+                rv_decl = self._c_decl('cpp_type', result, name='rv'),  # return value
+                ))
 
         arguments = []
         anames = []

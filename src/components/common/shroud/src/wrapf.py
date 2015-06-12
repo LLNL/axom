@@ -165,6 +165,12 @@ class Wrapf(object):
             )
         fmt_class.update(self.fmt_library)
 
+        fmt2_class = node['fmt']
+        fmt2_class.update(dict(
+                F_derived_name = typedef.fortran_derived,
+                F_this = node['options'].F_this,
+                ))
+
         unname = util.un_camel(name)
         self.f_type.extend([
                 '',
@@ -200,6 +206,8 @@ class Wrapf(object):
         else:
             self.log.write("method {1[result][name]}\n".format(self, node))
 
+        fmt2_func = node['fmt']
+
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
@@ -221,6 +229,11 @@ class Wrapf(object):
             )
         fmt_func['F_obj'] = wformat('{F_this}%{F_this}', fmt_func)
         fmt_func.update(self.fmt_class)
+        fmt2_func.update(dict(
+            F_this=node['options'].F_this,
+            F_result=F_result,
+            C_name=node['C_name'],
+            ))
 
         if 'F_C_name' not in node:
             node['F_C_name'] = node['C_name'].lower()
