@@ -143,8 +143,6 @@ class Wrapf(object):
 
         if not options.F_module_per_class:
             # put all classes into one module
-            self.tree['F_impl_filename'] = 'aaaa'
-            self.tree['F_module_name'] = 'bbbb'
             self.tree['F_module_dependencies'] = []
             self.write_module(self.tree)
 
@@ -375,8 +373,8 @@ class Wrapf(object):
                 fp.write('!\n')
 
     def write_module(self, node):
-        fname = node['F_impl_filename']
-        module_name = node['F_module_name']
+        fname = node['fmt']['F_impl_filename']
+        module_name = node['fmt'].F_module_name
         fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
 

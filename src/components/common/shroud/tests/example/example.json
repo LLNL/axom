@@ -22,9 +22,9 @@
                     []
                 ]
             ], 
-            "F_module_name": "exclass1_mod", 
             "fmt": {
                 "C_prefix": "AA_", 
+                "F_impl_filename": "wrapfExClass1.f", 
                 "F_module_name": "exclass1_mod", 
                 "cpp_class": "ExClass1", 
                 "lower_class": "exclass1", 
@@ -331,9 +331,9 @@
                     []
                 ]
             ], 
-            "F_module_name": "exclass2_mod", 
             "fmt": {
                 "C_prefix": "AA_", 
+                "F_impl_filename": "wrapfExClass2.f", 
                 "F_module_name": "exclass2_mod", 
                 "cpp_class": "ExClass2", 
                 "lower_class": "exclass2", 

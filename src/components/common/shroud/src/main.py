@@ -99,8 +99,12 @@ class Schema(object):
             computed['F_module_name_template']   = '{lower_class}_mod'
             computed['F_impl_filename_template'] = 'wrapf{cpp_class}.f'
         else:
-            fmt2_library.F_module_name = def_options.get('F_module_name',
-                    wformat(def_options.get('F_module_name_template', '{lower_library}_mod'), fmt2_library))
+            util.eval_template2(def_options, 'F_module_name_template',
+                                fmt2_library, 'F_module_name',
+                                '{lower_library}_mod')
+            util.eval_template2(def_options, 'F_impl_filename_template',
+                                fmt2_library, 'F_impl_filename',
+                                'wrapf{lower_library}.f')
             computed['F_module_name_template']   = '{lower_library}_mod'
             computed['F_impl_filename_template'] = 'wrapf{lower_library}.f'
 #--            computed['F_module_name'] = wformat(computed['F_module_name_template'], computed)
@@ -206,8 +210,12 @@ class Schema(object):
         fmt2_class.update(fmt_class)
 
         if options.F_module_per_class:
-            fmt2_class.F_module_name = options.get('F_module_name',
-                    wformat(options.get('F_module_name_template', '{lower_class}_mod'), fmt2_class))
+            util.eval_template2(options, 'F_module_name_template',
+                                fmt2_class, 'F_module_name',
+                                '{lower_class}_mod')
+            util.eval_template2(options, 'F_impl_filename_template',
+                                fmt2_class, 'F_impl_filename',
+                                'wrapf{lower_class}.f')
 
 
 #--        if options.F_module_per_class:
@@ -220,8 +228,8 @@ class Schema(object):
             [
                 'C_header_filename',
                 'C_impl_filename',
-                'F_impl_filename',
-                'F_module_name',
+#                'F_impl_filename',
+#                'F_module_name',
                 ],
             node, fmt_class)
 
@@ -241,7 +249,7 @@ class Schema(object):
                 fortran_derived = unname,
                 fortran_to_c = '{var}%obj',
                 # XXX module name may not conflict with type name
-                f_module = {node['F_module_name']:[unname]},
+                f_module = {fmt2_class.F_module_name:[unname]},
 
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
