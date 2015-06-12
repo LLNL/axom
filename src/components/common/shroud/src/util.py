@@ -59,16 +59,29 @@ def update(d, u):
     return d
 
 
-class Argument(object):
+class Typedef(object):
     """ Collect fields for an argument.
     This used to be a dict but a class has better access semantics: i.attr vs d['attr']
     It also initializes default values to avoid  d.get('attr', default)
     """
     # valid fields
-    fields = ['name', 'type', 'other']
     defaults = dict(
-        type='dtype',
-        other='dother'
+        base='unknown',       # base type: 'string'
+        forward=None,         # forward declaration
+
+        cpp=None,             # name of type in C++
+        cpp_to_c='{var}',     # expression to convert from C++ to C
+
+        c=None,               # name of type in C
+        c_header=None,        # Name of C header file required for type
+        c_to_cpp='{var}',     # expression to convert from C to C++
+        c_fortran=None,       # expression to convert from C to Fortran
+
+        fortran=None,         # name of type in Fortran
+        fortran_type=None,    # Fortran derived type name
+        fortran_to_c='{var}', # expression to convert Fortran to C
+        f_module=None,        # Fortran modules needed for type  (dictionary)
+        f_return_code='{F_result} = {F_C_name}({arg_c_call})',
         )
 
     def __init__(self, name, **kw):
@@ -76,27 +89,39 @@ class Argument(object):
 #        for key, defvalue in self.defaults.items():
 #            setattr(self, key, defvalue)
         self.__dict__.update(self.defaults) # set all default values
-        for key in kw:
+        self.update(kw)
+
+    def update(self, d):
+        """Add options from dictionary to self.
+        """
+        for key in d:
             if key in self.defaults:
-                setattr(self, key, kw[key])
+                setattr(self, key, d[key])
             else:
                 raise RuntimeError("Unknown key for Argument %s", key)
 
     def _to_dict(self):
         """Convert instance to a dictionary for json.
         """
+        # only export non-default values
         a = {}
-        for key in self.fields:
-            a[key] = getattr(self, key)
+        for key, defvalue in self.defaults.items():
+            value = getattr(self, key)
+            if value is not defvalue:
+                a[key] = value
         return a
 
-
-class ExpandedEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, '_to_dict'):
-            return obj._to_dict()
-         # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, obj)
+    def __repr__(self):
+        # only print non-default values
+        args = []
+        for key, defvalue in self.defaults.items():
+            value = getattr(self, key)
+            if value is not defvalue:
+                if isinstance(value, str):
+                    args.append("{0}='{1}'".format(key, value))
+                else:
+                    args.append("{0}={1}".format(key, value))
+        return "Typedef('%s', " % self.name + ','.join(args) + ')'
 
 
 class Options(object):
@@ -135,6 +160,16 @@ class Options(object):
                 d[key] = value
         return d
 
+
+class ExpandedEncoder(json.JSONEncoder):
+    """Jason handler to convert objects into a dictionary when they have
+    a _to_dict method.
+    """
+    def default(self, obj):
+        if hasattr(obj, '_to_dict'):
+            return obj._to_dict()
+         # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
 
 
 if __name__ == '__main__':

@@ -63,6 +63,8 @@ def do_test(name, replace_ref):
         makedirs(result_dir)
         clear_files(result_dir)
 
+    output_file = os.path.join(result_dir, 'output')
+
     cmd = [
         code_path,
         '--logdir', result_dir,
@@ -80,6 +82,9 @@ def do_test(name, replace_ref):
         logging.error('Exit status: %d' % exc.returncode)
         logging.error(exc.output)
         return False
+    fp = open(output_file, 'w')
+    fp.write(output)
+    fp.close()
 
     """
     pipes = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

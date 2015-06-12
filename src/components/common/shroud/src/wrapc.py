@@ -52,7 +52,7 @@ class Wrapc(object):
             raise RuntimeError("No such type %s" % arg['type'])
         if arg['attrs'].get('const', False):
             t.append('const')
-        t.append(typedef[lang])
+        t.append(getattr(typedef, lang))
         if arg['attrs'].get('ptr', False):
             t.append('*')
         elif arg['attrs'].get('reference', False):
@@ -179,7 +179,7 @@ class Wrapc(object):
         self.log.write("class {1[name]}\n".format(self, node))
         name = node['name']
         typedef = self.typedef[name]
-        cname = typedef['c']
+        cname = typedef.c
 
         self.fmt_dict = dict(
             cpp_class = name,
@@ -218,13 +218,13 @@ class Wrapc(object):
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
 
-        if 'c_header' in result_typedef:
+        if result_typedef.c_header:
             # include any dependent header in generated header
-            self.header_typedef_include[result_typedef['c_header']] = True
-        if 'forward' in result_typedef:
+            self.header_typedef_include[result_typedef.c_header] = True
+        if result_typedef.forward:
             # create forward references for other types being wrapped
             # i.e. This method returns a wrapped type
-            self.header_forward[result_typedef['c']] = True
+            self.header_forward[result_typedef.c] = True
 
         fmt_dict = dict(
             method_name=result['name'],
@@ -255,16 +255,16 @@ class Wrapc(object):
             arguments.append(self._c_decl('c', arg))
             arg_typedef = self.typedef[arg['type']]
             # convert C argument to C++
-            anames.append(arg_typedef.get('c_to_cpp', '{var}').format(
+            anames.append(arg_typedef.c_to_cpp.format(
                     var=arg['name'],
                     ptr=' *' if arg['attrs'].get('ptr', False) else ''))
-            if 'c_header' in arg_typedef:
+            if arg_typedef.c_header:
                 # include any dependent header in generated header
-                self.header_typedef_include[arg_typedef['c_header']] = True
-            if 'forward' in arg_typedef:
+                self.header_typedef_include[arg_typedef.c_header] = True
+            if arg_typedef.forward:
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
-                self.header_forward[arg_typedef['c']] = True
+                self.header_forward[arg_typedef.c] = True
         fmt_dict['call_list'] = ', '.join(anames)
 
         if 'C_name' not in node:
@@ -302,7 +302,7 @@ class Wrapc(object):
                                fmt_dict)
                 lines.append(line)
 
-                ret = result_typedef.get('cpp_to_c', '{var}')
+                ret = result_typedef.cpp_to_c
                 line = 'return ' + ret.format(var='rv') + ';'
                 lines.append(line)
 

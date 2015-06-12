@@ -55,8 +55,8 @@ class Wrapf(object):
         is_ptr = (arg['attrs'].get('ptr', False) or
                   arg['attrs'].get('reference', False))
 
-        typ = typedef['c_fortran']
-        if typedef['base'] == 'string':
+        typ = typedef.c_fortran
+        if typedef.base == 'string':
             return (typ, True)   # is array
         else:
             #        if arg['attrs'].get('const', False):
@@ -94,8 +94,8 @@ class Wrapf(object):
         if typedef is None:
             raise RuntimeError("No such type %s" % arg['type'])
 
-        typ = typedef['fortran']
-        if typedef['base'] == 'string':
+        typ = typedef.fortran
+        if typedef.base == 'string':
             return (typ, False)  # not array
         else:
             #        if arg['attrs'].get('const', False):
@@ -148,7 +148,7 @@ class Wrapf(object):
             cpp_class = name,
             lower_class = name.lower(),
             upper_class = name.upper(),
-            F_type_name = typedef['fortran_type'],
+            F_type_name = typedef.fortran_type,
             F_this = node['options'].F_this,
             )
         fmt_dict = self.fmt_dict
@@ -261,7 +261,7 @@ class Wrapf(object):
             arg_c_names.append(arg['name'])
             arg_c_decl.append(self._c_decl(arg))
 
-            rrr = self.typedef[arg['type']].get('fortran_to_c', '{var}')
+            rrr = self.typedef[arg['type']].fortran_to_c
             arg_c_call.append(rrr.format(var=arg['name']))
             arg_f_names.append(arg['name'])
             arg_f_decl.append(self._f_decl(arg))
@@ -270,7 +270,7 @@ class Wrapf(object):
         # since arguments may be used to compute return value
         # (for example, string lengths)
         if subprogram == 'function':
-            if result_typedef['base'] == 'string':
+            if result_typedef.base == 'string':
                 # special case returning a string
                 rvlen = result['attrs'].get('len', '1')
                 fmt_dict['rvlen'] = rvlen
@@ -312,8 +312,7 @@ class Wrapf(object):
             if is_ctor:
                 lines.append(wformat('{F_result}%{F_this} = {F_C_name}({arg_c_call})', fmt_dict))
             elif subprogram == 'function':
-                fmt = result_typedef.get('f_return_code',
-                                         '{F_result} = {F_C_name}({arg_c_call})')
+                fmt = result_typedef.f_return_code
                 lines.append(wformat(fmt, fmt_dict))
 
             else:

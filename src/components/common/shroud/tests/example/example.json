@@ -49,22 +49,7 @@
                     ], 
                     "decl": "ExClass1 *new+constructor ( const string *name )", 
                     "docs": "constructor", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "constructor": true, 
@@ -89,22 +74,7 @@
                     "F_name_method": "delete", 
                     "args": [], 
                     "decl": "void delete+destructor", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "destructor": true
@@ -135,22 +105,7 @@
                     ], 
                     "decl": "int incrementCount(int incr)", 
                     "docs": "blah blah", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "incrementCount", 
@@ -172,22 +127,7 @@
                     "F_name_method": "get_name", 
                     "args": [], 
                     "decl": "const string& getName()", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -212,22 +152,7 @@
                     "F_name_impl": "exclass1_get_name_length", 
                     "F_name_method": "get_name_length", 
                     "docs": "helper function for Fortran", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -252,22 +177,7 @@
                     "F_name_method": "get_root", 
                     "args": [], 
                     "decl": "ExClass2 *getRoot()", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -298,22 +208,7 @@
                     ], 
                     "decl": "int  getValue(int value)", 
                     "method_suffix": "_from_int", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -342,22 +237,7 @@
                     ], 
                     "decl": "long getValue(long value)", 
                     "method_suffix": "_1", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass1.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -367,20 +247,7 @@
             ], 
             "name": "ExClass1", 
             "options": {
-                "C_header_filename_template": "wrap{cpp_class}.h", 
-                "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                "C_prefix": "AA_", 
-                "C_this": "self", 
-                "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                "F_module_name_template": "{lower_class}_mod", 
-                "F_name_generic_template": "{underscore_name}", 
-                "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                "F_name_method_template": "{underscore_name}{method_suffix}", 
-                "F_result": "rv", 
-                "F_this": "obj", 
-                "cpp_header": "ExClass1.hpp", 
-                "namespace": "example nested"
+                "cpp_header": "ExClass1.hpp"
             }
         }, 
         {
@@ -425,22 +292,7 @@
                         }
                     ], 
                     "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass2.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "constructor": true, 
@@ -465,22 +317,7 @@
                     "F_name_method": "ex_class1", 
                     "args": [], 
                     "decl": "void ExClass1+destructor", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass2.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "destructor": true
@@ -504,22 +341,7 @@
                     "F_name_method": "get_name", 
                     "args": [], 
                     "decl": "const string& getName", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass2.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -544,22 +366,7 @@
                     "F_name_impl": "exclass2_get_name_length", 
                     "F_name_method": "get_name_length", 
                     "docs": "helper function for Fortran", 
-                    "options": {
-                        "C_header_filename_template": "wrap{cpp_class}.h", 
-                        "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                        "C_prefix": "AA_", 
-                        "C_this": "self", 
-                        "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                        "F_module_name_template": "{lower_class}_mod", 
-                        "F_name_generic_template": "{underscore_name}", 
-                        "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                        "F_name_method_template": "{underscore_name}{method_suffix}", 
-                        "F_result": "rv", 
-                        "F_this": "obj", 
-                        "cpp_header": "ExClass2.hpp", 
-                        "namespace": "example nested"
-                    }, 
+                    "options": {}, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -572,20 +379,7 @@
             ], 
             "name": "ExClass2", 
             "options": {
-                "C_header_filename_template": "wrap{cpp_class}.h", 
-                "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                "C_prefix": "AA_", 
-                "C_this": "self", 
-                "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                "F_module_name_template": "{lower_class}_mod", 
-                "F_name_generic_template": "{underscore_name}", 
-                "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                "F_name_method_template": "{underscore_name}{method_suffix}", 
-                "F_result": "rv", 
-                "F_this": "obj", 
-                "cpp_header": "ExClass2.hpp", 
-                "namespace": "example nested"
+                "cpp_header": "ExClass2.hpp"
             }
         }
     ], 
@@ -599,21 +393,7 @@
             "args": [], 
             "decl": "void local_function1", 
             "docs": "yada yada yada", 
-            "options": {
-                "C_header_filename_template": "wrap{cpp_class}.h", 
-                "C_impl_filename_template": "wrap{cpp_class}.cpp", 
-                "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{method_suffix}", 
-                "C_prefix": "AA_", 
-                "C_this": "self", 
-                "F_impl_filename_template": "wrapf{cpp_class}.f", 
-                "F_module_name_template": "{lower_class}_mod", 
-                "F_name_generic_template": "{underscore_name}", 
-                "F_name_impl_template": "{lower_class}_{underscore_name}{method_suffix}", 
-                "F_name_method_template": "{underscore_name}{method_suffix}", 
-                "F_result": "rv", 
-                "F_this": "obj", 
-                "namespace": "example nested"
-            }, 
+            "options": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "local_function1", 
@@ -634,6 +414,7 @@
         "F_name_method_template": "{underscore_name}{method_suffix}", 
         "F_result": "rv", 
         "F_this": "obj", 
+        "cpp_header": "", 
         "namespace": "example nested"
     }, 
     "typedef": {
@@ -672,7 +453,6 @@
             "forward": "ExClass2"
         }, 
         "bool": {
-            "base": "unknown", 
             "c": "bool", 
             "c_fortran": "logical(C_BOOL)", 
             "cpp": "bool", 
@@ -680,25 +460,21 @@
             "fortran": "logical"
         }, 
         "int": {
-            "base": "unknown", 
             "c": "int", 
             "c_fortran": "integer(C_INT)", 
             "cpp": "int", 
             "fortran": "integer(C_INT)"
         }, 
         "long": {
-            "base": "unknown", 
             "c": "long", 
             "c_fortran": "integer(C_LONG)", 
             "cpp": "long", 
             "fortran": "integer(C_LONG)"
         }, 
         "other": {
-            "base": "unknown", 
             "cpp": "junk"
         }, 
         "size_t": {
-            "base": "unknown", 
             "c": "size_t", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
@@ -732,7 +508,6 @@
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 
         "void": {
-            "base": "unknown", 
             "c": "void", 
             "c_fortran": "type(C_PTR)", 
             "cpp": "void", 

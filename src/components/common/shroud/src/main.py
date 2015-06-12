@@ -79,40 +79,40 @@ class Schema(object):
         node['options'] = def_options
 
         def_types = dict(
-            void    = dict(
+            void    = util.Typedef('void',
                 c       = 'void',
                 cpp     = 'void',
 #                fortran = 'subroutine',
                 c_fortran = 'type(C_PTR)',
                 fortran = 'type(C_PTR)',
                 ),
-            int    = dict(
+            int    = util.Typedef('int',
                 c       = 'int',
                 cpp     = 'int',
                 c_fortran = 'integer(C_INT)',
                 fortran   = 'integer(C_INT)',
                 ),
-            long   = dict(
+            long   = util.Typedef('long',
                 c       = 'long',
                 cpp     = 'long',
                 c_fortran = 'integer(C_LONG)',
                 fortran   = 'integer(C_LONG)',
                 ),
-            size_t   = dict(
+            size_t   = util.Typedef('size_t',
                 c       = 'size_t',
                 cpp     = 'size_t',
                 c_header = 'stdlib.h',
                 c_fortran = 'integer(C_SIZE_T)',
                 fortran   = 'integer(C_SIZE_T)',
                 ),
-            bool   = dict(
+            bool   = util.Typedef('bool',
                 c       = 'bool',
                 cpp     = 'bool',
                 c_fortran = 'logical(C_BOOL)',
                 fortran   = 'logical',
                 f_return_code = '{F_result} = bool2logical({F_C_name}({arg_c_call}))',
                 ),
-            string = dict(  # implies null terminated string
+            string = util.Typedef('string',  # implies null terminated string
                 c   = 'char',    # XXX - char *
                 cpp = 'std::string',
                 cpp_to_c = '{var}.c_str()',  # . or ->
@@ -126,13 +126,17 @@ class Schema(object):
                 ),
             )
         def_types['std::string'] = def_types['string']
-        if 'typedef' in node:
-            def_types.update(node['typedef'])
-
-        # set some default members
-        for typ in def_types.values():
-            if 'base' not in typ:
-                typ['base'] = 'unknown'
+        if 'typedef' in node and \
+                node['typedef'] is not None:
+            if not isinstance(node['typedef'], dict):
+                raise TypeError("typedef must be a dictionary")
+            for key, value in node['typedef'].items():
+                if not isinstance(value, dict):
+                    raise TypeError("typedef '%s' must be a dictionary" % key)
+                if key in def_types:
+                    def_types.update(value)
+                else:
+                    def_types[key] = util.Typedef(key, **value)
 
         node['typedef'] = def_types
         self.typedef = node['typedef']
@@ -180,7 +184,8 @@ class Schema(object):
 #            unname = util.un_camel(name)
             unname = name.lower()
             cname = node['options'].C_prefix + unname
-            self.typedef[name] = dict(
+            self.typedef[name] = util.Typedef(
+                name,
                 cpp = name,
                 c = cname,
                 c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
@@ -256,8 +261,8 @@ class Schema(object):
 
         modules = {}
         for typ in used_types.values():
-            if 'f_module' in typ:
-                for mname, only in typ['f_module'].items():
+            if typ.f_module:
+                for mname, only in typ.f_module.items():
                     module = modules.setdefault(mname, {})
                     if only:  # Empty list means no ONLY clause
                         for oname in only:
