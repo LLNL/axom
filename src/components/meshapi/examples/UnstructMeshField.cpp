@@ -75,8 +75,8 @@ public:
 #endif
     typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
-    typedef NodeSet::SetIndex      IndexType;
-    typedef NodeSet::SetPosition   PositionType;
+    typedef NodeSet::IndexType      IndexType;
+    typedef NodeSet::PositionType   PositionType;
 
     // types for maps
     // TODO: Convert to meshapi::Map
@@ -286,13 +286,13 @@ void generateNodeZoneRelation(HexMesh* mesh)
 
     RelationVec beginsVec( mesh->nodes.size() + 1 );
     RelationVec offsetsVec( numZonesOfNode );
-    HexMesh::NodeSet::SetIndex count = 0;
+    HexMesh::NodeSet::IndexType count = 0;
     for(HexMesh::NodeSet::iterator nIt = mesh->nodes.begin(), nEnd = mesh->nodes.end(); nIt < nEnd; ++nIt)
     {
         beginsVec[*nIt] = count;
         for(DynRelationIteratorPair sItPair = tmpZonesOfNode.range(*nIt); sItPair.first < sItPair.second; ++sItPair.first)
         {
-            HexMesh::ZoneSet::SetIndex const& zoneIdx = *(sItPair.first);
+            HexMesh::ZoneSet::IndexType const& zoneIdx = *(sItPair.first);
             offsetsVec[count++] = zoneIdx;
         }
     }
@@ -345,7 +345,7 @@ void createZoneRadiusField (HexMesh* mesh)
     typedef HexMesh::ZoneSet::iterator ZoneIter;
     for (ZoneIter zIt = mesh->zones.begin(); zIt < mesh->zones.end();++zIt)
     {
-        Point const& zp = mesh->zonePosition[*zIt];
+        const Point& zp = mesh->zonePosition[*zIt];
         // What's the radius?
         mesh->zoneField[*zIt] = zp.radius();
     }

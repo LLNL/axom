@@ -19,8 +19,8 @@
 using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::DynamicVariableRelation;
 
-typedef RangeSet::SetPosition PositionType;
-typedef RangeSet::SetElement ElementType;
+typedef RangeSet::PositionType PositionType;
+typedef RangeSet::ElementType ElementType;
 // typedef asctoolkit::meshapi::Set::SetPosition PositionType;
 
 const PositionType FROMSET_SIZE = 5;

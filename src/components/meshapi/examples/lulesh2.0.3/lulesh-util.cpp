@@ -221,36 +221,44 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
    printf("FOM                  = %10.8g (z/s)\n\n", 1000.0/grindTime2); // zones per second
 
    /// Compare to given values for cycles and origin energy from lulesh 2.0 paper:
-   std::map<Int_t, Index_t> cycleCheckMap;
-   std::map<Int_t, Real_t>  energyCheckMap;
+   std::map<Int_t, std::pair<Index_t, Real_t> > resultCheckMap;
 
-   cycleCheckMap[ 5] =   72;
-   cycleCheckMap[10] =  231;
-   cycleCheckMap[30] =  932;
-   cycleCheckMap[45] = 1477;
-   cycleCheckMap[50] = 1662;
-   cycleCheckMap[70] = 2402;
-   cycleCheckMap[90] = 3145;
+   resultCheckMap[ 5] =  std::make_pair(   72, 7.853665e+03);
+   resultCheckMap[10] =  std::make_pair(  231, 2.720531e+04);
+   resultCheckMap[30] =  std::make_pair(  932, 2.025075e+05);
+   resultCheckMap[45] =  std::make_pair( 1477, 4.234875e+05);
+   resultCheckMap[50] =  std::make_pair( 1662, 5.124778e+05);
+   resultCheckMap[70] =  std::make_pair( 2402, 9.417145e+05);
+   resultCheckMap[90] =  std::make_pair( 3145, 1.482403e+06);
 
-   energyCheckMap[ 5] = 7.853665e+03;
-   energyCheckMap[10] = 2.720531e+04;
-   energyCheckMap[30] = 2.025075e+05;
-   energyCheckMap[45] = 4.234875e+05;
-   energyCheckMap[50] = 5.124778e+05;
-   energyCheckMap[70] = 9.417145e+05;
-   energyCheckMap[90] = 1.482403e+06;
-
-   if(cycleCheckMap.find(nx) != cycleCheckMap.end() )
+   if(resultCheckMap.find(nx) != resultCheckMap.end() )
    {
-       ATK_ASSERT_MSG( cycleCheckMap[nx] == locDom.cycle()
-                 , "Specs state that num cycles should be " << cycleCheckMap[nx]
+       ATK_ASSERT_MSG( resultCheckMap[nx].first == locDom.cycle()
+                 , "Specs state that num cycles should be " << resultCheckMap[nx].first
                  << " actual number of cycles was " << locDom.cycle() <<"." );
 
-       ATK_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( energyCheckMap[nx], locDom.e(ElemId), 1e-6, 10e10 )
-                 , "Specs state that final energy at origing must be " << energyCheckMap[nx]
+       ATK_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( resultCheckMap[nx].second, locDom.e(ElemId))
+                 , "Specs state that final energy at origing must be " << resultCheckMap[nx].second
                  << " actual energy at origin was " << locDom.e(ElemId) <<"."
-                 << " Difference was " << fabs(energyCheckMap[nx] - locDom.e(ElemId) )
+                 << " Difference was " << std::fabs(resultCheckMap[nx].second - locDom.e(ElemId) )
        );
+
+       double diff = std::fabs(resultCheckMap[nx].second - locDom.e(ElemId) );
+       double maxFabs = std::max( std::fabs(resultCheckMap[nx].second), std::fabs(locDom.e(ElemId) ) );
+       double relMaxFabs = 1.0e-6 * maxFabs;
+       double relMaxFabsWithAbsolute = relMaxFabs + 1.0e-8;
+
+
+       std::cout << "\n**  comparing \n\t" << resultCheckMap[nx].second << " with \n\t" << locDom.e(ElemId)
+                 << "\n\t fabs difference: " << diff
+                 << "\n\t maxFabs * rel (1e-6): " <<  relMaxFabs
+                 << "\n\t <above> with abs 1e-8: " << relMaxFabsWithAbsolute
+                 << "\n\t  diff (again) :\t\t\t" << diff
+                 << "\n\t  diff of last two: \t\t\t\t" << relMaxFabsWithAbsolute - diff
+                 << "\n\t " << ( diff <= relMaxFabsWithAbsolute ? "TRUE" : "FALSE" )
+                 << std::endl;
+                 ;
+
 
    }
 

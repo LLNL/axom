@@ -21,7 +21,7 @@ namespace meshapi    {
     class Relation
     {
     public:
-        typedef Set::SetPosition                                                SetPosition;
+        typedef Set::PositionType                                                SetPosition;
 
         typedef std::vector<SetPosition>                                        RelationVec;
         typedef RelationVec::iterator                                           RelationVecIterator;

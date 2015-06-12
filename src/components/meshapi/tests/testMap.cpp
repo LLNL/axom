@@ -17,8 +17,8 @@ typedef asctoolkit::meshapi::RangeSet SetType;
 typedef asctoolkit::meshapi::Map<int> IntMap;
 typedef asctoolkit::meshapi::Map<double> RealMap;
 
-typedef SetType::SetPosition PositionType;
-typedef SetType::SetElement ElementType;
+typedef SetType::PositionType PositionType;
+typedef SetType::ElementType ElementType;
 
 typedef SetType::iterator SetIterator;
 static PositionType const MAX_SET_SIZE = 10;

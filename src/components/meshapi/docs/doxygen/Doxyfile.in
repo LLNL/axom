@@ -2,3 +2,4 @@ PROJECT_NAME  = MeshAPI
 PROJECT_BRIEF = "Reusable components for defining distributed meshes on simulation codes"
 INPUT = @PROJECT_SOURCE_DIR@/src @PROJECT_SOURCE_DIR@/examples
 GENERATE_XML = YES
+USE_MATHJAX = YES

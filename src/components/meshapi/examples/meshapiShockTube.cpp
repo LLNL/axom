@@ -92,8 +92,8 @@ namespace shocktube {
         typedef asctoolkit::meshapi::StaticConstantRelation FaceToElemRelation;
 
         // other types
-        typedef asctoolkit::meshapi::Set::SetIndex IndexType;
-        typedef asctoolkit::meshapi::Set::SetPosition PositionType;
+        typedef asctoolkit::meshapi::Set::IndexType IndexType;
+        typedef asctoolkit::meshapi::Set::PositionType PositionType;
 
     public:
         ElemSet elems;          // The entire set of elements
@@ -333,7 +333,6 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
 }
 
 /**
- * \function ComputeFaceInfo
  * \brief Compute F quantities at faces.
  *
  * \details

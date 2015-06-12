@@ -21,31 +21,37 @@ namespace asctoolkit{
 namespace meshapi{
 
 
+    /**
+     * \class RangeSet
+     * \brief Models a set whose elements belong to a contiguous range \f$ \in [lowerIndex,upperIndex) \f$
+     * \details The ElementType here needs to be computable as offsets (of PositionType) from the lowerIndex
+     *          Examples include: signed and unsigned integral types
+     */
     class RangeSet  : public Set
     {
     public:
-      typedef Set::SetIndex     SetIndex;
-      typedef Set::SetPosition  SetPosition;
-      typedef SetIndex          SetElement;
+      typedef Set::IndexType     IndexType;
+      typedef Set::PositionType  PositionType;
+      typedef IndexType          ElementType;
 
 
-      typedef boost::counting_iterator<SetElement> iterator;
+      typedef boost::counting_iterator<ElementType> iterator;
       typedef std::pair<iterator,iterator> iterator_pair;
 
       static const NullSet s_nullSet;
 
     public:
-      RangeSet(SetElement size = SetElement(), const Set* parentSet = &s_nullSet )
-            : m_lowerIdx(SetElement())
+      RangeSet(ElementType size = ElementType(), const Set* parentSet = &s_nullSet )
+            : m_lowerIdx(ElementType())
             , m_upperIdx(size)
             , m_parentSet(parentSet) {}
 
-      RangeSet(SetElement lowerIndex, SetElement upperIndex, const Set* parentSet = &s_nullSet )
+      RangeSet(ElementType lowerIndex, ElementType upperIndex, const Set* parentSet = &s_nullSet )
             : m_lowerIdx(lowerIndex)
             , m_upperIdx(upperIndex)
             , m_parentSet(parentSet) {}
 
-      SetPosition size()  const { return (m_upperIdx - m_lowerIdx); }
+      PositionType size()  const { return (m_upperIdx - m_lowerIdx); }
 
       iterator  begin() const  { return iterator(m_lowerIdx); }
       iterator  end()   const  { return iterator(m_upperIdx); }
@@ -54,8 +60,8 @@ namespace meshapi{
       /**
        * \brief Given a position in the Set, return a position in the larger index space
        */
-      SetElement     operator[](SetPosition pos) const { verifyPosition(pos); return pos + m_lowerIdx;}
-      SetElement     at(SetPosition pos)         const { return operator[](pos); }
+      ElementType     operator[](PositionType pos) const { verifyPosition(pos); return pos + m_lowerIdx;}
+      ElementType     at(PositionType pos)         const { return operator[](pos); }
 
       bool isValid(bool verboseOutput = false) const;
 
@@ -64,16 +70,16 @@ namespace meshapi{
 
 
     private:
-      inline void  verifyPosition(SetPosition pos)       const
+      inline void  verifyPosition(PositionType pos)       const
       {
-          ATK_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
+          ATK_ASSERT_MSG( pos < size()
                           , "MeshAPI::RangeSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }
 
     private:
-      SetElement m_lowerIdx;
-      SetElement m_upperIdx;
+      ElementType m_lowerIdx;
+      ElementType m_upperIdx;
       const Set * m_parentSet;
 
     };

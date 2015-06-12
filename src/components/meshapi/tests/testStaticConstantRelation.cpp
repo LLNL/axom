@@ -19,8 +19,8 @@
 using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::StaticConstantRelation;
 
-typedef RangeSet::SetElement ElementType;
-typedef RangeSet::SetPosition PositionType;
+typedef RangeSet::ElementType ElementType;
+typedef RangeSet::PositionType PositionType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 6;

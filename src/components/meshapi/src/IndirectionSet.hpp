@@ -29,12 +29,12 @@ namespace meshapi{
   {
   public:
 
-    typedef Set::SetIndex                               SetIndex;
-    typedef Set::SizeType                               SizeType;
-    typedef Set::SetPosition                            SetPosition;
-    typedef SetPosition                                 SetElement;
+    typedef Set::IndexType                               IndexType;
+    typedef Set::SizeType                                SizeType;
+    typedef Set::PositionType                            PositionType;
+    typedef IndexType                                    ElementType;
 
-    typedef std::vector<SetElement>                     ArrType;
+    typedef std::vector<ElementType>                     ArrType;
     typedef ArrType::iterator                           iterator;
     typedef std::pair<iterator, iterator>               iterator_pair;
 
@@ -54,7 +54,7 @@ namespace meshapi{
        * @return A reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      SetElement&       operator[](SetPosition idx)        { return m_entities[idx];}
+      ElementType&       operator[](PositionType idx)        { return m_entities[idx];}
 
       /**
        * \brief Unchecked random access to the entities of the set (const version)
@@ -62,7 +62,7 @@ namespace meshapi{
        * @return A const reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      SetElement const& operator[](SetPosition idx) const  { return m_entities[idx];}
+      ElementType const& operator[](PositionType idx) const  { return m_entities[idx];}
 
       /**
        * \brief Checked random access to the entities of the set
@@ -71,7 +71,7 @@ namespace meshapi{
        * @return A reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      SetElement&       at(SetPosition idx);
+      ElementType&       at(PositionType idx);
 
       /**
        * \brief Checked random access to the entities of the set (const version)
@@ -80,13 +80,13 @@ namespace meshapi{
        * @return A const reference to the encoded index
        * \pre idx must be less than the number of elements in the set ( size() )
        */
-      SetElement const& at(SetPosition idx) const;
+      ElementType const& at(PositionType idx) const;
 
       /**
        * \brief Get the number of entities in the set
        * @return The number of entities in the set.
        */
-      SetPosition size() const      { return m_entities.size(); }
+      PositionType size() const      { return m_entities.size(); }
 
       /**
        * @return An iterator to the beginning of the entities
@@ -151,7 +151,7 @@ namespace meshapi{
   {
       if(firstSet.size() != otherSet.size() )
           return false;
-      for(SetIndex idx=0; idx< firstSet.size(); ++idx)
+      for(IndexType idx=0; idx< firstSet.size(); ++idx)
       {
           if( firstSet[idx] != otherSet[idx] )
               return false;

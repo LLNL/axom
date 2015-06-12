@@ -26,8 +26,8 @@ namespace meshapi    {
     class Map
     {
     public:
-        typedef Set::SetIndex                                          SetIndex;
-        typedef Set::SetPosition                                       SetPosition;
+        typedef Set::IndexType                                          SetIndex;
+        typedef Set::PositionType                                       SetPosition;
 
         typedef std::vector<DataType>                                  OrderedMap;
 

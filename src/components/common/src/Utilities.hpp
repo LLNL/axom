@@ -224,30 +224,30 @@ namespace utilities
    /*!
     * \brief Fuzzy comparison of two real valued quantities
     *
-    * \param thresh The threshold of the fuzzy comparison.  Default is 1e-8
-    * \return \c true if the absolute value of the difference is less than \param thresh, else false
+    * \param a,b The real valued quantities we are comparing
+    * \param thresh The threshold of the fuzzy comparison.  Default is 1.0e-8
+    * \return \c true if the absolute value of the difference is less than \param thresh and false otherwise
     */
    template<typename RealType>
-   bool compareReals(RealType a, RealType b, RealType thresh = 1e-8)
+   bool compareReals(RealType a, RealType b, RealType thresh = 1.0e-8)
    {
-       return std::fabs(a-b) < thresh;
+       return std::fabs(a-b) <= thresh;
    }
 
    /*!
     * \brief Fuzzy comparison of two real valued quantities
     *
-    * \param thresh The threshold of the fuzzy comparison.  Default is 1e-8
-    * \return \c true if the absolute value of the difference is less than \param thresh, else false
+    * \param a,b The real valued quantities we are comparing
+    * \param relThresh The relative threshold of the fuzzy comparison.  Default is 1.0e-6
+    * \param absThresh The absolute threshold of the fuzzy comparison.  Default is 1.0e-8
+    * \return \c true if the absolute value of the difference is less than the sum of \param absThresh
+    *         and the relative difference (\param relThresh times the absolute max of a and b)
     */
    template<typename RealType>
-   bool compareRealsRelative(RealType a, RealType b, RealType relThresh = 1e-6, RealType absThresh = 1e-8)
+   bool compareRealsRelative(RealType a, RealType b, RealType relThresh = 1.0e-6, RealType absThresh = 1.0e-8)
    {
-       RealType absDiff = std::fabs(a-b);
-       if( absDiff > absThresh)
-           return false;
-
-       RealType dividend = (std::fabs(a) < std::fabs(b) ) ? b : a ;
-       return (absDiff / dividend) <= relThresh;
+       RealType maxFabs = std::max(std::fabs(a), std::fabs(b) );
+       return std::fabs(a-b) <= ( maxFabs * relThresh + absThresh);
    }
 
 

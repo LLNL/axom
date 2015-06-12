@@ -62,9 +62,9 @@ namespace meshapi{
   class Set
   {
   public:
-    typedef MeshIndexType                 SetIndex;         // Index into a set
-    typedef MeshSizeType                 SetPosition;      // Position in which we are indexing
-    typedef MeshIndexType                 SetElement;
+    typedef MeshIndexType                 IndexType;         // Index into a set
+    typedef MeshSizeType                 PositionType;      // Position in which we are indexing
+    typedef MeshIndexType                 ElementType;
 
 
   public:
@@ -74,29 +74,29 @@ namespace meshapi{
 
       /**
        * \brief Random access to the entities of the set
-       * @param idx The index of the desired element
-       * @return The value of the element at the given position
-       * \pre idx must be less than the number of elements in the set ( size() )
+       * \param pos The index of the desired element
+       * \return The value of the element at the given position
+       * \pre pos must be less than the number of elements in the set ( size() )
        * \note How are we planning to handle indexes that are out or range (accidentally)?
        *       How are we planning to handle indexes that are intentionally out of range
        *       (e.g. to indicate a problem, or a missing element etc..)?
        */
-      virtual SetElement at(SetPosition) const  =0;
+      virtual ElementType at(PositionType) const  =0;
 
       /**
        * \brief Get the number of entities in the set
-       * @return The number of entities in the set.
+       * \return The number of entities in the set.
        */
-      virtual SetPosition size() const      =0;
+      virtual PositionType size() const      =0;
 
       /**
        * \brief Determines if the Set is a Subset of another set.
-       * @return true if the set is a subset of another set, otherwise false.
+       * \return true if the set is a subset of another set, otherwise false.
        */
       virtual bool isSubset() const       =0;
 
       /**
-       * @return A pointer to the parent set.  NullSet / NULL if there is no parent.
+       * \return A pointer to the parent set.  NullSet / NULL if there is no parent.
        */
       virtual const Set* parentSet() const           =0;
 
@@ -116,7 +116,7 @@ namespace meshapi{
       /**
        * \brief Utility function to verify that the given SetPosition is in a valid range.
        */
-      virtual void verifyPosition(SetPosition) const =0;
+      virtual void verifyPosition(PositionType) const =0;
   };
 
 
@@ -127,16 +127,16 @@ namespace meshapi{
    */
   inline bool operator==(Set const& set1, Set const& set2)
   {
-      typedef Set::SetPosition SetPosition;
+      typedef Set::PositionType PositionType;
 
-      SetPosition const numElts = set1.size();
+      PositionType const numElts = set1.size();
 
       // Sets are different if they have a different size
       if(set2.size() != numElts)
           return false;
 
       // Otherwise, compare the indices element wise
-      for(SetPosition pos= SetPosition(); pos < numElts; ++pos)
+      for(PositionType pos= PositionType(); pos < numElts; ++pos)
       {
           if(set1.at(pos) != set2.at(pos))
               return false;

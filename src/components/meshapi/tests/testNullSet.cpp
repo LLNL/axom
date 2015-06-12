@@ -21,7 +21,7 @@ TEST(gtest_meshapi_set,subscript_fails_nullset)
 {
     std::cout<<"\n****** Testing subscript access on NullSet -- code is expected to assert and die." << std::endl;
 
-    typedef asctoolkit::meshapi::Set::SetPosition SetPosition;
+    typedef asctoolkit::meshapi::Set::PositionType SetPosition;
     asctoolkit::meshapi::NullSet n;
 
     EXPECT_EQ(n.size(), SetPosition()) <<"size of null set is defined to be zero";

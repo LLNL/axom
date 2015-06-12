@@ -25,10 +25,10 @@ namespace meshapi{
     public:
         NullSet() {}
 
-        inline SetPosition size() const { return SetPosition();}
+        inline PositionType size() const { return PositionType();}
 
-        inline SetElement at(SetPosition pos) const { verifyPosition(pos); return SetPosition();}
-        inline SetElement operator[](SetPosition pos) const { return at(pos);}
+        inline ElementType at(PositionType pos) const { verifyPosition(pos); return PositionType();}
+        inline ElementType operator[](PositionType pos) const { return at(pos);}
 
         inline bool isSubset() const { return false; }
         const Set* parentSet() const { return this; }
@@ -42,7 +42,7 @@ namespace meshapi{
         // iterator_pair range();
 
     private:
-        void verifyPosition(SetPosition pos) const
+        void verifyPosition(PositionType pos) const
         {
             ATK_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
                            << "\n\tAttempted to access item at index " << pos <<".");

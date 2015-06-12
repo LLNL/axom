@@ -14,8 +14,8 @@
 
 typedef asctoolkit::meshapi::RangeSet SetType;
 typedef SetType::iterator SetIterator;
-typedef SetType::SetPosition SetPosition;
-typedef SetType::SetElement SetElement;
+typedef SetType::PositionType SetPosition;
+typedef SetType::ElementType SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
 

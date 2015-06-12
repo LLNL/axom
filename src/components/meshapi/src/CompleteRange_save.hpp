@@ -25,9 +25,9 @@ namespace meshapi{
     class RangeSet  : public Set
     {
     public:
-      typedef Set::SetIndex     SetIndex;
+      typedef Set::IndexType     SetIndex;
       typedef Set::SizeType     SizeType;
-      typedef Set::SetPosition  SetPosition;
+      typedef Set::PositionType  SetPosition;
 
 
       typedef boost::counting_iterator<SetIndex> iterator;
