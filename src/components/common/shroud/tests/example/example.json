@@ -303,7 +303,6 @@
                         "F_subprogram": "function", 
                         "method_name": "getValue", 
                         "method_suffix": "_from_int", 
-                        "overloaded": true, 
                         "rv_decl": "int rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -346,7 +345,6 @@
                         "F_subprogram": "function", 
                         "method_name": "getValue", 
                         "method_suffix": "_1", 
-                        "overloaded": true, 
                         "rv_decl": "long rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -413,9 +411,9 @@
                         "C_return_type": "bool", 
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass1_has_addr", 
-                        "F_arg_c_call": "obj%obj, logical2bool(in)", 
+                        "F_arg_c_call": "obj%obj, logicaltobool(in)", 
                         "F_arguments": "obj, in", 
-                        "F_code": "rv = bool2logical(aa_exclass1_has_addr(obj%obj, logical2bool(in)))", 
+                        "F_code": "rv = booltological(aa_exclass1_has_addr(obj%obj, logicaltobool(in)))", 
                         "F_name_generic": "has_addr", 
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
@@ -726,6 +724,39 @@
                         "name": "declare", 
                         "type": "void"
                     }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void destroyall()", 
+                    "fmt": {
+                        "CPP_name": "destroyall", 
+                        "CPP_this": "selfobj", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_code": "selfobj->destroyall();\nreturn;", 
+                        "C_name": "AA_exclass2_destroyall", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_destroyall", 
+                        "F_arg_c_call": "obj%obj", 
+                        "F_arguments": "obj", 
+                        "F_code": "call aa_exclass2_destroyall(obj%obj)", 
+                        "F_name_generic": "destroyall", 
+                        "F_name_impl": "exclass2_destroyall", 
+                        "F_name_method": "destroyall", 
+                        "F_obj": "obj%obj", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "destroyall", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "destroyall"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "destroyall", 
+                        "type": "void"
+                    }
                 }
             ], 
             "name": "ExClass2", 
@@ -838,9 +869,9 @@
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
-            "f_return_code": "{F_result} = bool2logical({F_C_name}({F_arg_c_call}))", 
+            "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call}))", 
             "f_type": "logical", 
-            "fortran_to_c": "logical2bool({var})"
+            "fortran_to_c": "logicaltobool({var})"
         }, 
         "int": {
             "c_fortran": "integer(C_INT)", 

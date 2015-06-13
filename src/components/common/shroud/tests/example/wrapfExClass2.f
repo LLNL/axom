@@ -13,6 +13,7 @@ module exclass2_mod
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
         procedure :: declare => exclass2_declare
+        procedure :: destroyall => exclass2_destroyall
     end type exclass2
     
     interface
@@ -66,6 +67,13 @@ module exclass2_mod
             integer(C_LONG), value :: len
             type(C_PTR) :: rv
         end function aa_exclass2_declare
+        
+        subroutine aa_exclass2_destroyall(self) &
+                bind(C, name="AA_exclass2_destroyall")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+        end subroutine aa_exclass2_destroyall
     end interface
 
 contains
@@ -133,5 +141,14 @@ contains
         rv = aa_exclass2_declare(obj%obj, type, len)
         ! splicer end
     end function exclass2_declare
+    
+    subroutine exclass2_destroyall(obj)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        ! splicer begin
+        call aa_exclass2_destroyall(obj%obj)
+        ! splicer end
+    end subroutine exclass2_destroyall
 
 end module exclass2_mod

@@ -32,6 +32,8 @@ module sidre_mod
         procedure :: get_num_views => datagroup_get_num_views
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: has_view => datagroup_has_view
+        procedure :: create_view_and_buffer_noargs => datagroup_create_view_and_buffer_noargs
+        procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_view => datagroup_create_view
         procedure :: move_view => datagroup_move_view
@@ -50,7 +52,7 @@ module sidre_mod
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
-        generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
+        generic :: create_view_and_buffer => create_view_and_buffer_noargs, create_view_and_buffer_from_type
     end type datagroup
     
     
@@ -59,9 +61,11 @@ module sidre_mod
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: declare => databuffer_declare
+        procedure :: allocate_noargs => databuffer_allocate_noargs
+        procedure :: allocate_from_type => databuffer_allocate_from_type
         procedure :: reallocate => databuffer_reallocate
         procedure :: get_data => databuffer_get_data
-        generic :: allocate => allocate, allocate_from_type
+        generic :: allocate => allocate_noargs, allocate_from_type
     end type databuffer
     
     
@@ -124,10 +128,11 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datastore_create_buffer
         
-        subroutine atk_datastore_destroy_buffer(id) &
+        subroutine atk_datastore_destroy_buffer(self, id) &
                 bind(C, name="ATK_datastore_destroy_buffer")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
             integer(C_INT), value :: id
         end subroutine atk_datastore_destroy_buffer
         
@@ -139,10 +144,11 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function atk_datastore_get_num_buffers
         
-        subroutine atk_datastore_print() &
+        subroutine atk_datastore_print(self) &
                 bind(C, name="ATK_datastore_print")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
         end subroutine atk_datastore_print
     end interface
     interface
@@ -196,14 +202,14 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function atk_datagroup_has_view
         
-        function atk_datagroup_create_view_and_buffer(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_and_buffer")
+        function atk_datagroup_create_view_and_buffer_noargs(self, name) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_and_buffer_noargs")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_and_buffer
+        end function atk_datagroup_create_view_and_buffer_noargs
         
         function atk_datagroup_create_view_and_buffer_from_type(self, name, type, len) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_and_buffer_from_type")
@@ -254,10 +260,11 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_copy_view
         
-        subroutine atk_datagroup_destroy_view_and_buffer(name) &
+        subroutine atk_datagroup_destroy_view_and_buffer(self, name) &
                 bind(C, name="ATK_datagroup_destroy_view_and_buffer")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
             character(kind=C_CHAR) :: name(*)
         end subroutine atk_datagroup_destroy_view_and_buffer
         
@@ -315,10 +322,11 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_move_group
         
-        subroutine atk_datagroup_destroy_group(name) &
+        subroutine atk_datagroup_destroy_group(self, name) &
                 bind(C, name="ATK_datagroup_destroy_group")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
             character(kind=C_CHAR) :: name(*)
         end subroutine atk_datagroup_destroy_group
         
@@ -349,24 +357,27 @@ module sidre_mod
             type(C_PTR) rv
         end function atk_datagroup_get_group_name
         
-        subroutine atk_datagroup_print() &
+        subroutine atk_datagroup_print(self) &
                 bind(C, name="ATK_datagroup_print")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
         end subroutine atk_datagroup_print
         
-        subroutine atk_datagroup_save(obase, protocol) &
+        subroutine atk_datagroup_save(self, obase, protocol) &
                 bind(C, name="ATK_datagroup_save")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
             character(kind=C_CHAR) :: obase(*)
             character(kind=C_CHAR) :: protocol(*)
         end subroutine atk_datagroup_save
         
-        subroutine atk_datagroup_load(obase, protocol) &
+        subroutine atk_datagroup_load(self, obase, protocol) &
                 bind(C, name="ATK_datagroup_load")
             use iso_c_binding
             implicit none
+            type(C_PTR), value :: self
             character(kind=C_CHAR) :: obase(*)
             character(kind=C_CHAR) :: protocol(*)
         end subroutine atk_datagroup_load
@@ -391,13 +402,13 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_databuffer_declare
         
-        function atk_databuffer_allocate(self) result(rv) &
-                bind(C, name="ATK_databuffer_allocate")
+        function atk_databuffer_allocate_noargs(self) result(rv) &
+                bind(C, name="ATK_databuffer_allocate_noargs")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             type(C_PTR) :: rv
-        end function atk_databuffer_allocate
+        end function atk_databuffer_allocate_noargs
         
         function atk_databuffer_allocate_from_type(self, type, len) result(rv) &
                 bind(C, name="ATK_databuffer_allocate_from_type")
@@ -592,12 +603,13 @@ contains
         ! splicer end
     end function datastore_create_buffer
     
-    subroutine datastore_destroy_buffer(id)
+    subroutine datastore_destroy_buffer(obj, id)
         use iso_c_binding
         implicit none
+        class(datastore) :: obj
         integer(C_INT) :: id
         ! splicer begin
-        call atk_datastore_destroy_buffer(id)
+        call atk_datastore_destroy_buffer(obj%obj, id)
         ! splicer end
     end subroutine datastore_destroy_buffer
     
@@ -611,11 +623,12 @@ contains
         ! splicer end
     end function datastore_get_num_buffers
     
-    subroutine datastore_print()
+    subroutine datastore_print(obj)
         use iso_c_binding
         implicit none
+        class(datastore) :: obj
         ! splicer begin
-        call atk_datastore_print()
+        call atk_datastore_print(obj%obj)
         ! splicer end
     end subroutine datastore_print
     
@@ -677,20 +690,20 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin
-        rv = bool2logical(atk_datagroup_has_view(obj%obj, trim(name) // C_NULL_CHAR))
+        rv = booltological(atk_datagroup_has_view(obj%obj, trim(name) // C_NULL_CHAR))
         ! splicer end
     end function datagroup_has_view
     
-    function datagroup_create_view_and_buffer(obj, name) result(rv)
+    function datagroup_create_view_and_buffer_noargs(obj, name) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
+        rv%obj = atk_datagroup_create_view_and_buffer_noargs(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
-    end function datagroup_create_view_and_buffer
+    end function datagroup_create_view_and_buffer_noargs
     
     function datagroup_create_view_and_buffer_from_type(obj, name, type, len) result(rv)
         use iso_c_binding
@@ -751,12 +764,13 @@ contains
         ! splicer end
     end function datagroup_copy_view
     
-    subroutine datagroup_destroy_view_and_buffer(name)
+    subroutine datagroup_destroy_view_and_buffer(obj, name)
         use iso_c_binding
         implicit none
+        class(datagroup) :: obj
         character(*) :: name
         ! splicer begin
-        call atk_datagroup_destroy_view_and_buffer(trim(name) // C_NULL_CHAR)
+        call atk_datagroup_destroy_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end subroutine datagroup_destroy_view_and_buffer
     
@@ -801,7 +815,7 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin
-        rv = bool2logical(atk_datagroup_has_group(obj%obj, trim(name) // C_NULL_CHAR))
+        rv = booltological(atk_datagroup_has_group(obj%obj, trim(name) // C_NULL_CHAR))
         ! splicer end
     end function datagroup_has_group
     
@@ -827,12 +841,13 @@ contains
         ! splicer end
     end function datagroup_move_group
     
-    subroutine datagroup_destroy_group(name)
+    subroutine datagroup_destroy_group(obj, name)
         use iso_c_binding
         implicit none
+        class(datagroup) :: obj
         character(*) :: name
         ! splicer begin
-        call atk_datagroup_destroy_group(trim(name) // C_NULL_CHAR)
+        call atk_datagroup_destroy_group(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
     end subroutine datagroup_destroy_group
     
@@ -870,31 +885,34 @@ contains
         ! splicer end
     end function datagroup_get_group_name
     
-    subroutine datagroup_print()
+    subroutine datagroup_print(obj)
         use iso_c_binding
         implicit none
+        class(datagroup) :: obj
         ! splicer begin
-        call atk_datagroup_print()
+        call atk_datagroup_print(obj%obj)
         ! splicer end
     end subroutine datagroup_print
     
-    subroutine datagroup_save(obase, protocol)
+    subroutine datagroup_save(obj, obase, protocol)
         use iso_c_binding
         implicit none
+        class(datagroup) :: obj
         character(*) :: obase
         character(*) :: protocol
         ! splicer begin
-        call atk_datagroup_save(trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
+        call atk_datagroup_save(obj%obj, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
         ! splicer end
     end subroutine datagroup_save
     
-    subroutine datagroup_load(obase, protocol)
+    subroutine datagroup_load(obj, obase, protocol)
         use iso_c_binding
         implicit none
+        class(datagroup) :: obj
         character(*) :: obase
         character(*) :: protocol
         ! splicer begin
-        call atk_datagroup_load(trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
+        call atk_datagroup_load(obj%obj, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
         ! splicer end
     end subroutine datagroup_load
     
@@ -920,15 +938,15 @@ contains
         ! splicer end
     end function databuffer_declare
     
-    function databuffer_allocate(obj) result(rv)
+    function databuffer_allocate_noargs(obj) result(rv)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         type(databuffer) :: rv
         ! splicer begin
-        rv%obj = atk_databuffer_allocate(obj%obj)
+        rv%obj = atk_databuffer_allocate_noargs(obj%obj)
         ! splicer end
-    end function databuffer_allocate
+    end function databuffer_allocate_noargs
     
     function databuffer_allocate_from_type(obj, type, len) result(rv)
         use iso_c_binding
@@ -1006,7 +1024,7 @@ contains
         class(dataview) :: obj
         logical :: rv
         ! splicer begin
-        rv = bool2logical(atk_dataview_has_buffer(obj%obj))
+        rv = booltological(atk_dataview_has_buffer(obj%obj))
         ! splicer end
     end function dataview_has_buffer
     
@@ -1016,7 +1034,7 @@ contains
         class(dataview) :: obj
         logical :: rv
         ! splicer begin
-        rv = bool2logical(atk_dataview_is_opaque(obj%obj))
+        rv = booltological(atk_dataview_is_opaque(obj%obj))
         ! splicer end
     end function dataview_is_opaque
     

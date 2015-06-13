@@ -254,7 +254,7 @@ class Wrapf(object):
         fmt_func.F_subprogram    = subprogram
 
         # Add 'this' argument
-        if not is_ctor and (is_dtor or subprogram == 'function'):
+        if not is_ctor:
             arg_c_names.append(C_this)
             arg_c_decl.append('type(C_PTR), value :: ' + C_this)
             arg_c_call.append(fmt_func.F_obj)
@@ -303,9 +303,8 @@ class Wrapf(object):
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
             self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
-            if not fmt_func.overloaded:
-                self.f_type_decl.append('procedure :: %s => %s' % (
-                        F_name_method, fmt_func.F_name_impl))
+            self.f_type_decl.append('procedure :: %s => %s' % (
+                    F_name_method, fmt_func.F_name_impl))
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))

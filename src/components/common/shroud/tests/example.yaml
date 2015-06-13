@@ -116,6 +116,9 @@ classes:
     # typedefs that require modules
     - decl: void* declare(TypeID type, SidreLength len)
 
+    # void function
+    - decl: void destroyall()
+
 
 functions:
   - decl: void local_function1

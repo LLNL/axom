@@ -61,6 +61,15 @@ return rv;
 // splicer end
 }
 
+void AA_exclass2_destroyall(AA_exclass2 * self)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin
+selfobj->destroyall();
+return;
+// splicer end
+}
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

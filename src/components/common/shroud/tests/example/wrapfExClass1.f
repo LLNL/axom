@@ -13,6 +13,8 @@ module exclass1_mod
         procedure :: get_name => exclass1_get_name
         procedure :: get_name_length => exclass1_get_name_length
         procedure :: get_root => exclass1_get_root
+        procedure :: get_value_from_int => exclass1_get_value_from_int
+        procedure :: get_value_1 => exclass1_get_value_1
         procedure :: get_addr => exclass1_get_addr
         procedure :: has_addr => exclass1_has_addr
         generic :: get_value => get_value_from_int, get_value_1
@@ -207,7 +209,7 @@ contains
         logical :: in
         logical :: rv
         ! splicer begin
-        rv = bool2logical(aa_exclass1_has_addr(obj%obj, logical2bool(in)))
+        rv = booltological(aa_exclass1_has_addr(obj%obj, logicaltobool(in)))
         ! splicer end
     end function exclass1_has_addr
 

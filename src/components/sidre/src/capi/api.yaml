@@ -92,7 +92,7 @@ classes:
     -  decl: bool hasView( const string& name )
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *createViewAndBuffer( const string& name )
-       method_suffix:
+       method_suffix: _noargs
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
        method_suffix: _from_type
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
@@ -143,7 +143,7 @@ classes:
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
-        method_suffix:
+        method_suffix: _noargs
       - decl: DataBuffer* allocate(TypeID type, SidreLength len)
         method_suffix: _from_type
 #      - decl: DataBuffer* allocate(const Schema &schema)

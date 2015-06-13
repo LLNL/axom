@@ -34,7 +34,7 @@ return rv;
 // splicer end
 }
 
-ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self)
+ATK_databuffer * ATK_databuffer_allocate_noargs(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
 // splicer begin

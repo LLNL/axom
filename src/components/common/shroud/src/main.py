@@ -124,9 +124,9 @@ class Schema(object):
                 c_type    = 'bool',
                 cpp_type  = 'bool',
                 c_fortran = 'logical(C_BOOL)',
-                fortran_to_c  = 'logical2bool({var})',
+                fortran_to_c  = 'logicaltobool({var})',
                 f_type    = 'logical',
-                f_return_code = '{F_result} = bool2logical({F_C_name}({F_arg_c_call}))',
+                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call}))',
                 ),
             string = util.Typedef('string',  # implies null terminated string
                 c_type   = 'char',    # XXX - char *
@@ -240,7 +240,7 @@ class Schema(object):
         for mname, methods in overloaded_methods.items():
             if len(methods) > 1:
                 for i, method in enumerate(methods):
-                    method['fmt'].overloaded = True
+#                    method['fmt'].overloaded = True
                     if 'method_suffix' not in method:
                         method['fmt'].method_suffix =  '_%d' % i
 
