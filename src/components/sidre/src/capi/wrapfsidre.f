@@ -53,7 +53,6 @@ module sidre_mod
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
         generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
-        generic :: print => print, print
     end type datagroup
     
     
@@ -67,8 +66,6 @@ module sidre_mod
         procedure :: reallocate => databuffer_reallocate
         procedure :: get_data => databuffer_get_data
         generic :: allocate => allocate, allocate_from_type
-        generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
-        generic :: print => print, print
     end type databuffer
     
     
@@ -88,14 +85,6 @@ module sidre_mod
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_number_of_elements => dataview_get_number_of_elements
-        generic :: allocate => allocate, allocate_from_type, allocate
-        generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
-        generic :: declare => declare, declare
-        generic :: get_buffer => get_buffer, get_buffer
-        generic :: get_data => get_data, get_data
-        generic :: get_name => get_name, get_name
-        generic :: print => print, print
-        generic :: reallocate => reallocate, reallocate
     end type dataview
     
     interface

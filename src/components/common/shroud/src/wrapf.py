@@ -33,10 +33,12 @@ class Wrapf(object):
 
     def _begin_file(self):
         """Start a new class for output"""
-        self.f_type = []
-        self.f_type_generic = {} # look for generic methods
+        self.f_type_decl = []
         self.c_interface = []
         self.impl = []         # implementation
+
+    def _begin_class(self):
+        self.f_type_generic = {} # look for generic methods
 
     def _c_type(self, arg):
         """
@@ -129,6 +131,7 @@ class Wrapf(object):
 
         self._begin_file()
         for node in self.tree['classes']:
+            self._begin_class()
             self.c_interface.append('interface')
             self.c_interface.append(1)
 
@@ -164,7 +167,7 @@ class Wrapf(object):
             fmt_class.F_this = options.F_this
 
         unname = util.un_camel(name)
-        self.f_type.extend([
+        self.f_type_decl.extend([
                 '',
                 wformat('type {F_derived_name}', fmt_class),
                 1,
@@ -179,10 +182,10 @@ class Wrapf(object):
         for key in sorted(self.f_type_generic.keys()):
             methods = self.f_type_generic[key]
             if len(methods) > 1:
-                self.f_type.append('generic :: %s => %s' % (
+                self.f_type_decl.append('generic :: %s => %s' % (
                         key, ', '.join(methods)))
 
-        self.f_type.extend([
+        self.f_type_decl.extend([
                 -1,
                  wformat('end type {F_derived_name}', fmt_class),
                  ''
@@ -301,7 +304,7 @@ class Wrapf(object):
             F_name_generic = fmt_func.F_name_generic
             F_name_impl = fmt_func.F_name_impl
             self.f_type_generic.setdefault(F_name_generic,[]).append(F_name_method)
-            self.f_type.append('procedure :: %s => %s' % (
+            self.f_type_decl.append('procedure :: %s => %s' % (
                     F_name_method, F_name_impl))
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
@@ -388,7 +391,7 @@ class Wrapf(object):
         else:
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
 
-        output.extend(self.f_type)
+        output.extend(self.f_type_decl)
 
         output.extend(self.c_interface)
 
