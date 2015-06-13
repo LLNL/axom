@@ -26,6 +26,9 @@ typedef:
     cpp_type : IndexType
     c_fortran: integer(C_INT)
     f_type   : integer(C_INT)
+    f_module : 
+      iso_c_binding:
+      - C_INT
 
   SidreLength:
 # defined in SidreTypes.hpp
@@ -34,6 +37,9 @@ typedef:
     cpp_type : SidreLength
     c_fortran: integer(C_LONG)
     f_type   : integer(C_LONG)
+    f_module : 
+      iso_c_binding:
+      - C_LONG
 
   TypeID:
     # enum for types
@@ -43,6 +49,9 @@ typedef:
     c_to_cpp :  getTypeID({var})
     c_fortran: integer(C_INT)
     f_type   : integer(C_INT)
+    f_module : 
+      iso_c_binding:
+      - C_INT
 
 # XXX
 # parameters:

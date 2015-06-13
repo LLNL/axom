@@ -7,6 +7,8 @@
 #ifndef WRAPEXCLASS2_H
 #define WRAPEXCLASS2_H
 
+#include "sidre/SidreTypes.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,6 +33,8 @@ const char * AA_exclass2_get_name(const AA_exclass2 * self);
 const int AA_exclass2_get_name_length(const AA_exclass2 * self);
 
 AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in);
+
+void * AA_exclass2_declare(AA_exclass2 * self, int type, ATK_SidreLength len);
 
 #ifdef __cplusplus
 }

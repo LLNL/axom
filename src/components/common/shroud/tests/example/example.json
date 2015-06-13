@@ -455,7 +455,10 @@
                 ], 
                 [
                     "iso_c_binding", 
-                    []
+                    [
+                        "C_INT", 
+                        "C_LONG"
+                    ]
                 ]
             ], 
             "fmt": {
@@ -676,6 +679,53 @@
                         "name": "get_class1", 
                         "type": "ExClass1"
                     }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }, 
+                        {
+                            "attrs": {}, 
+                            "name": "len", 
+                            "type": "SidreLength"
+                        }
+                    ], 
+                    "decl": "void* declare(TypeID type, SidreLength len)", 
+                    "fmt": {
+                        "CPP_name": "declare", 
+                        "CPP_this": "selfobj", 
+                        "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
+                        "C_call_list": "getTypeID(type), len", 
+                        "C_code": "void * rv = selfobj->declare(getTypeID(type), len);\nreturn rv;", 
+                        "C_name": "AA_exclass2_declare", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void *", 
+                        "F_C_arguments": "self, type, len", 
+                        "F_C_name": "aa_exclass2_declare", 
+                        "F_arg_c_call": "obj%obj, type, len", 
+                        "F_arguments": "obj, type, len", 
+                        "F_code": "rv = aa_exclass2_declare(obj%obj, type, len)", 
+                        "F_name_generic": "declare", 
+                        "F_name_impl": "exclass2_declare", 
+                        "F_name_method": "declare", 
+                        "F_obj": "obj%obj", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "declare", 
+                        "rv_decl": "void * rv", 
+                        "underscore_name": "declare"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }
                 }
             ], 
             "name": "ExClass2", 
@@ -759,6 +809,30 @@
             "fortran_derived": "exclass2", 
             "fortran_to_c": "{var}%obj", 
             "forward": "ExClass2"
+        }, 
+        "SidreLength": {
+            "c_fortran": "integer(C_LONG)", 
+            "c_header": "sidre/SidreTypes.h", 
+            "c_type": "ATK_SidreLength", 
+            "cpp_type": "SidreLength", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "TypeID": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "sidre/SidreTypes.h", 
+            "c_to_cpp": "getTypeID({var})", 
+            "c_type": "int", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
         }, 
         "bool": {
             "c_fortran": "logical(C_BOOL)", 

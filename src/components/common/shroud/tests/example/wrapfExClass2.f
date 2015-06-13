@@ -4,7 +4,7 @@
 module exclass2_mod
     use fstr_mod
     use exclass1_mod, only : exclass1
-    use iso_c_binding
+    use iso_c_binding, only : C_INT, C_LONG
     
     type exclass2
         type(C_PTR) obj
@@ -12,6 +12,7 @@ module exclass2_mod
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
+        procedure :: declare => exclass2_declare
     end type exclass2
     
     interface
@@ -55,6 +56,16 @@ module exclass2_mod
             type(C_PTR) :: in
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
+        
+        function aa_exclass2_declare(self, type, len) result(rv) &
+                bind(C, name="AA_exclass2_declare")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_INT), value :: type
+            integer(C_LONG), value :: len
+            type(C_PTR) :: rv
+        end function aa_exclass2_declare
     end interface
 
 contains
@@ -105,5 +116,16 @@ contains
         rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)
         ! splicer end
     end function exclass2_get_class1
+    
+    function exclass2_declare(obj, type, len) result(rv)
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(C_PTR) :: rv
+        ! splicer begin
+        rv = aa_exclass2_declare(obj%obj, type, len)
+        ! splicer end
+    end function exclass2_declare
 
 end module exclass2_mod

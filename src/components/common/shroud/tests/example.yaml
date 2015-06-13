@@ -14,6 +14,31 @@ typedef:
   other:
     cpp_type: junk
 
+
+  SidreLength:
+# defined in SidreTypes.hpp
+    c_header : sidre/SidreTypes.h
+    c_type   : ATK_SidreLength
+    cpp_type : SidreLength
+    c_fortran: integer(C_LONG)
+    f_type   : integer(C_LONG)
+#    f_module : iso_c_binding:C_LONG
+    f_module : 
+      iso_c_binding:
+      - C_LONG
+
+  TypeID:
+    # enum for types
+    c_header : sidre/SidreTypes.h
+    c_type   : int
+#    cpp_type: DataType::
+    c_to_cpp :  getTypeID({var})
+    c_fortran: integer(C_INT)
+    f_type   : integer(C_INT)
+    f_module :
+      iso_c_binding:
+      -  C_INT
+
 classes:
   - name: ExClass1
     options:
@@ -87,6 +112,9 @@ classes:
 
     # test forward declarations
     - decl: ExClass1 *get_class1(ExClass1 *in)
+
+    # typedefs that require modules
+    - decl: void* declare(TypeID type, SidreLength len)
 
 
 functions:
