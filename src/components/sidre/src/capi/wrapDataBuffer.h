@@ -31,7 +31,7 @@ ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
 ATK_databuffer * ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len);
 
-ATK_databuffer * ATK_databuffer_allocate_noargs(ATK_databuffer * self);
+ATK_databuffer * ATK_databuffer_allocate(ATK_databuffer * self);
 
 ATK_databuffer * ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len);
 

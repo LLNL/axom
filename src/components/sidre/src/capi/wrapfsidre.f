@@ -32,7 +32,7 @@ module sidre_mod
         procedure :: get_num_views => datagroup_get_num_views
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: has_view => datagroup_has_view
-        procedure :: create_view_and_buffer_noargs => datagroup_create_view_and_buffer_noargs
+        procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
         procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_view => datagroup_create_view
@@ -52,7 +52,7 @@ module sidre_mod
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
-        generic :: create_view_and_buffer => create_view_and_buffer_noargs, create_view_and_buffer_from_type
+        generic :: create_view_and_buffer => create_view_and_buffer, create_view_and_buffer_from_type
     end type datagroup
     
     
@@ -61,11 +61,11 @@ module sidre_mod
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: declare => databuffer_declare
-        procedure :: allocate_noargs => databuffer_allocate_noargs
+        procedure :: allocate => databuffer_allocate
         procedure :: allocate_from_type => databuffer_allocate_from_type
         procedure :: reallocate => databuffer_reallocate
         procedure :: get_data => databuffer_get_data
-        generic :: allocate => allocate_noargs, allocate_from_type
+        generic :: allocate => allocate, allocate_from_type
     end type databuffer
     
     
@@ -202,14 +202,14 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function atk_datagroup_has_view
         
-        function atk_datagroup_create_view_and_buffer_noargs(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_and_buffer_noargs")
+        function atk_datagroup_create_view_and_buffer(self, name) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_and_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_and_buffer_noargs
+        end function atk_datagroup_create_view_and_buffer
         
         function atk_datagroup_create_view_and_buffer_from_type(self, name, type, len) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_and_buffer_from_type")
@@ -402,13 +402,13 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_databuffer_declare
         
-        function atk_databuffer_allocate_noargs(self) result(rv) &
-                bind(C, name="ATK_databuffer_allocate_noargs")
+        function atk_databuffer_allocate(self) result(rv) &
+                bind(C, name="ATK_databuffer_allocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             type(C_PTR) :: rv
-        end function atk_databuffer_allocate_noargs
+        end function atk_databuffer_allocate
         
         function atk_databuffer_allocate_from_type(self, type, len) result(rv) &
                 bind(C, name="ATK_databuffer_allocate_from_type")
@@ -637,7 +637,6 @@ contains
         implicit none
         class(datagroup) :: obj
         character(kind=C_CHAR, len=1) :: rv
-        type(C_PTR) :: rv_ptr
         ! splicer begin
         rv = fstr(atk_datagroup_get_name(obj%obj))
         ! splicer end
@@ -694,16 +693,16 @@ contains
         ! splicer end
     end function datagroup_has_view
     
-    function datagroup_create_view_and_buffer_noargs(obj, name) result(rv)
+    function datagroup_create_view_and_buffer(obj, name) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_datagroup_create_view_and_buffer_noargs(obj%obj, trim(name) // C_NULL_CHAR)
+        rv%obj = atk_datagroup_create_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
         ! splicer end
-    end function datagroup_create_view_and_buffer_noargs
+    end function datagroup_create_view_and_buffer
     
     function datagroup_create_view_and_buffer_from_type(obj, name, type, len) result(rv)
         use iso_c_binding
@@ -802,7 +801,6 @@ contains
         class(datagroup) :: obj
         integer(C_INT) :: idx
         character(kind=C_CHAR, len=1) :: rv
-        type(C_PTR) :: rv_ptr
         ! splicer begin
         rv = fstr(atk_datagroup_get_view_name(obj%obj, idx))
         ! splicer end
@@ -879,7 +877,6 @@ contains
         class(datagroup) :: obj
         integer(C_INT) :: idx
         character(kind=C_CHAR, len=1) :: rv
-        type(C_PTR) :: rv_ptr
         ! splicer begin
         rv = fstr(atk_datagroup_get_group_name(obj%obj, idx))
         ! splicer end
@@ -938,15 +935,15 @@ contains
         ! splicer end
     end function databuffer_declare
     
-    function databuffer_allocate_noargs(obj) result(rv)
+    function databuffer_allocate(obj) result(rv)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         type(databuffer) :: rv
         ! splicer begin
-        rv%obj = atk_databuffer_allocate_noargs(obj%obj)
+        rv%obj = atk_databuffer_allocate(obj%obj)
         ! splicer end
-    end function databuffer_allocate_noargs
+    end function databuffer_allocate
     
     function databuffer_allocate_from_type(obj, type, len) result(rv)
         use iso_c_binding
@@ -1043,7 +1040,6 @@ contains
         implicit none
         class(dataview) :: obj
         character(kind=C_CHAR, len=1) :: rv
-        type(C_PTR) :: rv_ptr
         ! splicer begin
         rv = fstr(atk_dataview_get_name(obj%obj))
         ! splicer end

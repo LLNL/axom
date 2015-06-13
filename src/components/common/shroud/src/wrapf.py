@@ -289,7 +289,6 @@ class Wrapf(object):
                 arg_f_decl.append(
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
                             fmt_func))
-                arg_f_decl.append('type(C_PTR) :: rv_ptr')
             else:
                 # XXX - make sure ptr is set to avoid VALUE
                 arg_dict = dict(name=F_result,

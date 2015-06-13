@@ -23,7 +23,7 @@ set(sidre_generated_source
     wrapDataBuffer.cpp
     wrapDataView.cpp
     fstr_mod.f
-    wrapfsidre.f
+#    wrapfsidre.f
     )
 
 #set(API_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})

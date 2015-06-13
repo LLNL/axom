@@ -103,7 +103,6 @@ contains
         implicit none
         class(exclass2) :: obj
         character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%obj)) :: rv
-        type(C_PTR) :: rv_ptr
         ! splicer begin
         rv = fstr(aa_exclass2_get_name(obj%obj))
         ! splicer end
