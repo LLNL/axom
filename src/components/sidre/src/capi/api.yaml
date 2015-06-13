@@ -13,8 +13,10 @@ copyright:
   -
 
 options:
+  library: SiDRe
   C_prefix: ATK_
   namespace: asctoolkit sidre
+  F_module_per_class: False
 
 typedef:
   IndexType:
