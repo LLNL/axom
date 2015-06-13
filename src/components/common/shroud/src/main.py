@@ -71,12 +71,12 @@ class Schema(object):
             namespace='',
             cpp_header='',
 
-            C_this='self',   # object argument name
-            F_this='obj',    # object argument name
-            F_result='rv',   # function result
+#            C_this='self',   # object argument name
+ #           F_this='obj',    # object argument name
+ #           F_result='rv',   # function result
             F_module_per_class=True,
 
-            C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+#            C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
 #            F_name_method_template='{underscore_name}{method_suffix}',
 #            F_name_generic_template='{underscore_name}',
 #            F_name_impl_template  ='{lower_class}_{underscore_name}{method_suffix}',

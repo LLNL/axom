@@ -121,6 +121,9 @@ class Wrapf(object):
 
     def wrap_library(self):
         options = self.tree['options']
+        fmt_library = self.tree['fmt']
+        fmt_library.F_this = options.get('F_this', 'obj')
+        fmt_library.F_result = options.get('F_result', 'rv')
 
         self._begin_file()
         for node in self.tree['classes']:
@@ -152,11 +155,11 @@ class Wrapf(object):
         name = node['name']
         typedef = self.typedef[name]
 
+        options = node['options']
         fmt_class = node['fmt']
-        fmt_class.update(dict(
-                F_derived_name = typedef.fortran_derived,
-                F_this = node['options'].F_this,
-                ))
+        fmt_class.F_derived_name = typedef.fortran_derived
+        if hasattr(options, 'F_this'):
+            fmt_class.F_this = options.F_this
 
         unname = util.un_camel(name)
         self.f_type.extend([
@@ -200,15 +203,17 @@ class Wrapf(object):
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
         result_typedef = self.typedef[result_type]
-        C_this = options.C_this
-        F_result = options.F_result
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
         fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
-        fmt_func.F_this = options.F_this
-        fmt_func.F_result=F_result
+        if hasattr(options, 'F_this'):
+            fmt_func.F_this = options.F_this
+        if hasattr(options, 'F_result'):
+            fmt_func.F_result = options.F_result
+        F_result = fmt_func.F_result
+        C_this = fmt_func.C_this
 
         if hasattr(options, 'F_C_name'):
             fmt_func.F_C_name = options.F_C_name

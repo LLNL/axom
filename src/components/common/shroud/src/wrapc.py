@@ -78,6 +78,8 @@ class Wrapc(object):
 
     def wrap_library(self):
         options = self.tree['options']
+        fmt_library = self.tree['fmt']
+        fmt_library.C_this = options.get('C_this', 'self')
 
         for node in self.tree['classes']:
             fmt_class = node['fmt']
@@ -217,10 +219,13 @@ class Wrapc(object):
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
         result_typedef = self.typedef[result_type]
-        C_this = options.C_this
         is_const = result['attrs'].get('const', False)
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
+
+        if hasattr(options, 'C_this'):
+            fmt_func.C_this = options.C_this
+        C_this = fmt_func.C_this
 
         if result_typedef.c_header:
             # include any dependent header in generated header
