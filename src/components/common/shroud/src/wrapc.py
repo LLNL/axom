@@ -236,8 +236,8 @@ class Wrapc(object):
             self.header_forward[result_typedef.c_type] = True
 
         fmt_func.const = 'const ' if is_const else ''
-        fmt_func.cpp_this = C_this + 'obj'
-        fmt_func.cpp_name = result['name']
+        fmt_func.CPP_this = C_this + 'obj'
+        fmt_func.CPP_name = result['name']
         fmt_func.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
 
         arguments = []
@@ -293,12 +293,12 @@ class Wrapc(object):
             elif is_dtor:
                 lines.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
-                line = wformat('{cpp_this}->{cpp_name}({C_call_list});',
+                line = wformat('{CPP_this}->{CPP_name}({C_call_list});',
                                fmt_func)
                 lines.append(line)
                 lines.append('return;')
             else:
-                line = wformat('{rv_decl} = {cpp_this}->{cpp_name}({C_call_list});',
+                line = wformat('{rv_decl} = {CPP_this}->{CPP_name}({C_call_list});',
                                fmt_func)
                 lines.append(line)
 
