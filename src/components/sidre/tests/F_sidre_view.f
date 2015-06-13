@@ -103,7 +103,7 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(databuffer) dbuff
-!    type(dataview) dv_e, dv_o 
+    type(dataview) dv_e, dv_o 
     type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
@@ -128,8 +128,8 @@ contains
 !--              dbuff->getSchema().total_bytes())
 !--#endif
 
-!    dv_e = root%create_view("even", dbuff)
-!    dv_o = root%create_view("odd", dbuff)
+    dv_e = root%create_view("even", dbuff)
+    dv_o = root%create_view("odd", dbuff)
 
 !--#ifdef XXX
 !--  dv_e->apply(DataType::uint32(5,0,8))
@@ -154,7 +154,7 @@ contains
 !--    EXPECT_EQ(dv_o_ptr[i] % 2, 1u)
 !--  }
 !--#endif
-!    call ds%print()
+    call ds%print()
     call datastore_delete(ds)
   end subroutine int_array_multi_view
 
@@ -218,8 +218,8 @@ contains
 !--    EXPECT_EQ(dv_o_ptr[i] % 2, 1u)
 !--  }
 !--#endif
-!--
-!--     ATK_datastore_print(ds)
+
+    call ds%print()
     call datastore_delete(ds)
   end subroutine init_int_array_multi_view
 
@@ -386,7 +386,7 @@ contains
 !--
 !--  buff_new->getNode().print()
 !--#endif
-!--
+
     call ds%print()
     call datastore_delete(ds)
 
@@ -400,6 +400,11 @@ contains
     !
     type(datastore) ds
     type(datagroup) root
+    type(dataview) a1, a2
+    type(C_PTR) a1_ptr, a2_ptr
+    real(C_FLOAT), pointer :: a1_data(:)
+    integer(C_INT), pointer :: a2_data(:)
+    integer i
 
     ! create our main data store
     ds = datastore_new()
@@ -407,50 +412,45 @@ contains
     ! get access to our root data Group
     root = ds%get_root()
 
-  ! create a view to hold the base buffer
-!--  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", ATK_C_FLOAT_T, 5)
-!--  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", ATK_C_INT_T, 5)
-!--
-!--  float * a1_ptr = (float *) ATK_dataview_get_data_buffer(a1)
-!--  int * a2_ptr = (int *)  ATK_dataview_get_data_buffer(a2)
-!--
-!--  for(int i=0  i<5  i++)
-!--  {
-!--    a1_ptr[i] =  5.0
-!--    a2_ptr[i] = -5
-!--  }
-!--
+    ! create a view to hold the base buffer
+    a1 = root%create_view_and_buffer("a1", ATK_C_FLOAT_T, 5_8)
+    a2 = root%create_view_and_buffer("a2", ATK_C_INT_T, 5_8)
+
+    a1_ptr = a1%get_data_buffer()
+    a2_ptr = a2%get_data_buffer()
+    call c_f_pointer(a1_ptr, a1_data, [ 5 ])
+    call c_f_pointer(a2_ptr, a2_data, [ 5 ])
+
+    do i = 1, 5
+       a1_data(i) =  5.0
+       a2_data(i) = -5
+    enddo
+
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*5)
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
-!--
-!--
-!--  ATK_dataview_reallocate(a1, ATK_C_FLOAT_T, 10)
-!--  ATK_dataview_reallocate(a2, ATK_C_INT_T, 15)
-!--
-!--  a1_ptr = (float *) ATK_dataview_get_data_buffer(a1)
-!--  a2_ptr = (int *) ATK_dataview_get_data_buffer(a2)
-!--
-!--  for(int i=0  i<5  i++)
-!--  {
-!--    EXPECT_EQ(a1_ptr[i],5.0)
-!--    EXPECT_EQ(a2_ptr[i],-5)
-!--  }
-!--
-!--  for(int i=5  i<10  i++)
-!--  {
-!--    a1_ptr[i] = 10.0
-!--    a2_ptr[i] = -10
-!--  }
-!--
-!--  for(int i=10  i<15  i++)
-!--  {
-!--    a2_ptr[i] = -15
-!--  }
-!--
+
+
+    call a1%reallocate(ATK_C_FLOAT_T, 10_8)
+    call a2%reallocate(ATK_C_INT_T, 15_8)
+
+    a1_ptr = a1%get_data_buffer()
+    a2_ptr = a2%get_data_buffer()
+    call c_f_pointer(a1_ptr, a1_data, [ 10 ])
+    call c_f_pointer(a2_ptr, a2_data, [ 15 ])
+
+    do i = 1, 5
+       call assert_equals(a1_data(i), 5.0)
+       call assert_equals(a2_data(i), -5)
+    enddo
+
+    a1_data(6:10) = 10.0
+    a2_data(6:10) = -10
+
+    a2_data(11:15) = -15
+
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*10)
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*15)
-!--
-!--
+
     call ds%print()
     call datastore_delete(ds)
 
@@ -461,30 +461,33 @@ contains
   subroutine simple_opaque()
     type(datastore) ds
     type(datagroup) root
+    type(dataview) opq_view
+    integer(C_INT), target :: src_data
+    integer(C_INT), pointer :: out_data
+    type(C_PTR) src_ptr, opq_ptr
 
     ! create our main data store
     ds = datastore_new()
 
     ! get access to our root data Group
     root = ds%get_root()
-!--  int * src_data = (int *) malloc(sizeof(int))
-!--
-!--  src_data[0] = 42
-!--
-!--  void * src_ptr = (void *)src_data
-!--
-!--  ATK_dataview * opq_view = ATK_datagroup_create_opaque_view(root, "my_opaque",src_ptr)
-!--
-!--  ! we shouldn't have any buffers
-!--  EXPECT_EQ(ATK_datastore_get_num_buffers(ds), 0u)
-!--
-!--  EXPECT_TRUE(ATK_dataview_is_opaque(opq_view))
-!--
-!--  void * opq_ptr = ATK_dataview_get_opaque(opq_view)
-!--
-!--  int * out_data = (int *)opq_ptr
-!--  EXPECT_EQ(opq_ptr,src_ptr)
-!--  EXPECT_EQ(out_data[0],42)
+
+    src_data = 42
+   
+    src_ptr = c_loc(src_data)
+
+    opq_view = root%create_opaque_view("my_opaque", src_ptr)
+
+    ! we shouldn't have any buffers
+!XX    call assert_equals(ds%get_num_buffers(), 0)
+
+    call assert_true(opq_view%is_opaque())
+
+    opq_ptr = opq_view%get_opaque()
+    call c_f_pointer(opq_ptr, out_data)
+
+!XX    call assert_equals(opq_ptr, src_ptr)
+    call assert_equals(out_data, 42)
 
     call ds%print()
     call datastore_delete(ds)
