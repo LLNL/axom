@@ -243,18 +243,6 @@ class Wrapc(object):
             # i.e. This method returns a wrapped type
             self.header_forward[result_typedef.c_type] = True
 
-        fmt_func = dict(
-            method_name=result['name'],
-            underscore_name=util.un_camel(result['name']),
-            method_suffix = node.get('method_suffix', ''),
-
-            const='const ' if is_const else '',
-            this=C_this,
-            cpp_this = C_this + 'obj',
-            cpp_name = result['name'],
-            rv_decl = self._c_decl('cpp_type', result, name='rv'),  # return value
-            )
-        fmt_func.update(self.fmt_class)
         fmt2_func.update(dict(
                 const='const ' if is_const else '',
                 this=C_this,
@@ -289,12 +277,12 @@ class Wrapc(object):
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
                 self.header_forward[arg_typedef.c_type] = True
-        fmt_func['call_list'] = ', '.join(anames)
+        fmt2_func.C_call_list = ', '.join(anames)
 
         if 'C_name' not in node:
             node['C_name'] = wformat(
                 options.C_name_method_template,
-                fmt_func)
+                fmt2_func)
 
         if 'C_return_type' not in node:
             node['C_return_type'] = self._c_type('c_type', result)
@@ -304,10 +292,10 @@ class Wrapc(object):
 
         if 'C_object' not in node:
             if is_ctor:
-                template = '{const}{cpp_class} *{this}obj = new {cpp_class}({call_list});'
+                template = '{const}{cpp_class} *{this}obj = new {cpp_class}({C_call_list});'
             else:
                 template = '{const}{cpp_class} *{this}obj = static_cast<{const}{cpp_class} *>({this});'
-            node['C_object'] = wformat(template, fmt_func)
+            node['C_object'] = wformat(template, fmt2_func)
 
         if 'C_code' not in node:
             # generate the C body
@@ -317,13 +305,13 @@ class Wrapc(object):
             elif is_dtor:
                 lines.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
-                line = wformat('{cpp_this}->{cpp_name}({call_list});',
-                               fmt_func)
+                line = wformat('{cpp_this}->{cpp_name}({C_call_list});',
+                               fmt2_func)
                 lines.append(line)
                 lines.append('return;')
             else:
-                line = wformat('{rv_decl} = {cpp_this}->{cpp_name}({call_list});',
-                               fmt_func)
+                line = wformat('{rv_decl} = {cpp_this}->{cpp_name}({C_call_list});',
+                               fmt2_func)
                 lines.append(line)
 
                 ret = result_typedef.cpp_to_c

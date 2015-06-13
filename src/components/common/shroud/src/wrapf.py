@@ -219,17 +219,7 @@ class Wrapf(object):
         is_dtor  = result['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
-        XXXfmt_func = dict(
-            method_name=result['name'],
-            underscore_name=util.un_camel(result['name']),
-            method_suffix = node.get('method_suffix', ''),
-
-            F_this=options.F_this,
-            F_result=F_result,
-            C_name=node['C_name'],
-            )
         fmt2_func.F_obj = wformat('{F_this}%{F_this}', fmt2_func)
-#        fmt_func.update(self.fmt_class)
         fmt2_func.update(dict(
             F_this=options.F_this,
             F_result=F_result,

@@ -56,6 +56,7 @@
                     "decl": "ExClass1 *new+constructor ( const string *name )", 
                     "docs": "constructor", 
                     "fmt": {
+                        "C_call_list": "name", 
                         "C_name": "AA_exclass1_new", 
                         "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass1_new", 
@@ -102,6 +103,7 @@
                     "args": [], 
                     "decl": "void delete+destructor", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass1_delete", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_delete", 
@@ -154,6 +156,7 @@
                     "decl": "int incrementCount(int incr)", 
                     "docs": "blah blah", 
                     "fmt": {
+                        "C_call_list": "incr", 
                         "C_name": "AA_exclass1_increment_count", 
                         "F_C_arguments": "self, incr", 
                         "F_C_name": "aa_exclass1_increment_count", 
@@ -197,6 +200,7 @@
                     "args": [], 
                     "decl": "const string& getName()", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name", 
@@ -244,6 +248,7 @@
                     "F_code": "rv = aa_exclass1_get_name_length(obj%obj)", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_length", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_length", 
@@ -290,6 +295,7 @@
                     "args": [], 
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_root", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_root", 
@@ -341,6 +347,7 @@
                     ], 
                     "decl": "int  getValue(int value)", 
                     "fmt": {
+                        "C_call_list": "value", 
                         "C_name": "AA_exclass1_get_value_from_int", 
                         "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_from_int", 
@@ -391,6 +398,7 @@
                     ], 
                     "decl": "long getValue(long value)", 
                     "fmt": {
+                        "C_call_list": "value", 
                         "C_name": "AA_exclass1_get_value_1", 
                         "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_1", 
@@ -435,6 +443,7 @@
                     "args": [], 
                     "decl": "void *getAddr()", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_addr", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_addr", 
@@ -486,6 +495,7 @@
                     ], 
                     "decl": "bool hasAddr(bool in)", 
                     "fmt": {
+                        "C_call_list": "in", 
                         "C_name": "AA_exclass1_has_addr", 
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass1_has_addr", 
@@ -577,6 +587,7 @@
                     ], 
                     "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
                     "fmt": {
+                        "C_call_list": "name", 
                         "C_name": "AA_exclass2_ex_class2", 
                         "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass2_ex_class2", 
@@ -623,6 +634,7 @@
                     "args": [], 
                     "decl": "void ExClass1+destructor", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass2_ex_class1", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_ex_class1", 
@@ -668,6 +680,7 @@
                     "args": [], 
                     "decl": "const string& getName", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name", 
@@ -715,6 +728,7 @@
                     "F_code": "rv = aa_exclass2_get_name_length(obj%obj)", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
+                        "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name_length", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name_length", 
@@ -769,6 +783,7 @@
                     ], 
                     "decl": "ExClass1 *get_class1(ExClass1 *in)", 
                     "fmt": {
+                        "C_call_list": "static_cast<ExClass1 *>(in)", 
                         "C_name": "AA_exclass2_get_class1", 
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass2_get_class1", 
