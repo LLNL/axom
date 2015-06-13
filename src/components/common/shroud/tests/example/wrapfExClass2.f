@@ -71,6 +71,7 @@ module exclass2_mod
 contains
     
     function exclass2_ex_class2(name) result(rv)
+        use iso_c_binding
         implicit none
         character(*) :: name
         type(exclass2) :: rv
@@ -80,6 +81,7 @@ contains
     end function exclass2_ex_class2
     
     subroutine exclass2_ex_class1(obj)
+        use iso_c_binding
         implicit none
         type(exclass2) :: obj
         ! splicer begin
@@ -89,6 +91,7 @@ contains
     end subroutine exclass2_ex_class1
     
     function exclass2_get_name(obj) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass2) :: obj
         character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%obj)) :: rv
@@ -99,6 +102,7 @@ contains
     end function exclass2_get_name
     
     function exclass2_get_name_length(obj) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: rv
@@ -108,6 +112,7 @@ contains
     end function exclass2_get_name_length
     
     function exclass2_get_class1(obj, in) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass2) :: obj
         type(exclass1) :: in
@@ -118,6 +123,7 @@ contains
     end function exclass2_get_class1
     
     function exclass2_declare(obj, type, len) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: type

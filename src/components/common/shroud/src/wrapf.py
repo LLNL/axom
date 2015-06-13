@@ -238,6 +238,7 @@ class Wrapf(object):
 
         arg_f_names = [ ]
         arg_f_decl = [ ]
+        arg_f_use  = [ 'use iso_c_binding' ]  # XXX totally brain dead for now
 
         # find subprogram type
         # compute first to get order of arguments correct.
@@ -301,12 +302,10 @@ class Wrapf(object):
         if not is_ctor and not is_dtor:
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
-            F_name_generic = fmt_func.F_name_generic
-            F_name_impl = fmt_func.F_name_impl
-            self.f_type_generic.setdefault(F_name_generic,[]).append(F_name_method)
+            self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
             if not fmt_func.overloaded:
                 self.f_type_decl.append('procedure :: %s => %s' % (
-                        F_name_method, F_name_impl))
+                        F_name_method, fmt_func.F_name_impl))
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
@@ -350,6 +349,7 @@ class Wrapf(object):
         impl.append('')
         impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt_func))
         impl.append(1)
+        impl.extend(arg_f_use)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
         impl.append('! splicer begin')

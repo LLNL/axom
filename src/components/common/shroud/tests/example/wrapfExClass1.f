@@ -107,6 +107,7 @@ module exclass1_mod
 contains
     
     function exclass1_new(name) result(rv)
+        use iso_c_binding
         implicit none
         character(*) :: name
         type(exclass1) :: rv
@@ -116,6 +117,7 @@ contains
     end function exclass1_new
     
     subroutine exclass1_delete(obj)
+        use iso_c_binding
         implicit none
         type(exclass1) :: obj
         ! splicer begin
@@ -125,6 +127,7 @@ contains
     end subroutine exclass1_delete
     
     function exclass1_increment_count(obj, incr) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         integer(C_INT) :: incr
@@ -135,6 +138,7 @@ contains
     end function exclass1_increment_count
     
     function exclass1_get_name(obj) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%obj)) :: rv
@@ -145,6 +149,7 @@ contains
     end function exclass1_get_name
     
     function exclass1_get_name_length(obj) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         integer(C_INT) :: rv
@@ -154,6 +159,7 @@ contains
     end function exclass1_get_name_length
     
     function exclass1_get_root(obj) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         type(exclass2) :: rv
@@ -163,6 +169,7 @@ contains
     end function exclass1_get_root
     
     function exclass1_get_value_from_int(obj, value) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         integer(C_INT) :: value
@@ -173,6 +180,7 @@ contains
     end function exclass1_get_value_from_int
     
     function exclass1_get_value_1(obj, value) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         integer(C_LONG) :: value
@@ -183,6 +191,7 @@ contains
     end function exclass1_get_value_1
     
     function exclass1_get_addr(obj) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         type(C_PTR) :: rv
@@ -192,6 +201,7 @@ contains
     end function exclass1_get_addr
     
     function exclass1_has_addr(obj, in) result(rv)
+        use iso_c_binding
         implicit none
         class(exclass1) :: obj
         logical :: in
