@@ -242,9 +242,9 @@ class Wrapf(object):
             result_clause = ' result(%s)' % F_result
             if is_const:
                 pure_clause = 'pure '
-        fmt_func.subprogram   = subprogram
-        fmt_func.result_clause = result_clause
-        fmt_func.pure_clause   = pure_clause
+        fmt_func.F_subprogram    = subprogram
+        fmt_func.F_result_clause = result_clause
+        fmt_func.F_pure_clause   = pure_clause
 
         # Add 'this' argument
         if not is_ctor and (is_dtor or subprogram == 'function'):
@@ -301,7 +301,7 @@ class Wrapf(object):
             self.f_type.append('procedure :: %s => %s' % (
                     F_name_method, F_name_impl))
 
-        fmt_func.arg_c_call = ', '.join(arg_c_call)
+        fmt_func.F_arg_c_call = ', '.join(arg_c_call)
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
         fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
@@ -310,13 +310,13 @@ class Wrapf(object):
         else:
             lines = []
             if is_ctor:
-                lines.append(wformat('{F_result}%{F_this} = {F_C_name}({arg_c_call})', fmt_func))
+                lines.append(wformat('{F_result}%{F_this} = {F_C_name}({F_arg_c_call})', fmt_func))
             elif subprogram == 'function':
                 fmt = result_typedef.f_return_code
                 lines.append(wformat(fmt, fmt_func))
 
             else:
-                lines.append(wformat('call {F_C_name}({arg_c_call})', fmt_func))
+                lines.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
 
             if is_dtor:
                 lines.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt_func))
@@ -326,18 +326,18 @@ class Wrapf(object):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{pure_clause}{subprogram} {F_C_name}({F_C_arguments}){result_clause} bind(C, name="{C_name}")',
+                '{F_pure_clause}{F_subprogram} {F_C_name}({F_C_arguments}){F_result_clause} bind(C, name="{C_name}")',
                 fmt_func))
         c_interface.append(1)
         c_interface.append('use iso_c_binding')
         c_interface.append('implicit none')
         c_interface.extend(arg_c_decl)
         c_interface.append(-1)
-        c_interface.append(wformat('end {subprogram} {F_C_name}', fmt_func))
+        c_interface.append(wformat('end {F_subprogram} {F_C_name}', fmt_func))
 
         impl = self.impl
         impl.append('')
-        impl.append(wformat('{subprogram} {F_name_impl}({F_arguments}){result_clause}', fmt_func))
+        impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt_func))
         impl.append(1)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
@@ -345,7 +345,7 @@ class Wrapf(object):
         impl.append(fmt_func.F_code)
         impl.append('! splicer end')
         impl.append(-1)
-        impl.append(wformat('end {subprogram} {F_name_impl}', fmt_func))
+        impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
     def wrap_function(self, node):
         """

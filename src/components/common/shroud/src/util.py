@@ -94,7 +94,7 @@ class Typedef(object):
         fortran_derived=None,    # Fortran derived type name
         fortran_to_c='{var}', # expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)
-        f_return_code='{F_result} = {F_C_name}({arg_c_call})',
+        f_return_code='{F_result} = {F_C_name}({F_arg_c_call})',
         )
 
     def __init__(self, name, **kw):
