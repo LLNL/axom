@@ -24,6 +24,11 @@ set(gtest_sidre_tests
    C_sidre_view.cpp
    )
 
+set(fruit_sidre_tests
+   F_sidre_smoke.f
+   F_sidre_view.f
+)
+
 
 
 #
@@ -55,10 +60,12 @@ endforeach()
 #)
 
 
-add_fortran_test(
-    TEST_SOURCE F_sidre_smoke.f
-    DEPENDS_ON fruit sidre slic conduit
-)
+foreach(test ${fruit_sidre_tests})
+    add_fortran_test(
+        TEST_SOURCE ${test}
+        DEPENDS_ON fruit sidre slic conduit
+    )
+endforeach()
 
 
 
