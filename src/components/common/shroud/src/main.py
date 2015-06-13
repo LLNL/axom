@@ -207,6 +207,7 @@ class Schema(object):
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,
+#                cpp_to_c = 'static_cast<void *>({var})',
                 c_type = cname,
                 c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
                 c_fortran = 'type(C_PTR)',
