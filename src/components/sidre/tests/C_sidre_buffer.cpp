@@ -42,7 +42,6 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
   ATK_databuffer_allocate_existing(dbuff);
 
-  //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
