@@ -1,560 +1,540 @@
-/*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
- */
+!
+! Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+! Produced at the Lawrence Livermore National Laboratory.
+!
+! All rights reserved.
+!
+! This source code cannot be distributed without permission and
+! further review from Lawrence Livermore National Laboratory.
+!
 
-#include "gtest/gtest.h"
+! API coverage tests
+! Each test should be documented with the interface functions being tested
 
-#include "sidre/sidre.hpp"
+module sidre_group
+  use iso_c_binding
+  use fruit
+  use sidre_mod
+  implicit none
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
+contains
 
-using namespace conduit;
+  !------------------------------------------------------------------------------
+  ! get_name()
+  !------------------------------------------------------------------------------
+  subroutine get_name)
+    type(datastore) ds
+    type(datagroup) root, group
 
+    ds = datastore_new()
+    root = ds%get_root()
+    group = root%create_group("test")
 
-// API coverage tests
-// Each test should be documented with the interface functions being tested
+    call assert_true(group%get_name() == "test" )
+    
+    call datastore_delete(ds)
+  end subroutine get_name
 
-//------------------------------------------------------------------------------
-// getName()
-//------------------------------------------------------------------------------
-TEST(sidre_group,get_name)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("test");
+!------------------------------------------------------------------------------
+! getParent()
+!------------------------------------------------------------------------------
+  subroutine get_parent)
+    type(datastore) ds
+    DataStore * ds = datastore_new()
+    DataGroup * root = ds%get_root()
+    DataGroup * parent = root%create_group("parent")
+    DataGroup * child = parent%create_group("child")
 
-  EXPECT_TRUE(group->getName() == std::string("test") );
+    call assert_true( child%getParent() == parent )
 
-  delete ds;
+    call datastore_delete(ds)
+  end subroutine get_parent
+
+!------------------------------------------------------------------------------
+! Verify getDatastore()
+!------------------------------------------------------------------------------
+subroutine get_datastore)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
+  DataGroup * group = root%create_group("parent")
+
+  call assert_true( group%getDataStore() == ds )
+
+  DataStore const * const_ds = group%getDataStore()
+  call assert_true( const_ds == ds )
+
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-// getParent()
-//------------------------------------------------------------------------------
-TEST(sidre_group,get_parent)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * parent = root->createGroup("parent");
-  DataGroup * child = parent->createGroup("child");
+!------------------------------------------------------------------------------
+! Verify hasGroup()
+!------------------------------------------------------------------------------
+subroutine has_group)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
 
-  EXPECT_TRUE( child->getParent() == parent );
+  DataGroup * parent = root%create_group("parent")
+  DataGroup * child = parent%create_group("child")
+  call assert_true( child%getParent() == parent )
 
-  delete ds;
+  call assert_true( parent%hasGroup("child") )
+
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-// Verify getDatastore()
-//------------------------------------------------------------------------------
-TEST(sidre_group,get_datastore)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("parent");
+!------------------------------------------------------------------------------
+! Verify hasView()
+!------------------------------------------------------------------------------
+subroutine has_view)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
 
-  EXPECT_TRUE( group->getDataStore() == ds );
+  DataGroup * parent = root%create_group("parent")
+  DataView * view = parent%createViewAndBuffer("view")
 
-  DataStore const * const_ds = group->getDataStore();
-  EXPECT_TRUE( const_ds == ds );
+  call assert_true( view%getOwningGroup() == parent )
 
-  delete ds;
+  call assert_true( parent%hasView("view") )
+
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-// Verify hasGroup()
-//------------------------------------------------------------------------------
-TEST(sidre_group,has_group)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+!------------------------------------------------------------------------------
+! Verify getViewName(), getViewIndex()
+!------------------------------------------------------------------------------
+subroutine get_view_name_index)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
 
-  DataGroup * parent = root->createGroup("parent");
-  DataGroup * child = parent->createGroup("child");
-  EXPECT_TRUE( child->getParent() == parent );
+  DataGroup * parent = root%create_group("parent")
+  DataView * view1 = parent%createViewAndBuffer("view1")
+  DataView * view2 = parent%createViewAndBuffer("view2")
 
-  EXPECT_TRUE( parent->hasGroup("child") );
+  call assert_equals(parent%getNumViews(), 2u)
 
-  delete ds;
-}
+  IndexType idx1 = parent%getViewIndex("view1")
+  IndexType idx2 = parent%getViewIndex("view2")
 
-//------------------------------------------------------------------------------
-// Verify hasView()
-//------------------------------------------------------------------------------
-TEST(sidre_group,has_view)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+  const std::string& name1 = parent%getViewName(idx1)
+  const std::string& name2 = parent%getViewName(idx2)
 
-  DataGroup * parent = root->createGroup("parent");
-  DataView * view = parent->createViewAndBuffer("view");
+  call assert_equals(name1, std::string("view1"))
+  call assert_equals(view1%get_name(), name1)
 
-  EXPECT_TRUE( view->getOwningGroup() == parent );
+  call assert_equals(name2, std::string("view2"))
+  call assert_equals(view2%get_name(), name2)
 
-  EXPECT_TRUE( parent->hasView("view") );
+#if 0 ! Leave out for now until we resolve error/warning/assert macro usage
+  IndexType idx3 = parent%getViewIndex("view3")
+  const std::string& name3 = parent%getViewName(idx3)
 
-  delete ds;
-}
-
-//------------------------------------------------------------------------------
-// Verify getViewName(), getViewIndex()
-//------------------------------------------------------------------------------
-TEST(sidre_group,get_view_name_index)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-
-  DataGroup * parent = root->createGroup("parent");
-  DataView * view1 = parent->createViewAndBuffer("view1");
-  DataView * view2 = parent->createViewAndBuffer("view2");
-
-  EXPECT_EQ(parent->getNumViews(), 2u);
-
-  IndexType idx1 = parent->getViewIndex("view1");
-  IndexType idx2 = parent->getViewIndex("view2");
-
-  const std::string& name1 = parent->getViewName(idx1);
-  const std::string& name2 = parent->getViewName(idx2);
-
-  EXPECT_EQ(name1, std::string("view1"));
-  EXPECT_EQ(view1->getName(), name1);
-
-  EXPECT_EQ(name2, std::string("view2"));
-  EXPECT_EQ(view2->getName(), name2);
-
-#if 0 // Leave out for now until we resolve error/warning/assert macro usage
-  IndexType idx3 = parent->getViewIndex("view3");
-  const std::string& name3 = parent->getViewName(idx3);
-
-  EXPECT_EQ(idx3, InvalidIndex);
-  EXPECT_TRUE(name3.empty());
-  EXPECT_FALSE(isNameValid(name3));
+  call assert_equals(idx3, InvalidIndex)
+  call assert_true(name3.empty())
+  EXPECT_FALSE(isNameValid(name3))
 #endif
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-// Verify getGroupName(), getGroupIndex()
-//------------------------------------------------------------------------------
-TEST(sidre_group,get_group_name_index)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
+!------------------------------------------------------------------------------
+! Verify getGroupName(), get_group_index()
+!------------------------------------------------------------------------------
+subroutine get_group_name_index)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
 
-  DataGroup * parent = root->createGroup("parent");
-  DataGroup * group1 = parent->createGroup("group1");
-  DataGroup * group2 = parent->createGroup("group2");
+  DataGroup * parent = root%create_group("parent")
+  DataGroup * group1 = parent%create_group("group1")
+  DataGroup * group2 = parent%create_group("group2")
 
-  EXPECT_EQ(parent->getNumGroups(), 2u);
+  call assert_equals(parent%getNumGroups(), 2u)
 
-  IndexType idx1 = parent->getGroupIndex("group1");
-  IndexType idx2 = parent->getGroupIndex("group2");
+  IndexType idx1 = parent%get_group_index("group1")
+  IndexType idx2 = parent%get_group_index("group2")
 
-  const std::string& name1 = parent->getGroupName(idx1);
-  const std::string& name2 = parent->getGroupName(idx2);
+  const std::string& name1 = parent%getGroupName(idx1)
+  const std::string& name2 = parent%getGroupName(idx2)
 
-  EXPECT_EQ(name1, std::string("group1"));
-  EXPECT_EQ(group1->getName(), name1);
+  call assert_equals(name1, std::string("group1"))
+  call assert_equals(group1%get_name(), name1)
 
-  EXPECT_EQ(name2, std::string("group2"));
-  EXPECT_EQ(group2->getName(), name2);
+  call assert_equals(name2, std::string("group2"))
+  call assert_equals(group2%get_name(), name2)
 
-#if 0 // Leave out for now until we resolve error/warning/assert macro usage
-  IndexType idx3 = parent->getGroupIndex("group3");
-  const std::string& name3 = parent->getGroupName(idx3);
+#if 0 ! Leave out for now until we resolve error/warning/assert macro usage
+  IndexType idx3 = parent%get_group_index("group3")
+  const std::string& name3 = parent%getGroupName(idx3)
 
-  EXPECT_EQ(idx3, InvalidIndex);
-  EXPECT_TRUE(name3.empty());
+  call assert_equals(idx3, InvalidIndex)
+  call assert_true(name3.empty())
 #endif
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-// createViewAndBuffer()
-// destroyViewAndBuffer()
-// hasView()
-//------------------------------------------------------------------------------
-TEST(sidre_group,create_destroy_has_viewbuffer)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("parent");
+!------------------------------------------------------------------------------
+! createViewAndBuffer()
+! destroyViewAndBuffer()
+! hasView()
+!------------------------------------------------------------------------------
+subroutine create_destroy_has_viewbuffer)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
+  DataGroup * group = root%create_group("parent")
 
-  DataView * view = group->createViewAndBuffer("view");
-  EXPECT_TRUE( group->getParent() == root );
-  EXPECT_TRUE( view->hasBuffer() );
+  DataView * view = group%createViewAndBuffer("view")
+  call assert_true( group%getParent() == root )
+  call assert_true( view%hasBuffer() )
 
-  EXPECT_TRUE( group->hasView("view") );
+  call assert_true( group%hasView("view") )
 
-  group->destroyViewAndBuffer("view");
+  group%destroyViewAndBuffer("view")
 
-  EXPECT_FALSE( group->hasView("view") );
+  EXPECT_FALSE( group%hasView("view") )
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-// createGroup()
-// destroyGroup()
-// hasGroup()
-//------------------------------------------------------------------------------
-TEST(sidre_group,create_destroy_has_group)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * group = root->createGroup("group");
-  EXPECT_TRUE( group->getParent() == root );
+!------------------------------------------------------------------------------
+! create_group()
+! destroyGroup()
+! hasGroup()
+!------------------------------------------------------------------------------
+subroutine create_destroy_has_group)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
+  DataGroup * group = root%create_group("group")
+  call assert_true( group%getParent() == root )
 
-  EXPECT_TRUE( root->hasGroup("group") );
+  call assert_true( root%hasGroup("group") )
 
 
-  root->destroyGroup("group");
-  EXPECT_FALSE( root->hasGroup("group") );
+  root%destroyGroup("group")
+  EXPECT_FALSE( root%hasGroup("group") )
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-TEST(sidre_group,group_name_collisions)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
-  flds->createViewAndBuffer("a");
+!------------------------------------------------------------------------------
+subroutine group_name_collisions)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * flds = ds%get_root()%create_group("fields")
+  flds%createViewAndBuffer("a")
 
-  EXPECT_TRUE(flds->hasView("a"));
+  call assert_true(flds%hasView("a"))
 
-  delete ds;
+  call datastore_delete(ds)
 }
-//------------------------------------------------------------------------------
-TEST(sidre_group,view_copy_move)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
+!------------------------------------------------------------------------------
+subroutine view_copy_move)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * flds = ds%get_root()%create_group("fields")
 
-  flds->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  flds->createViewAndBuffer("f0")->allocate(DataType::c_float());
-  flds->createViewAndBuffer("d0")->allocate(DataType::c_double());
+  flds%createViewAndBuffer("i0")%allocate(DataType::c_int())
+  flds%createViewAndBuffer("f0")%allocate(DataType::c_float())
+  flds%createViewAndBuffer("d0")%allocate(DataType::c_double())
 
-  (*flds->getView("i0")->getNode().as_int_ptr())   = 1;
-  (*flds->getView("f0")->getNode().as_float_ptr()) = 100.0;
-  (*flds->getView("d0")->getNode().as_double_ptr()) = 3000.0;
+  (*flds%getView("i0")%getNode().as_int_ptr())   = 1
+  (*flds%getView("f0")%getNode().as_float_ptr()) = 100.0
+  (*flds%getView("d0")%getNode().as_double_ptr()) = 3000.0
 
-  EXPECT_TRUE(flds->hasView("i0"));
-  EXPECT_TRUE(flds->hasView("f0"));
-  EXPECT_TRUE(flds->hasView("d0"));
+  call assert_true(flds%hasView("i0"))
+  call assert_true(flds%hasView("f0"))
+  call assert_true(flds%hasView("d0"))
 
-  // test moving a view from flds to sub
-  flds->createGroup("sub")->moveView(flds->getView("d0"));
-  flds->print();
-  EXPECT_FALSE(flds->hasView("d0"));
-  EXPECT_TRUE(flds->hasGroup("sub"));
-  EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
+  ! test moving a view from flds to sub
+  flds%create_group("sub")%moveView(flds%getView("d0"))
+  call flds%print()
+  EXPECT_FALSE(flds%hasView("d0"))
+  call assert_true(flds%hasGroup("sub"))
+  call assert_true(flds%getGroup("sub")%hasView("d0"))
 
-  // check the data value
-  double * d0_data =  flds->getGroup("sub")
-                      ->getView("d0")
-                      ->getValue();
-  EXPECT_NEAR(d0_data[0],3000.0,1e-12);
+  ! check the data value
+  double * d0_data =  flds%getGroup("sub")
+                      %getView("d0")
+                      %getValue()
+  EXPECT_NEAR(d0_data[0],3000.0,1e-12)
 
-  // test copying a view from flds to sub
-  flds->getGroup("sub")->copyView(flds->getView("i0"));
+  ! test copying a view from flds to sub
+  flds%getGroup("sub")%copyView(flds%getView("i0"))
 
-  flds->print();
+  call flds%print()
 
-  EXPECT_TRUE(flds->hasView("i0"));
-  EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
+  call assert_true(flds%hasView("i0"))
+  call assert_true(flds%getGroup("sub")%hasView("i0"))
 
-  // we expect the actual data  pointers to be the same
-  EXPECT_EQ(flds->getView("i0")->getDataBuffer(),
-            flds->getGroup("sub")->getView("i0")->getDataBuffer());
+  ! we expect the actual data  pointers to be the same
+  call assert_equals(flds%getView("i0")%getDataBuffer(),
+            flds%getGroup("sub")%getView("i0")%getDataBuffer())
 
-  delete ds;
-}
-
-//------------------------------------------------------------------------------
-TEST(sidre_group,groups_move_copy)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
-
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds->createGroup("b");
-  DataGroup * gc = flds->createGroup("c");
-
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
-  gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
-
-  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
-  (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
-  (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
-
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
-
-  //move "b" to a child of "sub"
-  flds->createGroup("sub")->moveGroup(gb);
-
-  flds->print();
-
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("sub"));
-  EXPECT_TRUE(flds->hasGroup("c"));
-
-  EXPECT_EQ(flds->getGroup("sub")->getGroup("b"),gb);
-
-  delete ds;
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-TEST(sidre_group,create_destroy_view_and_buffer)
-{
-  DataStore * const ds = new DataStore();
-  DataGroup * const grp = ds->getRoot()->createGroup("grp");
+!------------------------------------------------------------------------------
+subroutine groups_move_copy)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * flds = ds%get_root()%create_group("fields")
 
-  std::string const viewName1 = "viewBuffer1";
-  std::string const viewName2 = "viewBuffer2";
+  DataGroup * ga = flds%create_group("a")
+  DataGroup * gb = flds%create_group("b")
+  DataGroup * gc = flds%create_group("c")
 
-  DataView const * const view1 = grp->createViewAndBuffer(viewName1);
-  DataView const * const view2 = grp->createViewAndBuffer(viewName2);
+  ga%createViewAndBuffer("i0")%allocate(DataType::c_int())
+  gb%createViewAndBuffer("f0")%allocate(DataType::c_float())
+  gc%createViewAndBuffer("d0")%allocate(DataType::c_double())
 
-  EXPECT_TRUE(grp->hasView(viewName1));
-  EXPECT_EQ( grp->getView(viewName1), view1 );
+  (*ga%getView("i0")%getNode().as_int_ptr())   = 1
+  (*gb%getView("f0")%getNode().as_float_ptr()) = 100.0
+  (*gc%getView("d0")%getNode().as_double_ptr()) = 3000.0
 
-  EXPECT_TRUE(grp->hasView(viewName2));
-  EXPECT_EQ( grp->getView(viewName2), view2 );
+  ! check that all sub groups exist
+  call assert_true(flds%hasGroup("a"))
+  call assert_true(flds%hasGroup("b"))
+  call assert_true(flds%hasGroup("c"))
 
-  IndexType const bufferId1 = view1->getBuffer()->getIndex();
+  !move "b" to a child of "sub"
+  flds%create_group("sub")%moveGroup(gb)
 
-  grp->destroyViewAndBuffer(viewName1);
+  call flds%print()
+
+  call assert_true(flds%hasGroup("a"))
+  call assert_true(flds%hasGroup("sub"))
+  call assert_true(flds%hasGroup("c"))
+
+  call assert_equals(flds%getGroup("sub")%getGroup("b"),gb)
+
+  call datastore_delete(ds)
+}
+
+!------------------------------------------------------------------------------
+subroutine create_destroy_view_and_buffer)
+type(datastore) ds
+  DataStore * const ds = datastore_new()
+  DataGroup * const grp = ds%get_root()%create_group("grp")
+
+  std::string const viewName1 = "viewBuffer1"
+  std::string const viewName2 = "viewBuffer2"
+
+  DataView const * const view1 = grp%createViewAndBuffer(viewName1)
+  DataView const * const view2 = grp%createViewAndBuffer(viewName2)
+
+  call assert_true(grp%hasView(viewName1))
+  call assert_equals( grp%getView(viewName1), view1 )
+
+  call assert_true(grp%hasView(viewName2))
+  call assert_equals( grp%getView(viewName2), view2 )
+
+  IndexType const bufferId1 = view1%getBuffer()%getIndex()
+
+  grp%destroyViewAndBuffer(viewName1)
 
 
-  EXPECT_FALSE(grp->hasView(viewName1));
-  EXPECT_EQ(ds->getNumBuffers(), 1u);
+  EXPECT_FALSE(grp%hasView(viewName1))
+  call assert_equals(ds%getNumBuffers(), 1u)
 
-  DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
-  bool buffValid = true;
+  DataBuffer const * const buffer1 = ds%getBuffer(bufferId1)
+  bool buffValid = true
   if( buffer1 == ATK_NULLPTR )
-  {
-    buffValid = false;
+  type(datastore) ds
+    buffValid = false
   }
 
-  EXPECT_FALSE(buffValid);
+  EXPECT_FALSE(buffValid)
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
 
-//------------------------------------------------------------------------------
-TEST(sidre_group,create_destroy_alloc_view_and_buffer)
-{
-  DataStore * const ds = new DataStore();
-  DataGroup * const grp = ds->getRoot()->createGroup("grp");
+!------------------------------------------------------------------------------
+subroutine create_destroy_alloc_view_and_buffer)
+type(datastore) ds
+  DataStore * const ds = datastore_new()
+  DataGroup * const grp = ds%get_root()%create_group("grp")
 
-  std::string const viewName1 = "viewBuffer1";
-  std::string const viewName2 = "viewBuffer2";
+  std::string const viewName1 = "viewBuffer1"
+  std::string const viewName2 = "viewBuffer2"
 
-  // use create + alloc convenience methods
-  // this one is the DataType & method
-  DataView * const view1 = grp->createViewAndBuffer(viewName1,
-                                                    DataType::c_int(10));
-  // this one is the Schema & method
-  Schema s;
-  s.set(DataType::c_double(10));
-  DataView * const view2 = grp->createViewAndBuffer(viewName2,
-                                                    s);
+  ! use create + alloc convenience methods
+  ! this one is the DataType & method
+  DataView * const view1 = grp%createViewAndBuffer(viewName1,
+                                                    DataType::c_int(10))
+  ! this one is the Schema & method
+  Schema s
+  s.set(DataType::c_double(10))
+  DataView * const view2 = grp%createViewAndBuffer(viewName2,
+                                                    s)
 
-  EXPECT_TRUE(grp->hasView(viewName1));
-  EXPECT_EQ( grp->getView(viewName1), view1 );
+  call assert_true(grp%hasView(viewName1))
+  call assert_equals( grp%getView(viewName1), view1 )
 
-  EXPECT_TRUE(grp->hasView(viewName2));
-  EXPECT_EQ( grp->getView(viewName2), view2 );
+  call assert_true(grp%hasView(viewName2))
+  call assert_equals( grp%getView(viewName2), view2 )
 
 
-  int * v1_vals = view1->getValue();
-  double * v2_vals = view2->getValue();
+  int * v1_vals = view1%getValue()
+  double * v2_vals = view2%getValue()
 
-  for(int i=0 ; i<10 ; i++)
+  for(int i=0  i<10  i++)
   {
-    v1_vals[i] = i;
-    v2_vals[i] = i * 3.1415;
+    v1_vals[i] = i
+    v2_vals[i] = i * 3.1415
   }
 
 
-  EXPECT_EQ(view1->getNumberOfElements(), 10u);
-  EXPECT_EQ(view2->getNumberOfElements(), 10u);
-  EXPECT_EQ(view1->getTotalBytes(), 10 * sizeof(int));
-  EXPECT_EQ(view2->getTotalBytes(), 10 * sizeof(double));
+  call assert_equals(view1%getNumberOfElements(), 10u)
+  call assert_equals(view2%getNumberOfElements(), 10u)
+  call assert_equals(view1%getTotalBytes(), 10 * sizeof(int))
+  call assert_equals(view2%getTotalBytes(), 10 * sizeof(double))
 
-  grp->destroyViewAndBuffer(viewName1);
-  grp->destroyViewAndBuffer(viewName2);
+  grp%destroyViewAndBuffer(viewName1)
+  grp%destroyViewAndBuffer(viewName2)
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
-//------------------------------------------------------------------------------
-TEST(sidre_group,create_view_of_buffer_with_schema)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  // use create + alloc convenience methods
-  // this one is the DataType & method
-  DataView * base =  root->createViewAndBuffer("base",
-                                               DataType::c_int(10));
-  int * base_vals = base->getValue();
-  for(int i=0 ; i<10 ; i++)
+!------------------------------------------------------------------------------
+subroutine create_view_of_buffer_with_schema)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * root = ds%get_root()
+  ! use create + alloc convenience methods
+  ! this one is the DataType & method
+  DataView * base =  root%createViewAndBuffer("base",
+                                               DataType::c_int(10))
+  int * base_vals = base%getValue()
+  for(int i=0  i<10  i++)
   {
     if(i < 5)
     {
-      base_vals[i] = 10;
+      base_vals[i] = 10
     }
     else
     {
-      base_vals[i] = 20;
+      base_vals[i] = 20
     }
   }
 
-  DataBuffer * base_buff = base->getBuffer();
-  // create two views into this buffer
-  // view for the first 5 values
-  root->createView("sub_a", base_buff, DataType::c_int(5));
-  // view for the second 5 values
-  //  (schema call path case)
-  Schema s(DataType::c_int(5,5*sizeof(int)));
-  root->createView("sub_b",base_buff,s);
+  DataBuffer * base_buff = base%getBuffer()
+  ! create two views into this buffer
+  ! view for the first 5 values
+  root%createView("sub_a", base_buff, DataType::c_int(5))
+  ! view for the second 5 values
+  !  (schema call path case)
+  Schema s(DataType::c_int(5,5*sizeof(int)))
+  root%createView("sub_b",base_buff,s)
 
-  int * sub_a_vals = root->getView("sub_a")->getValue();
-  int * sub_b_vals = root->getView("sub_b")->getValue();
+  int * sub_a_vals = root%getView("sub_a")%getValue()
+  int * sub_b_vals = root%getView("sub_b")%getValue()
 
-  for(int i=0 ; i<5 ; i++)
+  for(int i=0  i<5  i++)
   {
-    EXPECT_EQ(sub_a_vals[i], 10);
-    EXPECT_EQ(sub_b_vals[i], 20);
+    call assert_equals(sub_a_vals[i], 10)
+    call assert_equals(sub_b_vals[i], 20)
   }
 
-  delete ds;
+  call datastore_delete(ds)
 }
 
 
 
 
-//------------------------------------------------------------------------------
-TEST(sidre_group,save_restore_simple)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
+!------------------------------------------------------------------------------
+subroutine save_restore_simple)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * flds = ds%get_root()%create_group("fields")
 
-  DataGroup * ga = flds->createGroup("a");
+  DataGroup * ga = flds%create_group("a")
 
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
+  ga%createViewAndBuffer("i0")%allocate(DataType::c_int())
 
-  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
+  (*ga%getView("i0")%getNode().as_int_ptr())   = 1
 
-  EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
-  EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
-  EXPECT_TRUE(ds->getRoot()->getGroup("fields")->getGroup("a")->hasView("i0"));
-
-
-  ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
-
-  ds->print();
-
-  DataStore * ds2 = new DataStore();
-
-  ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
-
-  ds2->print();
-
-  flds = ds2->getRoot()->getGroup("fields");
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
-
-  ds2->print();
-
-  delete ds;
-  delete ds2;
-
-}
-
-//------------------------------------------------------------------------------
-TEST(sidre_group,save_restore_complex)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * flds = ds->getRoot()->createGroup("fields");
-
-  DataGroup * ga = flds->createGroup("a");
-  DataGroup * gb = flds->createGroup("b");
-  DataGroup * gc = flds->createGroup("c");
-
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
-  gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
-
-  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
-  (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
-  (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
-
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
-
-  ds->print();
-
-  ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
-
-  DataStore * ds2 = new DataStore();
+  call assert_true(ds%get_root()%hasGroup("fields"))
+  call assert_true(ds%get_root()%getGroup("fields")%hasGroup("a"))
+  call assert_true(ds%get_root()%getGroup("fields")%getGroup("a")%hasView("i0"))
 
 
-  ds2->getRoot()->load("out_sidre_group_save_restore_complex","conduit");
+  ds%get_root()%save("out_sidre_group_save_restore_simple","conduit")
 
-  flds = ds2->getRoot()->getGroup("fields");
-  // check that all sub groups exist
-  EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_TRUE(flds->hasGroup("b"));
-  EXPECT_TRUE(flds->hasGroup("c"));
+  call ds%print()
 
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getNode().as_float(),100.0,  1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getNode().as_double(),3000.0, 1e-12);
+  DataStore * ds2 = datastore_new()
 
-  ds2->print();
+  ds2%get_root()%load("out_sidre_group_save_restore_simple","conduit")
 
-  delete ds;
-  delete ds2;
+  call ds2%print()
+
+  flds = ds2%get_root()%getGroup("fields")
+  ! check that all sub groups exist
+  call assert_true(flds%hasGroup("a"))
+  call assert_equals(flds%getGroup("a")%getView("i0")%getNode().as_int(),1)
+
+  call ds2%print()
+
+  call datastore_delete(ds)
+  call datastore_delete(ds2)
 
 }
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+!------------------------------------------------------------------------------
+subroutine save_restore_complex)
+type(datastore) ds
+  DataStore * ds = datastore_new()
+  DataGroup * flds = ds%get_root()%create_group("fields")
 
-int main(int argc, char* argv[])
-{
-   int result = 0;
+  DataGroup * ga = flds%create_group("a")
+  DataGroup * gb = flds%create_group("b")
+  DataGroup * gc = flds%create_group("c")
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ga%createViewAndBuffer("i0")%allocate(DataType::c_int())
+  gb%createViewAndBuffer("f0")%allocate(DataType::c_float())
+  gc%createViewAndBuffer("d0")%allocate(DataType::c_double())
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  (*ga%getView("i0")%getNode().as_int_ptr())   = 1
+  (*gb%getView("f0")%getNode().as_float_ptr()) = 100.0
+  (*gc%getView("d0")%getNode().as_double_ptr()) = 3000.0
 
-   result = RUN_ALL_TESTS();
+  ! check that all sub groups exist
+  call assert_true(flds%hasGroup("a"))
+  call assert_true(flds%hasGroup("b"))
+  call assert_true(flds%hasGroup("c"))
 
-   return result;
+  call ds%print()
+
+  ds%get_root()%save("out_sidre_group_save_restore_complex","conduit")
+
+  DataStore * ds2 = datastore_new()
+
+
+  ds2%get_root()%load("out_sidre_group_save_restore_complex","conduit")
+
+  flds = ds2%get_root()%getGroup("fields")
+  ! check that all sub groups exist
+  call assert_true(flds%hasGroup("a"))
+  call assert_true(flds%hasGroup("b"))
+  call assert_true(flds%hasGroup("c"))
+
+  call assert_equals(flds%getGroup("a")%getView("i0")%getNode().as_int(),1)
+  EXPECT_NEAR(flds%getGroup("b")%getView("f0")%getNode().as_float(),100.0,  1e-12)
+  EXPECT_NEAR(flds%getGroup("c")%getView("d0")%getNode().as_double(),3000.0, 1e-12)
+
+  call call ds2%print()
+
+  call datastore_delete(ds)
+  call datastore_delete(ds2)
+
 }
+
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
