@@ -434,6 +434,7 @@
             ], 
             "name": "ExClass1", 
             "options": {
+                "F_class_module_includes": "class.inc", 
                 "cpp_header": "ExClass1.hpp"
             }
         }, 
@@ -801,6 +802,7 @@
     ], 
     "options": {
         "C_prefix": "AA_", 
+        "F_library_module_includes": "library.inc", 
         "F_module_per_class": true, 
         "cpp_header": "", 
         "library": "UserLibrary", 

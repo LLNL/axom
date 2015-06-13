@@ -17,6 +17,7 @@ options:
   C_prefix: ATK_
   namespace: asctoolkit sidre
   F_module_per_class: False
+  F_library_module_includes: sidretypes.inc
 
 typedef:
   IndexType:

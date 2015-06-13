@@ -370,6 +370,7 @@ class Wrapf(object):
                 fp.write('!\n')
 
     def write_module(self, node):
+        options = node['options']
         fmt_class = node['fmt']
         fname = fmt_class.F_impl_filename
         module_name = fmt_class.F_module_name
@@ -382,6 +383,7 @@ class Wrapf(object):
 
         output.append('use fstr_mod')
         if node['options'].F_module_per_class:
+            include_option = 'F_class_module_includes'
             # XXX this will have some problems because of forward declarations
             for mname, only in node['F_module_dependencies']:
                 if mname == module_name:
@@ -392,7 +394,11 @@ class Wrapf(object):
                 else:
                     output.append('use %s' % mname)
         else:
+            include_option = 'F_library_module_includes'
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
+        output.append('implicit none')
+        for include in options.get(include_option, '').split():
+            output.append('include "{}"'.format(include))
 
         output.extend(self.f_type_decl)
 
