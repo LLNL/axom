@@ -32,8 +32,6 @@ module sidre_mod
         procedure :: get_num_views => datagroup_get_num_views
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: has_view => datagroup_has_view
-        procedure :: create_view_and_buffer => datagroup_create_view_and_buffer
-        procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_view => datagroup_create_view
         procedure :: move_view => datagroup_move_view
@@ -61,8 +59,6 @@ module sidre_mod
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: declare => databuffer_declare
-        procedure :: allocate => databuffer_allocate
-        procedure :: allocate_from_type => databuffer_allocate_from_type
         procedure :: reallocate => databuffer_reallocate
         procedure :: get_data => databuffer_get_data
         generic :: allocate => allocate, allocate_from_type

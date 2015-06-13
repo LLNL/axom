@@ -304,8 +304,9 @@ class Wrapf(object):
             F_name_generic = fmt_func.F_name_generic
             F_name_impl = fmt_func.F_name_impl
             self.f_type_generic.setdefault(F_name_generic,[]).append(F_name_method)
-            self.f_type_decl.append('procedure :: %s => %s' % (
-                    F_name_method, F_name_impl))
+            if not fmt_func.overloaded:
+                self.f_type_decl.append('procedure :: %s => %s' % (
+                        F_name_method, F_name_impl))
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))

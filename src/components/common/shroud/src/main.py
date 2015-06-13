@@ -77,17 +77,18 @@ class Schema(object):
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
 
-        fmt2_library = node['fmt'] = util.Options(None)
-        fmt2_library.library       = def_options.get('library', 'default_library')
-        fmt2_library.lower_library = fmt2_library.library.lower()
-        fmt2_library.method_suffix = ''   # assume no suffix
-        self.fmt_stack.append(fmt2_library)
+        fmt_library = node['fmt'] = util.Options(None)
+        fmt_library.library       = def_options.get('library', 'default_library')
+        fmt_library.lower_library = fmt_library.library.lower()
+        fmt_library.method_suffix = ''   # assume no suffix
+        fmt_library.overloaded = False
+        self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
         if not def_options.F_module_per_class:
-            util.eval_template(def_options, fmt2_library,
+            util.eval_template(def_options, fmt_library,
                                'F_module_name', '{lower_library}_mod')
-            util.eval_template(def_options, fmt2_library,
+            util.eval_template(def_options, fmt_library,
                                'F_impl_filename', 'wrapf{lower_library}.f')
 
         node['options'] = def_options
@@ -239,6 +240,7 @@ class Schema(object):
         for mname, methods in overloaded_methods.items():
             if len(methods) > 1:
                 for i, method in enumerate(methods):
+                    method['fmt'].overloaded = True
                     if 'method_suffix' not in method:
                         method['fmt'].method_suffix =  '_%d' % i
 
