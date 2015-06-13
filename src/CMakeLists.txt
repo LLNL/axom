@@ -7,9 +7,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ################################
 project(asctk LANGUAGES C CXX)
 
-if (ENABLE_FORTRAN)
-   enable_language(Fortran)
-endif()
+enable_language(Fortran OPTIONAL)
+#if (ENABLE_FORTRAN)
+#   enable_language(Fortran)
+#endif()
 
 ################################
 # Prevent in-source builds

@@ -40,7 +40,7 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
   ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
-  ATK_databuffer_allocate(dbuff);
+  ATK_databuffer_allocate_existing(dbuff);
 
   //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
@@ -96,7 +96,7 @@ TEST(C_sidre_buffer,realloc_buffer)
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
   ATK_databuffer_declare(dbuff, ATK_C_LONG_T, 5);
-  ATK_databuffer_allocate(dbuff);
+  ATK_databuffer_allocate_existing(dbuff);
 
 #if 0
   EXPECT_EQ(dbuff->getNode().schema().total_bytes(),

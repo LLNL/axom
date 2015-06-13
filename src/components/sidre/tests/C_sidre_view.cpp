@@ -19,8 +19,8 @@ TEST(C_sidre_view,create_views)
   ATK_datastore * ds   = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv_0 = ATK_datagroup_create_view_and_buffer(root, "field0");
-  ATK_dataview * dv_1 = ATK_datagroup_create_view_and_buffer(root, "field1");
+  ATK_dataview * dv_0 = ATK_datagroup_create_view_and_buffer_simple(root, "field0");
+  ATK_dataview * dv_1 = ATK_datagroup_create_view_and_buffer_simple(root, "field1");
 
 
   ATK_databuffer * db_0 = ATK_dataview_get_buffer(dv_0);
@@ -38,7 +38,7 @@ TEST(C_sidre_view,int_buffer_from_view)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer(root, "u0");
+  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
 
   ATK_dataview_allocate(dv, ATK_C_INT_T, 10);
   int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv);
@@ -89,7 +89,7 @@ TEST(C_sidre_view,int_array_multi_view)
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
   ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
-  ATK_databuffer_allocate(dbuff);
+  ATK_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++) {
@@ -221,7 +221,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // create a group to hold the "old" or data we want to copy
   ATK_datagroup * r_old = ATK_datagroup_create_group(root, "r_old");
   // create a view to hold the base buffer
-  ATK_dataview * base_old = ATK_datagroup_create_view_and_buffer(r_old, "base_data");
+  ATK_dataview * base_old = ATK_datagroup_create_view_and_buffer_simple(r_old, "base_data");
 
   // alloc our buffer
   // we will create 4 sub views of this array
@@ -288,7 +288,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // create a group to hold the "old" or data we want to copy into
   ATK_datagroup * r_new = ATK_datagroup_create_group(root, "r_new");
   // create a view to hold the base buffer
-  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer(r_new, "base_data");
+  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer_simple(r_new, "base_data");
 
   // alloc our buffer
   // create a buffer to hold larger subarrays
