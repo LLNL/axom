@@ -26,7 +26,7 @@ def wformat(template, d):
     # shorthand, wrap fmt.vformat
     return fmt.vformat(template, None, d)
 
-def eval_template4(options, fmt, name, default=None):
+def eval_template(options, fmt, name, default=None):
     """ If a tname exists in options, use it; else use default.
     fmt[vname] = option[tname]
     """

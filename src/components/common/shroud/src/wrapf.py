@@ -122,10 +122,6 @@ class Wrapf(object):
     def wrap_library(self):
         options = self.tree['options']
 
-        self.fmt_library = dict(
-            lower_library = options.library.lower()
-            )
-
         self._begin_file()
         for node in self.tree['classes']:
             self.c_interface.append('interface')
@@ -156,15 +152,6 @@ class Wrapf(object):
         name = node['name']
         typedef = self.typedef[name]
 
-        fmt_class = self.fmt_class = dict(
-            cpp_class = name,
-            lower_class = name.lower(),
-            upper_class = name.upper(),
-            F_derived_name = typedef.fortran_derived,
-            F_this = node['options'].F_this,
-            )
-        fmt_class.update(self.fmt_library)
-
         fmt2_class = node['fmt']
         fmt2_class.update(dict(
                 F_derived_name = typedef.fortran_derived,
@@ -192,7 +179,7 @@ class Wrapf(object):
 
         self.f_type.extend([
                 -1,
-                 wformat('end type {F_derived_name}', fmt_class),
+                 wformat('end type {F_derived_name}', fmt2_class),
                  ''
                  ])
 
@@ -230,11 +217,11 @@ class Wrapf(object):
         else:
             fmt2_func.F_C_name = fmt2_func.C_name.lower()
 
-        util.eval_template4(options, fmt2_func,
+        util.eval_template(options, fmt2_func,
                             'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
-        util.eval_template4(options, fmt2_func,
+        util.eval_template(options, fmt2_func,
                             'F_name_method', '{underscore_name}{method_suffix}')
-        util.eval_template4(options, fmt2_func,
+        util.eval_template(options, fmt2_func,
                             'F_name_generic', '{underscore_name}')
 
         arg_c_names = [ ]

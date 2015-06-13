@@ -192,15 +192,6 @@ class Wrapc(object):
         typedef = self.typedef[name]
         cname = typedef.c_type
 
-        fmt_class = self.fmt_class = dict(
-            cpp_class = name,
-            lower_class = name.lower(),
-            upper_class = name.upper(),
-            C_prefix = node['options'].C_prefix,
-            C_type_name = cname,
-            )
-        fmt_class.update(self.fmt_library)
-
 #        fmt2_class = node['fmt']
 #        fmt2_class.update(dict(
 #                ))
@@ -279,7 +270,7 @@ class Wrapc(object):
                 self.header_forward[arg_typedef.c_type] = True
         fmt2_func.C_call_list = ', '.join(anames)
 
-        util.eval_template4(options, fmt2_func, 'C_name')
+        util.eval_template(options, fmt2_func, 'C_name')
 
         fmt2_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
