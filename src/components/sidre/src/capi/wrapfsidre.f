@@ -394,43 +394,39 @@ module sidre_mod
             integer(C_INT) :: rv
         end function atk_databuffer_get_index
         
-        function atk_databuffer_declare(self, type, len) result(rv) &
+        subroutine atk_databuffer_declare(self, type, len) &
                 bind(C, name="ATK_databuffer_declare")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function atk_databuffer_declare
+        end subroutine atk_databuffer_declare
         
-        function atk_databuffer_allocate_existing(self) result(rv) &
+        subroutine atk_databuffer_allocate_existing(self) &
                 bind(C, name="ATK_databuffer_allocate_existing")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
-            type(C_PTR) :: rv
-        end function atk_databuffer_allocate_existing
+        end subroutine atk_databuffer_allocate_existing
         
-        function atk_databuffer_allocate_from_type(self, type, len) result(rv) &
+        subroutine atk_databuffer_allocate_from_type(self, type, len) &
                 bind(C, name="ATK_databuffer_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function atk_databuffer_allocate_from_type
+        end subroutine atk_databuffer_allocate_from_type
         
-        function atk_databuffer_reallocate(self, type, len) result(rv) &
+        subroutine atk_databuffer_reallocate(self, type, len) &
                 bind(C, name="ATK_databuffer_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function atk_databuffer_reallocate
+        end subroutine atk_databuffer_reallocate
         
         function atk_databuffer_get_data(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_data")
@@ -442,35 +438,32 @@ module sidre_mod
     end interface
     interface
         
-        function atk_dataview_declare(self, type, len) result(rv) &
+        subroutine atk_dataview_declare(self, type, len) &
                 bind(C, name="ATK_dataview_declare")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function atk_dataview_declare
+        end subroutine atk_dataview_declare
         
-        function atk_dataview_allocate(self, type, len) result(rv) &
+        subroutine atk_dataview_allocate(self, type, len) &
                 bind(C, name="ATK_dataview_allocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function atk_dataview_allocate
+        end subroutine atk_dataview_allocate
         
-        function atk_dataview_reallocate(self, type, len) result(rv) &
+        subroutine atk_dataview_reallocate(self, type, len) &
                 bind(C, name="ATK_dataview_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function atk_dataview_reallocate
+        end subroutine atk_dataview_reallocate
         
         function atk_dataview_has_buffer(self) result(rv) &
                 bind(C, name="ATK_dataview_has_buffer")
@@ -925,51 +918,47 @@ contains
         ! splicer end
     end function databuffer_get_index
     
-    function databuffer_declare(obj, type, len) result(rv)
+    subroutine databuffer_declare(obj, type, len)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        type(databuffer) :: rv
         ! splicer begin
-        rv%obj = atk_databuffer_declare(obj%obj, type, len)
+        call atk_databuffer_declare(obj%obj, type, len)
         ! splicer end
-    end function databuffer_declare
+    end subroutine databuffer_declare
     
-    function databuffer_allocate_existing(obj) result(rv)
+    subroutine databuffer_allocate_existing(obj)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        type(databuffer) :: rv
         ! splicer begin
-        rv%obj = atk_databuffer_allocate_existing(obj%obj)
+        call atk_databuffer_allocate_existing(obj%obj)
         ! splicer end
-    end function databuffer_allocate_existing
+    end subroutine databuffer_allocate_existing
     
-    function databuffer_allocate_from_type(obj, type, len) result(rv)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        type(databuffer) :: rv
-        ! splicer begin
-        rv%obj = atk_databuffer_allocate_from_type(obj%obj, type, len)
-        ! splicer end
-    end function databuffer_allocate_from_type
-    
-    function databuffer_reallocate(obj, type, len) result(rv)
+    subroutine databuffer_allocate_from_type(obj, type, len)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        type(databuffer) :: rv
         ! splicer begin
-        rv%obj = atk_databuffer_reallocate(obj%obj, type, len)
+        call atk_databuffer_allocate_from_type(obj%obj, type, len)
         ! splicer end
-    end function databuffer_reallocate
+    end subroutine databuffer_allocate_from_type
+    
+    subroutine databuffer_reallocate(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin
+        call atk_databuffer_reallocate(obj%obj, type, len)
+        ! splicer end
+    end subroutine databuffer_reallocate
     
     function databuffer_get_data(obj) result(rv)
         use iso_c_binding
@@ -981,41 +970,38 @@ contains
         ! splicer end
     end function databuffer_get_data
     
-    function dataview_declare(obj, type, len) result(rv)
+    subroutine dataview_declare(obj, type, len)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_dataview_declare(obj%obj, type, len)
+        call atk_dataview_declare(obj%obj, type, len)
         ! splicer end
-    end function dataview_declare
+    end subroutine dataview_declare
     
-    function dataview_allocate(obj, type, len) result(rv)
+    subroutine dataview_allocate(obj, type, len)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_dataview_allocate(obj%obj, type, len)
+        call atk_dataview_allocate(obj%obj, type, len)
         ! splicer end
-    end function dataview_allocate
+    end subroutine dataview_allocate
     
-    function dataview_reallocate(obj, type, len) result(rv)
+    subroutine dataview_reallocate(obj, type, len)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        type(dataview) :: rv
         ! splicer begin
-        rv%obj = atk_dataview_reallocate(obj%obj, type, len)
+        call atk_dataview_reallocate(obj%obj, type, len)
         ! splicer end
-    end function dataview_reallocate
+    end subroutine dataview_reallocate
     
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding

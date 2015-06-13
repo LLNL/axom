@@ -141,15 +141,19 @@ classes:
       - decl: IndexType getIndex() const
 #      - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeID type, SidreLength len)
+        return_this: True
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
         method_suffix: _existing
+        return_this: True
       - decl: DataBuffer* allocate(TypeID type, SidreLength len)
         method_suffix: _from_type
+        return_this: True
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
       - decl: DataBuffer * reallocate(TypeID type, SidreLength len)
+        return_this: True
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
       - decl: void* getData()
@@ -167,13 +171,16 @@ classes:
 
     methods:
     - decl: DataView* declare(TypeID type, SidreLength len)
+      return_this: True
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
     - decl: DataView* allocate(TypeID type, SidreLength len)
+      return_this: True
 #    - decl: DataView* allocate()
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
     - decl: DataView * reallocate(TypeID type, SidreLength len)
+      return_this: True
 #    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* reallocate(const DataType& dtype)
 #    - decl: DataView* apply()

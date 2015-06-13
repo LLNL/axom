@@ -16,30 +16,30 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-ATK_dataview * ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-DataView * rv = selfobj->declare(getTypeID(type), len);
-return rv;
+selfobj->declare(getTypeID(type), len);
+return;
 // splicer end
 }
 
-ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_allocate(ATK_dataview * self, int type, ATK_SidreLength len)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-DataView * rv = selfobj->allocate(getTypeID(type), len);
-return rv;
+selfobj->allocate(getTypeID(type), len);
+return;
 // splicer end
 }
 
-ATK_dataview * ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-DataView * rv = selfobj->reallocate(getTypeID(type), len);
-return rv;
+selfobj->reallocate(getTypeID(type), len);
+return;
 // splicer end
 }
 
