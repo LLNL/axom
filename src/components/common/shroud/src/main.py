@@ -188,13 +188,10 @@ class Schema(object):
 
         options = self.push_options(node)
         fmt2_class = self.push_fmt(node)
-        fmt_class = dict(
-            cpp_class = name,
-            lower_class = name.lower(),
-            upper_class = name.upper(),
-            C_prefix = options.get('C_prefix', ''),
-            )
-        fmt2_class.update(fmt_class)
+        fmt2_class.cpp_class = name
+        fmt2_class.lower_class = name.lower()
+        fmt2_class.upper_class = name.upper()
+        fmt2_class.C_prefix = options.get('C_prefix', '')
 
         if options.F_module_per_class:
             util.eval_template(options, fmt2_class,

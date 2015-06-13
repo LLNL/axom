@@ -79,10 +79,6 @@ class Wrapc(object):
     def wrap_library(self):
         options = self.tree['options']
 
-        self.fmt_library = dict(
-            lower_library = options.library.lower()
-            )
-
         for node in self.tree['classes']:
             fmt2_class = node['fmt']
             self._clear_class()
