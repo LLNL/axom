@@ -303,6 +303,7 @@
                         "F_subprogram": "function", 
                         "method_name": "getValue", 
                         "method_suffix": "_from_int", 
+                        "overloaded": true, 
                         "rv_decl": "int rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -345,6 +346,7 @@
                         "F_subprogram": "function", 
                         "method_name": "getValue", 
                         "method_suffix": "_1", 
+                        "overloaded": true, 
                         "rv_decl": "long rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -696,7 +698,8 @@
         "F_this": "obj", 
         "library": "UserLibrary", 
         "lower_library": "userlibrary", 
-        "method_suffix": ""
+        "method_suffix": "", 
+        "overloaded": false
     }, 
     "functions": [
         {

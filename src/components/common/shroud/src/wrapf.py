@@ -333,9 +333,13 @@ class Wrapf(object):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{F_pure_clause}{F_subprogram} {F_C_name}({F_C_arguments}){F_result_clause} bind(C, name="{C_name}")',
+                '{F_pure_clause}{F_subprogram} {F_C_name}({F_C_arguments}){F_result_clause} &',
                 fmt_func))
-        c_interface.append(1)
+        c_interface.append(2)  # extra indent for continued line
+        c_interface.append(wformat(
+                'bind(C, name="{C_name}")',
+                fmt_func))
+        c_interface.append(-1)
         c_interface.append('use iso_c_binding')
         c_interface.append('implicit none')
         c_interface.extend(arg_c_decl)
