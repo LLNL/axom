@@ -26,7 +26,6 @@ classes:
 
     - decl: int incrementCount(int incr)
       docs: blah blah
-#      C_code:   my code
 
 #    - decl: string getName+const+reference
     - decl: const string& getName()
@@ -41,7 +40,8 @@ classes:
          attrs:
             const: True
             len: aa_get_exclass2_name_length(obj%obj)
-      C_code: return selfobj->getName().length();
+      options:
+         C_code: return selfobj->getName().length();
 
     - decl: ExClass2 *getRoot()
 
@@ -82,7 +82,8 @@ classes:
          attrs:
             const: True
             len: exclass2_get_name_length(obj%obj)
-      C_code: return selfobj->getName().length();
+      options:
+          C_code: return selfobj->getName().length();
 
     # test forward declarations
     - decl: ExClass1 *get_class1(ExClass1 *in)

@@ -10,6 +10,11 @@ import parse_decl
 
 fmt = string.Formatter()
 
+default_template = dict(
+    C_name_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+)
+
+
 def wformat(template, d):
     # shorthand, wrap fmt.vformat
     return fmt.vformat(template, None, d)
@@ -37,6 +42,17 @@ def eval_template3(options, fmt, name, default):
     fmt[vname] = option[tname]
     """
     setattr(fmt, name, wformat(options.get(name + '_template', default), fmt))
+
+def eval_template4(options, fmt, name):
+    """ If a tname exists in options, use it; else use default.
+    fmt[vname] = option[tname]
+    """
+    if hasattr(options, name):
+        setattr(fmt, name, getattr(options, name))
+    else:
+        tname = name + '_template'
+        setattr(fmt, name, wformat(options.get(tname,
+                                               default_template[tname]), fmt))
 
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case

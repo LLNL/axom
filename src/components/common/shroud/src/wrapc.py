@@ -279,25 +279,24 @@ class Wrapc(object):
                 self.header_forward[arg_typedef.c_type] = True
         fmt2_func.C_call_list = ', '.join(anames)
 
-        if 'C_name' not in node:
-            node['C_name'] = wformat(
-                options.C_name_method_template,
-                fmt2_func)
+        util.eval_template4(options, fmt2_func, 'C_name')
 
-        if 'C_return_type' not in node:
-            node['C_return_type'] = self._c_type('c_type', result)
+        fmt2_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
-        if 'C_arguments' not in node:
-            node['C_arguments'] = ', '.join(arguments)
+        fmt2_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
 
-        if 'C_object' not in node:
+        if hasattr(options, 'C_object'):
+            fmt2_func.C_object = options.C_object
+        else:
             if is_ctor:
                 template = '{const}{cpp_class} *{this}obj = new {cpp_class}({C_call_list});'
             else:
                 template = '{const}{cpp_class} *{this}obj = static_cast<{const}{cpp_class} *>({this});'
-            node['C_object'] = wformat(template, fmt2_func)
+            fmt2_func.C_object = wformat(template, fmt2_func)
 
-        if 'C_code' not in node:
+        if hasattr(options, 'C_code'):
+            fmt2_func.C_code = options.C_code
+        else:
             # generate the C body
             lines = []
             if is_ctor:
@@ -318,10 +317,10 @@ class Wrapc(object):
                 line = 'return ' + ret.format(var='rv') + ';'
                 lines.append(line)
 
-            node['C_code'] = "\n".join(lines)
+            fmt2_func.C_code = "\n".join(lines)
 
         self.header_proto_c.append(wformat('\n{C_return_type} {C_name}({C_arguments});\n',
-                                           node))
+                                           fmt2_func))
 
         self.impl.append(wformat("""
 {C_return_type} {C_name}({C_arguments})
@@ -331,4 +330,4 @@ class Wrapc(object):
 {C_code}
 // splicer end
 }}
-""", node))
+""", fmt2_func))

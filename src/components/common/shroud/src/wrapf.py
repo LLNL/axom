@@ -223,11 +223,10 @@ class Wrapf(object):
         fmt2_func.update(dict(
             F_this=options.F_this,
             F_result=F_result,
-            C_name=node['C_name'],
             ))
 
         if 'F_C_name' not in node:
-            node['F_C_name'] = node['C_name'].lower()
+            node['F_C_name'] = fmt2_func.C_name.lower()
         fmt2_func.F_C_name = node['F_C_name']
 
         util.eval_template3(options, fmt2_func,

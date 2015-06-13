@@ -34,11 +34,6 @@
             }, 
             "methods": [
                 {
-                    "C_arguments": "const char * name", 
-                    "C_code": "return (AA_exclass1 *) selfobj;", 
-                    "C_name": "AA_exclass1_new", 
-                    "C_object": "ExClass1 *selfobj = new ExClass1(name);", 
-                    "C_return_type": "AA_exclass1 *", 
                     "F_C_arguments": "name", 
                     "F_C_name": "aa_exclass1_new", 
                     "F_arguments": "name", 
@@ -56,8 +51,12 @@
                     "decl": "ExClass1 *new+constructor ( const string *name )", 
                     "docs": "constructor", 
                     "fmt": {
+                        "C_arguments": "const char * name", 
                         "C_call_list": "name", 
+                        "C_code": "return (AA_exclass1 *) selfobj;", 
                         "C_name": "AA_exclass1_new", 
+                        "C_object": "ExClass1 *selfobj = new ExClass1(name);", 
+                        "C_return_type": "AA_exclass1 *", 
                         "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass1_new", 
                         "F_arguments": "name", 
@@ -91,11 +90,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self", 
-                    "C_code": "delete selfobj;", 
-                    "C_name": "AA_exclass1_delete", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "void", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass1_delete", 
                     "F_arguments": "obj", 
@@ -103,8 +97,12 @@
                     "args": [], 
                     "decl": "void delete+destructor", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
+                        "C_code": "delete selfobj;", 
                         "C_name": "AA_exclass1_delete", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "void", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_delete", 
                         "F_arguments": "obj", 
@@ -137,11 +135,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self, int incr", 
-                    "C_code": "int rv = selfobj->incrementCount(incr);\nreturn rv;", 
-                    "C_name": "AA_exclass1_increment_count", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "int", 
                     "F_C_arguments": "self, incr", 
                     "F_C_name": "aa_exclass1_increment_count", 
                     "F_arguments": "obj, incr", 
@@ -156,8 +149,12 @@
                     "decl": "int incrementCount(int incr)", 
                     "docs": "blah blah", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self, int incr", 
                         "C_call_list": "incr", 
+                        "C_code": "int rv = selfobj->incrementCount(incr);\nreturn rv;", 
                         "C_name": "AA_exclass1_increment_count", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "int", 
                         "F_C_arguments": "self, incr", 
                         "F_C_name": "aa_exclass1_increment_count", 
                         "F_arguments": "obj, incr", 
@@ -188,11 +185,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "const AA_exclass1 * self", 
-                    "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
-                    "C_name": "AA_exclass1_get_name", 
-                    "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
-                    "C_return_type": "const char *", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass1_get_name", 
                     "F_arguments": "obj", 
@@ -200,8 +192,12 @@
                     "args": [], 
                     "decl": "const string& getName()", 
                     "fmt": {
+                        "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
+                        "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
                         "C_name": "AA_exclass1_get_name", 
+                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                        "C_return_type": "const char *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name", 
                         "F_arguments": "obj", 
@@ -237,19 +233,18 @@
                     }
                 }, 
                 {
-                    "C_arguments": "const AA_exclass1 * self", 
-                    "C_code": "return selfobj->getName().length();", 
-                    "C_name": "AA_exclass1_get_name_length", 
-                    "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
-                    "C_return_type": "const int", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass1_get_name_length", 
                     "F_arguments": "obj", 
                     "F_code": "rv = aa_exclass1_get_name_length(obj%obj)", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
+                        "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
+                        "C_code": "return selfobj->getName().length();", 
                         "C_name": "AA_exclass1_get_name_length", 
+                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                        "C_return_type": "const int", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_length", 
                         "F_arguments": "obj", 
@@ -272,7 +267,9 @@
                         "this": "self", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "options": {}, 
+                    "options": {
+                        "C_code": "return selfobj->getName().length();"
+                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -283,11 +280,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self", 
-                    "C_code": "ExClass2 * rv = selfobj->getRoot();\nreturn rv;", 
-                    "C_name": "AA_exclass1_get_root", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "AA_exclass2 *", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass1_get_root", 
                     "F_arguments": "obj", 
@@ -295,8 +287,12 @@
                     "args": [], 
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
+                        "C_code": "ExClass2 * rv = selfobj->getRoot();\nreturn rv;", 
                         "C_name": "AA_exclass1_get_root", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "AA_exclass2 *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_root", 
                         "F_arguments": "obj", 
@@ -329,11 +325,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self, int value", 
-                    "C_code": "int rv = selfobj->getValue(value);\nreturn rv;", 
-                    "C_name": "AA_exclass1_get_value_from_int", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "int", 
                     "F_C_arguments": "self, value", 
                     "F_C_name": "aa_exclass1_get_value_from_int", 
                     "F_arguments": "obj, value", 
@@ -347,8 +338,12 @@
                     ], 
                     "decl": "int  getValue(int value)", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self, int value", 
                         "C_call_list": "value", 
+                        "C_code": "int rv = selfobj->getValue(value);\nreturn rv;", 
                         "C_name": "AA_exclass1_get_value_from_int", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "int", 
                         "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_from_int", 
                         "F_arguments": "obj, value", 
@@ -380,11 +375,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self, long value", 
-                    "C_code": "long rv = selfobj->getValue(value);\nreturn rv;", 
-                    "C_name": "AA_exclass1_get_value_1", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "long", 
                     "F_C_arguments": "self, value", 
                     "F_C_name": "aa_exclass1_get_value_1", 
                     "F_arguments": "obj, value", 
@@ -398,8 +388,12 @@
                     ], 
                     "decl": "long getValue(long value)", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self, long value", 
                         "C_call_list": "value", 
+                        "C_code": "long rv = selfobj->getValue(value);\nreturn rv;", 
                         "C_name": "AA_exclass1_get_value_1", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "long", 
                         "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_1", 
                         "F_arguments": "obj, value", 
@@ -431,11 +425,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self", 
-                    "C_code": "void * rv = selfobj->getAddr();\nreturn rv;", 
-                    "C_name": "AA_exclass1_get_addr", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "void *", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass1_get_addr", 
                     "F_arguments": "obj", 
@@ -443,8 +432,12 @@
                     "args": [], 
                     "decl": "void *getAddr()", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
+                        "C_code": "void * rv = selfobj->getAddr();\nreturn rv;", 
                         "C_name": "AA_exclass1_get_addr", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "void *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_addr", 
                         "F_arguments": "obj", 
@@ -477,11 +470,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass1 * self, bool in", 
-                    "C_code": "bool rv = selfobj->hasAddr(in);\nreturn rv;", 
-                    "C_name": "AA_exclass1_has_addr", 
-                    "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                    "C_return_type": "bool", 
                     "F_C_arguments": "self, in", 
                     "F_C_name": "aa_exclass1_has_addr", 
                     "F_arguments": "obj, in", 
@@ -495,8 +483,12 @@
                     ], 
                     "decl": "bool hasAddr(bool in)", 
                     "fmt": {
+                        "C_arguments": "AA_exclass1 * self, bool in", 
                         "C_call_list": "in", 
+                        "C_code": "bool rv = selfobj->hasAddr(in);\nreturn rv;", 
                         "C_name": "AA_exclass1_has_addr", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "bool", 
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass1_has_addr", 
                         "F_arguments": "obj, in", 
@@ -566,11 +558,6 @@
             }, 
             "methods": [
                 {
-                    "C_arguments": "const char * name", 
-                    "C_code": "return (AA_exclass2 *) selfobj;", 
-                    "C_name": "AA_exclass2_ex_class2", 
-                    "C_object": "ExClass2 *selfobj = new ExClass2(name);", 
-                    "C_return_type": "AA_exclass2 *", 
                     "F_C_arguments": "name", 
                     "F_C_name": "aa_exclass2_ex_class2", 
                     "F_arguments": "name", 
@@ -587,8 +574,12 @@
                     ], 
                     "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
                     "fmt": {
+                        "C_arguments": "const char * name", 
                         "C_call_list": "name", 
+                        "C_code": "return (AA_exclass2 *) selfobj;", 
                         "C_name": "AA_exclass2_ex_class2", 
+                        "C_object": "ExClass2 *selfobj = new ExClass2(name);", 
+                        "C_return_type": "AA_exclass2 *", 
                         "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass2_ex_class2", 
                         "F_arguments": "name", 
@@ -622,11 +613,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass2 * self", 
-                    "C_code": "delete selfobj;", 
-                    "C_name": "AA_exclass2_ex_class1", 
-                    "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                    "C_return_type": "void", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass2_ex_class1", 
                     "F_arguments": "obj", 
@@ -634,8 +620,12 @@
                     "args": [], 
                     "decl": "void ExClass1+destructor", 
                     "fmt": {
+                        "C_arguments": "AA_exclass2 * self", 
                         "C_call_list": "", 
+                        "C_code": "delete selfobj;", 
                         "C_name": "AA_exclass2_ex_class1", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_ex_class1", 
                         "F_arguments": "obj", 
@@ -668,11 +658,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "const AA_exclass2 * self", 
-                    "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
-                    "C_name": "AA_exclass2_get_name", 
-                    "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
-                    "C_return_type": "const char *", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass2_get_name", 
                     "F_arguments": "obj", 
@@ -680,8 +665,12 @@
                     "args": [], 
                     "decl": "const string& getName", 
                     "fmt": {
+                        "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
+                        "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
                         "C_name": "AA_exclass2_get_name", 
+                        "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
+                        "C_return_type": "const char *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name", 
                         "F_arguments": "obj", 
@@ -717,19 +706,18 @@
                     }
                 }, 
                 {
-                    "C_arguments": "const AA_exclass2 * self", 
-                    "C_code": "return selfobj->getName().length();", 
-                    "C_name": "AA_exclass2_get_name_length", 
-                    "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
-                    "C_return_type": "const int", 
                     "F_C_arguments": "self", 
                     "F_C_name": "aa_exclass2_get_name_length", 
                     "F_arguments": "obj", 
                     "F_code": "rv = aa_exclass2_get_name_length(obj%obj)", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
+                        "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
+                        "C_code": "return selfobj->getName().length();", 
                         "C_name": "AA_exclass2_get_name_length", 
+                        "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
+                        "C_return_type": "const int", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name_length", 
                         "F_arguments": "obj", 
@@ -752,7 +740,9 @@
                         "this": "self", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "options": {}, 
+                    "options": {
+                        "C_code": "return selfobj->getName().length();"
+                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -763,11 +753,6 @@
                     }
                 }, 
                 {
-                    "C_arguments": "AA_exclass2 * self, AA_exclass1 * in", 
-                    "C_code": "ExClass1 * rv = selfobj->get_class1(static_cast<ExClass1 *>(in));\nreturn rv;", 
-                    "C_name": "AA_exclass2_get_class1", 
-                    "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                    "C_return_type": "AA_exclass1 *", 
                     "F_C_arguments": "self, in", 
                     "F_C_name": "aa_exclass2_get_class1", 
                     "F_arguments": "obj, in", 
@@ -783,8 +768,12 @@
                     ], 
                     "decl": "ExClass1 *get_class1(ExClass1 *in)", 
                     "fmt": {
+                        "C_arguments": "AA_exclass2 * self, AA_exclass1 * in", 
                         "C_call_list": "static_cast<ExClass1 *>(in)", 
+                        "C_code": "ExClass1 * rv = selfobj->get_class1(static_cast<ExClass1 *>(in));\nreturn rv;", 
                         "C_name": "AA_exclass2_get_class1", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "AA_exclass1 *", 
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass2_get_class1", 
                         "F_arguments": "obj, in", 
