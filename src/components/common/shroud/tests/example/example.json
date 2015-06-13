@@ -65,7 +65,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "new", 
                         "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "new"
@@ -102,7 +101,6 @@
                         "F_name_method": "delete", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
-                        "const": "", 
                         "method_name": "delete", 
                         "rv_decl": "void rv", 
                         "underscore_name": "delete"
@@ -146,7 +144,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "incrementCount", 
                         "rv_decl": "int rv", 
                         "underscore_name": "increment_count"
@@ -167,6 +164,7 @@
                         "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
+                        "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name", 
                         "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
                         "C_return_type": "const char *", 
@@ -182,7 +180,6 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "const ", 
                         "method_name": "getName", 
                         "rv_decl": "const std::string & rv", 
                         "rvlen": "aa_exclass1_get_name_length(obj%obj)", 
@@ -207,6 +204,7 @@
                         "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "return selfobj->getName().length();", 
+                        "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name_length", 
                         "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
                         "C_return_type": "const int", 
@@ -222,7 +220,6 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "const ", 
                         "method_name": "get_name_length", 
                         "rv_decl": "const int rv", 
                         "underscore_name": "get_name_length"
@@ -262,7 +259,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "getRoot", 
                         "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "get_root"
@@ -305,7 +301,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "getValue", 
                         "method_suffix": "_from_int", 
                         "rv_decl": "int rv", 
@@ -348,7 +343,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "getValue", 
                         "method_suffix": "_1", 
                         "rv_decl": "long rv", 
@@ -384,7 +378,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "getAddr", 
                         "rv_decl": "void * rv", 
                         "underscore_name": "get_addr"
@@ -427,7 +420,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "hasAddr", 
                         "rv_decl": "bool rv", 
                         "underscore_name": "has_addr"
@@ -509,7 +501,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "ExClass2", 
                         "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "ex_class2"
@@ -546,7 +537,6 @@
                         "F_name_method": "ex_class1", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
-                        "const": "", 
                         "method_name": "ExClass1", 
                         "rv_decl": "void rv", 
                         "underscore_name": "ex_class1"
@@ -569,6 +559,7 @@
                         "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
+                        "C_const": "const ", 
                         "C_name": "AA_exclass2_get_name", 
                         "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
                         "C_return_type": "const char *", 
@@ -584,7 +575,6 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "const ", 
                         "method_name": "getName", 
                         "rv_decl": "const std::string & rv", 
                         "rvlen": "aa_exclass2_get_name_length(obj%obj)", 
@@ -609,6 +599,7 @@
                         "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "return selfobj->getName().length();", 
+                        "C_const": "const ", 
                         "C_name": "AA_exclass2_get_name_length", 
                         "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
                         "C_return_type": "const int", 
@@ -624,7 +615,6 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "const ", 
                         "method_name": "get_name_length", 
                         "rv_decl": "const int rv", 
                         "underscore_name": "get_name_length"
@@ -672,7 +662,6 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "const": "", 
                         "method_name": "get_class1", 
                         "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "get_class1"
@@ -699,6 +688,7 @@
         null
     ], 
     "fmt": {
+        "C_const": "", 
         "C_this": "self", 
         "F_pure_clause": "", 
         "F_result": "rv", 

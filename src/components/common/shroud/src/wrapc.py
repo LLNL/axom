@@ -80,6 +80,7 @@ class Wrapc(object):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
         fmt_library.C_this = options.get('C_this', 'self')
+        fmt_library.C_const = ''
 
         for node in self.tree['classes']:
             fmt_class = node['fmt']
@@ -235,7 +236,8 @@ class Wrapc(object):
             # i.e. This method returns a wrapped type
             self.header_forward[result_typedef.c_type] = True
 
-        fmt_func.const = 'const ' if is_const else ''
+        if is_const:
+            fmt_func.C_const = 'const '
         fmt_func.CPP_this = C_this + 'obj'
         fmt_func.CPP_name = result['name']
         fmt_func.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
@@ -278,9 +280,9 @@ class Wrapc(object):
             fmt_func.C_object = options.C_object
         else:
             if is_ctor:
-                template = '{const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
+                template = '{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
             else:
-                template = '{const}{cpp_class} *{C_this}obj = static_cast<{const}{cpp_class} *>({C_this});'
+                template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
             fmt_func.C_object = wformat(template, fmt_func)
 
         if hasattr(options, 'C_code'):
