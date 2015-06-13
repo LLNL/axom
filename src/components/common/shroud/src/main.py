@@ -240,7 +240,6 @@ class Schema(object):
             if len(methods) > 1:
                 for i, method in enumerate(methods):
                     if 'method_suffix' not in method:
-#                        method['method_suffix'] = '_%d' % i
                         method['fmt'].method_suffix =  '_%d' % i
 
         self.pop_fmt()
@@ -260,7 +259,7 @@ class Schema(object):
             util.update(node, values)  # recursive update
         if 'method_suffix' in node and node['method_suffix'] is None:
             # YAML turns blanks strings to None
-            del node['method_suffix']
+            node['method_suffix'] = ''
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']

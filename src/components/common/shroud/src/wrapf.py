@@ -375,14 +375,18 @@ class Wrapf(object):
         output.append(1)
 
         output.append('use fstr_mod')
-        for mname, only in node['F_module_dependencies']:
-            if mname == module_name:
-                continue
-            if only:
-                output.append('use %s, only : %s' % (
-                        mname, ', '.join(only)))
-            else:
-                output.append('use %s' % mname)
+        if node['options'].F_module_per_class:
+            # XXX this will have some problems because of forward declarations
+            for mname, only in node['F_module_dependencies']:
+                if mname == module_name:
+                    continue
+                if only:
+                    output.append('use %s, only : %s' % (
+                            mname, ', '.join(only)))
+                else:
+                    output.append('use %s' % mname)
+        else:
+            output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
 
         output.extend(self.f_type)
 

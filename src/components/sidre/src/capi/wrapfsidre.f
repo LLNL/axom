@@ -9,6 +9,7 @@
 !
 module sidre_mod
     use fstr_mod
+    use, intrinsic :: iso_c_binding, only : C_PTR
     
     type datastore
         type(C_PTR) obj
