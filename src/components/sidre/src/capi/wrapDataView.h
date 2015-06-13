@@ -34,11 +34,11 @@ struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
-ATK_dataview * ATK_dataview_declare(ATK_dataview * self, const int type, const ATK_SidreLength len);
+ATK_dataview * ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len);
 
-ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, const int type, const ATK_SidreLength len);
+ATK_dataview * ATK_dataview_allocate(ATK_dataview * self, int type, ATK_SidreLength len);
 
-ATK_dataview * ATK_dataview_reallocate(ATK_dataview * self, const int type, const ATK_SidreLength len);
+ATK_dataview * ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len);
 
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 

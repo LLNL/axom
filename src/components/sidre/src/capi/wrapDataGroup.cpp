@@ -79,7 +79,7 @@ return rv;
 // splicer end
 }
 
-ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, const int type, const ATK_SidreLength len)
+ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength len)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin

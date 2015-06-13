@@ -84,7 +84,7 @@ classes:
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *createViewAndBuffer( const string& name )
        method_suffix:
-    -  decl: DataView *createViewAndBuffer( const std::string& name, const TypeID type, const SidreLength len)
+    -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
        method_suffix: _from_type
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
@@ -130,16 +130,16 @@ classes:
     methods:
       - decl: IndexType getIndex() const
 #      - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(const TypeID type, const SidreLength len)
+      - decl: DataBuffer* declare(TypeID type, SidreLength len)
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
         method_suffix:
-      - decl: DataBuffer* allocate(const TypeID type, const SidreLength len)
+      - decl: DataBuffer* allocate(TypeID type, SidreLength len)
         method_suffix: _from_type
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
-      - decl: DataBuffer * reallocate(const TypeID type, const SidreLength len)
+      - decl: DataBuffer * reallocate(TypeID type, SidreLength len)
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
       - decl: void* getData()
@@ -156,14 +156,14 @@ classes:
       cpp_header: sidre/DataView.hpp
 
     methods:
-    - decl: DataView* declare(const TypeID type, const SidreLength len)
+    - decl: DataView* declare(TypeID type, SidreLength len)
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
-    - decl: DataView* allocate(const TypeID type, const SidreLength len)
+    - decl: DataView* allocate(TypeID type, SidreLength len)
 #    - decl: DataView* allocate()
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
-    - decl: DataView * reallocate(const TypeID type, const SidreLength len)
+    - decl: DataView * reallocate(TypeID type, SidreLength len)
 #    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* reallocate(const DataType& dtype)
 #    - decl: DataView* apply()
