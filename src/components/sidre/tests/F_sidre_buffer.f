@@ -1,159 +1,163 @@
-/*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
- */
+!
+! Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+! Produced at the Lawrence Livermore National Laboratory.
+!
+! All rights reserved.
+!
+! This source code cannot be distributed without permission and
+! further review from Lawrence Livermore National Laboratory.
+!
 
-#include "gtest/gtest.h"
+module sidre_buffer
+  use iso_c_binding
+  use fruit
+  use sidre_mod
+  implicit none
 
-#include "sidre/sidre.hpp"
+contains
+!------------------------------------------------------------------------------
 
-#include "conduit/conduit.hpp"
+  subroutine create_buffers
+    type(datastore) ds
+    type(databuffer) dbuff_0, dbuff_1, dbuff_3
 
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataBuffer;
+    ds = datastore_new()
 
-using namespace conduit;
+    dbuff_0 = ds%create_buffer()
+    dbuff_1 = ds%create_buffer()
 
-//------------------------------------------------------------------------------
+    call assert_equals(dbuff_0%get_index(), 0)
+    call assert_equals(dbuff_1%get_index(), 1)
+    call ds%destroy_buffer(0)
 
-TEST(sidre_buffer,create_buffers)
-{
-  DataStore * ds = new DataStore();
-  DataBuffer * dbuff_0 = ds->createBuffer();
-  DataBuffer * dbuff_1 = ds->createBuffer();
+    dbuff_3 = ds%create_buffer()
+    call assert_equals(dbuff_3%get_index(), 0)
+    call ds%print()
+    call datastore_delete(ds)
+  end subroutine create_buffers
 
-  EXPECT_EQ(dbuff_0->getIndex(), 0);
-  EXPECT_EQ(dbuff_1->getIndex(), 1);
-  ds->destroyBuffer(0);
+!------------------------------------------------------------------------------
 
-  DataBuffer * dbuff_3 = ds->createBuffer();
-  EXPECT_EQ(dbuff_3->getIndex(), 0);
-  ds->print();
-  delete ds;
-}
+  subroutine alloc_buffer_for_int_array
+    type(datastore) ds
+    type(databuffer) dbuff
+    type(C_PTR) data_ptr
+    integer(C_INT), pointer :: data(:)
+    integer i
+    
+    ds = datastore_new()
 
-//------------------------------------------------------------------------------
+    dbuff = ds%create_buffer()
 
-TEST(sidre_buffer,alloc_buffer_for_uint32_array)
-{
-  DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+    call dbuff%declare(ATK_C_INT_T, 10_8)
+    call dbuff%allocate()
 
-  //dbuff->declare(DataType::uint32(10));
-  dbuff->declare(DataType::UINT32_T, 10);
-  dbuff->allocate();
+    data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ 10 ])
 
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+    do i = 1, 10
+       data(i) = i * i
+    enddo
 
-  for(int i=0 ; i<10 ; i++)
-  {
-    data_ptr[i] = i*i;
-  }
+!    dbuff%getNode().print_detailed()
 
-  dbuff->getNode().print_detailed();
+!    call assert_equals(dbuff%getNode().schema().total_bytes(), &
+!         dbuff%getSchema().total_bytes())
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+    call ds%print()
+    call datastore_delete(ds)
+  end subroutine alloc_buffer_for_int_array
 
-  ds->print();
-  delete ds;
+!------------------------------------------------------------------------------
 
-}
+  subroutine init_buffer_for_int_array
+    type(datastore) ds
+    type(databuffer) dbuff
+    type(C_PTR) data_ptr
+    integer(C_INT), pointer :: data(:)
+    integer i
 
-//------------------------------------------------------------------------------
+    dbuff = ds%create_buffer()
 
-TEST(sidre_buffer,init_buffer_for_uint32_array)
-{
-  DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+    call dbuff%allocate(ATK_C_INT_T, 10_8)
+    data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ 10 ])
 
-  dbuff->allocate(DataType::uint32(10));
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+    do i = 1, 10
+       data(i) = i * i
+    enddo
 
-  for(int i=0 ; i<10 ; i++)
-  {
-    data_ptr[i] = i*i;
-  }
+!  dbuff%getNode().print_detailed()
 
-  dbuff->getNode().print_detailed();
+!  call assert_equals(dbuff%getNode().schema().total_bytes(),
+!            dbuff%getSchema().total_bytes())
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+    call ds%print()
+    call datastore_delete(ds)
+  end subroutine init_buffer_for_int_array
 
-  ds->print();
-  delete ds;
+!------------------------------------------------------------------------------
 
-}
+  subroutine realloc_buffer
+    type(datastore) ds
+    type(databuffer) dbuff
+    type(C_PTR) data_ptr
+    integer(C_LONG), pointer :: data(:)
+    integer i
 
+    ds = datastore_new()
 
-//------------------------------------------------------------------------------
+    dbuff = ds%create_buffer()
 
-TEST(sidre_buffer,realloc_buffer)
-{
-  DataStore * ds = new DataStore();
-  DataBuffer * dbuff = ds->createBuffer();
+    call dbuff%allocate(ATK_C_LONG_T, 5_8)
 
-  dbuff->allocate(DataType::c_long(5));
+!    call assert_equals(dbuff%getNode().schema().total_bytes(), sizeof(long)*5)
 
+    data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ 5 ])
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(long)*5);
+    data(:) = 5
 
-  long * data_ptr = dbuff->getNode().as_long_ptr();
+    ! call dbuff%getNode().print_detailed()
+  
+    call dbuff%reallocate(ATK_C_LONG_T, 10_8)
 
-  for(int i=0 ; i<5 ; i++)
-  {
-    data_ptr[i] = 5;
-  }
+    ! data buffer changes
+    data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ 10 ])
 
-  dbuff->getNode().print_detailed();
+    do i = 1, 5
+       call assert_equals(int(data(i)), 5)  ! XXX cast
+    enddo
 
-  dbuff->reallocate(DataType::c_long(10));
+    do i = 6, 10
+       data(i) = 10
+    enddo
 
-  // data buffer changes
-  data_ptr = dbuff->getNode().as_long_ptr();
+!  call assert_equals(dbuff%getNode().schema().total_bytes(), sizeof(long)*10)
 
-  for(int i=0 ; i<5 ; i++)
-  {
-    EXPECT_EQ(data_ptr[i],5);
-  }
+!  dbuff%getNode().print_detailed()
 
-  for(int i=5 ; i<10 ; i++)
-  {
-    data_ptr[i] = 10;
-  }
+    call ds%print()
+    call datastore_delete(ds)
 
+  end subroutine realloc_buffer
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(long)*10);
+!----------------------------------------------------------------------
+end module sidre_buffer
+!----------------------------------------------------------------------
 
-  dbuff->getNode().print_detailed();
+program tester
+  use fruit
+  use sidre_buffer
+  call init_fruit
 
-  ds->print();
-  delete ds;
+! XXX ERROR: `log` is called with a NULL logger!
+!  call create_buffers
+!  call alloc_buffer_for_int_array
+!  call init_buffer_for_int_array
+!  call realloc_buffer
 
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char* argv[])
-{
-   int result = 0;
-
-   ::testing::InitGoogleTest(&argc, argv);
-
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
-   
-   result = RUN_ALL_TESTS();
-
-   return result;
-}
+  call fruit_summary
+  call fruit_finalize
+end program tester

@@ -9,9 +9,9 @@
 !
 
 module sidre_view
+  use iso_c_binding
   use fruit
   use sidre_mod
-  use iso_c_binding
   implicit none
 
 contains
