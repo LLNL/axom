@@ -11,6 +11,7 @@
 module sidre_view
   use fruit
   use sidre_mod
+  use iso_c_binding
   implicit none
 
 contains
@@ -42,18 +43,22 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview) dv
+    type(C_PTR) data_ptr
+    integer(C_INT), pointer :: data(:)
+    integer i
 
     ds = datastore_new()
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0")
     call dv%allocate(ATK_C_INT_T, 10_8)
-!--    int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv)
-!--
-!--    for(int i=0  i<10  i++) {
-!--    data_ptr[i] = i*i
-!--    }
-!--
+    data_ptr = dv%get_data_buffer()
+    call c_f_pointer(data_ptr, data, [ 10 ])
+
+    do i = 1, 10
+       data(i) = i * i
+    enddo
+
 !--#ifdef XXX
 !--    dv->getNode().print_detailed()
 !--#endif
@@ -68,21 +73,26 @@ contains
   subroutine int_buffer_from_view_conduit_value()
     type(datastore) ds
     type(datagroup) root
+    type(dataview) dv
+    type(C_PTR) data_ptr
+    integer(C_INT), pointer :: data(:)
+    integer i
 
     ds = datastore_new()
     root = ds%get_root()
 
-!--    ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10)
-!--    int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv)
-!--
-!--    for(int i=0  i<10  i++) {
-!--    data_ptr[i] = i*i
-!--    }
-!--
+    dv = root%create_view_and_buffer("u0", ATK_C_INT_T, 10_8)
+    data_ptr = dv%get_data_buffer()
+    call c_f_pointer(data_ptr, data, [ 10 ])
+
+    do i = 1, 10
+       data(i) = i * i
+    enddo
+
 !--#ifdef XXX
 !--    dv->getNode().print_detailed()
 !--#endif
-!--
+
 !--    EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10)
     call datastore_delete(ds)
   end subroutine int_buffer_from_view_conduit_value
@@ -92,32 +102,35 @@ contains
   subroutine int_array_multi_view()
     type(datastore) ds
     type(datagroup) root
+    type(databuffer) dbuff
+!    type(dataview) dv_e, dv_o 
+    type(C_PTR) data_ptr
+    integer(C_INT), pointer :: data(:)
+    integer i
 
     ds = datastore_new()
     root = ds%get_root()
-!--    ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds)
-!--    
-!--    ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10)
-!--    ATK_databuffer_allocate_existing(dbuff)
-!--    int * data_ptr = (int *) ATK_databuffer_get_data(dbuff)
-!--
-!--    for(int i=0  i<10  i++) {
-!--    data_ptr[i] = i
-!--    }
-!--
+    dbuff = ds%create_buffer()
+
+    call dbuff%declare(ATK_C_INT_T, 10_8)
+    call dbuff%allocate()
+    data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ 10 ])
+
+    do i = 1, 10
+       data(i) = i
+    enddo
+
 !--#ifdef XXX
 !--    dbuff->getNode().print_detailed()
 !--
 !--    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
 !--              dbuff->getSchema().total_bytes())
 !--#endif
-!--
-!--
-!--     ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even", dbuff)
-!--     ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd", dbuff)
-!--     EXPECT_TRUE(dv_e != NULL)
-!--     EXPECT_TRUE(dv_o != NULL)
-!--
+
+!    dv_e = root%create_view("even", dbuff)
+!    dv_o = root%create_view("odd", dbuff)
+
 !--#ifdef XXX
 !--  dv_e->apply(DataType::uint32(5,0,8))
 !--
@@ -141,40 +154,43 @@ contains
 !--    EXPECT_EQ(dv_o_ptr[i] % 2, 1u)
 !--  }
 !--#endif
-!--     ATK_datastore_print(ds)
-     call datastore_delete(ds)
-   end subroutine int_array_multi_view
+!    call ds%print()
+    call datastore_delete(ds)
+  end subroutine int_array_multi_view
 
 !------------------------------------------------------------------------------
 
   subroutine init_int_array_multi_view()
     type(datastore) ds
     type(datagroup) root
-
+    type(databuffer) dbuff
+    type(dataview) dv_e, dv_o 
+    type(C_PTR) data_ptr
+    integer, pointer :: data(:)
+    integer i
+    
     ds = datastore_new()
     root = ds%get_root()
-!--     ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds)
-!--
-!--     ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10)
-!--     int * data_ptr = (int *) ATK_databuffer_get_data(dbuff)
-!--
-!--  for(int i=0  i<10  i++) {
-!--    data_ptr[i] = i
-!--  }
-!--
+    dbuff = ds%create_buffer()
+    
+    call dbuff%allocate(ATK_C_INT_T, 10_8)
+    data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ 10 ])
+
+    do i = 1, 10
+       data(i) = i
+    enddo
+
 !--#ifdef XXX
 !--  dbuff->getNode().print_detailed()
 !--
 !--  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
 !--            dbuff->getSchema().total_bytes())
 !--#endif
-!--
-!--
-!--     ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even",dbuff)
-!--     ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd",dbuff)
-!--     EXPECT_TRUE(dv_e != NULL)
-!--     EXPECT_TRUE(dv_o != NULL)
-!--
+
+    dv_e = root%create_view("even", dbuff)
+    dv_o = root%create_view("odd", dbuff)
+
 !--#ifdef XXX
 !--  ! uint32(num_elems, offset, stride)
 !--  dv_e->apply(DataType::uint32(5,0,8))
@@ -204,12 +220,12 @@ contains
 !--#endif
 !--
 !--     ATK_datastore_print(ds)
-     call datastore_delete(ds)
-   end subroutine init_int_array_multi_view
+    call datastore_delete(ds)
+  end subroutine init_int_array_multi_view
 
 !------------------------------------------------------------------------------
 
-   subroutine int_array_multi_view_resize()
+  subroutine int_array_multi_view_resize()
      !
      ! This example creates a 4 * 10 buffer of ints,
      ! and 4 views that point the 4 sections of 10 ints
@@ -221,7 +237,11 @@ contains
      ! into the new views
      !
     type(datastore) ds
-    type(datagroup) root
+    type(datagroup) root, r_old
+    type(dataview) base_old
+    type(C_PTR) data_ptr
+    integer(C_INT), pointer :: data(:)
+    integer i
 
     ! create our main data store
     ds = datastore_new()
@@ -229,32 +249,32 @@ contains
     ! get access to our root data Group
     root = ds%get_root()
 
-  ! create a group to hold the "old" or data we want to copy
-!--  ATK_datagroup * r_old = ATK_datagroup_create_group(root, "r_old")
-  ! create a view to hold the base buffer
-!--  ATK_dataview * base_old = ATK_datagroup_create_view_and_buffer_simple(r_old, "base_data")
-!--
-!--  ! alloc our buffer
-!--  ! we will create 4 sub views of this array
-!--  ATK_dataview_allocate(base_old, ATK_C_INT_T, 40)
-!--  int * data_ptr = (int *) ATK_dataview_get_data_buffer(base_old)
-!--
-!--
-!--  ! init the buff with values that align with the
-!--  ! 4 subsections.
-!--  for(int i=0  i<10  i++) {
-!--    data_ptr[i] = 1
-!--  }
-!--  for(int i=10  i<20  i++) {
-!--    data_ptr[i] = 2
-!--  }
-!--  for(int i=20  i<30  i++) {
-!--    data_ptr[i] = 3
-!--  }
-!--  for(int i=30  i<40  i++) {
-!--    data_ptr[i] = 4
-!--  }
-!--
+    ! create a group to hold the "old" or data we want to copy
+    r_old = root%create_group("r_old")
+    ! create a view to hold the base buffer
+    base_old = r_old%create_view_and_buffer("base_data")
+
+    ! alloc our buffer
+    ! we will create 4 sub views of this array
+    call base_old%allocate(ATK_C_INT_T, 40_8)
+    data_ptr = base_old%get_data_buffer()
+    call c_f_pointer(data_ptr, data, [ 40 ])
+
+    ! init the buff with values that align with the
+    ! 4 subsections.
+    do i = 1, 10
+       data(i) = 1
+    enddo
+    do i = 11, 20
+       data(i) = 2
+    enddo
+    do i = 21, 30
+       data(i) = 3
+    enddo
+    do i = 31, 40
+       data(i) = 4
+    enddo
+
 !--#ifdef XXX
 !--  ! setup our 4 views
 !--  ATK_databuffer * buff_old = ATK_dataview_get_buffer(base_old)
@@ -299,7 +319,7 @@ contains
 !--  ! create a group to hold the "old" or data we want to copy into
 !--  ATK_datagroup * r_new = ATK_datagroup_create_group(root, "r_new")
 !--  ! create a view to hold the base buffer
-!--  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer_simple(r_new, "base_data")
+!--  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer(r_new, "base_data")
 !--
 !--  ! alloc our buffer
 !--  ! create a buffer to hold larger subarrays
@@ -367,7 +387,7 @@ contains
 !--  buff_new->getNode().print()
 !--#endif
 !--
-!--  ATK_datastore_print(ds)
+    call ds%print()
     call datastore_delete(ds)
 
   end subroutine int_array_multi_view_resize
@@ -431,7 +451,7 @@ contains
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*15)
 !--
 !--
-!--  ATK_datastore_print(ds)
+    call ds%print()
     call datastore_delete(ds)
 
   end subroutine int_array_realloc
@@ -465,9 +485,9 @@ contains
 !--  int * out_data = (int *)opq_ptr
 !--  EXPECT_EQ(opq_ptr,src_ptr)
 !--  EXPECT_EQ(out_data[0],42)
-!--
-!--  ATK_datastore_print(ds)
-  call datastore_delete(ds)
+
+    call ds%print()
+    call datastore_delete(ds)
 !--  free(src_data)
   end subroutine simple_opaque
 
@@ -480,7 +500,14 @@ program tester
   use sidre_view
   call init_fruit
 
-  call create_views()
+  call create_views
+  call int_buffer_from_view
+  call int_buffer_from_view_conduit_value
+  call int_array_multi_view
+  call init_int_array_multi_view
+  call int_array_multi_view_resize
+  call int_array_realloc
+  call simple_opaque
 
   call fruit_summary
   call fruit_finalize
