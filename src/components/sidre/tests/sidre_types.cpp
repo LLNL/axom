@@ -13,8 +13,6 @@
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
 
-//#include "conduit/conduit.h"
-
 using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::getTypeID;

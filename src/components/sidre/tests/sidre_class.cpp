@@ -21,7 +21,6 @@ using asctoolkit::sidre::DataView;
 
 using namespace conduit;
 
-
 namespace classtest
 {
 

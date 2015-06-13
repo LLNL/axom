@@ -9,6 +9,7 @@
 ###############################################################################
 set(CMAKE_C_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran" CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit
@@ -26,13 +27,8 @@ set(CMAKE_CXX_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bgg++" CACHE PA
 #set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
 
 # boost headers from uberenv
-#set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/boost-headers@1.55.0" CACHE PATH "")
-
-###############################################################################
-# Set location for boost library
-# Need to provide your own boost and set this by hand, no boost 1.57 on BG/Q.
-###############################################################################
-#set(BOOST_ROOT "/usr/local/tools/boost" CACHE PATH "")
+set(ENABLE_BOOST ON CACHE PATH "")
+set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.55.0" CACHE PATH "")
 
 ###############################################################################
 # Additional Compiler Flags

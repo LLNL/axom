@@ -152,9 +152,8 @@ if(ENABLE_WARNINGS)
     if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
         add_definitions(/W2)
     else()
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-            "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            # using clang or gcc
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            # using gcc
             add_definitions(-Wall -Wextra -Werror)
         endif()
     endif()

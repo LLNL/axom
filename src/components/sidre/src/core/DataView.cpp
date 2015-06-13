@@ -24,6 +24,7 @@
 
 // Other toolkit project headers
 #include "common/CommonTypes.hpp"
+#include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "DataBuffer.hpp"
@@ -44,8 +45,10 @@ namespace sidre
  *
  *************************************************************************
  */
-DataView * DataView::declare(const TypeID type, const SidreLength len)
+DataView * DataView::declare(TypeID type, SidreLength len)
 {
+  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
+
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(len);
 
@@ -91,12 +94,14 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::allocate()
 {
-  // we only force alloc if there is a 1-1 between the view and buffer
-  ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  m_data_buffer->allocate(m_schema);
-  apply();
+  if ( m_data_buffer->getNumViews() == 1 )
+  {
+    m_data_buffer->allocate(m_schema);
+    apply();
+  }
   return this;
 }
 
@@ -107,7 +112,7 @@ DataView * DataView::allocate()
  *
  *************************************************************************
  */
-DataView * DataView::allocate( const TypeID type, const SidreLength len)
+DataView * DataView::allocate( TypeID type, SidreLength len)
 {
   declare(type, len);
   allocate();
@@ -154,20 +159,19 @@ DataView * DataView::allocate(const DataType& dtype)
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(const TypeID type, const SidreLength len)
+DataView * DataView::reallocate(TypeID type, SidreLength len)
 {
-  // in this case the view does not have a buffer
-  ATK_ASSERT_MSG( !isOpaque(),
+  SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to reallocate an external or opaque view");
-
-  // following alloc,  we only force realloc if there is a 1-1 between
-  // the view and its buffer.
-  ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
-  declare(type, len);
-  m_data_buffer->reallocate(type, len);
-  apply();
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  {
+    declare(type, len);
+    m_data_buffer->reallocate(type, len);
+    apply();
+  }
   return this;
 }
 
@@ -180,18 +184,17 @@ DataView * DataView::reallocate(const TypeID type, const SidreLength len)
  */
 DataView * DataView::reallocate(const Schema& schema)
 {
-  // in this case the view does not have a buffer
-  ATK_ASSERT_MSG( !isOpaque(),
+  SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to reallocate an external or opaque view");
-
-  // following alloc,  we only force realloc if there is a 1-1 between
-  // the view and its buffer.
-  ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
-  declare(schema);
-  m_data_buffer->reallocate(m_schema);
-  apply();
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  {
+    declare(schema);
+    m_data_buffer->reallocate(m_schema);
+    apply();
+  }
   return this;
 }
 
@@ -204,19 +207,17 @@ DataView * DataView::reallocate(const Schema& schema)
  */
 DataView * DataView::reallocate(const DataType& dtype)
 {
-
-  // in this case the view does not have a buffer
-  ATK_ASSERT_MSG( !isOpaque(),
+  SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to reallocate an external or opaque view");
-
-  // following alloc,  we only force realloc if there is a 1-1 between
-  // the view and its buffer.
-  ATK_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
-  declare(dtype);
-  m_data_buffer->reallocate(m_schema);
-  apply();
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  {
+    declare(dtype);
+    m_data_buffer->reallocate(m_schema);
+    apply();
+  }
   return this;
 }
 
@@ -272,8 +273,14 @@ DataView * DataView::apply(const DataType &dtype)
  */
 void * DataView::getOpaque() const
 {
-  // if (!m_is_opaque) error?
-  return (void *)(getNode().as_uint64());
+  if ( isOpaque() ) 
+  {
+    return (void *)(getNode().as_uint64());
+  } 
+  else 
+  {
+    return ATK_NULLPTR; 
+  }
 }
 
 
