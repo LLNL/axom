@@ -10,13 +10,13 @@
 
 module sidre_smoke
   use fruit
+  use sidre_mod
   implicit none
 
 contains
 !------------------------------------------------------------------------------
 
   subroutine create_datastore
-    use sidre_mod
     type(datastore) ds
 
     ds = datastore_new()
