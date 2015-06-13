@@ -34,10 +34,6 @@
             }, 
             "methods": [
                 {
-                    "F_C_arguments": "name", 
-                    "F_C_name": "aa_exclass1_new", 
-                    "F_arguments": "name", 
-                    "F_code": "rv%obj = aa_exclass1_new(trim(name) // C_NULL_CHAR)", 
                     "args": [
                         {
                             "attrs": {
@@ -60,6 +56,7 @@
                         "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass1_new", 
                         "F_arguments": "name", 
+                        "F_code": "rv%obj = aa_exclass1_new(trim(name) // C_NULL_CHAR)", 
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
@@ -90,10 +87,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass1_delete", 
-                    "F_arguments": "obj", 
-                    "F_code": "call aa_exclass1_delete(obj%obj)\nobj%obj = C_NULL_PTR", 
                     "args": [], 
                     "decl": "void delete+destructor", 
                     "fmt": {
@@ -106,6 +99,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_delete", 
                         "F_arguments": "obj", 
+                        "F_code": "call aa_exclass1_delete(obj%obj)\nobj%obj = C_NULL_PTR", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass1_delete", 
                         "F_name_method": "delete", 
@@ -135,10 +129,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self, incr", 
-                    "F_C_name": "aa_exclass1_increment_count", 
-                    "F_arguments": "obj, incr", 
-                    "F_code": "rv = aa_exclass1_increment_count(obj%obj, incr)", 
                     "args": [
                         {
                             "attrs": {}, 
@@ -158,6 +148,7 @@
                         "F_C_arguments": "self, incr", 
                         "F_C_name": "aa_exclass1_increment_count", 
                         "F_arguments": "obj, incr", 
+                        "F_code": "rv = aa_exclass1_increment_count(obj%obj, incr)", 
                         "F_name_generic": "increment_count", 
                         "F_name_impl": "exclass1_increment_count", 
                         "F_name_method": "increment_count", 
@@ -185,10 +176,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass1_get_name", 
-                    "F_arguments": "obj", 
-                    "F_code": "rv = fstr(aa_exclass1_get_name(obj%obj))", 
                     "args": [], 
                     "decl": "const string& getName()", 
                     "fmt": {
@@ -201,6 +188,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name", 
                         "F_arguments": "obj", 
+                        "F_code": "rv = fstr(aa_exclass1_get_name(obj%obj))", 
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
@@ -233,10 +221,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass1_get_name_length", 
-                    "F_arguments": "obj", 
-                    "F_code": "rv = aa_exclass1_get_name_length(obj%obj)", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
                         "C_arguments": "const AA_exclass1 * self", 
@@ -248,6 +232,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_length", 
                         "F_arguments": "obj", 
+                        "F_code": "rv = aa_exclass1_get_name_length(obj%obj)", 
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
@@ -280,10 +265,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass1_get_root", 
-                    "F_arguments": "obj", 
-                    "F_code": "rv%obj = aa_exclass1_get_root(obj%obj)", 
                     "args": [], 
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
@@ -296,6 +277,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_root", 
                         "F_arguments": "obj", 
+                        "F_code": "rv%obj = aa_exclass1_get_root(obj%obj)", 
                         "F_name_generic": "get_root", 
                         "F_name_impl": "exclass1_get_root", 
                         "F_name_method": "get_root", 
@@ -325,10 +307,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self, value", 
-                    "F_C_name": "aa_exclass1_get_value_from_int", 
-                    "F_arguments": "obj, value", 
-                    "F_code": "rv = aa_exclass1_get_value_from_int(obj%obj, value)", 
                     "args": [
                         {
                             "attrs": {}, 
@@ -347,6 +325,7 @@
                         "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_from_int", 
                         "F_arguments": "obj, value", 
+                        "F_code": "rv = aa_exclass1_get_value_from_int(obj%obj, value)", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_from_int", 
                         "F_name_method": "get_value_from_int", 
@@ -375,10 +354,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self, value", 
-                    "F_C_name": "aa_exclass1_get_value_1", 
-                    "F_arguments": "obj, value", 
-                    "F_code": "rv = aa_exclass1_get_value_1(obj%obj, value)", 
                     "args": [
                         {
                             "attrs": {}, 
@@ -397,6 +372,7 @@
                         "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_1", 
                         "F_arguments": "obj, value", 
+                        "F_code": "rv = aa_exclass1_get_value_1(obj%obj, value)", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_1", 
                         "F_name_method": "get_value_1", 
@@ -425,10 +401,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass1_get_addr", 
-                    "F_arguments": "obj", 
-                    "F_code": "rv = aa_exclass1_get_addr(obj%obj)", 
                     "args": [], 
                     "decl": "void *getAddr()", 
                     "fmt": {
@@ -441,6 +413,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_addr", 
                         "F_arguments": "obj", 
+                        "F_code": "rv = aa_exclass1_get_addr(obj%obj)", 
                         "F_name_generic": "get_addr", 
                         "F_name_impl": "exclass1_get_addr", 
                         "F_name_method": "get_addr", 
@@ -470,10 +443,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self, in", 
-                    "F_C_name": "aa_exclass1_has_addr", 
-                    "F_arguments": "obj, in", 
-                    "F_code": "rv = bool2logical(aa_exclass1_has_addr(obj%obj, logical2bool(in)))", 
                     "args": [
                         {
                             "attrs": {}, 
@@ -492,6 +461,7 @@
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass1_has_addr", 
                         "F_arguments": "obj, in", 
+                        "F_code": "rv = bool2logical(aa_exclass1_has_addr(obj%obj, logical2bool(in)))", 
                         "F_name_generic": "has_addr", 
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
@@ -558,10 +528,6 @@
             }, 
             "methods": [
                 {
-                    "F_C_arguments": "name", 
-                    "F_C_name": "aa_exclass2_ex_class2", 
-                    "F_arguments": "name", 
-                    "F_code": "rv%obj = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)", 
                     "args": [
                         {
                             "attrs": {
@@ -583,6 +549,7 @@
                         "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass2_ex_class2", 
                         "F_arguments": "name", 
+                        "F_code": "rv%obj = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)", 
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
@@ -613,10 +580,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass2_ex_class1", 
-                    "F_arguments": "obj", 
-                    "F_code": "call aa_exclass2_ex_class1(obj%obj)\nobj%obj = C_NULL_PTR", 
                     "args": [], 
                     "decl": "void ExClass1+destructor", 
                     "fmt": {
@@ -629,6 +592,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_ex_class1", 
                         "F_arguments": "obj", 
+                        "F_code": "call aa_exclass2_ex_class1(obj%obj)\nobj%obj = C_NULL_PTR", 
                         "F_name_generic": "ex_class1", 
                         "F_name_impl": "exclass2_ex_class1", 
                         "F_name_method": "ex_class1", 
@@ -658,10 +622,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass2_get_name", 
-                    "F_arguments": "obj", 
-                    "F_code": "rv = fstr(aa_exclass2_get_name(obj%obj))", 
                     "args": [], 
                     "decl": "const string& getName", 
                     "fmt": {
@@ -674,6 +634,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name", 
                         "F_arguments": "obj", 
+                        "F_code": "rv = fstr(aa_exclass2_get_name(obj%obj))", 
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
@@ -706,10 +667,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self", 
-                    "F_C_name": "aa_exclass2_get_name_length", 
-                    "F_arguments": "obj", 
-                    "F_code": "rv = aa_exclass2_get_name_length(obj%obj)", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
                         "C_arguments": "const AA_exclass2 * self", 
@@ -721,6 +678,7 @@
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name_length", 
                         "F_arguments": "obj", 
+                        "F_code": "rv = aa_exclass2_get_name_length(obj%obj)", 
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
@@ -753,10 +711,6 @@
                     }
                 }, 
                 {
-                    "F_C_arguments": "self, in", 
-                    "F_C_name": "aa_exclass2_get_class1", 
-                    "F_arguments": "obj, in", 
-                    "F_code": "rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)", 
                     "args": [
                         {
                             "attrs": {
@@ -777,6 +731,7 @@
                         "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass2_get_class1", 
                         "F_arguments": "obj, in", 
+                        "F_code": "rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)", 
                         "F_name_generic": "get_class1", 
                         "F_name_impl": "exclass2_get_class1", 
                         "F_name_method": "get_class1", 

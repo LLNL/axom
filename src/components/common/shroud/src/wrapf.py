@@ -225,9 +225,10 @@ class Wrapf(object):
             F_result=F_result,
             ))
 
-        if 'F_C_name' not in node:
-            node['F_C_name'] = fmt2_func.C_name.lower()
-        fmt2_func.F_C_name = node['F_C_name']
+        if hasattr(options, 'F_C_name'):
+            fmt2_func.F_C_name = options.F_C_name
+        else:
+            fmt2_func.F_C_name = fmt2_func.C_name.lower()
 
         util.eval_template3(options, fmt2_func,
                             'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
@@ -316,16 +317,12 @@ class Wrapf(object):
                     F_name_method, F_name_impl))
 
         fmt2_func.arg_c_call = ', '.join(arg_c_call)
+        fmt2_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
+        fmt2_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
-        if 'F_C_arguments' not in node:
-            node['F_C_arguments'] = ', '.join(arg_c_names)
-        fmt2_func.F_C_arguments = node['F_C_arguments']
-
-        if 'F_arguments' not in node:
-            node['F_arguments'] = ', '.join(arg_f_names)
-        fmt2_func.F_arguments = node['F_arguments']
-
-        if 'F_code' not in node:
+        if hasattr(options, 'F_code'):
+            fmt2_func.F_code = options.F_code
+        else:
             lines = []
             if is_ctor:
                 lines.append(wformat('{F_result}%{F_this} = {F_C_name}({arg_c_call})', fmt2_func))
@@ -339,7 +336,7 @@ class Wrapf(object):
             if is_dtor:
                 lines.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt2_func))
 
-            node['F_code'] = '\n'.join(lines)
+            fmt2_func.F_code = '\n'.join(lines)
 
         c_interface = self.c_interface
         c_interface.append('')
@@ -360,7 +357,7 @@ class Wrapf(object):
         impl.append('implicit none')
         impl.extend(arg_f_decl)
         impl.append('! splicer begin')
-        impl.append(node['F_code'])
+        impl.append(fmt2_func.F_code)
         impl.append('! splicer end')
         impl.append(-1)
         impl.append(wformat('end {subprogram} {F_name_impl}', fmt2_func))
