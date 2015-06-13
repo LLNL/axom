@@ -124,6 +124,8 @@ class Wrapf(object):
         fmt_library = self.tree['fmt']
         fmt_library.F_this = options.get('F_this', 'obj')
         fmt_library.F_result = options.get('F_result', 'rv')
+        fmt_library.F_result_clause = ''
+        fmt_library.F_pure_clause = ''
 
         self._begin_file()
         for node in self.tree['classes']:
@@ -237,19 +239,15 @@ class Wrapf(object):
         # find subprogram type
         # compute first to get order of arguments correct.
         # Add 
-        pure_clause = ''
         if result_type == 'void' and not result_is_ptr:
             #  void=subroutine   void *=function
             subprogram = 'subroutine'
-            result_clause = ''
         else:
             subprogram = 'function'
-            result_clause = ' result(%s)' % F_result
+            fmt_func.F_result_clause = ' result(%s)' % F_result
             if is_const:
-                pure_clause = 'pure '
+                fmt_func.F_pure_clause   = 'pure '
         fmt_func.F_subprogram    = subprogram
-        fmt_func.F_result_clause = result_clause
-        fmt_func.F_pure_clause   = pure_clause
 
         # Add 'this' argument
         if not is_ctor and (is_dtor or subprogram == 'function'):

@@ -71,15 +71,7 @@ class Schema(object):
             namespace='',
             cpp_header='',
 
-#            C_this='self',   # object argument name
- #           F_this='obj',    # object argument name
- #           F_result='rv',   # function result
             F_module_per_class=True,
-
-#            C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
-#            F_name_method_template='{underscore_name}{method_suffix}',
-#            F_name_generic_template='{underscore_name}',
-#            F_name_impl_template  ='{lower_class}_{underscore_name}{method_suffix}',
             )
         if 'options' in node:
             def_options.update(node['options'])
@@ -248,7 +240,7 @@ class Schema(object):
             if len(methods) > 1:
                 for i, method in enumerate(methods):
                     if 'method_suffix' not in method:
-                        method['method_suffix'] = '_%d' % i
+#                        method['method_suffix'] = '_%d' % i
                         method['fmt'].method_suffix =  '_%d' % i
 
         self.pop_fmt()
@@ -268,7 +260,7 @@ class Schema(object):
             util.update(node, values)  # recursive update
         if 'method_suffix' in node and node['method_suffix'] is None:
             # YAML turns blanks strings to None
-            node['method_suffix'] = ''
+            del node['method_suffix']
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -281,7 +273,8 @@ class Schema(object):
 
         fmt2_func.method_name =     result['name']
         fmt2_func.underscore_name = util.un_camel(result['name'])
-        fmt2_func.method_suffix =   node.get('method_suffix', '')
+        if 'method_suffix' in node:
+            fmt2_func.method_suffix =   node['method_suffix']
 
         # docs
         self.pop_fmt()
