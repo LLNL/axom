@@ -70,7 +70,6 @@
                         "method_name": "new", 
                         "method_suffix": "", 
                         "rv_decl": "ExClass1 * rv", 
-                        "this": "self", 
                         "underscore_name": "new"
                     }, 
                     "options": {}, 
@@ -111,7 +110,6 @@
                         "method_name": "delete", 
                         "method_suffix": "", 
                         "rv_decl": "void rv", 
-                        "this": "self", 
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
@@ -158,7 +156,6 @@
                         "method_name": "incrementCount", 
                         "method_suffix": "", 
                         "rv_decl": "int rv", 
-                        "this": "self", 
                         "underscore_name": "increment_count"
                     }, 
                     "options": {}, 
@@ -197,7 +194,6 @@
                         "method_suffix": "", 
                         "rv_decl": "const std::string & rv", 
                         "rvlen": "aa_exclass1_get_name_length(obj%obj)", 
-                        "this": "self", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
@@ -238,7 +234,6 @@
                         "method_name": "get_name_length", 
                         "method_suffix": "", 
                         "rv_decl": "const int rv", 
-                        "this": "self", 
                         "underscore_name": "get_name_length"
                     }, 
                     "options": {
@@ -281,7 +276,6 @@
                         "method_name": "getRoot", 
                         "method_suffix": "", 
                         "rv_decl": "ExClass2 * rv", 
-                        "this": "self", 
                         "underscore_name": "get_root"
                     }, 
                     "options": {}, 
@@ -327,7 +321,6 @@
                         "method_name": "getValue", 
                         "method_suffix": "_from_int", 
                         "rv_decl": "int rv", 
-                        "this": "self", 
                         "underscore_name": "get_value"
                     }, 
                     "method_suffix": "_from_int", 
@@ -372,7 +365,6 @@
                         "method_name": "getValue", 
                         "method_suffix": "_1", 
                         "rv_decl": "long rv", 
-                        "this": "self", 
                         "underscore_name": "get_value"
                     }, 
                     "method_suffix": "_1", 
@@ -411,7 +403,6 @@
                         "method_name": "getAddr", 
                         "method_suffix": "", 
                         "rv_decl": "void * rv", 
-                        "this": "self", 
                         "underscore_name": "get_addr"
                     }, 
                     "options": {}, 
@@ -457,7 +448,6 @@
                         "method_name": "hasAddr", 
                         "method_suffix": "", 
                         "rv_decl": "bool rv", 
-                        "this": "self", 
                         "underscore_name": "has_addr"
                     }, 
                     "options": {}, 
@@ -542,7 +532,6 @@
                         "method_name": "ExClass2", 
                         "method_suffix": "", 
                         "rv_decl": "ExClass2 * rv", 
-                        "this": "self", 
                         "underscore_name": "ex_class2"
                     }, 
                     "options": {}, 
@@ -583,7 +572,6 @@
                         "method_name": "ExClass1", 
                         "method_suffix": "", 
                         "rv_decl": "void rv", 
-                        "this": "self", 
                         "underscore_name": "ex_class1"
                     }, 
                     "options": {}, 
@@ -624,7 +612,6 @@
                         "method_suffix": "", 
                         "rv_decl": "const std::string & rv", 
                         "rvlen": "aa_exclass2_get_name_length(obj%obj)", 
-                        "this": "self", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
@@ -665,7 +652,6 @@
                         "method_name": "get_name_length", 
                         "method_suffix": "", 
                         "rv_decl": "const int rv", 
-                        "this": "self", 
                         "underscore_name": "get_name_length"
                     }, 
                     "options": {
@@ -716,7 +702,6 @@
                         "method_name": "get_class1", 
                         "method_suffix": "", 
                         "rv_decl": "ExClass1 * rv", 
-                        "this": "self", 
                         "underscore_name": "get_class1"
                     }, 
                     "options": {}, 

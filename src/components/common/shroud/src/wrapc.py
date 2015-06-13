@@ -236,7 +236,6 @@ class Wrapc(object):
             self.header_forward[result_typedef.c_type] = True
 
         fmt_func.const = 'const ' if is_const else ''
-        fmt_func.this = C_this
         fmt_func.cpp_this = C_this + 'obj'
         fmt_func.cpp_name = result['name']
         fmt_func.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
@@ -279,9 +278,9 @@ class Wrapc(object):
             fmt_func.C_object = options.C_object
         else:
             if is_ctor:
-                template = '{const}{cpp_class} *{this}obj = new {cpp_class}({C_call_list});'
+                template = '{const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
             else:
-                template = '{const}{cpp_class} *{this}obj = static_cast<{const}{cpp_class} *>({this});'
+                template = '{const}{cpp_class} *{C_this}obj = static_cast<{const}{cpp_class} *>({C_this});'
             fmt_func.C_object = wformat(template, fmt_func)
 
         if hasattr(options, 'C_code'):
