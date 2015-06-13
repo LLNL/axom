@@ -93,12 +93,10 @@ class Schema(object):
 
         # default some options based on other options
         if not def_options.F_module_per_class:
-            util.eval_template2(def_options, 'F_module_name_template',
-                                fmt2_library, 'F_module_name',
-                                '{lower_library}_mod')
-            util.eval_template2(def_options, 'F_impl_filename_template',
-                                fmt2_library, 'F_impl_filename',
-                                'wrapf{lower_library}.f')
+            util.eval_template4(def_options, fmt2_library,
+                                'F_module_name', '{lower_library}_mod')
+            util.eval_template4(def_options, fmt2_library,
+                                'F_impl_filename', 'wrapf{lower_library}.f')
 
         node['options'] = def_options
 
@@ -199,20 +197,16 @@ class Schema(object):
         fmt2_class.update(fmt_class)
 
         if options.F_module_per_class:
-            util.eval_template2(options, 'F_module_name_template',
-                                fmt2_class, 'F_module_name',
-                                '{lower_class}_mod')
-            util.eval_template2(options, 'F_impl_filename_template',
-                                fmt2_class, 'F_impl_filename',
-                                'wrapf{cpp_class}.f')   # XXX lower_class
+            util.eval_template4(options, fmt2_class,
+                                'F_module_name', '{lower_class}_mod')
+            util.eval_template4(options, fmt2_class,
+                                'F_impl_filename', 'wrapf{cpp_class}.f')   # XXX lower_class
 
         # Only one file per class for C.
-        util.eval_template2(options, 'C_header_filename_template',
-                            fmt2_class, 'C_header_filename',
-                            'wrap{cpp_class}.h')
-        util.eval_template2(options, 'C_impl_filename_template',
-                            fmt2_class, 'C_impl_filename',
-                            'wrap{cpp_class}.cpp')
+        util.eval_template4(options, fmt2_class,
+                            'C_header_filename', 'wrap{cpp_class}.h')
+        util.eval_template4(options, fmt2_class,
+                            'C_impl_filename', 'wrap{cpp_class}.cpp')
 
         # create typedef for each class before generating code
         # this allows classes to reference each other

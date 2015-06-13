@@ -230,11 +230,11 @@ class Wrapf(object):
         else:
             fmt2_func.F_C_name = fmt2_func.C_name.lower()
 
-        util.eval_template3(options, fmt2_func,
+        util.eval_template4(options, fmt2_func,
                             'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
-        util.eval_template3(options, fmt2_func,
+        util.eval_template4(options, fmt2_func,
                             'F_name_method', '{underscore_name}{method_suffix}')
-        util.eval_template3(options, fmt2_func,
+        util.eval_template4(options, fmt2_func,
                             'F_name_generic', '{underscore_name}')
 
         arg_c_names = [ ]

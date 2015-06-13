@@ -11,7 +11,14 @@ import parse_decl
 fmt = string.Formatter()
 
 default_template = dict(
-    C_name_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+    C_name='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+
+#    C_header_filename = 'wrap{cpp_class}.h',
+#    C_impl_filename = 'wrap{cpp_class}.cpp',
+
+#    F_name_impl = '{lower_class}_{underscore_name}{method_suffix}',
+#    F_name_method = '{underscore_name}{method_suffix}',
+#    F_name_generic = '{underscore_name}',
 )
 
 
@@ -19,40 +26,16 @@ def wformat(template, d):
     # shorthand, wrap fmt.vformat
     return fmt.vformat(template, None, d)
 
-def eval_templates(templates, node, fmt_dict):
-    """ If variable is not already set in node, then
-    set based on template.
-    Update value in fmt_dict.
-    """
-    for tname in ( templates ) :
-        if tname not in node:
-            node[tname] = fmt.vformat(
-                getattr(node['options'], tname + '_template'),
-                None, fmt_dict)
-        fmt_dict[tname] = node[tname]
-
-def eval_template2(options, tname, fmt, vname, default):
-    """ If a tname exists in options, use it; else use default.
-    fmt[vname] = option[tname]
-    """
-    setattr(fmt, vname, wformat(options.get(tname, default), fmt))
-
-def eval_template3(options, fmt, name, default):
-    """ If a tname exists in options, use it; else use default.
-    fmt[vname] = option[tname]
-    """
-    setattr(fmt, name, wformat(options.get(name + '_template', default), fmt))
-
-def eval_template4(options, fmt, name):
+def eval_template4(options, fmt, name, default=None):
     """ If a tname exists in options, use it; else use default.
     fmt[vname] = option[tname]
     """
     if hasattr(options, name):
         setattr(fmt, name, getattr(options, name))
     else:
+        dflt = default or default_template[name]
         tname = name + '_template'
-        setattr(fmt, name, wformat(options.get(tname,
-                                               default_template[tname]), fmt))
+        setattr(fmt, name, wformat(options.get(tname, dflt), fmt))
 
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case
