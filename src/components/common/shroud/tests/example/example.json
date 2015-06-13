@@ -698,21 +698,20 @@
                         "CPP_this": "selfobj", 
                         "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
                         "C_call_list": "getTypeID(type), len", 
-                        "C_code": "void * rv = selfobj->declare(getTypeID(type), len);\nreturn rv;", 
+                        "C_code": "selfobj->declare(getTypeID(type), len);\nreturn;", 
                         "C_name": "AA_exclass2_declare", 
                         "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void *", 
+                        "C_return_type": "void", 
                         "F_C_arguments": "self, type, len", 
                         "F_C_name": "aa_exclass2_declare", 
                         "F_arg_c_call": "obj%obj, type, len", 
                         "F_arguments": "obj, type, len", 
-                        "F_code": "rv = aa_exclass2_declare(obj%obj, type, len)", 
+                        "F_code": "call aa_exclass2_declare(obj%obj, type, len)", 
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare", 
                         "F_name_method": "declare", 
                         "F_obj": "obj%obj", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
+                        "F_subprogram": "subroutine", 
                         "method_name": "declare", 
                         "rv_decl": "void * rv", 
                         "underscore_name": "declare"
@@ -724,7 +723,8 @@
                         }, 
                         "name": "declare", 
                         "type": "void"
-                    }
+                    }, 
+                    "return_this": true
                 }, 
                 {
                     "args": [], 

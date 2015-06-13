@@ -207,6 +207,11 @@ class Wrapf(object):
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
+
+        if node.get('return_this', False):
+            result_type = 'void'
+            result_is_ptr = False
+
         result_typedef = self.typedef[result_type]
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)

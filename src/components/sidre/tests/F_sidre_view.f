@@ -47,7 +47,7 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0")
-!--    dv%allocate(ATK_C_INT_T, 10)
+!--    call dv%allocate(ATK_C_INT_T, 10)
 !--    int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv)
 !--
 !--    for(int i=0  i<10  i++) {

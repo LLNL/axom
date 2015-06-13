@@ -59,15 +59,14 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
         
-        function aa_exclass2_declare(self, type, len) result(rv) &
+        subroutine aa_exclass2_declare(self, type, len) &
                 bind(C, name="AA_exclass2_declare")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             integer(C_INT), value :: type
             integer(C_LONG), value :: len
-            type(C_PTR) :: rv
-        end function aa_exclass2_declare
+        end subroutine aa_exclass2_declare
         
         subroutine aa_exclass2_destroyall(self) &
                 bind(C, name="AA_exclass2_destroyall")
@@ -130,17 +129,16 @@ contains
         ! splicer end
     end function exclass2_get_class1
     
-    function exclass2_declare(obj, type, len) result(rv)
+    subroutine exclass2_declare(obj, type, len)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        type(C_PTR) :: rv
         ! splicer begin
-        rv = aa_exclass2_declare(obj%obj, type, len)
+        call aa_exclass2_declare(obj%obj, type, len)
         ! splicer end
-    end function exclass2_declare
+    end subroutine exclass2_declare
     
     subroutine exclass2_destroyall(obj)
         use iso_c_binding

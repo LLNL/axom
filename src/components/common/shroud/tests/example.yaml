@@ -119,6 +119,9 @@ classes:
 
     # typedefs that require modules
     - decl: void* declare(TypeID type, SidreLength len)
+      # by returning this,the C++ function allows chaining.
+      # make them subroutines in Fortran.
+      return_this: True
 
     # void function
     - decl: void destroyall()

@@ -219,6 +219,11 @@ class Wrapc(object):
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
+
+        if node.get('return_this', False):
+            result_type = 'void'
+            result_is_ptr = False
+
         result_typedef = self.typedef[result_type]
         is_const = result['attrs'].get('const', False)
         is_ctor  = result['attrs'].get('constructor', False)
@@ -272,7 +277,10 @@ class Wrapc(object):
 
         util.eval_template(options, fmt_func, 'C_name')
 
-        fmt_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
+        if node.get('return_this', False):
+            fmt_func.C_return_type = 'void'
+        else:
+            fmt_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
         fmt_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
 
