@@ -80,12 +80,12 @@ class Wrapc(object):
         options = self.tree['options']
 
         for node in self.tree['classes']:
-            fmt2_class = node['fmt']
+            fmt_class = node['fmt']
             self._clear_class()
             name = node['name']
             self.wrap_class(node)
-            c_header = fmt2_class.C_header_filename
-            c_impl   = fmt2_class.C_impl_filename
+            c_header = fmt_class.C_header_filename
+            c_impl   = fmt_class.C_impl_filename
             self.write_header(node, c_header)
             self.write_impl(node, c_header, c_impl)
 
@@ -188,8 +188,8 @@ class Wrapc(object):
         typedef = self.typedef[name]
         cname = typedef.c_type
 
-#        fmt2_class = node['fmt']
-#        fmt2_class.update(dict(
+#        fmt_class = node['fmt']
+#        fmt_class.update(dict(
 #                ))
 
         # create a forward declaration for this type
@@ -209,7 +209,7 @@ class Wrapc(object):
             self.log.write("method {1[result][name]}\n".format(self, node))
         # assume a C++ method
 
-        fmt2_func = node['fmt']
+        fmt_func = node['fmt']
 
         # return type
         options = node['options']
@@ -230,13 +230,11 @@ class Wrapc(object):
             # i.e. This method returns a wrapped type
             self.header_forward[result_typedef.c_type] = True
 
-        fmt2_func.update(dict(
-                const='const ' if is_const else '',
-                this=C_this,
-                cpp_this = C_this + 'obj',
-                cpp_name = result['name'],
-                rv_decl = self._c_decl('cpp_type', result, name='rv'),  # return value
-                ))
+        fmt_func.const = 'const ' if is_const else ''
+        fmt_func.this = C_this
+        fmt_func.cpp_this = C_this + 'obj'
+        fmt_func.cpp_name = result['name']
+        fmt_func.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
 
         arguments = []
         anames = []
@@ -264,25 +262,25 @@ class Wrapc(object):
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
                 self.header_forward[arg_typedef.c_type] = True
-        fmt2_func.C_call_list = ', '.join(anames)
+        fmt_func.C_call_list = ', '.join(anames)
 
-        util.eval_template(options, fmt2_func, 'C_name')
+        util.eval_template(options, fmt_func, 'C_name')
 
-        fmt2_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
+        fmt_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
-        fmt2_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
+        fmt_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
 
         if hasattr(options, 'C_object'):
-            fmt2_func.C_object = options.C_object
+            fmt_func.C_object = options.C_object
         else:
             if is_ctor:
                 template = '{const}{cpp_class} *{this}obj = new {cpp_class}({C_call_list});'
             else:
                 template = '{const}{cpp_class} *{this}obj = static_cast<{const}{cpp_class} *>({this});'
-            fmt2_func.C_object = wformat(template, fmt2_func)
+            fmt_func.C_object = wformat(template, fmt_func)
 
         if hasattr(options, 'C_code'):
-            fmt2_func.C_code = options.C_code
+            fmt_func.C_code = options.C_code
         else:
             # generate the C body
             lines = []
@@ -292,22 +290,22 @@ class Wrapc(object):
                 lines.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
                 line = wformat('{cpp_this}->{cpp_name}({C_call_list});',
-                               fmt2_func)
+                               fmt_func)
                 lines.append(line)
                 lines.append('return;')
             else:
                 line = wformat('{rv_decl} = {cpp_this}->{cpp_name}({C_call_list});',
-                               fmt2_func)
+                               fmt_func)
                 lines.append(line)
 
                 ret = result_typedef.cpp_to_c
                 line = 'return ' + ret.format(var='rv') + ';'
                 lines.append(line)
 
-            fmt2_func.C_code = "\n".join(lines)
+            fmt_func.C_code = "\n".join(lines)
 
         self.header_proto_c.append(wformat('\n{C_return_type} {C_name}({C_arguments});\n',
-                                           fmt2_func))
+                                           fmt_func))
 
         self.impl.append(wformat("""
 {C_return_type} {C_name}({C_arguments})
@@ -317,4 +315,4 @@ class Wrapc(object):
 {C_code}
 // splicer end
 }}
-""", fmt2_func))
+""", fmt_func))

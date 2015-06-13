@@ -152,8 +152,8 @@ class Wrapf(object):
         name = node['name']
         typedef = self.typedef[name]
 
-        fmt2_class = node['fmt']
-        fmt2_class.update(dict(
+        fmt_class = node['fmt']
+        fmt_class.update(dict(
                 F_derived_name = typedef.fortran_derived,
                 F_this = node['options'].F_this,
                 ))
@@ -161,9 +161,9 @@ class Wrapf(object):
         unname = util.un_camel(name)
         self.f_type.extend([
                 '',
-                wformat('type {F_derived_name}', fmt2_class),
+                wformat('type {F_derived_name}', fmt_class),
                 1,
-                wformat('type(C_PTR) {F_this}', fmt2_class),
+                wformat('type(C_PTR) {F_this}', fmt_class),
                 -1, 'contains', 1,
                 ])
 
@@ -179,7 +179,7 @@ class Wrapf(object):
 
         self.f_type.extend([
                 -1,
-                 wformat('end type {F_derived_name}', fmt2_class),
+                 wformat('end type {F_derived_name}', fmt_class),
                  ''
                  ])
 
@@ -194,7 +194,7 @@ class Wrapf(object):
             self.log.write("method {1[result][name]}\n".format(self, node))
 
         options = node['options']
-        fmt2_func = node['fmt']
+        fmt_func = node['fmt']
 
         result = node['result']
         result_type = result['type']
@@ -206,22 +206,20 @@ class Wrapf(object):
         is_dtor  = result['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
-        fmt2_func.F_obj = wformat('{F_this}%{F_this}', fmt2_func)
-        fmt2_func.update(dict(
-            F_this=options.F_this,
-            F_result=F_result,
-            ))
+        fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
+        fmt_func.F_this = options.F_this
+        fmt_func.F_result=F_result
 
         if hasattr(options, 'F_C_name'):
-            fmt2_func.F_C_name = options.F_C_name
+            fmt_func.F_C_name = options.F_C_name
         else:
-            fmt2_func.F_C_name = fmt2_func.C_name.lower()
+            fmt_func.F_C_name = fmt_func.C_name.lower()
 
-        util.eval_template(options, fmt2_func,
+        util.eval_template(options, fmt_func,
                             'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
-        util.eval_template(options, fmt2_func,
+        util.eval_template(options, fmt_func,
                             'F_name_method', '{underscore_name}{method_suffix}')
-        util.eval_template(options, fmt2_func,
+        util.eval_template(options, fmt_func,
                             'F_name_generic', '{underscore_name}')
 
         arg_c_names = [ ]
@@ -244,24 +242,24 @@ class Wrapf(object):
             result_clause = ' result(%s)' % F_result
             if is_const:
                 pure_clause = 'pure '
-        fmt2_func.subprogram   = subprogram
-        fmt2_func.result_clause = result_clause
-        fmt2_func.pure_clause   = pure_clause
+        fmt_func.subprogram   = subprogram
+        fmt_func.result_clause = result_clause
+        fmt_func.pure_clause   = pure_clause
 
         # Add 'this' argument
         if not is_ctor and (is_dtor or subprogram == 'function'):
             arg_c_names.append(C_this)
             arg_c_decl.append('type(C_PTR), value :: ' + C_this)
-            arg_c_call.append(fmt2_func.F_obj)
-            arg_f_names.append(fmt2_func.F_this)
+            arg_c_call.append(fmt_func.F_obj)
+            arg_f_names.append(fmt_func.F_this)
             if is_dtor:
                 arg_f_decl.append(wformat(
                         'type({F_derived_name}) :: {F_this}',
-                        fmt2_func))
+                        fmt_func))
             else:
                 arg_f_decl.append(wformat(
                         'class({F_derived_name}) :: {F_this}',
-                        fmt2_func))
+                        fmt_func))
 
         for arg in node.get('args', []):
             arg_c_names.append(arg['name'])
@@ -279,11 +277,11 @@ class Wrapf(object):
             if result_typedef.base == 'string':
                 # special case returning a string
                 rvlen = result['attrs'].get('len', '1')
-                fmt2_func.rvlen = rvlen
+                fmt_func.rvlen = rvlen
                 arg_c_decl.append('type(C_PTR) %s' % F_result)
                 arg_f_decl.append(
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
-                            fmt2_func))
+                            fmt_func))
                 arg_f_decl.append('type(C_PTR) :: rv_ptr')
             else:
                 # XXX - make sure ptr is set to avoid VALUE
@@ -296,58 +294,58 @@ class Wrapf(object):
 
         if not is_ctor and not is_dtor:
             # Add method to derived type
-            F_name_method = fmt2_func.F_name_method
-            F_name_generic = fmt2_func.F_name_generic
-            F_name_impl = fmt2_func.F_name_impl
+            F_name_method = fmt_func.F_name_method
+            F_name_generic = fmt_func.F_name_generic
+            F_name_impl = fmt_func.F_name_impl
             self.f_type_generic.setdefault(F_name_generic,[]).append(F_name_method)
             self.f_type.append('procedure :: %s => %s' % (
                     F_name_method, F_name_impl))
 
-        fmt2_func.arg_c_call = ', '.join(arg_c_call)
-        fmt2_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
-        fmt2_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
+        fmt_func.arg_c_call = ', '.join(arg_c_call)
+        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
+        fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
         if hasattr(options, 'F_code'):
-            fmt2_func.F_code = options.F_code
+            fmt_func.F_code = options.F_code
         else:
             lines = []
             if is_ctor:
-                lines.append(wformat('{F_result}%{F_this} = {F_C_name}({arg_c_call})', fmt2_func))
+                lines.append(wformat('{F_result}%{F_this} = {F_C_name}({arg_c_call})', fmt_func))
             elif subprogram == 'function':
                 fmt = result_typedef.f_return_code
-                lines.append(wformat(fmt, fmt2_func))
+                lines.append(wformat(fmt, fmt_func))
 
             else:
-                lines.append(wformat('call {F_C_name}({arg_c_call})', fmt2_func))
+                lines.append(wformat('call {F_C_name}({arg_c_call})', fmt_func))
 
             if is_dtor:
-                lines.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt2_func))
+                lines.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt_func))
 
-            fmt2_func.F_code = '\n'.join(lines)
+            fmt_func.F_code = '\n'.join(lines)
 
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
                 '{pure_clause}{subprogram} {F_C_name}({F_C_arguments}){result_clause} bind(C, name="{C_name}")',
-                fmt2_func))
+                fmt_func))
         c_interface.append(1)
         c_interface.append('use iso_c_binding')
         c_interface.append('implicit none')
         c_interface.extend(arg_c_decl)
         c_interface.append(-1)
-        c_interface.append(wformat('end {subprogram} {F_C_name}', fmt2_func))
+        c_interface.append(wformat('end {subprogram} {F_C_name}', fmt_func))
 
         impl = self.impl
         impl.append('')
-        impl.append(wformat('{subprogram} {F_name_impl}({F_arguments}){result_clause}', fmt2_func))
+        impl.append(wformat('{subprogram} {F_name_impl}({F_arguments}){result_clause}', fmt_func))
         impl.append(1)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
         impl.append('! splicer begin')
-        impl.append(fmt2_func.F_code)
+        impl.append(fmt_func.F_code)
         impl.append('! splicer end')
         impl.append(-1)
-        impl.append(wformat('end {subprogram} {F_name_impl}', fmt2_func))
+        impl.append(wformat('end {subprogram} {F_name_impl}', fmt_func))
 
     def wrap_function(self, node):
         """
