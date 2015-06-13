@@ -57,7 +57,7 @@ endforeach()
 
 add_fortran_test(
     TEST_SOURCE F_sidre_smoke.f
-    DEPENDS_ON fruit slic conduit sidre
+    DEPENDS_ON fruit sidre slic conduit
 )
 
 

@@ -16,8 +16,12 @@ contains
 !------------------------------------------------------------------------------
 
   subroutine create_datastore
-!    DataStore * ds = new DataStore();
-!    delete ds;
+    use sidre_mod
+    type(datastore) ds
+
+    ds = datastore_new()
+    call datastore_delete(ds)
+
     call assert_true(.true.)
   end subroutine create_datastore
 
