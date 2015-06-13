@@ -27,6 +27,7 @@ set(gtest_sidre_tests
 
 set(fruit_sidre_tests
    F_sidre_smoke.f
+   F_sidre_group.f
    F_sidre_buffer.f
    F_sidre_view.f
 )
