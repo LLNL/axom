@@ -163,7 +163,7 @@ class Wrapf(object):
         options = node['options']
         fmt_class = node['fmt']
         fmt_class.F_derived_name = typedef.fortran_derived
-        if hasattr(options, 'F_this'):
+        if 'F_this' in options:
             fmt_class.F_this = options.F_this
 
         unname = util.un_camel(name)
@@ -218,14 +218,14 @@ class Wrapf(object):
         is_const = result['attrs'].get('const', False)
 
         fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
-        if hasattr(options, 'F_this'):
+        if 'F_this' in options:
             fmt_func.F_this = options.F_this
-        if hasattr(options, 'F_result'):
+        if 'F_result' in options:
             fmt_func.F_result = options.F_result
         F_result = fmt_func.F_result
         C_this = fmt_func.C_this
 
-        if hasattr(options, 'F_C_name'):
+        if 'F_C_name' in options:
             fmt_func.F_C_name = options.F_C_name
         else:
             fmt_func.F_C_name = fmt_func.C_name.lower()
@@ -314,7 +314,7 @@ class Wrapf(object):
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
         fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
-        if hasattr(options, 'F_code'):
+        if 'F_code' in options:
             fmt_func.F_code = options.F_code
         else:
             lines = []

@@ -25,8 +25,8 @@ contains
     call assert_true(.true.)
   end subroutine create_datastore
 
+!------------------------------------------------------------------------------
 end module sidre_smoke
-
 !------------------------------------------------------------------------------
 
 program tester
