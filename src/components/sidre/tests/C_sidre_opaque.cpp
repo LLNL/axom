@@ -10,18 +10,13 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
-
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataType;
+#include "sidre/sidre.h"
 
 //------------------------------------------------------------------------------
 // Some simple types and functions used in tests
 // (included in namespace to prevent clashes)
 //------------------------------------------------------------------------------
+#if 0
 namespace dsopaquetest
 {
 
@@ -91,59 +86,59 @@ public:
 
 
 }  // closing brace for dsopaquetest namespace
+#else
+#endif
 
 //------------------------------------------------------------------------------
 //
 // Simple test that adds an opaque data object, retrieves it and checks if
 // the retrieved object is in the expected state.
 //
-TEST(sidre_opaque,inout)
+TEST(C_sidre_opaque,inout)
 {
-  using namespace dsopaquetest;
-
   const int ihi_val = 9;
 
-  DataStore * ds   = new DataStore();
-  DataGroup * root_gp = ds->getRoot();
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  DataGroup * problem_gp = root_gp->createGroup("problem");
+  ATK_datagroup * problem_gp = root->create_group(root, "problem");
 
   Extent * ext = new Extent(0, ihi_val);
 
-  problem_gp->createOpaqueView("ext", ext);
+  ATK_dataview *ext_view = ATK_datagroup_createOpaqueView(problem_gp, "ext", ext);
 #if 1
-//  problem_gp->CreateViewAndBuffer("ext");
-//  problem_gp->CreateOpaqueView("ext", ext);
-//  problem_gp->CreateView("ext", 0);
-//  problem_gp->MoveView(0);
-//  problem_gp->MoveView(problem_gp->GetView("ext"));
-//  problem_gp->CopyView(0);
-//  problem_gp->CopyView(problem_gp->GetView("ext"));
-//  problem_gp->AttachView(0);
-//  problem_gp->CopyView(problem_gp->GetView("ext"));
+//  ATK_datagroup_CreateViewAndBuffer("ext");
+//  ATK_datagroup_CreateOpaqueView("ext", ext);
+//  ATK_datagroup_CreateView("ext", 0);
+//  ATK_datagroup_MoveView(0);
+//  ATK_datagroup_MoveView(ATK_datagroup_GetView(problem_gp, "ext"));
+//  ATK_datagroup_CopyView(0);
+//  ATK_datagroup_CopyView(ATK_datagroup_GetView(problem_gp, "ext"));
+//  ATK_datagroup_AttachView(0);
+//  ATK_datagroup_CopyView(ATK_datagroup_GetView(problem_gp, "ext"));
 //  Can't do following: method is private...
-//  DataView* v = problem_gp->DetachView("ext");
+//  DataView* v = ATK_datagroup_DetachView("ext");
 //  std::cout << "view name = " << v->GetName() << std::endl;
-//  problem_gp->DestroyView("foo");
-//  root_gp->MoveGroup(problem_gp);
-//  root_gp->CopyGroup(problem_gp);
+//  ATK_datagroup_DestroyView("foo");
+//  root->MoveGroup(problem_gp);
+//  root->CopyGroup(problem_gp);
 //  Can't do following: method is private...
-//  root_gp->DetachGroup("bar");
-//  root_gp->DestroyGroup("bar");
-//  problem_gp->getView(2);
+//  root->DetachGroup("bar");
+//  root->DestroyGroup("bar");
+//  ATK_datagroup_get_view(2);
 #endif
 
-  bool test_opaque = problem_gp->getView("ext")->isOpaque();
+  bool test_opaque = ATK_dataview_is_opaque(ext_view);
   EXPECT_EQ(test_opaque, true);
 
-  Extent * test_extent =
-    static_cast<Extent *>(problem_gp->getView("ext")->getOpaque());
+  Extent * test_extent = (Extent *) >ATK_dataview_get_opaque(ext_view);
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
 
   // clean up...
-  delete ext;
+  free(ext);
+  ATK_datastore_delete(ds);
   delete ds;
 }
 
@@ -154,10 +149,8 @@ TEST(sidre_opaque,inout)
 // domain size, and depth), and then checks to if the allocated data
 // lengths match the expected values.
 //
-TEST(sidre_opaque,meshvar)
+TEST(C_sidre_opaque,meshvar)
 {
-  using namespace dsopaquetest;
-
   const int ilo_val[] = {0, 10};
   const int ihi_val[] = {9, 21};
   const std::string dom_name[] = { std::string("domain0"),
@@ -167,12 +160,12 @@ TEST(sidre_opaque,meshvar)
   const int node_var_depth = 2;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root_gp = ds->getRoot();
+  DataGroup * root = ds->getRoot();
 
-  DataGroup * problem_gp = root_gp->createGroup("problem");
+  DataGroup * problem_gp = ATK_datagroup_create_group(root, "problem");
 
   // Add two different mesh vars to mesh var group
-  DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
+  DataGroup * meshvar_gp = ATK_datagroup_create_group(problem_gp, "mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
   meshvar_gp->createOpaqueView("zone_mv", zone_mv);
   MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
@@ -185,20 +178,18 @@ TEST(sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
 
-    DataGroup * dom_gp = problem_gp->createGroup(dom_name[idom]);
+    DataGroup * dom_gp = ATK_datagroup_create_group(problem_gp, dom_name[idom]);
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createOpaqueView("ext", dom_ext);
 
-    DataGroup * mv_gp = problem_gp->getGroup("mesh_var");
+    DataGroup * mv_gp = ATK_datagroup_get_group("mesh_var");
 
     DataView * dom_zone_view = dom_gp->createViewAndBuffer("zone_data");
-    MeshVar * zonemv = static_cast<MeshVar *>(
-      mv_gp->getView("zone_mv")->getOpaque() );
+    MeshVar * zonemv = (MeshVar *) mv_gp->get_view("zone_mv")->get_opaque();
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
     DataView * dom_node_view = dom_gp->createViewAndBuffer("node_data");
-    MeshVar * nodemv = static_cast<MeshVar *>(
-      mv_gp->getView("node_mv")->getOpaque() );
+    MeshVar * nodemv = (MeshVar *)  mv_gp->get_view("node_mv")->get_opaque();
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }
@@ -215,22 +206,19 @@ TEST(sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
 
-    DataGroup * dom_gp = problem_gp->getGroup(dom_name[idom]);
-    Extent * dom_ext = static_cast<Extent *>(
-      dom_gp->getView("ext")->getOpaque() );
+    DataGroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom]);
+    Extent * dom_ext = (Extent *) dom_gp->get_view("ext")->get_opaque();
 
-    DataGroup * mv_gp = problem_gp->getGroup("mesh_var");
-    MeshVar * zonemv = static_cast<MeshVar *>(
-      mv_gp->getView("zone_mv")->getOpaque() );
-    MeshVar * nodemv = static_cast<MeshVar *>(
-      mv_gp->getView("node_mv")->getOpaque() );
+    DataGroup * mv_gp = ATK_datagroup_get_group(problem_gp, "mesh_var");
+    MeshVar * zonemv = (MeshVar *)  mv_gp->get_view("zone_mv")->get_opaque();
+    MeshVar * nodemv = (<MeshVar *) mv_gp->get_view("node_mv")->get_opaque();
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
-    int test_num_zone_vals = dom_gp->getView("zone_data")->getNumberOfElements();
+    int test_num_zone_vals = dom_gp->get_view("zone_data")->get_number_of_elements();
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = nodemv->getNumVals(dom_ext);
-    int test_num_node_vals = dom_gp->getView("node_data")->getNumberOfElements();
+    int test_num_node_vals = dom_gp->get_view("node_data")->get_number_of_elements();
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }
@@ -240,10 +228,9 @@ TEST(sidre_opaque,meshvar)
   delete node_mv;
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
-    delete static_cast<Extent *>(
-      problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaque() );
+      delete (Extent *) ATK_datagroup_get_group(dom_name[idom])->get_view("ext")->get_opaque();
   }
-  delete ds;
+  ATK_datastore_delete(ds);
 }
 
 //----------------------------------------------------------------------

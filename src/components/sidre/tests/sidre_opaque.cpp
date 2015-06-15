@@ -104,13 +104,13 @@ TEST(sidre_opaque,inout)
   const int ihi_val = 9;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root_gp = ds->getRoot();
+  DataGroup * root = ds->getRoot();
 
-  DataGroup * problem_gp = root_gp->createGroup("problem");
+  DataGroup * problem_gp = root->createGroup("problem");
 
   Extent * ext = new Extent(0, ihi_val);
 
-  problem_gp->createOpaqueView("ext", ext);
+  DataView *ext_view = problem_gp->createOpaqueView("ext", ext);
 #if 1
 //  problem_gp->CreateViewAndBuffer("ext");
 //  problem_gp->CreateOpaqueView("ext", ext);
@@ -125,19 +125,19 @@ TEST(sidre_opaque,inout)
 //  DataView* v = problem_gp->DetachView("ext");
 //  std::cout << "view name = " << v->GetName() << std::endl;
 //  problem_gp->DestroyView("foo");
-//  root_gp->MoveGroup(problem_gp);
-//  root_gp->CopyGroup(problem_gp);
+//  root->MoveGroup(problem_gp);
+//  root->CopyGroup(problem_gp);
 //  Can't do following: method is private...
-//  root_gp->DetachGroup("bar");
-//  root_gp->DestroyGroup("bar");
+//  root->DetachGroup("bar");
+//  root->DestroyGroup("bar");
 //  problem_gp->getView(2);
 #endif
 
-  bool test_opaque = problem_gp->getView("ext")->isOpaque();
+  bool test_opaque = ext_view->isOpaque();
   EXPECT_EQ(test_opaque, true);
 
   Extent * test_extent =
-    static_cast<Extent *>(problem_gp->getView("ext")->getOpaque());
+    static_cast<Extent *>(ext_view->getOpaque());
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
@@ -167,9 +167,9 @@ TEST(sidre_opaque,meshvar)
   const int node_var_depth = 2;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root_gp = ds->getRoot();
+  DataGroup * root = ds->getRoot();
 
-  DataGroup * problem_gp = root_gp->createGroup("problem");
+  DataGroup * problem_gp = root->createGroup("problem");
 
   // Add two different mesh vars to mesh var group
   DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
