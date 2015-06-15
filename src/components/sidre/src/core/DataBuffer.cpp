@@ -51,7 +51,7 @@ DataView * DataBuffer::getView( IndexType idx )
 {
   SLIC_CHECK_MSG(hasView(idx), "no view exists with index == " << idx);
 
-  if ( 0 <= idx && (static_cast<unsigned>(idx) < m_views.size()) )
+  if ( hasView(idx) )
   {
     return m_views[idx];
   }
@@ -73,9 +73,12 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
 {
   SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
 
-  DataType dtype = conduit::DataType::default_dtype(type);
-  dtype.set_number_of_elements(len);
-  m_schema.set(dtype);
+  if ( len >= 0 )
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+    m_schema.set(dtype);
+  }
   return this;
 }
 
@@ -120,10 +123,14 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
   SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
                   "Attempting to set buffer to null external data" );
-  m_schema.set(schema);
-  m_data = external_data;
-  m_node.set_external(m_schema, m_data);
-  m_is_data_external = true;
+
+  if ( m_data == ATK_NULLPTR && external_data != ATK_NULLPTR )
+  {
+    m_schema.set(schema);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
   return this;
 }
 
@@ -141,10 +148,14 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
   SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
                   "Attempting to set buffer to null external data" );
-  m_schema.set(dtype);
-  m_data = external_data;
-  m_node.set_external(m_schema, m_data);
-  m_is_data_external = true;
+  
+  if ( m_data == ATK_NULLPTR && external_data != ATK_NULLPTR )
+  {
+    m_schema.set(dtype);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
   return this;
 }
 
@@ -182,10 +193,11 @@ DataBuffer * DataBuffer::allocate()
  */
 DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
 {
+  SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if ( !m_is_data_external )
+  if ( len >= 0 && !m_is_data_external )
   {
     declare(type, len);
     allocate();
@@ -245,10 +257,11 @@ DataBuffer * DataBuffer::allocate(const DataType& dtype)
  */
 DataBuffer * DataBuffer::reallocate( TypeID type, SidreLength len)
 {
+  SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
-  if ( !m_is_data_external )
+  if ( len >= 0 && !m_is_data_external )
   {
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(len);
