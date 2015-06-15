@@ -74,7 +74,7 @@ void * ATK_dataview_get_data_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-void * rv = selfobj->getDataBuffer();
+void * rv = selfobj->getDataInBuffer();
 return rv;
 // splicer end
 }
