@@ -367,6 +367,24 @@ public:
 
   /*!
    * \brief Create a DataView object (for view into given buffer) with
+   *        given name and use the Sidre TypeID and length to initialize the
+   *        view into this buffer. 
+   *
+   * New view will be attached to this DataGroup object.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given buffer pointer is null, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         DataBuffer * buff,
+			 const TypeID type,
+			 const SidreLength len );
+
+  /*!
+   * \brief Create a DataView object (for view into given buffer) with
    *        given name and use the Conduit DataType to initialize the
    *        view into this buffer. 
    *
@@ -413,6 +431,23 @@ public:
    */
   DataView * createOpaqueView( const std::string& name,
                                void * opaque_ptr);
+
+  /*!
+   * \brief Create an DataView into externally-owned data with given name,
+   *        using the given Sidre TypeID and length to describe the data. 
+   *
+   * New view will be attached to this DataGroup object.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given data pointer is null, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createExternalView( const std::string& name,
+                                 void * external_data,
+				 const TypeID type,
+				 const SidreLength len );
 
   /*!
    * \brief Create an DataView into externally-owned data with given name,

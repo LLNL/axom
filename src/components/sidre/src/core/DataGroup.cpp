@@ -173,6 +173,39 @@ DataView * DataGroup::createView( const std::string& name,
   }
 }
 
+/*
+ *************************************************************************
+ *
+ * Create view associated with given buffer, apply given data type
+ * and attach to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  DataBuffer * buff,
+				  const TypeID type,
+				  const SidreLength len )
+
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
+                   "Cannot create view with null buffer pointer" );
+
+  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+
+    DataView * const view = createView( name, buff );
+    view->apply(dtype);
+    return view;
+  }
+}
 
 /*
  *************************************************************************
@@ -260,6 +293,43 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
   }
 }
 
+
+/*
+ *************************************************************************
+ *
+ * Create external view with given data type and attach to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createExternalView( const std::string& name,
+                                          void * external_data,
+					  const TypeID type,
+					  const SidreLength len )
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR ,
+                   "Cannot create external view with null data pointer" );
+ 
+  if ( name.empty() || hasView(name) || external_data == ATK_NULLPTR )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+
+    DataBuffer * buff = this->getDataStore()->createBuffer();
+    buff->declareExternal(external_data, dtype);
+
+    DataView * const view = new DataView( name, this, buff);
+    buff->attachView(view);
+    view->apply(dtype);
+
+    return attachView(view);
+  }
+}
 
 /*
  *************************************************************************

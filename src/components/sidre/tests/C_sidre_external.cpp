@@ -8,6 +8,10 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+#include "gtest/gtest.h"
+
+#include "sidre/sidre.h"
+
 #include <stdlib.h>
 
 //------------------------------------------------------------------------------
@@ -29,11 +33,11 @@ TEST(C_sidre_external, declare_external_buffer)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_databuffer * dbuff_0 ATK_datastore_create_buffer(ds);
-  ATK_databuffer * dbuff_1 ATK_datastore_create_buffer(ds);
-  ATK_databuffer * dbuff_2 ATK_datastore_create_buffer(ds);
+  ATK_databuffer * dbuff_0 = ATK_datastore_create_buffer(ds);
+  ATK_databuffer * dbuff_1 = ATK_datastore_create_buffer(ds);
+  ATK_databuffer * dbuff_2 = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate(dbuff_0, ATK_C_INT_T, len);
+  ATK_databuffer_allocate_from_type(dbuff_0, ATK_C_DOUBLE_T, len);
   ATK_databuffer_declare_external(dbuff_1, idata, ATK_C_INT_T, len);
   ATK_databuffer_declare_external(dbuff_2, ddata, ATK_C_DOUBLE_T, len);
 
@@ -41,11 +45,11 @@ TEST(C_sidre_external, declare_external_buffer)
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_1), true);
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_2), true);
 
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_0), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_1), sizeof(CONDUIT_NATIVE_INT)*len);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_2), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_0), sizeof(double)*len);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_1), sizeof(int)*len);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_2), sizeof(double)*len);
 
-  ATK_databuffer_print(ds);
+  ATK_datastore_print(ds);
 
   ATK_datastore_delete(ds);
   free(idata);

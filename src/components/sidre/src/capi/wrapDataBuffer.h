@@ -32,11 +32,15 @@ ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
 void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len);
 
+void ATK_databuffer_declare_external(ATK_databuffer * self, void * external_data, int type, ATK_SidreLength len);
+
 void ATK_databuffer_allocate_existing(ATK_databuffer * self);
 
 void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len);
 
 void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len);
+
+bool ATK_databuffer_is_external(ATK_databuffer * self);
 
 void * ATK_databuffer_get_data(ATK_databuffer * self);
 

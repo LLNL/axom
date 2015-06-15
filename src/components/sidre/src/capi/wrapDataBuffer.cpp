@@ -34,6 +34,15 @@ return;
 // splicer end
 }
 
+void ATK_databuffer_declare_external(ATK_databuffer * self, void * external_data, int type, ATK_SidreLength len)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+selfobj->declareExternal(external_data, getTypeID(type), len);
+return;
+// splicer end
+}
+
 void ATK_databuffer_allocate_existing(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
@@ -58,6 +67,15 @@ DataBuffer *selfobj = static_cast<DataBuffer *>(self);
 // splicer begin
 selfobj->reallocate(getTypeID(type), len);
 return;
+// splicer end
+}
+
+bool ATK_databuffer_is_external(ATK_databuffer * self)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+bool rv = selfobj->isExternal();
+return rv;
 // splicer end
 }
 

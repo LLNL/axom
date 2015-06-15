@@ -171,7 +171,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare( TypeID type, SidreLength len);
+  DataBuffer * declare(TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to OWN data described as a Conduit schema.
@@ -191,6 +191,19 @@ public:
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * declare(const DataType& dtype);
+
+  /*!
+   * \brief Declare a buffer to hold external data described by Sidre type
+   *        and length.
+   *
+   * The given pointer references the existing external data. The buffer
+   * cannot allocate or reallocate it, and it will not be deallocated when
+   * buffer is destroyed.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * declareExternal(void * external_data,
+			       TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to hold external data described as a
