@@ -16,8 +16,7 @@
 
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 

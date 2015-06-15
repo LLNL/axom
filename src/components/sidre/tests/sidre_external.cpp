@@ -18,8 +18,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 // Test DataBuffer::declareExternal()

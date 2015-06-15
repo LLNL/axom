@@ -18,6 +18,7 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::InvalidIndex;
+using asctoolkit::sidre::DataType;
 
 using namespace conduit;
 
