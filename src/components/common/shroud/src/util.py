@@ -163,6 +163,9 @@ class Options(object):
         """
         return getattr(self, key)
 
+    def __contains__(self, item):
+        return hasattr(self, item)
+
     def get(self, key, value=None):
         """ D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.
         """
@@ -315,6 +318,12 @@ if __name__ == '__main__':
 
     print("GET",  lev1.get('a', 'notfound'))
     print("GET",  lev1.get('nosuch', 'notfound'))
+
+    print("IN  a", 'a' in lev1)
+    print("IN  z", 'z' in lev1)
+    print("IN  c2", 'c2' in lev1)
+    print("IN  z2", 'z2' in lev1)
+    print("IN nosuch", 'nosuch' in lev1)
 
 
     print("FORMAT:", wformat("{a} {z} {c2} {z2}", lev1))

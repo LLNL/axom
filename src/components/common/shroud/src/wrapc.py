@@ -229,7 +229,7 @@ class Wrapc(object):
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
 
-        if hasattr(options, 'C_this'):
+        if 'C_this' in options:
             fmt_func.C_this = options.C_this
         C_this = fmt_func.C_this
 
@@ -284,7 +284,7 @@ class Wrapc(object):
 
         fmt_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
 
-        if hasattr(options, 'C_object'):
+        if 'C_object' in options:
             fmt_func.C_object = options.C_object
         else:
             if is_ctor:
@@ -293,7 +293,7 @@ class Wrapc(object):
                 template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
             fmt_func.C_object = wformat(template, fmt_func)
 
-        if hasattr(options, 'C_code'):
+        if 'C_code' in options:
             fmt_func.C_code = options.C_code
         else:
             # generate the C body
