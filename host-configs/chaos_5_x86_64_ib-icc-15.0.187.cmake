@@ -7,10 +7,9 @@
 ###############################################################################
 # Select the c and c++ compiler though the standard CMake Variables.
 ###############################################################################
-#set(CMAKE_C_COMPILER "/usr/local/tools/ic-15.0.187/bin/icc" CACHE PATH "")
-#set(CMAKE_CXX_COMPILER "/usr/local/tools/ic-15.0.187/bin/icpc" CACHE PATH "")
 set(CMAKE_C_COMPILER "/usr/local/tools/ic-15.0.187/bin/icc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/tools/ic-15.0.187/bin/icpc" CACHE PATH "")
+set(CMAKE_FORTRAN_COMPILER "/usr/local/tools/ic-15.0.187/bin/ifort" CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit

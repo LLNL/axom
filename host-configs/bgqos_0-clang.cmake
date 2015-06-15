@@ -9,6 +9,7 @@
 ###############################################################################
 set(CMAKE_C_COMPILER "/usr/local/bin/bgclang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/bin/bgclang++" CACHE PATH "")
+set(CMAKE_FORTRAN_COMPILER "/clang/has/no/fortran" CACHE PATH "")
 set(ENABLE_FORTRAN OFF CACHE PATH "")
 
 #######

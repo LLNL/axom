@@ -9,6 +9,7 @@
 ###############################################################################
 set(CMAKE_C_COMPILER "/usr/apps/gnu/clang/bin/clang" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/apps/gnu/clang/bin/clang++" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/clang/has/no/fortran" CACHE PATH "")
 set(ENABLE_FORTRAN OFF CACHE PATH "")
 
 #######
