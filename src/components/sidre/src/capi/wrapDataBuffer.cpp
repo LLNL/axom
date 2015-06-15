@@ -70,6 +70,15 @@ return rv;
 // splicer end
 }
 
+size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin
+size_t rv = selfobj->getTotalBytes();
+return rv;
+// splicer end
+}
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

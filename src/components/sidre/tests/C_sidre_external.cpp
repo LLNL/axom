@@ -41,14 +41,9 @@ TEST(C_sidre_external, declare_external_buffer)
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_1), true);
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_2), true);
 
-#if 0
-  EXPECT_EQ(dbuff_0->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_DOUBLE)*len);
-  EXPECT_EQ(dbuff_1->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_INT)*len);
-  EXPECT_EQ(dbuff_2->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_DOUBLE)*len);
-#endif
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_0), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_1), sizeof(CONDUIT_NATIVE_INT)*len);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_2), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
 
   ATK_databuffer_print(ds);
 

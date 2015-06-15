@@ -55,8 +55,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
@@ -80,8 +79,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
@@ -98,9 +96,7 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->allocate(DataType::c_long(5));
 
-
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(long)*5);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 5);
 
   long * data_ptr = dbuff->getNode().as_long_ptr();
 
@@ -127,8 +123,7 @@ TEST(sidre_buffer,realloc_buffer)
   }
 
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(long)*10);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
   dbuff->getNode().print_detailed();
 

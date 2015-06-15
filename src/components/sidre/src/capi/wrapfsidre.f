@@ -67,6 +67,7 @@ module sidre_mod
         procedure :: allocate_from_type => databuffer_allocate_from_type
         procedure :: reallocate => databuffer_reallocate
         procedure :: get_data => databuffer_get_data
+        procedure :: get_total_bytes => databuffer_get_total_bytes
         generic :: allocate => allocate_existing, allocate_from_type
     end type databuffer
     
@@ -435,6 +436,14 @@ module sidre_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_databuffer_get_data
+        
+        function atk_databuffer_get_total_bytes(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_total_bytes")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_databuffer_get_total_bytes
     end interface
     interface
         
@@ -969,6 +978,16 @@ contains
         rv = atk_databuffer_get_data(obj%obj)
         ! splicer end
     end function databuffer_get_data
+    
+    function databuffer_get_total_bytes(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin
+        rv = atk_databuffer_get_total_bytes(obj%obj)
+        ! splicer end
+    end function databuffer_get_total_bytes
     
     subroutine dataview_declare(obj, type, len)
         use iso_c_binding

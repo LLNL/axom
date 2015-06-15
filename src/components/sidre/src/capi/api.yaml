@@ -157,6 +157,7 @@ classes:
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
       - decl: void* getData()
+      - decl: size_t getTotalBytes() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
 #      - decl: const Schema& getSchema() const

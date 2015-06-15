@@ -51,7 +51,6 @@ TEST(C_sidre_view,int_buffer_from_view)
   dv->getNode().print_detailed();
 #endif
 
-  //  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), dv->getSchema().total_bytes());
   EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10);
   ATK_datastore_delete(ds);
 
@@ -98,10 +97,9 @@ TEST(C_sidre_view,int_array_multi_view)
 
 #ifdef XXX
   dbuff->getNode().print_detailed();
-
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
 #endif
+
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
   ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even", dbuff);
@@ -154,10 +152,8 @@ TEST(C_sidre_view,init_int_array_multi_view)
 
 #ifdef XXX
   dbuff->getNode().print_detailed();
-
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
 #endif
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
   ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even",dbuff);

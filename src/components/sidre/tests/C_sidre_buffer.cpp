@@ -51,12 +51,11 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 
 #if 0
   dbuff->getNode().print_detailed();
-
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
-
-  ds->print();
 #endif
+
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+
+  ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
 }
@@ -78,10 +77,9 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
 
 #ifdef XXX
   dbuff->getNode().print_detailed();
-
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
 #endif
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
@@ -97,10 +95,7 @@ TEST(C_sidre_buffer,realloc_buffer)
   ATK_databuffer_declare(dbuff, ATK_C_LONG_T, 5);
   ATK_databuffer_allocate_existing(dbuff);
 
-#if 0
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(long)*5);
-#endif
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
   long * data_ptr = (long *) ATK_databuffer_get_data(dbuff);
 
@@ -128,15 +123,12 @@ TEST(C_sidre_buffer,realloc_buffer)
     data_ptr[i] = 10;
   }
 
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 #ifdef XXX
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long)*10);
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(long)*10);
-
   dbuff->getNode().print_detailed();
+#endif
 
   ATK_datastore_print(ds);
-#endif
   ATK_datastore_delete(ds);
 
 }

@@ -50,12 +50,9 @@ TEST(sidre_external, declare_external_buffer)
   EXPECT_EQ(dbuff_1->isExternal(), true);
   EXPECT_EQ(dbuff_2->isExternal(), true);
 
-  EXPECT_EQ(dbuff_0->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_DOUBLE)*len);
-  EXPECT_EQ(dbuff_1->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_INT)*len);
-  EXPECT_EQ(dbuff_2->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+  EXPECT_EQ(dbuff_0->getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+  EXPECT_EQ(dbuff_1->getTotalBytes(), sizeof(CONDUIT_NATIVE_INT)*len);
+  EXPECT_EQ(dbuff_2->getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
 
   ds->print();
 

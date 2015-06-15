@@ -14,6 +14,7 @@
 #define WRAPDATABUFFER_H
 
 #include "sidre/SidreTypes.h"
+#include "stdlib.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,6 +39,8 @@ void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_Sidr
 void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len);
 
 void * ATK_databuffer_get_data(ATK_databuffer * self);
+
+size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
 
 #ifdef __cplusplus
 }

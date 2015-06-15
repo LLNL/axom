@@ -16,8 +16,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 // Some simple types and functions used in tests

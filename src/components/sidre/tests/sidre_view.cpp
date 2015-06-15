@@ -101,9 +101,7 @@ TEST(sidre_view,int_array_multi_view)
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
-
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
@@ -151,8 +149,7 @@ TEST(sidre_view,init_int_array_multi_view)
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
 
   DataView * dv_e = root->createView("even",dbuff);

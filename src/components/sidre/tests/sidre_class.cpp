@@ -18,8 +18,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 namespace classtest
 {
@@ -51,7 +50,7 @@ public:
   void copyFromGroup(DataGroup * gp)
   {
     DataView * iview = gp->getView("idata");
-    size_t ilen = iview->getBuffer()->getNode().schema().total_bytes() /
+    size_t ilen = iview->getBuffer()->getTotalBytes() /
                   sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
 
@@ -125,7 +124,7 @@ public:
   void copyFromGroup(DataGroup * gp)
   {
     DataView * iview = gp->getView("idata");
-    size_t ilen = iview->getBuffer()->getNode().schema().total_bytes() /
+    size_t ilen = iview->getBuffer()->getTotalBytes() /
                   sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
 
@@ -136,7 +135,7 @@ public:
     }
 
     DataView * dview = gp->getView("ddata");
-    size_t dlen = dview->getBuffer()->getNode().schema().total_bytes() /
+    size_t dlen = dview->getBuffer()->getTotalBytes() /
                   sizeof(CONDUIT_NATIVE_DOUBLE);
     m_ddata = std::vector<double>(dlen);
 
