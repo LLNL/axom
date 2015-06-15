@@ -47,14 +47,21 @@ namespace sidre
  */
 DataView * DataView::declare(TypeID type, SidreLength len)
 {
-  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
+  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements in view >=0");
 
-  DataType dtype = conduit::DataType::default_dtype(type);
-  dtype.set_number_of_elements(len);
+  if ( len < 0 ) 
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
 
-  m_schema.set(dtype);
-  m_is_applied = false;
-  return this;
+    m_schema.set(dtype);
+    m_is_applied = false;
+    return this;
+  }
 }
 
 /*
@@ -114,9 +121,16 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
-  declare(type, len);
-  allocate();
-  apply();
+  SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+
+  if ( len >= 0 && m_data_buffer->getNumViews() == 1 ) 
+  {
+    declare(type, len);
+    allocate();
+    apply();
+  }
   return this;
 }
 
@@ -129,9 +143,15 @@ DataView * DataView::allocate( TypeID type, SidreLength len)
  */
 DataView * DataView::allocate(const Schema& schema)
 {
-  declare(schema);
-  allocate();
-  apply();
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+
+  if ( m_data_buffer->getNumViews() == 1 )
+  {
+    declare(schema);
+    allocate();
+    apply();
+  }
   return this;
 }
 
@@ -144,10 +164,15 @@ DataView * DataView::allocate(const Schema& schema)
  */
 DataView * DataView::allocate(const DataType& dtype)
 {
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  declare(dtype);
-  allocate();
-  apply();
+  if ( m_data_buffer->getNumViews() == 1 )
+  {
+    declare(dtype);
+    allocate();
+    apply();
+  }
   return this;
 }
 
@@ -163,10 +188,11 @@ DataView * DataView::reallocate(TypeID type, SidreLength len)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to reallocate an external or opaque view");
+  SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements in view >=0");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 )
   {
     declare(type, len);
     m_data_buffer->reallocate(type, len);

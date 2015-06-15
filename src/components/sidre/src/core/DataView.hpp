@@ -28,10 +28,11 @@
 #include <vector>
 
 // Other CS Toolkit headers
-#include "sidre/SidreTypes.hpp"
 #include "common/CommonTypes.hpp"
 #include "conduit/conduit.hpp"
 
+// SiDRe project headers
+#include "sidre/SidreTypes.hpp"
 
 
 
@@ -106,7 +107,10 @@ public:
   /*!
    * \brief Declare a data view from sidre type and length.
    *
-   * \return pointer to this DataView object.
+   * If given length < 0, method does nothing.
+   *
+   * \return pointer to this DataView object or ATK_NULLPTR if
+   * new DataView is not created.
    */
   DataView * declare( TypeID type, SidreLength len);
 
@@ -131,8 +135,9 @@ public:
    * associated data buffer and then calling apply() on this DataView
    * object.
    *
-   * NOTE: Allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Allocation from a view only makes sense if this is the only 
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -144,8 +149,10 @@ public:
    * This is equivalent to calling declare(Schema), then allocate(),
    * and then calling apply() on this DataView object.
    *
-   * NOTE: Allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Allocation from a view only makes sense if this is the only 
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.  Also, if the given length is < 0, this
+   *       method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -157,8 +164,9 @@ public:
    * This is equivalent to calling declare(Schema), then allocate(),
    * and then calling apply() on this DataView object.
    *
-   * NOTE: Allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Allocation from a view only makes sense if this is the only
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing. 
    *
    * \return pointer to this DataView object.
    */
@@ -171,8 +179,9 @@ public:
    * This is equivalent to calling declare(DataType), then allocate(),
    * and then calling apply() on this DataView object.
    *
-   * NOTE: Allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Allocation from a view only makes sense if this is the only
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing. 
    *
    * \return pointer to this DataView object.
    */
@@ -182,10 +191,13 @@ public:
    * \brief  Reallocate the view's underlying buffer using a Sidre type 
    *         and length.
    *
-   *  Uses conduit's update semantics();
+   * This is equivalent to calling declare(TypeID), then allocate(),
+   * and then calling apply() on this DataView object.
    *
-   * NOTE: Re-allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Re-allocation from a view only makes sense if this is the only 
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.  Also, if the given length is < 0 or if
+   *       this is an opaque view, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -195,10 +207,10 @@ public:
    * \brief  Reallocate the view's underlying buffer using a Conduit
    *         schema.
    *
-   *  Uses conduit's update semantics();
-   *
-   * NOTE: Re-allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Re-allocation from a view only makes sense if this is the only
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.  Also, if this is an opaque view, this 
+   *       method does nothing. 
    *
    * \return pointer to this DataView object.
    */
@@ -208,10 +220,10 @@ public:
    * \brief  Reallocate the view's underlying buffer using a Conduit
    *         data type.
    *
-   *  Uses conduit's update semantics();
-   *
-   * NOTE: Re-allocation from a view only makes sense, and we only allow it, 
-   *       if this is the only view associated with its buffer.
+   * NOTE: Re-allocation from a view only makes sense if this is the only
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.  Also, if this is an opaque view, this 
+   *       method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -299,7 +311,7 @@ public:
   /*!
    * \brief Return void* pointer to data in view's buffer.
    */
-    void * getDataBuffer() // const
+  void * getDataInBuffer() // const
   {
     return static_cast<void *>(getNode().data_pointer());
   }
