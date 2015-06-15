@@ -46,7 +46,7 @@ bool ATK_dataview_is_opaque(ATK_dataview * self);
 
 const char * ATK_dataview_get_name(const ATK_dataview * self);
 
-void * ATK_dataview_get_data_buffer(ATK_dataview * self);
+void * ATK_dataview_get_data_in_buffer(ATK_dataview * self);
 
 void * ATK_dataview_get_opaque(ATK_dataview * self);
 

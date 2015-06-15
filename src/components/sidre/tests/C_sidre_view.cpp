@@ -41,7 +41,7 @@ TEST(C_sidre_view,int_buffer_from_view)
   ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
 
   ATK_dataview_allocate(dv, ATK_C_INT_T, 10);
-  int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv);
+  int * data_ptr = (int *) ATK_dataview_get_data_in_buffer(dv);
 
   for(int i=0 ; i<10 ; i++) {
     data_ptr[i] = i*i;
@@ -64,7 +64,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
   ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10);
-  int * data_ptr = (int *) ATK_dataview_get_data_buffer(dv);
+  int * data_ptr = (int *) ATK_dataview_get_data_in_buffer(dv);
 
   for(int i=0 ; i<10 ; i++) {
     data_ptr[i] = i*i;
@@ -222,7 +222,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // alloc our buffer
   // we will create 4 sub views of this array
   ATK_dataview_allocate(base_old, ATK_C_INT_T, 40);
-  int * data_ptr = (int *) ATK_dataview_get_data_buffer(base_old);
+  int * data_ptr = (int *) ATK_dataview_get_data_in_buffer(base_old);
 
 
   // init the buff with values that align with the
@@ -331,7 +331,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 
   /// check pointer values
-  int * r2_new_ptr = (int *) ATK_dataview_get_data_buffer(r2_new);
+  int * r2_new_ptr = (int *) ATK_dataview_get_data_in_buffer(r2_new);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -374,8 +374,8 @@ TEST(C_sidre_view,int_array_realloc)
   ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", ATK_C_FLOAT_T, 5);
   ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", ATK_C_INT_T, 5);
 
-  float * a1_ptr = (float *) ATK_dataview_get_data_buffer(a1);
-  int * a2_ptr = (int *)  ATK_dataview_get_data_buffer(a2);
+  float * a1_ptr = (float *) ATK_dataview_get_data_in_buffer(a1);
+  int * a2_ptr = (int *)  ATK_dataview_get_data_in_buffer(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -390,8 +390,8 @@ TEST(C_sidre_view,int_array_realloc)
   ATK_dataview_reallocate(a1, ATK_C_FLOAT_T, 10);
   ATK_dataview_reallocate(a2, ATK_C_INT_T, 15);
 
-  a1_ptr = (float *) ATK_dataview_get_data_buffer(a1);
-  a2_ptr = (int *) ATK_dataview_get_data_buffer(a2);
+  a1_ptr = (float *) ATK_dataview_get_data_in_buffer(a1);
+  a2_ptr = (int *) ATK_dataview_get_data_in_buffer(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
