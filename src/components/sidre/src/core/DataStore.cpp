@@ -75,7 +75,7 @@ DataBuffer * DataStore::getBuffer( IndexType idx )
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
-  if ( 0 <= idx && (static_cast<unsigned>(idx) < m_data_buffers.size()) )
+  if ( hasBuffer(idx) ) 
   { 
     return m_data_buffers[idx];
   }
@@ -214,14 +214,14 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
 void DataStore::info(Node& n) const
 {
   m_RootGroup->info(n["DataStore/root"]);
-  for ( IndexType idx = 0 ;
-        static_cast<unsigned>(idx) < m_data_buffers.size() ; ++idx)
+
+  IndexType bidx = getFirstValidBufferIndex();
+  while ( indexIsValid(bidx) )
   {
     Node& b = n["DataStore/buffers"].append();
-    if (m_data_buffers[idx] != ATK_NULLPTR)
-    {
-      m_data_buffers[idx]->info(b);
-    }
+    m_data_buffers[bidx]->info(b);
+
+    bidx = getNextValidBufferIndex(bidx);
   }
 }
 
