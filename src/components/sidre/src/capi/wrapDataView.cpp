@@ -70,7 +70,7 @@ return rv.c_str();
 // splicer end
 }
 
-void * ATK_dataview_get_data_buffer(ATK_dataview * self)
+void * ATK_dataview_get_data_in_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin

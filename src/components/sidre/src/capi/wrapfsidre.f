@@ -83,7 +83,7 @@ module sidre_mod
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
-        procedure :: get_data_buffer => dataview_get_data_buffer
+        procedure :: get_data_in_buffer => dataview_get_data_in_buffer
         procedure :: get_opaque => dataview_get_opaque
         procedure :: get_buffer => dataview_get_buffer
         procedure :: get_data => dataview_get_data
@@ -518,13 +518,13 @@ module sidre_mod
             type(C_PTR) rv
         end function atk_dataview_get_name
         
-        function atk_dataview_get_data_buffer(self) result(rv) &
-                bind(C, name="ATK_dataview_get_data_buffer")
+        function atk_dataview_get_data_in_buffer(self) result(rv) &
+                bind(C, name="ATK_dataview_get_data_in_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value :: self
             type(C_PTR) :: rv
-        end function atk_dataview_get_data_buffer
+        end function atk_dataview_get_data_in_buffer
         
         function atk_dataview_get_opaque(self) result(rv) &
                 bind(C, name="ATK_dataview_get_opaque")
@@ -1094,15 +1094,15 @@ contains
         ! splicer end
     end function dataview_get_name
     
-    function dataview_get_data_buffer(obj) result(rv)
+    function dataview_get_data_in_buffer(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(C_PTR) :: rv
         ! splicer begin
-        rv = atk_dataview_get_data_buffer(obj%obj)
+        rv = atk_dataview_get_data_in_buffer(obj%obj)
         ! splicer end
-    end function dataview_get_data_buffer
+    end function dataview_get_data_in_buffer
     
     function dataview_get_opaque(obj) result(rv)
         use iso_c_binding
