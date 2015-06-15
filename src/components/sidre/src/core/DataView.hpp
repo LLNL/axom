@@ -29,7 +29,6 @@
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
-#include "conduit/conduit.hpp"
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
@@ -44,7 +43,6 @@ namespace sidre
 // using directives to make Conduit usage easier and less visible
 using conduit::Node;
 using conduit::Schema;
-using conduit::DataType;
 
 class DataBuffer;
 class DataGroup;

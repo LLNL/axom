@@ -27,7 +27,6 @@
 #include <vector>
 
 // Other toolkit component headers
-#include "conduit/conduit.hpp"
 #include "common/CommonTypes.hpp"
 
 // SiDRe project headers
@@ -40,7 +39,6 @@ namespace asctoolkit
 namespace sidre
 {
 // using directives to make Conduit usage easier and less visible
-using conduit::DataType;
 using conduit::Node;
 using conduit::Schema;
 
