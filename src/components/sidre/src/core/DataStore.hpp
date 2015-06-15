@@ -27,7 +27,6 @@
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
-#include "conduit/conduit.hpp"
 #include "slic/slic.hpp"
 
 // SiDRe project headers
