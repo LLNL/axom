@@ -100,7 +100,7 @@ classes:
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
 #    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, const TypeID type, const SidreLength len )
 #    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-#    -  decl:  DataView * createExternalView( const std::string& name, void * external_data,  const TypeID type, const SidreLength len )
+    -  decl:  DataView * createExternalView( const std::string& name, void * external_data,  const TypeID type, const SidreLength len )
     -  decl: DataView *moveView(DataView *view)
     -  decl: DataView *copyView(DataView *view)
     -  decl: void destroyViewAndBuffer(const std::string &name)

@@ -38,6 +38,7 @@ module sidre_mod
         procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_view => datagroup_create_view
+        procedure :: create_external_view => datagroup_create_external_view
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
@@ -246,6 +247,18 @@ module sidre_mod
             type(C_PTR) :: buff
             type(C_PTR) :: rv
         end function atk_datagroup_create_view
+        
+        function atk_datagroup_create_external_view(self, name, external_data, type, len) result(rv) &
+                bind(C, name="ATK_datagroup_create_external_view")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            character(kind=C_CHAR) :: name(*)
+            type(C_PTR) :: external_data
+            integer(C_INT), value :: type
+            integer(C_LONG), value :: len
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_external_view
         
         function atk_datagroup_move_view(self, view) result(rv) &
                 bind(C, name="ATK_datagroup_move_view")
@@ -764,6 +777,20 @@ contains
         rv%obj = atk_datagroup_create_view(obj%obj, trim(name) // C_NULL_CHAR, buff%obj)
         ! splicer end
     end function datagroup_create_view
+    
+    function datagroup_create_external_view(obj, name, external_data, type, len) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        type(C_PTR) :: external_data
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(dataview) :: rv
+        ! splicer begin
+        rv%obj = atk_datagroup_create_external_view(obj%obj, trim(name) // C_NULL_CHAR, external_data, type, len)
+        ! splicer end
+    end function datagroup_create_external_view
     
     function datagroup_move_view(obj, view) result(rv)
         use iso_c_binding

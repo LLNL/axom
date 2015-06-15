@@ -57,6 +57,8 @@ ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char
 
 ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name, ATK_databuffer * buff);
 
+ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, const int type, const ATK_SidreLength len);
+
 ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view);
 
 ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view);

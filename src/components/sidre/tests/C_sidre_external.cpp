@@ -90,7 +90,7 @@ TEST(C_sidre_external, create_external_view)
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * idata_chk = (double *) ATK_dataview_get_data_in_buffer(dview);
+  double * ddata_chk = (double *) ATK_dataview_get_data_in_buffer(dview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -124,21 +124,19 @@ TEST(C_sidre_external, save_load_external_view)
   ATK_dataview *dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
   EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
   ATK_databuffer *tmpbuf;
-  tmpbuf = ATK_dataview_get_buffer(iview)
-  EXPECT_EQ(ATK_databuffer_is_external(), true);
-  tmpbuf = ATK_dataview_get_buffer(dview)
-  EXPECT_EQ(ATK_databuffer_is_external(), true);
+  tmpbuf = ATK_dataview_get_buffer(iview);
+  EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), true);
+  tmpbuf = ATK_dataview_get_buffer(dview);
+  EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), true);
 
 #ifdef XXX
-  ATK_dataview *iview = ATK_datagroup_get_view(root, "idata");
-  ATK_dataview *dview = ATK_datagroup_get_view(root, "idata");
-  root->getView("idata")->getNode().print_detailed();
-  root->getView("ddata")->getNode().print_detailed();
+  iview->getNode().print_detailed();
+  dview->getNode().print_detailed();
 #endif
 
   ATK_datagroup_save(root, "out_sidre_external_save_restore_external_view", "conduit");
 
-  ATK_databuffer_print(ds);
+  ATK_datastore_print(ds);
 
 
   ATK_datastore * ds2 = ATK_datastore_new();
@@ -146,13 +144,12 @@ TEST(C_sidre_external, save_load_external_view)
 
   ATK_datagroup_load(root, "out_sidre_external_save_restore_external_view","conduit");
 
-  ATK_datagroup_print(ds2);
+  ATK_datastore_print(ds2);
 
-  ATK_dataview iview2 = ATK_datagroup_getView(root2, "idata");
-  ATK_dataview dview2 = ATK_datagroup_getView(root2, "ddata");
+  ATK_dataview *iview2 = ATK_datagroup_get_view(root2, "idata");
+  ATK_dataview *dview2 = ATK_datagroup_get_view(root2, "ddata");
 
   EXPECT_EQ(ATK_datagroup_get_num_views(root2), 2u);
-  ATK_databuffer tmpbuf;
   tmpbuf = ATK_dataview_get_buffer(iview2);
   EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), false);
   tmpbuf = ATK_dataview_get_buffer(dview2);
@@ -164,7 +161,7 @@ TEST(C_sidre_external, save_load_external_view)
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * idata_chk = (double *) ATK_dataview_get_data_in_buffer(dview2);
+  double * ddata_chk = (double *) ATK_dataview_get_data_in_buffer(dview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
