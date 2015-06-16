@@ -70,15 +70,6 @@ return rv.c_str();
 // splicer end
 }
 
-void * ATK_dataview_get_data_in_buffer(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin
-void * rv = selfobj->getDataInBuffer();
-return rv;
-// splicer end
-}
-
 void * ATK_dataview_get_opaque(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);
@@ -93,15 +84,6 @@ ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self)
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
 DataBuffer * rv = selfobj->getBuffer();
-return rv;
-// splicer end
-}
-
-void * ATK_dataview_get_data(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin
-void * rv = selfobj->getData();
 return rv;
 // splicer end
 }

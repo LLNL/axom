@@ -306,19 +306,10 @@ public:
   }
 
   /*!
-   * \brief Return void* pointer to data in view's buffer.
-   */
-  void * getDataInBuffer() // const
-  {
-    return static_cast<void *>(getNode().data_pointer());
-  }
-
-  /*!
    * \brief Return void* pointer to opaque data in view, else ATK_NULLPTR
    *        if view has not been declared opaque.
    */
   void * getOpaque() const;
-
 
   /*!
    * \brief Return pointer to non-const DataBuffer associated with DataView.
@@ -340,26 +331,6 @@ public:
    * \brief Return void-pointer to data associated with DataView.
    */
   void * getDataPointer() const;
-
-  /*!
-   * \brief Return void-pointer to data associated with DataView.
-   */
-  void * getData()
-  {
-#if 0
-    // invalid use of incomplete type, discuss.
-    if (hasBuffer())
-    {
-      return m_data_buffer->getData();
-    }
-    else
-    {
-      return ATK_NULLPTR;
-    }
-#else
-    return ATK_NULLPTR;
-#endif
-  }
 
   /*!
    * \brief Return non-const reference to Conduit node holding data.

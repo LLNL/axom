@@ -197,11 +197,9 @@ classes:
     - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const
     - decl: const std::string& getName() const
-    - decl: void * getDataInBuffer()
     - decl: void* getOpaque() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
-    - decl: void* getData()
     - decl: void * getDataPointer() const
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
