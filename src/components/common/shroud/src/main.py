@@ -180,22 +180,22 @@ class Schema(object):
         name = node['name']
 
         options = self.push_options(node)
-        fmt2_class = self.push_fmt(node)
-        fmt2_class.cpp_class = name
-        fmt2_class.lower_class = name.lower()
-        fmt2_class.upper_class = name.upper()
-        fmt2_class.C_prefix = options.get('C_prefix', '')
+        fmt_class = self.push_fmt(node)
+        fmt_class.cpp_class = name
+        fmt_class.lower_class = name.lower()
+        fmt_class.upper_class = name.upper()
+        fmt_class.C_prefix = options.get('C_prefix', '')
 
         if options.F_module_per_class:
-            util.eval_template(options, fmt2_class,
+            util.eval_template(options, fmt_class,
                                'F_module_name', '{lower_class}_mod')
-            util.eval_template(options, fmt2_class,
+            util.eval_template(options, fmt_class,
                                'F_impl_filename', 'wrapf{cpp_class}.f')   # XXX lower_class
 
         # Only one file per class for C.
-        util.eval_template(options, fmt2_class,
+        util.eval_template(options, fmt_class,
                            'C_header_filename', 'wrap{cpp_class}.h')
-        util.eval_template(options, fmt2_class,
+        util.eval_template(options, fmt_class,
                            'C_impl_filename', 'wrap{cpp_class}.cpp')
 
         # create typedef for each class before generating code
@@ -215,7 +215,7 @@ class Schema(object):
                 fortran_derived = unname,
                 fortran_to_c = '{var}%obj',
                 # XXX module name may not conflict with type name
-                f_module = {fmt2_class.F_module_name:[unname]},
+                f_module = {fmt_class.F_module_name:[unname]},
 
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
@@ -227,7 +227,7 @@ class Schema(object):
                 )
 
         typedef = self.typedef[name]
-        fmt2_class.C_type_name = typedef.c_type
+        fmt_class.C_type_name = typedef.c_type
 
         overloaded_methods = {}
         methods = node.setdefault('methods', [])
@@ -250,7 +250,7 @@ class Schema(object):
 
     def check_function(self, node):
         self.push_options(node)
-        fmt2_func = self.push_fmt(node)
+        fmt_func = self.push_fmt(node)
 
 #        func = util.FunctionNode()
 #        func.update(node)
@@ -273,10 +273,10 @@ class Schema(object):
 
         result = node['result']
 
-        fmt2_func.method_name =     result['name']
-        fmt2_func.underscore_name = util.un_camel(result['name'])
+        fmt_func.method_name =     result['name']
+        fmt_func.underscore_name = util.un_camel(result['name'])
         if 'method_suffix' in node:
-            fmt2_func.method_suffix =   node['method_suffix']
+            fmt_func.method_suffix =   node['method_suffix']
 
         # docs
         self.pop_fmt()
