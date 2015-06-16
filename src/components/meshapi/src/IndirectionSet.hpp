@@ -132,9 +132,19 @@ namespace meshapi{
        */
       Set* parentSet()            { return m_parentSet;}
 
+  public:
+      /**
+       * \name DirectDataAccess
+       * \brief Accessor functions to get the underlying set data
+       * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+       */
+
+      /// \{
 
       ArrType       & data()        { return m_entities; }
       const ArrType & data() const  { return m_entities; }
+
+      /// \}
 
   private:
 

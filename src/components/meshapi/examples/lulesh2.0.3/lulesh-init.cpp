@@ -615,18 +615,19 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
     ghostIdx[5] = pidx ;
   }
 
-  // MeshAPI HACK: I added this test so the code will automatically fail when MPI is enabled, and to use the ghostIdx variables.
-  //               Otherwise it warns that they are only set and never used.
-  ATK_ASSERT_MSG(ghostIdx[0] == ghostIdx[5]
-        , "The boundary conditions code is only necessary when MPI is disabled."
-        << "\nThis assertion implies that the below code must be fixed."
-        );
 
-  // MeshAPI HACK: I had to comment out the updates to the face adjacencies since we cannot modify ConstantRelation data.
-  //               We can uncomment this after (a) The underlying relation data is made accessible
-  //                                           (b) We define a DynamicConstantrelation class to modify the data
-  //                (a) is strictly necessary, as this will be the only way to modify the data
-  //                (b) is not strictly necessary, it is only a convenience, since once we have the underlying data, we can modify it.
+  // MeshAPI HACK: We are directly accessing the relation data of a StaticConstantRelation (ElemFaceAdjacencyRelation)
+  //               so that we can modify it. A nicer solution can be implemented once we define DynamicConstantRelations
+  //               which we can use to wrap the code.  However, the code should still look similar for now...
+
+  typedef Domain::ElemFaceAdjacencyRelation::RelationVec IndexVec;
+  IndexVec& local_xi_m = m_lxim.toSetPositionsData();
+  IndexVec& local_xi_p = m_lxip.toSetPositionsData();
+  IndexVec& local_eta_m = m_letam.toSetPositionsData();
+  IndexVec& local_eta_p = m_letap.toSetPositionsData();
+  IndexVec& local_zeta_m = m_lzetam.toSetPositionsData();
+  IndexVec& local_zeta_p = m_lzetap.toSetPositionsData();
+
 
   // symmetry plane or free surface BCs 
   for (Index_t i=0; i<edgeElems; ++i) {
@@ -638,17 +639,15 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(rowInc+j) |= ZETA_M_COMM ;
-//        lzetam(rowInc+j) = ghostIdx[0] + rowInc + j ;
+        local_zeta_m[rowInc+j] = ghostIdx[0] + rowInc + j ;
       }
 
       if (m_planeLoc == m_tp-1) {
-        elemBC(rowInc+j+numElem()-edgeElems*edgeElems) |=
-          ZETA_P_FREE;
+        elemBC(rowInc+j+numElem()-edgeElems*edgeElems) |= ZETA_P_FREE;
       }
       else {
-        elemBC(rowInc+j+numElem()-edgeElems*edgeElems) |=
-          ZETA_P_COMM ;
-//        lzetap(rowInc+j+numElem()-edgeElems*edgeElems) = ghostIdx[1] + rowInc + j ;
+        elemBC(rowInc+j+numElem()-edgeElems*edgeElems) |= ZETA_P_COMM ;
+        local_zeta_p[rowInc+j+numElem()-edgeElems*edgeElems] = ghostIdx[1] + rowInc + j ;
       }
 
       if (m_rowLoc == 0) {
@@ -656,17 +655,15 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(planeInc+j) |= ETA_M_COMM ;
-//        letam(planeInc+j) = ghostIdx[2] + rowInc + j ;
+        local_eta_m[planeInc+j] = ghostIdx[2] + rowInc + j ;
       }
 
       if (m_rowLoc == m_tp-1) {
-        elemBC(planeInc+j+edgeElems*edgeElems-edgeElems) |=
-          ETA_P_FREE ;
+        elemBC(planeInc+j+edgeElems*edgeElems-edgeElems) |= ETA_P_FREE ;
       }
       else {
-        elemBC(planeInc+j+edgeElems*edgeElems-edgeElems) |=
-          ETA_P_COMM ;
-//        letap(planeInc+j+edgeElems*edgeElems-edgeElems) = ghostIdx[3] +  rowInc + j ;
+        elemBC(planeInc+j+edgeElems*edgeElems-edgeElems) |= ETA_P_COMM ;
+        local_eta_p[planeInc+j+edgeElems*edgeElems-edgeElems] = ghostIdx[3] +  rowInc + j ;
       }
 
       if (m_colLoc == 0) {
@@ -674,7 +671,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(planeInc+j*edgeElems) |= XI_M_COMM ;
-//        lxim(planeInc+j*edgeElems) = ghostIdx[4] + rowInc + j ;
+        local_xi_m[planeInc+j*edgeElems] = ghostIdx[4] + rowInc + j ;
       }
 
       if (m_colLoc == m_tp-1) {
@@ -682,10 +679,19 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(planeInc+j*edgeElems+edgeElems-1) |= XI_P_COMM ;
-//        lxip(planeInc+j*edgeElems+edgeElems-1) = ghostIdx[5] + rowInc + j ;
+        local_xi_p[planeInc+j*edgeElems+edgeElems-1] = ghostIdx[5] + rowInc + j ;
       }
     }
   }
+
+  // Ensure that all the indices in the element adjacency relations are still valid
+  ATK_ASSERT( m_lxim.isValid() );
+  ATK_ASSERT( m_lxip.isValid() );
+  ATK_ASSERT( m_letam.isValid() );
+  ATK_ASSERT( m_letap.isValid() );
+  ATK_ASSERT( m_lzetam.isValid() );
+  ATK_ASSERT( m_lzetap.isValid() );
+
 }
 
 ///////////////////////////////////////////////////////////////////////////

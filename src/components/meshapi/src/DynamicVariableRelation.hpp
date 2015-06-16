@@ -90,6 +90,29 @@ namespace meshapi    {
             return m_relationsVec[fromSetIndex];
         }
 
+    public:
+        /**
+         * \name DirectDataAccess
+         * \brief Accessor functions to get the underlying relation data for each element
+
+         * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+         */
+
+        /// \{
+
+        /**
+         * \brief Access the set of positions in the 'toSet' associated with the given position in 'fromSet'
+         * \param fromSetPos The position within the 'fromSet' whose relation data (in the 'toSet') we are requesting
+         */
+              RelationVec & data(SetPosition fromSetPos)       { verifyPosition(fromSetPos); return m_relationsVec[fromSetPos]; }
+
+        /**
+        * \brief Access the set of positions in the 'toSet' associated with the given position in 'fromSet'
+        * \param fromSetPos The position within the 'fromSet' whose relation data (in the 'toSet') we are requesting
+        */
+        const RelationVec & data(SetPosition fromSetPos) const { verifyPosition(fromSetPos); return m_relationsVec[fromSetPos]; }
+
+        /// \}
 
     private:
         inline void  verifyPosition(SetPosition fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) ); }

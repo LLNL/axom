@@ -31,22 +31,22 @@ namespace meshapi    {
 
         typedef std::vector<DataType>                                  OrderedMap;
 
-        static NullSet const s_nullSet;
+        static const NullSet s_nullSet;
 
     public:
-        Map(Set const* theSet = &s_nullSet) : m_set(theSet)
+        Map(const Set * theSet = &s_nullSet) : m_set(theSet)
         {
             m_data.resize( m_set->size());
         }
 
-        Map(Set const* theSet, DataType defaultValue) : m_set(theSet)
+        Map(const Set * theSet, DataType defaultValue) : m_set(theSet)
         {
             m_data.resize( m_set->size(), defaultValue );
         }
 
         ~Map(){}
 
-        DataType const& operator[](SetPosition setIndex) const
+        const DataType & operator[](SetPosition setIndex) const
         {
             verifyPosition(setIndex);
             return m_data[setIndex];
@@ -62,21 +62,32 @@ namespace meshapi    {
         Set const* set() const { return m_set; }
 
 
+        SetPosition size() const { return m_set->size(); }
+
+        bool isValid(bool verboseOutput = false) const;
+
+
+    public:
+        /**
+         * \name DirectDataAccess
+         * \brief Accessor functions to get the underlying map data
+         * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+         */
+
+        /// \{
+
         //* Placeholder for function that returns the (pointer to) underlying data **/
         OrderedMap      & data()        { return m_data; }
         //* Placeholder for function that returns the (const pointer to) underlying data **/
         const OrderedMap & data() const  { return m_data; }
 
-
-        SetPosition size() const { return m_set->size(); }
-
-        bool isValid(bool verboseOutput = false) const;
+        /// \}
 
     private:
         inline void  verifyPosition(SetPosition setIndex)       const { ATK_ASSERT( setIndex < m_set->size()  ); }
 
     private:
-        Set const*  m_set;
+        const Set *  m_set;
         OrderedMap         m_data;
     };
 
