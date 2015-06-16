@@ -70,6 +70,15 @@ return;
 // splicer end
 }
 
+int AA_exclass2_get_type_id(AA_exclass2 * self)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin
+TypeID rv = selfobj->getTypeID();
+return rv;
+// splicer end
+}
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

@@ -38,6 +38,8 @@ void AA_exclass2_declare(AA_exclass2 * self, int type, ATK_SidreLength len);
 
 void AA_exclass2_destroyall(AA_exclass2 * self);
 
+int AA_exclass2_get_type_id(AA_exclass2 * self);
+
 #ifdef __cplusplus
 }
 #endif

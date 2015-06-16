@@ -33,7 +33,8 @@ typedef:
     # enum for types
     c_header : sidre/SidreTypes.h
     c_type   : int
-#    cpp_type: DataType::
+    cpp_type: TypeID
+#    cpp_to_c : static_cast<int>({var})
     c_to_cpp :  getTypeID({var})
     c_fortran: integer(C_INT)
     f_type   : integer(C_INT)
@@ -125,6 +126,9 @@ classes:
 
     # void function
     - decl: void destroyall()
+
+    # return typedef'd type
+    - decl: TypeID getTypeID() const
 
 
 functions:

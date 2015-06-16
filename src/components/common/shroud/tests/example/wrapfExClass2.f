@@ -15,6 +15,7 @@ module exclass2_mod
         procedure :: get_class1 => exclass2_get_class1
         procedure :: declare => exclass2_declare
         procedure :: destroyall => exclass2_destroyall
+        procedure :: get_type_id => exclass2_get_type_id
     end type exclass2
     
     interface
@@ -74,6 +75,14 @@ module exclass2_mod
             implicit none
             type(C_PTR), value :: self
         end subroutine aa_exclass2_destroyall
+        
+        function aa_exclass2_get_type_id(self) result(rv) &
+                bind(C, name="AA_exclass2_get_type_id")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            integer(C_INT) :: rv
+        end function aa_exclass2_get_type_id
     end interface
 
 contains
@@ -148,5 +157,15 @@ contains
         call aa_exclass2_destroyall(obj%obj)
         ! splicer end
     end subroutine exclass2_destroyall
+    
+    function exclass2_get_type_id(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin
+        rv = aa_exclass2_get_type_id(obj%obj)
+        ! splicer end
+    end function exclass2_get_type_id
 
 end module exclass2_mod

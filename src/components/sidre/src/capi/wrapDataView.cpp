@@ -119,7 +119,7 @@ int ATK_dataview_get_type_id(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin
-int rv = selfobj->getTypeID();
+TypeID rv = selfobj->getTypeID();
 return rv;
 // splicer end
 }

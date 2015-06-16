@@ -758,6 +758,40 @@
                         "name": "destroyall", 
                         "type": "void"
                     }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "TypeID getTypeID() const", 
+                    "fmt": {
+                        "CPP_name": "getTypeID", 
+                        "CPP_this": "selfobj", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_code": "TypeID rv = selfobj->getTypeID();\nreturn rv;", 
+                        "C_name": "AA_exclass2_get_type_id", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_get_type_id", 
+                        "F_arg_c_call": "obj%obj", 
+                        "F_arguments": "obj", 
+                        "F_code": "rv = aa_exclass2_get_type_id(obj%obj)", 
+                        "F_name_generic": "get_type_id", 
+                        "F_name_impl": "exclass2_get_type_id", 
+                        "F_name_method": "get_type_id", 
+                        "F_obj": "obj%obj", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getTypeID", 
+                        "rv_decl": "TypeID rv", 
+                        "underscore_name": "get_type_id"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getTypeID", 
+                        "type": "TypeID"
+                    }
                 }
             ], 
             "name": "ExClass2", 
@@ -860,6 +894,7 @@
             "c_header": "sidre/SidreTypes.h", 
             "c_to_cpp": "getTypeID({var})", 
             "c_type": "int", 
+            "cpp_type": "TypeID", 
             "f_module": {
                 "iso_c_binding": [
                     "C_INT"

@@ -19,6 +19,7 @@ method get_name_length
 method ExClass1 *get_class1(ExClass1 *in)
 method void* declare(TypeID type, SidreLength len)
 method void destroyall()
+method TypeID getTypeID() const
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 function void local_function1
@@ -42,5 +43,6 @@ method get_name_length
 method ExClass1 *get_class1(ExClass1 *in)
 method void* declare(TypeID type, SidreLength len)
 method void destroyall()
+method TypeID getTypeID() const
 Close wrapfExClass2.f
 function void local_function1
