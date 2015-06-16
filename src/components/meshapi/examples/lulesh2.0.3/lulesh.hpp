@@ -130,6 +130,7 @@ class Domain {
    typedef asctoolkit::meshapi::RangeSet               ElemSet;
    typedef asctoolkit::meshapi::RangeSet               NodeSet;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
+   typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceAdjacencyRelation;
 
    public:
 
@@ -165,16 +166,16 @@ class Domain {
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
-      //m_nodelist.resize(8*numElem);
+       // elem to node incidence relation
       m_nodelist = ElemToNodeRelation(&m_elemSet, &m_nodeSet);
 
-      // elem connectivities through face
-      m_lxim.resize(numElem);
-      m_lxip.resize(numElem);
-      m_letam.resize(numElem);
-      m_letap.resize(numElem);
-      m_lzetam.resize(numElem);
-      m_lzetap.resize(numElem);
+      // elem adjacencies through face
+      m_lxim   = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
+      m_lxip   = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
+      m_letam  = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
+      m_letap  = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
+      m_lzetam = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
+      m_lzetap = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
 
       m_elemBC.resize(numElem);
 
@@ -285,12 +286,12 @@ class Domain {
    const Index_t*  nodelist(Index_t idx)    { return &(*m_nodelist.begin(idx)) ; }
 
    // elem connectivities through face
-   Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
-   Index_t&  lxip(Index_t idx) { return m_lxip[idx] ; }
-   Index_t&  letam(Index_t idx) { return m_letam[idx] ; }
-   Index_t&  letap(Index_t idx) { return m_letap[idx] ; }
-   Index_t&  lzetam(Index_t idx) { return m_lzetam[idx] ; }
-   Index_t&  lzetap(Index_t idx) { return m_lzetap[idx] ; }
+   const Index_t&  lxim(Index_t idx) { return *m_lxim.begin(idx); }
+   const Index_t&  lxip(Index_t idx) { return *m_lxip.begin(idx); }
+   const Index_t&  letam(Index_t idx) { return *m_letam.begin(idx); }
+   const Index_t&  letap(Index_t idx) { return *m_letap.begin(idx); }
+   const Index_t&  lzetam(Index_t idx) { return *m_lzetam.begin(idx); }
+   const Index_t&  lzetap(Index_t idx) { return *m_lzetap.begin(idx); }
 
    // elem face symm/free-surface flag
    Int_t&  elemBC(Index_t idx) { return m_elemBC[idx] ; }
@@ -470,12 +471,12 @@ class Domain {
    //std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
 
 
-   std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
-   std::vector<Index_t>  m_lxip ;
-   std::vector<Index_t>  m_letam ;
-   std::vector<Index_t>  m_letap ;
-   std::vector<Index_t>  m_lzetam ;
-   std::vector<Index_t>  m_lzetap ;
+   ElemFaceAdjacencyRelation m_lxim ;  /* element connectivity across each face */
+   ElemFaceAdjacencyRelation m_lxip ;
+   ElemFaceAdjacencyRelation m_letam ;
+   ElemFaceAdjacencyRelation m_letap ;
+   ElemFaceAdjacencyRelation m_lzetam ;
+   ElemFaceAdjacencyRelation m_lzetap ;
 
    std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 

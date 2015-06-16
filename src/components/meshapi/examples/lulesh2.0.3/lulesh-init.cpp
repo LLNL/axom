@@ -216,13 +216,13 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
   // embed hexahedral elements in nodal point lattice
   // MeshAPI NOTE: This should really be a DynamicConstantRelation
   // MeshAPI TODO: Change this once DynamicConstantRelation becomes available
+  // MeshAPI TODO: Actually the underlying connectivity should be derivable from an implicit Fixed grid in 3D.
   std::vector<Index_t>  local_nodelist( 8 * numElem() );
   Index_t zidx = 0 ;
   nidx = 0 ;
   for (Index_t plane=0; plane<edgeElems; ++plane) {
     for (Index_t row=0; row<edgeElems; ++row) {
       for (Index_t col=0; col<edgeElems; ++col) {
-        // Index_t *localNode = nodelist(zidx) ;
         Index_t *localNode = &local_nodelist[Index_t(8)*zidx];
 
         localNode[0] = nidx                                       ;
@@ -523,30 +523,51 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 void
 Domain::SetupElementConnectivities(Int_t edgeElems)
 {
-   lxim(0) = 0 ;
-   for (Index_t i=1; i<numElem(); ++i) {
-      lxim(i)   = i-1 ;
-      lxip(i-1) = i ;
-   }
-   lxip(numElem()-1) = numElem()-1 ;
+   // Create temporary arrays to hold the data
+   std::vector<Index_t> indices_m( numElem() );
+   std::vector<Index_t> indices_p( numElem() );
 
+   // Setup xi face adjacencies
+   indices_m[0] = 0 ;
+   for (Index_t i=1; i<numElem(); ++i) {
+      indices_m[i]   = i-1 ;
+      indices_p[i-1] = i ;
+   }
+   indices_p[numElem()-1] = numElem()-1 ;
+   m_lxim.bindRelationData( indices_m, 1);
+   m_lxip.bindRelationData( indices_p, 1);
+
+   // Setup eta face adjacencies
    for (Index_t i=0; i<edgeElems; ++i) {
-      letam(i) = i ; 
-      letap(numElem()-edgeElems+i) = numElem()-edgeElems+i ;
+      indices_m[i] = i ;
+      indices_p[numElem()-edgeElems+i] = numElem()-edgeElems+i ;
    }
    for (Index_t i=edgeElems; i<numElem(); ++i) {
-      letam(i) = i-edgeElems ;
-      letap(i-edgeElems) = i ;
+      indices_m[i] = i-edgeElems ;
+      indices_p[i-edgeElems] = i ;
    }
+   m_letam.bindRelationData( indices_m, 1);
+   m_letap.bindRelationData( indices_p, 1);
 
+   // Setup zeta face adjacencies
    for (Index_t i=0; i<edgeElems*edgeElems; ++i) {
-      lzetam(i) = i ;
-      lzetap(numElem()-edgeElems*edgeElems+i) = numElem()-edgeElems*edgeElems+i ;
+      indices_m[i] = i ;
+      indices_p[numElem()-edgeElems*edgeElems+i] = numElem()-edgeElems*edgeElems+i ;
    }
    for (Index_t i=edgeElems*edgeElems; i<numElem(); ++i) {
-      lzetam(i) = i - edgeElems*edgeElems ;
-      lzetap(i-edgeElems*edgeElems) = i ;
+      indices_m[i] = i - edgeElems*edgeElems ;
+      indices_p[i-edgeElems*edgeElems] = i ;
    }
+   m_lzetam.bindRelationData( indices_m, 1);
+   m_lzetap.bindRelationData( indices_p, 1);
+
+   // Ensure that all the indices in the relations are valid
+   ATK_ASSERT( m_lxim.isValid() );
+   ATK_ASSERT( m_lxip.isValid() );
+   ATK_ASSERT( m_letam.isValid() );
+   ATK_ASSERT( m_letap.isValid() );
+   ATK_ASSERT( m_lzetam.isValid() );
+   ATK_ASSERT( m_lzetap.isValid() );
 }
 
 /////////////////////////////////////////////////////////////
@@ -594,6 +615,19 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
     ghostIdx[5] = pidx ;
   }
 
+  // MeshAPI HACK: I added this test so the code will automatically fail when MPI is enabled, and to use the ghostIdx variables.
+  //               Otherwise it warns that they are only set and never used.
+  ATK_ASSERT_MSG(ghostIdx[0] == ghostIdx[5]
+        , "The boundary conditions code is only necessary when MPI is disabled."
+        << "\nThis assertion implies that the below code must be fixed."
+        );
+
+  // MeshAPI HACK: I had to comment out the updates to the face adjacencies since we cannot modify ConstantRelation data.
+  //               We can uncomment this after (a) The underlying relation data is made accessible
+  //                                           (b) We define a DynamicConstantrelation class to modify the data
+  //                (a) is strictly necessary, as this will be the only way to modify the data
+  //                (b) is not strictly necessary, it is only a convenience, since once we have the underlying data, we can modify it.
+
   // symmetry plane or free surface BCs 
   for (Index_t i=0; i<edgeElems; ++i) {
     Index_t planeInc = i*edgeElems*edgeElems ;
@@ -604,7 +638,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(rowInc+j) |= ZETA_M_COMM ;
-        lzetam(rowInc+j) = ghostIdx[0] + rowInc + j ;
+//        lzetam(rowInc+j) = ghostIdx[0] + rowInc + j ;
       }
 
       if (m_planeLoc == m_tp-1) {
@@ -614,8 +648,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       else {
         elemBC(rowInc+j+numElem()-edgeElems*edgeElems) |=
           ZETA_P_COMM ;
-        lzetap(rowInc+j+numElem()-edgeElems*edgeElems) =
-          ghostIdx[1] + rowInc + j ;
+//        lzetap(rowInc+j+numElem()-edgeElems*edgeElems) = ghostIdx[1] + rowInc + j ;
       }
 
       if (m_rowLoc == 0) {
@@ -623,7 +656,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(planeInc+j) |= ETA_M_COMM ;
-        letam(planeInc+j) = ghostIdx[2] + rowInc + j ;
+//        letam(planeInc+j) = ghostIdx[2] + rowInc + j ;
       }
 
       if (m_rowLoc == m_tp-1) {
@@ -633,8 +666,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       else {
         elemBC(planeInc+j+edgeElems*edgeElems-edgeElems) |=
           ETA_P_COMM ;
-        letap(planeInc+j+edgeElems*edgeElems-edgeElems) =
-          ghostIdx[3] +  rowInc + j ;
+//        letap(planeInc+j+edgeElems*edgeElems-edgeElems) = ghostIdx[3] +  rowInc + j ;
       }
 
       if (m_colLoc == 0) {
@@ -642,7 +674,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(planeInc+j*edgeElems) |= XI_M_COMM ;
-        lxim(planeInc+j*edgeElems) = ghostIdx[4] + rowInc + j ;
+//        lxim(planeInc+j*edgeElems) = ghostIdx[4] + rowInc + j ;
       }
 
       if (m_colLoc == m_tp-1) {
@@ -650,8 +682,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
       }
       else {
         elemBC(planeInc+j*edgeElems+edgeElems-1) |= XI_P_COMM ;
-        lxip(planeInc+j*edgeElems+edgeElems-1) =
-          ghostIdx[5] + rowInc + j ;
+//        lxip(planeInc+j*edgeElems+edgeElems-1) = ghostIdx[5] + rowInc + j ;
       }
     }
   }
