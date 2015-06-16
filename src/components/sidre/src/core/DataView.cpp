@@ -47,9 +47,11 @@ namespace sidre
  */
 DataView * DataView::declare(TypeID type, SidreLength len)
 {
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements in view >=0");
 
-  if ( len >= 0 ) 
+  if ( !isOpaque() && len >= 0 ) 
   {
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(len);
@@ -69,8 +71,14 @@ DataView * DataView::declare(TypeID type, SidreLength len)
  */
 DataView * DataView::declare(const Schema& schema)
 {
-  m_schema.set(schema);
-  m_is_applied = false;
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+
+  if ( !isOpaque() ) 
+  {
+    m_schema.set(schema);
+    m_is_applied = false;
+  }
   return this;
 }
 
@@ -83,8 +91,14 @@ DataView * DataView::declare(const Schema& schema)
  */
 DataView * DataView::declare(const DataType& dtype)
 {
-  m_schema.set(dtype);
-  m_is_applied = false;
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+
+  if ( !isOpaque() ) 
+  {
+    m_schema.set(dtype);
+    m_is_applied = false;
+  }
   return this;
 }
 
@@ -98,7 +112,7 @@ DataView * DataView::declare(const DataType& dtype)
 DataView * DataView::allocate()
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Cannot call allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -171,7 +185,7 @@ DataView * DataView::allocate(const DataType& dtype)
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( m_data_buffer->getNumViews() == 1 )
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     declare(dtype);
     allocate();
@@ -261,8 +275,14 @@ DataView * DataView::reallocate(const DataType& dtype)
  */
 DataView * DataView::apply()
 {
-  m_node.set_external(m_schema, m_data_buffer->getData());
-  m_is_applied = true;
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call apply() on an opaque view");
+ 
+  if ( !isOpaque() )
+  { 
+    m_node.set_external(m_schema, m_data_buffer->getData());
+    m_is_applied = true;
+  }
   return this;
 }
 
@@ -275,8 +295,14 @@ DataView * DataView::apply()
  */
 DataView * DataView::apply(const Schema& schema)
 {
-  declare(schema);
-  apply();
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call apply() on an opaque view");
+ 
+  if ( !isOpaque() )
+  { 
+    declare(schema);
+    apply();
+  }
   return this;
 }
 
@@ -289,8 +315,14 @@ DataView * DataView::apply(const Schema& schema)
  */
 DataView * DataView::apply(const DataType &dtype)
 {
-  declare(dtype);
-  apply();
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call apply() on an opaque view");
+ 
+  if ( !isOpaque() )
+  { 
+    declare(dtype);
+    apply();
+  }
   return this;
 }
 

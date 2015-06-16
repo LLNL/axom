@@ -105,7 +105,8 @@ public:
   /*!
    * \brief Declare a data view from sidre type and length.
    *
-   * If given length < 0, method does nothing.
+   * If given length < 0 or view has previously been declared opaque, 
+   * the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -114,12 +115,16 @@ public:
   /*!
    * \brief Declare a data view as a Conduit schema.
    *
+   * If view has previously been declared opaque, the method does nothing.
+   *
    * \return pointer to this DataView object.
    */
   DataView * declare(const Schema& schema);
 
   /*!
    * \brief Declare a data view as a pre-defined Conduit data type.
+   *
+   * If view has previously been declared opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -141,7 +146,8 @@ public:
   DataView * allocate();
 
   /*!
-   * \brief Declare a data view from a sidre type and length then allocate the data.
+   * \brief Declare a data view from a sidre type and length then allocate 
+   * the data.
    *
    * This is equivalent to calling declare(Schema), then allocate(),
    * and then calling apply() on this DataView object.
@@ -231,6 +237,8 @@ public:
    * \brief Apply a previously declared data view to data held in
    *        the DataBuffer associated with this DataView object.
    *
+   * If view has previously been declared opaque, the method does nothing.
+   *
    * \return pointer to this DataView object.
    */
   DataView * apply();
@@ -242,6 +250,8 @@ public:
    *
    * This is equivalent to calling declare(Schema), then apply().
    *
+   * If view has previously been declared opaque, the method does nothing.
+   *
    * \return pointer to this DataView object.
    */
   DataView * apply(const Schema& schema);
@@ -252,6 +262,8 @@ public:
    *        this DataView object
    *
    * This is equivalent to calling declare(DataType), then apply().
+   *
+   * If view has previously been declared opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
