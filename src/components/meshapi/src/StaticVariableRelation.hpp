@@ -92,6 +92,46 @@ namespace meshapi    {
 
         bool isValid(bool verboseOutput = false) const;
 
+    public:
+
+        /**
+         * \name DirectDataAccess
+         * \brief Accessor functions to get the underlying relation data
+         * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+         */
+
+        /// \{
+
+        /**
+         * \brief Helper function to access the underlying relation data
+         * \note The relation currently 'owns' the underlying vector.
+         *       This will be changing soon, and we will only have a reference/pointer to the data.
+         */
+        RelationVec       & fromSetBeginsData()       { return m_fromSetBeginsVec;}
+
+        /**
+         * \brief Helper function to access the underlying relation data
+         * \note The relation currently 'owns' the underlying vector.
+         *       This will be changing soon, and we will only have a reference/pointer to the data.
+         */
+        const RelationVec & fromSetBeginsData() const { return m_fromSetBeginsVec;}
+
+        /**
+         * \brief Helper function to access the underlying relation data
+         * \note The relation currently 'owns' the underlying vector.
+         *       This will be changing soon, and we will only have a reference/pointer to the data.
+         */
+        RelationVec       & toSetPositionsData()       { return m_toSetIndicesVec;}
+
+        /**
+         * \brief Helper function to access the underlying relation data
+         * \note The relation currently 'owns' the underlying vector.
+         *       This will be changing soon, and we will only have a reference/pointer to the data.
+         */
+        const RelationVec & toSetPositionsData() const { return m_toSetIndicesVec;}
+
+        /// \}
+
     private:
         inline void  verifyPosition(SetPosition fromSetIndex)       const { ATK_ASSERT( fromSetIndex <  m_fromSet->size()  ); }
         inline SetPosition toSetBeginIndex(SetPosition fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
