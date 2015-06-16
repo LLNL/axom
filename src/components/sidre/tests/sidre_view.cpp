@@ -49,6 +49,7 @@ TEST(sidre_view,int_buffer_from_view)
   DataView * dv = root->createViewAndBuffer("u0");
 
   dv->allocate(DataType::c_int(10));
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++) {

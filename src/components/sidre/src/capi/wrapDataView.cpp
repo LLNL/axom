@@ -115,6 +115,15 @@ return rv;
 // splicer end
 }
 
+int ATK_dataview_get_type_id(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin
+int rv = selfobj->getTypeID();
+return rv;
+// splicer end
+}
+
 size_t ATK_dataview_get_total_bytes(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);

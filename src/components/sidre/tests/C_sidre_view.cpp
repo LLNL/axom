@@ -41,6 +41,7 @@ TEST(C_sidre_view,int_buffer_from_view)
   ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
 
   ATK_dataview_allocate(dv, ATK_C_INT_T, 10);
+  EXPECT_EQ(ATK_dataview_get_type_id(dv), ATK_INT32_T);  // XXX NATIVE TYPE
   int * data_ptr = (int *) ATK_dataview_get_data_in_buffer(dv);
 
   for(int i=0 ; i<10 ; i++) {

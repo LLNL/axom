@@ -56,6 +56,8 @@ void * ATK_dataview_get_data(ATK_dataview * self);
 
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);
 
+int ATK_dataview_get_type_id(ATK_dataview * self);
+
 size_t ATK_dataview_get_total_bytes(ATK_dataview * self);
 
 size_t ATK_dataview_get_number_of_elements(ATK_dataview * self);

@@ -409,6 +409,14 @@ public:
   /*!
    * \brief Return total number of bytes allocated by this DataView object.
    */
+  TypeID getTypeID() const
+  {
+      return static_cast<TypeID>(m_node.dtype().id());
+  }
+
+  /*!
+   * \brief Return total number of bytes allocated by this DataView object.
+   */
   size_t getTotalBytes() const
   {
     return m_schema.total_bytes();
