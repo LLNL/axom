@@ -32,14 +32,14 @@ module exclass2_mod
                 bind(C, name="AA_exclass2_ex_class1")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass2_ex_class1
         
         pure function aa_exclass2_get_name(self) result(rv) &
                 bind(C, name="AA_exclass2_get_name")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function aa_exclass2_get_name
         
@@ -47,7 +47,7 @@ module exclass2_mod
                 bind(C, name="AA_exclass2_get_name_length")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_name_length
         
@@ -55,8 +55,8 @@ module exclass2_mod
                 bind(C, name="AA_exclass2_get_class1")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: in
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), intent(IN) :: in
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
         
@@ -64,23 +64,23 @@ module exclass2_mod
                 bind(C, name="AA_exclass2_declare")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine aa_exclass2_declare
         
         subroutine aa_exclass2_destroyall(self) &
                 bind(C, name="AA_exclass2_destroyall")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass2_destroyall
         
         function aa_exclass2_get_type_id(self) result(rv) &
                 bind(C, name="AA_exclass2_get_type_id")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
     end interface

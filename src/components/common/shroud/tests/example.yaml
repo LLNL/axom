@@ -58,7 +58,7 @@ classes:
       docs: blah blah
 
 #    - decl: string getName+const+reference
-    - decl: const string& getName()
+    - decl: const string& getName() const
       result:
          attrs:
             len: aa_exclass1_get_name_length(obj%obj)

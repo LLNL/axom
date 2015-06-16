@@ -106,14 +106,14 @@ module sidre_mod
                 bind(C, name="ATK_datastore_delete")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine atk_datastore_delete
         
         function atk_datastore_get_root(self) result(rv) &
                 bind(C, name="ATK_datastore_get_root")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_datastore_get_root
         
@@ -121,8 +121,8 @@ module sidre_mod
                 bind(C, name="ATK_datastore_get_buffer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: idx
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) :: rv
         end function atk_datastore_get_buffer
         
@@ -130,7 +130,7 @@ module sidre_mod
                 bind(C, name="ATK_datastore_create_buffer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_datastore_create_buffer
         
@@ -138,15 +138,15 @@ module sidre_mod
                 bind(C, name="ATK_datastore_destroy_buffer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: id
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: id
         end subroutine atk_datastore_destroy_buffer
         
         function atk_datastore_get_num_buffers(self) result(rv) &
                 bind(C, name="ATK_datastore_get_num_buffers")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_datastore_get_num_buffers
         
@@ -154,7 +154,7 @@ module sidre_mod
                 bind(C, name="ATK_datastore_print")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine atk_datastore_print
     end interface
     interface
@@ -163,7 +163,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_name")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function atk_datagroup_get_name
         
@@ -171,7 +171,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_parent")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_datagroup_get_parent
         
@@ -179,7 +179,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_data_store")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_datagroup_get_data_store
         
@@ -187,7 +187,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_num_views")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_datagroup_get_num_views
         
@@ -195,7 +195,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_num_groups")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_datagroup_get_num_groups
         
@@ -203,7 +203,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_has_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             logical(C_BOOL) :: rv
         end function atk_datagroup_has_view
@@ -212,7 +212,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_create_view_and_buffer_simple")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_simple
@@ -221,10 +221,10 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_create_view_and_buffer_from_type")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_from_type
         
@@ -232,9 +232,9 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_create_opaque_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            type(C_PTR) :: opaque_ptr
+            type(C_PTR), intent(IN) :: opaque_ptr
             type(C_PTR) :: rv
         end function atk_datagroup_create_opaque_view
         
@@ -242,9 +242,9 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_create_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            type(C_PTR) :: buff
+            type(C_PTR), intent(IN) :: buff
             type(C_PTR) :: rv
         end function atk_datagroup_create_view
         
@@ -252,11 +252,11 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_create_external_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            type(C_PTR) :: external_data
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), intent(IN) :: external_data
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
             type(C_PTR) :: rv
         end function atk_datagroup_create_external_view
         
@@ -264,8 +264,8 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_move_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: view
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), intent(IN) :: view
             type(C_PTR) :: rv
         end function atk_datagroup_move_view
         
@@ -273,8 +273,8 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_copy_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: view
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), intent(IN) :: view
             type(C_PTR) :: rv
         end function atk_datagroup_copy_view
         
@@ -282,7 +282,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_destroy_view_and_buffer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
         end subroutine atk_datagroup_destroy_view_and_buffer
         
@@ -290,7 +290,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_view")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_get_view
@@ -299,7 +299,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_view_index")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             integer(C_INT) :: rv
         end function atk_datagroup_get_view_index
@@ -308,8 +308,8 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_view_name")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: idx
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) rv
         end function atk_datagroup_get_view_name
         
@@ -317,7 +317,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_has_group")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             logical(C_BOOL) :: rv
         end function atk_datagroup_has_group
@@ -326,7 +326,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_create_group")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_group
@@ -335,8 +335,8 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_move_group")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: grp
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), intent(IN) :: grp
             type(C_PTR) :: rv
         end function atk_datagroup_move_group
         
@@ -344,7 +344,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_destroy_group")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
         end subroutine atk_datagroup_destroy_group
         
@@ -352,7 +352,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_group")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_get_group
@@ -361,7 +361,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_group_index")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
             integer(C_INT) :: rv
         end function atk_datagroup_get_group_index
@@ -370,8 +370,8 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_get_group_name")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: idx
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) rv
         end function atk_datagroup_get_group_name
         
@@ -379,14 +379,14 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_print")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine atk_datagroup_print
         
         subroutine atk_datagroup_save(self, obase, protocol) &
                 bind(C, name="ATK_datagroup_save")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: obase(*)
             character(kind=C_CHAR) :: protocol(*)
         end subroutine atk_datagroup_save
@@ -395,7 +395,7 @@ module sidre_mod
                 bind(C, name="ATK_datagroup_load")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: obase(*)
             character(kind=C_CHAR) :: protocol(*)
         end subroutine atk_datagroup_load
@@ -406,7 +406,7 @@ module sidre_mod
                 bind(C, name="ATK_databuffer_get_index")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function atk_databuffer_get_index
         
@@ -414,51 +414,51 @@ module sidre_mod
                 bind(C, name="ATK_databuffer_declare")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_declare
         
         subroutine atk_databuffer_declare_external(self, external_data, type, len) &
                 bind(C, name="ATK_databuffer_declare_external")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            type(C_PTR) :: external_data
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), intent(IN) :: external_data
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_declare_external
         
         subroutine atk_databuffer_allocate_existing(self) &
                 bind(C, name="ATK_databuffer_allocate_existing")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine atk_databuffer_allocate_existing
         
         subroutine atk_databuffer_allocate_from_type(self, type, len) &
                 bind(C, name="ATK_databuffer_allocate_from_type")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_allocate_from_type
         
         subroutine atk_databuffer_reallocate(self, type, len) &
                 bind(C, name="ATK_databuffer_reallocate")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_reallocate
         
         function atk_databuffer_is_external(self) result(rv) &
                 bind(C, name="ATK_databuffer_is_external")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
         end function atk_databuffer_is_external
         
@@ -466,7 +466,7 @@ module sidre_mod
                 bind(C, name="ATK_databuffer_get_data")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_databuffer_get_data
         
@@ -474,7 +474,7 @@ module sidre_mod
                 bind(C, name="ATK_databuffer_get_total_bytes")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_databuffer_get_total_bytes
     end interface
@@ -484,34 +484,34 @@ module sidre_mod
                 bind(C, name="ATK_dataview_declare")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_declare
         
         subroutine atk_dataview_allocate(self, type, len) &
                 bind(C, name="ATK_dataview_allocate")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_allocate
         
         subroutine atk_dataview_reallocate(self, type, len) &
                 bind(C, name="ATK_dataview_reallocate")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: type
-            integer(C_LONG), value :: len
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_reallocate
         
         function atk_dataview_has_buffer(self) result(rv) &
                 bind(C, name="ATK_dataview_has_buffer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
         end function atk_dataview_has_buffer
         
@@ -519,7 +519,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_is_opaque")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
         end function atk_dataview_is_opaque
         
@@ -527,7 +527,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_name")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function atk_dataview_get_name
         
@@ -535,7 +535,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_opaque")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_opaque
         
@@ -543,7 +543,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_buffer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_buffer
         
@@ -551,7 +551,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_data_pointer")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_data_pointer
         
@@ -559,7 +559,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_owning_group")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_owning_group
         
@@ -567,7 +567,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_type_id")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function atk_dataview_get_type_id
         
@@ -575,7 +575,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_total_bytes")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_total_bytes
         
@@ -583,7 +583,7 @@ module sidre_mod
                 bind(C, name="ATK_dataview_get_number_of_elements")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_number_of_elements
     end interface

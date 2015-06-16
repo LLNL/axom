@@ -36,15 +36,15 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_delete")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass1_delete
         
         function aa_exclass1_increment_count(self, incr) result(rv) &
                 bind(C, name="AA_exclass1_increment_count")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: incr
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: incr
             integer(C_INT) :: rv
         end function aa_exclass1_increment_count
         
@@ -52,7 +52,7 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_get_name")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
         end function aa_exclass1_get_name
         
@@ -60,7 +60,7 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_get_name_length")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass1_get_name_length
         
@@ -68,7 +68,7 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_get_root")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function aa_exclass1_get_root
         
@@ -76,8 +76,8 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_get_value_from_int")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_INT), value :: value
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: value
             integer(C_INT) :: rv
         end function aa_exclass1_get_value_from_int
         
@@ -85,8 +85,8 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_get_value_1")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            integer(C_LONG), value :: value
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_LONG), value, intent(IN) :: value
             integer(C_LONG) :: rv
         end function aa_exclass1_get_value_1
         
@@ -94,7 +94,7 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_get_addr")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
+            type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function aa_exclass1_get_addr
         
@@ -102,8 +102,8 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_has_addr")
             use iso_c_binding
             implicit none
-            type(C_PTR), value :: self
-            logical(C_BOOL), value :: in
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL), value, intent(IN) :: in
             logical(C_BOOL) :: rv
         end function aa_exclass1_has_addr
     end interface

@@ -11,6 +11,11 @@ constains
   generic :: {F_name_generic} => {F_name_method}, ...
 end type
 
+
+TODO:
+  intent is kludged for now.  They're all intent(IN) because ifort
+  requires them for pure functions
+
 """
 from __future__ import print_function
 
@@ -56,6 +61,7 @@ class Wrapf(object):
             raise RuntimeError("No such type %s" % arg['type'])
         is_ptr = (arg['attrs'].get('ptr', False) or
                   arg['attrs'].get('reference', False))
+        intent = arg['attrs'].get('intent', None)
 
         typ = typedef.c_fortran
         if typedef.base == 'string':
@@ -66,6 +72,8 @@ class Wrapf(object):
             t.append(typ)
             if not is_ptr:
                 t.append(', value')
+            if intent:
+                t.append(', intent(%s)' % intent.upper())
             return (''.join(t), arg['attrs'].get('array', False))
 
     def _c_decl(self, arg, name=None):
@@ -261,7 +269,7 @@ class Wrapf(object):
         # Add 'this' argument
         if not is_ctor:
             arg_c_names.append(C_this)
-            arg_c_decl.append('type(C_PTR), value :: ' + C_this)
+            arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
             arg_c_call.append(fmt_func.F_obj)
             arg_f_names.append(fmt_func.F_this)
             if is_dtor:
@@ -274,6 +282,11 @@ class Wrapf(object):
                         fmt_func))
 
         for arg in node.get('args', []):
+            # default argument's intent
+            # XXX look at const, ptr
+            if 'intent' not in arg['attrs']:
+                arg['attrs']['intent'] = 'in'
+
             arg_c_names.append(arg['name'])
             arg_c_decl.append(self._c_decl(arg))
 

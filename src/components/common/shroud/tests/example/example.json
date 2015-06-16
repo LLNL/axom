@@ -37,6 +37,7 @@
                         {
                             "attrs": {
                                 "const": true, 
+                                "intent": "in", 
                                 "ptr": true
                             }, 
                             "name": "name", 
@@ -117,7 +118,9 @@
                 {
                     "args": [
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in"
+                            }, 
                             "name": "incr", 
                             "type": "int"
                         }
@@ -157,7 +160,7 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "const string& getName()", 
+                    "decl": "const string& getName() const", 
                     "fmt": {
                         "CPP_name": "getName", 
                         "CPP_this": "selfobj", 
@@ -275,7 +278,9 @@
                 {
                     "args": [
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in"
+                            }, 
                             "name": "value", 
                             "type": "int"
                         }
@@ -317,7 +322,9 @@
                 {
                     "args": [
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in"
+                            }, 
                             "name": "value", 
                             "type": "long"
                         }
@@ -394,7 +401,9 @@
                 {
                     "args": [
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in"
+                            }, 
                             "name": "in", 
                             "type": "bool"
                         }
@@ -478,6 +487,7 @@
                         {
                             "attrs": {
                                 "const": true, 
+                                "intent": "in", 
                                 "ptr": true
                             }, 
                             "name": "name", 
@@ -639,6 +649,7 @@
                     "args": [
                         {
                             "attrs": {
+                                "intent": "in", 
                                 "ptr": true
                             }, 
                             "name": "in", 
@@ -682,12 +693,16 @@
                 {
                     "args": [
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in"
+                            }, 
                             "name": "type", 
                             "type": "TypeID"
                         }, 
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in"
+                            }, 
                             "name": "len", 
                             "type": "SidreLength"
                         }

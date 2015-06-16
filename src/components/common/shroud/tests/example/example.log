@@ -2,7 +2,7 @@ class ExClass1
 method ExClass1 *new+constructor ( const string *name )
 method void delete+destructor
 method int incrementCount(int incr)
-method const string& getName()
+method const string& getName() const
 method get_name_length
 method ExClass2 *getRoot()
 method int  getValue(int value)
@@ -27,7 +27,7 @@ class ExClass1
 method ExClass1 *new+constructor ( const string *name )
 method void delete+destructor
 method int incrementCount(int incr)
-method const string& getName()
+method const string& getName() const
 method get_name_length
 method ExClass2 *getRoot()
 method int  getValue(int value)
