@@ -148,8 +148,8 @@ public:
    *
    * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
-   *       method does nothing.  Also, if the given length is < 0, this
-   *       method does nothing.
+   *       method does nothing.  Also, if the given length is < 0 or has been
+   *       previously declared opaque, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -164,6 +164,7 @@ public:
    * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.
+   *       If view has previously been declared opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -179,6 +180,7 @@ public:
    * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.
+   *       If view has previously been declared opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
