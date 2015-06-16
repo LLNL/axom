@@ -49,19 +49,15 @@ DataView * DataView::declare(TypeID type, SidreLength len)
 {
   SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements in view >=0");
 
-  if ( len < 0 ) 
-  {
-    return ATK_NULLPTR;
-  }
-  else
+  if ( len >= 0 ) 
   {
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(len);
 
     m_schema.set(dtype);
     m_is_applied = false;
-    return this;
   }
+  return this;
 }
 
 /*
