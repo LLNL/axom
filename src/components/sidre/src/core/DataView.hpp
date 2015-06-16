@@ -133,7 +133,7 @@ public:
    * associated data buffer and then calling apply() on this DataView
    * object.
    *
-   * NOTE: Allocation from a view only makes sense if this is the only 
+   * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.
    *
@@ -147,7 +147,7 @@ public:
    * This is equivalent to calling declare(Schema), then allocate(),
    * and then calling apply() on this DataView object.
    *
-   * NOTE: Allocation from a view only makes sense if this is the only 
+   * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.  Also, if the given length is < 0, this
    *       method does nothing.
@@ -164,7 +164,7 @@ public:
    *
    * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
-   *       method does nothing. 
+   *       method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -179,20 +179,20 @@ public:
    *
    * NOTE: Allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
-   *       method does nothing. 
+   *       method does nothing.
    *
    * \return pointer to this DataView object.
    */
   DataView * allocate(const DataType& dtype);
 
   /*!
-   * \brief  Reallocate the view's underlying buffer using a Sidre type 
+   * \brief  Reallocate the view's underlying buffer using a Sidre type
    *         and length.
    *
    * This is equivalent to calling declare(TypeID), then allocate(),
    * and then calling apply() on this DataView object.
    *
-   * NOTE: Re-allocation from a view only makes sense if this is the only 
+   * NOTE: Re-allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.  Also, if the given length is < 0 or if
    *       this is an opaque view, this method does nothing.
@@ -207,8 +207,8 @@ public:
    *
    * NOTE: Re-allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
-   *       method does nothing.  Also, if this is an opaque view, this 
-   *       method does nothing. 
+   *       method does nothing.  Also, if this is an opaque view, this
+   *       method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -220,7 +220,7 @@ public:
    *
    * NOTE: Re-allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
-   *       method does nothing.  Also, if this is an opaque view, this 
+   *       method does nothing.  Also, if this is an opaque view, this
    *       method does nothing.
    *
    * \return pointer to this DataView object.
@@ -411,7 +411,7 @@ public:
    */
   TypeID getTypeID() const
   {
-      return static_cast<TypeID>(m_node.dtype().id());
+    return static_cast<TypeID>(m_node.dtype().id());
   }
 
   /*!

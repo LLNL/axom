@@ -52,7 +52,8 @@ TEST(sidre_view,int_buffer_from_view)
   EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   int * data_ptr = dv->getValue();
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i*i;
   }
 
@@ -73,7 +74,8 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
   DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(10));
   int * data_ptr = dv->getValue();
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i*i;
   }
 
@@ -96,7 +98,8 @@ TEST(sidre_view,int_array_multi_view)
   dbuff->allocate();
   int * data_ptr = dbuff->getNode().as_int_ptr();
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i;
   }
 
@@ -144,7 +147,8 @@ TEST(sidre_view,init_int_array_multi_view)
   dbuff->allocate(DataType::c_int(10));
   int * data_ptr = dbuff->getNode().as_int_ptr();
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i;
   }
 
@@ -219,16 +223,20 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   // init the buff with values that align with the
   // 4 subsections.
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = 1;
   }
-  for(int i=10 ; i<20 ; i++) {
+  for(int i=10 ; i<20 ; i++)
+  {
     data_ptr[i] = 2;
   }
-  for(int i=20 ; i<30 ; i++) {
+  for(int i=20 ; i<30 ; i++)
+  {
     data_ptr[i] = 3;
   }
-  for(int i=30 ; i<40 ; i++) {
+  for(int i=30 ; i<40 ; i++)
+  {
     data_ptr[i] = 4;
   }
 
@@ -282,10 +290,10 @@ TEST(sidre_view,int_array_multi_view_resize)
   // create a buffer to hold larger subarrays
   base_new->allocate(DataType::c_int(4 * 12));
   int * base_new_data = base_new->getValue();
-  for (int i = 0; i < 4 * 12; ++i) 
+  for (int i = 0 ; i < 4 * 12 ; ++i)
   {
-     base_new_data[i] = 0;
-  } 
+    base_new_data[i] = 0;
+  }
 
   DataBuffer * buff_new = base_new->getBuffer();
   buff_new->getNode().print();
@@ -449,16 +457,16 @@ TEST(sidre_view,simple_opaque)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

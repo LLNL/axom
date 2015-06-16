@@ -265,10 +265,10 @@ public:
   }
 
   /*!
-   * \brief Return next valid DataView index after given index (i.e., 
+   * \brief Return next valid DataView index after given index (i.e.,
    *        smallest index over all view indices larger than given one).
    *
-   * sidre::InvalidIndex is returned if there is no valid index greater 
+   * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
    */
   IndexType getNextValidViewIndex(IndexType idx) const
@@ -276,7 +276,7 @@ public:
     return m_view_coll.getNextValidIndex(idx);
   }
 
-//@} 
+//@}
 
 
 //@{
@@ -293,7 +293,7 @@ public:
    * name, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created. 
+   * view is not created.
    */
   DataView * createViewAndBuffer( const std::string& name );
 
@@ -301,13 +301,13 @@ public:
    * \brief Create a DataView object (and buffer) with given name,
    *        and use the Sidre DataType and length to allocate the
    *        underlying buffer and initialize the view.
-   * 
+   *
    * Note that created DataBuffer will be owned by associated DataStore
    * and new view will be attached to this group.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given length is < 0 method does nothing.
-   * 
+   *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
    */
@@ -327,7 +327,7 @@ public:
    * name, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created. 
+   * view is not created.
    */
   DataView * createViewAndBuffer( const std::string& name,
                                   const DataType& dtype);
@@ -366,7 +366,7 @@ public:
   /*!
    * \brief Create a DataView object (for view into given buffer) with
    *        given name and use the Sidre TypeID and length to initialize the
-   *        view into this buffer. 
+   *        view into this buffer.
    *
    * New view will be attached to this DataGroup object.
    *
@@ -378,13 +378,13 @@ public:
    */
   DataView * createView( const std::string& name,
                          DataBuffer * buff,
-			 const TypeID type,
-			 const SidreLength len );
+                         const TypeID type,
+                         const SidreLength len );
 
   /*!
    * \brief Create a DataView object (for view into given buffer) with
    *        given name and use the Conduit DataType to initialize the
-   *        view into this buffer. 
+   *        view into this buffer.
    *
    * New view will be attached to this DataGroup object.
    *
@@ -403,14 +403,14 @@ public:
    * \brief Create a DataView object (for view into given buffer) with
    *        given name and use the Conduit Schema to initialize the
    *        view into this buffer.
-   * 
+   *
    * New view will be attached to this DataGroup object.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given buffer pointer is null, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created. 
+   * view is not created.
    */
   DataView * createView( const std::string& name,
                          DataBuffer * buff,
@@ -432,7 +432,7 @@ public:
 
   /*!
    * \brief Create an DataView into externally-owned data with given name,
-   *        using the given Sidre TypeID and length to describe the data. 
+   *        using the given Sidre TypeID and length to describe the data.
    *
    * New view will be attached to this DataGroup object.
    *
@@ -444,12 +444,12 @@ public:
    */
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
-				 const TypeID type,
-				 const SidreLength len );
+                                 const TypeID type,
+                                 const SidreLength len );
 
   /*!
    * \brief Create an DataView into externally-owned data with given name,
-   *        using the given Conduit DataType to describe the data. 
+   *        using the given Conduit DataType to describe the data.
    *
    * New view will be attached to this DataGroup object.
    *
@@ -634,7 +634,7 @@ public:
 //!  @name (child) DataGroup iteration methods
 
   /*!
-   * \brief Return first valid (child) DataGroup index (i.e., smallest 
+   * \brief Return first valid (child) DataGroup index (i.e., smallest
    *        index over all (child) DataGroups).
    *
    * sidre::InvalidIndex is returned if group has no child groups.
@@ -645,11 +645,11 @@ public:
   }
 
   /*!
-   * \brief Return next valid (child) DataGroup index after given index 
-   *        (i.e., smallest index over all chid group indices larger 
+   * \brief Return next valid (child) DataGroup index after given index
+   *        (i.e., smallest index over all chid group indices larger
    *        than given one).
    *
-   * sidre::InvalidIndex is returned if there is no valid index greater 
+   * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
    */
   IndexType getNextValidGroupIndex(IndexType idx) const
@@ -678,14 +678,14 @@ public:
    */
 
   /*!
-   * \brief Create a DataGroup object with given name and attach as a 
+   * \brief Create a DataGroup object with given name and attach as a
    * child group of this group.
    *
-   * If name is an empty string or group already has a child group with 
+   * If name is an empty string or group already has a child group with
    * given name, method does nothing.
    *
    * \return pointer to created DataGroup object or ATK_NULLPTR if new
-   * group is not created. 
+   * group is not created.
    */
   DataGroup * createGroup( const std::string& name );
 
@@ -715,7 +715,7 @@ public:
    * same name as given group, method does nothing.
    *
    * \return pointer to given DataGroup object or ATK_NULLPTR if group
-   * is not moved into this group. 
+   * is not moved into this group.
    */
   DataGroup * moveGroup(DataGroup * group);
 
@@ -731,7 +731,7 @@ public:
    * If given group pointer is null or group already contains a group with
    * same name as given group, method does nothing.
    *
-   * \return pointer to new DataGroup object in this group or ATK_NULLPTR if 
+   * \return pointer to new DataGroup object in this group or ATK_NULLPTR if
    * new group is not created.
    */
   DataGroup * copyGroup(DataGroup * group);
@@ -891,9 +891,9 @@ private:
   // typedef std::map<std::string, IndexType> MapType;
   ///
 #if defined(USE_CXX11)
-     typedef std::unordered_map<std::string, IndexType> MapType;
+  typedef std::unordered_map<std::string, IndexType> MapType;
 #else
-     typedef boost::unordered_map<std::string, IndexType> MapType;
+  typedef boost::unordered_map<std::string, IndexType> MapType;
 #endif
   //
   ///////////////////////////////////////////////////////////////////
@@ -906,9 +906,9 @@ private:
   // Original implementation (no holes in index sequence)
   ///////////////////////////////////////////////////////////////////
   //
-    typedef MapCollection<DataView, MapType> DataViewCollection;
+  typedef MapCollection<DataView, MapType> DataViewCollection;
   //
-    typedef MapCollection<DataGroup, MapType> DataGroupCollection;
+  typedef MapCollection<DataGroup, MapType> DataGroupCollection;
   //
   ///////////////////////////////////////////////////////////////////
   //

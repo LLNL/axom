@@ -44,7 +44,8 @@ TEST(C_sidre_view,int_buffer_from_view)
   EXPECT_EQ(ATK_dataview_get_type_id(dv), ATK_INT32_T);  // XXX NATIVE TYPE
   int * data_ptr = (int *) ATK_dataview_get_data_in_buffer(dv);
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i*i;
   }
 
@@ -67,7 +68,8 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10);
   int * data_ptr = (int *) ATK_dataview_get_data_in_buffer(dv);
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i*i;
   }
 
@@ -92,7 +94,8 @@ TEST(C_sidre_view,int_array_multi_view)
   ATK_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i;
   }
 
@@ -147,7 +150,8 @@ TEST(C_sidre_view,init_int_array_multi_view)
   ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i;
   }
 
@@ -228,16 +232,20 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
   // init the buff with values that align with the
   // 4 subsections.
-  for(int i=0 ; i<10 ; i++) {
+  for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = 1;
   }
-  for(int i=10 ; i<20 ; i++) {
+  for(int i=10 ; i<20 ; i++)
+  {
     data_ptr[i] = 2;
   }
-  for(int i=20 ; i<30 ; i++) {
+  for(int i=20 ; i<30 ; i++)
+  {
     data_ptr[i] = 3;
   }
-  for(int i=30 ; i<40 ; i++) {
+  for(int i=30 ; i<40 ; i++)
+  {
     data_ptr[i] = 4;
   }
 
@@ -290,11 +298,11 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // alloc our buffer
   // create a buffer to hold larger subarrays
   base_new->allocate(base_new, DataType::uint32(4 * 12));
-  int* base_new_data = (int *) ATK_databuffer_det_data(base_new);
-  for (int i = 0; i < 4 * 12; ++i) 
+  int * base_new_data = (int *) ATK_databuffer_det_data(base_new);
+  for (int i = 0 ; i < 4 * 12 ; ++i)
   {
-     base_new_data[i] = 0;
-  } 
+    base_new_data[i] = 0;
+  }
 
   ATK_databuffer * buff_new = ATK_dataview_get_buffer(base_new);
   buff_new->getNode().print();
@@ -457,16 +465,16 @@ TEST(C_sidre_view,simple_opaque)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

@@ -270,16 +270,16 @@ TEST(sidre_class, save_load_class_to_group)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

@@ -265,8 +265,8 @@ TEST(sidre_group,view_copy_move)
 
   // check the data value
   double * d0_data =  flds->getGroup("sub")
-                      ->getView("d0")
-                      ->getValue();
+                     ->getView("d0")
+                     ->getValue();
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds to sub
@@ -546,16 +546,16 @@ TEST(sidre_group,save_restore_complex)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

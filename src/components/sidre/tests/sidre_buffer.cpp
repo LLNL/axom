@@ -137,16 +137,16 @@ TEST(sidre_buffer,realloc_buffer)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
-   
-   result = RUN_ALL_TESTS();
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   return result;
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

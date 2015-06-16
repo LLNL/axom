@@ -341,7 +341,8 @@ TEST(C_sidre_group,groups_move_copy)
     tmpview = ATK_datagroup_get_view(ga, "i0");
     int * v = (int *) ATK_dataview_get_data_in_buffer(tmpview);
     EXPECT_TRUE(v != NULL);
-    if (v != NULL) {
+    if (v != NULL)
+    {
       *v = 1;
     }
   }
@@ -349,7 +350,8 @@ TEST(C_sidre_group,groups_move_copy)
     tmpview = ATK_datagroup_get_view(gb, "f0");
     float * v = (float *) ATK_dataview_get_data_in_buffer(tmpview);
     EXPECT_TRUE(v != NULL);
-    if (v != NULL) {
+    if (v != NULL)
+    {
       *v = 100.0;
     }
   }
@@ -357,7 +359,8 @@ TEST(C_sidre_group,groups_move_copy)
     tmpview = ATK_datagroup_get_view(gc, "d0");
     double * v = (double *) ATK_dataview_get_data_in_buffer(tmpview);
     EXPECT_TRUE(v != NULL);
-    if (v != NULL) {
+    if (v != NULL)
+    {
       *v = 3000.0;
     }
   }
@@ -403,7 +406,7 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
   EXPECT_EQ( ATK_datagroup_get_view(grp, viewName2), view2 );
 
-  ATK_databuffer *tmpbuf = ATK_dataview_get_buffer(view1);
+  ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(view1);
   ATK_IndexType bufferId1 = ATK_databuffer_get_index(tmpbuf);
 
   ATK_datagroup_destroy_view_and_buffer(grp, viewName1);
@@ -437,11 +440,11 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   // use create + alloc convenience methods
   // this one is the DataType & method
   ATK_dataview * const view1 = ATK_datagroup_create_view_and_buffer_from_type
-      (grp, viewName1, ATK_C_INT_T, 10);
+                                 (grp, viewName1, ATK_C_INT_T, 10);
 
   // this one is the Schema & method
   ATK_dataview * const view2 = ATK_datagroup_create_view_and_buffer_from_type
-      (grp, viewName2, ATK_C_DOUBLE_T, 10);
+                                 (grp, viewName2, ATK_C_DOUBLE_T, 10);
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
   EXPECT_EQ( ATK_datagroup_get_view(grp, viewName1), view1 );
@@ -480,7 +483,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   // use create + alloc convenience methods
   // this one is the DataType & method
   ATK_dataview * base =  ATK_datagroup_create_view_and_buffer_from_type(root, "base",
-									ATK_C_INT_T, 10);
+                                                                        ATK_C_INT_T, 10);
 #ifdef XXX
   int * base_vals = (int *) ATK_dataview_get_data(base);
   for(int i=0 ; i<10 ; i++)
@@ -550,7 +553,7 @@ TEST(C_sidre_group,save_restore_simple)
   ATK_datastore_print(ds2);
 
   flds = ATK_datagroup_get_group(ATK_datastore_get_root(ds2), "fields");
-	      
+
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
 #ifdef XXX
@@ -575,8 +578,8 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
   ATK_datagroup * gb = ATK_datagroup_create_group(flds, "b");
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
-  
-  ATK_dataview *tmpview;
+
+  ATK_dataview * tmpview;
   tmpview = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
   ATK_dataview_allocate(tmpview, ATK_C_INT_T, 1);
   int * ival = (int *) ATK_dataview_get_data(tmpview);
@@ -631,16 +634,16 @@ TEST(C_sidre_group,save_restore_complex)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

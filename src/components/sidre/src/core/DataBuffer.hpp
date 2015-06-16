@@ -143,7 +143,7 @@ public:
   }
 
   /*!
-   * \brief Return true if DataBuffer has an associated DataView with given 
+   * \brief Return true if DataBuffer has an associated DataView with given
    *        index; else false.
    */
   bool hasView( IndexType idx ) const
@@ -167,7 +167,7 @@ public:
   /*!
    * \brief Declare a buffer to OWN data of given type and number of elements.
    *
-   * If given length is < 0, method does nothing. 
+   * If given length is < 0, method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -183,7 +183,7 @@ public:
   DataBuffer * declare(const Schema& schema);
 
   /*!
-   * \brief Declare a buffer to OWN data described as a pre-defined 
+   * \brief Declare a buffer to OWN data described as a pre-defined
    *        Conduit data type.
    *
    * Note the data must be allocated by calling allocate().
@@ -203,7 +203,7 @@ public:
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * declareExternal(void * external_data,
-			       TypeID type, SidreLength len);
+                               TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to hold external data described as a
@@ -286,12 +286,12 @@ public:
    *
    *        Equivalent to calling declare(type), then allocate().
    *
-   * If buffer has been declared external or given length is < 0, 
+   * If buffer has been declared external or given length is < 0,
    * this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-   DataBuffer * reallocate(TypeID type, SidreLength len);
+  DataBuffer * reallocate(TypeID type, SidreLength len);
 
   /*!
    * \brief Reallocate data described as a Conduit schema.

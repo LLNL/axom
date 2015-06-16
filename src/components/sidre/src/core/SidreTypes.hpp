@@ -37,8 +37,8 @@ typedef long int SidreLength;
 const IndexType InvalidIndex = -1;
 ///
 inline bool indexIsValid(IndexType idx)
-{ 
-  return  idx != InvalidIndex;
+{
+  return idx != InvalidIndex;
 }
 
 /*!

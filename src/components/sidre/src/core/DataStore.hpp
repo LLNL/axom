@@ -91,8 +91,8 @@ public:
    */
   bool hasBuffer( IndexType idx ) const
   {
-    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() && 
-             m_data_buffers[idx] != ATK_NULLPTR ); 
+    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
+             m_data_buffers[idx] != ATK_NULLPTR );
   }
 
   /*!
@@ -160,7 +160,7 @@ public:
    * \brief Return next valid DataBuffer index after given index (i.e.,
    *        smallest index over all buffer indices larger than given one).
    *
-   * sidre::InvalidIndex is returned if there is no valid index greater 
+   * sidre::InvalidIndex is returned if there is no valid index greater
    * than given one.
    */
   IndexType getNextValidBufferIndex(IndexType idx) const;

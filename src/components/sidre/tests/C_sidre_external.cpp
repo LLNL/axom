@@ -75,8 +75,8 @@ TEST(C_sidre_external, create_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_dataview *iview = ATK_datagroup_create_external_view(root, "idata", idata, ATK_C_INT_T, len);
-  ATK_dataview *dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
+  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, ATK_C_INT_T, len);
+  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
   EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
 
 #ifdef XXX
@@ -120,10 +120,10 @@ TEST(C_sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_dataview *iview = ATK_datagroup_create_external_view(root, "idata", idata, ATK_C_INT_T, len);
-  ATK_dataview *dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
+  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, ATK_C_INT_T, len);
+  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
   EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
-  ATK_databuffer *tmpbuf;
+  ATK_databuffer * tmpbuf;
   tmpbuf = ATK_dataview_get_buffer(iview);
   EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), true);
   tmpbuf = ATK_dataview_get_buffer(dview);
@@ -146,8 +146,8 @@ TEST(C_sidre_external, save_load_external_view)
 
   ATK_datastore_print(ds2);
 
-  ATK_dataview *iview2 = ATK_datagroup_get_view(root2, "idata");
-  ATK_dataview *dview2 = ATK_datagroup_get_view(root2, "ddata");
+  ATK_dataview * iview2 = ATK_datagroup_get_view(root2, "idata");
+  ATK_dataview * dview2 = ATK_datagroup_get_view(root2, "ddata");
 
   EXPECT_EQ(ATK_datagroup_get_num_views(root2), 2u);
   tmpbuf = ATK_dataview_get_buffer(iview2);
@@ -178,16 +178,16 @@ TEST(C_sidre_external, save_load_external_view)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

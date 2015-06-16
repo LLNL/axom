@@ -24,66 +24,69 @@ enum DType { _Double_,
              _Int_,
              _UnknownType_};
 
-typedef struct {
+typedef struct
+{
   int ilo;
   int ihi;
 } AA_extent;
 
-AA_extent *AA_extent_new(int lo, int hi)
+AA_extent * AA_extent_new(int lo, int hi)
 {
-    AA_extent *self = (AA_extent *) malloc( sizeof(AA_extent) );
-    self->ilo = lo;
-    self->ihi = hi;
-    return self;
+  AA_extent * self = (AA_extent *) malloc( sizeof(AA_extent) );
+  self->ilo = lo;
+  self->ihi = hi;
+  return self;
 }
 
-void AA_extent_delete(AA_extent *self)
+void AA_extent_delete(AA_extent * self)
 {
-    free(self);
+  free(self);
 }
 
-int AA_get_num_pts(AA_extent *self, Centering cent)
+int AA_get_num_pts(AA_extent * self, Centering cent)
 {
-    int retval = 0;
-    
-    switch ( cent ) {
-    case _Zone_:
-	retval = (self->ihi - self->ilo + 1);
-	break;
-    case _Node_:
-	retval = (self->ihi - self->ilo + 2);
-	break;
-    default:
-	retval = -1;         // I know magic numbers are bad. So sue me.
-    }
+  int retval = 0;
 
-    return retval;
+  switch ( cent )
+  {
+  case _Zone_:
+    retval = (self->ihi - self->ilo + 1);
+    break;
+  case _Node_:
+    retval = (self->ihi - self->ilo + 2);
+    break;
+  default:
+    retval = -1;       // I know magic numbers are bad. So sue me.
+  }
+
+  return retval;
 }
 
-typedef struct {
-    Centering cent;
-    DType type;
-    int depth;
+typedef struct
+{
+  Centering cent;
+  DType type;
+  int depth;
 } AA_meshvar;
 
 
-AA_meshvar *AA_meshvar_new(Centering cent, DType type, int depth)
+AA_meshvar * AA_meshvar_new(Centering cent, DType type, int depth)
 {
-    AA_meshvar *self = (AA_meshvar *) malloc( sizeof(AA_meshvar) );
-    self->cent = cent;
-    self->type = type;
-    self->depth = depth;
-    return self;
+  AA_meshvar * self = (AA_meshvar *) malloc( sizeof(AA_meshvar) );
+  self->cent = cent;
+  self->type = type;
+  self->depth = depth;
+  return self;
 }
 
-void AA_meshvar_delete(AA_meshvar *self)
+void AA_meshvar_delete(AA_meshvar * self)
 {
-    free(self);
+  free(self);
 }
 
-int AA_get_num_vals(AA_meshvar *self, AA_extent * ext)
+int AA_get_num_vals(AA_meshvar * self, AA_extent * ext)
 {
-    return AA_get_num_pts(ext, self->cent) * self->depth;
+  return AA_get_num_pts(ext, self->cent) * self->depth;
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +105,7 @@ TEST(C_sidre_opaque,inout)
 
   AA_extent * ext = AA_extent_new(0, ihi_val);
 
-  ATK_dataview *ext_view = ATK_datagroup_create_opaque_view(problem_gp, "ext", ext);
+  ATK_dataview * ext_view = ATK_datagroup_create_opaque_view(problem_gp, "ext", ext);
 #if 1
 //  ATK_datagroup_CreateViewAndBuffer("ext");
 //  ATK_datagroup_CreateOpaqueView("ext", ext);
@@ -163,9 +166,9 @@ TEST(C_sidre_opaque,meshvar)
   // Add two different mesh vars to mesh var group
   ATK_datagroup * meshvar_gp = ATK_datagroup_create_group(problem_gp, "mesh_var");
   AA_meshvar * zone_mv = AA_meshvar_new(_Zone_, _Int_, zone_var_depth);
-  ATK_dataview *zone_mv_view = ATK_datagroup_create_opaque_view(meshvar_gp, "zone_mv", zone_mv);
+  ATK_dataview * zone_mv_view = ATK_datagroup_create_opaque_view(meshvar_gp, "zone_mv", zone_mv);
   AA_meshvar * node_mv = AA_meshvar_new(_Node_, _Double_, node_var_depth);
-  ATK_dataview *node_mv_view = ATK_datagroup_create_opaque_view(meshvar_gp, "node_mv", node_mv);
+  ATK_dataview * node_mv_view = ATK_datagroup_create_opaque_view(meshvar_gp, "node_mv", node_mv);
 
   //
   // Create domain groups, add extents
@@ -173,17 +176,17 @@ TEST(C_sidre_opaque,meshvar)
   //
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
-      ATK_datagroup * dom_gp = ATK_datagroup_create_group(problem_gp, dom_name[idom].c_str());
-      AA_extent * dom_ext = AA_extent_new(ilo_val[idom], ihi_val[idom]);
-      ATK_datagroup_create_opaque_view(dom_gp, "ext", dom_ext);
+    ATK_datagroup * dom_gp = ATK_datagroup_create_group(problem_gp, dom_name[idom].c_str());
+    AA_extent * dom_ext = AA_extent_new(ilo_val[idom], ihi_val[idom]);
+    ATK_datagroup_create_opaque_view(dom_gp, "ext", dom_ext);
 
-      AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
-      ATK_dataview * dom_zone_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "zone_data");
-      ATK_dataview_allocate(dom_zone_view, ATK_C_INT_T, AA_get_num_vals(zonemv, dom_ext));
+    AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
+    ATK_dataview * dom_zone_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "zone_data");
+    ATK_dataview_allocate(dom_zone_view, ATK_C_INT_T, AA_get_num_vals(zonemv, dom_ext));
 
-      AA_meshvar * nodemv = (AA_meshvar *)  ATK_dataview_get_opaque(node_mv_view);
-      ATK_dataview * dom_node_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "node_data");
-      ATK_dataview_allocate(dom_node_view, ATK_C_DOUBLE_T, AA_get_num_vals(nodemv, dom_ext));
+    AA_meshvar * nodemv = (AA_meshvar *)  ATK_dataview_get_opaque(node_mv_view);
+    ATK_dataview * dom_node_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "node_data");
+    ATK_dataview_allocate(dom_node_view, ATK_C_DOUBLE_T, AA_get_num_vals(nodemv, dom_ext));
 
   }
 
@@ -198,22 +201,22 @@ TEST(C_sidre_opaque,meshvar)
   //
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
-      ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
-      ATK_dataview * ext_view = ATK_datagroup_get_view(dom_gp, "ext");
-      AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
+    ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
+    ATK_dataview * ext_view = ATK_datagroup_get_view(dom_gp, "ext");
+    AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
 
-      AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
-      AA_meshvar * nodemv = (AA_meshvar *) ATK_dataview_get_opaque(node_mv_view);
+    AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
+    AA_meshvar * nodemv = (AA_meshvar *) ATK_dataview_get_opaque(node_mv_view);
 
-      int num_zone_vals = AA_get_num_vals(zonemv, dom_ext);
-      ATK_dataview *dom_zone_data_view = ATK_datagroup_get_view(dom_gp, "zone_data");
-      int test_num_zone_vals = ATK_dataview_get_number_of_elements(dom_zone_data_view);
-      EXPECT_EQ(num_zone_vals, test_num_zone_vals);
+    int num_zone_vals = AA_get_num_vals(zonemv, dom_ext);
+    ATK_dataview * dom_zone_data_view = ATK_datagroup_get_view(dom_gp, "zone_data");
+    int test_num_zone_vals = ATK_dataview_get_number_of_elements(dom_zone_data_view);
+    EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
-      int num_node_vals = AA_get_num_vals(nodemv, dom_ext);
-      ATK_dataview *dom_node_data_view = ATK_datagroup_get_view(dom_gp, "node_data");
-      int test_num_node_vals = ATK_dataview_get_number_of_elements(dom_node_data_view);
-      EXPECT_EQ(num_node_vals, test_num_node_vals);
+    int num_node_vals = AA_get_num_vals(nodemv, dom_ext);
+    ATK_dataview * dom_node_data_view = ATK_datagroup_get_view(dom_gp, "node_data");
+    int test_num_node_vals = ATK_dataview_get_number_of_elements(dom_node_data_view);
+    EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }
 
@@ -222,10 +225,10 @@ TEST(C_sidre_opaque,meshvar)
   AA_meshvar_delete(node_mv);
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
-      ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
-      ATK_dataview * ext_view = ATK_datagroup_get_view(dom_gp, "ext");
-      AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
-      AA_extent_delete(dom_ext);
+    ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
+    ATK_dataview * ext_view = ATK_datagroup_get_view(dom_gp, "ext");
+    AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
+    AA_extent_delete(dom_ext);
   }
   ATK_datastore_delete(ds);
 }
@@ -235,16 +238,16 @@ TEST(C_sidre_opaque,meshvar)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-   int result = 0;
+  int result = 0;
 
-   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
-   UnitTestLogger logger;  // create & initialize test logger,
-                       // finalized when exiting main scope
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
 
-   result = RUN_ALL_TESTS();
+  result = RUN_ALL_TESTS();
 
-   return result;
+  return result;
 }

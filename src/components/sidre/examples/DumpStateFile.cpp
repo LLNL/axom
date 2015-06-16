@@ -99,8 +99,8 @@ public:
   // Read everything from file into group.
 //      void restore(sidre::DataGroup& group)
 //      {
-  // Restore state data back into group, exercising needed API calls.
-  // A real code would read in each item from file first.
+// Restore state data back into group, exercising needed API calls.
+// A real code would read in each item from file first.
 //      }
 
   void close() {}
