@@ -329,6 +329,9 @@ public:
 
   /*!
    * \brief Return void-pointer to data associated with DataView.
+   *
+   * This will return the data pointer for all DataViews, including opaque
+   * and external.
    */
   void * getDataPointer() const;
 

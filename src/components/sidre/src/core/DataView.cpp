@@ -97,10 +97,12 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::allocate()
 {
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Attempting to allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( m_data_buffer->getNumViews() == 1 )
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     m_data_buffer->allocate(m_schema);
     apply();
@@ -117,11 +119,13 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Attempting to allocate an external or opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( len >= 0 && m_data_buffer->getNumViews() == 1 ) 
+  if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 ) 
   {
     declare(type, len);
     allocate();
@@ -139,10 +143,12 @@ DataView * DataView::allocate( TypeID type, SidreLength len)
  */
 DataView * DataView::allocate(const Schema& schema)
 {
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Attempting to allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( m_data_buffer->getNumViews() == 1 )
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     declare(schema);
     allocate();
@@ -160,6 +166,8 @@ DataView * DataView::allocate(const Schema& schema)
  */
 DataView * DataView::allocate(const DataType& dtype)
 {
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Attempting to allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -295,7 +303,11 @@ DataView * DataView::apply(const DataType &dtype)
  */
 void * DataView::getDataPointer() const
 {
-  return m_data_buffer->getData();
+  if ( isOpaque() ) {
+      return (void *)(getNode().as_uint64());
+  } else {
+      return m_data_buffer->getData();
+  }
 }
 
 /*
