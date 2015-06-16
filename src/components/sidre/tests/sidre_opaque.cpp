@@ -174,9 +174,9 @@ TEST(sidre_opaque,meshvar)
   // Add two different mesh vars to mesh var group
   DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
-  meshvar_gp->createOpaqueView("zone_mv", zone_mv);
+  DataView * zone_mv_view = meshvar_gp->createOpaqueView("zone_mv", zone_mv);
   MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
-  meshvar_gp->createOpaqueView("node_mv", node_mv);
+  DataView * node_mv_view = meshvar_gp->createOpaqueView("node_mv", node_mv);
 
   //
   // Create domain groups, add extents
@@ -189,16 +189,12 @@ TEST(sidre_opaque,meshvar)
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createOpaqueView("ext", dom_ext);
 
-    DataGroup * mv_gp = problem_gp->getGroup("mesh_var");
-
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
     DataView * dom_zone_view = dom_gp->createViewAndBuffer("zone_data");
-    MeshVar * zonemv = static_cast<MeshVar *>(
-      mv_gp->getView("zone_mv")->getOpaque() );
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
     DataView * dom_node_view = dom_gp->createViewAndBuffer("node_data");
-    MeshVar * nodemv = static_cast<MeshVar *>(
-      mv_gp->getView("node_mv")->getOpaque() );
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }
@@ -206,7 +202,7 @@ TEST(sidre_opaque,meshvar)
 //
 //  Print datastore contents to see what's going on.
 //
-//  ds->Print();
+//  ds->print();
 
 
   //
@@ -219,11 +215,8 @@ TEST(sidre_opaque,meshvar)
     Extent * dom_ext = static_cast<Extent *>(
       dom_gp->getView("ext")->getOpaque() );
 
-    DataGroup * mv_gp = problem_gp->getGroup("mesh_var");
-    MeshVar * zonemv = static_cast<MeshVar *>(
-      mv_gp->getView("zone_mv")->getOpaque() );
-    MeshVar * nodemv = static_cast<MeshVar *>(
-      mv_gp->getView("node_mv")->getOpaque() );
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
     int test_num_zone_vals = dom_gp->getView("zone_data")->getNumberOfElements();

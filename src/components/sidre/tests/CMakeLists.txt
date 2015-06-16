@@ -22,7 +22,7 @@ set(gtest_sidre_tests
    C_sidre_buffer.cpp
    C_sidre_external.cpp
    C_sidre_group.cpp
-#   C_sidre_opaque.cpp
+   C_sidre_opaque.cpp
    C_sidre_view.cpp
    )
 
