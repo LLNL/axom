@@ -88,6 +88,7 @@ module sidre_mod
         procedure :: get_opaque => dataview_get_opaque
         procedure :: get_buffer => dataview_get_buffer
         procedure :: get_data => dataview_get_data
+        procedure :: get_data_pointer => dataview_get_data_pointer
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
@@ -563,6 +564,14 @@ module sidre_mod
             type(C_PTR), value :: self
             type(C_PTR) :: rv
         end function atk_dataview_get_data
+        
+        function atk_dataview_get_data_pointer(self) result(rv) &
+                bind(C, name="ATK_dataview_get_data_pointer")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value :: self
+            type(C_PTR) :: rv
+        end function atk_dataview_get_data_pointer
         
         function atk_dataview_get_owning_group(self) result(rv) &
                 bind(C, name="ATK_dataview_get_owning_group")
@@ -1169,6 +1178,16 @@ contains
         rv = atk_dataview_get_data(obj%obj)
         ! splicer end
     end function dataview_get_data
+    
+    function dataview_get_data_pointer(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        type(C_PTR) :: rv
+        ! splicer begin
+        rv = atk_dataview_get_data_pointer(obj%obj)
+        ! splicer end
+    end function dataview_get_data_pointer
     
     function dataview_get_owning_group(obj) result(rv)
         use iso_c_binding

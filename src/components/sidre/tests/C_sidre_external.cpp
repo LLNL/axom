@@ -84,13 +84,13 @@ TEST(C_sidre_external, create_external_view)
   root->getView("ddata")->getNode().print_detailed();
 #endif
 
-  int * idata_chk = (int *) ATK_dataview_get_data_in_buffer(iview);
+  int * idata_chk = (int *) ATK_dataview_get_data_pointer(iview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = (double *) ATK_dataview_get_data_in_buffer(dview);
+  double * ddata_chk = (double *) ATK_dataview_get_data_pointer(dview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -155,13 +155,13 @@ TEST(C_sidre_external, save_load_external_view)
   tmpbuf = ATK_dataview_get_buffer(dview2);
   EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), false);
 
-  int * idata_chk = (int *) ATK_dataview_get_data_in_buffer(iview2);
+  int * idata_chk = (int *) ATK_dataview_get_data_pointer(iview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = (double *) ATK_dataview_get_data_in_buffer(dview2);
+  double * ddata_chk = (double *) ATK_dataview_get_data_pointer(dview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);

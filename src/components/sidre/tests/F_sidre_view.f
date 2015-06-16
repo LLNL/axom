@@ -53,7 +53,7 @@ contains
     dv = root%create_view_and_buffer("u0")
     call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
     call dv%allocate(ATK_C_INT_T, 10_8)
-    data_ptr = dv%get_data_in_buffer()
+    data_ptr = dv%get_data_pointer()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -83,7 +83,7 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0", ATK_C_INT_T, 10_8)
-    data_ptr = dv%get_data_in_buffer()
+    data_ptr = dv%get_data_pointer()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -258,7 +258,7 @@ contains
     ! alloc our buffer
     ! we will create 4 sub views of this array
     call base_old%allocate(ATK_C_INT_T, 40_8)
-    data_ptr = base_old%get_data_in_buffer()
+    data_ptr = base_old%get_data_pointer()
     call c_f_pointer(data_ptr, data, [ 40 ])
 
     ! init the buff with values that align with the
@@ -367,7 +367,7 @@ contains
 !--
 !--
 !--  ! check pointer values
-!--  int * r2_new_ptr = (int *) ATK_dataview_get_data_in_buffer(r2_new)
+!--  int * r2_new_ptr = (int *) ATK_dataview_get_data_pointer(r2_new)
 !--
 !--  for(int i=0  i<10  i++)
 !--  {
@@ -417,8 +417,8 @@ contains
     a1 = root%create_view_and_buffer("a1", ATK_C_FLOAT_T, 5_8)
     a2 = root%create_view_and_buffer("a2", ATK_C_INT_T, 5_8)
 
-    a1_ptr = a1%get_data_in_buffer()
-    a2_ptr = a2%get_data_in_buffer()
+    a1_ptr = a1%get_data_pointer()
+    a2_ptr = a2%get_data_pointer()
     call c_f_pointer(a1_ptr, a1_data, [ 5 ])
     call c_f_pointer(a2_ptr, a2_data, [ 5 ])
 
@@ -434,8 +434,8 @@ contains
     call a1%reallocate(ATK_C_FLOAT_T, 10_8)
     call a2%reallocate(ATK_C_INT_T, 15_8)
 
-    a1_ptr = a1%get_data_in_buffer()
-    a2_ptr = a2%get_data_in_buffer()
+    a1_ptr = a1%get_data_pointer()
+    a2_ptr = a2%get_data_pointer()
     call c_f_pointer(a1_ptr, a1_data, [ 10 ])
     call c_f_pointer(a2_ptr, a2_data, [ 15 ])
 

@@ -470,7 +470,7 @@ contains
     ! use create + alloc convenience methods
     ! this one is the DataType & method
     base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10_8)
-    base_ptr = base%get_data_in_buffer()
+    base_ptr = base%get_data_pointer()
     call c_f_pointer(base_ptr, base_vals, [10])
 
     base_vals(1:5) = 10

@@ -339,7 +339,7 @@ TEST(C_sidre_group,groups_move_copy)
 #endif
   {
     tmpview = ATK_datagroup_get_view(ga, "i0");
-    int * v = (int *) ATK_dataview_get_data_in_buffer(tmpview);
+    int * v = (int *) ATK_dataview_get_data_pointer(tmpview);
     EXPECT_TRUE(v != NULL);
     if (v != NULL)
     {
@@ -348,7 +348,7 @@ TEST(C_sidre_group,groups_move_copy)
   }
   {
     tmpview = ATK_datagroup_get_view(gb, "f0");
-    float * v = (float *) ATK_dataview_get_data_in_buffer(tmpview);
+    float * v = (float *) ATK_dataview_get_data_pointer(tmpview);
     EXPECT_TRUE(v != NULL);
     if (v != NULL)
     {
@@ -357,7 +357,7 @@ TEST(C_sidre_group,groups_move_copy)
   }
   {
     tmpview = ATK_datagroup_get_view(gc, "d0");
-    double * v = (double *) ATK_dataview_get_data_in_buffer(tmpview);
+    double * v = (double *) ATK_dataview_get_data_pointer(tmpview);
     EXPECT_TRUE(v != NULL);
     if (v != NULL)
     {
