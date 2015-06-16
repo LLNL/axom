@@ -6,6 +6,7 @@
 
 #ifndef WRAPEXCLASS1_H
 #define WRAPEXCLASS1_H
+// splicer push.class.ExClass1
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +42,8 @@ long AA_exclass1_get_value_1(AA_exclass1 * self, long value);
 void * AA_exclass1_get_addr(AA_exclass1 * self);
 
 bool AA_exclass1_has_addr(AA_exclass1 * self, bool in);
+
+// splicer pop.class.ExClass1
 
 #ifdef __cplusplus
 }

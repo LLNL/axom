@@ -86,25 +86,26 @@ module exclass2_mod
     end interface
 
 contains
+    ! splicer push class.exclass2
     
     function exclass2_ex_class2(name) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: name
         type(exclass2) :: rv
-        ! splicer begin
+        ! splicer begin exclass2_ex_class2
         rv%obj = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)
-        ! splicer end
+        ! splicer end exclass2_ex_class2
     end function exclass2_ex_class2
     
     subroutine exclass2_ex_class1(obj)
         use iso_c_binding
         implicit none
         type(exclass2) :: obj
-        ! splicer begin
+        ! splicer begin exclass2_ex_class1
         call aa_exclass2_ex_class1(obj%obj)
         obj%obj = C_NULL_PTR
-        ! splicer end
+        ! splicer end exclass2_ex_class1
     end subroutine exclass2_ex_class1
     
     function exclass2_get_name(obj) result(rv)
@@ -112,9 +113,9 @@ contains
         implicit none
         class(exclass2) :: obj
         character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%obj)) :: rv
-        ! splicer begin
+        ! splicer begin exclass2_get_name
         rv = fstr(aa_exclass2_get_name(obj%obj))
-        ! splicer end
+        ! splicer end exclass2_get_name
     end function exclass2_get_name
     
     function exclass2_get_name_length(obj) result(rv)
@@ -122,9 +123,9 @@ contains
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: rv
-        ! splicer begin
+        ! splicer begin exclass2_get_name_length
         rv = aa_exclass2_get_name_length(obj%obj)
-        ! splicer end
+        ! splicer end exclass2_get_name_length
     end function exclass2_get_name_length
     
     function exclass2_get_class1(obj, in) result(rv)
@@ -133,9 +134,9 @@ contains
         class(exclass2) :: obj
         type(exclass1) :: in
         type(exclass1) :: rv
-        ! splicer begin
+        ! splicer begin exclass2_get_class1
         rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)
-        ! splicer end
+        ! splicer end exclass2_get_class1
     end function exclass2_get_class1
     
     subroutine exclass2_declare(obj, type, len)
@@ -144,18 +145,18 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin
+        ! splicer begin exclass2_declare
         call aa_exclass2_declare(obj%obj, type, len)
-        ! splicer end
+        ! splicer end exclass2_declare
     end subroutine exclass2_declare
     
     subroutine exclass2_destroyall(obj)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        ! splicer begin
+        ! splicer begin exclass2_destroyall
         call aa_exclass2_destroyall(obj%obj)
-        ! splicer end
+        ! splicer end exclass2_destroyall
     end subroutine exclass2_destroyall
     
     function exclass2_get_type_id(obj) result(rv)
@@ -163,9 +164,11 @@ contains
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: rv
-        ! splicer begin
+        ! splicer begin exclass2_get_type_id
         rv = aa_exclass2_get_type_id(obj%obj)
-        ! splicer end
+        ! splicer end exclass2_get_type_id
     end function exclass2_get_type_id
+    
+    ! splicer pop class.exclass2
 
 end module exclass2_mod

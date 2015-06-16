@@ -183,8 +183,11 @@ class Wrapf(object):
                 -1, 'contains', 1,
                 ])
 
+        self.impl.append(wformat('! splicer push class.{lower_class}', fmt_class))
         for method in node['methods']:
             self.wrap_method(node, method)
+        self.impl.append('')
+        self.impl.append(wformat('! splicer pop class.{lower_class}', fmt_class))
 
         # Look for generics
         for key in sorted(self.f_type_generic.keys()):
@@ -368,9 +371,9 @@ class Wrapf(object):
         impl.extend(arg_f_use)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
-        impl.append('! splicer begin')
+        impl.append(wformat('! splicer begin {F_name_impl}', fmt_func))
         impl.append(fmt_func.F_code)
-        impl.append('! splicer end')
+        impl.append(wformat('! splicer end {F_name_impl}', fmt_func))
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 

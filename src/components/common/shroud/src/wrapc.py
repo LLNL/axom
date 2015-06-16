@@ -115,6 +115,7 @@ class Wrapc(object):
                 '#ifndef %s\n' % guard,
                 '#define %s\n' % guard,
                 ])
+        fp.write('// splicer push.class.%s\n' % node['name'])
 
         # headers required by typedefs
         if self.header_typedef_include:
@@ -144,6 +145,7 @@ class Wrapc(object):
                      format(C_type_name=name))
         fp.write('#endif\n')
         fp.writelines(self.header_proto_c);
+        fp.write('\n// splicer pop.class.%s\n' % node['name'])
         fp.writelines([
                 '\n',
                 '#ifdef __cplusplus\n',
@@ -170,7 +172,9 @@ class Wrapc(object):
         fp.write('\nextern "C" {\n')
         for name in namespace.split():
             fp.write('namespace %s {\n' % name)
+        fp.write('// splicer push class.%s.method\n' % node['name'])
         fp.writelines(self.impl)
+        fp.write('\n// splicer pop.class.%s method\n' % node['name'])
         fp.write('\n')
         for name in namespace.split():
             fp.write('}  // namespace %s\n' % name)
@@ -325,8 +329,8 @@ class Wrapc(object):
 {C_return_type} {C_name}({C_arguments})
 {{
 {C_object}
-// splicer begin
+// splicer begin {C_name}
 {C_code}
-// splicer end
+// splicer end {C_name}
 }}
 """, fmt_func))
