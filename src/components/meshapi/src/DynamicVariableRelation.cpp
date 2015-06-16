@@ -48,7 +48,7 @@ namespace meshapi {
                 sstr << "\n\t* Neither set was null";
 
             // Check that the the relations vector has the right size (should be same as fromSet's size() )
-            if( m_relationsVec.size() != m_fromSet->size() )
+            if( static_cast<SetPosition>(m_relationsVec.size()) != m_fromSet->size() )
             {
                 if(verboseOutput)
                 {

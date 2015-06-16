@@ -148,7 +148,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    // initialize field data 
    for (Index_t i=0; i<numElem(); ++i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
-      Index_t *elemToNode = nodelist(i) ;
+      const Index_t *elemToNode = nodelist(i) ;
       for( Index_t lnode=0 ; lnode<8 ; ++lnode )
       {
         Index_t gnode = elemToNode[lnode];
@@ -213,13 +213,18 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
   }
 
 
-  // embed hexehedral elements in nodal point lattice 
+  // embed hexahedral elements in nodal point lattice
+  // MeshAPI NOTE: This should really be a DynamicConstantRelation
+  // MeshAPI TODO: Change this once DynamicConstantRelation becomes available
+  std::vector<Index_t>  local_nodelist( 8 * numElem() );
   Index_t zidx = 0 ;
   nidx = 0 ;
   for (Index_t plane=0; plane<edgeElems; ++plane) {
     for (Index_t row=0; row<edgeElems; ++row) {
       for (Index_t col=0; col<edgeElems; ++col) {
-        Index_t *localNode = nodelist(zidx) ;
+        // Index_t *localNode = nodelist(zidx) ;
+        Index_t *localNode = &local_nodelist[Index_t(8)*zidx];
+
         localNode[0] = nidx                                       ;
         localNode[1] = nidx                                   + 1 ;
         localNode[2] = nidx                       + edgeNodes + 1 ;
@@ -235,6 +240,12 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
     }
     nidx += edgeNodes ;
   }
+
+  // MeshAPI NOTE: The following call copies the data array.
+  //               The actual data should just be referenced by the relation.
+  m_nodelist.bindRelationData(local_nodelist, 8);
+
+  ATK_ASSERT( m_nodelist.isValid());
 }
 
 
@@ -257,7 +268,7 @@ Domain::SetupThreadSupportStructures()
     }
 
     for (Index_t i=0; i<numElem(); ++i) {
-      Index_t *nl = nodelist(i) ;
+      const Index_t *nl = nodelist(i) ;
       for (Index_t j=0; j < 8; ++j) {
         ++(nodeElemCount[nl[j]] );
       }
@@ -279,7 +290,7 @@ Domain::SetupThreadSupportStructures()
     }
 
     for (Index_t i=0; i < numElem(); ++i) {
-      Index_t *nl = nodelist(i) ;
+      const Index_t *nl = nodelist(i) ;
       for (Index_t j=0; j < 8; ++j) {
         Index_t m = nl[j];
         Index_t k = i*8 + j ;

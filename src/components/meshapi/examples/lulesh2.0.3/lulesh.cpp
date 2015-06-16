@@ -1039,7 +1039,7 @@ void CalcHourglassControlForElems(Domain& domain,
       Real_t  x1[8],  y1[8],  z1[8] ;
       Real_t pfx[8], pfy[8], pfz[8] ;
 
-      Index_t* elemToNode = domain.nodelist(i);
+      const Index_t* elemToNode = domain.nodelist(i);
       CollectDomainNodesToElemNodes(domain, elemToNode, x1, y1, z1);
 
       CalcElemVolumeDerivative(pfx, pfy, pfz, x1, y1, z1);

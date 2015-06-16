@@ -54,7 +54,7 @@ bool StaticConstantRelation::isValid(bool verboseOutput) const
             errSstr << "\n\t* Neither set was null";
 
         // Check that the toSetIndices vector has the right size
-        if( m_toSetIndicesVec.size() != (m_stride * m_fromSet->size()) )
+        if( static_cast<SetPosition>(m_toSetIndicesVec.size()) != (m_stride * m_fromSet->size()) )
         {
             if(verboseOutput)
             {

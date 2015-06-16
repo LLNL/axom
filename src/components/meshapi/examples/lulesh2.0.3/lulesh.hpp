@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "meshapi/RangeSet.hpp"
+#include "meshapi/StaticConstantRelation.hpp"
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -126,6 +127,12 @@ class Domain {
 
    public:
 
+   typedef asctoolkit::meshapi::RangeSet               ElemSet;
+   typedef asctoolkit::meshapi::RangeSet               NodeSet;
+   typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
+
+   public:
+
    // Constructor
    Domain(Int_t numRanks, Index_t colLoc,
           Index_t rowLoc, Index_t planeLoc,
@@ -158,7 +165,8 @@ class Domain {
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
-      m_nodelist.resize(8*numElem);
+      //m_nodelist.resize(8*numElem);
+      m_nodelist = ElemToNodeRelation(&m_elemSet, &m_nodeSet);
 
       // elem connectivities through face
       m_lxim.resize(numElem);
@@ -274,7 +282,7 @@ class Domain {
    Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
    Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
-   Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
+   const Index_t*  nodelist(Index_t idx)    { return &(*m_nodelist.begin(idx)) ; }
 
    // elem connectivities through face
    Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
@@ -458,7 +466,9 @@ class Domain {
    Index_t *m_regNumList ;    // Region number per domain element
    Index_t **m_regElemlist ;  // region indexset 
 
-   std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
+   ElemToNodeRelation m_nodelist;
+   //std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
+
 
    std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
    std::vector<Index_t>  m_lxip ;
@@ -548,8 +558,8 @@ class Domain {
    Index_t m_sizeY ;
    Index_t m_sizeZ ;
 
-   asctoolkit::meshapi::RangeSet m_nodeSet;
-   asctoolkit::meshapi::RangeSet m_elemSet;
+   NodeSet m_nodeSet;
+   ElemSet m_elemSet;
 
    Index_t m_maxPlaneSize ;
    Index_t m_maxEdgeSize ;

@@ -71,7 +71,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
             errSstr << "\n\t* Neither set was null";
 
         // Check that the fromSet vector has the correct size
-        if( m_fromSetBeginsVec.size() != (m_fromSet->size() +1) )
+        if( static_cast<SetPosition>(m_fromSetBeginsVec.size()) != (m_fromSet->size() +1) )
         {
             if(verboseOutput)
             {
@@ -86,7 +86,7 @@ bool StaticVariableRelation::isValid(bool verboseOutput) const
         // Check that no element of the fromSetBegins vector points outside of the toSetIndices vector
         for(RelationVecConstIterator it = m_fromSetBeginsVec.begin(), itEnd = m_fromSetBeginsVec.end(); it != itEnd; ++it)
         {
-            if( *it > m_toSetIndicesVec.size() )
+            if( *it > static_cast<SetPosition>(m_toSetIndicesVec.size()) )
             {
                 if(verboseOutput)
                 {

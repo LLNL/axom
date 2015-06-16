@@ -77,8 +77,9 @@ namespace meshapi{
        * \param pos The index of the desired element
        * \return The value of the element at the given position
        * \pre pos must be less than the number of elements in the set ( size() )
+       * \note Concrete realizations of Set also support subscript operator -- operator[].
        * \note How are we planning to handle indexes that are out or range (accidentally)?
-       *       How are we planning to handle indexes that are intentionally out of range
+       *       Are we planning to handle indexes that are intentionally out of range
        *       (e.g. to indicate a problem, or a missing element etc..)?
        */
       virtual ElementType at(PositionType) const  =0;

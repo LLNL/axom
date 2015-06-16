@@ -111,7 +111,7 @@ namespace meshapi    {
         }
         else
         {
-            if( m_data.size() != m_set->size())
+            if( static_cast<SetPosition>(m_data.size()) != m_set->size())
             {
                 if(verboseOutput)
                 {
