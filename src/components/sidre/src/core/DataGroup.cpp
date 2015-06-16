@@ -1199,10 +1199,9 @@ void DataGroup::copyFromNode(Node& n,
 
       IndexType buffer_id = n_view["buffer_id"].as_int32();
       // get the mapped buffer id
-      if( id_map.find(buffer_id) == id_map.end() )
-      {
-        ATK_ERROR("Invalid buffer index mapping.");
-      }
+
+      SLIC_ASSERT_MSG( id_map.find(buffer_id) != id_map.end(),
+                       "Invalid buffer index mapping." );
 
       buffer_id = id_map[buffer_id];
       DataBuffer * ds_buff = m_datastore->getBuffer(buffer_id);
@@ -1218,7 +1217,7 @@ void DataGroup::copyFromNode(Node& n,
     }
     else
     {
-      ATK_WARNING("DataGroup cannot restore opaque views.");
+      SLIC_ASSERT_MSG( 0, "DataGroup cannot restore opaque views." );
     }
   }
 

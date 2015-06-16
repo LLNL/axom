@@ -107,8 +107,7 @@ public:
    *
    * If given length < 0, method does nothing.
    *
-   * \return pointer to this DataView object or ATK_NULLPTR if
-   * new DataView is not created.
+   * \return pointer to this DataView object.
    */
   DataView * declare( TypeID type, SidreLength len);
 
@@ -315,7 +314,7 @@ public:
   }
 
   /*!
-   * \brief Return void* pointer to opaque data in view, else null ptr
+   * \brief Return void* pointer to opaque data in view, else ATK_NULLPTR
    *        if view has not been declared opaque.
    */
   void * getOpaque() const;

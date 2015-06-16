@@ -124,12 +124,16 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
   SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
                   "Attempting to set buffer to null external data" );
-  DataType dtype = conduit::DataType::default_dtype(type);
-  dtype.set_number_of_elements(len);
-  m_schema.set(dtype);
-  m_data = external_data;
-  m_node.set_external(m_schema, m_data);
-  m_is_data_external = true;
+
+  if ( len >= 0 && m_data == ATK_NULLPTR && external_data != ATK_NULLPTR ) 
+  {  
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+    m_schema.set(dtype);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
   return this;
 }
 
