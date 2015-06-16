@@ -339,6 +339,11 @@ public:
   /*!
    * \brief Return void-pointer to data associated with DataView.
    */
+  void * getDataPointer() const; 
+
+  /*!
+   * \brief Return void-pointer to data associated with DataView.
+   */
   void * getData()
   {
 #if 0
