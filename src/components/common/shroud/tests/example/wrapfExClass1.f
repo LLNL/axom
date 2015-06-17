@@ -5,16 +5,16 @@ module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2
     use iso_c_binding
-    ! splicer push class.exclass1
     implicit none
     
+    ! splicer push class.exclass1
     ! splicer begin module_top
     top of module splicer  1
-    ! splicer end   module_top
+    ! splicer end module_top
     
     type exclass1
         type(C_PTR) obj
-        ! splicer end component_part
+        ! splicer begin component_part
           component part 1a
           component part 1b
         ! splicer end component_part
@@ -29,7 +29,7 @@ module exclass1_mod
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
         generic :: get_value => get_value_from_int, get_value_1
-        ! splicer end type_bound_procedure_part
+        ! splicer begin type_bound_procedure_part
           type bound procedure part 1
         ! splicer end type_bound_procedure_part
     end type exclass1

@@ -70,7 +70,7 @@ class Wrapf(object):
         return top.get(names[-1], [])
 
     def _create_splicer(self, *names):
-        out =  [ '! splicer end %s' % names[-1] ]
+        out =  [ '! splicer begin %s' % names[-1] ]
         out.extend(self._fetch_splicer(*names))
         out.append('! splicer end %s' % names[-1])
         return out
@@ -459,18 +459,15 @@ class Wrapf(object):
                             mname, ', '.join(only)))
                 else:
                     output.append('use %s' % mname)
+            output.append('implicit none')
+            output.append('')
             output.append(wformat('! splicer push class.{lower_class}', fmt_class))
-            splicer = self._fetch_splicer(fmt_class.lower_class, 'module_top')
+            output.extend(self._create_splicer(fmt_class.lower_class, 'module_top'))
         else:
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
-            splicer = self._fetch_splicer('module_top')
-
-        output.append('implicit none')
-        output.append('')
-        output.append('! splicer begin module_top')
-        if splicer:
-            output.extend(splicer)
-        output.append('! splicer end   module_top')
+            output.append('implicit none')
+            output.append('')
+            output.extend(self._create_splicer('module_top'))
 
         output.extend(self.f_type_decl)
 

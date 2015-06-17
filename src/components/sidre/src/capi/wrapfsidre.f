@@ -33,11 +33,11 @@ module sidre_mod
     integer, parameter :: ATK_C_LONG_T = 15
     integer, parameter :: ATK_C_FLOAT_T = 16
     integer, parameter :: ATK_C_DOUBLE_T = 17
-    ! splicer end   module_top
+    ! splicer end module_top
     
     type datastore
         type(C_PTR) obj
-        ! splicer end component_part
+        ! splicer begin component_part
         ! splicer end component_part
     contains
         procedure :: get_root => datastore_get_root
@@ -46,14 +46,14 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
-        ! splicer end type_bound_procedure_part
+        ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type datastore
     
     
     type datagroup
         type(C_PTR) obj
-        ! splicer end component_part
+        ! splicer begin component_part
         ! splicer end component_part
     contains
         procedure :: get_name => datagroup_get_name
@@ -84,14 +84,14 @@ module sidre_mod
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
         generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_from_type
-        ! splicer end type_bound_procedure_part
+        ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type datagroup
     
     
     type databuffer
         type(C_PTR) obj
-        ! splicer end component_part
+        ! splicer begin component_part
         ! splicer end component_part
     contains
         procedure :: get_index => databuffer_get_index
@@ -104,14 +104,14 @@ module sidre_mod
         procedure :: get_data => databuffer_get_data
         procedure :: get_total_bytes => databuffer_get_total_bytes
         generic :: allocate => allocate_existing, allocate_from_type
-        ! splicer end type_bound_procedure_part
+        ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type databuffer
     
     
     type dataview
         type(C_PTR) obj
-        ! splicer end component_part
+        ! splicer begin component_part
         ! splicer end component_part
     contains
         procedure :: declare => dataview_declare
@@ -127,7 +127,7 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_number_of_elements => dataview_get_number_of_elements
-        ! splicer end type_bound_procedure_part
+        ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type dataview
     

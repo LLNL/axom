@@ -5,16 +5,16 @@ module exclass2_mod
     use fstr_mod
     use exclass1_mod, only : exclass1
     use iso_c_binding, only : C_INT, C_LONG
-    ! splicer push class.exclass2
     implicit none
     
+    ! splicer push class.exclass2
     ! splicer begin module_top
     top of module splicer  2
-    ! splicer end   module_top
+    ! splicer end module_top
     
     type exclass2
         type(C_PTR) obj
-        ! splicer end component_part
+        ! splicer begin component_part
         ! splicer end component_part
     contains
         procedure :: get_name => exclass2_get_name
@@ -23,7 +23,7 @@ module exclass2_mod
         procedure :: declare => exclass2_declare
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
-        ! splicer end type_bound_procedure_part
+        ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type exclass2
     
