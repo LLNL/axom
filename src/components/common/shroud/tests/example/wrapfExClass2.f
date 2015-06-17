@@ -5,7 +5,12 @@ module exclass2_mod
     use fstr_mod
     use exclass1_mod, only : exclass1
     use iso_c_binding, only : C_INT, C_LONG
+    ! splicer push class.exclass2
     implicit none
+    
+    ! splicer begin module_top
+    top of module splicer  2
+    ! splicer end   module_top
     
     type exclass2
         type(C_PTR) obj
@@ -86,7 +91,7 @@ module exclass2_mod
     end interface
 
 contains
-    ! splicer push class.exclass2.method
+    ! splicer push method
     
     function exclass2_ex_class2(name) result(rv)
         use iso_c_binding
@@ -169,6 +174,7 @@ contains
         ! splicer end get_type_id
     end function exclass2_get_type_id
     
-    ! splicer pop class.exclass2.method
+    ! splicer pop method
 
+! splicer pop class.exclass2
 end module exclass2_mod

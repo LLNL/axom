@@ -37,6 +37,7 @@ class Wrapf(object):
         self.log = config.log
         self.typedef = tree['typedef']
         self.splicer_stack = [ splicers ]
+        self.splicer_names = [ 'f' ]
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -50,10 +51,23 @@ class Wrapf(object):
     def _push_splicer(self, name):
         level = self.splicer_stack[-1].setdefault(name, {})
         self.splicer_stack.append(level)
+        self.splicer_names.append(name)
 
     def _pop_splicer(self, name):
-        # XXX maybe use name for error checking
+        # XXX maybe use name for error checking, must pop in reverse order
         self.splicer_stack.pop()
+        self.splicer_names.pop()
+
+    def _fetch_splicer(self, *names):
+        """
+        Pass nested layers to find splicer
+        _fetch_splicer('lowest')
+        _fetch_splicer('top', 'midle', 'lowest')
+        """
+        top = self.splicer_stack[-1]
+        for nested in names[:-1]:
+            top = top.setdefault(nested, {})
+        return top.get(names[-1], None)
 
     def _c_type(self, arg):
         """
@@ -196,13 +210,19 @@ class Wrapf(object):
                 -1, 'contains', 1,
                 ])
 
-        self.impl.append(wformat('! splicer push class.{lower_class}.method', fmt_class))
+        if not node['options'].F_module_per_class:
+            self.impl.append(wformat('! splicer push class.{lower_class}.method', fmt_class))
+        else:
+            self.impl.append('! splicer push method')
         self._push_splicer('method')
         for method in node['methods']:
             self.wrap_method(node, method)
         self._pop_splicer('method')
         self.impl.append('')
-        self.impl.append(wformat('! splicer pop class.{lower_class}.method', fmt_class))
+        if not node['options'].F_module_per_class:
+            self.impl.append(wformat('! splicer pop class.{lower_class}.method', fmt_class))
+        else:
+            self.impl.append('! splicer pop method')
 
         # Look for generics
         for key in sorted(self.f_type_generic.keys()):
@@ -430,10 +450,20 @@ class Wrapf(object):
                             mname, ', '.join(only)))
                 else:
                     output.append('use %s' % mname)
+            output.append(wformat('! splicer push class.{lower_class}', fmt_class))
+            splicer = self._fetch_splicer(fmt_class.lower_class, 'module_top')
         else:
             include_option = 'F_library_module_includes'
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
+            splicer = self._fetch_splicer('module_top')
+
         output.append('implicit none')
+        output.append('')
+        output.append('! splicer begin module_top')
+        if splicer:
+            output.extend(splicer)
+        output.append('! splicer end   module_top')
+
         for include in options.get(include_option, '').split():
             output.append('include "{}"'.format(include))
 
@@ -450,6 +480,9 @@ class Wrapf(object):
 
         output.append(-1)
         output.append('')
+        if node['options'].F_module_per_class:
+            output.append(wformat('! splicer pop class.{lower_class}', fmt_class))
+
         output.append('end module %s' % module_name)
 
         self.indent = 0

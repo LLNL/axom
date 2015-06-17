@@ -5,7 +5,12 @@ module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2
     use iso_c_binding
+    ! splicer push class.exclass1
     implicit none
+    
+    ! splicer begin module_top
+    top of module splicer  1
+    ! splicer end   module_top
     include "class.inc"
     
     type exclass1
@@ -117,7 +122,7 @@ module exclass1_mod
     end interface
 
 contains
-    ! splicer push class.exclass1.method
+    ! splicer push method
     
     function exclass1_new(name) result(rv)
         use iso_c_binding
@@ -232,6 +237,7 @@ contains
         ! splicer end splicer_special
     end subroutine exclass1_splicer_special
     
-    ! splicer pop class.exclass1.method
+    ! splicer pop method
 
+! splicer pop class.exclass1
 end module exclass1_mod

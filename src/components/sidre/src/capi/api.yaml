@@ -17,7 +17,7 @@ options:
   C_prefix: ATK_
   namespace: asctoolkit sidre
   F_module_per_class: False
-  F_library_module_includes: sidretypes.inc
+##  F_library_module_includes: sidretypes.inc
 
 typedef:
   IndexType:
@@ -214,3 +214,7 @@ classes:
 #    - decl: void print() const
 
 
+# Files which contain code to be inserted into generated code
+splicer:
+  f:
+  -  fsidresplicer.f
