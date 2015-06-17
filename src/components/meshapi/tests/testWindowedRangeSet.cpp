@@ -64,11 +64,16 @@ TEST(gtest_meshapi_windowed_range_set,construct_windowed_range_set)
     }
 
     std::cout<<"\n --Using random access on invalid address -- Note: We are testing for the expected failures." << std::endl;
+#ifdef ATK_DEBUG
+    // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
 
     // add this line to avoid a warning in the output about thread safety
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH(s.at(upperIndex),"") << "tried to access out of range element ("<< upperIndex << ")";
     ASSERT_DEATH(s.at(MAX_SET_SIZE),"") << "tried to access out of range element (" << MAX_SET_SIZE << ")";
+#else
+    std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
 
     std::cout << "--\ndone." << std::endl;
 }

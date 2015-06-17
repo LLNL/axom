@@ -26,7 +26,13 @@ TEST(gtest_meshapi_set,subscript_fails_nullset)
 
     EXPECT_EQ(n.size(), SetPosition()) <<"size of null set is defined to be zero";
 
+#ifdef ATK_DEBUG
+    // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+
     // add this line to avoid a warning in the output about thread safety
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH(n[0],"") << "subscript operator on null set asserts";
+#else
+    std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
 }

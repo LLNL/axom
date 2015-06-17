@@ -22,6 +22,9 @@
 
 #include "meshapi/RangeSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
+#include "meshapi/StaticVariableRelation.hpp"
+#include "meshapi/DynamicVariableRelation.hpp"
+#include "meshapi/Map.hpp"
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -112,7 +115,7 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
  *
  * For example, fields can be implemented as STL objects or
  * raw array pointers.  As another example, individual fields
- * m_x, m_y, m_z could be budled into
+ * m_x, m_y, m_z could be bundled into
  *
  *    struct { Real_t x, y, z ; } *m_coord ;
  *
@@ -131,6 +134,24 @@ class Domain {
    typedef asctoolkit::meshapi::RangeSet               NodeSet;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceAdjacencyRelation;
+
+   typedef asctoolkit::meshapi::RangeSet               RegionSet;
+   typedef asctoolkit::meshapi::StaticVariableRelation RegionToElemRelation;
+
+
+   typedef asctoolkit::meshapi::Map<Index_t>           ElemIndexMap;
+   typedef asctoolkit::meshapi::Map<Int_t>             ElemIntMap;
+   //typedef asctoolkit::meshapi::Map<Real_t>            ElemRealMap;
+
+   //typedef asctoolkit::meshapi::Map<Index_t>           NodeIndexMap;
+   //typedef asctoolkit::meshapi::Map<Int_t>             NodeIntMap;
+   //typedef asctoolkit::meshapi::Map<Real_t>            NodeRealMap;
+
+   //typedef asctoolkit::meshapi::Map<Index_t>           RegionIndexMap;
+   typedef asctoolkit::meshapi::Map<Int_t>             RegionIntMap;
+   //typedef asctoolkit::meshapi::Map<Real_t>            RegionRealMap;
+
+
 
    public:
 
@@ -277,15 +298,15 @@ class Domain {
    //
    // Element-centered
    //
-   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
-   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
-   Index_t*  regNumList()            { return &m_regNumList[0] ; }
-   Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
-   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
+   Index_t  regElemSize(Index_t idx) { return m_regionElementsRel.size(idx) ; }
+   Index_t&  regNumList(Index_t idx) { return m_elemRegNum[idx] ; }
+   Index_t*  regNumList()            { return &m_elemRegNum[0] ; }
+   const Index_t*  regElemlist(Int_t r)    { return &(*m_regionElementsRel.begin(r)); }
+   const Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regionElementsRel[r][idx] ; }
 
    const Index_t*  nodelist(Index_t idx)    { return &(*m_nodelist.begin(idx)) ; }
 
-   // elem connectivities through face
+   // elem adjacencies through face
    const Index_t&  lxim(Index_t idx) { return *m_lxim.begin(idx); }
    const Index_t&  lxip(Index_t idx) { return *m_lxip.begin(idx); }
    const Index_t&  letam(Index_t idx) { return *m_letam.begin(idx); }
@@ -398,7 +419,8 @@ class Domain {
    Index_t&  sizeX()              { return m_sizeX ; }
    Index_t&  sizeY()              { return m_sizeY ; }
    Index_t&  sizeZ()              { return m_sizeZ ; }
-   Index_t&  numReg()             { return m_numReg ; }
+
+   Index_t  numReg()              { return m_regionSet.size() ; }
    Int_t&  cost()                 { return m_cost ; }
 
    Index_t  numElem()  const      { return m_elemSet.size() ; }
@@ -461,11 +483,17 @@ class Domain {
    // Element-centered
 
    // Region information
-   Int_t    m_numReg ;
+   //Int_t    m_numReg ;
+   RegionSet m_regionSet;
+
    Int_t    m_cost; //imbalance cost
-   Index_t *m_regElemSize ;   // Size of region sets
-   Index_t *m_regNumList ;    // Region number per domain element
-   Index_t **m_regElemlist ;  // region indexset 
+
+   ElemIntMap           m_elemRegNum;
+   RegionToElemRelation m_regionElementsRel;
+
+//   Index_t *m_regElemSize ;   // Size of region sets
+//   Index_t *m_regNumList ;    // Region number per domain element
+//   Index_t **m_regElemlist ;  // region indexset
 
    ElemToNodeRelation m_nodelist;
    //std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */

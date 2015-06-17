@@ -62,7 +62,6 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    m_nodeSet = asctoolkit::meshapi::RangeSet(edgeNodes*edgeNodes*edgeNodes);
 
-   m_regNumList = new Index_t[numElem()] ;  // material indexset
 
    // Elem-centered 
    AllocateElemPersistent(numElem()) ;
@@ -387,6 +386,11 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
 void
 Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 {
+   typedef asctoolkit::meshapi::DynamicVariableRelation RegionToElemDynamicRelation;
+
+
+
+
 #ifdef USE_MPI
    Index_t myRank;
    MPI_Comm_rank(MPI_COMM_WORLD, &myRank) ;
@@ -395,19 +399,35 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
    srand(0);
    Index_t myRank = 0;
 #endif
-   this->numReg() = nr;
-   m_regElemSize = new Index_t[numReg()];
-   m_regElemlist = new Index_t*[numReg()];
-   Index_t nextIndex = 0;
+
+   // Create a region set over the number of regions in the mesh
+   m_regionSet = RegionSet(nr);
+
+   // Generate the region to element map as a dynamic relation.
+   // We will linearize this into a static relation below...
+   RegionToElemDynamicRelation reg2Elems(&m_regionSet, &m_elemSet);
+
+   // Create the region material number map over the elements
+   m_elemRegNum = ElemIntMap(&m_elemSet);
+
+//   m_regElemSize = new Index_t[numReg()];
+//   m_regElemlist = new Index_t*[numReg()];
+
+
    //if we only have one region just fill it
    // Fill out the regNumList with material numbers, which are always
    // the region index plus one 
    if(numReg() == 1) {
-      while (nextIndex < numElem()) {
-         this->regNumList(nextIndex) = 1;
-         nextIndex++;
-      }
-      regElemSize(0) = 0;
+//      while (nextIndex < numElem()) {
+//         this->regNumList(nextIndex) = 1;
+//         nextIndex++;
+//      }
+//      regElemSize(0) = 0;
+
+       // Create the region material number map over the elements
+       const Index_t regMatID = 1;
+       m_elemRegNum = ElemIntMap(&m_elemSet, regMatID);
+
    }
    //If we have more than one region distribute the elements.
    else {
@@ -417,15 +437,23 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       Int_t binSize;
       Index_t elements;
       Index_t runto = 0;
+
+      //Int_t* regBinEnd = new Int_t[numReg()];
+
+      // Create the region material map over the elements
+      m_elemRegNum = ElemIntMap(&m_elemSet);
+
+      RegionIntMap regBinEnd(&m_regionSet);
+
+      //Determine the relative weights of all the regions.  This is based off the -b flag.  Balance is the value passed into b.
       Int_t costDenominator = 0;
-      Int_t* regBinEnd = new Int_t[numReg()];
-      //Determine the relative weights of all the regions.  This is based off the -b flag.  Balance is the value passed into b.  
-      for (Index_t i=0 ; i<numReg() ; ++i) {
-         regElemSize(i) = 0;
+      for (Index_t i=0 ; i< numReg() ; ++i) {
          costDenominator += pow((i+1), balance);  //Total sum of all regions weights
          regBinEnd[i] = costDenominator;  //Chance of hitting a given region is (regBinEnd[i] - regBinEdn[i-1])/costDenominator
       }
+
       //Until all elements are assigned
+      Index_t nextIndex = 0;
       while (nextIndex < numElem()) {
          //pick the region
          regionVar = rand() % costDenominator;
@@ -443,6 +471,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
                i++;
             regionNum = ((i + myRank) % numReg()) + 1;
          }
+
          //Pick the bin size of the region and determine the number of elements.
          binSize = rand() % 1000;
          if(binSize < 773) {
@@ -466,32 +495,41 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
          else
             elements = rand() % 1537 + 512;
          runto = elements + nextIndex;
+
          //Store the elements.  If we hit the end before we run out of elements then just stop.
-         while (nextIndex < runto && nextIndex < numElem()) {
-            this->regNumList(nextIndex) = regionNum;
-            nextIndex++;
+         for(; nextIndex < runto && nextIndex < numElem(); nextIndex++) {
+            reg2Elems.insert(regionNum-1, nextIndex);
+            m_elemRegNum[nextIndex] = regionNum;        // MeshAPI NOTE: is this still necessary?
          }
          lastReg = regionNum;
       } 
    }
-   // Convert regNumList to region index sets
-   // First, count size of each region 
-   for (Index_t i=0 ; i<numElem() ; ++i) {
-      int r = this->regNumList(i)-1; // region index == regnum-1
-      regElemSize(r)++;
+
+   ATK_ASSERT(reg2Elems.isValid());     // Ensure that the dynamic relation is valid
+
+   // Convert from a Dynamic to a Static relation
+   typedef RegionToElemRelation::RelationVec RelVec;
+   typedef RegionToElemRelation::RelationVecIterator RelVecIt;
+
+   RelVec begins( numReg()+1 );
+   RelVec offsets( numElem() );
+   RelVecIt offIt = offsets.begin();
+
+   for(Index_t regionPos=0; regionPos < numReg(); ++regionPos)
+   {
+       begins[ regionPos] = std::distance( offsets.begin(), offIt);
+       for(Index_t elemRelPos = 0; elemRelPos < reg2Elems.size( regionPos); ++elemRelPos)
+       {
+           *offIt++ = reg2Elems[ regionPos][elemRelPos];
+       }
    }
-   // Second, allocate each region index set
-   for (Index_t i=0 ; i<numReg() ; ++i) {
-      m_regElemlist[i] = new Index_t[regElemSize(i)];
-      regElemSize(i) = 0;
-   }
-   // Third, fill index sets
-   for (Index_t i=0 ; i<numElem() ; ++i) {
-      Index_t r = regNumList(i)-1;       // region index == regnum-1
-      Index_t regndx = regElemSize(r)++; // Note increment
-      regElemlist(r,regndx) = i;
-   }
-   
+   begins[ numReg()] = offsets.size();
+
+   m_regionElementsRel = RegionToElemRelation(&m_regionSet, &m_elemSet);
+   m_regionElementsRel.bindRelationData(begins,offsets);
+
+   ATK_ASSERT(m_regionElementsRel.isValid());     // Ensure that the relation is valid
+
 }
 
 /////////////////////////////////////////////////////////////
@@ -691,7 +729,6 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
   ATK_ASSERT( m_letap.isValid() );
   ATK_ASSERT( m_lzetam.isValid() );
   ATK_ASSERT( m_lzetap.isValid() );
-
 }
 
 ///////////////////////////////////////////////////////////////////////////

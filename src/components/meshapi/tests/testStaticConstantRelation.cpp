@@ -40,11 +40,18 @@ TEST(gtest_meshapi_static_constant_relation,empty_relation)
 TEST(gtest_meshapi_static_constant_relation,empty_relation_out_of_bounds)
 {
     std::cout<<"\n****** Testing access on empty relation -- code is expected to assert and die." << std::endl;
-    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
     StaticConstantRelation emptyRel;
 
+#ifdef ATK_DEBUG
+    // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH( emptyRel[FROMSET_SIZE], "");
+#else
+    std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
+
 }
 
 TEST(gtest_meshapi_static_constant_relation,test_uninitialized_relation)
@@ -147,8 +154,6 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
 
 TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
 {
-    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
     std::cout<<"\n****** Testing out of bounds access on initialized relation.  Code is expected to assert and die." << std::endl;
 
     RangeSet fromSet(FROMSET_SIZE);
@@ -162,7 +167,15 @@ TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
     generateIncrementingRelations(ELEM_STRIDE, &offsets);
     incrementingRel.bindRelationData(offsets, ELEM_STRIDE);
 
+#ifdef ATK_DEBUG
+    // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH( incrementingRel[FROMSET_SIZE], "");
+#else
+    std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
+
 }
 
 
