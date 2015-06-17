@@ -589,7 +589,7 @@ module sidre_mod
     end interface
 
 contains
-    ! splicer push class.datastore
+    ! splicer push class.datastore.method
     
     function datastore_new() result(rv)
         use iso_c_binding
@@ -670,8 +670,8 @@ contains
         ! splicer end datastore_print
     end subroutine datastore_print
     
-    ! splicer pop class.datastore
-    ! splicer push class.datagroup
+    ! splicer pop class.datastore.method
+    ! splicer push class.datagroup.method
     
     function datagroup_get_name(obj) result(rv)
         use iso_c_binding
@@ -968,8 +968,8 @@ contains
         ! splicer end datagroup_load
     end subroutine datagroup_load
     
-    ! splicer pop class.datagroup
-    ! splicer push class.databuffer
+    ! splicer pop class.datagroup.method
+    ! splicer push class.databuffer.method
     
     function databuffer_get_index(obj) result(rv)
         use iso_c_binding
@@ -1065,8 +1065,8 @@ contains
         ! splicer end databuffer_get_total_bytes
     end function databuffer_get_total_bytes
     
-    ! splicer pop class.databuffer
-    ! splicer push class.dataview
+    ! splicer pop class.databuffer.method
+    ! splicer push class.dataview.method
     
     subroutine dataview_declare(obj, type, len)
         use iso_c_binding
@@ -1201,6 +1201,6 @@ contains
         ! splicer end dataview_get_number_of_elements
     end function dataview_get_number_of_elements
     
-    ! splicer pop class.dataview
+    ! splicer pop class.dataview.method
 
 end module sidre_mod

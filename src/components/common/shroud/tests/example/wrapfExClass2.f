@@ -86,7 +86,7 @@ module exclass2_mod
     end interface
 
 contains
-    ! splicer push class.exclass2
+    ! splicer push class.exclass2.method
     
     function exclass2_ex_class2(name) result(rv)
         use iso_c_binding
@@ -169,6 +169,6 @@ contains
         ! splicer end exclass2_get_type_id
     end function exclass2_get_type_id
     
-    ! splicer pop class.exclass2
+    ! splicer pop class.exclass2.method
 
 end module exclass2_mod

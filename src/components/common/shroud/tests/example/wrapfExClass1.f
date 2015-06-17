@@ -109,7 +109,7 @@ module exclass1_mod
     end interface
 
 contains
-    ! splicer push class.exclass1
+    ! splicer push class.exclass1.method
     
     function exclass1_new(name) result(rv)
         use iso_c_binding
@@ -215,6 +215,6 @@ contains
         ! splicer end exclass1_has_addr
     end function exclass1_has_addr
     
-    ! splicer pop class.exclass1
+    ! splicer pop class.exclass1.method
 
 end module exclass1_mod

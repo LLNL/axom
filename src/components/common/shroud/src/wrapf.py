@@ -183,11 +183,11 @@ class Wrapf(object):
                 -1, 'contains', 1,
                 ])
 
-        self.impl.append(wformat('! splicer push class.{lower_class}', fmt_class))
+        self.impl.append(wformat('! splicer push class.{lower_class}.method', fmt_class))
         for method in node['methods']:
             self.wrap_method(node, method)
         self.impl.append('')
-        self.impl.append(wformat('! splicer pop class.{lower_class}', fmt_class))
+        self.impl.append(wformat('! splicer pop class.{lower_class}.method', fmt_class))
 
         # Look for generics
         for key in sorted(self.f_type_generic.keys()):
