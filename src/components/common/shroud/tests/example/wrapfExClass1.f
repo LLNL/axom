@@ -14,6 +14,10 @@ module exclass1_mod
     
     type exclass1
         type(C_PTR) obj
+        ! splicer end component_part
+          component part 1a
+          component part 1b
+        ! splicer end component_part
     contains
         procedure :: increment_count => exclass1_increment_count
         procedure :: get_name => exclass1_get_name
@@ -25,6 +29,9 @@ module exclass1_mod
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
         generic :: get_value => get_value_from_int, get_value_1
+        ! splicer end type_bound_procedure_part
+          type bound procedure part 1
+        ! splicer end type_bound_procedure_part
     end type exclass1
     
     interface

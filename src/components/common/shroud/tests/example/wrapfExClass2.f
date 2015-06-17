@@ -14,6 +14,8 @@ module exclass2_mod
     
     type exclass2
         type(C_PTR) obj
+        ! splicer end component_part
+        ! splicer end component_part
     contains
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
@@ -21,6 +23,8 @@ module exclass2_mod
         procedure :: declare => exclass2_declare
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
+        ! splicer end type_bound_procedure_part
+        ! splicer end type_bound_procedure_part
     end type exclass2
     
     interface

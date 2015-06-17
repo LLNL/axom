@@ -67,7 +67,13 @@ class Wrapf(object):
         top = self.splicer_stack[-1]
         for nested in names[:-1]:
             top = top.setdefault(nested, {})
-        return top.get(names[-1], None)
+        return top.get(names[-1], [])
+
+    def _create_splicer(self, *names):
+        out =  [ '! splicer end %s' % names[-1] ]
+        out.extend(self._fetch_splicer(*names))
+        out.append('! splicer end %s' % names[-1])
+        return out
 
     def _c_type(self, arg):
         """
@@ -207,6 +213,9 @@ class Wrapf(object):
                 wformat('type {F_derived_name}', fmt_class),
                 1,
                 wformat('type(C_PTR) {F_this}', fmt_class),
+                ])
+        self.f_type_decl.extend(self._create_splicer('component_part'))
+        self.f_type_decl.extend([
                 -1, 'contains', 1,
                 ])
 
@@ -231,8 +240,9 @@ class Wrapf(object):
                 self.f_type_decl.append('generic :: %s => %s' % (
                         key, ', '.join(methods)))
 
+        self.f_type_decl.extend(self._create_splicer('type_bound_procedure_part'))
         self.f_type_decl.extend([
-                -1,
+                 -1,
                  wformat('end type {F_derived_name}', fmt_class),
                  ''
                  ])

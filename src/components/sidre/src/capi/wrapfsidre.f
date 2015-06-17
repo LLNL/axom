@@ -37,6 +37,8 @@ module sidre_mod
     
     type datastore
         type(C_PTR) obj
+        ! splicer end component_part
+        ! splicer end component_part
     contains
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
@@ -44,11 +46,15 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
+        ! splicer end type_bound_procedure_part
+        ! splicer end type_bound_procedure_part
     end type datastore
     
     
     type datagroup
         type(C_PTR) obj
+        ! splicer end component_part
+        ! splicer end component_part
     contains
         procedure :: get_name => datagroup_get_name
         procedure :: get_parent => datagroup_get_parent
@@ -78,11 +84,15 @@ module sidre_mod
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
         generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_from_type
+        ! splicer end type_bound_procedure_part
+        ! splicer end type_bound_procedure_part
     end type datagroup
     
     
     type databuffer
         type(C_PTR) obj
+        ! splicer end component_part
+        ! splicer end component_part
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: declare => databuffer_declare
@@ -94,11 +104,15 @@ module sidre_mod
         procedure :: get_data => databuffer_get_data
         procedure :: get_total_bytes => databuffer_get_total_bytes
         generic :: allocate => allocate_existing, allocate_from_type
+        ! splicer end type_bound_procedure_part
+        ! splicer end type_bound_procedure_part
     end type databuffer
     
     
     type dataview
         type(C_PTR) obj
+        ! splicer end component_part
+        ! splicer end component_part
     contains
         procedure :: declare => dataview_declare
         procedure :: allocate => dataview_allocate
@@ -113,6 +127,8 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_number_of_elements => dataview_get_number_of_elements
+        ! splicer end type_bound_procedure_part
+        ! splicer end type_bound_procedure_part
     end type dataview
     
     interface
