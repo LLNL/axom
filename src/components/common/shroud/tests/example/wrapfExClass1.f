@@ -11,7 +11,6 @@ module exclass1_mod
     ! splicer begin module_top
     top of module splicer  1
     ! splicer end   module_top
-    include "class.inc"
     
     type exclass1
         type(C_PTR) obj

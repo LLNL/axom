@@ -440,7 +440,6 @@ class Wrapf(object):
 
         output.append('use fstr_mod')
         if node['options'].F_module_per_class:
-            include_option = 'F_class_module_includes'
             # XXX this will have some problems because of forward declarations
             for mname, only in node['F_module_dependencies']:
                 if mname == module_name:
@@ -453,7 +452,6 @@ class Wrapf(object):
             output.append(wformat('! splicer push class.{lower_class}', fmt_class))
             splicer = self._fetch_splicer(fmt_class.lower_class, 'module_top')
         else:
-            include_option = 'F_library_module_includes'
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
             splicer = self._fetch_splicer('module_top')
 
@@ -463,9 +461,6 @@ class Wrapf(object):
         if splicer:
             output.extend(splicer)
         output.append('! splicer end   module_top')
-
-        for include in options.get(include_option, '').split():
-            output.append('include "{}"'.format(include))
 
         output.extend(self.f_type_decl)
 
