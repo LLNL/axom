@@ -62,15 +62,6 @@ endif()
 #
 # Add fortran tests
 #
-#add_fortran_test(TEST_SOURCE testfortran.f DEPENDS_ON sidre)
-
-#add_executable(calculator calculator.f90 calculator_test.f90 fruit_driver.f90)
-#target_link_libraries(calculator fruit)
-#add_test( NAME calculator
-#          COMMAND calculator
-#          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
-#)
-
 if (ENABLE_FORTRAN)
   foreach(test ${fruit_sidre_tests})
       add_fortran_test(
