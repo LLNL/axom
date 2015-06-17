@@ -11,12 +11,6 @@
 // Other CS Toolkit headers
 #include "conduit/conduit.hpp"
 
-// SiDRe project headers
-// If Fortran is disabled, do not build the CAPI
-#ifdef ATK_ENABLE_FORTRAN
-  #include "sidre/SidreTypes.h"
-#endif
-
 namespace asctoolkit
 {
 namespace sidre
@@ -54,100 +48,6 @@ inline bool nameIsValid(const std::string& name)
   return name != InvalidName;
 }
 
-
-template< int TYPEID >
-inline TypeID getTypeID()
-{
-  return static_cast<TypeID>(TYPEID);
-}
-
-/*
- *************************************************************************
- *
- * Convert C #define value to TypeID.
- * Used with C wrappers.
- *
- *************************************************************************
- */
-// This function is only required when building the CAPI and Fortran interface.
-#ifdef ATK_ENABLE_FORTRAN
-
-inline TypeID getTypeID( const int typeID )
-{
-  TypeID rval = DataType::EMPTY_T;
-
-  switch( typeID )
-  {
-#if 0
-  case 0:
-    rval = DataType::EMPTY_T;
-    break;
-  case 1:
-    rval = DataType::OBJECT_T;
-    break;
-  case 2:
-    rval = DataType::LIST_T;
-    break;
-#endif
-  case ATK_INT8_T:
-    rval = DataType::INT8_T;
-    break;
-  case ATK_INT16_T:
-    rval = DataType::INT16_T;
-    break;
-  case ATK_INT32_T:
-    rval = DataType::INT32_T;
-    break;
-  case ATK_INT64_T:
-    rval = DataType::INT64_T;
-    break;
-  case ATK_UINT8_T:
-    rval = DataType::UINT8_T;
-    break;
-  case ATK_UINT16_T:
-    rval = DataType::UINT16_T;
-    break;
-  case ATK_UINT32_T:
-    rval = DataType::UINT32_T;
-    break;
-  case ATK_UINT64_T:
-    rval = DataType::UINT64_T;
-    break;
-  case ATK_FLOAT32_T:
-    rval = DataType::FLOAT32_T;
-    break;
-  case ATK_FLOAT64_T:
-    rval = DataType::FLOAT64_T;
-    break;
-  case ATK_CHAR8_STR_T:
-    rval = DataType::CHAR8_STR_T;
-    break;
-
-  case ATK_C_INT_T:
-    rval = CONDUIT_NATIVE_INT_DATATYPE_ID;
-    break;
-  case ATK_C_LONG_T:
-    rval = CONDUIT_NATIVE_LONG_DATATYPE_ID;
-    break;
-  case ATK_C_FLOAT_T:
-    rval = CONDUIT_NATIVE_FLOAT_DATATYPE_ID;
-    break;
-  case ATK_C_DOUBLE_T:
-    rval = CONDUIT_NATIVE_DOUBLE_DATATYPE_ID;
-    break;
-
-  default:
-    rval = DataType::EMPTY_T;
-    break;
-//      ATK_ERROR( "getTypeID(int) passed invalid type" );
-
-
-  }
-
-  return rval;
-
-}
-#endif
 
 
 /*

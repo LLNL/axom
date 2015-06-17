@@ -84,6 +84,8 @@ class Typedef(object):
 
         cpp_type=None,        # name of type in C++
         cpp_to_c='{var}',     # expression to convert from C++ to C
+        cpp_header=None,      # Name of C++ header file required for implementation
+                              # For example, if cpp_to_c was a function
 
         c_type=None,          # name of type in C
         c_header=None,        # Name of C header file required for type

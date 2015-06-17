@@ -11,6 +11,7 @@
 #define EXAMPLE_WRAPPER_IMPL
 #include "wrapDataView.h"
 #include "sidre/DataView.hpp"
+#include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {
