@@ -439,6 +439,39 @@
                         "name": "hasAddr", 
                         "type": "bool"
                     }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void SplicerSpecial", 
+                    "fmt": {
+                        "CPP_name": "SplicerSpecial", 
+                        "CPP_this": "selfobj", 
+                        "C_arguments": "AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_code": "selfobj->SplicerSpecial();\nreturn;", 
+                        "C_name": "AA_exclass1_splicer_special", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_splicer_special", 
+                        "F_arg_c_call": "obj%obj", 
+                        "F_arguments": "obj", 
+                        "F_code": "call aa_exclass1_splicer_special(obj%obj)", 
+                        "F_name_generic": "splicer_special", 
+                        "F_name_impl": "exclass1_splicer_special", 
+                        "F_name_method": "splicer_special", 
+                        "F_obj": "obj%obj", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "SplicerSpecial", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "splicer_special"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "SplicerSpecial", 
+                        "type": "void"
+                    }
                 }
             ], 
             "name": "ExClass1", 
@@ -856,6 +889,11 @@
         "cpp_header": "", 
         "library": "UserLibrary", 
         "namespace": "example nested"
+    }, 
+    "splicer": {
+        "f": [
+            "fsplicer.f"
+        ]
     }, 
     "typedef": {
         "ExClass1": {

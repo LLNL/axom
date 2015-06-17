@@ -43,6 +43,8 @@ void * AA_exclass1_get_addr(AA_exclass1 * self);
 
 bool AA_exclass1_has_addr(AA_exclass1 * self, bool in);
 
+void AA_exclass1_splicer_special(AA_exclass1 * self);
+
 // splicer pop.class.ExClass1
 
 #ifdef __cplusplus

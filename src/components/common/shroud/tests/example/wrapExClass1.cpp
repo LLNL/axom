@@ -98,6 +98,15 @@ return rv;
 // splicer end AA_exclass1_has_addr
 }
 
+void AA_exclass1_splicer_special(AA_exclass1 * self)
+{
+ExClass1 *selfobj = static_cast<ExClass1 *>(self);
+// splicer begin AA_exclass1_splicer_special
+selfobj->SplicerSpecial();
+return;
+// splicer end AA_exclass1_splicer_special
+}
+
 // splicer pop.class.ExClass1 method
 
 }  // namespace example

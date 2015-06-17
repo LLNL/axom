@@ -14,6 +14,7 @@ import sys
 
 import util
 import parse_decl
+import splicer
 import wrapc
 import wrapf
 
@@ -363,6 +364,7 @@ if __name__ == '__main__':
 
     # accumulated input
     all = {}
+    splicers = dict(c={}, f={})
 
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
@@ -371,14 +373,23 @@ if __name__ == '__main__':
             d = yaml.load(fp.read())
             fp.close()
             all.update(d)
+        elif ext == '.json':
+            raise NotImplemented("Can not deal with json input for now")
         else:
-            raise SystemExit("File must end in .yaml for now")
+            splicer.get_splicer_based_on_suffix(filename, splicers)
 
 #    print(all)
 
 
-
     Schema(all).check_schema()
+
+    if 'splicer' in all:
+        for suffix, names in all['splicer'].items():
+            subsplicer = splicers.setdefault(suffix, {})
+            for name in names:
+                fullname = os.path.join(config.source_dir, name)
+                splicer.get_splicers(fullname, subsplicer)
+
 
     wrapc.Wrapc(all, config).wrap_library()
 

@@ -19,6 +19,7 @@ module exclass1_mod
         procedure :: get_value_1 => exclass1_get_value_1
         procedure :: get_addr => exclass1_get_addr
         procedure :: has_addr => exclass1_has_addr
+        procedure :: splicer_special => exclass1_splicer_special
         generic :: get_value => get_value_from_int, get_value_1
     end type exclass1
     
@@ -106,6 +107,13 @@ module exclass1_mod
             logical(C_BOOL), value, intent(IN) :: in
             logical(C_BOOL) :: rv
         end function aa_exclass1_has_addr
+        
+        subroutine aa_exclass1_splicer_special(self) &
+                bind(C, name="AA_exclass1_splicer_special")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine aa_exclass1_splicer_special
     end interface
 
 contains
@@ -214,6 +222,15 @@ contains
         rv = booltological(aa_exclass1_has_addr(obj%obj, logicaltobool(in)))
         ! splicer end exclass1_has_addr
     end function exclass1_has_addr
+    
+    subroutine exclass1_splicer_special(obj)
+        use iso_c_binding
+        implicit none
+        class(exclass1) :: obj
+        ! splicer begin exclass1_splicer_special
+        call aa_exclass1_splicer_special(obj%obj)
+        ! splicer end exclass1_splicer_special
+    end subroutine exclass1_splicer_special
     
     ! splicer pop class.exclass1.method
 

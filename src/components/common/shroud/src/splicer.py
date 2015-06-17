@@ -68,8 +68,7 @@ def get_splicers(fname, out):
                 else:
                     save.append(line.rstrip())
                     
-def get_all_splicers(flist, out):
-    for name in flist:
+def get_splicer_based_on_suffix(name, out):
         fileName, fileExtension = os.path.splitext(name)
         if fileExtension in [ '.f', '.f90']:
             d = out.setdefault('f', {})
@@ -87,6 +86,7 @@ if __name__ == '__main__':
 
     out = {}
 
-    get_all_splicers(glob.glob('../tests/example/*'), out)
+    for name in glob.glob('../tests/example/*'):
+        get_splicer_based_on_suffix(name, out)
 
     print(json.dumps(out, indent=4, sort_keys=True))
