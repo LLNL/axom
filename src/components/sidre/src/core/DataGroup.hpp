@@ -312,8 +312,7 @@ public:
    * view is not created.
    */
   DataView * createViewAndBuffer( const std::string& name,
-                                  const TypeID type,
-                                  const SidreLength len );
+                                  TypeID type, SidreLength len );
 
   /*!
    * \brief Create a DataView object (and buffer) with given name,
@@ -378,8 +377,7 @@ public:
    */
   DataView * createView( const std::string& name,
                          DataBuffer * buff,
-                         const TypeID type,
-                         const SidreLength len );
+                         TypeID type, SidreLength len );
 
   /*!
    * \brief Create a DataView object (for view into given buffer) with
@@ -444,8 +442,7 @@ public:
    */
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
-                                 const TypeID type,
-                                 const SidreLength len );
+                                 TypeID type, SidreLength len );
 
   /*!
    * \brief Create an DataView into externally-owned data with given name,

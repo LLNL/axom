@@ -76,8 +76,7 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name )
  *************************************************************************
  */
 DataView * DataGroup::createViewAndBuffer( const std::string& name,
-                                           const TypeID type,
-                                           const SidreLength len )
+                                           TypeID type, SidreLength len )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
@@ -183,8 +182,7 @@ DataView * DataGroup::createView( const std::string& name,
  */
 DataView * DataGroup::createView( const std::string& name,
                                   DataBuffer * buff,
-				  const TypeID type,
-				  const SidreLength len )
+				  TypeID type, SidreLength len )
 
 {
   SLIC_ASSERT( !name.empty() );
@@ -303,8 +301,7 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
  */
 DataView * DataGroup::createExternalView( const std::string& name,
                                           void * external_data,
-					  const TypeID type,
-					  const SidreLength len )
+					  TypeID type, SidreLength len )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
