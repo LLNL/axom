@@ -12,6 +12,7 @@
 
 #ifndef WRAPDATAVIEW_H
 #define WRAPDATAVIEW_H
+// splicer push.class.DataView
 
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
@@ -59,6 +60,8 @@ int ATK_dataview_get_type_id(ATK_dataview * self);
 size_t ATK_dataview_get_total_bytes(ATK_dataview * self);
 
 size_t ATK_dataview_get_number_of_elements(ATK_dataview * self);
+
+// splicer pop.class.DataView
 
 #ifdef __cplusplus
 }

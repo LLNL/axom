@@ -9,6 +9,7 @@ method int  getValue(int value)
 method long getValue(long value)
 method void *getAddr()
 method bool hasAddr(bool in)
+method void SplicerSpecial
 Close wrapExClass1.h
 Close wrapExClass1.cpp
 class ExClass2
@@ -34,6 +35,7 @@ method int  getValue(int value)
 method long getValue(long value)
 method void *getAddr()
 method bool hasAddr(bool in)
+method void SplicerSpecial
 Close wrapfExClass1.f
 class ExClass2
 method ExClass2 *ExClass2+constructor (const string *name)

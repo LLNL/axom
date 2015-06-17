@@ -3,6 +3,10 @@ copyright:
   - yada yada
   -
 
+splicer:
+  f:
+  -  fsplicer.f
+
 options:
 #  module_name: exclass1_mod
   library: UserLibrary
@@ -81,6 +85,8 @@ classes:
 
     - decl: void *getAddr()
     - decl: bool hasAddr(bool in)
+
+    - decl: void SplicerSpecial
 
 
   - name: ExClass2

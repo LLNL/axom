@@ -67,6 +67,7 @@ def do_test(name, replace_ref):
 
     cmd = [
         code_path,
+        '--indir', test_source_dir,
         '--logdir', result_dir,
         '--outdir', result_dir,
         testyaml,

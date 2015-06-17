@@ -105,7 +105,7 @@ public:
   /*!
    * \brief Declare a data view from sidre type and length.
    *
-   * If given length < 0 or view has previously been declared opaque, 
+   * If given length < 0 or view has previously been declared opaque,
    * the method does nothing.
    *
    * \return pointer to this DataView object.
@@ -146,7 +146,7 @@ public:
   DataView * allocate();
 
   /*!
-   * \brief Declare a data view from a sidre type and length then allocate 
+   * \brief Declare a data view from a sidre type and length then allocate
    * the data.
    *
    * This is equivalent to calling declare(Schema), then allocate(),

@@ -12,6 +12,7 @@
 
 #ifndef WRAPDATAGROUP_H
 #define WRAPDATAGROUP_H
+// splicer push.class.DataGroup
 
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
@@ -90,6 +91,8 @@ void ATK_datagroup_print(ATK_datagroup * self);
 void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol);
 
 void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol);
+
+// splicer pop.class.DataGroup
 
 #ifdef __cplusplus
 }

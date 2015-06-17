@@ -19,6 +19,7 @@ module exclass1_mod
         procedure :: get_value_1 => exclass1_get_value_1
         procedure :: get_addr => exclass1_get_addr
         procedure :: has_addr => exclass1_has_addr
+        procedure :: splicer_special => exclass1_splicer_special
         generic :: get_value => get_value_from_int, get_value_1
     end type exclass1
     
@@ -106,28 +107,36 @@ module exclass1_mod
             logical(C_BOOL), value, intent(IN) :: in
             logical(C_BOOL) :: rv
         end function aa_exclass1_has_addr
+        
+        subroutine aa_exclass1_splicer_special(self) &
+                bind(C, name="AA_exclass1_splicer_special")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine aa_exclass1_splicer_special
     end interface
 
 contains
+    ! splicer push class.exclass1.method
     
     function exclass1_new(name) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: name
         type(exclass1) :: rv
-        ! splicer begin
+        ! splicer begin new
         rv%obj = aa_exclass1_new(trim(name) // C_NULL_CHAR)
-        ! splicer end
+        ! splicer end new
     end function exclass1_new
     
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none
         type(exclass1) :: obj
-        ! splicer begin
+        ! splicer begin delete
         call aa_exclass1_delete(obj%obj)
         obj%obj = C_NULL_PTR
-        ! splicer end
+        ! splicer end delete
     end subroutine exclass1_delete
     
     function exclass1_increment_count(obj, incr) result(rv)
@@ -136,9 +145,9 @@ contains
         class(exclass1) :: obj
         integer(C_INT) :: incr
         integer(C_INT) :: rv
-        ! splicer begin
+        ! splicer begin increment_count
         rv = aa_exclass1_increment_count(obj%obj, incr)
-        ! splicer end
+        ! splicer end increment_count
     end function exclass1_increment_count
     
     function exclass1_get_name(obj) result(rv)
@@ -146,9 +155,9 @@ contains
         implicit none
         class(exclass1) :: obj
         character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%obj)) :: rv
-        ! splicer begin
+        ! splicer begin get_name
         rv = fstr(aa_exclass1_get_name(obj%obj))
-        ! splicer end
+        ! splicer end get_name
     end function exclass1_get_name
     
     function exclass1_get_name_length(obj) result(rv)
@@ -156,9 +165,9 @@ contains
         implicit none
         class(exclass1) :: obj
         integer(C_INT) :: rv
-        ! splicer begin
+        ! splicer begin get_name_length
         rv = aa_exclass1_get_name_length(obj%obj)
-        ! splicer end
+        ! splicer end get_name_length
     end function exclass1_get_name_length
     
     function exclass1_get_root(obj) result(rv)
@@ -166,9 +175,9 @@ contains
         implicit none
         class(exclass1) :: obj
         type(exclass2) :: rv
-        ! splicer begin
+        ! splicer begin get_root
         rv%obj = aa_exclass1_get_root(obj%obj)
-        ! splicer end
+        ! splicer end get_root
     end function exclass1_get_root
     
     function exclass1_get_value_from_int(obj, value) result(rv)
@@ -177,9 +186,9 @@ contains
         class(exclass1) :: obj
         integer(C_INT) :: value
         integer(C_INT) :: rv
-        ! splicer begin
+        ! splicer begin get_value_from_int
         rv = aa_exclass1_get_value_from_int(obj%obj, value)
-        ! splicer end
+        ! splicer end get_value_from_int
     end function exclass1_get_value_from_int
     
     function exclass1_get_value_1(obj, value) result(rv)
@@ -188,9 +197,9 @@ contains
         class(exclass1) :: obj
         integer(C_LONG) :: value
         integer(C_LONG) :: rv
-        ! splicer begin
+        ! splicer begin get_value_1
         rv = aa_exclass1_get_value_1(obj%obj, value)
-        ! splicer end
+        ! splicer end get_value_1
     end function exclass1_get_value_1
     
     function exclass1_get_addr(obj) result(rv)
@@ -198,9 +207,9 @@ contains
         implicit none
         class(exclass1) :: obj
         type(C_PTR) :: rv
-        ! splicer begin
+        ! splicer begin get_addr
         rv = aa_exclass1_get_addr(obj%obj)
-        ! splicer end
+        ! splicer end get_addr
     end function exclass1_get_addr
     
     function exclass1_has_addr(obj, in) result(rv)
@@ -209,9 +218,20 @@ contains
         class(exclass1) :: obj
         logical :: in
         logical :: rv
-        ! splicer begin
+        ! splicer begin has_addr
         rv = booltological(aa_exclass1_has_addr(obj%obj, logicaltobool(in)))
-        ! splicer end
+        ! splicer end has_addr
     end function exclass1_has_addr
+    
+    subroutine exclass1_splicer_special(obj)
+        use iso_c_binding
+        implicit none
+        class(exclass1) :: obj
+        ! splicer begin splicer_special
+        blah blah blah
+        ! splicer end splicer_special
+    end subroutine exclass1_splicer_special
+    
+    ! splicer pop class.exclass1.method
 
 end module exclass1_mod

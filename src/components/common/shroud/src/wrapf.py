@@ -30,13 +30,15 @@ class Wrapf(object):
     """Generate Fortran bindings.
     """
 
-    def __init__(self, tree, config):
+    def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
         self.config = config
+        self.splicers = splicers
         self.log = config.log
         self.typedef = tree['typedef']
+        self.splicer_stack = [ splicers ]
 
-    def _begin_file(self):
+    def _begin_output_file(self):
         """Start a new class for output"""
         self.f_type_decl = []
         self.c_interface = []
@@ -44,6 +46,14 @@ class Wrapf(object):
 
     def _begin_class(self):
         self.f_type_generic = {} # look for generic methods
+
+    def _push_splicer(self, name):
+        level = self.splicer_stack[-1].setdefault(name, {})
+        self.splicer_stack.append(level)
+
+    def _pop_splicer(self, name):
+        # XXX maybe use name for error checking
+        self.splicer_stack.pop()
 
     def _c_type(self, arg):
         """
@@ -137,7 +147,8 @@ class Wrapf(object):
         fmt_library.F_result_clause = ''
         fmt_library.F_pure_clause = ''
 
-        self._begin_file()
+        self._begin_output_file()
+        self._push_splicer('class')
         for node in self.tree['classes']:
             self._begin_class()
             self.c_interface.append('interface')
@@ -151,7 +162,8 @@ class Wrapf(object):
             self.c_interface.append('end interface')
             if options.F_module_per_class:
                 self.write_module(node)
-                self._begin_file()
+                self._begin_output_file()
+        self._pop_splicer('class')
 
         if not options.F_module_per_class:
             # put all classes into one module
@@ -170,6 +182,7 @@ class Wrapf(object):
 
         options = node['options']
         fmt_class = node['fmt']
+        self._push_splicer(fmt_class.lower_class)
         fmt_class.F_derived_name = typedef.fortran_derived
         if 'F_this' in options:
             fmt_class.F_this = options.F_this
@@ -183,8 +196,13 @@ class Wrapf(object):
                 -1, 'contains', 1,
                 ])
 
+        self.impl.append(wformat('! splicer push class.{lower_class}.method', fmt_class))
+        self._push_splicer('method')
         for method in node['methods']:
             self.wrap_method(node, method)
+        self._pop_splicer('method')
+        self.impl.append('')
+        self.impl.append(wformat('! splicer pop class.{lower_class}.method', fmt_class))
 
         # Look for generics
         for key in sorted(self.f_type_generic.keys()):
@@ -198,6 +216,7 @@ class Wrapf(object):
                  wformat('end type {F_derived_name}', fmt_class),
                  ''
                  ])
+        self._pop_splicer(fmt_class.lower_class)
 
     def wrap_method(self, cls, node):
         """
@@ -327,23 +346,23 @@ class Wrapf(object):
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
         fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
+        # body of function
+        splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)
         if 'F_code' in options:
-            fmt_func.F_code = options.F_code
+            F_code = [ options.F_code ]
+        elif splicer_code:
+            F_code = splicer_code
         else:
-            lines = []
+            F_code = []
             if is_ctor:
-                lines.append(wformat('{F_result}%{F_this} = {F_C_name}({F_arg_c_call})', fmt_func))
+                F_code.append(wformat('{F_result}%{F_this} = {F_C_name}({F_arg_c_call})', fmt_func))
             elif subprogram == 'function':
                 fmt = result_typedef.f_return_code
-                lines.append(wformat(fmt, fmt_func))
-
+                F_code.append(wformat(fmt, fmt_func))
             else:
-                lines.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
-
+                F_code.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
             if is_dtor:
-                lines.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt_func))
-
-            fmt_func.F_code = '\n'.join(lines)
+                F_code.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt_func))
 
         c_interface = self.c_interface
         c_interface.append('')
@@ -368,9 +387,9 @@ class Wrapf(object):
         impl.extend(arg_f_use)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
-        impl.append('! splicer begin')
-        impl.append(fmt_func.F_code)
-        impl.append('! splicer end')
+        impl.append(wformat('! splicer begin {F_name_method}', fmt_func))
+        impl.extend(F_code)
+        impl.append(wformat('! splicer end {F_name_method}', fmt_func))
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 

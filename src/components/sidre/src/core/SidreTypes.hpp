@@ -158,7 +158,7 @@ inline TypeID getTypeID( const int typeID )
  *************************************************************************
  */
 #if 0
-inline DataType createDataType( const TypeID type, long len )
+inline DataType createDataType( TypeID type, long len )
 {
   DataType rval;
 

@@ -12,6 +12,7 @@
 
 #ifndef WRAPDATASTORE_H
 #define WRAPDATASTORE_H
+// splicer push.class.DataStore
 
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
@@ -49,6 +50,8 @@ void ATK_datastore_destroy_buffer(ATK_datastore * self, ATK_IndexType id);
 size_t ATK_datastore_get_num_buffers(ATK_datastore * self);
 
 void ATK_datastore_print(ATK_datastore * self);
+
+// splicer pop.class.DataStore
 
 #ifdef __cplusplus
 }
