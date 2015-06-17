@@ -376,6 +376,7 @@ if __name__ == '__main__':
         elif ext == '.json':
             raise NotImplemented("Can not deal with json input for now")
         else:
+            # process splicer file on command line
             splicer.get_splicer_based_on_suffix(filename, splicers)
 
 #    print(all)
@@ -384,6 +385,7 @@ if __name__ == '__main__':
     Schema(all).check_schema()
 
     if 'splicer' in all:
+        # read splicer files defined in input yaml file
         for suffix, names in all['splicer'].items():
             subsplicer = splicers.setdefault(suffix, {})
             for name in names:
@@ -391,9 +393,9 @@ if __name__ == '__main__':
                 splicer.get_splicers(fullname, subsplicer)
 
 
-    wrapc.Wrapc(all, config).wrap_library()
+    wrapc.Wrapc(all, config, splicers['c']).wrap_library()
 
-    wrapf.Wrapf(all, config).wrap_library()
+    wrapf.Wrapf(all, config, splicers['f']).wrap_library()
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')

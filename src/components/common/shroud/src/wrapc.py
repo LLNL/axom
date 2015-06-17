@@ -23,9 +23,10 @@ class Wrapc(object):
     """Generate C bindings for C++ classes
 
     """
-    def __init__(self, tree, config):
+    def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
         self.config = config
+        self.splicers = splicers
         self.log = config.log
         self.typedef = tree['typedef']
 
