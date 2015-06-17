@@ -12,7 +12,10 @@
 #include "conduit/conduit.hpp"
 
 // SiDRe project headers
-#include "sidre/SidreTypes.h"
+// If Fortran is disabled, do not build the CAPI
+#ifdef ATK_ENABLE_FORTRAN
+  #include "sidre/SidreTypes.h"
+#endif
 
 namespace asctoolkit
 {
@@ -66,6 +69,9 @@ inline TypeID getTypeID()
  *
  *************************************************************************
  */
+// This function is only required when building the CAPI and Fortran interface.
+#ifdef ATK_ENABLE_FORTRAN
+
 inline TypeID getTypeID( const int typeID )
 {
   TypeID rval = DataType::EMPTY_T;
@@ -141,6 +147,8 @@ inline TypeID getTypeID( const int typeID )
   return rval;
 
 }
+#endif
+
 
 /*
  *************************************************************************

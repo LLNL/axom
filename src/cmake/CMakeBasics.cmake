@@ -90,6 +90,8 @@ mark_as_advanced(
 option(ENABLE_FORTRAN "Enables Fortran compiler support" ON)
 
 if(ENABLE_FORTRAN)
+    add_definitions(-DATK_ENABLE_FORTRAN)
+
     # if enabled but no fortran compiler, halt the configure
     if(CMAKE_Fortran_COMPILER)
         MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
@@ -97,7 +99,7 @@ if(ENABLE_FORTRAN)
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
     endif()    
 else()
-    MESSAGE(STATUS  "Fortran support disabled. (ENABLE_FORTRAN == OFF)")
+    MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
 endif()
 
 ################################
