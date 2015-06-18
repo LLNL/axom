@@ -1,21 +1,22 @@
-/*
- * Set.cpp
+/**
+ * \file Set.cpp
  *
- *  Created on: Apr 23, 2015
- *      Author: weiss27
+ *  \brief Implementation of the IndirectionSet class
  */
 
 #include <stdexcept>
 #include <sstream>
 
-#include "meshapi/Set.hpp"
+#include "IndirectionSet.hpp"
 
 namespace asctoolkit {
 namespace meshapi {
 
-bool IndirectionSet::isValid(bool verboseOutput)
+const NullSet IndirectionSet::s_nullSet;
+
+bool IndirectionSet::isValid(bool verboseOutput) const
 {
-    bool valid;
+    bool bValid = true;
 
     std::stringstream errStr;
 
@@ -28,11 +29,11 @@ bool IndirectionSet::isValid(bool verboseOutput)
 
     if(verboseOutput)
     {
-        if( !valid)
+        if( !bValid)
             std::cout<<" There was a problem: " << errStr.str() << std::endl;
     }
 
-    return valid;
+    return bValid;
 }
 
 } /* namespace meshapi */

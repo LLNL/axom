@@ -12,6 +12,9 @@
 TEST(gtest_meshapi_set,construct_nullset)
 {
     asctoolkit::meshapi::Set* s = new asctoolkit::meshapi::NullSet();
+
+    EXPECT_TRUE(s->isEmpty());
+
     delete s;
 
     EXPECT_TRUE( true );

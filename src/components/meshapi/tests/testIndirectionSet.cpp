@@ -9,10 +9,10 @@
 #include "gtest/gtest.h"
 
 #include "meshapi/Utilities.hpp"
-#include "meshapi/RangeSet.hpp"
+#include "meshapi/IndirectionSet.hpp"
 
 
-typedef asctoolkit::meshapi::RangeSet SetType;
+typedef asctoolkit::meshapi::IndirectionSet SetType;
 typedef SetType::iterator SetIterator;
 typedef SetType::PositionType SetPosition;
 typedef SetType::ElementType SetElement;
@@ -20,13 +20,13 @@ typedef SetType::ElementType SetElement;
 static const SetPosition MAX_SET_SIZE = 10;
 
 
-TEST(gtest_meshapi_range_set,construct_range_set)
+TEST(gtest_meshapi_indirection_set,construct_indirection_set)
 {
 
-    SetType s(MAX_SET_SIZE);
+    SetType s;
 
     EXPECT_TRUE(s.isValid());
-
+/*
     if(MAX_SET_SIZE > SetPosition())
         EXPECT_FALSE(s.isEmpty());
 
@@ -73,11 +73,12 @@ TEST(gtest_meshapi_range_set,construct_range_set)
     std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
 #endif
 
-
+*/
     std::cout << "--\ndone." << std::endl;
 
 }
 
+/*
 TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
 {
     std::cout<<"\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;
@@ -93,5 +94,5 @@ TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
     std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
 #endif
 }
-
+*/
 

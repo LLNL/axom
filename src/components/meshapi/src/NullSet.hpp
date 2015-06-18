@@ -35,6 +35,8 @@ namespace meshapi{
 
         bool isValid(bool) const { return true;}
 
+        bool isEmpty() const { return true; }
+
         // TODO: Do we need to add iterator stubs here to satisfy some interface?
         //       The result will be invalid, but it may be useful to get the code to compile, or avoid special logic in the code...
         // iterator begin();

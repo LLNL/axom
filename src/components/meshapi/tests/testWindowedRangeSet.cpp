@@ -29,6 +29,10 @@ TEST(gtest_meshapi_windowed_range_set,construct_windowed_range_set)
 
     EXPECT_TRUE(s.isValid());
 
+    if(lowerIndex != upperIndex)
+        EXPECT_FALSE(s.isEmpty());
+
+
     std::cout<<"Iterating through windowed range set of size " << s.size()
             <<"\n\twith lower element " << lowerIndex <<" (included in set)"
             <<"\n\twith upper element " << upperIndex <<" (not included in set)"

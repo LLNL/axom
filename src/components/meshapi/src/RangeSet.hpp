@@ -13,9 +13,9 @@
 
 #include <boost/iterator/counting_iterator.hpp>
 
-#include "Utilities.hpp"
-#include "Set.hpp"
-#include "NullSet.hpp"
+#include "meshapi/Utilities.hpp"
+#include "meshapi/Set.hpp"
+#include "meshapi/NullSet.hpp"
 
 namespace asctoolkit{
 namespace meshapi{
@@ -68,6 +68,7 @@ namespace meshapi{
       bool isSubset() const { return *m_parentSet != s_nullSet; }
       const Set * parentSet() const { return m_parentSet; }
 
+      bool isEmpty() const { return size() == PositionType(); }
 
     private:
       inline void  verifyPosition(PositionType pos)       const

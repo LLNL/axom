@@ -457,7 +457,7 @@ class Domain {
    // IMPLEMENTATION
    //
 
-   /* Node-centered */
+   /// Node-centered
    std::vector<Real_t> m_x ;  /* coordinates */
    std::vector<Real_t> m_y ;
    std::vector<Real_t> m_z ;
@@ -480,7 +480,7 @@ class Domain {
    std::vector<Index_t> m_symmY ;
    std::vector<Index_t> m_symmZ ;
 
-   // Element-centered
+   /// Element-centered
 
    // Region information
    //Int_t    m_numReg ;
@@ -488,15 +488,10 @@ class Domain {
 
    Int_t    m_cost; //imbalance cost
 
-   ElemIntMap           m_elemRegNum;
-   RegionToElemRelation m_regionElementsRel;
+   ElemIntMap           m_elemRegNum;           // previously m_regNumList
+   RegionToElemRelation m_regionElementsRel;    // previously m_regElemSize and m_regElemlist
 
-//   Index_t *m_regElemSize ;   // Size of region sets
-//   Index_t *m_regNumList ;    // Region number per domain element
-//   Index_t **m_regElemlist ;  // region indexset
-
-   ElemToNodeRelation m_nodelist;
-   //std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
+   ElemToNodeRelation m_nodelist;               // elemToNode connectivity
 
 
    ElemFaceAdjacencyRelation m_lxim ;  /* element connectivity across each face */

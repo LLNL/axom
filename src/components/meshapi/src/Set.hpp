@@ -107,7 +107,18 @@ namespace meshapi{
        */
       virtual bool isValid(bool verboseOutput = false)  const    =0;
 
+      /**
+       * \brief Checks if there are any elements in the set -- equivalent to: set.size() == 0
+       */
+      virtual bool isEmpty() const =0;
+
 #if 0
+      /**
+       * \brief Returns true if the set contains the given element.
+       * Alternatively, we can return the position in the set containing the element, with some value for not containing the element
+       */
+      virtual bool contains(const SetElement & elt) const =0;
+
       //Possible other useful functions
       void reset(size_type) { throw NotImplementedException(); }
 #endif

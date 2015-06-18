@@ -8,6 +8,7 @@ set(gtest_meshapi_tests
    testNullSet.cpp
    testRangeSet.cpp
    testWindowedRangeSet.cpp
+   testIndirectionSet.cpp
 
    # test relations
    testDynamicVariableRelation.cpp

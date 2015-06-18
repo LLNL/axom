@@ -10,7 +10,9 @@
 #include <cstddef>
 #include <vector>
 
-#include "Utilities.hpp"
+#include "meshapi/Utilities.hpp"
+#include "meshapi/Set.hpp"
+#include "meshapi/NullSet.hpp"
 
 namespace asctoolkit{
 namespace meshapi{
@@ -30,7 +32,6 @@ namespace meshapi{
   public:
 
     typedef Set::IndexType                               IndexType;
-    typedef Set::SizeType                                SizeType;
     typedef Set::PositionType                            PositionType;
     typedef IndexType                                    ElementType;
 
@@ -49,88 +50,87 @@ namespace meshapi{
       ~IndirectionSet () {}
 
       /**
-       * \brief Unchecked random access to the entities of the set
-       * @param idx The index of the desired element
-       * @return A reference to the encoded index
-       * \pre idx must be less than the number of elements in the set ( size() )
+       * \brief Random access to the entities of the set.  Checked in debug builds.
+       * \param pos The index of the desired element
+       * \return A reference to the encoded index
+       * \pre pos must be less than the number of elements in the set ( size() )
        */
-      ElementType&       operator[](PositionType idx)        { return m_entities[idx];}
+      ElementType&       operator[](PositionType pos)        { verifyPosition(pos); return m_entities[pos];}
 
       /**
-       * \brief Unchecked random access to the entities of the set (const version)
-       * @param idx The index of the desired element
-       * @return A const reference to the encoded index
-       * \pre idx must be less than the number of elements in the set ( size() )
+       * \brief Random access to the entities of the set (const version).  Checked in debug builds.
+       * \param pos The index of the desired element
+       * \return A const reference to the encoded index
+       * \pre pos must be less than the number of elements in the set ( size() )
        */
-      ElementType const& operator[](PositionType idx) const  { return m_entities[idx];}
+      ElementType const& operator[](PositionType pos) const  { verifyPosition(pos); return m_entities[pos];}
 
       /**
-       * \brief Checked random access to the entities of the set
-       * \throws A std::out_of_range exception if idx >= the number of entities in the set
-       * @param idx The index of the desired element
-       * @return A reference to the encoded index
-       * \pre idx must be less than the number of elements in the set ( size() )
+       * \brief Random access to the entities of the set -- implementation of Set's virtual function at()
+       * \param pos The index of the desired element
+       * \return The element at position pos (via the indirection map)
+       * \pre pos must be less than the number of elements in the set ( size() )
        */
-      ElementType&       at(PositionType idx);
-
-      /**
-       * \brief Checked random access to the entities of the set (const version)
-       * \throws A std::out_of_range exception if idx >= the number of entities in the set
-       * @param idx The index of the desired element
-       * @return A const reference to the encoded index
-       * \pre idx must be less than the number of elements in the set ( size() )
-       */
-      ElementType const& at(PositionType idx) const;
+      ElementType       at(PositionType pos) const { return operator[](pos); }
 
       /**
        * \brief Get the number of entities in the set
-       * @return The number of entities in the set.
+       * \return The number of entities in the set.
        */
       PositionType size() const      { return m_entities.size(); }
 
       /**
-       * @return An iterator to the beginning of the entities
+       * \return An iterator to the beginning of the entities
        */
       iterator  begin()            { return m_entities.begin(); }
 
       /**
-       * @return A const iterator to the beginning of the entities
+       * \return A const iterator to the beginning of the entities
        */
-      iterator begin() const      { return m_entities.begin(); }
+      const_iterator begin() const      { return m_entities.begin(); }
 
       /**
-       * @return An iterator to the end of the entities.
+       * \return An iterator to the end of the entities.
        */
       iterator end()              { return m_entities.end(); }
 
       /**
-       * @return A const iterator to the end of the entities
+       * \return A const iterator to the end of the entities
        */
-      iterator end() const        { return m_entities.end(); }
+      const_iterator end() const        { return m_entities.end(); }
 
       /**
-        * @return A pair of begin/end iterators
+        * \return A pair of begin/end iterators
        */
       iterator_pair  range()        { return std::make_pair(begin(), end()); }
 
       /**
-        * @return A pair of begin/end iterators
+        * \return A pair of begin/end iterators
        */
-      iterator_pair range() const { return std::make_pair(begin(), end()); }
+      const_iterator_pair range() const { return std::make_pair(begin(), end()); }
 
 
+      /**
+       * \brief Checks that the set is valid
+       */
       bool isValid(bool verboseOutput = false) const;
 
       /**
        * \brief Determines if the Set is a Subset of another set.
-       * @return true if the set is a subset of another set, otherwise false.
+       * \return true if the set is a subset of another set, otherwise false.
        */
-      bool isSubset() const       { return m_parentSet == NULL; }
+      bool isSubset() const       { return *m_parentSet == s_nullSet; }
 
       /**
-       * @return A pointer to the parent set.  NULL if there is no parent
+       * \brief Checks whether the set has any elements
        */
-      Set* parentSet()            { return m_parentSet;}
+      bool isEmpty() const { return m_entities.empty(); }
+
+
+      /**
+       * \return A pointer to the parent set.  Parent is a NullSet if isSubset() is false
+       */
+      const Set* parentSet()    const        { return m_parentSet;}
 
   public:
       /**
@@ -147,12 +147,19 @@ namespace meshapi{
       /// \}
 
   private:
+      void verifyPosition(PositionType pos) const
+      {
+          ATK_ASSERT_MSG( pos < size()
+                          , "MeshAPI::IndirectionSet -- requested out of range element at position "
+                          << pos << ", but set only has " << size() << " elements." );
+      }
+  private:
 
       ArrType   m_entities;
-      Set*      m_parentSet;
+      const Set*      m_parentSet;
   };
 
-
+#if 0
   /**
    * \brief Two IndirectionSets are equal if they have the same cardinality and all indexes are the same (and in the same order)
    * \note Two sets of different types are (currently) considered to be unequal
@@ -174,7 +181,7 @@ namespace meshapi{
    * \note Two sets of different types are (currently) considered to be unequal
    */
   inline bool operator!=(IndirectionSet const& firstSet, IndirectionSet const& otherSet) { return !(firstSet==otherSet); }
-
+#endif
 
 
 
