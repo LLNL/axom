@@ -50,3 +50,4 @@ method void destroyall()
 method TypeID getTypeID() const
 Close wrapfExClass2.f
 function void local_function1
+Close wrapfuserlibrary.f

@@ -197,15 +197,20 @@ class Wrapf(object):
                 self.write_module(node)
                 self._begin_output_file()
 
+        if self.tree['functions']:
+            self.tree['F_module_dependencies'] = []
+            for node in self.tree['functions']:
+                self.wrap_function(node)
+            self._end_output_file()
+            self.write_module(self.tree)
+            self._begin_output_file()
+
         if not options.F_module_per_class:
-            # put all classes into one module
+            # put all functions and classes into one module
             self._pop_splicer('class', self.impl)
             self.tree['F_module_dependencies'] = []
             self._end_output_file()
             self.write_module(self.tree)
-
-        for node in self.tree['functions']:
-            self.wrap_function(node)
 
         fwrap_util.write_runtime(self.tree, self.config)
 
@@ -466,7 +471,7 @@ class Wrapf(object):
         output.append(1)
 
         output.append('use fstr_mod')
-        if node['options'].F_module_per_class:
+        if options.F_module_per_class:
             # XXX this will have some problems because of forward declarations
             for mname, only in node['F_module_dependencies']:
                 if mname == module_name:

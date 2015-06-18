@@ -91,11 +91,11 @@ class Schema(object):
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
-        if not def_options.F_module_per_class:
-            util.eval_template(def_options, fmt_library,
-                               'F_module_name', '{lower_library}_mod')
-            util.eval_template(def_options, fmt_library,
-                               'F_impl_filename', 'wrapf{lower_library}.f')
+        # All class/methods and functions may go into this file or just functions.
+        util.eval_template(def_options, fmt_library,
+                           'F_module_name', '{lower_library}_mod')
+        util.eval_template(def_options, fmt_library,
+                           'F_impl_filename', 'wrapf{lower_library}.f')
 
         node['options'] = def_options
 
