@@ -37,7 +37,8 @@ class Wrapf(object):
         self.log = config.log
         self.typedef = tree['typedef']
         self.splicer_stack = [ splicers ]
-        self.splicer_names = [ 'f' ]
+        self.splicer_names = [ ]
+        self.splicer_path = ''
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -58,12 +59,14 @@ class Wrapf(object):
         level = self.splicer_stack[-1].setdefault(name, {})
         self.splicer_stack.append(level)
         self.splicer_names.append(name)
+        self.splicer_path = '.'.join(self.splicer_names) + '.'
         return '! splicer push %s' % name
 
     def _pop_splicer(self, name):
         # XXX maybe use name for error checking, must pop in reverse order
         self.splicer_stack.pop()
         self.splicer_names.pop()
+        self.splicer_path = '.'.join(self.splicer_names) + '.'
         return '! splicer pop %s' % name
 
     def _create_splicer(self, name, out):
@@ -73,6 +76,10 @@ class Wrapf(object):
         out.append('! splicer begin %s' % name)
         out.extend(self.splicer_stack[-1].get(name, []))
         out.append('! splicer end %s' % name)
+        # XXX full paths
+#        out.append('! splicer begin %s%s' % (self.splicer_path, name))
+#        out.extend(self.splicer_stack[-1].get(name, []))
+#        out.append('! splicer end %s%s' % (self.splicer_path, name))
 
     def _c_type(self, arg):
         """
