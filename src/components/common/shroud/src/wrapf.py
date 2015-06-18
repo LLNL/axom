@@ -200,7 +200,7 @@ class Wrapf(object):
         if self.tree['functions']:
             self.tree['F_module_dependencies'] = []
             for node in self.tree['functions']:
-                self.wrap_function(node)
+                self.wrap_method(None, node)
             self._end_output_file()
             self.write_module(self.tree)
             self._begin_output_file()
@@ -271,13 +271,17 @@ class Wrapf(object):
 
     def wrap_method(self, cls, node):
         """
-        cls  - class node
-        node - function node
+        cls  - class node or None for functions
+        node - function/method node
         """
-        if 'decl' in node:
-            self.log.write("method {1[decl]}\n".format(self, node))
+        if cls:
+            cls_function = 'method'
         else:
-            self.log.write("method {1[result][name]}\n".format(self, node))
+            cls_function = 'function'
+        if 'decl' in node:
+            self.log.write("{0} {1[decl]}\n".format(cls_function, node))
+        else:
+            self.log.write("{0} {1[result][name]}\n".format(cls_function, node))
 
         options = node['options']
         fmt_func = node['fmt']
@@ -308,8 +312,12 @@ class Wrapf(object):
         else:
             fmt_func.F_C_name = fmt_func.C_name.lower()
 
-        util.eval_template(options, fmt_func,
-                            'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
+        if cls:
+            util.eval_template(options, fmt_func,
+                               'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
+        else:
+            util.eval_template(options, fmt_func,
+                               'F_name_impl', '{underscore_name}{method_suffix}')
         util.eval_template(options, fmt_func,
                             'F_name_method', '{underscore_name}{method_suffix}')
         util.eval_template(options, fmt_func,
@@ -336,20 +344,21 @@ class Wrapf(object):
                 fmt_func.F_pure_clause   = 'pure '
         fmt_func.F_subprogram    = subprogram
 
-        # Add 'this' argument
-        if not is_ctor:
-            arg_c_names.append(C_this)
-            arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
-            arg_c_call.append(fmt_func.F_obj)
-            arg_f_names.append(fmt_func.F_this)
-            if is_dtor:
-                arg_f_decl.append(wformat(
-                        'type({F_derived_name}) :: {F_this}',
-                        fmt_func))
-            else:
-                arg_f_decl.append(wformat(
-                        'class({F_derived_name}) :: {F_this}',
-                        fmt_func))
+        if cls:
+            # Add 'this' argument
+            if not is_ctor:
+                arg_c_names.append(C_this)
+                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
+                arg_c_call.append(fmt_func.F_obj)
+                arg_f_names.append(fmt_func.F_this)
+                if is_dtor:
+                    arg_f_decl.append(wformat(
+                            'type({F_derived_name}) :: {F_this}',
+                            fmt_func))
+                else:
+                    arg_f_decl.append(wformat(
+                            'class({F_derived_name}) :: {F_this}',
+                            fmt_func))
 
         for arg in node.get('args', []):
             # default argument's intent
@@ -444,12 +453,6 @@ class Wrapf(object):
         self._create_splicer(fmt_func.F_name_method, impl, F_code)
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
-
-    def wrap_function(self, node):
-        """
-        node - function node
-        """
-        self.log.write("function {1[decl]}\n".format(self, node))
 
     def write_copyright(self, fp):
         for line in self.tree.get('copyright', []):
