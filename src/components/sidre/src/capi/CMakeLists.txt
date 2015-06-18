@@ -5,6 +5,7 @@
 set(sidre_headers
     sidre.h
     SidreTypes.h
+    SidreWrapperHelpers.hpp
 )
 
 set(sidre_generated_headers

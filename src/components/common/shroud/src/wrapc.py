@@ -34,6 +34,7 @@ class Wrapc(object):
         """Start a new class for output"""
         self.header_forward = {}          # forward declarations of C++ class as opaque C struct.
         self.header_typedef_include = {}  # include files required by typedefs
+        self.header_impl_include = {}     # headers needed by implementation, i.e. helper functions
         self.header_proto_c = []
         self.impl = []
 
@@ -167,9 +168,18 @@ class Wrapc(object):
         self.write_copyright(fp)
         fp.write('// {}\n'.format(fname))
         fp.write('#define EXAMPLE_WRAPPER_IMPL\n')
+
         fp.write('#include "%s"\n' % hname)
         if node['options'].cpp_header:
-            fp.write('#include "%s"\n' % options.cpp_header)
+            for include in node['options'].cpp_header.split():
+                self.header_impl_include[include] = True
+        # headers required by implementation
+        if self.header_impl_include:
+            headers = self.header_impl_include.keys()
+            headers.sort()
+            for header in headers:
+                fp.write('#include "%s"\n' % header)
+
         fp.write('\nextern "C" {\n')
         for name in namespace.split():
             fp.write('namespace %s {\n' % name)
@@ -241,6 +251,9 @@ class Wrapc(object):
         if result_typedef.c_header:
             # include any dependent header in generated header
             self.header_typedef_include[result_typedef.c_header] = True
+        if result_typedef.cpp_header:
+            # include any dependent header in generated source
+            self.header_impl_include[result_typedef.cpp_header] = True
         if result_typedef.forward:
             # create forward references for other types being wrapped
             # i.e. This method returns a wrapped type
@@ -274,6 +287,9 @@ class Wrapc(object):
             if arg_typedef.c_header:
                 # include any dependent header in generated header
                 self.header_typedef_include[arg_typedef.c_header] = True
+            if arg_typedef.cpp_header:
+                # include any dependent header in generated source
+                self.header_impl_include[arg_typedef.cpp_header] = True
             if arg_typedef.forward:
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
