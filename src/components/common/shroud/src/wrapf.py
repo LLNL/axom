@@ -66,14 +66,13 @@ class Wrapf(object):
         self.splicer_names.pop()
         return '! splicer pop %s' % name
 
-    def _create_splicer(self, name, prefix=''):
+    def _create_splicer(self, name, out):
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
-        out =  [ '! splicer begin %s%s' % (prefix, name) ]
+        out.append('! splicer begin %s' % name)
         out.extend(self.splicer_stack[-1].get(name, []))
-        out.append('! splicer end %s%s' % (prefix, name))
-        return out
+        out.append('! splicer end %s' % name)
 
     def _c_type(self, arg):
         """
@@ -218,21 +217,21 @@ class Wrapf(object):
         for method in node['methods']:
             self.wrap_method(node, method)
         self.impl.append(self._pop_splicer('method'))
-        self.impl.extend(self._create_splicer('extra_methods'))
+        self._create_splicer('extra_methods', self.impl)
         self.impl.append(self._pop_splicer(fmt_class.lower_class))
 
 
         # type declaration
         self.f_type_decl.append('')
         self.f_type_decl.append(self._push_splicer(fmt_class.lower_class))
-        self.f_type_decl.extend(self._create_splicer('module_top'))
+        self._create_splicer('module_top', self.f_type_decl)
         self.f_type_decl.extend([
                 '',
                 wformat('type {F_derived_name}', fmt_class),
                 1,
                 wformat('type(C_PTR) {F_this}', fmt_class),
                 ])
-        self.f_type_decl.extend(self._create_splicer('component_part'))
+        self._create_splicer('component_part', self.f_type_decl)
         self.f_type_decl.extend([
                 -1, 'contains', 1,
                 ])
@@ -245,7 +244,7 @@ class Wrapf(object):
                 self.f_type_decl.append('generic :: %s => %s' % (
                         key, ', '.join(methods)))
 
-        self.f_type_decl.extend(self._create_splicer('type_bound_procedure_part'))
+        self._create_splicer('type_bound_procedure_part', self.f_type_decl)
         self.f_type_decl.extend([
                  -1,
                  wformat('end type {F_derived_name}', fmt_class),
@@ -469,7 +468,7 @@ class Wrapf(object):
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
             output.append('implicit none')
             output.append('')
-            output.extend(self._create_splicer('module_top'))
+            self._create_splicer('module_top', output)
 
         output.append('! splicer push class')
         output.extend(self.f_type_decl)
