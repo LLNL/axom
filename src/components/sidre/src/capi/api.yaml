@@ -142,7 +142,7 @@ classes:
       cpp_header: sidre/DataBuffer.hpp
     methods:
       - decl: IndexType getIndex() const
-#      - decl: size_t getNumViews() const
+      - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeID type, SidreLength len)
         return_this: True
       - decl: DataBuffer * declareExternal(void * external_data, TypeID type, SidreLength len)

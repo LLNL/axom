@@ -131,6 +131,7 @@ contains
 
     dv_e = root%create_view("even", dbuff)
     dv_o = root%create_view("odd", dbuff)
+!-XXXX-long    call assert_equals(dbuff%get_num_views(), 2);
 
 !--#ifdef XXX
 !--  dv_e->apply(DataType::uint32(5,0,8))
