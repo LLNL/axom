@@ -44,9 +44,12 @@ class Wrapf(object):
         self.f_type_decl = []
         self.c_interface = []
         self.impl = []         # implementation, after contains
+        self.c_interface.append('interface')
+        self.c_interface.append(1)
 
     def _end_output_file(self):
-        pass
+        self.c_interface.append(-1)
+        self.c_interface.append('end interface')
 
     def _begin_class(self):
         self.f_type_generic = {} # look for generic methods
@@ -169,18 +172,13 @@ class Wrapf(object):
             self.impl.append(self._push_splicer('class'))
         for node in self.tree['classes']:
             self._begin_class()
-            self.c_interface.append('interface')
-            self.c_interface.append(1)
 
             name = node['name']
             # how to decide module name, module per class
 #            module_name = node['options'].setdefault('module_name', name.lower())
             if options.F_module_per_class:
                 self.impl.append(self._push_splicer('class'))
-
             self.wrap_class(node)
-            self.c_interface.append(-1)
-            self.c_interface.append('end interface')
             if options.F_module_per_class:
                 self.impl.append(self._pop_splicer('class'))
                 self._end_output_file()

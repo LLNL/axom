@@ -213,8 +213,6 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine atk_datastore_print
-    end interface
-    interface
         
         pure function atk_datagroup_get_name(self) result(rv) &
                 bind(C, name="ATK_datagroup_get_name")
@@ -456,8 +454,6 @@ module sidre_mod
             character(kind=C_CHAR) :: obase(*)
             character(kind=C_CHAR) :: protocol(*)
         end subroutine atk_datagroup_load
-    end interface
-    interface
         
         function atk_databuffer_get_index(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_index")
@@ -534,8 +530,6 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_databuffer_get_total_bytes
-    end interface
-    interface
         
         subroutine atk_dataview_declare(self, type, len) &
                 bind(C, name="ATK_dataview_declare")
