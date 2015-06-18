@@ -636,6 +636,14 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_number_of_elements
+        
+        function atk_name_is_valid(name) result(rv) &
+                bind(C, name="ATK_name_is_valid")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR) :: name(*)
+            logical(C_BOOL) :: rv
+        end function atk_name_is_valid
     end interface
 
 contains
@@ -1259,5 +1267,15 @@ contains
     end function dataview_get_number_of_elements
     ! splicer begin class.dataview.extra_methods
     ! splicer end class.dataview.extra_methods
+    
+    function name_is_valid(name) result(rv)
+        use iso_c_binding
+        implicit none
+        character(*) :: name
+        logical :: rv
+        ! splicer begin class.name_is_valid
+        rv = booltological(atk_name_is_valid(trim(name) // C_NULL_CHAR))
+        ! splicer end class.name_is_valid
+    end function name_is_valid
 
 end module sidre_mod

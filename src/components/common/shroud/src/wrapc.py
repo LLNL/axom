@@ -280,6 +280,7 @@ class Wrapc(object):
         anames = []
         if cls:
             # object pointer
+            fmt_func.CPP_this_call = fmt_func.CPP_this + '->'  # call method syntax
             arg_dict = dict(name=C_this,
                             type=cls['name'], 
                             attrs=dict(ptr=True,
@@ -288,6 +289,9 @@ class Wrapc(object):
             if not is_ctor:
                 arg = self._c_decl('c_type', arg_dict)
                 arguments.append(arg)
+        else:
+            fmt_func.CPP_this_call = ''  # call method syntax
+
 
         for arg in node.get('args', []):
             arguments.append(self._c_decl('c_type', arg))
@@ -341,12 +345,12 @@ class Wrapc(object):
             elif is_dtor:
                 lines.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
-                line = wformat('{CPP_this}->{CPP_name}({C_call_list});',
+                line = wformat('{CPP_this_call}{CPP_name}({C_call_list});',
                                fmt_func)
                 lines.append(line)
                 lines.append('return;')
             else:
-                line = wformat('{rv_decl} = {CPP_this}->{CPP_name}({C_call_list});',
+                line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}({C_call_list});',
                                fmt_func)
                 lines.append(line)
 

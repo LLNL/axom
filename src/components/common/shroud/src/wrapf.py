@@ -198,12 +198,14 @@ class Wrapf(object):
                 self._begin_output_file()
 
         if self.tree['functions']:
+            if options.F_module_per_class:
+                self._begin_output_file()
             self.tree['F_module_dependencies'] = []
             for node in self.tree['functions']:
                 self.wrap_method(None, node)
-            self._end_output_file()
-            self.write_module(self.tree)
-            self._begin_output_file()
+            if options.F_module_per_class:
+                self._end_output_file()
+                self.write_module(self.tree)
 
         if not options.F_module_per_class:
             # put all functions and classes into one module

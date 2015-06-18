@@ -13,7 +13,7 @@ void AA_local_function1()
 {
 
 // splicer begin AA_local_function1
-selfobj->local_function1();
+local_function1();
 return;
 // splicer end AA_local_function1
 }

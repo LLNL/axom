@@ -51,6 +51,7 @@
                     "fmt": {
                         "CPP_name": "new", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "const char * name", 
                         "C_call_list": "name", 
                         "C_code": "return (AA_exclass1 *) selfobj;", 
@@ -87,6 +88,7 @@
                     "fmt": {
                         "CPP_name": "delete", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "delete selfobj;", 
@@ -131,6 +133,7 @@
                     "fmt": {
                         "CPP_name": "incrementCount", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self, int incr", 
                         "C_call_list": "incr", 
                         "C_code": "int rv = selfobj->incrementCount(incr);\nreturn rv;", 
@@ -164,6 +167,7 @@
                     "fmt": {
                         "CPP_name": "getName", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
@@ -203,6 +207,7 @@
                     "fmt": {
                         "CPP_name": "get_name_length", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "return selfobj->getName().length();", 
@@ -243,6 +248,7 @@
                     "fmt": {
                         "CPP_name": "getRoot", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "ExClass2 * rv = selfobj->getRoot();\nreturn rv;", 
@@ -287,6 +293,7 @@
                     "fmt": {
                         "CPP_name": "getValue", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self, int value", 
                         "C_call_list": "value", 
                         "C_code": "int rv = selfobj->getValue(value);\nreturn rv;", 
@@ -331,6 +338,7 @@
                     "fmt": {
                         "CPP_name": "getValue", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self, long value", 
                         "C_call_list": "value", 
                         "C_code": "long rv = selfobj->getValue(value);\nreturn rv;", 
@@ -365,6 +373,7 @@
                     "fmt": {
                         "CPP_name": "getAddr", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "void * rv = selfobj->getAddr();\nreturn rv;", 
@@ -409,6 +418,7 @@
                     "fmt": {
                         "CPP_name": "hasAddr", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self, bool in", 
                         "C_call_list": "in", 
                         "C_code": "bool rv = selfobj->hasAddr(in);\nreturn rv;", 
@@ -442,6 +452,7 @@
                     "fmt": {
                         "CPP_name": "SplicerSpecial", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
                         "C_code": "selfobj->SplicerSpecial();\nreturn;", 
@@ -526,6 +537,7 @@
                     "fmt": {
                         "CPP_name": "ExClass2", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "const char * name", 
                         "C_call_list": "name", 
                         "C_code": "return (AA_exclass2 *) selfobj;", 
@@ -562,6 +574,7 @@
                     "fmt": {
                         "CPP_name": "ExClass1", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "delete selfobj;", 
@@ -596,6 +609,7 @@
                     "fmt": {
                         "CPP_name": "getName", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
@@ -635,6 +649,7 @@
                     "fmt": {
                         "CPP_name": "get_name_length", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "return selfobj->getName().length();", 
@@ -685,6 +700,7 @@
                     "fmt": {
                         "CPP_name": "get_class1", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, AA_exclass1 * in", 
                         "C_call_list": "static_cast<ExClass1 *>(in)", 
                         "C_code": "ExClass1 * rv = selfobj->get_class1(static_cast<ExClass1 *>(in));\nreturn rv;", 
@@ -737,6 +753,7 @@
                     "fmt": {
                         "CPP_name": "declare", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
                         "C_call_list": "getTypeID(type), len", 
                         "C_code": "selfobj->declare(getTypeID(type), len);\nreturn;", 
@@ -772,6 +789,7 @@
                     "fmt": {
                         "CPP_name": "destroyall", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "selfobj->destroyall();\nreturn;", 
@@ -804,6 +822,7 @@
                     "fmt": {
                         "CPP_name": "getTypeID", 
                         "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self", 
                         "C_call_list": "", 
                         "C_code": "TypeID rv = selfobj->getTypeID();\nreturn rv;", 
@@ -868,9 +887,10 @@
             "fmt": {
                 "CPP_name": "local_function1", 
                 "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
                 "C_arguments": "", 
                 "C_call_list": "", 
-                "C_code": "selfobj->local_function1();\nreturn;", 
+                "C_code": "local_function1();\nreturn;", 
                 "C_name": "AA_local_function1", 
                 "C_object": "", 
                 "C_return_type": "void", 
