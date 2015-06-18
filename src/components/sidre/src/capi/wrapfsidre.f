@@ -1034,9 +1034,9 @@ contains
         implicit none
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_num_views
+        ! splicer begin class.databuffer.method.get_num_views
         rv = atk_databuffer_get_num_views(obj%obj)
-        ! splicer end get_num_views
+        ! splicer end class.databuffer.method.get_num_views
     end function databuffer_get_num_views
     
     subroutine databuffer_declare(obj, type, len)
