@@ -14,7 +14,6 @@ options:
   namespace: example nested
 #  F_module_per_class: False
   # include files to add to module
-  F_library_module_includes: library.inc
 
 typedef:
   other:
@@ -52,7 +51,6 @@ classes:
     options:
       cpp_header: ExClass1.hpp
       # include files to add to module
-      F_class_module_includes: class.inc
     methods:
     - decl: ExClass1 *new+constructor ( const string *name )
       docs: constructor

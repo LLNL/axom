@@ -18,6 +18,8 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::InvalidIndex;
+using asctoolkit::sidre::nameIsValid;
+using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
 
 using namespace conduit;
@@ -36,6 +38,9 @@ TEST(sidre_group,get_name)
   DataGroup * group = root->createGroup("test");
 
   EXPECT_TRUE(group->getName() == std::string("test") );
+
+  DataGroup * group2 = root->getGroup("foo");
+  EXPECT_TRUE(group2 == ATK_NULLPTR); 
 
   delete ds;
 }
@@ -133,14 +138,12 @@ TEST(sidre_group,get_view_name_index)
   EXPECT_EQ(name2, std::string("view2"));
   EXPECT_EQ(view2->getName(), name2);
 
-#if 0 // Leave out for now until we resolve error/warning/assert macro usage
   IndexType idx3 = parent->getViewIndex("view3");
-  const std::string& name3 = parent->getViewName(idx3);
+  EXPECT_TRUE(idx3 == InvalidIndex);
 
-  EXPECT_EQ(idx3, InvalidIndex);
+  const std::string& name3 = parent->getViewName(idx3);
   EXPECT_TRUE(name3.empty());
-  EXPECT_FALSE(isNameValid(name3));
-#endif
+  EXPECT_TRUE(nameIsValid(name3) == false);
 
   delete ds;
 }
@@ -171,13 +174,12 @@ TEST(sidre_group,get_group_name_index)
   EXPECT_EQ(name2, std::string("group2"));
   EXPECT_EQ(group2->getName(), name2);
 
-#if 0 // Leave out for now until we resolve error/warning/assert macro usage
   IndexType idx3 = parent->getGroupIndex("group3");
-  const std::string& name3 = parent->getGroupName(idx3);
+  EXPECT_TRUE(idx3 == InvalidIndex);
 
-  EXPECT_EQ(idx3, InvalidIndex);
+  const std::string& name3 = parent->getGroupName(idx3);
   EXPECT_TRUE(name3.empty());
-#endif
+  EXPECT_TRUE(nameIsValid(name3) == false);
 
   delete ds;
 }
@@ -348,13 +350,7 @@ TEST(sidre_group,create_destroy_view_and_buffer)
   EXPECT_EQ(ds->getNumBuffers(), 1u);
 
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
-  bool buffValid = true;
-  if( buffer1 == ATK_NULLPTR )
-  {
-    buffValid = false;
-  }
-
-  EXPECT_FALSE(buffValid);
+  EXPECT_TRUE( buffer1 == ATK_NULLPTR );
 
   delete ds;
 }

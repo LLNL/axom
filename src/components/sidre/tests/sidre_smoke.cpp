@@ -15,7 +15,13 @@
 
 #include "conduit/conduit.hpp"
 
+using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
+using asctoolkit::sidre::IndexType;
+using asctoolkit::sidre::InvalidIndex;
+using asctoolkit::sidre::indexIsValid;
+using asctoolkit::sidre::InvalidName;
+using asctoolkit::sidre::nameIsValid;
 
 //------------------------------------------------------------------------------
 
@@ -24,6 +30,26 @@ TEST(sidre_smoke,create_datastore)
   DataStore * ds = new DataStore();
   delete ds;
   EXPECT_TRUE( true );
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_smoke,valid_invalid)
+{
+   DataStore * ds = new DataStore();
+
+   IndexType idx = 3;
+   EXPECT_TRUE(idx != InvalidIndex);
+
+   std::string name("foo");
+   EXPECT_TRUE(nameIsValid(name) == true);
+
+   DataGroup * root = ds->getRoot();
+
+   EXPECT_TRUE(root->getGroupName(idx) == InvalidName);
+   EXPECT_TRUE(root->getGroupIndex(name) == InvalidIndex);
+
+   delete ds;
 }
 
 //------------------------------------------------------------------------------

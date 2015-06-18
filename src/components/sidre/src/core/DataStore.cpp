@@ -140,10 +140,11 @@ void DataStore::destroyBuffer( IndexType idx )
  */
 void DataStore::destroyBuffers()
 {
-  for ( IndexType idx = 0 ;
-        static_cast<unsigned>(idx) < m_data_buffers.size() ; ++idx)
+  IndexType bidx = getFirstValidBufferIndex();
+  while ( indexIsValid(bidx) )
   {
-    destroyBuffer( idx );
+    destroyBuffer( bidx );
+    bidx = getNextValidBufferIndex(bidx);
   }
 }
 

@@ -38,7 +38,8 @@
                             "attrs": {
                                 "const": true, 
                                 "intent": "in", 
-                                "ptr": true
+                                "ptr": true, 
+                                "value": true
                             }, 
                             "name": "name", 
                             "type": "string"
@@ -117,7 +118,8 @@
                     "args": [
                         {
                             "attrs": {
-                                "intent": "in"
+                                "intent": "in", 
+                                "value": true
                             }, 
                             "name": "incr", 
                             "type": "int"
@@ -273,7 +275,8 @@
                     "args": [
                         {
                             "attrs": {
-                                "intent": "in"
+                                "intent": "in", 
+                                "value": true
                             }, 
                             "name": "value", 
                             "type": "int"
@@ -316,7 +319,8 @@
                     "args": [
                         {
                             "attrs": {
-                                "intent": "in"
+                                "intent": "in", 
+                                "value": true
                             }, 
                             "name": "value", 
                             "type": "long"
@@ -393,7 +397,8 @@
                     "args": [
                         {
                             "attrs": {
-                                "intent": "in"
+                                "intent": "in", 
+                                "value": true
                             }, 
                             "name": "in", 
                             "type": "bool"
@@ -465,7 +470,6 @@
             ], 
             "name": "ExClass1", 
             "options": {
-                "F_class_module_includes": "class.inc", 
                 "cpp_header": "ExClass1.hpp"
             }
         }, 
@@ -510,7 +514,8 @@
                             "attrs": {
                                 "const": true, 
                                 "intent": "in", 
-                                "ptr": true
+                                "ptr": true, 
+                                "value": true
                             }, 
                             "name": "name", 
                             "type": "string"
@@ -668,7 +673,8 @@
                         {
                             "attrs": {
                                 "intent": "in", 
-                                "ptr": true
+                                "ptr": true, 
+                                "value": true
                             }, 
                             "name": "in", 
                             "type": "ExClass1"
@@ -711,14 +717,16 @@
                     "args": [
                         {
                             "attrs": {
-                                "intent": "in"
+                                "intent": "in", 
+                                "value": true
                             }, 
                             "name": "type", 
                             "type": "TypeID"
                         }, 
                         {
                             "attrs": {
-                                "intent": "in"
+                                "intent": "in", 
+                                "value": true
                             }, 
                             "name": "len", 
                             "type": "SidreLength"
@@ -865,7 +873,6 @@
     ], 
     "options": {
         "C_prefix": "AA_", 
-        "F_library_module_includes": "library.inc", 
         "F_module_per_class": true, 
         "cpp_header": "", 
         "library": "UserLibrary", 

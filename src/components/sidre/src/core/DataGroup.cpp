@@ -168,6 +168,7 @@ DataView * DataGroup::createView( const std::string& name,
   else 
   {
     DataView * const view = new DataView( name, this, buff );
+    buff->attachView(view);
     return attachView(view);
   }
 }

@@ -27,6 +27,15 @@ return rv;
 // splicer end ATK_databuffer_get_index
 }
 
+size_t ATK_databuffer_get_num_views(ATK_databuffer * self)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin ATK_databuffer_get_num_views
+size_t rv = selfobj->getNumViews();
+return rv;
+// splicer end ATK_databuffer_get_num_views
+}
+
 void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);

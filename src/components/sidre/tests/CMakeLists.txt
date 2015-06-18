@@ -71,5 +71,3 @@ if (ENABLE_FORTRAN)
   endforeach()
 endif()
 
-
-
