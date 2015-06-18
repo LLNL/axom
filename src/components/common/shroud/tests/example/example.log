@@ -24,6 +24,8 @@ method TypeID getTypeID() const
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 function void local_function1
+Close wrapUserLibrary.h
+Close wrapUserLibrary.cpp
 class ExClass1
 method ExClass1 *new+constructor ( const string *name )
 method void delete+destructor

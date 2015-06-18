@@ -83,6 +83,10 @@ class Schema(object):
         fmt_library.lower_library = fmt_library.library.lower()
         fmt_library.method_suffix = ''   # assume no suffix
         fmt_library.overloaded = False
+        util.eval_template(def_options, fmt_library,
+                           'C_header_filename', 'wrap{library}.h')
+        util.eval_template(def_options, fmt_library,
+                           'C_impl_filename', 'wrap{library}.cpp')
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options

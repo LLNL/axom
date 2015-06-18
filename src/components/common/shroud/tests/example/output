@@ -2,6 +2,8 @@ Wrote wrapExClass1.h
 Wrote wrapExClass1.cpp
 Wrote wrapExClass2.h
 Wrote wrapExClass2.cpp
+Wrote wrapUserLibrary.h
+Wrote wrapUserLibrary.cpp
 Wrote wrapfExClass1.f
 Wrote wrapfExClass2.f
 Wrote fstr_mod.f

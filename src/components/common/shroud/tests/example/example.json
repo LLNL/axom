@@ -844,6 +844,8 @@
     ], 
     "fmt": {
         "C_const": "", 
+        "C_header_filename": "wrapUserLibrary.h", 
+        "C_impl_filename": "wrapUserLibrary.cpp", 
         "C_this": "self", 
         "F_pure_clause": "", 
         "F_result": "rv", 

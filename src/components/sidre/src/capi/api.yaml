@@ -212,6 +212,9 @@ classes:
 #    - decl: void info(Node& n) const
 #    - decl: void print() const
 
+functions:
+  -  decl: bool nameIsValid(const std::string& name)
+
 
 # Files which contain code to be inserted into generated code
 splicer:

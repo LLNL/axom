@@ -30,7 +30,7 @@ class Wrapc(object):
         self.log = config.log
         self.typedef = tree['typedef']
 
-    def _clear_class(self):
+    def _begin_output_file(self):
         """Start a new class for output"""
         self.header_forward = {}          # forward declarations of C++ class as opaque C struct.
         self.header_typedef_include = {}  # include files required by typedefs
@@ -86,16 +86,23 @@ class Wrapc(object):
 
         for node in self.tree['classes']:
             fmt_class = node['fmt']
-            self._clear_class()
+            self._begin_output_file()
             name = node['name']
             self.wrap_class(node)
             c_header = fmt_class.C_header_filename
             c_impl   = fmt_class.C_impl_filename
+            self.write_header(node, c_header, cls=True)
+            self.write_impl(node, c_header, c_impl, cls=True)
+
+        if self.tree['functions']:
+            fmt = fmt_library
+            self._begin_output_file()
+            for node in self.tree['functions']:
+                self.wrap_function(node)
+            c_header = fmt.C_header_filename
+            c_impl   = fmt.C_impl_filename
             self.write_header(node, c_header)
             self.write_impl(node, c_header, c_impl)
-
-        for node in self.tree['functions']:
-            self.wrap_function(node)
 
     def write_copyright(self, fp):
         for line in self.tree.get('copyright', []):
@@ -104,7 +111,7 @@ class Wrapc(object):
             else:
                 fp.write('//\n')
 
-    def write_header(self, node, fname):
+    def write_header(self, node, fname, cls=False):
         fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
 
@@ -117,7 +124,8 @@ class Wrapc(object):
                 '#ifndef %s\n' % guard,
                 '#define %s\n' % guard,
                 ])
-        fp.write('// splicer push.class.%s\n' % node['name'])
+        if cls:
+            fp.write('// splicer push.class.%s\n' % node['name'])
 
         # headers required by typedefs
         if self.header_typedef_include:
@@ -147,7 +155,8 @@ class Wrapc(object):
                      format(C_type_name=name))
         fp.write('#endif\n')
         fp.writelines(self.header_proto_c);
-        fp.write('\n// splicer pop.class.%s\n' % node['name'])
+        if cls:
+            fp.write('\n// splicer pop.class.%s\n' % node['name'])
         fp.writelines([
                 '\n',
                 '#ifdef __cplusplus\n',
@@ -160,7 +169,7 @@ class Wrapc(object):
         self.log.write("Close %s\n" % fname)
         print("Wrote", fname)
 
-    def write_impl(self, node, hname, fname):
+    def write_impl(self, node, hname, fname, cls=False):
         # node = class node
         options = node['options']
         namespace = options.namespace
@@ -183,9 +192,11 @@ class Wrapc(object):
         fp.write('\nextern "C" {\n')
         for name in namespace.split():
             fp.write('namespace %s {\n' % name)
-        fp.write('// splicer push class.%s.method\n' % node['name'])
+        if cls:
+            fp.write('// splicer push class.%s.method\n' % node['name'])
         fp.writelines(self.impl)
-        fp.write('\n// splicer pop.class.%s method\n' % node['name'])
+        if cls:
+            fp.write('\n// splicer pop.class.%s method\n' % node['name'])
         fp.write('\n')
         for name in namespace.split():
             fp.write('}  // namespace %s\n' % name)
