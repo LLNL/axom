@@ -67,7 +67,10 @@ class Wrapf(object):
         # XXX maybe use name for error checking, must pop in reverse order
         self.splicer_stack.pop()
         self.splicer_names.pop()
-        self.splicer_path = '.'.join(self.splicer_names) + '.'
+        if self.splicer_names:
+            self.splicer_path = '.'.join(self.splicer_names) + '.'
+        else:
+            self.splicer_path = ''
 #X        out.append('! splicer pop %s' % name)
 
     def _create_splicer(self, name, out, default=None):

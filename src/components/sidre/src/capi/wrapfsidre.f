@@ -12,7 +12,7 @@ module sidre_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
     implicit none
     
-    ! splicer begin .module_top
+    ! splicer begin module_top
     !
     ! Type parameters
     ! Must be kept in sync with SidreTypes.h
@@ -33,7 +33,7 @@ module sidre_mod
     integer, parameter :: ATK_C_LONG_T = 15
     integer, parameter :: ATK_C_FLOAT_T = 16
     integer, parameter :: ATK_C_DOUBLE_T = 17
-    ! splicer end .module_top
+    ! splicer end module_top
     
     ! splicer begin class.datastore.module_top
     ! splicer end class.datastore.module_top
