@@ -63,6 +63,7 @@ module sidre_mod
         type(C_PTR) obj
     contains
         procedure :: get_index => databuffer_get_index
+        procedure :: get_num_views => databuffer_get_num_views
         procedure :: declare => databuffer_declare
         procedure :: declare_external => databuffer_declare_external
         procedure :: allocate_existing => databuffer_allocate_existing
@@ -409,6 +410,14 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function atk_databuffer_get_index
+        
+        function atk_databuffer_get_num_views(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_num_views")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_databuffer_get_num_views
         
         subroutine atk_databuffer_declare(self, type, len) &
                 bind(C, name="ATK_databuffer_declare")
@@ -980,6 +989,16 @@ contains
         rv = atk_databuffer_get_index(obj%obj)
         ! splicer end get_index
     end function databuffer_get_index
+    
+    function databuffer_get_num_views(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin get_num_views
+        rv = atk_databuffer_get_num_views(obj%obj)
+        ! splicer end get_num_views
+    end function databuffer_get_num_views
     
     subroutine databuffer_declare(obj, type, len)
         use iso_c_binding

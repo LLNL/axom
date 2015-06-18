@@ -110,6 +110,7 @@ TEST(C_sidre_view,int_array_multi_view)
   ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd", dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 2u);
 
 #ifdef XXX
   dv_e->apply(DataType::uint32(5,0,8));

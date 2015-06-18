@@ -109,6 +109,7 @@ TEST(sidre_view,int_array_multi_view)
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
+  EXPECT_EQ(dbuff->getNumViews(), 2u);
 
   dv_e->apply(DataType::c_int(5,0,8));
 
