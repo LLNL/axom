@@ -23,3 +23,15 @@ integer, parameter :: ATK_C_FLOAT_T = 16
 integer, parameter :: ATK_C_DOUBLE_T = 17
 ! splicer end module_top
 
+! splicer push class
+
+! splicer push datastore
+
+! splicer begin extra_methods
+!  extra methods for datastore
+! splicer end   extra_methods
+
+! splicer pop datastore
+
+! splicer pop class
+

@@ -7,7 +7,9 @@ module exclass1_mod
     use iso_c_binding
     implicit none
     
-    ! splicer push class.exclass1
+    ! splicer push class
+    
+    ! splicer push exclass1
     ! splicer begin module_top
     top of module splicer  1
     ! splicer end module_top
@@ -33,6 +35,8 @@ module exclass1_mod
           type bound procedure part 1
         ! splicer end type_bound_procedure_part
     end type exclass1
+    ! splicer pop exclass1
+    ! splicer pop class
     
     interface
         
@@ -128,6 +132,8 @@ module exclass1_mod
     end interface
 
 contains
+    ! splicer push class
+    ! splicer push exclass1
     ! splicer push method
     
     function exclass1_new(name) result(rv)
@@ -242,8 +248,11 @@ contains
         blah blah blah
         ! splicer end splicer_special
     end subroutine exclass1_splicer_special
-    
     ! splicer pop method
+    ! splicer begin extra_methods
+      insert extra methods here
+    ! splicer end extra_methods
+    ! splicer pop exclass1
+    ! splicer pop class
 
-! splicer pop class.exclass1
 end module exclass1_mod

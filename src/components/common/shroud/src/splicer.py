@@ -34,8 +34,13 @@ def get_splicers(fname, out):
                 if i > 0:
                     fields = line[i+len(str_begin):].split()
                     tag = fields[0]
-                    # XXX look for subtags?
                     begin_tag = tag
+                    subtags = tag.split('.')
+                    begin_subtag = subtags[-1]
+                    begin_nest = len(subtags) - 1
+                    for subtag in subtags[:-1]:
+                        top = top.setdefault(subtag, {})
+                        stack.append(top)
 #                    print("BEGIN", begin_tag)
                     save = []
                     state = state_collect
@@ -74,7 +79,9 @@ def get_splicers(fname, out):
                         raise RuntimeError("Mismatched tags  '%s' '%s'", (begin_tag, end_tag))
                     if end_tag in top:
                         raise RuntimeError("Tag already exists - '%s'" % end_tag)
-                    top[end_tag] = save
+                    top[begin_subtag] = save
+                    for i in range(begin_nest):
+                        stack.pop()
 #                    print_tree(out)
                     state = state_look
                 else:

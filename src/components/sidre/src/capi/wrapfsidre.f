@@ -34,6 +34,11 @@ module sidre_mod
     integer, parameter :: ATK_C_FLOAT_T = 16
     integer, parameter :: ATK_C_DOUBLE_T = 17
     ! splicer end module_top
+    ! splicer push class
+    
+    ! splicer push datastore
+    ! splicer begin module_top
+    ! splicer end module_top
     
     type datastore
         type(C_PTR) obj
@@ -49,7 +54,11 @@ module sidre_mod
         ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type datastore
+    ! splicer pop datastore
     
+    ! splicer push datagroup
+    ! splicer begin module_top
+    ! splicer end module_top
     
     type datagroup
         type(C_PTR) obj
@@ -87,7 +96,11 @@ module sidre_mod
         ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type datagroup
+    ! splicer pop datagroup
     
+    ! splicer push databuffer
+    ! splicer begin module_top
+    ! splicer end module_top
     
     type databuffer
         type(C_PTR) obj
@@ -107,7 +120,11 @@ module sidre_mod
         ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type databuffer
+    ! splicer pop databuffer
     
+    ! splicer push dataview
+    ! splicer begin module_top
+    ! splicer end module_top
     
     type dataview
         type(C_PTR) obj
@@ -130,6 +147,8 @@ module sidre_mod
         ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type dataview
+    ! splicer pop dataview
+    ! splicer pop class
     
     interface
         
@@ -627,7 +646,9 @@ module sidre_mod
     end interface
 
 contains
-    ! splicer push class.datastore.method
+    ! splicer push class
+    ! splicer push datastore
+    ! splicer push method
     
     function datastore_new() result(rv)
         use iso_c_binding
@@ -707,9 +728,13 @@ contains
         call atk_datastore_print(obj%obj)
         ! splicer end print
     end subroutine datastore_print
-    
-    ! splicer pop class.datastore.method
-    ! splicer push class.datagroup.method
+    ! splicer pop method
+    ! splicer begin extra_methods
+    !  extra methods for datastore
+    ! splicer end extra_methods
+    ! splicer pop datastore
+    ! splicer push datagroup
+    ! splicer push method
     
     function datagroup_get_name(obj) result(rv)
         use iso_c_binding
@@ -1005,9 +1030,12 @@ contains
         call atk_datagroup_load(obj%obj, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
         ! splicer end load
     end subroutine datagroup_load
-    
-    ! splicer pop class.datagroup.method
-    ! splicer push class.databuffer.method
+    ! splicer pop method
+    ! splicer begin extra_methods
+    ! splicer end extra_methods
+    ! splicer pop datagroup
+    ! splicer push databuffer
+    ! splicer push method
     
     function databuffer_get_index(obj) result(rv)
         use iso_c_binding
@@ -1102,9 +1130,12 @@ contains
         rv = atk_databuffer_get_total_bytes(obj%obj)
         ! splicer end get_total_bytes
     end function databuffer_get_total_bytes
-    
-    ! splicer pop class.databuffer.method
-    ! splicer push class.dataview.method
+    ! splicer pop method
+    ! splicer begin extra_methods
+    ! splicer end extra_methods
+    ! splicer pop databuffer
+    ! splicer push dataview
+    ! splicer push method
     
     subroutine dataview_declare(obj, type, len)
         use iso_c_binding
@@ -1238,7 +1269,10 @@ contains
         rv = atk_dataview_get_number_of_elements(obj%obj)
         ! splicer end get_number_of_elements
     end function dataview_get_number_of_elements
-    
-    ! splicer pop class.dataview.method
+    ! splicer pop method
+    ! splicer begin extra_methods
+    ! splicer end extra_methods
+    ! splicer pop dataview
+    ! splicer pop class
 
 end module sidre_mod

@@ -7,7 +7,9 @@ module exclass2_mod
     use iso_c_binding, only : C_INT, C_LONG
     implicit none
     
-    ! splicer push class.exclass2
+    ! splicer push class
+    
+    ! splicer push exclass2
     ! splicer begin module_top
     top of module splicer  2
     ! splicer end module_top
@@ -26,6 +28,8 @@ module exclass2_mod
         ! splicer begin type_bound_procedure_part
         ! splicer end type_bound_procedure_part
     end type exclass2
+    ! splicer pop exclass2
+    ! splicer pop class
     
     interface
         
@@ -95,6 +99,8 @@ module exclass2_mod
     end interface
 
 contains
+    ! splicer push class
+    ! splicer push exclass2
     ! splicer push method
     
     function exclass2_ex_class2(name) result(rv)
@@ -177,8 +183,10 @@ contains
         rv = aa_exclass2_get_type_id(obj%obj)
         ! splicer end get_type_id
     end function exclass2_get_type_id
-    
     ! splicer pop method
+    ! splicer begin extra_methods
+    ! splicer end extra_methods
+    ! splicer pop exclass2
+    ! splicer pop class
 
-! splicer pop class.exclass2
 end module exclass2_mod
