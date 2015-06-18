@@ -103,8 +103,9 @@ class Wrapc(object):
         self.write_impl(node, c_header, c_impl, cls)
 
     def wrap_functions(self, tree):
+        # worker function for write_file
         for node in tree['functions']:
-            self.wrap_function(node)
+            self.wrap_method(None, node)
 
     def write_copyright(self, fp):
         for line in self.tree.get('copyright', []):
@@ -207,12 +208,6 @@ class Wrapc(object):
         self.log.write("Close %s\n" % fname)
         print("Wrote", fname)
 
-    def wrap_function(self, node):
-        """
-        node - function node
-        """
-        self.log.write("function {1[decl]}\n".format(self, node))
-
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
         name = node['name']
@@ -231,14 +226,17 @@ class Wrapc(object):
 
     def wrap_method(self, cls, node):
         """
-        cls  - class node
-        node - function node
+        cls  - class node or None for functions
+        node - function/method node
         """
-        if 'decl' in node:
-            self.log.write("method {1[decl]}\n".format(self, node))
+        if cls:
+            cls_function = 'method'
         else:
-            self.log.write("method {1[result][name]}\n".format(self, node))
-        # assume a C++ method
+            cls_function = 'function'
+        if 'decl' in node:
+            self.log.write("{0} {1[decl]}\n".format(cls_function, node))
+        else:
+            self.log.write("{0} {1[result][name]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
 
@@ -280,15 +278,16 @@ class Wrapc(object):
 
         arguments = []
         anames = []
-        # object pointer
-        arg_dict = dict(name=C_this,
-                        type=cls['name'], 
-                        attrs=dict(ptr=True,
-                                   const=is_const))
-        C_this_type = self._c_type('c_type', arg_dict)
-        if not is_ctor:
-            arg = self._c_decl('c_type', arg_dict)
-            arguments.append(arg)
+        if cls:
+            # object pointer
+            arg_dict = dict(name=C_this,
+                            type=cls['name'], 
+                            attrs=dict(ptr=True,
+                                       const=is_const))
+            C_this_type = self._c_type('c_type', arg_dict)
+            if not is_ctor:
+                arg = self._c_decl('c_type', arg_dict)
+                arguments.append(arg)
 
         for arg in node.get('args', []):
             arguments.append(self._c_decl('c_type', arg))
@@ -309,23 +308,28 @@ class Wrapc(object):
                 self.header_forward[arg_typedef.c_type] = True
         fmt_func.C_call_list = ', '.join(anames)
 
-        util.eval_template(options, fmt_func, 'C_name')
+        fmt_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
 
         if node.get('return_this', False):
             fmt_func.C_return_type = 'void'
         else:
             fmt_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
-        fmt_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
-
-        if 'C_object' in options:
-            fmt_func.C_object = options.C_object
-        else:
-            if is_ctor:
-                template = '{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
+        if cls:
+            util.eval_template(options, fmt_func, 'C_name',
+                               '{C_prefix}{lower_class}_{underscore_name}{method_suffix}')
+            if 'C_object' in options:
+                fmt_func.C_object = options.C_object
             else:
-                template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
-            fmt_func.C_object = wformat(template, fmt_func)
+                if is_ctor:
+                    template = '{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
+                else:
+                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
+                fmt_func.C_object = wformat(template, fmt_func)
+        else:
+            util.eval_template(options, fmt_func, 'C_name',
+                               '{C_prefix}{underscore_name}{method_suffix}')
+            fmt_func.C_object = ''
 
         if 'C_code' in options:
             fmt_func.C_code = options.C_code

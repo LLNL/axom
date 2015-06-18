@@ -82,7 +82,8 @@ class Schema(object):
         fmt_library.library       = def_options.get('library', 'default_library')
         fmt_library.lower_library = fmt_library.library.lower()
         fmt_library.method_suffix = ''   # assume no suffix
-        fmt_library.overloaded = False
+        fmt_library.overloaded    = False
+        fmt_library.C_prefix      = def_options.get('C_prefix', '')
         util.eval_template(def_options, fmt_library,
                            'C_header_filename', 'wrap{library}.h')
         util.eval_template(def_options, fmt_library,
@@ -189,7 +190,8 @@ class Schema(object):
         fmt_class.cpp_class = name
         fmt_class.lower_class = name.lower()
         fmt_class.upper_class = name.upper()
-        fmt_class.C_prefix = options.get('C_prefix', '')
+        if 'C_prefix' in options:
+            fmt_class.C_prefix = options.C_prefix
 
         if options.F_module_per_class:
             util.eval_template(options, fmt_class,

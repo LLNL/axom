@@ -16,6 +16,8 @@ extern "C" {
 #else
 #endif
 
+void AA_local_function1();
+
 #ifdef __cplusplus
 }
 #endif
