@@ -12,7 +12,7 @@ module sidre_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
     implicit none
     
-    ! splicer begin module_top
+    ! splicer begin .module_top
     !
     ! Type parameters
     ! Must be kept in sync with SidreTypes.h
@@ -33,17 +33,15 @@ module sidre_mod
     integer, parameter :: ATK_C_LONG_T = 15
     integer, parameter :: ATK_C_FLOAT_T = 16
     integer, parameter :: ATK_C_DOUBLE_T = 17
-    ! splicer end module_top
-    ! splicer push class
+    ! splicer end .module_top
     
-    ! splicer push datastore
-    ! splicer begin module_top
-    ! splicer end module_top
+    ! splicer begin class.datastore.module_top
+    ! splicer end class.datastore.module_top
     
     type datastore
         type(C_PTR) obj
-        ! splicer begin component_part
-        ! splicer end component_part
+        ! splicer begin class.datastore.component_part
+        ! splicer end class.datastore.component_part
     contains
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
@@ -51,19 +49,17 @@ module sidre_mod
         procedure :: destroy_buffer => datastore_destroy_buffer
         procedure :: get_num_buffers => datastore_get_num_buffers
         procedure :: print => datastore_print
-        ! splicer begin type_bound_procedure_part
-        ! splicer end type_bound_procedure_part
+        ! splicer begin class.datastore.type_bound_procedure_part
+        ! splicer end class.datastore.type_bound_procedure_part
     end type datastore
-    ! splicer pop datastore
     
-    ! splicer push datagroup
-    ! splicer begin module_top
-    ! splicer end module_top
+    ! splicer begin class.datagroup.module_top
+    ! splicer end class.datagroup.module_top
     
     type datagroup
         type(C_PTR) obj
-        ! splicer begin component_part
-        ! splicer end component_part
+        ! splicer begin class.datagroup.component_part
+        ! splicer end class.datagroup.component_part
     contains
         procedure :: get_name => datagroup_get_name
         procedure :: get_parent => datagroup_get_parent
@@ -93,19 +89,17 @@ module sidre_mod
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
         generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_from_type
-        ! splicer begin type_bound_procedure_part
-        ! splicer end type_bound_procedure_part
+        ! splicer begin class.datagroup.type_bound_procedure_part
+        ! splicer end class.datagroup.type_bound_procedure_part
     end type datagroup
-    ! splicer pop datagroup
     
-    ! splicer push databuffer
-    ! splicer begin module_top
-    ! splicer end module_top
+    ! splicer begin class.databuffer.module_top
+    ! splicer end class.databuffer.module_top
     
     type databuffer
         type(C_PTR) obj
-        ! splicer begin component_part
-        ! splicer end component_part
+        ! splicer begin class.databuffer.component_part
+        ! splicer end class.databuffer.component_part
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: declare => databuffer_declare
@@ -117,19 +111,17 @@ module sidre_mod
         procedure :: get_data => databuffer_get_data
         procedure :: get_total_bytes => databuffer_get_total_bytes
         generic :: allocate => allocate_existing, allocate_from_type
-        ! splicer begin type_bound_procedure_part
-        ! splicer end type_bound_procedure_part
+        ! splicer begin class.databuffer.type_bound_procedure_part
+        ! splicer end class.databuffer.type_bound_procedure_part
     end type databuffer
-    ! splicer pop databuffer
     
-    ! splicer push dataview
-    ! splicer begin module_top
-    ! splicer end module_top
+    ! splicer begin class.dataview.module_top
+    ! splicer end class.dataview.module_top
     
     type dataview
         type(C_PTR) obj
-        ! splicer begin component_part
-        ! splicer end component_part
+        ! splicer begin class.dataview.component_part
+        ! splicer end class.dataview.component_part
     contains
         procedure :: declare => dataview_declare
         procedure :: allocate => dataview_allocate
@@ -144,11 +136,9 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_number_of_elements => dataview_get_number_of_elements
-        ! splicer begin type_bound_procedure_part
-        ! splicer end type_bound_procedure_part
+        ! splicer begin class.dataview.type_bound_procedure_part
+        ! splicer end class.dataview.type_bound_procedure_part
     end type dataview
-    ! splicer pop dataview
-    ! splicer pop class
     
     interface
         
@@ -640,27 +630,24 @@ module sidre_mod
     end interface
 
 contains
-    ! splicer push class
-    ! splicer push datastore
-    ! splicer push method
     
     function datastore_new() result(rv)
         use iso_c_binding
         implicit none
         type(datastore) :: rv
-        ! splicer begin new
+        ! splicer begin class.datastore.method.new
         rv%obj = atk_datastore_new()
-        ! splicer end new
+        ! splicer end class.datastore.method.new
     end function datastore_new
     
     subroutine datastore_delete(obj)
         use iso_c_binding
         implicit none
         type(datastore) :: obj
-        ! splicer begin delete
+        ! splicer begin class.datastore.method.delete
         call atk_datastore_delete(obj%obj)
         obj%obj = C_NULL_PTR
-        ! splicer end delete
+        ! splicer end class.datastore.method.delete
     end subroutine datastore_delete
     
     function datastore_get_root(obj) result(rv)
@@ -668,9 +655,9 @@ contains
         implicit none
         class(datastore) :: obj
         type(datagroup) :: rv
-        ! splicer begin get_root
+        ! splicer begin class.datastore.method.get_root
         rv%obj = atk_datastore_get_root(obj%obj)
-        ! splicer end get_root
+        ! splicer end class.datastore.method.get_root
     end function datastore_get_root
     
     function datastore_get_buffer(obj, idx) result(rv)
@@ -679,9 +666,9 @@ contains
         class(datastore) :: obj
         integer(C_INT) :: idx
         type(databuffer) :: rv
-        ! splicer begin get_buffer
+        ! splicer begin class.datastore.method.get_buffer
         rv%obj = atk_datastore_get_buffer(obj%obj, idx)
-        ! splicer end get_buffer
+        ! splicer end class.datastore.method.get_buffer
     end function datastore_get_buffer
     
     function datastore_create_buffer(obj) result(rv)
@@ -689,9 +676,9 @@ contains
         implicit none
         class(datastore) :: obj
         type(databuffer) :: rv
-        ! splicer begin create_buffer
+        ! splicer begin class.datastore.method.create_buffer
         rv%obj = atk_datastore_create_buffer(obj%obj)
-        ! splicer end create_buffer
+        ! splicer end class.datastore.method.create_buffer
     end function datastore_create_buffer
     
     subroutine datastore_destroy_buffer(obj, id)
@@ -699,9 +686,9 @@ contains
         implicit none
         class(datastore) :: obj
         integer(C_INT) :: id
-        ! splicer begin destroy_buffer
+        ! splicer begin class.datastore.method.destroy_buffer
         call atk_datastore_destroy_buffer(obj%obj, id)
-        ! splicer end destroy_buffer
+        ! splicer end class.datastore.method.destroy_buffer
     end subroutine datastore_destroy_buffer
     
     function datastore_get_num_buffers(obj) result(rv)
@@ -709,35 +696,31 @@ contains
         implicit none
         class(datastore) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_num_buffers
+        ! splicer begin class.datastore.method.get_num_buffers
         rv = atk_datastore_get_num_buffers(obj%obj)
-        ! splicer end get_num_buffers
+        ! splicer end class.datastore.method.get_num_buffers
     end function datastore_get_num_buffers
     
     subroutine datastore_print(obj)
         use iso_c_binding
         implicit none
         class(datastore) :: obj
-        ! splicer begin print
+        ! splicer begin class.datastore.method.print
         call atk_datastore_print(obj%obj)
-        ! splicer end print
+        ! splicer end class.datastore.method.print
     end subroutine datastore_print
-    ! splicer pop method
-    ! splicer begin extra_methods
+    ! splicer begin class.datastore.extra_methods
     !  extra methods for datastore
-    ! splicer end extra_methods
-    ! splicer pop datastore
-    ! splicer push datagroup
-    ! splicer push method
+    ! splicer end class.datastore.extra_methods
     
     function datagroup_get_name(obj) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(kind=C_CHAR, len=1) :: rv
-        ! splicer begin get_name
+        ! splicer begin class.datagroup.method.get_name
         rv = fstr(atk_datagroup_get_name(obj%obj))
-        ! splicer end get_name
+        ! splicer end class.datagroup.method.get_name
     end function datagroup_get_name
     
     function datagroup_get_parent(obj) result(rv)
@@ -745,9 +728,9 @@ contains
         implicit none
         class(datagroup) :: obj
         type(datagroup) :: rv
-        ! splicer begin get_parent
+        ! splicer begin class.datagroup.method.get_parent
         rv%obj = atk_datagroup_get_parent(obj%obj)
-        ! splicer end get_parent
+        ! splicer end class.datagroup.method.get_parent
     end function datagroup_get_parent
     
     function datagroup_get_data_store(obj) result(rv)
@@ -755,9 +738,9 @@ contains
         implicit none
         class(datagroup) :: obj
         type(datastore) :: rv
-        ! splicer begin get_data_store
+        ! splicer begin class.datagroup.method.get_data_store
         rv%obj = atk_datagroup_get_data_store(obj%obj)
-        ! splicer end get_data_store
+        ! splicer end class.datagroup.method.get_data_store
     end function datagroup_get_data_store
     
     function datagroup_get_num_views(obj) result(rv)
@@ -765,9 +748,9 @@ contains
         implicit none
         class(datagroup) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_num_views
+        ! splicer begin class.datagroup.method.get_num_views
         rv = atk_datagroup_get_num_views(obj%obj)
-        ! splicer end get_num_views
+        ! splicer end class.datagroup.method.get_num_views
     end function datagroup_get_num_views
     
     function datagroup_get_num_groups(obj) result(rv)
@@ -775,9 +758,9 @@ contains
         implicit none
         class(datagroup) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_num_groups
+        ! splicer begin class.datagroup.method.get_num_groups
         rv = atk_datagroup_get_num_groups(obj%obj)
-        ! splicer end get_num_groups
+        ! splicer end class.datagroup.method.get_num_groups
     end function datagroup_get_num_groups
     
     function datagroup_has_view(obj, name) result(rv)
@@ -786,9 +769,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         logical :: rv
-        ! splicer begin has_view
+        ! splicer begin class.datagroup.method.has_view
         rv = booltological(atk_datagroup_has_view(obj%obj, trim(name) // C_NULL_CHAR))
-        ! splicer end has_view
+        ! splicer end class.datagroup.method.has_view
     end function datagroup_has_view
     
     function datagroup_create_view_and_buffer_simple(obj, name) result(rv)
@@ -797,9 +780,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         type(dataview) :: rv
-        ! splicer begin create_view_and_buffer_simple
+        ! splicer begin class.datagroup.method.create_view_and_buffer_simple
         rv%obj = atk_datagroup_create_view_and_buffer_simple(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end create_view_and_buffer_simple
+        ! splicer end class.datagroup.method.create_view_and_buffer_simple
     end function datagroup_create_view_and_buffer_simple
     
     function datagroup_create_view_and_buffer_from_type(obj, name, type, len) result(rv)
@@ -810,9 +793,9 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         type(dataview) :: rv
-        ! splicer begin create_view_and_buffer_from_type
+        ! splicer begin class.datagroup.method.create_view_and_buffer_from_type
         rv%obj = atk_datagroup_create_view_and_buffer_from_type(obj%obj, trim(name) // C_NULL_CHAR, type, len)
-        ! splicer end create_view_and_buffer_from_type
+        ! splicer end class.datagroup.method.create_view_and_buffer_from_type
     end function datagroup_create_view_and_buffer_from_type
     
     function datagroup_create_opaque_view(obj, name, opaque_ptr) result(rv)
@@ -822,9 +805,9 @@ contains
         character(*) :: name
         type(C_PTR) :: opaque_ptr
         type(dataview) :: rv
-        ! splicer begin create_opaque_view
+        ! splicer begin class.datagroup.method.create_opaque_view
         rv%obj = atk_datagroup_create_opaque_view(obj%obj, trim(name) // C_NULL_CHAR, opaque_ptr)
-        ! splicer end create_opaque_view
+        ! splicer end class.datagroup.method.create_opaque_view
     end function datagroup_create_opaque_view
     
     function datagroup_create_view(obj, name, buff) result(rv)
@@ -834,9 +817,9 @@ contains
         character(*) :: name
         type(databuffer) :: buff
         type(dataview) :: rv
-        ! splicer begin create_view
+        ! splicer begin class.datagroup.method.create_view
         rv%obj = atk_datagroup_create_view(obj%obj, trim(name) // C_NULL_CHAR, buff%obj)
-        ! splicer end create_view
+        ! splicer end class.datagroup.method.create_view
     end function datagroup_create_view
     
     function datagroup_create_external_view(obj, name, external_data, type, len) result(rv)
@@ -848,9 +831,9 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         type(dataview) :: rv
-        ! splicer begin create_external_view
+        ! splicer begin class.datagroup.method.create_external_view
         rv%obj = atk_datagroup_create_external_view(obj%obj, trim(name) // C_NULL_CHAR, external_data, type, len)
-        ! splicer end create_external_view
+        ! splicer end class.datagroup.method.create_external_view
     end function datagroup_create_external_view
     
     function datagroup_move_view(obj, view) result(rv)
@@ -859,9 +842,9 @@ contains
         class(datagroup) :: obj
         type(dataview) :: view
         type(dataview) :: rv
-        ! splicer begin move_view
+        ! splicer begin class.datagroup.method.move_view
         rv%obj = atk_datagroup_move_view(obj%obj, view%obj)
-        ! splicer end move_view
+        ! splicer end class.datagroup.method.move_view
     end function datagroup_move_view
     
     function datagroup_copy_view(obj, view) result(rv)
@@ -870,9 +853,9 @@ contains
         class(datagroup) :: obj
         type(dataview) :: view
         type(dataview) :: rv
-        ! splicer begin copy_view
+        ! splicer begin class.datagroup.method.copy_view
         rv%obj = atk_datagroup_copy_view(obj%obj, view%obj)
-        ! splicer end copy_view
+        ! splicer end class.datagroup.method.copy_view
     end function datagroup_copy_view
     
     subroutine datagroup_destroy_view_and_buffer(obj, name)
@@ -880,9 +863,9 @@ contains
         implicit none
         class(datagroup) :: obj
         character(*) :: name
-        ! splicer begin destroy_view_and_buffer
+        ! splicer begin class.datagroup.method.destroy_view_and_buffer
         call atk_datagroup_destroy_view_and_buffer(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end destroy_view_and_buffer
+        ! splicer end class.datagroup.method.destroy_view_and_buffer
     end subroutine datagroup_destroy_view_and_buffer
     
     function datagroup_get_view(obj, name) result(rv)
@@ -891,9 +874,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         type(dataview) :: rv
-        ! splicer begin get_view
+        ! splicer begin class.datagroup.method.get_view
         rv%obj = atk_datagroup_get_view(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end get_view
+        ! splicer end class.datagroup.method.get_view
     end function datagroup_get_view
     
     function datagroup_get_view_index(obj, name) result(rv)
@@ -902,9 +885,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         integer(C_INT) :: rv
-        ! splicer begin get_view_index
+        ! splicer begin class.datagroup.method.get_view_index
         rv = atk_datagroup_get_view_index(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end get_view_index
+        ! splicer end class.datagroup.method.get_view_index
     end function datagroup_get_view_index
     
     function datagroup_get_view_name(obj, idx) result(rv)
@@ -913,9 +896,9 @@ contains
         class(datagroup) :: obj
         integer(C_INT) :: idx
         character(kind=C_CHAR, len=1) :: rv
-        ! splicer begin get_view_name
+        ! splicer begin class.datagroup.method.get_view_name
         rv = fstr(atk_datagroup_get_view_name(obj%obj, idx))
-        ! splicer end get_view_name
+        ! splicer end class.datagroup.method.get_view_name
     end function datagroup_get_view_name
     
     function datagroup_has_group(obj, name) result(rv)
@@ -924,9 +907,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         logical :: rv
-        ! splicer begin has_group
+        ! splicer begin class.datagroup.method.has_group
         rv = booltological(atk_datagroup_has_group(obj%obj, trim(name) // C_NULL_CHAR))
-        ! splicer end has_group
+        ! splicer end class.datagroup.method.has_group
     end function datagroup_has_group
     
     function datagroup_create_group(obj, name) result(rv)
@@ -935,9 +918,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         type(datagroup) :: rv
-        ! splicer begin create_group
+        ! splicer begin class.datagroup.method.create_group
         rv%obj = atk_datagroup_create_group(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end create_group
+        ! splicer end class.datagroup.method.create_group
     end function datagroup_create_group
     
     function datagroup_move_group(obj, grp) result(rv)
@@ -946,9 +929,9 @@ contains
         class(datagroup) :: obj
         type(datagroup) :: grp
         type(datagroup) :: rv
-        ! splicer begin move_group
+        ! splicer begin class.datagroup.method.move_group
         rv%obj = atk_datagroup_move_group(obj%obj, grp%obj)
-        ! splicer end move_group
+        ! splicer end class.datagroup.method.move_group
     end function datagroup_move_group
     
     subroutine datagroup_destroy_group(obj, name)
@@ -956,9 +939,9 @@ contains
         implicit none
         class(datagroup) :: obj
         character(*) :: name
-        ! splicer begin destroy_group
+        ! splicer begin class.datagroup.method.destroy_group
         call atk_datagroup_destroy_group(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end destroy_group
+        ! splicer end class.datagroup.method.destroy_group
     end subroutine datagroup_destroy_group
     
     function datagroup_get_group(obj, name) result(rv)
@@ -967,9 +950,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         type(datagroup) :: rv
-        ! splicer begin get_group
+        ! splicer begin class.datagroup.method.get_group
         rv%obj = atk_datagroup_get_group(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end get_group
+        ! splicer end class.datagroup.method.get_group
     end function datagroup_get_group
     
     function datagroup_get_group_index(obj, name) result(rv)
@@ -978,9 +961,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         integer(C_INT) :: rv
-        ! splicer begin get_group_index
+        ! splicer begin class.datagroup.method.get_group_index
         rv = atk_datagroup_get_group_index(obj%obj, trim(name) // C_NULL_CHAR)
-        ! splicer end get_group_index
+        ! splicer end class.datagroup.method.get_group_index
     end function datagroup_get_group_index
     
     function datagroup_get_group_name(obj, idx) result(rv)
@@ -989,18 +972,18 @@ contains
         class(datagroup) :: obj
         integer(C_INT) :: idx
         character(kind=C_CHAR, len=1) :: rv
-        ! splicer begin get_group_name
+        ! splicer begin class.datagroup.method.get_group_name
         rv = fstr(atk_datagroup_get_group_name(obj%obj, idx))
-        ! splicer end get_group_name
+        ! splicer end class.datagroup.method.get_group_name
     end function datagroup_get_group_name
     
     subroutine datagroup_print(obj)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        ! splicer begin print
+        ! splicer begin class.datagroup.method.print
         call atk_datagroup_print(obj%obj)
-        ! splicer end print
+        ! splicer end class.datagroup.method.print
     end subroutine datagroup_print
     
     subroutine datagroup_save(obj, obase, protocol)
@@ -1009,9 +992,9 @@ contains
         class(datagroup) :: obj
         character(*) :: obase
         character(*) :: protocol
-        ! splicer begin save
+        ! splicer begin class.datagroup.method.save
         call atk_datagroup_save(obj%obj, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
-        ! splicer end save
+        ! splicer end class.datagroup.method.save
     end subroutine datagroup_save
     
     subroutine datagroup_load(obj, obase, protocol)
@@ -1020,25 +1003,21 @@ contains
         class(datagroup) :: obj
         character(*) :: obase
         character(*) :: protocol
-        ! splicer begin load
+        ! splicer begin class.datagroup.method.load
         call atk_datagroup_load(obj%obj, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
-        ! splicer end load
+        ! splicer end class.datagroup.method.load
     end subroutine datagroup_load
-    ! splicer pop method
-    ! splicer begin extra_methods
-    ! splicer end extra_methods
-    ! splicer pop datagroup
-    ! splicer push databuffer
-    ! splicer push method
+    ! splicer begin class.datagroup.extra_methods
+    ! splicer end class.datagroup.extra_methods
     
     function databuffer_get_index(obj) result(rv)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: rv
-        ! splicer begin get_index
+        ! splicer begin class.databuffer.method.get_index
         rv = atk_databuffer_get_index(obj%obj)
-        ! splicer end get_index
+        ! splicer end class.databuffer.method.get_index
     end function databuffer_get_index
     
     subroutine databuffer_declare(obj, type, len)
@@ -1047,9 +1026,9 @@ contains
         class(databuffer) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin declare
+        ! splicer begin class.databuffer.method.declare
         call atk_databuffer_declare(obj%obj, type, len)
-        ! splicer end declare
+        ! splicer end class.databuffer.method.declare
     end subroutine databuffer_declare
     
     subroutine databuffer_declare_external(obj, external_data, type, len)
@@ -1059,18 +1038,18 @@ contains
         type(C_PTR) :: external_data
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin declare_external
+        ! splicer begin class.databuffer.method.declare_external
         call atk_databuffer_declare_external(obj%obj, external_data, type, len)
-        ! splicer end declare_external
+        ! splicer end class.databuffer.method.declare_external
     end subroutine databuffer_declare_external
     
     subroutine databuffer_allocate_existing(obj)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        ! splicer begin allocate_existing
+        ! splicer begin class.databuffer.method.allocate_existing
         call atk_databuffer_allocate_existing(obj%obj)
-        ! splicer end allocate_existing
+        ! splicer end class.databuffer.method.allocate_existing
     end subroutine databuffer_allocate_existing
     
     subroutine databuffer_allocate_from_type(obj, type, len)
@@ -1079,9 +1058,9 @@ contains
         class(databuffer) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin allocate_from_type
+        ! splicer begin class.databuffer.method.allocate_from_type
         call atk_databuffer_allocate_from_type(obj%obj, type, len)
-        ! splicer end allocate_from_type
+        ! splicer end class.databuffer.method.allocate_from_type
     end subroutine databuffer_allocate_from_type
     
     subroutine databuffer_reallocate(obj, type, len)
@@ -1090,9 +1069,9 @@ contains
         class(databuffer) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin reallocate
+        ! splicer begin class.databuffer.method.reallocate
         call atk_databuffer_reallocate(obj%obj, type, len)
-        ! splicer end reallocate
+        ! splicer end class.databuffer.method.reallocate
     end subroutine databuffer_reallocate
     
     function databuffer_is_external(obj) result(rv)
@@ -1100,9 +1079,9 @@ contains
         implicit none
         class(databuffer) :: obj
         logical :: rv
-        ! splicer begin is_external
+        ! splicer begin class.databuffer.method.is_external
         rv = booltological(atk_databuffer_is_external(obj%obj))
-        ! splicer end is_external
+        ! splicer end class.databuffer.method.is_external
     end function databuffer_is_external
     
     function databuffer_get_data(obj) result(rv)
@@ -1110,9 +1089,9 @@ contains
         implicit none
         class(databuffer) :: obj
         type(C_PTR) :: rv
-        ! splicer begin get_data
+        ! splicer begin class.databuffer.method.get_data
         rv = atk_databuffer_get_data(obj%obj)
-        ! splicer end get_data
+        ! splicer end class.databuffer.method.get_data
     end function databuffer_get_data
     
     function databuffer_get_total_bytes(obj) result(rv)
@@ -1120,16 +1099,12 @@ contains
         implicit none
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_total_bytes
+        ! splicer begin class.databuffer.method.get_total_bytes
         rv = atk_databuffer_get_total_bytes(obj%obj)
-        ! splicer end get_total_bytes
+        ! splicer end class.databuffer.method.get_total_bytes
     end function databuffer_get_total_bytes
-    ! splicer pop method
-    ! splicer begin extra_methods
-    ! splicer end extra_methods
-    ! splicer pop databuffer
-    ! splicer push dataview
-    ! splicer push method
+    ! splicer begin class.databuffer.extra_methods
+    ! splicer end class.databuffer.extra_methods
     
     subroutine dataview_declare(obj, type, len)
         use iso_c_binding
@@ -1137,9 +1112,9 @@ contains
         class(dataview) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin declare
+        ! splicer begin class.dataview.method.declare
         call atk_dataview_declare(obj%obj, type, len)
-        ! splicer end declare
+        ! splicer end class.dataview.method.declare
     end subroutine dataview_declare
     
     subroutine dataview_allocate(obj, type, len)
@@ -1148,9 +1123,9 @@ contains
         class(dataview) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin allocate
+        ! splicer begin class.dataview.method.allocate
         call atk_dataview_allocate(obj%obj, type, len)
-        ! splicer end allocate
+        ! splicer end class.dataview.method.allocate
     end subroutine dataview_allocate
     
     subroutine dataview_reallocate(obj, type, len)
@@ -1159,9 +1134,9 @@ contains
         class(dataview) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin reallocate
+        ! splicer begin class.dataview.method.reallocate
         call atk_dataview_reallocate(obj%obj, type, len)
-        ! splicer end reallocate
+        ! splicer end class.dataview.method.reallocate
     end subroutine dataview_reallocate
     
     function dataview_has_buffer(obj) result(rv)
@@ -1169,9 +1144,9 @@ contains
         implicit none
         class(dataview) :: obj
         logical :: rv
-        ! splicer begin has_buffer
+        ! splicer begin class.dataview.method.has_buffer
         rv = booltological(atk_dataview_has_buffer(obj%obj))
-        ! splicer end has_buffer
+        ! splicer end class.dataview.method.has_buffer
     end function dataview_has_buffer
     
     function dataview_is_opaque(obj) result(rv)
@@ -1179,9 +1154,9 @@ contains
         implicit none
         class(dataview) :: obj
         logical :: rv
-        ! splicer begin is_opaque
+        ! splicer begin class.dataview.method.is_opaque
         rv = booltological(atk_dataview_is_opaque(obj%obj))
-        ! splicer end is_opaque
+        ! splicer end class.dataview.method.is_opaque
     end function dataview_is_opaque
     
     function dataview_get_name(obj) result(rv)
@@ -1189,9 +1164,9 @@ contains
         implicit none
         class(dataview) :: obj
         character(kind=C_CHAR, len=1) :: rv
-        ! splicer begin get_name
+        ! splicer begin class.dataview.method.get_name
         rv = fstr(atk_dataview_get_name(obj%obj))
-        ! splicer end get_name
+        ! splicer end class.dataview.method.get_name
     end function dataview_get_name
     
     function dataview_get_opaque(obj) result(rv)
@@ -1199,9 +1174,9 @@ contains
         implicit none
         class(dataview) :: obj
         type(C_PTR) :: rv
-        ! splicer begin get_opaque
+        ! splicer begin class.dataview.method.get_opaque
         rv = atk_dataview_get_opaque(obj%obj)
-        ! splicer end get_opaque
+        ! splicer end class.dataview.method.get_opaque
     end function dataview_get_opaque
     
     function dataview_get_buffer(obj) result(rv)
@@ -1209,9 +1184,9 @@ contains
         implicit none
         class(dataview) :: obj
         type(databuffer) :: rv
-        ! splicer begin get_buffer
+        ! splicer begin class.dataview.method.get_buffer
         rv%obj = atk_dataview_get_buffer(obj%obj)
-        ! splicer end get_buffer
+        ! splicer end class.dataview.method.get_buffer
     end function dataview_get_buffer
     
     function dataview_get_data_pointer(obj) result(rv)
@@ -1219,9 +1194,9 @@ contains
         implicit none
         class(dataview) :: obj
         type(C_PTR) :: rv
-        ! splicer begin get_data_pointer
+        ! splicer begin class.dataview.method.get_data_pointer
         rv = atk_dataview_get_data_pointer(obj%obj)
-        ! splicer end get_data_pointer
+        ! splicer end class.dataview.method.get_data_pointer
     end function dataview_get_data_pointer
     
     function dataview_get_owning_group(obj) result(rv)
@@ -1229,9 +1204,9 @@ contains
         implicit none
         class(dataview) :: obj
         type(datagroup) :: rv
-        ! splicer begin get_owning_group
+        ! splicer begin class.dataview.method.get_owning_group
         rv%obj = atk_dataview_get_owning_group(obj%obj)
-        ! splicer end get_owning_group
+        ! splicer end class.dataview.method.get_owning_group
     end function dataview_get_owning_group
     
     function dataview_get_type_id(obj) result(rv)
@@ -1239,9 +1214,9 @@ contains
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: rv
-        ! splicer begin get_type_id
+        ! splicer begin class.dataview.method.get_type_id
         rv = atk_dataview_get_type_id(obj%obj)
-        ! splicer end get_type_id
+        ! splicer end class.dataview.method.get_type_id
     end function dataview_get_type_id
     
     function dataview_get_total_bytes(obj) result(rv)
@@ -1249,9 +1224,9 @@ contains
         implicit none
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_total_bytes
+        ! splicer begin class.dataview.method.get_total_bytes
         rv = atk_dataview_get_total_bytes(obj%obj)
-        ! splicer end get_total_bytes
+        ! splicer end class.dataview.method.get_total_bytes
     end function dataview_get_total_bytes
     
     function dataview_get_number_of_elements(obj) result(rv)
@@ -1259,14 +1234,11 @@ contains
         implicit none
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin get_number_of_elements
+        ! splicer begin class.dataview.method.get_number_of_elements
         rv = atk_dataview_get_number_of_elements(obj%obj)
-        ! splicer end get_number_of_elements
+        ! splicer end class.dataview.method.get_number_of_elements
     end function dataview_get_number_of_elements
-    ! splicer pop method
-    ! splicer begin extra_methods
-    ! splicer end extra_methods
-    ! splicer pop dataview
-    ! splicer pop class
+    ! splicer begin class.dataview.extra_methods
+    ! splicer end class.dataview.extra_methods
 
 end module sidre_mod

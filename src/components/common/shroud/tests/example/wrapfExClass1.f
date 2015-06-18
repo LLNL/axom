@@ -7,19 +7,17 @@ module exclass1_mod
     use iso_c_binding
     implicit none
     
-    ! splicer push class
     
-    ! splicer push exclass1
-    ! splicer begin module_top
+    ! splicer begin class.exclass1.module_top
     top of module splicer  1
-    ! splicer end module_top
+    ! splicer end class.exclass1.module_top
     
     type exclass1
         type(C_PTR) obj
-        ! splicer begin component_part
+        ! splicer begin class.exclass1.component_part
           component part 1a
           component part 1b
-        ! splicer end component_part
+        ! splicer end class.exclass1.component_part
     contains
         procedure :: increment_count => exclass1_increment_count
         procedure :: get_name => exclass1_get_name
@@ -31,12 +29,10 @@ module exclass1_mod
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
         generic :: get_value => get_value_from_int, get_value_1
-        ! splicer begin type_bound_procedure_part
+        ! splicer begin class.exclass1.type_bound_procedure_part
           type bound procedure part 1
-        ! splicer end type_bound_procedure_part
+        ! splicer end class.exclass1.type_bound_procedure_part
     end type exclass1
-    ! splicer pop exclass1
-    ! splicer pop class
     
     interface
         
@@ -132,28 +128,25 @@ module exclass1_mod
     end interface
 
 contains
-    ! splicer push class
-    ! splicer push exclass1
-    ! splicer push method
     
     function exclass1_new(name) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: name
         type(exclass1) :: rv
-        ! splicer begin new
+        ! splicer begin class.exclass1.method.new
         rv%obj = aa_exclass1_new(trim(name) // C_NULL_CHAR)
-        ! splicer end new
+        ! splicer end class.exclass1.method.new
     end function exclass1_new
     
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none
         type(exclass1) :: obj
-        ! splicer begin delete
+        ! splicer begin class.exclass1.method.delete
         call aa_exclass1_delete(obj%obj)
         obj%obj = C_NULL_PTR
-        ! splicer end delete
+        ! splicer end class.exclass1.method.delete
     end subroutine exclass1_delete
     
     function exclass1_increment_count(obj, incr) result(rv)
@@ -162,9 +155,9 @@ contains
         class(exclass1) :: obj
         integer(C_INT) :: incr
         integer(C_INT) :: rv
-        ! splicer begin increment_count
+        ! splicer begin class.exclass1.method.increment_count
         rv = aa_exclass1_increment_count(obj%obj, incr)
-        ! splicer end increment_count
+        ! splicer end class.exclass1.method.increment_count
     end function exclass1_increment_count
     
     function exclass1_get_name(obj) result(rv)
@@ -172,9 +165,9 @@ contains
         implicit none
         class(exclass1) :: obj
         character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%obj)) :: rv
-        ! splicer begin get_name
+        ! splicer begin class.exclass1.method.get_name
         rv = fstr(aa_exclass1_get_name(obj%obj))
-        ! splicer end get_name
+        ! splicer end class.exclass1.method.get_name
     end function exclass1_get_name
     
     function exclass1_get_name_length(obj) result(rv)
@@ -182,9 +175,9 @@ contains
         implicit none
         class(exclass1) :: obj
         integer(C_INT) :: rv
-        ! splicer begin get_name_length
+        ! splicer begin class.exclass1.method.get_name_length
         rv = aa_exclass1_get_name_length(obj%obj)
-        ! splicer end get_name_length
+        ! splicer end class.exclass1.method.get_name_length
     end function exclass1_get_name_length
     
     function exclass1_get_root(obj) result(rv)
@@ -192,9 +185,9 @@ contains
         implicit none
         class(exclass1) :: obj
         type(exclass2) :: rv
-        ! splicer begin get_root
+        ! splicer begin class.exclass1.method.get_root
         rv%obj = aa_exclass1_get_root(obj%obj)
-        ! splicer end get_root
+        ! splicer end class.exclass1.method.get_root
     end function exclass1_get_root
     
     function exclass1_get_value_from_int(obj, value) result(rv)
@@ -203,9 +196,9 @@ contains
         class(exclass1) :: obj
         integer(C_INT) :: value
         integer(C_INT) :: rv
-        ! splicer begin get_value_from_int
+        ! splicer begin class.exclass1.method.get_value_from_int
         rv = aa_exclass1_get_value_from_int(obj%obj, value)
-        ! splicer end get_value_from_int
+        ! splicer end class.exclass1.method.get_value_from_int
     end function exclass1_get_value_from_int
     
     function exclass1_get_value_1(obj, value) result(rv)
@@ -214,9 +207,9 @@ contains
         class(exclass1) :: obj
         integer(C_LONG) :: value
         integer(C_LONG) :: rv
-        ! splicer begin get_value_1
+        ! splicer begin class.exclass1.method.get_value_1
         rv = aa_exclass1_get_value_1(obj%obj, value)
-        ! splicer end get_value_1
+        ! splicer end class.exclass1.method.get_value_1
     end function exclass1_get_value_1
     
     function exclass1_get_addr(obj) result(rv)
@@ -224,9 +217,9 @@ contains
         implicit none
         class(exclass1) :: obj
         type(C_PTR) :: rv
-        ! splicer begin get_addr
+        ! splicer begin class.exclass1.method.get_addr
         rv = aa_exclass1_get_addr(obj%obj)
-        ! splicer end get_addr
+        ! splicer end class.exclass1.method.get_addr
     end function exclass1_get_addr
     
     function exclass1_has_addr(obj, in) result(rv)
@@ -235,24 +228,21 @@ contains
         class(exclass1) :: obj
         logical :: in
         logical :: rv
-        ! splicer begin has_addr
+        ! splicer begin class.exclass1.method.has_addr
         rv = booltological(aa_exclass1_has_addr(obj%obj, logicaltobool(in)))
-        ! splicer end has_addr
+        ! splicer end class.exclass1.method.has_addr
     end function exclass1_has_addr
     
     subroutine exclass1_splicer_special(obj)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        ! splicer begin splicer_special
+        ! splicer begin class.exclass1.method.splicer_special
         blah blah blah
-        ! splicer end splicer_special
+        ! splicer end class.exclass1.method.splicer_special
     end subroutine exclass1_splicer_special
-    ! splicer pop method
-    ! splicer begin extra_methods
+    ! splicer begin class.exclass1.extra_methods
       insert extra methods here
-    ! splicer end extra_methods
-    ! splicer pop exclass1
-    ! splicer pop class
+    ! splicer end class.exclass1.extra_methods
 
 end module exclass1_mod

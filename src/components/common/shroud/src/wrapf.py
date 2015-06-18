@@ -60,29 +60,28 @@ class Wrapf(object):
         self.splicer_stack.append(level)
         self.splicer_names.append(name)
         self.splicer_path = '.'.join(self.splicer_names) + '.'
-        out.append('! splicer push %s' % name)
+#        out.append('! splicer push %s' % name)
 
+#X changes for push/pop instead of full paths
     def _pop_splicer(self, name, out):
         # XXX maybe use name for error checking, must pop in reverse order
         self.splicer_stack.pop()
         self.splicer_names.pop()
         self.splicer_path = '.'.join(self.splicer_names) + '.'
-        out.append('! splicer pop %s' % name)
+#X        out.append('! splicer pop %s' % name)
 
     def _create_splicer(self, name, out, default=None):
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
-        out.append('! splicer begin %s' % name)
+#X        out.append('! splicer begin %s' % name)
+        out.append('! splicer begin %s%s' % (self.splicer_path, name))
         if default:
             out.extend(default)
         else:
             out.extend(self.splicer_stack[-1].get(name, []))
-        out.append('! splicer end %s' % name)
-        # XXX full paths
-#        out.append('! splicer begin %s%s' % (self.splicer_path, name))
-#        out.extend(self.splicer_stack[-1].get(name, []))
-#        out.append('! splicer end %s%s' % (self.splicer_path, name))
+#X        out.append('! splicer end %s' % name)
+        out.append('! splicer end %s%s' % (self.splicer_path, name))
 
     def _c_type(self, arg):
         """
@@ -478,9 +477,9 @@ class Wrapf(object):
             output.append('')
             self._create_splicer('module_top', output)
 
-        output.append('! splicer push class')
+#X        output.append('! splicer push class')
         output.extend(self.f_type_decl)
-        output.append('! splicer pop class')
+#X        output.append('! splicer pop class')
         output.append('')
 
         output.extend(self.c_interface)
