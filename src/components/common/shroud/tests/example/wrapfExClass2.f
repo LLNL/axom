@@ -65,7 +65,7 @@ module exclass2_mod
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), intent(IN) :: in
+            type(C_PTR), value, intent(IN) :: in
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
         

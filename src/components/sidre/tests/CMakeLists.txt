@@ -71,7 +71,3 @@ if (ENABLE_FORTRAN)
   endforeach()
 endif()
 
-
-
-#add_executable(tester tester.cpp F_sidre_view2.f90)
-#target_link_libraries( tester fruit sidre slic conduit)

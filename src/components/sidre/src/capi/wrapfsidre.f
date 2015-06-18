@@ -280,7 +280,7 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            type(C_PTR), intent(IN) :: opaque_ptr
+            type(C_PTR), value, intent(IN) :: opaque_ptr
             type(C_PTR) :: rv
         end function atk_datagroup_create_opaque_view
         
@@ -290,7 +290,7 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            type(C_PTR), intent(IN) :: buff
+            type(C_PTR), value, intent(IN) :: buff
             type(C_PTR) :: rv
         end function atk_datagroup_create_view
         
@@ -300,7 +300,7 @@ module sidre_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR) :: name(*)
-            type(C_PTR), intent(IN) :: external_data
+            type(C_PTR), value, intent(IN) :: external_data
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
             type(C_PTR) :: rv
@@ -311,7 +311,7 @@ module sidre_mod
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), intent(IN) :: view
+            type(C_PTR), value, intent(IN) :: view
             type(C_PTR) :: rv
         end function atk_datagroup_move_view
         
@@ -320,7 +320,7 @@ module sidre_mod
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), intent(IN) :: view
+            type(C_PTR), value, intent(IN) :: view
             type(C_PTR) :: rv
         end function atk_datagroup_copy_view
         
@@ -382,7 +382,7 @@ module sidre_mod
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), intent(IN) :: grp
+            type(C_PTR), value, intent(IN) :: grp
             type(C_PTR) :: rv
         end function atk_datagroup_move_group
         
@@ -476,7 +476,7 @@ module sidre_mod
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), intent(IN) :: external_data
+            type(C_PTR), value, intent(IN) :: external_data
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_declare_external

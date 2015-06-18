@@ -103,6 +103,7 @@ class Wrapf(object):
         is_ptr = (arg['attrs'].get('ptr', False) or
                   arg['attrs'].get('reference', False))
         intent = arg['attrs'].get('intent', None)
+        is_value = arg['attrs'].get('value', False)
 
         typ = typedef.c_fortran
         if typedef.base == 'string':
@@ -111,7 +112,7 @@ class Wrapf(object):
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
             t.append(typ)
-            if not is_ptr:
+            if is_value:
                 t.append(', value')
             if intent:
                 t.append(', intent(%s)' % intent.upper())
@@ -348,8 +349,11 @@ class Wrapf(object):
         for arg in node.get('args', []):
             # default argument's intent
             # XXX look at const, ptr
-            if 'intent' not in arg['attrs']:
-                arg['attrs']['intent'] = 'in'
+            attrs = arg['attrs']
+            if 'intent' not in attrs:
+                attrs['intent'] = 'in'
+            if 'value' not in attrs:
+                attrs['value'] = True
 
             arg_c_names.append(arg['name'])
             arg_c_decl.append(self._c_decl(arg))

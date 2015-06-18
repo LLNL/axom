@@ -508,8 +508,8 @@ program tester
   call create_views
   call int_buffer_from_view
   call int_buffer_from_view_conduit_value
-!  call int_array_multi_view
-!  call init_int_array_multi_view
+  call int_array_multi_view
+  call init_int_array_multi_view
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque
