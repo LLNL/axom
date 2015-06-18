@@ -1,1 +1,1 @@
-bgqos-gnu.cmake
+bgqos/gnu.cmake
