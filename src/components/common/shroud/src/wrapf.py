@@ -55,19 +55,19 @@ class Wrapf(object):
     def _begin_class(self):
         self.f_type_generic = {} # look for generic methods
 
-    def _push_splicer(self, name):
+    def _push_splicer(self, name, out):
         level = self.splicer_stack[-1].setdefault(name, {})
         self.splicer_stack.append(level)
         self.splicer_names.append(name)
         self.splicer_path = '.'.join(self.splicer_names) + '.'
-        return '! splicer push %s' % name
+        out.append('! splicer push %s' % name)
 
-    def _pop_splicer(self, name):
+    def _pop_splicer(self, name, out):
         # XXX maybe use name for error checking, must pop in reverse order
         self.splicer_stack.pop()
         self.splicer_names.pop()
         self.splicer_path = '.'.join(self.splicer_names) + '.'
-        return '! splicer pop %s' % name
+        out.append('! splicer pop %s' % name)
 
     def _create_splicer(self, name, out, default=None):
         # The prefix is needed when two different sets of output are being create
@@ -178,7 +178,7 @@ class Wrapf(object):
 
         self._begin_output_file()
         if not options.F_module_per_class:
-            self.impl.append(self._push_splicer('class'))
+            self._push_splicer('class', self.impl)
         for node in self.tree['classes']:
             self._begin_class()
 
@@ -186,17 +186,17 @@ class Wrapf(object):
             # how to decide module name, module per class
 #            module_name = node['options'].setdefault('module_name', name.lower())
             if options.F_module_per_class:
-                self.impl.append(self._push_splicer('class'))
+                self._push_splicer('class', self.impl)
             self.wrap_class(node)
             if options.F_module_per_class:
-                self.impl.append(self._pop_splicer('class'))
+                self._pop_splicer('class', self.impl)
                 self._end_output_file()
                 self.write_module(node)
                 self._begin_output_file()
 
         if not options.F_module_per_class:
             # put all classes into one module
-            self.impl.append(self._pop_splicer('class'))
+            self._pop_splicer('class', self.impl)
             self.tree['F_module_dependencies'] = []
             self._end_output_file()
             self.write_module(self.tree)
@@ -222,18 +222,18 @@ class Wrapf(object):
         self.type_bound_part = []
 
         # wrap methods
-        self.impl.append(self._push_splicer(fmt_class.lower_class))
-        self.impl.append(self._push_splicer('method'))
+        self._push_splicer(fmt_class.lower_class, self.impl)
+        self._push_splicer('method', self.impl)
         for method in node['methods']:
             self.wrap_method(node, method)
-        self.impl.append(self._pop_splicer('method'))
+        self._pop_splicer('method', self.impl)
         self._create_splicer('extra_methods', self.impl)
-        self.impl.append(self._pop_splicer(fmt_class.lower_class))
+        self._pop_splicer(fmt_class.lower_class, self.impl)
 
 
         # type declaration
         self.f_type_decl.append('')
-        self.f_type_decl.append(self._push_splicer(fmt_class.lower_class))
+        self._push_splicer(fmt_class.lower_class, self.f_type_decl)
         self._create_splicer('module_top', self.f_type_decl)
         self.f_type_decl.extend([
                 '',
@@ -259,7 +259,7 @@ class Wrapf(object):
                  -1,
                  wformat('end type {F_derived_name}', fmt_class),
                  ])
-        self.f_type_decl.append(self._pop_splicer(fmt_class.lower_class))
+        self._pop_splicer(fmt_class.lower_class, self.f_type_decl)
 
     def wrap_method(self, cls, node):
         """
