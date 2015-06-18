@@ -85,24 +85,26 @@ class Wrapc(object):
         fmt_library.C_const = ''
 
         for node in self.tree['classes']:
-            fmt_class = node['fmt']
-            self._begin_output_file()
-            name = node['name']
-            self.wrap_class(node)
-            c_header = fmt_class.C_header_filename
-            c_impl   = fmt_class.C_impl_filename
-            self.write_header(node, c_header, cls=True)
-            self.write_impl(node, c_header, c_impl, cls=True)
+            self.write_file(node, self.wrap_class, True)
 
         if self.tree['functions']:
-            fmt = fmt_library
-            self._begin_output_file()
-            for node in self.tree['functions']:
-                self.wrap_function(node)
-            c_header = fmt.C_header_filename
-            c_impl   = fmt.C_impl_filename
-            self.write_header(node, c_header)
-            self.write_impl(node, c_header, c_impl)
+            self.write_file(self.tree, self.wrap_functions, False)
+
+    def write_file(self, node, worker, cls):
+        """Write a file for the library and it's functions or
+        a class and it's methods.
+        """
+        fmt = node['fmt']
+        self._begin_output_file()
+        worker(node)
+        c_header = fmt.C_header_filename
+        c_impl   = fmt.C_impl_filename
+        self.write_header(node, c_header, cls)
+        self.write_impl(node, c_header, c_impl, cls)
+
+    def wrap_functions(self, tree):
+        for node in tree['functions']:
+            self.wrap_function(node)
 
     def write_copyright(self, fp):
         for line in self.tree.get('copyright', []):
