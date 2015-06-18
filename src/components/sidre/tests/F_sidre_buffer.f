@@ -46,7 +46,6 @@ contains
     integer i
     
     ds = datastore_new()
-
     dbuff = ds%create_buffer()
 
     call dbuff%declare(ATK_C_INT_T, 10_8)
@@ -77,6 +76,7 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    ds = datastore_new()
     dbuff = ds%create_buffer()
 
     call dbuff%allocate(ATK_C_INT_T, 10_8)
@@ -152,11 +152,10 @@ program tester
   use sidre_buffer
   call init_fruit
 
-! XXX ERROR: `log` is called with a NULL logger!
-!  call create_buffers
-!  call alloc_buffer_for_int_array
-!  call init_buffer_for_int_array
-!  call realloc_buffer
+  call create_buffers
+  call alloc_buffer_for_int_array
+  call init_buffer_for_int_array
+  call realloc_buffer
 
   call fruit_summary
   call fruit_finalize

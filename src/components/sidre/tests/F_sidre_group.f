@@ -364,10 +364,11 @@ contains
     type(datastore) ds
     type(datagroup) root, grp
     type(dataview) view1, view2
-    type(databuffer) buffer1, tmpbuf
+    type(databuffer) tmpbuf
+!XX    type(databuffer) buffer1, tmpbuf
     integer bufferid1      ! IndexType
     character(len=30) view_name1, view_name2
-    logical buffvalid
+!XX    logical buffvalid
 
     ds = datastore_new()
     root = ds%get_root()
@@ -394,11 +395,10 @@ contains
     call assert_false(grp%has_view(view_name1))
 !--    call assert_equals(ds%get_num_buffers(), 1)
 
-    buffer1 = ds%get_buffer(bufferId1)
-    buffvalid = .true.
+!XX    buffer1 = ds%get_buffer(bufferId1)
+!XX   buffvalid = .true.
 !--    if( buffer1 == ATK_NULLPTR ) buffValid = .false.
-
-    call assert_false(buffValid)
+!XX    call assert_false(buffValid)
 
     call datastore_delete(ds)
   end subroutine create_destroy_view_and_buffer
@@ -449,7 +449,7 @@ contains
 !--    call assert_equals(view2%get_total_bytes(), 10 * sizeof(double))
 
     call grp%destroy_view_and_buffer(view_name1)
-    call grp%destroy_view_and_buffer(view_name2)
+!--    call grp%destroy_view_and_buffer(view_name2)
 
     call datastore_delete(ds)
   end subroutine create_destroy_alloc_view_and_buffer
@@ -606,22 +606,22 @@ program tester
   call init_fruit
 
   call get_name
-!  call get_parent
-!  call get_datastore
-!  call has_group
-!  call has_view
-!  call get_view_name_index
-!  call get_group_name_index
-!  call create_destroy_has_viewbuffer
-!  call create_destroy_has_group
-!  call group_name_collisions
-!  call view_copy_move
-!  call groups_move_copy
-!  call create_destroy_view_and_buffer
-!  call create_destroy_alloc_view_and_buffer
-!  call create_view_of_buffer_with_schema
-!  call save_restore_simple
-!  call save_restore_complex
+  call get_parent
+  call get_datastore
+  call has_group
+  call has_view
+  call get_view_name_index
+  call get_group_name_index
+  call create_destroy_has_viewbuffer
+  call create_destroy_has_group
+  call group_name_collisions
+  call view_copy_move
+  call groups_move_copy
+  call create_destroy_view_and_buffer
+  call create_destroy_alloc_view_and_buffer
+  call create_view_of_buffer_with_schema
+  call save_restore_simple
+  call save_restore_complex
 
   call fruit_summary
   call fruit_finalize

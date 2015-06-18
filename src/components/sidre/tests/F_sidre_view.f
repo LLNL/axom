@@ -131,7 +131,7 @@ contains
 
     dv_e = root%create_view("even", dbuff)
     dv_o = root%create_view("odd", dbuff)
-!-XXXX-long    call assert_equals(dbuff%get_num_views(), 2);
+    call assert_true(dbuff%get_num_views() == 2)
 
 !--#ifdef XXX
 !--  dv_e->apply(DataType::uint32(5,0,8))
@@ -481,7 +481,7 @@ contains
     opq_view = root%create_opaque_view("my_opaque", src_ptr)
 
     ! we shouldn't have any buffers
-!XX    call assert_equals(ds%get_num_buffers(), 0)
+    call assert_true(ds%get_num_buffers() == 0)
 
     call assert_true(opq_view%is_opaque())
 
