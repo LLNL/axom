@@ -69,12 +69,15 @@ class Wrapf(object):
         self.splicer_path = '.'.join(self.splicer_names) + '.'
         return '! splicer pop %s' % name
 
-    def _create_splicer(self, name, out):
+    def _create_splicer(self, name, out, default=None):
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
         out.append('! splicer begin %s' % name)
-        out.extend(self.splicer_stack[-1].get(name, []))
+        if default:
+            out.extend(default)
+        else:
+            out.extend(self.splicer_stack[-1].get(name, []))
         out.append('! splicer end %s' % name)
         # XXX full paths
 #        out.append('! splicer begin %s%s' % (self.splicer_path, name))
@@ -427,9 +430,7 @@ class Wrapf(object):
         impl.extend(arg_f_use)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
-        impl.append(wformat('! splicer begin {F_name_method}', fmt_func))
-        impl.extend(F_code)
-        impl.append(wformat('! splicer end {F_name_method}', fmt_func))
+        self._create_splicer(fmt_func.F_name_method, impl, F_code)
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
