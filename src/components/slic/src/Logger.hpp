@@ -26,6 +26,7 @@
 // C/C++ includes
 #include <string> // for STL string
 #include <vector> // for STL vector
+#include <map>    // for STL map
 
 namespace asctoolkit {
 
@@ -72,12 +73,24 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Registers the given log stream to this Logger instance.
-   * \param [in] ls pointer to a user-supplied LogStream object.
+   * \brief Binds the given stream to the given level for this Logger instance.
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] level the level that this stream will be associated with.
+   * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    *****************************************************************************
    */
-  void addLogStream( LogStream* ls );
+  void addStreamToLevel( LogStream* ls, message::Level level );
+
+  /*!
+   *****************************************************************************
+   * \brief Binds the given stream to all the levels for this Logger instance.
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   * \note The Logger takes ownership of the LogStream object.
+   * \pre ls != NULL.
+   *****************************************************************************
+   */
+  void addStreamToAllLevels( LogStream* ls );
 
 
   /*!
@@ -270,7 +283,8 @@ private:
   ///@{
 
   bool m_isEnabled[ message::Num_Levels ];
-  std::vector< LogStream* > m_logStreams;
+  std::map< LogStream*, LogStream* > m_streamObjectsManager;
+  std::vector< LogStream* > m_logStreams[ message::Num_Levels ];
 
   ///@}
 

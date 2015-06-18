@@ -31,7 +31,7 @@ namespace asctoolkit {
 
 namespace slic {
 
-Logger* Logger::s_Logger = static_cast< Logger* >( ATK_NULLPTR );
+Logger* Logger::s_Logger = ATK_NULLPTR;
 
 
 //------------------------------------------------------------------------------
@@ -44,20 +44,23 @@ Logger::Logger()
 
   }
 
+
 }
 
 //------------------------------------------------------------------------------
 Logger::~Logger()
 {
-  unsigned nstreams = m_logStreams.size( );
-  for ( unsigned istream=0; istream < nstreams; ++istream ) {
+  std::map< LogStream*, LogStream* >::iterator it =
+      m_streamObjectsManager.begin();
+  for ( ; it != m_streamObjectsManager.end(); ++it ) {
+    delete it->second;
+  } // END for all logStreams
 
-    delete m_logStreams[ istream ];
-    m_logStreams[ istream ] = static_cast< LogStream* >( ATK_NULLPTR );
+  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
 
-  } // END for all streams
+    m_logStreams[ level ].clear();
 
-  m_logStreams.clear() ;
+  } // END for all levels
 
 }
 
@@ -71,7 +74,7 @@ void Logger::setLoggingLevel( message::Level level )
 }
 
 //------------------------------------------------------------------------------
-void Logger::addLogStream( LogStream* ls )
+void Logger::addStreamToLevel( LogStream* ls, message::Level level )
 {
   if ( ls == ATK_NULLPTR ) {
 
@@ -80,7 +83,27 @@ void Logger::addLogStream( LogStream* ls )
 
   }
 
-  m_logStreams.push_back( ls );
+  m_logStreams[ level ].push_back( ls );
+  m_streamObjectsManager[ ls ] = ls;
+
+}
+
+//------------------------------------------------------------------------------
+void Logger::addStreamToAllLevels( LogStream* ls )
+{
+  if ( ls == ATK_NULLPTR ) {
+
+    std::cerr << "WARNING: supplied log stream is NULL!\n";
+    return;
+
+  }
+
+  m_streamObjectsManager[ ls ] = ls;
+  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+
+    m_logStreams[ level ].push_back( ls );
+
+  } // END for all levels
 
 }
 
@@ -123,10 +146,11 @@ void Logger::logMessage( message::Level level,
 
   } // END if
 
-  unsigned nstreams = m_logStreams.size();
+  unsigned nstreams = m_logStreams[ level ].size();
   for ( unsigned istream=0; istream < nstreams; ++istream ) {
 
-    m_logStreams[ istream ]->append( level, message, tagName, fileName, line );
+    m_logStreams[ level ][ istream ]->append(
+                              level,message,tagName,fileName,line);
 
   } // END for all streams
 
@@ -135,12 +159,16 @@ void Logger::logMessage( message::Level level,
 //------------------------------------------------------------------------------
 void Logger::flushAllStreams()
 {
-  unsigned nstreams = m_logStreams.size();
-  for ( unsigned istream=0; istream < nstreams; ++istream ) {
+  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
 
-    m_logStreams[ istream ]->flush( );
+    unsigned nstreams = m_logStreams[ level ].size();
+    for ( unsigned istream=0; istream < nstreams; ++istream ) {
 
-  } // END for all streams
+      m_logStreams[ level ][ istream ]->flush( );
+
+    } // END for all streams
+
+  } // END for all levels
 
 }
 
@@ -173,7 +201,7 @@ void Logger::addStream( LogStream* ls )
               << "` is called with a NULL logger!";
 
   }
-  s_Logger->addLogStream( ls );
+  s_Logger->addStreamToAllLevels( ls );
 }
 
 //------------------------------------------------------------------------------
