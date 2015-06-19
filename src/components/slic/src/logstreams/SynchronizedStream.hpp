@@ -23,7 +23,7 @@
 
 #include "slic/LogStream.hpp"
 
-#include "common/Types.hpp"
+#include "common/CommonTypes.hpp"
 
 // C/C++ includes
 #include <iostream> // for std::ostream

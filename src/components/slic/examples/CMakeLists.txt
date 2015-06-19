@@ -10,15 +10,16 @@
 
 ## Build examples using logapi
 make_executable( EXECUTABLE_SOURCE logging_example.cc DEPENDS_ON slic )
+make_executable( EXECUTABLE_SOURCE cpplogger_example.cc DEPENDS_ON slic )
 
 ## Build MPI examples using logapi
 if (ENABLE_MPI)
 
-   make_executable( LINK_MPI
+   make_executable( WITH_MPI
                     EXECUTABLE_SOURCE parallel_logging_example.cc
                     DEPENDS_ON slic )
 
-   make_executable( LINK_MPI
+   make_executable( WITH_MPI
                     EXECUTABLE_SOURCE seperate_file_per_rank.cc
                     DEPENDS_ON slic )
 

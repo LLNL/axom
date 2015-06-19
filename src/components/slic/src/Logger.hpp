@@ -26,6 +26,7 @@
 // C/C++ includes
 #include <string> // for STL string
 #include <vector> // for STL vector
+#include <map>    // for STL map
 
 namespace asctoolkit {
 
@@ -72,12 +73,24 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Registers the given log stream to this Logger instance.
-   * \param [in] ls pointer to a user-supplied LogStream object.
+   * \brief Binds the given stream to the given level for this Logger instance.
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   * \param [in] level the level that this stream will be associated with.
+   * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    *****************************************************************************
    */
-  void addLogStream( LogStream* ls );
+  void addStreamToLevel( LogStream* ls, message::Level level );
+
+  /*!
+   *****************************************************************************
+   * \brief Binds the given stream to all the levels for this Logger instance.
+   * \param [in] ls pointer to the user-supplied LogStream object.
+   * \note The Logger takes ownership of the LogStream object.
+   * \pre ls != NULL.
+   *****************************************************************************
+   */
+  void addStreamToAllLevels( LogStream* ls );
 
 
   /*!
@@ -139,7 +152,7 @@ public:
    *  call this method.
    *****************************************************************************
    */
-  void flushAllStreams();
+  void flushStreams();
 
   /// \name Static Methods
   ///@{
@@ -151,84 +164,6 @@ public:
    *****************************************************************************
    */
   static void initialize();
-
-  /*!
-   *****************************************************************************
-   * \brief Sets the logging level used to filter out messages.
-   * \param [in] level the logging level to use.
-   * \see Logger::setLoggingLevel
-   *****************************************************************************
-   */
-  static void setLogLevel( message::Level level );
-
-  /*!
-   *****************************************************************************
-   * \brief Adds the given stream to this logger instance.
-   * \param [in] ls pointer to the user-supplied log-stream.
-   * \see Logger::addLogStream
-   *****************************************************************************
-   */
-  static void addStream( LogStream* ls );
-
-  /*!
-   *****************************************************************************
-   * \brief Logs the given message to all registered streams.
-   * \param [in] level the level of the message being logged.
-   * \param [in] message user-supplied message.
-   *****************************************************************************
-   */
-  static void log( message::Level level,
-                   const std::string& message );
-
-  /*!
-   *****************************************************************************
-   * \brief Logs the given message to all registered streams.
-   * \param [in] level the level of the message being logged.
-   * \param [in] message user-supplied message.
-   * \param [in] tag user-supplied associated with this message.
-   *****************************************************************************
-   */
-  static void log( message::Level level,
-                   const std::string& message,
-                   const std::string& tag );
-
-  /*!
-   *****************************************************************************
-   * \brief Logs the given message to all registered streams.
-   * \param [in] level the level of the message being logged.
-   * \param [in] message user-supplied message.
-   * \param [in] fileName the name of the file this message is logged from.
-   * \param [in] line the line number within the file this message is logged.
-   *****************************************************************************
-   */
-  static void log( message::Level level,
-                   const std::string& message,
-                   const std::string& fileName,
-                   int line );
-
-  /*!
-   *****************************************************************************
-   * \brief Logs the given message to all registered streams.
-   * \param [in] level the level of the message being logged.
-   * \param [in] message user-supplied message.
-   * \param [in] tag user-supplied tag associated with the message.
-   * \param [in] fileName the name of the file this message is logged form.
-   * \param [in] line the line number within the file this message is logged.
-   *****************************************************************************
-   */
-  static void log( message::Level level,
-                   const std::string& message,
-                   const std::string& tag,
-                   const std::string& fileName,
-                   int line );
-
-  /*!
-   *****************************************************************************
-   * \brief Flushes all streams.
-   * \see Logger::flushAllStreams
-   *****************************************************************************
-   */
-  static void flushStreams();
 
   /*!
    *****************************************************************************
@@ -270,7 +205,8 @@ private:
   ///@{
 
   bool m_isEnabled[ message::Num_Levels ];
-  std::vector< LogStream* > m_logStreams;
+  std::map< LogStream*, LogStream* > m_streamObjectsManager;
+  std::vector< LogStream* > m_logStreams[ message::Num_Levels ];
 
   ///@}
 
