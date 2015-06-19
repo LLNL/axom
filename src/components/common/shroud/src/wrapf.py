@@ -33,12 +33,9 @@ class Wrapf(object):
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
         self.config = config
-        self.splicers = splicers
         self.log = config.log
         self.typedef = tree['typedef']
-        self.splicer_stack = [ splicers ]
-        self.splicer_names = [ ]
-        self.splicer_path = ''
+        self._init_splicer(splicers)
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -54,6 +51,14 @@ class Wrapf(object):
 
     def _begin_class(self):
         self.f_type_generic = {} # look for generic methods
+
+#####
+
+    def _init_splicer(self, splicers):
+        self.splicers = splicers
+        self.splicer_stack = [ splicers ]
+        self.splicer_names = [ ]
+        self.splicer_path = ''
 
     def _push_splicer(self, name, out):
         level = self.splicer_stack[-1].setdefault(name, {})
@@ -85,6 +90,8 @@ class Wrapf(object):
             out.extend(self.splicer_stack[-1].get(name, []))
 #X        out.append('! splicer end %s' % name)
         out.append('! splicer end %s%s' % (self.splicer_path, name))
+
+#####
 
     def _c_type(self, arg):
         """

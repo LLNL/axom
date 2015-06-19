@@ -26,9 +26,9 @@ class Wrapc(object):
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
         self.config = config
-        self.splicers = splicers
         self.log = config.log
         self.typedef = tree['typedef']
+        self._init_splicer(splicers)
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -37,6 +37,47 @@ class Wrapc(object):
         self.header_impl_include = {}     # headers needed by implementation, i.e. helper functions
         self.header_proto_c = []
         self.impl = []
+
+#####
+
+    def _init_splicer(self, splicers):
+        self.splicers = splicers
+        self.splicer_stack = [ splicers ]
+        self.splicer_names = [ ]
+        self.splicer_path = ''
+
+    def _push_splicer(self, name, out):
+        level = self.splicer_stack[-1].setdefault(name, {})
+        self.splicer_stack.append(level)
+        self.splicer_names.append(name)
+        self.splicer_path = '.'.join(self.splicer_names) + '.'
+#        out.append('! splicer push %s' % name)
+
+#X changes for push/pop instead of full paths
+    def _pop_splicer(self, name, out):
+        # XXX maybe use name for error checking, must pop in reverse order
+        self.splicer_stack.pop()
+        self.splicer_names.pop()
+        if self.splicer_names:
+            self.splicer_path = '.'.join(self.splicer_names) + '.'
+        else:
+            self.splicer_path = ''
+#X        out.append('! splicer pop %s' % name)
+
+    def _create_splicer(self, name, out, default=None):
+        # The prefix is needed when two different sets of output are being create
+        # and they are not in sync.
+        # Creating methods and derived types together.
+#X        out.append('! splicer begin %s' % name)
+        out.append('! splicer begin %s%s' % (self.splicer_path, name))
+        if default:
+            out.extend(default)
+        else:
+            out.extend(self.splicer_stack[-1].get(name, []))
+#X        out.append('! splicer end %s' % name)
+        out.append('! splicer end %s%s' % (self.splicer_path, name))
+
+#####
 
     def _c_type(self, lang, arg):
         """
@@ -130,6 +171,7 @@ class Wrapc(object):
                 ])
         if cls:
             output.append('// splicer push.class.%s' % node['name'])
+#            self._push_splicer('class', output)
 
         # headers required by typedefs
         if self.header_typedef_include:
