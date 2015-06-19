@@ -143,7 +143,7 @@ TEST(sidre_group,get_view_name_index)
 
   const std::string& name3 = parent->getViewName(idx3);
   EXPECT_TRUE(name3.empty());
-  EXPECT_TRUE(isNameValid(name3) == false);
+  EXPECT_FALSE(isNameValid(name3));
 
   delete ds;
 }
@@ -179,7 +179,7 @@ TEST(sidre_group,get_group_name_index)
 
   const std::string& name3 = parent->getGroupName(idx3);
   EXPECT_TRUE(name3.empty());
-  EXPECT_TRUE(isNameValid(name3) == false);
+  EXPECT_FALSE(isNameValid(name3));
 
   delete ds;
 }

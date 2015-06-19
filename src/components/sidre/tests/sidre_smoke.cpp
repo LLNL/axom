@@ -42,7 +42,7 @@ TEST(sidre_smoke,valid_invalid)
    EXPECT_TRUE(idx != InvalidIndex);
 
    std::string name("foo");
-   EXPECT_TRUE(isNameValid(name) == true);
+   EXPECT_TRUE(isNameValid(name));
 
    DataGroup * root = ds->getRoot();
 

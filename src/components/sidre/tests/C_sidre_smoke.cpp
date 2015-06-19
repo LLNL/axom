@@ -28,21 +28,19 @@ TEST(sidre_smoke,valid_invalid)
   ATK_datastore * ds = ATK_datastore_new();
 
   ATK_IndexType idx = 3;
-  EXPECT_TRUE(idx != ATK_InvalidID);
+  EXPECT_TRUE(idx != ATK_InvalidIndex);
 
-  const char name[] = "foo";
-#if 0 // C API needs some additions to make this work...
-  EXPECT_TRUE(ATK_isNameValid(name) == 0); 
-#endif
+  const char * name = "foo";
+  EXPECT_TRUE(ATK_is_name_valid(name)); 
 
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
 #if 0 // C API needs some additions to make this work...
   const char * gp_name = ATK_datagroup_get_group_name(root, idx);
   EXPECT_TRUE(gp_name == NULL);
-  EXPECT_TRUE(ATK_isNameValid(name) == 0);  
+  EXPECT_FALSE(ATK_is_name_valid(name));
 #endif
-  EXPECT_TRUE(ATK_datagroup_get_group_index(root, name) == ATK_InvalidID);
+  EXPECT_TRUE(ATK_datagroup_get_group_index(root, name) == ATK_InvalidIndex);
 
   ATK_datastore_delete(ds);
 }

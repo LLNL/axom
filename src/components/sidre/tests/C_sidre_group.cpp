@@ -126,12 +126,12 @@ TEST(C_sidre_group,get_view_name_index)
   EXPECT_TRUE(strcmp(ATK_dataview_get_name(view2), name2) == 0);
 
   ATK_IndexType idx3 = ATK_datagroup_get_view_index(parent, "view3");
-  EXPECT_TRUE(idx3 == ATK_InvalidID);
+  EXPECT_TRUE(idx3 == ATK_InvalidIndex);
 
 #if 0 // C API needs some additions to make this work...
   const char * name3 = ATK_datagroup_get_view_name(parent, idx3);
   EXPECT_TRUE(name3 == NULL);
-  EXPECT_TRUE(ATK_isNameValid(name3) == 0);
+  EXPECT_FALSE(ATK_is_name_valid(name3));
 #endif
 
   ATK_datastore_delete(ds);
@@ -164,7 +164,7 @@ TEST(C_sidre_group,get_group_name_index)
   EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group2), name2) == 0);
 
   ATK_IndexType idx3 = ATK_datagroup_get_group_index(parent, "group3");
-  EXPECT_TRUE(idx3 == ATK_InvalidID);
+  EXPECT_TRUE(idx3 == ATK_InvalidIndex);
 
 #if 0 // C API needs some additions to make this work...
   const char * name3 = ATK_datagroup_get_group_name(parent, idx3);
