@@ -36,20 +36,20 @@ TEST(sidre_smoke,create_datastore)
 
 TEST(sidre_smoke,valid_invalid)
 {
-   DataStore * ds = new DataStore();
+  DataStore * ds = new DataStore();
 
-   IndexType idx = 3;
-   EXPECT_TRUE(idx != InvalidIndex);
+  IndexType idx = 3;
+  EXPECT_TRUE(idx != InvalidIndex);
 
-   std::string name("foo");
-   EXPECT_TRUE(isNameValid(name));
+  std::string name("foo");
+  EXPECT_TRUE(isNameValid(name));
 
-   DataGroup * root = ds->getRoot();
+  DataGroup * root = ds->getRoot();
 
-   EXPECT_TRUE(root->getGroupName(idx) == InvalidName);
-   EXPECT_TRUE(root->getGroupIndex(name) == InvalidIndex);
+  EXPECT_TRUE(root->getGroupName(idx) == InvalidName);
+  EXPECT_TRUE(root->getGroupIndex(name) == InvalidIndex);
 
-   delete ds;
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

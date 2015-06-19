@@ -40,7 +40,7 @@ TEST(sidre_group,get_name)
   EXPECT_TRUE(group->getName() == std::string("test") );
 
   DataGroup * group2 = root->getGroup("foo");
-  EXPECT_TRUE(group2 == ATK_NULLPTR); 
+  EXPECT_TRUE(group2 == ATK_NULLPTR);
 
   delete ds;
 }

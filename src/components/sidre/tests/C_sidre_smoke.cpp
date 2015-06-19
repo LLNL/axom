@@ -31,7 +31,7 @@ TEST(sidre_smoke,valid_invalid)
   EXPECT_TRUE(idx != ATK_InvalidIndex);
 
   const char * name = "foo";
-  EXPECT_TRUE(ATK_is_name_valid(name)); 
+  EXPECT_TRUE(ATK_is_name_valid(name));
 
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 

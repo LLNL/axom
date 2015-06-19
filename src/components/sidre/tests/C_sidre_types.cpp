@@ -19,7 +19,7 @@ using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::getTypeID;
 //------------------------------------------------------------------------------
 // This test verifies that the getTypeID C version and C++ (templated) version
-// returns the same types. 
+// returns the same types.
 //------------------------------------------------------------------------------
 
 TEST(sidre_types,get_sidre_type)
