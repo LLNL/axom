@@ -216,7 +216,7 @@ classes:
 #    - decl: void print() const
 
 functions:
-  -  decl: bool nameIsValid(const std::string& name)
+  -  decl: bool isNameValid(const std::string& name)
 
 
 # Files which contain code to be inserted into generated code

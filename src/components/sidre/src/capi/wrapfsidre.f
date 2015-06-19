@@ -637,13 +637,13 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_number_of_elements
         
-        function atk_name_is_valid(name) result(rv) &
-                bind(C, name="ATK_name_is_valid")
+        function atk_is_name_valid(name) result(rv) &
+                bind(C, name="ATK_is_name_valid")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR) :: name(*)
             logical(C_BOOL) :: rv
-        end function atk_name_is_valid
+        end function atk_is_name_valid
     end interface
 
 contains
@@ -1268,14 +1268,14 @@ contains
     ! splicer begin class.dataview.extra_methods
     ! splicer end class.dataview.extra_methods
     
-    function name_is_valid(name) result(rv)
+    function is_name_valid(name) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: name
         logical :: rv
-        ! splicer begin class.name_is_valid
-        rv = booltological(atk_name_is_valid(trim(name) // C_NULL_CHAR))
-        ! splicer end class.name_is_valid
-    end function name_is_valid
+        ! splicer begin class.is_name_valid
+        rv = booltological(atk_is_name_valid(trim(name) // C_NULL_CHAR))
+        ! splicer end class.is_name_valid
+    end function is_name_valid
 
 end module sidre_mod

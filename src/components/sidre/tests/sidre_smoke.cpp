@@ -21,7 +21,7 @@ using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::InvalidName;
-using asctoolkit::sidre::nameIsValid;
+using asctoolkit::sidre::isNameValid;
 
 //------------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ TEST(sidre_smoke,valid_invalid)
    EXPECT_TRUE(idx != InvalidIndex);
 
    std::string name("foo");
-   EXPECT_TRUE(nameIsValid(name) == true);
+   EXPECT_TRUE(isNameValid(name) == true);
 
    DataGroup * root = ds->getRoot();
 

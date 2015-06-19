@@ -16,13 +16,13 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-bool ATK_name_is_valid(const char * name)
+bool ATK_is_name_valid(const char * name)
 {
 
-// splicer begin ATK_name_is_valid
-bool rv = nameIsValid(name);
+// splicer begin ATK_is_name_valid
+bool rv = isNameValid(name);
 return rv;
-// splicer end ATK_name_is_valid
+// splicer end ATK_is_name_valid
 }
 
 }  // namespace asctoolkit

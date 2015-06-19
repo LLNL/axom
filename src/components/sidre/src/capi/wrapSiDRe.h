@@ -22,7 +22,7 @@ extern "C" {
 #else
 #endif
 
-bool ATK_name_is_valid(const char * name);
+bool ATK_is_name_valid(const char * name);
 
 #ifdef __cplusplus
 }

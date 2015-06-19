@@ -18,7 +18,7 @@ using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
 using asctoolkit::sidre::IndexType;
 using asctoolkit::sidre::InvalidIndex;
-using asctoolkit::sidre::nameIsValid;
+using asctoolkit::sidre::isNameValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
 
@@ -143,7 +143,7 @@ TEST(sidre_group,get_view_name_index)
 
   const std::string& name3 = parent->getViewName(idx3);
   EXPECT_TRUE(name3.empty());
-  EXPECT_TRUE(nameIsValid(name3) == false);
+  EXPECT_TRUE(isNameValid(name3) == false);
 
   delete ds;
 }
@@ -179,7 +179,7 @@ TEST(sidre_group,get_group_name_index)
 
   const std::string& name3 = parent->getGroupName(idx3);
   EXPECT_TRUE(name3.empty());
-  EXPECT_TRUE(nameIsValid(name3) == false);
+  EXPECT_TRUE(isNameValid(name3) == false);
 
   delete ds;
 }
