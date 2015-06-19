@@ -37,6 +37,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_dvovmax(Real_t(0.1)),
    m_refdens(Real_t(1.0))
 {
+  m_DataGroup = m_DataStore.getRoot()->createGroup("Domain");
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;
@@ -180,6 +181,8 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    }
    //set initial deltatime base on analytic CFL calculation
    deltatime() = (Real_t(.5)*cbrt(volo(0)))/sqrt(Real_t(2.0)*einit);
+
+
 
 } // End constructor
 
@@ -364,11 +367,29 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
 
   // Boundary nodesets
   if (m_colLoc == 0)
+  {
+#if USE_SIDRE==1
+    m_symmX = m_DataGroup->createViewAndBuffer("m_symmX",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes));
+#else
     m_symmX.resize(edgeNodes*edgeNodes);
+#endif
+  }
   if (m_rowLoc == 0)
+  {
+#if USE_SIDRE==1
+    m_symmY = m_DataGroup->createViewAndBuffer("m_symmY",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes));
+#else
     m_symmY.resize(edgeNodes*edgeNodes);
+#endif
+  }
   if (m_planeLoc == 0)
+  {
+#if USE_SIDRE==1
+    m_symmZ = m_DataGroup->createViewAndBuffer("m_symmZ",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes));
+#else
     m_symmZ.resize(edgeNodes*edgeNodes);
+#endif
+  }
 }
 
 
@@ -487,19 +508,28 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 void 
 Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 {
+#if USE_SIDRE==1
+  Index_t * const symmX = m_DataGroup->getView("m_symmX")->getValue();
+  Index_t * const symmY = m_DataGroup->getView("m_symmY")->getValue();
+  Index_t * const symmZ = m_DataGroup->getView("m_symmZ")->getValue();
+#else
+  Index_t * const symmX = m_symmX.data();
+  Index_t * const symmY = m_symmY.data();
+  Index_t * const symmZ = m_symmZ.data();
+#endif
   Index_t nidx = 0 ;
   for (Index_t i=0; i<edgeNodes; ++i) {
     Index_t planeInc = i*edgeNodes*edgeNodes ;
     Index_t rowInc   = i*edgeNodes ;
     for (Index_t j=0; j<edgeNodes; ++j) {
       if (m_planeLoc == 0) {
-	m_symmZ[nidx] = rowInc   + j ;
+        symmZ[nidx] = rowInc   + j ;
       }
       if (m_rowLoc == 0) {
-	m_symmY[nidx] = planeInc + j ;
+        symmY[nidx] = planeInc + j ;
       }
       if (m_colLoc == 0) {
-	m_symmX[nidx] = planeInc + j*edgeNodes ;
+        symmX[nidx] = planeInc + j*edgeNodes ;
       }
       ++nidx ;
     }

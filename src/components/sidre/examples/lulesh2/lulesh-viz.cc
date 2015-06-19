@@ -425,7 +425,11 @@ void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks)
 {
    if (myRank == 0) {
       printf("Must enable -DVIZ_MESH at compile time to call DumpDomain\n");
+
    }
+   std::cout<<domain.numNode();
+   numFiles = numFiles;
+   numRanks = numRanks;
 }
 
 #endif

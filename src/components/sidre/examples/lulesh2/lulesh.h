@@ -1,7 +1,3 @@
-#if !defined(USE_MPI)
-# error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
-#endif
-
 
 // OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
 // used supports it (i.e. the _OPENMP symbol is defined)
@@ -23,6 +19,8 @@
 
 #include <math.h>
 #include <vector>
+
+#include "sidre/sidre.hpp"
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
@@ -123,10 +121,21 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
  *  "Real_t &y(Index_t idx) { return m_coord[idx].y ; }"
  *  "Real_t &z(Index_t idx) { return m_coord[idx].z ; }"
  */
+#define USE_SIDRE 1
 
 class Domain {
 
    public:
+
+#if USE_SIDRE==1
+  typedef asctoolkit::sidre::DataView * luleshRealData;
+  typedef asctoolkit::sidre::DataView * luleshIntData;
+  typedef asctoolkit::sidre::DataView * luleshIndexData;
+#else
+  typedef std::vector<Real_t> luleshRealData;
+  typedef std::vector<Int_t> luleshIntData;
+  typedef std::vector<Index_t> luleshIndexData;
+#endif
 
    // Constructor
    Domain(Int_t numRanks, Index_t colLoc,
@@ -139,6 +148,26 @@ class Domain {
 
    void AllocateNodePersistent(Int_t numNode) // Node-centered
    {
+#if USE_SIDRE==1
+     m_x = m_DataGroup->createViewAndBuffer("m_x",asctoolkit::sidre::DataType::float64(numNode));
+     m_y = m_DataGroup->createViewAndBuffer("m_y",asctoolkit::sidre::DataType::float64(numNode));
+     m_z = m_DataGroup->createViewAndBuffer("m_z",asctoolkit::sidre::DataType::float64(numNode));
+
+     m_xd = m_DataGroup->createViewAndBuffer("m_xd",asctoolkit::sidre::DataType::float64(numNode));
+     m_yd = m_DataGroup->createViewAndBuffer("m_yd",asctoolkit::sidre::DataType::float64(numNode));
+     m_zd = m_DataGroup->createViewAndBuffer("m_zd",asctoolkit::sidre::DataType::float64(numNode));
+
+     m_xdd = m_DataGroup->createViewAndBuffer("m_xdd",asctoolkit::sidre::DataType::float64(numNode));
+     m_ydd = m_DataGroup->createViewAndBuffer("m_ydd",asctoolkit::sidre::DataType::float64(numNode));
+     m_zdd = m_DataGroup->createViewAndBuffer("m_zdd",asctoolkit::sidre::DataType::float64(numNode));
+
+     m_fx = m_DataGroup->createViewAndBuffer("m_fx",asctoolkit::sidre::DataType::float64(numNode));
+     m_fy = m_DataGroup->createViewAndBuffer("m_fy",asctoolkit::sidre::DataType::float64(numNode));
+     m_fz = m_DataGroup->createViewAndBuffer("m_fz",asctoolkit::sidre::DataType::float64(numNode));
+
+     m_nodalMass = m_DataGroup->createViewAndBuffer("m_nodalMass",asctoolkit::sidre::DataType::float64(numNode));
+
+#else
       m_x.resize(numNode);  // coordinates
       m_y.resize(numNode);
       m_z.resize(numNode);
@@ -156,10 +185,50 @@ class Domain {
       m_fz.resize(numNode);
 
       m_nodalMass.resize(numNode);  // mass
+#endif
    }
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
+#if USE_SIDRE==1
+     m_nodelist = m_DataGroup->createViewAndBuffer("m_nodelist",asctoolkit::sidre::DataType::int32(8*numElem));
+
+     // elem connectivities through face
+     m_lxim = m_DataGroup->createViewAndBuffer("m_lxim",asctoolkit::sidre::DataType::int32(numElem));
+     m_lxip = m_DataGroup->createViewAndBuffer("m_lxip",asctoolkit::sidre::DataType::int32(numElem));
+     m_letam = m_DataGroup->createViewAndBuffer("m_letam",asctoolkit::sidre::DataType::int32(numElem));
+     m_letap = m_DataGroup->createViewAndBuffer("m_letap",asctoolkit::sidre::DataType::int32(numElem));
+     m_lzetam = m_DataGroup->createViewAndBuffer("m_lzetam",asctoolkit::sidre::DataType::int32(numElem));
+     m_lzetap = m_DataGroup->createViewAndBuffer("m_lzetap",asctoolkit::sidre::DataType::int32(numElem));
+
+
+
+     m_elemBC = m_DataGroup->createViewAndBuffer("m_elemBC",asctoolkit::sidre::DataType::int32(numElem));
+
+      m_e = m_DataGroup->createViewAndBuffer("m_e",asctoolkit::sidre::DataType::float64(numElem));
+      m_p = m_DataGroup->createViewAndBuffer("m_p",asctoolkit::sidre::DataType::float64(numElem));
+
+      m_q = m_DataGroup->createViewAndBuffer("m_q",asctoolkit::sidre::DataType::float64(numElem));
+      m_ql = m_DataGroup->createViewAndBuffer("m_ql",asctoolkit::sidre::DataType::float64(numElem));
+      m_qq = m_DataGroup->createViewAndBuffer("m_qq",asctoolkit::sidre::DataType::float64(numElem));
+
+      m_v = m_DataGroup->createViewAndBuffer("m_v",asctoolkit::sidre::DataType::float64(numElem));
+
+      m_volo = m_DataGroup->createViewAndBuffer("m_volo",asctoolkit::sidre::DataType::float64(numElem));
+      m_delv = m_DataGroup->createViewAndBuffer("m_delv",asctoolkit::sidre::DataType::float64(numElem));
+      m_vdov = m_DataGroup->createViewAndBuffer("m_vdov",asctoolkit::sidre::DataType::float64(numElem));
+
+
+
+
+
+      m_arealg = m_DataGroup->createViewAndBuffer("m_arealg",asctoolkit::sidre::DataType::float64(numElem));
+
+      m_ss = m_DataGroup->createViewAndBuffer("m_ss",asctoolkit::sidre::DataType::float64(numElem));
+
+      m_elemMass = m_DataGroup->createViewAndBuffer("m_elemMass",asctoolkit::sidre::DataType::float64(numElem));
+
+#else
       m_nodelist.resize(8*numElem);
 
       // elem connectivities through face
@@ -190,10 +259,22 @@ class Domain {
       m_ss.resize(numElem);
 
       m_elemMass.resize(numElem);
+#endif
    }
 
    void AllocateGradients(Int_t numElem, Int_t allElem)
    {
+#if USE_SIDRE==1
+     // Position gradients
+     m_delx_xi = m_DataGroup->createViewAndBuffer("m_delx_xi",asctoolkit::sidre::DataType::float64(numElem));
+     m_delx_eta = m_DataGroup->createViewAndBuffer("m_delx_eta",asctoolkit::sidre::DataType::float64(numElem));
+     m_delx_zeta = m_DataGroup->createViewAndBuffer("m_delx_zeta",asctoolkit::sidre::DataType::float64(numElem));
+
+     // Velocity gradients
+     m_delv_xi = m_DataGroup->createViewAndBuffer("m_delv_xi",asctoolkit::sidre::DataType::float64(allElem));
+     m_delv_eta = m_DataGroup->createViewAndBuffer("m_delv_eta",asctoolkit::sidre::DataType::float64(allElem));
+     m_delv_zeta = m_DataGroup->createViewAndBuffer("m_delv_zeta",asctoolkit::sidre::DataType::float64(allElem));
+#else
       // Position gradients
       m_delx_xi.resize(numElem) ;
       m_delx_eta.resize(numElem) ;
@@ -203,10 +284,20 @@ class Domain {
       m_delv_xi.resize(allElem) ;
       m_delv_eta.resize(allElem);
       m_delv_zeta.resize(allElem) ;
+#endif
    }
 
    void DeallocateGradients()
    {
+#if USE_SIDRE==1
+     m_DataGroup->destroyView("m_delx_zeta") ;
+     m_DataGroup->destroyView("m_delx_eta") ;
+     m_DataGroup->destroyView("m_delx_xi") ;
+
+     m_DataGroup->destroyView("m_delv_zeta") ;
+     m_DataGroup->destroyView("m_delv_eta") ;
+     m_DataGroup->destroyView("m_delv_xi") ;
+#else
       m_delx_zeta.clear() ;
       m_delx_eta.clear() ;
       m_delx_xi.clear() ;
@@ -214,20 +305,33 @@ class Domain {
       m_delv_zeta.clear() ;
       m_delv_eta.clear() ;
       m_delv_xi.clear() ;
+#endif
    }
 
    void AllocateStrains(Int_t numElem)
    {
+#if USE_SIDRE==1
+     m_dxx = m_DataGroup->createViewAndBuffer("m_dxx",asctoolkit::sidre::DataType::float64(numElem)) ;
+     m_dyy = m_DataGroup->createViewAndBuffer("m_dyy",asctoolkit::sidre::DataType::float64(numElem)) ;
+     m_dzz = m_DataGroup->createViewAndBuffer("m_dzz",asctoolkit::sidre::DataType::float64(numElem)) ;
+#else
       m_dxx.resize(numElem) ;
       m_dyy.resize(numElem) ;
       m_dzz.resize(numElem) ;
+#endif
    }
 
    void DeallocateStrains()
    {
+#if USE_SIDRE==1
+     m_DataGroup->destroyView("m_dxx") ;
+     m_DataGroup->destroyView("m_dyy") ;
+     m_DataGroup->destroyView("m_dzz") ;
+#else
       m_dzz.clear() ;
       m_dyy.clear() ;
       m_dxx.clear() ;
+#endif
    }
    
    //
@@ -237,35 +341,35 @@ class Domain {
    // Node-centered
 
    // Nodal coordinates
-   Real_t& x(Index_t idx)    { return m_x[idx] ; }
-   Real_t& y(Index_t idx)    { return m_y[idx] ; }
-   Real_t& z(Index_t idx)    { return m_z[idx] ; }
+   Real_t& x(Index_t idx)    { return ((Real_t*)(m_x->getValue()))[idx] ; }
+   Real_t& y(Index_t idx)    { return ((Real_t*)(m_y->getValue()))[idx] ; }
+   Real_t& z(Index_t idx)    { return ((Real_t*)(m_z->getValue()))[idx] ; }
 
    // Nodal velocities
-   Real_t& xd(Index_t idx)   { return m_xd[idx] ; }
-   Real_t& yd(Index_t idx)   { return m_yd[idx] ; }
-   Real_t& zd(Index_t idx)   { return m_zd[idx] ; }
+   Real_t& xd(Index_t idx)   { return ((Real_t*)(m_xd->getValue()))[idx] ; }
+   Real_t& yd(Index_t idx)   { return ((Real_t*)(m_yd->getValue()))[idx] ; }
+   Real_t& zd(Index_t idx)   { return ((Real_t*)(m_zd->getValue()))[idx] ; }
 
    // Nodal accelerations
-   Real_t& xdd(Index_t idx)  { return m_xdd[idx] ; }
-   Real_t& ydd(Index_t idx)  { return m_ydd[idx] ; }
-   Real_t& zdd(Index_t idx)  { return m_zdd[idx] ; }
+   Real_t& xdd(Index_t idx)  { return ((Real_t*)(m_xdd->getValue()))[idx] ; }
+   Real_t& ydd(Index_t idx)  { return ((Real_t*)(m_ydd->getValue()))[idx] ; }
+   Real_t& zdd(Index_t idx)  { return ((Real_t*)(m_zdd->getValue()))[idx] ; }
 
    // Nodal forces
-   Real_t& fx(Index_t idx)   { return m_fx[idx] ; }
-   Real_t& fy(Index_t idx)   { return m_fy[idx] ; }
-   Real_t& fz(Index_t idx)   { return m_fz[idx] ; }
+   Real_t& fx(Index_t idx)   { return ((Real_t*)(m_fx->getValue()))[idx] ; }
+   Real_t& fy(Index_t idx)   { return ((Real_t*)(m_fy->getValue()))[idx] ; }
+   Real_t& fz(Index_t idx)   { return ((Real_t*)(m_fz->getValue()))[idx] ; }
 
    // Nodal mass
-   Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
+   Real_t& nodalMass(Index_t idx) { return ((Real_t*)(m_nodalMass->getValue()))[idx] ; }
 
    // Nodes on symmertry planes
-   Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
-   Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
-   Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
-   bool symmXempty()          { return m_symmX.empty(); }
-   bool symmYempty()          { return m_symmY.empty(); }
-   bool symmZempty()          { return m_symmZ.empty(); }
+   Index_t symmX(Index_t idx) { return ((Index_t*)(m_symmX->getValue()))[idx] ; }
+   Index_t symmY(Index_t idx) { return ((Index_t*)(m_symmY->getValue()))[idx] ; }
+   Index_t symmZ(Index_t idx) { return ((Index_t*)(m_symmZ->getValue()))[idx] ; }
+   bool symmXempty()          { return m_symmX->getNode().dtype().number_of_elements(); }
+   bool symmYempty()          { return m_symmY->getNode().dtype().number_of_elements(); }
+   bool symmZempty()          { return m_symmZ->getNode().dtype().number_of_elements(); }
 
    //
    // Element-centered
@@ -276,66 +380,66 @@ class Domain {
    Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
    Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
-   Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
+   Index_t*  nodelist(Index_t idx)    { return &(((Index_t*)(m_nodelist->getValue()))[Index_t(8)*idx]) ; }
 
    // elem connectivities through face
-   Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
-   Index_t&  lxip(Index_t idx) { return m_lxip[idx] ; }
-   Index_t&  letam(Index_t idx) { return m_letam[idx] ; }
-   Index_t&  letap(Index_t idx) { return m_letap[idx] ; }
-   Index_t&  lzetam(Index_t idx) { return m_lzetam[idx] ; }
-   Index_t&  lzetap(Index_t idx) { return m_lzetap[idx] ; }
+   Index_t&  lxim(Index_t idx) { return ((Index_t*)(m_lxim->getValue()))[idx] ; }
+   Index_t&  lxip(Index_t idx) { return ((Index_t*)(m_lxip->getValue()))[idx] ; }
+   Index_t&  letam(Index_t idx) { return ((Index_t*)(m_letam->getValue()))[idx] ; }
+   Index_t&  letap(Index_t idx) { return ((Index_t*)(m_letap->getValue()))[idx] ; }
+   Index_t&  lzetam(Index_t idx) { return ((Index_t*)(m_lzetam->getValue()))[idx] ; }
+   Index_t&  lzetap(Index_t idx) { return ((Index_t*)(m_lzetap->getValue()))[idx] ; }
 
    // elem face symm/free-surface flag
-   Int_t&  elemBC(Index_t idx) { return m_elemBC[idx] ; }
+   Int_t&  elemBC(Index_t idx) { return ((Int_t*)(m_elemBC->getValue()))[idx] ; }
 
    // Principal strains - temporary
-   Real_t& dxx(Index_t idx)  { return m_dxx[idx] ; }
-   Real_t& dyy(Index_t idx)  { return m_dyy[idx] ; }
-   Real_t& dzz(Index_t idx)  { return m_dzz[idx] ; }
+   Real_t& dxx(Index_t idx)  { return ((Real_t*)(m_dxx->getValue()))[idx] ; }
+   Real_t& dyy(Index_t idx)  { return ((Real_t*)(m_dyy->getValue()))[idx] ; }
+   Real_t& dzz(Index_t idx)  { return ((Real_t*)(m_dzz->getValue()))[idx] ; }
 
    // Velocity gradient - temporary
-   Real_t& delv_xi(Index_t idx)    { return m_delv_xi[idx] ; }
-   Real_t& delv_eta(Index_t idx)   { return m_delv_eta[idx] ; }
-   Real_t& delv_zeta(Index_t idx)  { return m_delv_zeta[idx] ; }
+   Real_t& delv_xi(Index_t idx)    { return ((Real_t*)(m_delv_xi->getValue()))[idx] ; }
+   Real_t& delv_eta(Index_t idx)   { return ((Real_t*)(m_delv_eta->getValue()))[idx] ; }
+   Real_t& delv_zeta(Index_t idx)  { return ((Real_t*)(m_delv_zeta->getValue()))[idx] ; }
 
    // Position gradient - temporary
-   Real_t& delx_xi(Index_t idx)    { return m_delx_xi[idx] ; }
-   Real_t& delx_eta(Index_t idx)   { return m_delx_eta[idx] ; }
-   Real_t& delx_zeta(Index_t idx)  { return m_delx_zeta[idx] ; }
+   Real_t& delx_xi(Index_t idx)    { return ((Real_t*)(m_delx_xi->getValue()))[idx] ; }
+   Real_t& delx_eta(Index_t idx)   { return ((Real_t*)(m_delx_eta->getValue()))[idx] ; }
+   Real_t& delx_zeta(Index_t idx)  { return ((Real_t*)(m_delx_zeta->getValue()))[idx] ; }
 
    // Energy
-   Real_t& e(Index_t idx)          { return m_e[idx] ; }
+   Real_t& e(Index_t idx)          { return ((Real_t*)(m_e->getValue()))[idx] ; }
 
    // Pressure
-   Real_t& p(Index_t idx)          { return m_p[idx] ; }
+   Real_t& p(Index_t idx)          { return ((Real_t*)(m_p->getValue()))[idx] ; }
 
    // Artificial viscosity
-   Real_t& q(Index_t idx)          { return m_q[idx] ; }
+   Real_t& q(Index_t idx)          { return ((Real_t*)(m_q->getValue()))[idx] ; }
 
    // Linear term for q
-   Real_t& ql(Index_t idx)         { return m_ql[idx] ; }
+   Real_t& ql(Index_t idx)         { return ((Real_t*)(m_ql->getValue()))[idx] ; }
    // Quadratic term for q
-   Real_t& qq(Index_t idx)         { return m_qq[idx] ; }
+   Real_t& qq(Index_t idx)         { return ((Real_t*)(m_qq->getValue()))[idx] ; }
 
    // Relative volume
-   Real_t& v(Index_t idx)          { return m_v[idx] ; }
-   Real_t& delv(Index_t idx)       { return m_delv[idx] ; }
+   Real_t& v(Index_t idx)          { return ((Real_t*)(m_v->getValue()))[idx] ; }
+   Real_t& delv(Index_t idx)       { return ((Real_t*)(m_delv->getValue()))[idx] ; }
 
    // Reference volume
-   Real_t& volo(Index_t idx)       { return m_volo[idx] ; }
+   Real_t& volo(Index_t idx)       { return ((Real_t*)(m_volo->getValue()))[idx] ; }
 
    // volume derivative over volume
-   Real_t& vdov(Index_t idx)       { return m_vdov[idx] ; }
+   Real_t& vdov(Index_t idx)       { return ((Real_t*)(m_vdov->getValue()))[idx] ; }
 
    // Element characteristic length
-   Real_t& arealg(Index_t idx)     { return m_arealg[idx] ; }
+   Real_t& arealg(Index_t idx)     { return ((Real_t*)(m_arealg->getValue()))[idx] ; }
 
    // Sound speed
-   Real_t& ss(Index_t idx)         { return m_ss[idx] ; }
+   Real_t& ss(Index_t idx)         { return ((Real_t*)(m_ss->getValue()))[idx] ; }
 
    // Element mass
-   Real_t& elemMass(Index_t idx)  { return m_elemMass[idx] ; }
+   Real_t& elemMass(Index_t idx)  { return ((Real_t*)(m_elemMass->getValue()))[idx] ; }
 
    Index_t nodeElemCount(Index_t idx)
    { return m_nodeElemStart[idx+1] - m_nodeElemStart[idx] ; }
@@ -426,29 +530,34 @@ class Domain {
    //
    // IMPLEMENTATION
    //
+#if USE_SIDRE==1
+   asctoolkit::sidre::DataStore m_DataStore;
+   asctoolkit::sidre::DataGroup * m_DataGroup;
+
+#endif
 
    /* Node-centered */
-   std::vector<Real_t> m_x ;  /* coordinates */
-   std::vector<Real_t> m_y ;
-   std::vector<Real_t> m_z ;
+   luleshRealData m_x ;  /* coordinates */
+   luleshRealData m_y ;
+   luleshRealData m_z ;
 
-   std::vector<Real_t> m_xd ; /* velocities */
-   std::vector<Real_t> m_yd ;
-   std::vector<Real_t> m_zd ;
+   luleshRealData m_xd ; /* velocities */
+   luleshRealData m_yd ;
+   luleshRealData m_zd ;
 
-   std::vector<Real_t> m_xdd ; /* accelerations */
-   std::vector<Real_t> m_ydd ;
-   std::vector<Real_t> m_zdd ;
+   luleshRealData m_xdd ; /* accelerations */
+   luleshRealData m_ydd ;
+   luleshRealData m_zdd ;
 
-   std::vector<Real_t> m_fx ;  /* forces */
-   std::vector<Real_t> m_fy ;
-   std::vector<Real_t> m_fz ;
+   luleshRealData m_fx ;  /* forces */
+   luleshRealData m_fy ;
+   luleshRealData m_fz ;
 
-   std::vector<Real_t> m_nodalMass ;  /* mass */
+   luleshRealData m_nodalMass ;  /* mass */
 
-   std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
-   std::vector<Index_t> m_symmY ;
-   std::vector<Index_t> m_symmZ ;
+   luleshIndexData m_symmX ;  /* symmetry plane nodesets */
+   luleshIndexData m_symmY ;
+   luleshIndexData m_symmZ ;
 
    // Element-centered
 
@@ -459,47 +568,47 @@ class Domain {
    Index_t *m_regNumList ;    // Region number per domain element
    Index_t **m_regElemlist ;  // region indexset 
 
-   std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
+   luleshIndexData  m_nodelist ;     /* elemToNode connectivity */
 
-   std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
-   std::vector<Index_t>  m_lxip ;
-   std::vector<Index_t>  m_letam ;
-   std::vector<Index_t>  m_letap ;
-   std::vector<Index_t>  m_lzetam ;
-   std::vector<Index_t>  m_lzetap ;
+   luleshIndexData  m_lxim ;  /* element connectivity across each face */
+   luleshIndexData  m_lxip ;
+   luleshIndexData  m_letam ;
+   luleshIndexData  m_letap ;
+   luleshIndexData  m_lzetam ;
+   luleshIndexData  m_lzetap ;
 
-   std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
+   luleshIntData    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
-   std::vector<Real_t> m_dxx ;  /* principal strains -- temporary */
-   std::vector<Real_t> m_dyy ;
-   std::vector<Real_t> m_dzz ;
+   luleshRealData m_dxx ;  /* principal strains -- temporary */
+   luleshRealData m_dyy ;
+   luleshRealData m_dzz ;
 
-   std::vector<Real_t> m_delv_xi ;    /* velocity gradient -- temporary */
-   std::vector<Real_t> m_delv_eta ;
-   std::vector<Real_t> m_delv_zeta ;
+   luleshRealData m_delv_xi ;    /* velocity gradient -- temporary */
+   luleshRealData m_delv_eta ;
+   luleshRealData m_delv_zeta ;
 
-   std::vector<Real_t> m_delx_xi ;    /* coordinate gradient -- temporary */
-   std::vector<Real_t> m_delx_eta ;
-   std::vector<Real_t> m_delx_zeta ;
+   luleshRealData m_delx_xi ;    /* coordinate gradient -- temporary */
+   luleshRealData m_delx_eta ;
+   luleshRealData m_delx_zeta ;
    
-   std::vector<Real_t> m_e ;   /* energy */
+   luleshRealData m_e ;   /* energy */
 
-   std::vector<Real_t> m_p ;   /* pressure */
-   std::vector<Real_t> m_q ;   /* q */
-   std::vector<Real_t> m_ql ;  /* linear term for q */
-   std::vector<Real_t> m_qq ;  /* quadratic term for q */
+   luleshRealData m_p ;   /* pressure */
+   luleshRealData m_q ;   /* q */
+   luleshRealData m_ql ;  /* linear term for q */
+   luleshRealData m_qq ;  /* quadratic term for q */
 
-   std::vector<Real_t> m_v ;     /* relative volume */
-   std::vector<Real_t> m_volo ;  /* reference volume */
-   std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
-   std::vector<Real_t> m_delv ;  /* m_vnew - m_v */
-   std::vector<Real_t> m_vdov ;  /* volume derivative over volume */
+   luleshRealData m_v ;     /* relative volume */
+   luleshRealData m_volo ;  /* reference volume */
+   luleshRealData m_vnew ;  /* new relative volume -- temporary */
+   luleshRealData m_delv ;  /* m_vnew - m_v */
+   luleshRealData m_vdov ;  /* volume derivative over volume */
 
-   std::vector<Real_t> m_arealg ;  /* characteristic length of an element */
+   luleshRealData m_arealg ;  /* characteristic length of an element */
    
-   std::vector<Real_t> m_ss ;      /* "sound speed" */
+   luleshRealData m_ss ;      /* "sound speed" */
 
-   std::vector<Real_t> m_elemMass ;  /* mass */
+   luleshRealData m_elemMass ;  /* mass */
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 

@@ -22,19 +22,21 @@ endforeach()
 set(lulesh_dir lulesh2  )
 
 set(lulesh_headers
-    ${lulesh_dir}/lulesh.hpp
-    # ${lulesh_dir}/lulesh_tuple.hpp
+    ${lulesh_dir}/lulesh.h
+    ${lulesh_dir}/lulesh_tuple.h
     )
 
 set(lulesh_sources
-    ${lulesh_dir}/lulesh.cpp
-    ${lulesh_dir}/lulesh-comm.cpp
-    ${lulesh_dir}/lulesh-init.cpp
-    ${lulesh_dir}/lulesh-util.cpp
-    ${lulesh_dir}/lulesh-viz.cpp
+    ${lulesh_dir}/lulesh.cc
+    ${lulesh_dir}/lulesh-comm.cc
+    ${lulesh_dir}/lulesh-init.cc
+    ${lulesh_dir}/lulesh-util.cc
+    ${lulesh_dir}/lulesh-viz.cc
     )
+
+set_source_files_properties( ${lulesh_sources} PROPERTIES LANGUAGE "CXX" )
 
 ## Ignore omp pragmas when openMP is not defined
 set_source_files_properties(${lulesh_sources} PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas " )
 add_executable( sidreLulesh2  ${lulesh_sources} ${lulesh_headers})
-target_link_libraries( sidreLulesh2  sidre )
+target_link_libraries( sidreLulesh2  sidre  conduit slic )
