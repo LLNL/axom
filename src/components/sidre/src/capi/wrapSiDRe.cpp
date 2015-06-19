@@ -18,7 +18,6 @@ namespace sidre {
 
 bool ATK_is_name_valid(const char * name)
 {
-
 // splicer begin ATK_is_name_valid
 return name != NULL;
 // splicer end ATK_is_name_valid

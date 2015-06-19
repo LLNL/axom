@@ -221,7 +221,7 @@ classes:
 
 functions:
   -  decl: bool isNameValid(const std::string& name)
-     # The qconcept of a valid name is different for C++, C and Fortran
+     # The concept of a valid name is different for C++, C and Fortran
      options:
        C_code:  return name != NULL;
        F_code:  rv = name .ne. " "

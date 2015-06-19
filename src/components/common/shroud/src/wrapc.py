@@ -120,54 +120,58 @@ class Wrapc(object):
 
         guard = fname.replace(".", "_").upper()
 
-        fp.writelines([
-                '// %s\n' % fname,
-                '// For C users and C++ implementation\n',
-                '\n',
-                '#ifndef %s\n' % guard,
-                '#define %s\n' % guard,
+        output = []
+        output.extend([
+                '// %s' % fname,
+                '// For C users and C++ implementation',
+                '',
+                '#ifndef %s' % guard,
+                '#define %s' % guard,
                 ])
         if cls:
-            fp.write('// splicer push.class.%s\n' % node['name'])
+            output.append('// splicer push.class.%s' % node['name'])
 
         # headers required by typedefs
         if self.header_typedef_include:
-#            fp.write('// header_typedef_include\n')
-            fp.write('\n')
+#            output.append('// header_typedef_include')
+            output.append('')
             headers = self.header_typedef_include.keys()
             headers.sort()
             for header in headers:
-                fp.write('#include "%s"\n' % header)
+                output.append('#include "%s"' % header)
 
-        fp.writelines([
-                '\n',
-                '#ifdef __cplusplus\n',
-                'extern "C" {\n',
-                '#endif\n',
-                '\n',
-                '// declaration of wrapped types\n',
-                '#ifdef EXAMPLE_WRAPPER_IMPL\n',
+        output.extend([
+                '',
+                '#ifdef __cplusplus',
+                'extern "C" {',
+                '#endif',
+                '',
+                '// declaration of wrapped types',
+                '#ifdef EXAMPLE_WRAPPER_IMPL',
                 ])
         names = self.header_forward.keys()
         names.sort()
         for name in names:
-            fp.write('typedef void {C_type_name};\n'.format(C_type_name=name))
-        fp.write('#else\n')
+            output.append('typedef void {C_type_name};'.format(C_type_name=name))
+        output.append('#else')
         for name in names:
-            fp.write('struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};\n'.
+            output.append('struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};'.
                      format(C_type_name=name))
-        fp.write('#endif\n')
-        fp.writelines(self.header_proto_c);
+        output.append('#endif')
+        output.extend(self.header_proto_c);
         if cls:
-            fp.write('\n// splicer pop.class.%s\n' % node['name'])
-        fp.writelines([
-                '\n',
-                '#ifdef __cplusplus\n',
-                '}\n',
-                '#endif\n',
-                '\n',
-                '#endif  // %s\n' % guard
+            output.append('')
+            output.append('// splicer pop.class.%s' % node['name'])
+        output.extend([
+                '',
+                '#ifdef __cplusplus',
+                '}',
+                '#endif',
+                '',
+                '#endif  // %s' % guard
                 ])
+        self.indent = 0
+        self.write_lines(fp, output)
         fp.close()
         self.log.write("Close %s\n" % fname)
         print("Wrote", fname)
@@ -365,10 +369,10 @@ class Wrapc(object):
 
             fmt_func.C_code = "\n".join(lines)
 
-        self.header_proto_c.append(wformat('\n{C_return_type} {C_name}({C_arguments});\n',
+        self.header_proto_c.append(wformat('\n{C_return_type} {C_name}({C_arguments});',
                                            fmt_func))
 
-        impl = []
+        impl = self.impl
         impl.append('')
         impl.append(wformat('{C_return_type} {C_name}({C_arguments})', fmt_func))
         impl.append('{')
@@ -378,7 +382,6 @@ class Wrapc(object):
         impl.append(fmt_func.C_code)
         impl.append(wformat('// splicer end {C_name}', fmt_func))
         impl.append('}')
-        self.impl.extend(impl)
 
     def write_lines(self, fp, lines):
         """ Write lines with indention and newlines.
