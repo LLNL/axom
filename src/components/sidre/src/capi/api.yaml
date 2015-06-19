@@ -18,6 +18,9 @@ options:
   namespace: asctoolkit sidre
   F_module_per_class: False
 
+  # header file for function, each class has its own header file
+  cpp_header: sidre/SidreTypes.hpp
+
 typedef:
   IndexType:
 # defined in SidreTypes.hpp

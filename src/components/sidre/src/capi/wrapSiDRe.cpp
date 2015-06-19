@@ -10,6 +10,7 @@
 // wrapSiDRe.cpp
 #define EXAMPLE_WRAPPER_IMPL
 #include "wrapSiDRe.h"
+#include "sidre/SidreTypes.hpp"
 
 extern "C" {
 namespace asctoolkit {
