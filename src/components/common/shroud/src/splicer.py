@@ -115,4 +115,8 @@ if __name__ == '__main__':
     get_splicer_based_on_suffix('../tests/fsplicer.f', out)
     print(json.dumps(out, indent=4, sort_keys=True))
 
+    out = {}
+    get_splicer_based_on_suffix('../tests/csplicer.c', out)
+    print(json.dumps(out, indent=4, sort_keys=True))
+
 

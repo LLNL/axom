@@ -101,8 +101,7 @@ void AA_exclass1_splicer_special(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
 // splicer begin class.ExClass1.method.SplicerSpecial
-selfobj->SplicerSpecial();
-return;
+//   splicer for SplicerSpecial
 // splicer end class.ExClass1.method.SplicerSpecial
 }
 

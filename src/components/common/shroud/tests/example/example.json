@@ -950,6 +950,9 @@
         "namespace": "example nested"
     }, 
     "splicer": {
+        "c": [
+            "csplicer.c"
+        ], 
         "f": [
             "fsplicer.f"
         ]
