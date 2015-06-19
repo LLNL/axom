@@ -57,6 +57,10 @@ typedef:
       iso_c_binding:
       - C_INT
 
+  string:
+    # test for valid string and return NULL if invalid instead of string object InvalidName
+    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : ATK_InvalidName"
+
 # XXX
 # parameters:
 #  InvalidID: IDTYPE -1
@@ -217,7 +221,10 @@ classes:
 
 functions:
   -  decl: bool isNameValid(const std::string& name)
-
+     # The qconcept of a valid name is different for C++, C and Fortran
+     options:
+       C_code:  return name != NULL;
+       F_code:  rv = name .ne. " "
 
 # Files which contain code to be inserted into generated code
 splicer:

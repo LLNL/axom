@@ -23,7 +23,7 @@ const char * ATK_datagroup_get_name(const ATK_datagroup * self)
 const DataGroup *selfobj = static_cast<const DataGroup *>(self);
 // splicer begin ATK_datagroup_get_name
 const std::string & rv = selfobj->getName();
-return rv.c_str();
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
 // splicer end ATK_datagroup_get_name
 }
 
@@ -167,7 +167,7 @@ const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexTy
 const DataGroup *selfobj = static_cast<const DataGroup *>(self);
 // splicer begin ATK_datagroup_get_view_name
 const std::string & rv = selfobj->getViewName(idx);
-return rv.c_str();
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
 // splicer end ATK_datagroup_get_view_name
 }
 
@@ -230,7 +230,7 @@ const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexT
 const DataGroup *selfobj = static_cast<const DataGroup *>(self);
 // splicer begin ATK_datagroup_get_group_name
 const std::string & rv = selfobj->getGroupName(idx);
-return rv.c_str();
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
 // splicer end ATK_datagroup_get_group_name
 }
 

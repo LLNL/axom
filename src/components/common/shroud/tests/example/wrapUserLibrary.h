@@ -18,6 +18,8 @@ extern "C" {
 
 void AA_local_function1();
 
+bool AA_is_name_valid(const char * name);
+
 #ifdef __cplusplus
 }
 #endif

@@ -33,7 +33,7 @@ const char * AA_exclass2_get_name(const AA_exclass2 * self)
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);
 // splicer begin AA_exclass2_get_name
 const std::string & rv = selfobj->getName();
-return rv.c_str();
+return isNameValid(rv) ? rv.c_str() : NULL;
 // splicer end AA_exclass2_get_name
 }
 

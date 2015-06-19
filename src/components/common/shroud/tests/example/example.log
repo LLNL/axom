@@ -24,6 +24,7 @@ method TypeID getTypeID() const
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 function void local_function1
+function bool isNameValid(const std::string& name)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
@@ -50,4 +51,5 @@ method void destroyall()
 method TypeID getTypeID() const
 Close wrapfExClass2.f
 function void local_function1
+function bool isNameValid(const std::string& name)
 Close wrapfuserlibrary.f

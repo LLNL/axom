@@ -19,6 +19,8 @@ typedef:
   other:
     cpp_type: junk
 
+  string:
+    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
 
   SidreLength:
 # defined in SidreTypes.hpp
@@ -139,3 +141,9 @@ classes:
 functions:
   - decl: void local_function1
     docs: yada yada yada
+
+  # override the C code.
+  -  decl: bool isNameValid(const std::string& name)
+     options:
+       C_code:  "return name != NULL;"
+       F_code:  rv = name .ne. " "

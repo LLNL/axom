@@ -170,7 +170,7 @@
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "const AA_exclass1 * self", 
                         "C_call_list": "", 
-                        "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
+                        "C_code": "const std::string & rv = selfobj->getName();\nreturn isNameValid(rv) ? rv.c_str() : NULL;", 
                         "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name", 
                         "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
@@ -612,7 +612,7 @@
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "const AA_exclass2 * self", 
                         "C_call_list": "", 
-                        "C_code": "const std::string & rv = selfobj->getName();\nreturn rv.c_str();", 
+                        "C_code": "const std::string & rv = selfobj->getName();\nreturn isNameValid(rv) ? rv.c_str() : NULL;", 
                         "C_const": "const ", 
                         "C_name": "AA_exclass2_get_name", 
                         "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
@@ -913,6 +913,54 @@
                 "name": "local_function1", 
                 "type": "void"
             }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "bool isNameValid(const std::string& name)", 
+            "fmt": {
+                "CPP_name": "isNameValid", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * name", 
+                "C_call_list": "name", 
+                "C_code": "return name != NULL;", 
+                "C_name": "AA_is_name_valid", 
+                "C_object": "", 
+                "C_return_type": "bool", 
+                "F_C_arguments": "name", 
+                "F_C_name": "aa_is_name_valid", 
+                "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
+                "F_arguments": "name", 
+                "F_name_generic": "is_name_valid", 
+                "F_name_impl": "is_name_valid", 
+                "F_name_method": "is_name_valid", 
+                "F_obj": "obj%obj", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "method_name": "isNameValid", 
+                "rv_decl": "bool rv", 
+                "underscore_name": "is_name_valid"
+            }, 
+            "options": {
+                "C_code": "return name != NULL;", 
+                "F_code": "rv = name .ne. \" \""
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "isNameValid", 
+                "type": "bool"
+            }
         }
     ], 
     "options": {
@@ -1022,7 +1070,7 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "isNameValid({var}) ? {var}.c_str() : NULL", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -1035,7 +1083,7 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
-            "cpp_to_c": "{var}.c_str()", 
+            "cpp_to_c": "isNameValid({var}) ? {var}.c_str() : NULL", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null

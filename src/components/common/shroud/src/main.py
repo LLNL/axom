@@ -156,7 +156,7 @@ class Schema(object):
                 if not isinstance(value, dict):
                     raise TypeError("typedef '%s' must be a dictionary" % key)
                 if key in def_types:
-                    def_types.update(value)
+                    def_types[key].update(value)
                 else:
                     def_types[key] = util.Typedef(key, **value)
 

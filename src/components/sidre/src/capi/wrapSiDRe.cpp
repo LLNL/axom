@@ -20,8 +20,7 @@ bool ATK_is_name_valid(const char * name)
 {
 
 // splicer begin ATK_is_name_valid
-bool rv = isNameValid(name);
-return rv;
+return name != NULL;
 // splicer end ATK_is_name_valid
 }
 

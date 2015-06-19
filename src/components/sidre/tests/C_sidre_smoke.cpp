@@ -35,11 +35,10 @@ TEST(sidre_smoke,valid_invalid)
 
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-#if 0 // C API needs some additions to make this work...
   const char * gp_name = ATK_datagroup_get_group_name(root, idx);
   EXPECT_TRUE(gp_name == NULL);
-  EXPECT_FALSE(ATK_is_name_valid(name));
-#endif
+  EXPECT_TRUE(gp_name == ATK_InvalidName);
+  EXPECT_FALSE(ATK_is_name_valid(gp_name));
   EXPECT_TRUE(ATK_datagroup_get_group_index(root, name) == ATK_InvalidIndex);
 
   ATK_datastore_delete(ds);

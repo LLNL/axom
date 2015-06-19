@@ -11,7 +11,7 @@ import parse_decl
 fmt = string.Formatter()
 
 default_template = dict(
-    C_name='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+#    C_name='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
 
 #    C_header_filename = 'wrap{cpp_class}.h',
 #    C_impl_filename = 'wrap{cpp_class}.cpp',

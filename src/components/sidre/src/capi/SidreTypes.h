@@ -9,8 +9,9 @@ typedef int ATK_IndexType;
 
 typedef long int ATK_SidreLength;
 
-const ATK_IndexType ATK_InvalidIndex = -1;
+#define ATK_InvalidIndex  -1
 
+#define ATK_InvalidName   NULL
 //
 //  Must be kept in sync with sidretypes.inc
 #define ATK_INT8_T   3

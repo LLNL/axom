@@ -18,6 +18,14 @@ return;
 // splicer end AA_local_function1
 }
 
+bool AA_is_name_valid(const char * name)
+{
+
+// splicer begin AA_is_name_valid
+return name != NULL;
+// splicer end AA_is_name_valid
+}
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

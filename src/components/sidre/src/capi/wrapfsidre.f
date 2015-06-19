@@ -1274,7 +1274,7 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.is_name_valid
-        rv = booltological(atk_is_name_valid(trim(name) // C_NULL_CHAR))
+        rv = name .ne. " "
         ! splicer end class.is_name_valid
     end function is_name_valid
 

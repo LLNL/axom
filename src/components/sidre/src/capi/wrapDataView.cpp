@@ -68,7 +68,7 @@ const char * ATK_dataview_get_name(const ATK_dataview * self)
 const DataView *selfobj = static_cast<const DataView *>(self);
 // splicer begin ATK_dataview_get_name
 const std::string & rv = selfobj->getName();
-return rv.c_str();
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
 // splicer end ATK_dataview_get_name
 }
 
