@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "meshapi/RangeSet.hpp"
+#include "meshapi/IndirectionSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
 #include "meshapi/StaticVariableRelation.hpp"
 #include "meshapi/DynamicVariableRelation.hpp"
@@ -59,35 +60,36 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 
 // Stuff needed for boundary conditions
 // 2 BCs on each of 6 hexahedral faces (12 bits)
-#define XI_M        0x00007
-#define XI_M_SYMM   0x00001
-#define XI_M_FREE   0x00002
-#define XI_M_COMM   0x00004
+enum{ XI_M_SYMM   = 1 << 0
+    , XI_M_FREE   = 1 << 1
+    , XI_M_COMM   = 1 << 2
+    , XI_M        = XI_M_SYMM | XI_M_FREE | XI_M_COMM
 
-#define XI_P        0x00038
-#define XI_P_SYMM   0x00008
-#define XI_P_FREE   0x00010
-#define XI_P_COMM   0x00020
+    , XI_P_SYMM   = 1 << 3
+    , XI_P_FREE   = 1 << 4
+    , XI_P_COMM   = 1 << 5
+    , XI_P        = XI_P_SYMM | XI_P_FREE | XI_P_COMM
 
-#define ETA_M       0x001c0
-#define ETA_M_SYMM  0x00040
-#define ETA_M_FREE  0x00080
-#define ETA_M_COMM  0x00100
+    , ETA_M_SYMM  = 1 << 6
+    , ETA_M_FREE  = 1 << 7
+    , ETA_M_COMM  = 1 << 8
+    , ETA_M       = ETA_M_SYMM | ETA_M_FREE | ETA_M_COMM
 
-#define ETA_P       0x00e00
-#define ETA_P_SYMM  0x00200
-#define ETA_P_FREE  0x00400
-#define ETA_P_COMM  0x00800
+    , ETA_P_SYMM  = 1 << 9
+    , ETA_P_FREE  = 1 << 10
+    , ETA_P_COMM  = 1 << 11
+    , ETA_P       = ETA_P_SYMM | ETA_P_FREE | ETA_P_COMM
 
-#define ZETA_M      0x07000
-#define ZETA_M_SYMM 0x01000
-#define ZETA_M_FREE 0x02000
-#define ZETA_M_COMM 0x04000
+    , ZETA_M_SYMM = 1 << 12
+    , ZETA_M_FREE = 1 << 13
+    , ZETA_M_COMM = 1 << 14
+    , ZETA_M      = ZETA_M_SYMM | ZETA_M_FREE | ZETA_M_COMM
 
-#define ZETA_P      0x38000
-#define ZETA_P_SYMM 0x08000
-#define ZETA_P_FREE 0x10000
-#define ZETA_P_COMM 0x20000
+    , ZETA_P_SYMM = 1 << 15
+    , ZETA_P_FREE = 1 << 16
+    , ZETA_P_COMM = 1 << 17
+    , ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM
+};
 
 // MPI Message Tags
 #define MSG_COMM_SBN      1024
@@ -132,6 +134,7 @@ class Domain {
 
    typedef asctoolkit::meshapi::RangeSet               ElemSet;
    typedef asctoolkit::meshapi::RangeSet               NodeSet;
+   typedef asctoolkit::meshapi::IndirectionSet         SymmNodeSet;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceAdjacencyRelation;
 
@@ -198,7 +201,7 @@ class Domain {
       m_lzetam = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
       m_lzetap = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
 
-      m_elemBC.resize(numElem);
+      m_elemBC = ElemIntMap(&m_elemSet);
 
       m_e.resize(numElem);
       m_p.resize(numElem);
@@ -291,9 +294,9 @@ class Domain {
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
    Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
    Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
-   bool symmXempty()          { return m_symmX.empty(); }
-   bool symmYempty()          { return m_symmY.empty(); }
-   bool symmZempty()          { return m_symmZ.empty(); }
+   bool symmXempty()          { return m_symmX.isEmpty(); }
+   bool symmYempty()          { return m_symmY.isEmpty(); }
+   bool symmZempty()          { return m_symmZ.isEmpty(); }
 
    //
    // Element-centered
@@ -448,7 +451,7 @@ class Domain {
    void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
    void SetupThreadSupportStructures();
    void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void SetupCommBuffers(Int_t edgeNodes);
+   void SetupCommBuffers();
    void SetupSymmetryPlanes(Int_t edgeNodes);
    void SetupElementConnectivities(Int_t edgeElems);
    void SetupBoundaryConditions(Int_t edgeElems);
@@ -476,9 +479,9 @@ class Domain {
 
    std::vector<Real_t> m_nodalMass ;  /* mass */
 
-   std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
-   std::vector<Index_t> m_symmY ;
-   std::vector<Index_t> m_symmZ ;
+   SymmNodeSet m_symmX ;  /* symmetry plane nodesets */
+   SymmNodeSet m_symmY ;
+   SymmNodeSet m_symmZ ;
 
    /// Element-centered
 
@@ -501,7 +504,7 @@ class Domain {
    ElemFaceAdjacencyRelation m_lzetam ;
    ElemFaceAdjacencyRelation m_lzetap ;
 
-   std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
+   ElemIntMap    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
 
    std::vector<Real_t> m_dxx ;  /* principal strains -- temporary */
    std::vector<Real_t> m_dyy ;

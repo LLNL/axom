@@ -400,7 +400,7 @@ class Domain {
    void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
    void SetupThreadSupportStructures();
    void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void SetupCommBuffers(Int_t edgeNodes);
+   void SetupCommBuffers();
    void SetupSymmetryPlanes(Int_t edgeNodes);
    void SetupElementConnectivities(Int_t edgeElems);
    void SetupBoundaryConditions(Int_t edgeElems);

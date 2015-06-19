@@ -69,7 +69,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    // Node-centered 
    AllocateNodePersistent(numNode()) ;
 
-   SetupCommBuffers(edgeNodes);
+   SetupCommBuffers();
 
    // Basic Field Initialization 
    for (Index_t i=0; i<numElem(); ++i) {
@@ -325,7 +325,7 @@ Domain::SetupThreadSupportStructures()
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-Domain::SetupCommBuffers(Int_t edgeNodes)
+Domain::SetupCommBuffers()
 {
   // allocate a buffer large enough for nodal ghost data 
   Index_t maxEdgeSize = MAX(this->sizeX(), MAX(this->sizeY(), this->sizeZ()))+1 ;
@@ -372,13 +372,6 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   memset(this->commDataRecv, 0, comBufSize*sizeof(Real_t)) ;
 #endif   
 
-  // Boundary nodesets
-  if (m_colLoc == 0)
-    m_symmX.resize(edgeNodes*edgeNodes);
-  if (m_rowLoc == 0)
-    m_symmY.resize(edgeNodes*edgeNodes);
-  if (m_planeLoc == 0)
-    m_symmZ.resize(edgeNodes*edgeNodes);
 }
 
 
@@ -536,23 +529,47 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 void 
 Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 {
+  typedef SymmNodeSet::ArrType SymmVec;
+  Int_t numSymmNodesX = m_colLoc == 0 ? edgeNodes * edgeNodes : 0;
+  Int_t numSymmNodesY = m_rowLoc == 0 ? edgeNodes * edgeNodes : 0;
+  Int_t numSymmNodesZ = m_planeLoc == 0 ? edgeNodes * edgeNodes : 0;
+
+  SymmVec loc_symmX(numSymmNodesX);
+  SymmVec loc_symmY(numSymmNodesY);
+  SymmVec loc_symmZ(numSymmNodesZ);
+
   Index_t nidx = 0 ;
   for (Index_t i=0; i<edgeNodes; ++i) {
     Index_t planeInc = i*edgeNodes*edgeNodes ;
     Index_t rowInc   = i*edgeNodes ;
     for (Index_t j=0; j<edgeNodes; ++j) {
       if (m_planeLoc == 0) {
-        m_symmZ[nidx] = rowInc   + j ;
+        loc_symmZ[nidx] = rowInc   + j ;
       }
       if (m_rowLoc == 0) {
-        m_symmY[nidx] = planeInc + j ;
+        loc_symmY[nidx] = planeInc + j ;
       }
       if (m_colLoc == 0) {
-        m_symmX[nidx] = planeInc + j*edgeNodes ;
+        loc_symmX[nidx] = planeInc + j*edgeNodes ;
       }
       ++nidx ;
     }
   }
+
+  // Setup symmetry nodes sets, w/ nodes as parent
+  m_symmX = SymmNodeSet(&m_nodeSet);
+  m_symmY = SymmNodeSet(&m_nodeSet);
+  m_symmZ = SymmNodeSet(&m_nodeSet);
+
+  // Swap data with Symmetry Node sets
+  loc_symmX.swap(m_symmX.data());
+  loc_symmY.swap(m_symmY.data());
+  loc_symmZ.swap(m_symmZ.data());
+
+  // Verify validity of the sets.
+  ATK_ASSERT( m_symmX.isValid() && m_symmX.size() == numSymmNodesX);
+  ATK_ASSERT( m_symmY.isValid() && m_symmY.size() == numSymmNodesY);
+  ATK_ASSERT( m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ);
 }
 
 
