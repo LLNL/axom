@@ -363,12 +363,26 @@ class Wrapc(object):
         self.header_proto_c.append(wformat('\n{C_return_type} {C_name}({C_arguments});\n',
                                            fmt_func))
 
-        self.impl.append(wformat("""
-{C_return_type} {C_name}({C_arguments})
-{{
-{C_object}
-// splicer begin {C_name}
-{C_code}
-// splicer end {C_name}
-}}
-""", fmt_func))
+        impl = []
+        impl.append('\n')
+        impl.append(wformat('{C_return_type} {C_name}({C_arguments})\n', fmt_func))
+        impl.append('{\n')
+        if cls:
+            impl.append(fmt_func.C_object + '\n')
+        impl.append(wformat('// splicer begin {C_name}\n', fmt_func))
+        impl.append(fmt_func.C_code + '\n')
+        impl.append(wformat('// splicer end {C_name}\n', fmt_func))
+        impl.append('}\n')
+        self.impl.extend(impl)
+
+    def write_lines(self, fp, lines):
+        """ Write lines with indention and newlines.
+        """
+        for line in lines:
+            if isinstance(line, int):
+                self.indent += int(line)
+            else:
+                for subline in line.split("\n"):
+                    fp.write('    ' * self.indent)
+                    fp.write(subline)
+                    fp.write('\n')
