@@ -18,9 +18,9 @@ namespace sidre {
 
 bool ATK_is_name_valid(const char * name)
 {
-// splicer begin ATK_is_name_valid
+// splicer begin function.isNameValid
 return name != NULL;
-// splicer end ATK_is_name_valid
+// splicer end function.isNameValid
 }
 
 }  // namespace asctoolkit

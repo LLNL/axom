@@ -15,79 +15,76 @@
 extern "C" {
 namespace asctoolkit {
 namespace sidre {
-// splicer push class.DataStore.method
 
 ATK_datastore * ATK_datastore_new()
 {
 DataStore *selfobj = new DataStore();
-// splicer begin ATK_datastore_new
+// splicer begin class.DataStore.method.new
 return (ATK_datastore *) selfobj;
-// splicer end ATK_datastore_new
+// splicer end class.DataStore.method.new
 }
 
 void ATK_datastore_delete(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_delete
+// splicer begin class.DataStore.method.delete
 delete selfobj;
-// splicer end ATK_datastore_delete
+// splicer end class.DataStore.method.delete
 }
 
 ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_get_root
+// splicer begin class.DataStore.method.getRoot
 DataGroup * rv = selfobj->getRoot();
 return rv;
-// splicer end ATK_datastore_get_root
+// splicer end class.DataStore.method.getRoot
 }
 
 ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, ATK_IndexType idx)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_get_buffer
+// splicer begin class.DataStore.method.getBuffer
 DataBuffer * rv = selfobj->getBuffer(idx);
 return rv;
-// splicer end ATK_datastore_get_buffer
+// splicer end class.DataStore.method.getBuffer
 }
 
 ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_create_buffer
+// splicer begin class.DataStore.method.createBuffer
 DataBuffer * rv = selfobj->createBuffer();
 return rv;
-// splicer end ATK_datastore_create_buffer
+// splicer end class.DataStore.method.createBuffer
 }
 
 void ATK_datastore_destroy_buffer(ATK_datastore * self, ATK_IndexType id)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_destroy_buffer
+// splicer begin class.DataStore.method.destroyBuffer
 selfobj->destroyBuffer(id);
 return;
-// splicer end ATK_datastore_destroy_buffer
+// splicer end class.DataStore.method.destroyBuffer
 }
 
 size_t ATK_datastore_get_num_buffers(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_get_num_buffers
+// splicer begin class.DataStore.method.getNumBuffers
 size_t rv = selfobj->getNumBuffers();
 return rv;
-// splicer end ATK_datastore_get_num_buffers
+// splicer end class.DataStore.method.getNumBuffers
 }
 
 void ATK_datastore_print(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin ATK_datastore_print
+// splicer begin class.DataStore.method.print
 selfobj->print();
 return;
-// splicer end ATK_datastore_print
+// splicer end class.DataStore.method.print
 }
-
-// splicer pop.class.DataStore method
 
 }  // namespace asctoolkit
 }  // namespace sidre

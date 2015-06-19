@@ -12,7 +12,6 @@
 
 #ifndef WRAPDATABUFFER_H
 #define WRAPDATABUFFER_H
-// splicer push.class.DataBuffer
 
 #include "sidre/SidreTypes.h"
 #include "stdlib.h"
@@ -48,8 +47,6 @@ bool ATK_databuffer_is_external(ATK_databuffer * self);
 void * ATK_databuffer_get_data(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
-
-// splicer pop.class.DataBuffer
 
 #ifdef __cplusplus
 }

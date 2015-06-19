@@ -51,7 +51,7 @@ class Wrapc(object):
         self.splicer_stack.append(level)
         self.splicer_names.append(name)
         self.splicer_path = '.'.join(self.splicer_names) + '.'
-#        out.append('! splicer push %s' % name)
+#        out.append('// splicer push %s' % name)
 
 #X changes for push/pop instead of full paths
     def _pop_splicer(self, name, out):
@@ -62,20 +62,20 @@ class Wrapc(object):
             self.splicer_path = '.'.join(self.splicer_names) + '.'
         else:
             self.splicer_path = ''
-#X        out.append('! splicer pop %s' % name)
+#X        out.append('// splicer pop %s' % name)
 
     def _create_splicer(self, name, out, default=None):
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
-#X        out.append('! splicer begin %s' % name)
-        out.append('! splicer begin %s%s' % (self.splicer_path, name))
+#X        out.append('// splicer begin %s' % name)
+        out.append('// splicer begin %s%s' % (self.splicer_path, name))
         if default:
             out.extend(default)
         else:
             out.extend(self.splicer_stack[-1].get(name, []))
-#X        out.append('! splicer end %s' % name)
-        out.append('! splicer end %s%s' % (self.splicer_path, name))
+#X        out.append('// splicer end %s' % name)
+        out.append('// splicer end %s%s' % (self.splicer_path, name))
 
 #####
 
@@ -125,8 +125,10 @@ class Wrapc(object):
         fmt_library.C_this = options.get('C_this', 'self')
         fmt_library.C_const = ''
 
+        self._push_splicer('class', [])
         for node in self.tree['classes']:
             self.write_file(node, self.wrap_class, True)
+        self._pop_splicer('class', [])
 
         if self.tree['functions']:
             self.write_file(self.tree, self.wrap_functions, False)
@@ -145,8 +147,10 @@ class Wrapc(object):
 
     def wrap_functions(self, tree):
         # worker function for write_file
+        self._push_splicer('function', [])
         for node in tree['functions']:
             self.wrap_method(None, node)
+        self._pop_splicer('function', [])
 
     def write_copyright(self, fp):
         for line in self.tree.get('copyright', []):
@@ -170,8 +174,7 @@ class Wrapc(object):
                 '#define %s' % guard,
                 ])
         if cls:
-            output.append('// splicer push.class.%s' % node['name'])
-#            self._push_splicer('class', output)
+            self._push_splicer('class', output)
 
         # headers required by typedefs
         if self.header_typedef_include:
@@ -202,8 +205,7 @@ class Wrapc(object):
         output.append('#endif')
         output.extend(self.header_proto_c);
         if cls:
-            output.append('')
-            output.append('// splicer pop.class.%s' % node['name'])
+            self._pop_splicer('class', output)
         output.extend([
                 '',
                 '#ifdef __cplusplus',
@@ -243,11 +245,7 @@ class Wrapc(object):
         output.append('\nextern "C" {')
         for name in namespace.split():
             output.append('namespace %s {' % name)
-        if cls:
-            output.append('// splicer push class.%s.method' % node['name'])
         output.extend(self.impl)
-        if cls:
-            output.append('\n// splicer pop.class.%s method' % node['name'])
         output.append('')
         for name in namespace.split():
             output.append('}  // namespace %s' % name)
@@ -265,6 +263,7 @@ class Wrapc(object):
         typedef = self.typedef[name]
         cname = typedef.c_type
 
+        self._push_splicer(name, [])
 #        fmt_class = node['fmt']
 #        fmt_class.update(dict(
 #                ))
@@ -272,8 +271,12 @@ class Wrapc(object):
         # create a forward declaration for this type
         self.header_forward[cname] = True
 
+        self._push_splicer('method', [])
         for method in node['methods']:
             self.wrap_method(node, method)
+        self._pop_splicer('method', [])
+
+        self._pop_splicer(name, [])
 
     def wrap_method(self, cls, node):
         """
@@ -386,32 +389,35 @@ class Wrapc(object):
                                '{C_prefix}{underscore_name}{method_suffix}')
             fmt_func.C_object = ''
 
+        # body of function
+        splicer_code = self.splicer_stack[-1].get(fmt_func.method_name, None)
         if 'C_code' in options:
-            fmt_func.C_code = options.C_code
+            C_code = [ options.C_code ]
+        elif splicer_code:
+            C_code = splicer_code
         else:
             # generate the C body
-            lines = []
+            C_code = []
             if is_ctor:
-                lines.append('return (%s) %sobj;' % (C_this_type, C_this))
+                C_code.append('return (%s) %sobj;' % (C_this_type, C_this))
             elif is_dtor:
-                lines.append('delete %sobj;' % C_this)
+                C_code.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
                 line = wformat('{CPP_this_call}{CPP_name}({C_call_list});',
                                fmt_func)
-                lines.append(line)
-                lines.append('return;')
+                C_code.append(line)
+                C_code.append('return;')
             else:
                 line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}({C_call_list});',
                                fmt_func)
-                lines.append(line)
+                C_code.append(line)
 
                 ret = result_typedef.cpp_to_c
                 line = 'return ' + ret.format(var='rv') + ';'
-                lines.append(line)
+                C_code.append(line)
 
-            fmt_func.C_code = "\n".join(lines)
-
-        self.header_proto_c.append(wformat('\n{C_return_type} {C_name}({C_arguments});',
+        self.header_proto_c.append('')
+        self.header_proto_c.append(wformat('{C_return_type} {C_name}({C_arguments});',
                                            fmt_func))
 
         impl = self.impl
@@ -420,9 +426,7 @@ class Wrapc(object):
         impl.append('{')
         if cls:
             impl.append(fmt_func.C_object )
-        impl.append(wformat('// splicer begin {C_name}', fmt_func))
-        impl.append(fmt_func.C_code)
-        impl.append(wformat('// splicer end {C_name}', fmt_func))
+        self._create_splicer(fmt_func.method_name, impl, C_code)
         impl.append('}')
 
     def write_lines(self, fp, lines):

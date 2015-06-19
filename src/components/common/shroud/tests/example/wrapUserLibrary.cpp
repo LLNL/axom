@@ -11,17 +11,17 @@ namespace nested {
 
 void AA_local_function1()
 {
-// splicer begin AA_local_function1
+// splicer begin function.local_function1
 local_function1();
 return;
-// splicer end AA_local_function1
+// splicer end function.local_function1
 }
 
 bool AA_is_name_valid(const char * name)
 {
-// splicer begin AA_is_name_valid
+// splicer begin function.isNameValid
 return name != NULL;
-// splicer end AA_is_name_valid
+// splicer end function.isNameValid
 }
 
 }  // namespace example

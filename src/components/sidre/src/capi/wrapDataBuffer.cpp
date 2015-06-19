@@ -16,99 +16,96 @@
 extern "C" {
 namespace asctoolkit {
 namespace sidre {
-// splicer push class.DataBuffer.method
 
 ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_get_index
+// splicer begin class.DataBuffer.method.getIndex
 IndexType rv = selfobj->getIndex();
 return rv;
-// splicer end ATK_databuffer_get_index
+// splicer end class.DataBuffer.method.getIndex
 }
 
 size_t ATK_databuffer_get_num_views(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_get_num_views
+// splicer begin class.DataBuffer.method.getNumViews
 size_t rv = selfobj->getNumViews();
 return rv;
-// splicer end ATK_databuffer_get_num_views
+// splicer end class.DataBuffer.method.getNumViews
 }
 
 void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_declare
+// splicer begin class.DataBuffer.method.declare
 selfobj->declare(getTypeID(type), len);
 return;
-// splicer end ATK_databuffer_declare
+// splicer end class.DataBuffer.method.declare
 }
 
 void ATK_databuffer_declare_external(ATK_databuffer * self, void * external_data, int type, ATK_SidreLength len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_declare_external
+// splicer begin class.DataBuffer.method.declareExternal
 selfobj->declareExternal(external_data, getTypeID(type), len);
 return;
-// splicer end ATK_databuffer_declare_external
+// splicer end class.DataBuffer.method.declareExternal
 }
 
 void ATK_databuffer_allocate_existing(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_allocate_existing
+// splicer begin class.DataBuffer.method.allocate
 selfobj->allocate();
 return;
-// splicer end ATK_databuffer_allocate_existing
+// splicer end class.DataBuffer.method.allocate
 }
 
 void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_allocate_from_type
+// splicer begin class.DataBuffer.method.allocate
 selfobj->allocate(getTypeID(type), len);
 return;
-// splicer end ATK_databuffer_allocate_from_type
+// splicer end class.DataBuffer.method.allocate
 }
 
 void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_reallocate
+// splicer begin class.DataBuffer.method.reallocate
 selfobj->reallocate(getTypeID(type), len);
 return;
-// splicer end ATK_databuffer_reallocate
+// splicer end class.DataBuffer.method.reallocate
 }
 
 bool ATK_databuffer_is_external(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_is_external
+// splicer begin class.DataBuffer.method.isExternal
 bool rv = selfobj->isExternal();
 return rv;
-// splicer end ATK_databuffer_is_external
+// splicer end class.DataBuffer.method.isExternal
 }
 
 void * ATK_databuffer_get_data(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_get_data
+// splicer begin class.DataBuffer.method.getData
 void * rv = selfobj->getData();
 return rv;
-// splicer end ATK_databuffer_get_data
+// splicer end class.DataBuffer.method.getData
 }
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin ATK_databuffer_get_total_bytes
+// splicer begin class.DataBuffer.method.getTotalBytes
 size_t rv = selfobj->getTotalBytes();
 return rv;
-// splicer end ATK_databuffer_get_total_bytes
+// splicer end class.DataBuffer.method.getTotalBytes
 }
-
-// splicer pop.class.DataBuffer method
 
 }  // namespace asctoolkit
 }  // namespace sidre

@@ -6,7 +6,6 @@
 
 #ifndef WRAPEXCLASS2_H
 #define WRAPEXCLASS2_H
-// splicer push.class.ExClass2
 
 #include "sidre/SidreTypes.h"
 
@@ -40,8 +39,6 @@ void AA_exclass2_declare(AA_exclass2 * self, int type, ATK_SidreLength len);
 void AA_exclass2_destroyall(AA_exclass2 * self);
 
 int AA_exclass2_get_type_id(AA_exclass2 * self);
-
-// splicer pop.class.ExClass2
 
 #ifdef __cplusplus
 }
