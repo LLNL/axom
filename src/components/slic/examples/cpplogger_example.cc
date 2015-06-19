@@ -23,8 +23,7 @@
 #include <cstdlib>  // for rand()
 
 // Logging includes
-#include "slic/Logger.hpp"
-#include "slic/LogStream.hpp"
+#include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
 using namespace asctoolkit;
@@ -44,8 +43,8 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   // STEP 0: Initialize logger
   //----------------------------------------------------------------------------
-  slic::Logger::initialize();
-  slic::Logger::getInstance()->setLoggingLevel(slic::message::Debug);
+  slic::initialize();
+  slic::setLoggingLevel(slic::message::Debug);
 
   //----------------------------------------------------------------------------
   // STEP 1: Create log streams
@@ -75,22 +74,18 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   // STEP 2: add streams to logger
   //----------------------------------------------------------------------------
-  slic::Logger::getInstance()->addStreamToLevel(
-      hspLogStream,slic::message::Fatal);
-  slic::Logger::getInstance()->addStreamToLevel(
-      hspLogStream,slic::message::Error);
-  slic::Logger::getInstance()->addStreamToLevel(
-      hspLogStream,slic::message::Warning);
+  slic::addStreamToLevel(hspLogStream,slic::message::Fatal);
+  slic::addStreamToLevel(hspLogStream,slic::message::Error);
+  slic::addStreamToLevel(hspLogStream,slic::message::Warning);
 
-  slic::Logger::getInstance()->addStreamToAllLevels( console );
+  slic::addStreamToAllLevels( console );
 
   //----------------------------------------------------------------------------
   // STEP 3: Loop N times and generate random logging events
   //----------------------------------------------------------------------------
   for ( int i=0; i < N; ++i ) {
 
-    slic::Logger::getInstance()->logMessage(
-        getRandomEvent(0,slic::message::Num_Levels),
+    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
         "a random message", __FILE__, __LINE__  );
 
   }
@@ -100,7 +95,7 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
 
   // finalize logging & close HSP file
-  slic::Logger::finalize();
+  slic::finalize();
   hspStream.close();
 
   return 0;
