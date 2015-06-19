@@ -178,10 +178,12 @@ class Wrapc(object):
         namespace = options.namespace
         fp = open(os.path.join(self.config.binary_dir, fname), "w")
         self.write_copyright(fp)
-        fp.write('// {}\n'.format(fname))
-        fp.write('#define EXAMPLE_WRAPPER_IMPL\n')
 
-        fp.write('#include "%s"\n' % hname)
+        output = []
+        output.append('// ' + fname)
+        output.append('#define EXAMPLE_WRAPPER_IMPL')
+
+        output.append('#include "%s"' % hname)
         if node['options'].cpp_header:
             for include in node['options'].cpp_header.split():
                 self.header_impl_include[include] = True
@@ -190,20 +192,23 @@ class Wrapc(object):
             headers = self.header_impl_include.keys()
             headers.sort()
             for header in headers:
-                fp.write('#include "%s"\n' % header)
+                output.append('#include "%s"' % header)
 
-        fp.write('\nextern "C" {\n')
+        output.append('\nextern "C" {')
         for name in namespace.split():
-            fp.write('namespace %s {\n' % name)
+            output.append('namespace %s {' % name)
         if cls:
-            fp.write('// splicer push class.%s.method\n' % node['name'])
-        fp.writelines(self.impl)
+            output.append('// splicer push class.%s.method' % node['name'])
+        output.extend(self.impl)
         if cls:
-            fp.write('\n// splicer pop.class.%s method\n' % node['name'])
-        fp.write('\n')
+            output.append('\n// splicer pop.class.%s method' % node['name'])
+        output.append('')
         for name in namespace.split():
-            fp.write('}  // namespace %s\n' % name)
-        fp.write('}  // extern "C"\n')
+            output.append('}  // namespace %s' % name)
+
+        output.append('}  // extern "C"')
+        self.indent = 0
+        self.write_lines(fp, output)
         fp.close()
         self.log.write("Close %s\n" % fname)
         print("Wrote", fname)
@@ -364,15 +369,15 @@ class Wrapc(object):
                                            fmt_func))
 
         impl = []
-        impl.append('\n')
-        impl.append(wformat('{C_return_type} {C_name}({C_arguments})\n', fmt_func))
-        impl.append('{\n')
+        impl.append('')
+        impl.append(wformat('{C_return_type} {C_name}({C_arguments})', fmt_func))
+        impl.append('{')
         if cls:
-            impl.append(fmt_func.C_object + '\n')
-        impl.append(wformat('// splicer begin {C_name}\n', fmt_func))
-        impl.append(fmt_func.C_code + '\n')
-        impl.append(wformat('// splicer end {C_name}\n', fmt_func))
-        impl.append('}\n')
+            impl.append(fmt_func.C_object )
+        impl.append(wformat('// splicer begin {C_name}', fmt_func))
+        impl.append(fmt_func.C_code)
+        impl.append(wformat('// splicer end {C_name}', fmt_func))
+        impl.append('}')
         self.impl.extend(impl)
 
     def write_lines(self, fp, lines):
