@@ -128,9 +128,9 @@ class Domain {
    public:
 
 #if USE_SIDRE==1
-  typedef asctoolkit::sidre::DataView * luleshRealData;
-  typedef asctoolkit::sidre::DataView * luleshIntData;
-  typedef asctoolkit::sidre::DataView * luleshIndexData;
+  typedef Real_t * luleshRealData;
+  typedef Int_t * luleshIntData;
+  typedef Index_t * luleshIndexData;
 #else
   typedef std::vector<Real_t> luleshRealData;
   typedef std::vector<Int_t> luleshIntData;
@@ -149,23 +149,23 @@ class Domain {
    void AllocateNodePersistent(Int_t numNode) // Node-centered
    {
 #if USE_SIDRE==1
-     m_x = m_DataGroup->createViewAndBuffer("m_x",asctoolkit::sidre::DataType::float64(numNode));
-     m_y = m_DataGroup->createViewAndBuffer("m_y",asctoolkit::sidre::DataType::float64(numNode));
-     m_z = m_DataGroup->createViewAndBuffer("m_z",asctoolkit::sidre::DataType::float64(numNode));
+     m_x = m_DataGroup->createViewAndBuffer("m_x",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_y = m_DataGroup->createViewAndBuffer("m_y",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_z = m_DataGroup->createViewAndBuffer("m_z",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_xd = m_DataGroup->createViewAndBuffer("m_xd",asctoolkit::sidre::DataType::float64(numNode));
-     m_yd = m_DataGroup->createViewAndBuffer("m_yd",asctoolkit::sidre::DataType::float64(numNode));
-     m_zd = m_DataGroup->createViewAndBuffer("m_zd",asctoolkit::sidre::DataType::float64(numNode));
+     m_xd = m_DataGroup->createViewAndBuffer("m_xd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_yd = m_DataGroup->createViewAndBuffer("m_yd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_zd = m_DataGroup->createViewAndBuffer("m_zd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_xdd = m_DataGroup->createViewAndBuffer("m_xdd",asctoolkit::sidre::DataType::float64(numNode));
-     m_ydd = m_DataGroup->createViewAndBuffer("m_ydd",asctoolkit::sidre::DataType::float64(numNode));
-     m_zdd = m_DataGroup->createViewAndBuffer("m_zdd",asctoolkit::sidre::DataType::float64(numNode));
+     m_xdd = m_DataGroup->createViewAndBuffer("m_xdd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_ydd = m_DataGroup->createViewAndBuffer("m_ydd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_zdd = m_DataGroup->createViewAndBuffer("m_zdd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_fx = m_DataGroup->createViewAndBuffer("m_fx",asctoolkit::sidre::DataType::float64(numNode));
-     m_fy = m_DataGroup->createViewAndBuffer("m_fy",asctoolkit::sidre::DataType::float64(numNode));
-     m_fz = m_DataGroup->createViewAndBuffer("m_fz",asctoolkit::sidre::DataType::float64(numNode));
+     m_fx = m_DataGroup->createViewAndBuffer("m_fx",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_fy = m_DataGroup->createViewAndBuffer("m_fy",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_fz = m_DataGroup->createViewAndBuffer("m_fz",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_nodalMass = m_DataGroup->createViewAndBuffer("m_nodalMass",asctoolkit::sidre::DataType::float64(numNode));
+     m_nodalMass = m_DataGroup->createViewAndBuffer("m_nodalMass",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
 #else
       m_x.resize(numNode);  // coordinates
@@ -191,42 +191,42 @@ class Domain {
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
 #if USE_SIDRE==1
-     m_nodelist = m_DataGroup->createViewAndBuffer("m_nodelist",asctoolkit::sidre::DataType::int32(8*numElem));
+     m_nodelist = m_DataGroup->createViewAndBuffer("m_nodelist",asctoolkit::sidre::DataType::int32(8*numElem))->getValue();
 
      // elem connectivities through face
-     m_lxim = m_DataGroup->createViewAndBuffer("m_lxim",asctoolkit::sidre::DataType::int32(numElem));
-     m_lxip = m_DataGroup->createViewAndBuffer("m_lxip",asctoolkit::sidre::DataType::int32(numElem));
-     m_letam = m_DataGroup->createViewAndBuffer("m_letam",asctoolkit::sidre::DataType::int32(numElem));
-     m_letap = m_DataGroup->createViewAndBuffer("m_letap",asctoolkit::sidre::DataType::int32(numElem));
-     m_lzetam = m_DataGroup->createViewAndBuffer("m_lzetam",asctoolkit::sidre::DataType::int32(numElem));
-     m_lzetap = m_DataGroup->createViewAndBuffer("m_lzetap",asctoolkit::sidre::DataType::int32(numElem));
+     m_lxim = m_DataGroup->createViewAndBuffer("m_lxim",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lxip = m_DataGroup->createViewAndBuffer("m_lxip",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_letam = m_DataGroup->createViewAndBuffer("m_letam",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_letap = m_DataGroup->createViewAndBuffer("m_letap",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lzetam = m_DataGroup->createViewAndBuffer("m_lzetam",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lzetap = m_DataGroup->createViewAndBuffer("m_lzetap",asctoolkit::sidre::DataType::int32(numElem))->getValue();
 
 
 
-     m_elemBC = m_DataGroup->createViewAndBuffer("m_elemBC",asctoolkit::sidre::DataType::int32(numElem));
+     m_elemBC = m_DataGroup->createViewAndBuffer("m_elemBC",asctoolkit::sidre::DataType::int32(numElem))->getValue();
 
-      m_e = m_DataGroup->createViewAndBuffer("m_e",asctoolkit::sidre::DataType::float64(numElem));
-      m_p = m_DataGroup->createViewAndBuffer("m_p",asctoolkit::sidre::DataType::float64(numElem));
+      m_e = m_DataGroup->createViewAndBuffer("m_e",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_p = m_DataGroup->createViewAndBuffer("m_p",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_q = m_DataGroup->createViewAndBuffer("m_q",asctoolkit::sidre::DataType::float64(numElem));
-      m_ql = m_DataGroup->createViewAndBuffer("m_ql",asctoolkit::sidre::DataType::float64(numElem));
-      m_qq = m_DataGroup->createViewAndBuffer("m_qq",asctoolkit::sidre::DataType::float64(numElem));
+      m_q = m_DataGroup->createViewAndBuffer("m_q",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_ql = m_DataGroup->createViewAndBuffer("m_ql",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_qq = m_DataGroup->createViewAndBuffer("m_qq",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_v = m_DataGroup->createViewAndBuffer("m_v",asctoolkit::sidre::DataType::float64(numElem));
+      m_v = m_DataGroup->createViewAndBuffer("m_v",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_volo = m_DataGroup->createViewAndBuffer("m_volo",asctoolkit::sidre::DataType::float64(numElem));
-      m_delv = m_DataGroup->createViewAndBuffer("m_delv",asctoolkit::sidre::DataType::float64(numElem));
-      m_vdov = m_DataGroup->createViewAndBuffer("m_vdov",asctoolkit::sidre::DataType::float64(numElem));
-
-
+      m_volo = m_DataGroup->createViewAndBuffer("m_volo",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_delv = m_DataGroup->createViewAndBuffer("m_delv",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_vdov = m_DataGroup->createViewAndBuffer("m_vdov",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
 
 
-      m_arealg = m_DataGroup->createViewAndBuffer("m_arealg",asctoolkit::sidre::DataType::float64(numElem));
 
-      m_ss = m_DataGroup->createViewAndBuffer("m_ss",asctoolkit::sidre::DataType::float64(numElem));
 
-      m_elemMass = m_DataGroup->createViewAndBuffer("m_elemMass",asctoolkit::sidre::DataType::float64(numElem));
+      m_arealg = m_DataGroup->createViewAndBuffer("m_arealg",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+
+      m_ss = m_DataGroup->createViewAndBuffer("m_ss",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+
+      m_elemMass = m_DataGroup->createViewAndBuffer("m_elemMass",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
 #else
       m_nodelist.resize(8*numElem);
@@ -266,14 +266,14 @@ class Domain {
    {
 #if USE_SIDRE==1
      // Position gradients
-     m_delx_xi = m_DataGroup->createViewAndBuffer("m_delx_xi",asctoolkit::sidre::DataType::float64(numElem));
-     m_delx_eta = m_DataGroup->createViewAndBuffer("m_delx_eta",asctoolkit::sidre::DataType::float64(numElem));
-     m_delx_zeta = m_DataGroup->createViewAndBuffer("m_delx_zeta",asctoolkit::sidre::DataType::float64(numElem));
+     m_delx_xi = m_DataGroup->createViewAndBuffer("m_delx_xi",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+     m_delx_eta = m_DataGroup->createViewAndBuffer("m_delx_eta",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+     m_delx_zeta = m_DataGroup->createViewAndBuffer("m_delx_zeta",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
      // Velocity gradients
-     m_delv_xi = m_DataGroup->createViewAndBuffer("m_delv_xi",asctoolkit::sidre::DataType::float64(allElem));
-     m_delv_eta = m_DataGroup->createViewAndBuffer("m_delv_eta",asctoolkit::sidre::DataType::float64(allElem));
-     m_delv_zeta = m_DataGroup->createViewAndBuffer("m_delv_zeta",asctoolkit::sidre::DataType::float64(allElem));
+     m_delv_xi = m_DataGroup->createViewAndBuffer("m_delv_xi",asctoolkit::sidre::DataType::float64(allElem))->getValue();
+     m_delv_eta = m_DataGroup->createViewAndBuffer("m_delv_eta",asctoolkit::sidre::DataType::float64(allElem))->getValue();
+     m_delv_zeta = m_DataGroup->createViewAndBuffer("m_delv_zeta",asctoolkit::sidre::DataType::float64(allElem))->getValue();
 #else
       // Position gradients
       m_delx_xi.resize(numElem) ;
@@ -311,9 +311,9 @@ class Domain {
    void AllocateStrains(Int_t numElem)
    {
 #if USE_SIDRE==1
-     m_dxx = m_DataGroup->createViewAndBuffer("m_dxx",asctoolkit::sidre::DataType::float64(numElem)) ;
-     m_dyy = m_DataGroup->createViewAndBuffer("m_dyy",asctoolkit::sidre::DataType::float64(numElem)) ;
-     m_dzz = m_DataGroup->createViewAndBuffer("m_dzz",asctoolkit::sidre::DataType::float64(numElem)) ;
+     m_dxx = m_DataGroup->createViewAndBuffer("m_dxx",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
+     m_dyy = m_DataGroup->createViewAndBuffer("m_dyy",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
+     m_dzz = m_DataGroup->createViewAndBuffer("m_dzz",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
 #else
       m_dxx.resize(numElem) ;
       m_dyy.resize(numElem) ;
@@ -341,35 +341,35 @@ class Domain {
    // Node-centered
 
    // Nodal coordinates
-   Real_t& x(Index_t idx)    { return ((Real_t*)(m_x->getValue()))[idx] ; }
-   Real_t& y(Index_t idx)    { return ((Real_t*)(m_y->getValue()))[idx] ; }
-   Real_t& z(Index_t idx)    { return ((Real_t*)(m_z->getValue()))[idx] ; }
+   Real_t& x(Index_t idx)    { return m_x[idx] ; }
+   Real_t& y(Index_t idx)    { return m_y[idx] ; }
+   Real_t& z(Index_t idx)    { return m_z[idx] ; }
 
    // Nodal velocities
-   Real_t& xd(Index_t idx)   { return ((Real_t*)(m_xd->getValue()))[idx] ; }
-   Real_t& yd(Index_t idx)   { return ((Real_t*)(m_yd->getValue()))[idx] ; }
-   Real_t& zd(Index_t idx)   { return ((Real_t*)(m_zd->getValue()))[idx] ; }
+   Real_t& xd(Index_t idx)   { return m_xd[idx] ; }
+   Real_t& yd(Index_t idx)   { return m_yd[idx] ; }
+   Real_t& zd(Index_t idx)   { return m_zd[idx] ; }
 
    // Nodal accelerations
-   Real_t& xdd(Index_t idx)  { return ((Real_t*)(m_xdd->getValue()))[idx] ; }
-   Real_t& ydd(Index_t idx)  { return ((Real_t*)(m_ydd->getValue()))[idx] ; }
-   Real_t& zdd(Index_t idx)  { return ((Real_t*)(m_zdd->getValue()))[idx] ; }
+   Real_t& xdd(Index_t idx)  { return m_xdd[idx] ; }
+   Real_t& ydd(Index_t idx)  { return m_ydd[idx] ; }
+   Real_t& zdd(Index_t idx)  { return m_zdd[idx] ; }
 
    // Nodal forces
-   Real_t& fx(Index_t idx)   { return ((Real_t*)(m_fx->getValue()))[idx] ; }
-   Real_t& fy(Index_t idx)   { return ((Real_t*)(m_fy->getValue()))[idx] ; }
-   Real_t& fz(Index_t idx)   { return ((Real_t*)(m_fz->getValue()))[idx] ; }
+   Real_t& fx(Index_t idx)   { return m_fx[idx] ; }
+   Real_t& fy(Index_t idx)   { return m_fy[idx] ; }
+   Real_t& fz(Index_t idx)   { return m_fz[idx] ; }
 
    // Nodal mass
-   Real_t& nodalMass(Index_t idx) { return ((Real_t*)(m_nodalMass->getValue()))[idx] ; }
+   Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
 
    // Nodes on symmertry planes
-   Index_t symmX(Index_t idx) { return ((Index_t*)(m_symmX->getValue()))[idx] ; }
-   Index_t symmY(Index_t idx) { return ((Index_t*)(m_symmY->getValue()))[idx] ; }
-   Index_t symmZ(Index_t idx) { return ((Index_t*)(m_symmZ->getValue()))[idx] ; }
-   bool symmXempty()          { return m_symmX->getNode().dtype().number_of_elements(); }
-   bool symmYempty()          { return m_symmY->getNode().dtype().number_of_elements(); }
-   bool symmZempty()          { return m_symmZ->getNode().dtype().number_of_elements(); }
+   Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
+   Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
+   Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
+   bool symmXempty()          { return m_DataGroup->getView("m_symmX")->getNode().dtype().number_of_elements(); }
+   bool symmYempty()          { return m_DataGroup->getView("m_symmY")->getNode().dtype().number_of_elements(); }
+   bool symmZempty()          { return m_DataGroup->getView("m_symmZ")->getNode().dtype().number_of_elements(); }
 
    //
    // Element-centered
@@ -380,66 +380,66 @@ class Domain {
    Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
    Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
-   Index_t*  nodelist(Index_t idx)    { return &(((Index_t*)(m_nodelist->getValue()))[Index_t(8)*idx]) ; }
+   Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
 
    // elem connectivities through face
-   Index_t&  lxim(Index_t idx) { return ((Index_t*)(m_lxim->getValue()))[idx] ; }
-   Index_t&  lxip(Index_t idx) { return ((Index_t*)(m_lxip->getValue()))[idx] ; }
-   Index_t&  letam(Index_t idx) { return ((Index_t*)(m_letam->getValue()))[idx] ; }
-   Index_t&  letap(Index_t idx) { return ((Index_t*)(m_letap->getValue()))[idx] ; }
-   Index_t&  lzetam(Index_t idx) { return ((Index_t*)(m_lzetam->getValue()))[idx] ; }
-   Index_t&  lzetap(Index_t idx) { return ((Index_t*)(m_lzetap->getValue()))[idx] ; }
+   Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
+   Index_t&  lxip(Index_t idx) { return m_lxip[idx] ; }
+   Index_t&  letam(Index_t idx) { return m_letam[idx] ; }
+   Index_t&  letap(Index_t idx) { return m_letap[idx] ; }
+   Index_t&  lzetam(Index_t idx) { return m_lzetam[idx] ; }
+   Index_t&  lzetap(Index_t idx) { return m_lzetap[idx] ; }
 
    // elem face symm/free-surface flag
-   Int_t&  elemBC(Index_t idx) { return ((Int_t*)(m_elemBC->getValue()))[idx] ; }
+   Int_t&  elemBC(Index_t idx) { return m_elemBC[idx] ; }
 
    // Principal strains - temporary
-   Real_t& dxx(Index_t idx)  { return ((Real_t*)(m_dxx->getValue()))[idx] ; }
-   Real_t& dyy(Index_t idx)  { return ((Real_t*)(m_dyy->getValue()))[idx] ; }
-   Real_t& dzz(Index_t idx)  { return ((Real_t*)(m_dzz->getValue()))[idx] ; }
+   Real_t& dxx(Index_t idx)  { return m_dxx[idx] ; }
+   Real_t& dyy(Index_t idx)  { return m_dyy[idx] ; }
+   Real_t& dzz(Index_t idx)  { return m_dzz[idx] ; }
 
    // Velocity gradient - temporary
-   Real_t& delv_xi(Index_t idx)    { return ((Real_t*)(m_delv_xi->getValue()))[idx] ; }
-   Real_t& delv_eta(Index_t idx)   { return ((Real_t*)(m_delv_eta->getValue()))[idx] ; }
-   Real_t& delv_zeta(Index_t idx)  { return ((Real_t*)(m_delv_zeta->getValue()))[idx] ; }
+   Real_t& delv_xi(Index_t idx)    { return m_delv_xi[idx] ; }
+   Real_t& delv_eta(Index_t idx)   { return m_delv_eta[idx] ; }
+   Real_t& delv_zeta(Index_t idx)  { return m_delv_zeta[idx] ; }
 
    // Position gradient - temporary
-   Real_t& delx_xi(Index_t idx)    { return ((Real_t*)(m_delx_xi->getValue()))[idx] ; }
-   Real_t& delx_eta(Index_t idx)   { return ((Real_t*)(m_delx_eta->getValue()))[idx] ; }
-   Real_t& delx_zeta(Index_t idx)  { return ((Real_t*)(m_delx_zeta->getValue()))[idx] ; }
+   Real_t& delx_xi(Index_t idx)    { return m_delx_xi[idx] ; }
+   Real_t& delx_eta(Index_t idx)   { return m_delx_eta[idx] ; }
+   Real_t& delx_zeta(Index_t idx)  { return m_delx_zeta[idx] ; }
 
    // Energy
-   Real_t& e(Index_t idx)          { return ((Real_t*)(m_e->getValue()))[idx] ; }
+   Real_t& e(Index_t idx)          { return m_e[idx] ; }
 
    // Pressure
-   Real_t& p(Index_t idx)          { return ((Real_t*)(m_p->getValue()))[idx] ; }
+   Real_t& p(Index_t idx)          { return m_p[idx] ; }
 
    // Artificial viscosity
-   Real_t& q(Index_t idx)          { return ((Real_t*)(m_q->getValue()))[idx] ; }
+   Real_t& q(Index_t idx)          { return m_q[idx] ; }
 
    // Linear term for q
-   Real_t& ql(Index_t idx)         { return ((Real_t*)(m_ql->getValue()))[idx] ; }
+   Real_t& ql(Index_t idx)         { return m_ql[idx] ; }
    // Quadratic term for q
-   Real_t& qq(Index_t idx)         { return ((Real_t*)(m_qq->getValue()))[idx] ; }
+   Real_t& qq(Index_t idx)         { return m_qq[idx] ; }
 
    // Relative volume
-   Real_t& v(Index_t idx)          { return ((Real_t*)(m_v->getValue()))[idx] ; }
-   Real_t& delv(Index_t idx)       { return ((Real_t*)(m_delv->getValue()))[idx] ; }
+   Real_t& v(Index_t idx)          { return m_v[idx] ; }
+   Real_t& delv(Index_t idx)       { return m_delv[idx] ; }
 
    // Reference volume
-   Real_t& volo(Index_t idx)       { return ((Real_t*)(m_volo->getValue()))[idx] ; }
+   Real_t& volo(Index_t idx)       { return m_volo[idx] ; }
 
    // volume derivative over volume
-   Real_t& vdov(Index_t idx)       { return ((Real_t*)(m_vdov->getValue()))[idx] ; }
+   Real_t& vdov(Index_t idx)       { return m_vdov[idx] ; }
 
    // Element characteristic length
-   Real_t& arealg(Index_t idx)     { return ((Real_t*)(m_arealg->getValue()))[idx] ; }
+   Real_t& arealg(Index_t idx)     { return m_arealg[idx] ; }
 
    // Sound speed
-   Real_t& ss(Index_t idx)         { return ((Real_t*)(m_ss->getValue()))[idx] ; }
+   Real_t& ss(Index_t idx)         { return m_ss[idx] ; }
 
    // Element mass
-   Real_t& elemMass(Index_t idx)  { return ((Real_t*)(m_elemMass->getValue()))[idx] ; }
+   Real_t& elemMass(Index_t idx)  { return m_elemMass[idx] ; }
 
    Index_t nodeElemCount(Index_t idx)
    { return m_nodeElemStart[idx+1] - m_nodeElemStart[idx] ; }

@@ -369,7 +369,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_colLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmX = m_DataGroup->createViewAndBuffer("m_symmX",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes));
+    m_symmX = m_DataGroup->createViewAndBuffer("m_symmX",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getValue();
 #else
     m_symmX.resize(edgeNodes*edgeNodes);
 #endif
@@ -377,7 +377,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_rowLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmY = m_DataGroup->createViewAndBuffer("m_symmY",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes));
+    m_symmY = m_DataGroup->createViewAndBuffer("m_symmY",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getValue();
 #else
     m_symmY.resize(edgeNodes*edgeNodes);
 #endif
@@ -385,7 +385,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_planeLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmZ = m_DataGroup->createViewAndBuffer("m_symmZ",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes));
+    m_symmZ = m_DataGroup->createViewAndBuffer("m_symmZ",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getValue();
 #else
     m_symmZ.resize(edgeNodes*edgeNodes);
 #endif
