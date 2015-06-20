@@ -82,7 +82,7 @@ class Wrapp(object):
         else:
             out.extend(self.splicer_stack[-1].get(name, []))
 #X        out.append('// splicer end %s' % name)
-        out.append('! splicer end %s%s' % (self.splicer_path, name))
+        out.append('// splicer end %s%s' % (self.splicer_path, name))
 
 #####
 
@@ -176,7 +176,9 @@ class Wrapp(object):
         fmt_library = self.tree['fmt']
 
         fmt_library.PY_module_filename = 'python_module.cpp'
+        fmt_library.PY_header_filename = 'python_header.cpp'
         self.py_type_object_creation = []
+        self.py_type_structs = []
 
         self._push_splicer('class', [])
         for node in self.tree['classes']:
@@ -194,6 +196,7 @@ class Wrapp(object):
                 self.wrap_method(None, node)
             self._pop_splicer('function', [])
 
+        self.write_header(self.tree)
         self.write_module(self.tree)
 
     def wrap_class(self, node):
@@ -217,6 +220,12 @@ class Wrapp(object):
     PyModule_AddObject(m, "Dbnode", (PyObject *)&PB_Dbnode_Type);
 """, fmt_class))
 
+
+        self._create_splicer('C_declaration', self.py_type_structs)
+        self.py_type_structs.append('typedef struct {')
+        self.py_type_structs.append('PyObject_HEAD')
+        self._create_splicer('C_object', self.py_type_structs)
+        self.py_type_structs.append('} PB_PackageObject;')
 
         # wrap methods
         self._push_splicer(name, [])
@@ -461,6 +470,54 @@ static PyObject *
         output.append('};')
 
         output.append(wformat(PyTypeObject_template, fmt))
+
+        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
+        self.write_copyright(fp)
+        self.indent = 0
+        self.write_lines(fp, output)
+        fp.close()
+        self.log.write("Close %s\n" % fname)
+        print("Wrote", fname)
+
+    def write_header(self, node):
+        options = node['options']
+        fmt = node['fmt']
+        fname = fmt.PY_header_filename
+
+        output = []
+
+        output.append("""
+/*
+ * This is generated code.
+ * Any edits must be made between the splicer.begin and splicer.end blocks.
+ * All other edits will be lost.
+ * Once a block is edited remove the 'UNMODIFIED' on the splicer.begin
+ * comment to allow the block to be preserved when it is regenerated.
+ */
+
+#ifndef HDR_BASISMODULE
+#define HDR_BASISMODULE
+#include <Python.h>
+#if PY_MAJOR_VERSION >= 3
+#define IS_PY3K
+#endif""")
+        
+        self._create_splicer('C_declaration', output)
+
+        output.extend(self.py_type_structs)
+
+        output.append("""
+extern PyObject *PB_error_obj;
+
+#ifdef IS_PY3K
+#define MOD_INITBASIS PyInit_basis
+#else
+#define MOD_INITBASIS initbasis
+#endif
+PyMODINIT_FUNC MOD_INITBASIS(void);
+#endif
+""")
+
 
         fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)

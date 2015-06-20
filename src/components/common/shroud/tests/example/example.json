@@ -68,6 +68,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "new", 
                         "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "new"
@@ -103,6 +105,8 @@
                         "F_name_method": "delete", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "delete", 
                         "rv_decl": "void rv", 
                         "underscore_name": "delete"
@@ -148,6 +152,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "incrementCount", 
                         "rv_decl": "int rv", 
                         "underscore_name": "increment_count"
@@ -183,6 +189,8 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getName", 
                         "rv_decl": "const std::string & rv", 
                         "rvlen": "aa_exclass1_get_name_length(obj%obj)", 
@@ -222,6 +230,8 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "get_name_length", 
                         "rv_decl": "const int rv", 
                         "underscore_name": "get_name_length"
@@ -260,6 +270,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getRoot", 
                         "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "get_root"
@@ -304,6 +316,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getValue", 
                         "method_suffix": "_from_int", 
                         "rv_decl": "int rv", 
@@ -348,6 +362,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getValue", 
                         "method_suffix": "_1", 
                         "rv_decl": "long rv", 
@@ -382,6 +398,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getAddr", 
                         "rv_decl": "void * rv", 
                         "underscore_name": "get_addr"
@@ -426,6 +444,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "hasAddr", 
                         "rv_decl": "bool rv", 
                         "underscore_name": "has_addr"
@@ -458,6 +478,8 @@
                         "F_name_method": "splicer_special", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "SplicerSpecial", 
                         "rv_decl": "void rv", 
                         "underscore_name": "splicer_special"
@@ -544,6 +566,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "ExClass2", 
                         "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "ex_class2"
@@ -579,6 +603,8 @@
                         "F_name_method": "ex_class1", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "ExClass1", 
                         "rv_decl": "void rv", 
                         "underscore_name": "ex_class1"
@@ -616,6 +642,8 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getName", 
                         "rv_decl": "const std::string & rv", 
                         "rvlen": "aa_exclass2_get_name_length(obj%obj)", 
@@ -655,6 +683,8 @@
                         "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "get_name_length", 
                         "rv_decl": "const int rv", 
                         "underscore_name": "get_name_length"
@@ -703,6 +733,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "get_class1", 
                         "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "get_class1"
@@ -754,6 +786,8 @@
                         "F_name_method": "declare", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "declare", 
                         "rv_decl": "void * rv", 
                         "underscore_name": "declare"
@@ -789,6 +823,8 @@
                         "F_name_method": "destroyall", 
                         "F_obj": "obj%obj", 
                         "F_subprogram": "subroutine", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "destroyall", 
                         "rv_decl": "void rv", 
                         "underscore_name": "destroyall"
@@ -822,6 +858,8 @@
                         "F_obj": "obj%obj", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
+                        "PY_func_name": "AAA", 
+                        "doc_string": "documentation", 
                         "method_name": "getTypeID", 
                         "rv_decl": "TypeID rv", 
                         "underscore_name": "get_type_id"
@@ -857,6 +895,7 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "PY_header_filename": "python_header.cpp", 
         "PY_library_doc": "library documentation", 
         "PY_module_filename": "python_module.cpp", 
         "library": "UserLibrary", 
@@ -887,6 +926,8 @@
                 "F_name_method": "local_function1", 
                 "F_obj": "obj%obj", 
                 "F_subprogram": "subroutine", 
+                "PY_func_name": "AAA", 
+                "doc_string": "documentation", 
                 "method_name": "local_function1", 
                 "rv_decl": "void rv", 
                 "underscore_name": "local_function1"
@@ -931,6 +972,8 @@
                 "F_obj": "obj%obj", 
                 "F_result_clause": " result(rv)", 
                 "F_subprogram": "function", 
+                "PY_func_name": "AAA", 
+                "doc_string": "documentation", 
                 "method_name": "isNameValid", 
                 "rv_decl": "bool rv", 
                 "underscore_name": "is_name_valid"
