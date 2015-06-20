@@ -20,6 +20,8 @@
 #endif
 // splicer begin include
 // splicer end include
+namespace example {
+namespace nested {
 extern PyTypeObject PP_ExClass1_Type;
 extern PyTypeObject PP_ExClass2_Type;
 // splicer begin C_declaration
@@ -43,9 +45,9 @@ PyObject_HEAD
 
 extern PyObject *PP_error_obj;
 
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifdef IS_PY3K
 #define MOD_INITBASIS PyInit_userlibrary
 #else
@@ -53,7 +55,9 @@ extern PyObject *PP_error_obj;
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
 #endif
-//#ifdef __cplusplus
-//}
-//#endif
+#ifdef __cplusplus
+}
+#endif
 
+}  // namespace example
+}  // namespace nested

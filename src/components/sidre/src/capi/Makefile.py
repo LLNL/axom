@@ -8,6 +8,7 @@ PYTHON_LIB = -L/home/taylor16/testzzz-ets-4.6.3-4.3f/lib/python2.7/config -lpyth
 CXX = /home/taylor16/gapps/gcc-4.9.0/bin/g++
 CXXFLAGS = -g -fPIC $(PYTHON_INC) -I/home/taylor16/datastore/sprint4/build-debug/include
 
+LDFLAGS = -L/home/taylor16/datastore/sprint4/build-debug/lib -lsidre -lslic -lconduit -lstdc++
 
 OBJS = \
 	pySidremodule.o \
@@ -17,7 +18,7 @@ OBJS = \
 	pyDataViewtype.o
 
 sidre.so : $(OBJS)
-	gcc -shared -fPIC -Wl,-soname,$@ -o $@ $(OBJS)
+	gcc -shared -fPIC -Wl,-soname,$@ -o $@ $(LDFLAGS) $(OBJS)
 #	$(LD) $(OBJS) --export-dynamic -o $@
 
 

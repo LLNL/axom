@@ -6,6 +6,8 @@
 #include "pyUserLibrarymodule.hpp"
 // splicer begin class.ExClass2.include
 // splicer end class.ExClass2.include
+namespace example {
+namespace nested {
 // splicer begin class.ExClass2.C_definition
 // splicer end class.ExClass2.C_definition
 // splicer begin class.ExClass2.extra_methods
@@ -354,3 +356,5 @@ PyTypeObject PP_ExClass2_Type = {
 #endif
 };
 
+}  // namespace example
+}  // namespace nested

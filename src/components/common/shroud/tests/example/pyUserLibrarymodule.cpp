@@ -7,6 +7,8 @@
 // splicer begin include
 // splicer end include
 
+namespace example {
+namespace nested {
 // splicer begin C_definition
 // splicer end C_definition
 PyObject *PP_error_obj;
@@ -99,9 +101,9 @@ static struct PyModuleDef moduledef = {
 #define INITERROR return
 #endif
 
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 PyMODINIT_FUNC
 MOD_INITBASIS(void)
 {
@@ -157,7 +159,9 @@ MOD_INITBASIS(void)
         Py_FatalError("can't initialize module userlibrary");
     return RETVAL;
 }
-//#ifdef __cplusplus
-//}
-//#endif
+#ifdef __cplusplus
+}
+#endif
 
+}  // namespace example
+}  // namespace nested
