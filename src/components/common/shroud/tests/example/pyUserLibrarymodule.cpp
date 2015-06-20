@@ -4,8 +4,6 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
-extern PyTypeObject PP_ExClass1_Type;
-extern PyTypeObject PP_ExClass2_Type;
 
 // splicer begin C_definition
 // splicer end C_definition

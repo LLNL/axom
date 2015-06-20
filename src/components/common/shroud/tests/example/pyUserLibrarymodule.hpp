@@ -18,6 +18,8 @@
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
 #endif
+extern PyTypeObject PP_ExClass1_Type;
+extern PyTypeObject PP_ExClass2_Type;
 // splicer begin C_declaration
 // splicer end C_declaration
 // splicer begin class.C_declaration

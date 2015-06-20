@@ -421,6 +421,23 @@ static PyObject *
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
+    def write_tpfunc(self, fmt, fmt_type, output):
+        # fmt is a dictiony here.
+        # update with type function names
+        # type bodies must be filled in by user, no real way to guess
+        PyObj  = fmt.PY_PyObject
+
+        for typename in typenames:
+            func_name = wformat('{PY_prefix}{cpp_class}_', fmt) + typename
+            fmt_type['tp_' + typename] = func_name
+            tup = typefuncs[typename]
+            output.append('// ' + typename)
+            output.append('static ' + tup[0])
+            output.append(('{name} ' + tup[1]).format(name=func_name, object=PyObj))
+            output.append('{')
+            output.append('return %s;' % tup[2])
+            output.append('}')
+
     def write_extension_type(self, node):
         fmt = node['fmt']
         fname = fmt.PY_type_filename
@@ -430,6 +447,13 @@ static PyObject *
         output.append(wformat('#include "{PY_header_filename}"', fmt))
         self._create_splicer('C_definition', output)
         self._create_splicer('extra_methods', output)
+        fmt_type = dict(
+            PY_module_name  = fmt.PY_module_name,
+            PY_PyObject     = fmt.PY_PyObject,
+            PY_PyTypeObject = fmt.PY_PyTypeObject,
+            cpp_class       = fmt.cpp_class,
+            )
+        self.write_tpfunc(fmt, fmt_type, output)
 
         output.extend(self.PyMethodBody)
 
@@ -438,7 +462,7 @@ static PyObject *
         output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
         output.append('};')
 
-        output.append(wformat(PyTypeObject_template, fmt))
+        output.append(wformat(PyTypeObject_template, fmt_type))
 
         self.write_output_file(fname, self.config.binary_dir, output)
 
@@ -465,6 +489,7 @@ static PyObject *
 #define IS_PY3K
 #endif""")
         
+        output.extend(self.py_type_extern)
         self._create_splicer('C_declaration', output)
         output.extend(self.py_type_structs)
         output.append(wformat("""
@@ -490,7 +515,6 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
-        output.extend(self.py_type_extern)
         output.append('')
         self._create_splicer('C_definition', output)
         output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
@@ -516,6 +540,31 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 
 #### Python boiler plate
 
+typenames = ['dealloc', 'print', 'compare',
+             'getattr', 'setattr',  # deprecated
+             'getattro', 'setattro',
+             'repr', 'hash', 'call', 'str',
+             'init', 'alloc', 'new', 'free', 'del']
+
+# return type, prototype, default return value
+typefuncs = {
+    'dealloc':  ('void',       '({object} *self)',                                  ''),
+    'print':    ('int',        '({object} *self, FILE *fp, int flags)',             '-1'),
+    'getattr':  ('PyObject *', '({object} *self, char *name)',                      'NULL'),
+    'setattr':  ('int',        '({object} *self, char *name, PyObject *value)',     '-1'),
+    'compare':  ('int',        '({object} *self, PyObject *)',                      '-1'),
+    'repr':     ('PyObject *', '({object} *self)',                                  'NULL'),
+    'hash':     ('long',       '({object} *self)',                                  '-1'),
+    'call':     ('PyObject *', '({object} *self, PyObject *args, PyObject *kwds)',  'NULL'),
+    'str':      ('PyObject *', '({object} *self)',                                  'NULL'),
+    'getattro': ('PyObject *', '({object} *self, PyObject *name)',                  'NULL'),
+    'setattro': ('int',        '({object} *self, PyObject *name, PyObject *value)', '-1'),
+    'init':     ('int',        '({object} *self, PyObject *args, PyObject *kwds)',  '-1'),
+    'alloc':    ('PyObject *', '(PyTypeObject *type, Py_ssize_t nitems)',                 'NULL'),
+    'new':      ('PyObject *', '(PyTypeObject *type, PyObject *args, PyObject *kwds)',    'NULL'),
+    'free':     ('void',       '(void *op)',                                        ''),
+    'del':      ('void',       '({object} *self)',                                  '')
+    }
 
 PyTypeObject_template = """
 static char {cpp_class}__doc__[] =
@@ -525,30 +574,30 @@ static char {cpp_class}__doc__[] =
 /* static */
 PyTypeObject {PY_PyTypeObject} = {{
         PyVarObject_HEAD_INIT(NULL, 0)
-        "basis.Dbnode",                       /* tp_name */
+        "{PY_module_name}.{cpp_class}",                       /* tp_name */
         sizeof({PY_PyObject}),         /* tp_basicsize */
         0,                              /* tp_itemsize */
         /* Methods to implement standard operations */
-        (destructor)0,                 /* tp_dealloc */
-        (printfunc)0,                   /* tp_print */
-        (getattrfunc)0,                 /* tp_getattr */
-        (setattrfunc)0,                 /* tp_setattr */
+        (destructor){tp_dealloc},                 /* tp_dealloc */
+        (printfunc){tp_print},                   /* tp_print */
+        (getattrfunc){tp_getattr},                 /* tp_getattr */
+        (setattrfunc){tp_setattr},                 /* tp_setattr */
 #ifdef IS_PY3K
         0,                               /* tp_reserved */
 #else
-        (cmpfunc)0,                     /* tp_compare */
+        (cmpfunc){tp_compare},                     /* tp_compare */
 #endif
-        (reprfunc)0,                    /* tp_repr */
+        (reprfunc){tp_repr},                    /* tp_repr */
         /* Method suites for standard classes */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
         0,                              /* tp_as_mapping */
         /* More standard operations (here for binary compatibility) */
-        (hashfunc)0,                    /* tp_hash */
-        (ternaryfunc)0,                 /* tp_call */
-        (reprfunc)0,                    /* tp_str */
-        (getattrofunc)0,                /* tp_getattro */
-        (setattrofunc)0,                /* tp_setattro */
+        (hashfunc){tp_hash},                    /* tp_hash */
+        (ternaryfunc){tp_call},                 /* tp_call */
+        (reprfunc){tp_str},                    /* tp_str */
+        (getattrofunc){tp_getattro},                /* tp_getattro */
+        (setattrofunc){tp_setattro},                /* tp_setattro */
         /* Functions to access object as input/output buffer */
         0,                              /* tp_as_buffer */
         /* Flags to define presence of optional/expanded features */
@@ -577,17 +626,17 @@ PyTypeObject {PY_PyTypeObject} = {{
         (descrgetfunc)0,                /* tp_descr_get */
         (descrsetfunc)0,                /* tp_descr_set */
         0,                              /* tp_dictoffset */
-        (initproc)0,                   /* tp_init */
-        (allocfunc)0,                  /* tp_alloc */
-        (newfunc)0,                    /* tp_new */
-        (freefunc)0,                   /* tp_free */
+        (initproc){tp_init},                   /* tp_init */
+        (allocfunc){tp_alloc},                  /* tp_alloc */
+        (newfunc){tp_new},                    /* tp_new */
+        (freefunc){tp_free},                   /* tp_free */
         (inquiry)0,                     /* tp_is_gc */
         0,                              /* tp_bases */
         0,                              /* tp_mro */
         0,                              /* tp_cache */
         0,                              /* tp_subclasses */
         0,                              /* tp_weaklist */
-        (destructor)0,                 /* tp_del */
+        (destructor){tp_del},                 /* tp_del */
         0,                              /* tp_version_tag */
 #ifdef IS_PY3K
         (destructor)0,                  /* tp_finalize */

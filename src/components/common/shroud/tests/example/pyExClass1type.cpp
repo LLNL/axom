@@ -8,6 +8,102 @@
 // splicer end class.C_definition
 // splicer begin class.extra_methods
 // splicer end class.extra_methods
+// dealloc
+static void
+PP_ExClass1_dealloc (PP_ExClass1 *self)
+{
+return ;
+}
+// print
+static int
+PP_ExClass1_print (PP_ExClass1 *self, FILE *fp, int flags)
+{
+return -1;
+}
+// compare
+static int
+PP_ExClass1_compare (PP_ExClass1 *self, PyObject *)
+{
+return -1;
+}
+// getattr
+static PyObject *
+PP_ExClass1_getattr (PP_ExClass1 *self, char *name)
+{
+return NULL;
+}
+// setattr
+static int
+PP_ExClass1_setattr (PP_ExClass1 *self, char *name, PyObject *value)
+{
+return -1;
+}
+// getattro
+static PyObject *
+PP_ExClass1_getattro (PP_ExClass1 *self, PyObject *name)
+{
+return NULL;
+}
+// setattro
+static int
+PP_ExClass1_setattro (PP_ExClass1 *self, PyObject *name, PyObject *value)
+{
+return -1;
+}
+// repr
+static PyObject *
+PP_ExClass1_repr (PP_ExClass1 *self)
+{
+return NULL;
+}
+// hash
+static long
+PP_ExClass1_hash (PP_ExClass1 *self)
+{
+return -1;
+}
+// call
+static PyObject *
+PP_ExClass1_call (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
+{
+return NULL;
+}
+// str
+static PyObject *
+PP_ExClass1_str (PP_ExClass1 *self)
+{
+return NULL;
+}
+// init
+static int
+PP_ExClass1_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
+{
+return -1;
+}
+// alloc
+static PyObject *
+PP_ExClass1_alloc (PyTypeObject *type, Py_ssize_t nitems)
+{
+return NULL;
+}
+// new
+static PyObject *
+PP_ExClass1_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+return NULL;
+}
+// free
+static void
+PP_ExClass1_free (void *op)
+{
+return ;
+}
+// del
+static void
+PP_ExClass1_del (PP_ExClass1 *self)
+{
+return ;
+}
 
 static char PP_exclass1_new__doc__[] =
 "documentation"
@@ -206,30 +302,30 @@ static char ExClass1__doc__[] =
 /* static */
 PyTypeObject PP_ExClass1_Type = {
         PyVarObject_HEAD_INIT(NULL, 0)
-        "basis.Dbnode",                       /* tp_name */
+        "userlibrary.ExClass1",                       /* tp_name */
         sizeof(PP_ExClass1),         /* tp_basicsize */
         0,                              /* tp_itemsize */
         /* Methods to implement standard operations */
-        (destructor)0,                 /* tp_dealloc */
-        (printfunc)0,                   /* tp_print */
-        (getattrfunc)0,                 /* tp_getattr */
-        (setattrfunc)0,                 /* tp_setattr */
+        (destructor)PP_ExClass1_dealloc,                 /* tp_dealloc */
+        (printfunc)PP_ExClass1_print,                   /* tp_print */
+        (getattrfunc)PP_ExClass1_getattr,                 /* tp_getattr */
+        (setattrfunc)PP_ExClass1_setattr,                 /* tp_setattr */
 #ifdef IS_PY3K
         0,                               /* tp_reserved */
 #else
-        (cmpfunc)0,                     /* tp_compare */
+        (cmpfunc)PP_ExClass1_compare,                     /* tp_compare */
 #endif
-        (reprfunc)0,                    /* tp_repr */
+        (reprfunc)PP_ExClass1_repr,                    /* tp_repr */
         /* Method suites for standard classes */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
         0,                              /* tp_as_mapping */
         /* More standard operations (here for binary compatibility) */
-        (hashfunc)0,                    /* tp_hash */
-        (ternaryfunc)0,                 /* tp_call */
-        (reprfunc)0,                    /* tp_str */
-        (getattrofunc)0,                /* tp_getattro */
-        (setattrofunc)0,                /* tp_setattro */
+        (hashfunc)PP_ExClass1_hash,                    /* tp_hash */
+        (ternaryfunc)PP_ExClass1_call,                 /* tp_call */
+        (reprfunc)PP_ExClass1_str,                    /* tp_str */
+        (getattrofunc)PP_ExClass1_getattro,                /* tp_getattro */
+        (setattrofunc)PP_ExClass1_setattro,                /* tp_setattro */
         /* Functions to access object as input/output buffer */
         0,                              /* tp_as_buffer */
         /* Flags to define presence of optional/expanded features */
@@ -258,17 +354,17 @@ PyTypeObject PP_ExClass1_Type = {
         (descrgetfunc)0,                /* tp_descr_get */
         (descrsetfunc)0,                /* tp_descr_set */
         0,                              /* tp_dictoffset */
-        (initproc)0,                   /* tp_init */
-        (allocfunc)0,                  /* tp_alloc */
-        (newfunc)0,                    /* tp_new */
-        (freefunc)0,                   /* tp_free */
+        (initproc)PP_ExClass1_init,                   /* tp_init */
+        (allocfunc)PP_ExClass1_alloc,                  /* tp_alloc */
+        (newfunc)PP_ExClass1_new,                    /* tp_new */
+        (freefunc)PP_ExClass1_free,                   /* tp_free */
         (inquiry)0,                     /* tp_is_gc */
         0,                              /* tp_bases */
         0,                              /* tp_mro */
         0,                              /* tp_cache */
         0,                              /* tp_subclasses */
         0,                              /* tp_weaklist */
-        (destructor)0,                 /* tp_del */
+        (destructor)PP_ExClass1_del,                 /* tp_del */
         0,                              /* tp_version_tag */
 #ifdef IS_PY3K
         (destructor)0,                  /* tp_finalize */
