@@ -25,6 +25,7 @@ class Wrapp(object):
         self.log = config.log
         self.typedef = tree['typedef']
         self._init_splicer(splicers)
+        self.comment = '//'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -447,13 +448,6 @@ static PyObject *
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
-    def write_copyright(self, fp):
-        for line in self.tree.get('copyright', []):
-            if line:
-                fp.write('// ' + line + '\n')
-            else:
-                fp.write('//\n')
-
     def write_extension_type(self, node):
         fmt = node['fmt']
         fname = fmt.PY_type_filename
@@ -471,13 +465,7 @@ static PyObject *
 
         output.append(wformat(PyTypeObject_template, fmt))
 
-        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
-        self.write_copyright(fp)
-        self.indent = 0
-        self.write_lines(fp, output)
-        fp.close()
-        self.log.write("Close %s\n" % fname)
-        print("Wrote", fname)
+        self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_header(self, node):
         options = node['options']
@@ -519,13 +507,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 """)
 
 
-        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
-        self.write_copyright(fp)
-        self.indent = 0
-        self.write_lines(fp, output)
-        fp.close()
-        self.log.write("Close %s\n" % fname)
-        print("Wrote", fname)
+        self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_module(self, node):
         options = node['options']
@@ -554,13 +536,26 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         self._create_splicer('C_init_body', output)
         output.append(wformat(module_end, fmt))
 
-        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
+        self.write_output_file(fname, self.config.binary_dir, output)
+
+#####
+
+    def write_output_file(self, fname, directory, output):
+        fp = open(os.path.join(directory, fname), 'w')
+        fp.write('%s %s\n' % (self.comment, fname))
         self.write_copyright(fp)
         self.indent = 0
         self.write_lines(fp, output)
         fp.close()
         self.log.write("Close %s\n" % fname)
         print("Wrote", fname)
+
+    def write_copyright(self, fp):
+        for line in self.tree.get('copyright', []):
+            if line:
+                fp.write(self.comment + ' ' + line + '\n')
+            else:
+                fp.write(self.comment + '\n')
 
     def write_lines(self, fp, lines):
         """ Write lines with indention and newlines.

@@ -29,6 +29,7 @@ class Wrapc(object):
         self.log = config.log
         self.typedef = tree['typedef']
         self._init_splicer(splicers)
+        self.comment = '//'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -152,17 +153,7 @@ class Wrapc(object):
             self.wrap_method(None, node)
         self._pop_splicer('function', [])
 
-    def write_copyright(self, fp):
-        for line in self.tree.get('copyright', []):
-            if line:
-                fp.write('// ' + line + '\n')
-            else:
-                fp.write('//\n')
-
     def write_header(self, node, fname, cls=False):
-        fp = open(os.path.join(self.config.binary_dir, fname), 'w')
-        self.write_copyright(fp)
-
         guard = fname.replace(".", "_").upper()
 
         output = []
@@ -214,18 +205,13 @@ class Wrapc(object):
                 '',
                 '#endif  // %s' % guard
                 ])
-        self.indent = 0
-        self.write_lines(fp, output)
-        fp.close()
-        self.log.write("Close %s\n" % fname)
-        print("Wrote", fname)
+
+        self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_impl(self, node, hname, fname, cls=False):
         # node = class node
         options = node['options']
         namespace = options.namespace
-        fp = open(os.path.join(self.config.binary_dir, fname), "w")
-        self.write_copyright(fp)
 
         output = []
         output.append('// ' + fname)
@@ -251,11 +237,8 @@ class Wrapc(object):
             output.append('}  // namespace %s' % name)
 
         output.append('}  // extern "C"')
-        self.indent = 0
-        self.write_lines(fp, output)
-        fp.close()
-        self.log.write("Close %s\n" % fname)
-        print("Wrote", fname)
+
+        self.write_output_file(fname, self.config.binary_dir, output)
 
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
@@ -428,6 +411,25 @@ class Wrapc(object):
             impl.append(fmt_func.C_object )
         self._create_splicer(fmt_func.method_name, impl, C_code)
         impl.append('}')
+
+#####
+
+    def write_output_file(self, fname, directory, output):
+        fp = open(os.path.join(directory, fname), 'w')
+        fp.write('%s %s\n' % (self.comment, fname))
+        self.write_copyright(fp)
+        self.indent = 0
+        self.write_lines(fp, output)
+        fp.close()
+        self.log.write("Close %s\n" % fname)
+        print("Wrote", fname)
+
+    def write_copyright(self, fp):
+        for line in self.tree.get('copyright', []):
+            if line:
+                fp.write(self.comment + ' ' + line + '\n')
+            else:
+                fp.write(self.comment + '\n')
 
     def write_lines(self, fp, lines):
         """ Write lines with indention and newlines.
