@@ -172,6 +172,7 @@ class Wrapp(object):
         fmt_library = self.tree['fmt']
 
         fmt_library.PY_module_filename = 'python_module.cpp'
+        self.py_type_object_creation = []
 
         self._push_splicer('class', [])
         for node in self.tree['classes']:
@@ -200,6 +201,17 @@ class Wrapp(object):
         fmt_class = node['fmt']
 
         fmt_class.PY_type_filename = wformat('python_{lower_class}.cpp', fmt_class)
+
+        self.py_type_object_creation.append(wformat("""
+// {cpp_class}
+    PB_Dbnode_Type.tp_new   = PyType_GenericNew;
+    PB_Dbnode_Type.tp_alloc = PyType_GenericAlloc;
+    if (PyType_Ready(&PB_Dbnode_Type) < 0)
+        return RETVAL;
+    Py_INCREF(&PB_Dbnode_Type);
+    PyModule_AddObject(m, "Dbnode", (PyObject *)&PB_Dbnode_Type);
+""", fmt_class))
+
 
         self.py_methods = []
 
@@ -428,9 +440,18 @@ class Wrapp(object):
         fmt = node['fmt']
         fname = fmt.PY_module_filename
 
-        output = []
+        fmt.PY_library_doc = 'library documentation'
 
+        output = []
         output.extend(self.py_methods)
+
+        output.append(wformat(module_begin, fmt))
+        self._create_splicer('C_init_locals', output)
+        output.append(wformat(module_middle, fmt))
+        output.extend(self.py_type_object_creation)
+        output.append(wformat(module_middle2, fmt))
+        self._create_splicer('C_init_body', output)
+        output.append(wformat(module_end, fmt))
 
         fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
@@ -452,3 +473,99 @@ class Wrapp(object):
                     fp.write(subline)
                     fp.write('\n')
 
+
+
+#### Python boiler plate
+
+
+
+module_begin = """
+/*
+ * init{lower_library} - Initialization function for the module
+ * *must* be called init{lower_library}
+ */
+static char PB__doc__[] =
+"{PY_library_doc}"
+;
+
+struct module_state {{
+    PyObject *error;
+}};
+
+#ifdef IS_PY3K
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+
+#ifdef IS_PY3K
+static int basis_traverse(PyObject *m, visitproc visit, void *arg) {{
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}}
+
+static int basis_clear(PyObject *m) {{
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}}
+
+static struct PyModuleDef moduledef = {{
+    PyModuleDef_HEAD_INIT,
+    "{lower_library}", /* m_name */
+    PB__doc__, /* m_doc */
+    sizeof(struct module_state), /* m_size */
+    PB_methods, /* m_methods */
+    NULL, /* m_reload */
+    {lower_library}_traverse, /* m_traverse */
+    {lower_library}_clear, /* m_clear */
+    NULL  /* m_free */
+}};
+
+#define RETVAL m
+#define INITERROR return NULL
+
+PyMODINIT_FUNC
+PyInit_{lower_library}(void)
+
+#else
+#define RETVAL
+#define INITERROR return
+
+PyMODINIT_FUNC
+init{lower_library}(void)
+#endif
+{{
+    PyObject *m = NULL;
+"""
+
+module_middle = """
+
+    /* Create the module and add the functions */
+#ifdef IS_PY3K
+    m = PyModule_Create(&moduledef);
+#else
+    m = Py_InitModule4("{lower_library}", PB_methods,
+                       PB__doc__,
+                       (PyObject*)NULL,PYTHON_API_VERSION);
+#endif
+    if (m == NULL)
+        return RETVAL;
+    struct module_state *st = GETSTATE(m);
+"""
+
+module_middle2 = """
+    PB_error_obj = PyErr_NewException("{lower_library}.Error", NULL, NULL);
+    if (PB_error_obj == NULL)
+        return RETVAL;
+    st->error = PB_error_obj;
+    PyModule_AddObject(m, "Error", st->error);
+"""
+
+module_end = """
+    /* Check for errors */
+    if (PyErr_Occurred())
+        Py_FatalError("can't initialize module {lower_library}");
+    return RETVAL;
+}}
+"""

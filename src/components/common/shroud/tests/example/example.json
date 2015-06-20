@@ -857,6 +857,7 @@
         "F_result": "rv", 
         "F_result_clause": "", 
         "F_this": "obj", 
+        "PY_library_doc": "library documentation", 
         "PY_module_filename": "python_module.cpp", 
         "library": "UserLibrary", 
         "lower_library": "userlibrary", 
