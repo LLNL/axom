@@ -133,9 +133,12 @@ class Wrapp(util.WrapperMixin):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
 
+        fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
+        fmt_library.PY_module_name     = fmt_library.lower_library
         fmt_library.PY_module_filename = 'python_module.cpp'
-        fmt_library.PY_header_filename = 'python_header.cpp'
+        fmt_library.PY_header_filename = 'python_header.hpp'
         self.py_type_object_creation = []
+        self.py_type_extern = []
         self.py_type_structs = []
 
         self._push_splicer('class', [])
@@ -166,24 +169,31 @@ class Wrapp(util.WrapperMixin):
         options = node['options']
         fmt_class = node['fmt']
 
+        util.eval_template(options, fmt_class,
+                           'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
+        util.eval_template(options, fmt_class,
+                           'PY_PyObject', '{PY_prefix}{cpp_class}')
+
         fmt_class.PY_type_filename = wformat('python_{lower_class}.cpp', fmt_class)
 
         self.py_type_object_creation.append(wformat("""
 // {cpp_class}
-    PB_Dbnode_Type.tp_new   = PyType_GenericNew;
-    PB_Dbnode_Type.tp_alloc = PyType_GenericAlloc;
-    if (PyType_Ready(&PB_Dbnode_Type) < 0)
+    {PY_PyTypeObject}.tp_new   = PyType_GenericNew;
+    {PY_PyTypeObject}.tp_alloc = PyType_GenericAlloc;
+    if (PyType_Ready(&{PY_PyTypeObject}) < 0)
         return RETVAL;
-    Py_INCREF(&PB_Dbnode_Type);
-    PyModule_AddObject(m, "Dbnode", (PyObject *)&PB_Dbnode_Type);
+    Py_INCREF(&{PY_PyTypeObject});
+    PyModule_AddObject(m, "{cpp_class}", (PyObject *)&{PY_PyTypeObject});
 """, fmt_class))
+        self.py_type_extern.append(wformat('extern PyTypeObject {PY_PyTypeObject};', fmt_class))
 
 
         self._create_splicer('C_declaration', self.py_type_structs)
+        self.py_type_structs.append('')
         self.py_type_structs.append('typedef struct {')
         self.py_type_structs.append('PyObject_HEAD')
         self._create_splicer('C_object', self.py_type_structs)
-        self.py_type_structs.append('} PB_PackageObject;')
+        self.py_type_structs.append(wformat('}} {PY_PyObject};', fmt_class))
 
         # wrap methods
         self._push_splicer(name, [])
@@ -224,7 +234,7 @@ class Wrapp(util.WrapperMixin):
         PY_code = [ 'PyErr_SetString(PyExc_NotImplementedError, "XXX");', 'return NULL;' ]
 
         self.PyMethodBody.append(wformat("""
-static char {PY_prefix}{underscore_name}__doc__[] =
+static char {PY_name_impl}__doc__[] =
 "{doc_string}"
 ;
 
@@ -238,7 +248,7 @@ static PyObject *
         self.PyMethodBody.append('}')
                                  
 
-        self.PyMethodDef.append( wformat('{{"{CPP_name}", (PyCFunction){PY_name_impl}, METH_VARARGS|METH_KEYWORDS, {PY_prefix}{underscore_name}__doc__}},', fmt_func))
+        self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, METH_VARARGS|METH_KEYWORDS, {PY_name_impl}__doc__}},', fmt_func))
 
 
         return
@@ -417,6 +427,8 @@ static PyObject *
 
         output = []
 
+        output.append(wformat('#include "{PY_header_filename}"', fmt))
+        self._create_splicer('C_definition', output)
         self._create_splicer('extra_methods', output)
 
         output.extend(self.PyMethodBody)
@@ -454,22 +466,18 @@ static PyObject *
 #endif""")
         
         self._create_splicer('C_declaration', output)
-
         output.extend(self.py_type_structs)
-
-        output.append("""
-extern PyObject *PB_error_obj;
+        output.append(wformat("""
+extern PyObject *{PY_prefix}error_obj;
 
 #ifdef IS_PY3K
-#define MOD_INITBASIS PyInit_basis
+#define MOD_INITBASIS PyInit_{PY_module_name}
 #else
-#define MOD_INITBASIS initbasis
+#define MOD_INITBASIS init{PY_module_name}
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
 #endif
-""")
-
-
+""", fmt))
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_module(self, node):
@@ -480,6 +488,13 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         fmt.PY_library_doc = 'library documentation'
 
         output = []
+
+        output.append(wformat('#include "{PY_header_filename}"', fmt))
+        output.extend(self.py_type_extern)
+        output.append('')
+        self._create_splicer('C_definition', output)
+        output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
+
         self._create_splicer('extra_methods', output)
         output.extend(self.PyMethodBody)
 
@@ -503,15 +518,15 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 
 
 PyTypeObject_template = """
-static char PB_Dbnode__doc__[] =
+static char {cpp_class}__doc__[] =
 "virtual class"
 ;
 
 /* static */
-PyTypeObject PB_Dbnode_Type = {{
+PyTypeObject {PY_PyTypeObject} = {{
         PyVarObject_HEAD_INIT(NULL, 0)
         "basis.Dbnode",                       /* tp_name */
-        sizeof(PB_DbnodeObject),         /* tp_basicsize */
+        sizeof({PY_PyObject}),         /* tp_basicsize */
         0,                              /* tp_itemsize */
         /* Methods to implement standard operations */
         (destructor)0,                 /* tp_dealloc */
@@ -523,7 +538,7 @@ PyTypeObject PB_Dbnode_Type = {{
 #else
         (cmpfunc)0,                     /* tp_compare */
 #endif
-        (reprfunc)PB_Dbnode_repr,                    /* tp_repr */
+        (reprfunc)0,                    /* tp_repr */
         /* Method suites for standard classes */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
@@ -538,7 +553,7 @@ PyTypeObject PB_Dbnode_Type = {{
         0,                              /* tp_as_buffer */
         /* Flags to define presence of optional/expanded features */
         Py_TPFLAGS_DEFAULT,             /* tp_flags */
-        PB_Dbnode__doc__,         /* tp_doc */
+        {cpp_class}__doc__,         /* tp_doc */
         /* Assigned meaning in release 2.0 */
         /* call function for all accessible objects */
         (traverseproc)0,                /* tp_traverse */
@@ -556,13 +571,13 @@ PyTypeObject PB_Dbnode_Type = {{
         /* Attribute descriptor and subclassing stuff */
         0,                             /* tp_methods */
         0,                              /* tp_members */
-        PB_Dbnode_getset,                             /* tp_getset */
+        0,                             /* tp_getset */
         0,                              /* tp_base */
         0,                              /* tp_dict */
         (descrgetfunc)0,                /* tp_descr_get */
         (descrsetfunc)0,                /* tp_descr_set */
         0,                              /* tp_dictoffset */
-        (initproc)PB_Dbnode_init,                   /* tp_init */
+        (initproc)0,                   /* tp_init */
         (allocfunc)0,                  /* tp_alloc */
         (newfunc)0,                    /* tp_new */
         (freefunc)0,                   /* tp_free */
@@ -602,12 +617,12 @@ static struct module_state _state;
 #endif
 
 #ifdef IS_PY3K
-static int basis_traverse(PyObject *m, visitproc visit, void *arg) {{
+static int {lower_library}_traverse(PyObject *m, visitproc visit, void *arg) {{
     Py_VISIT(GETSTATE(m)->error);
     return 0;
 }}
 
-static int basis_clear(PyObject *m) {{
+static int {lower_library}_clear(PyObject *m) {{
     Py_CLEAR(GETSTATE(m)->error);
     return 0;
 }}
@@ -635,10 +650,11 @@ PyInit_{lower_library}(void)
 #define INITERROR return
 
 PyMODINIT_FUNC
-init{lower_library}(void)
+init{PY_module_name}(void)
 #endif
 {{
     PyObject *m = NULL;
+    const char * error_name = "{lower_library}.Error";
 """
 
 module_middle = """
@@ -647,7 +663,7 @@ module_middle = """
 #ifdef IS_PY3K
     m = PyModule_Create(&moduledef);
 #else
-    m = Py_InitModule4("{lower_library}", {PY_prefix}methods,
+    m = Py_InitModule4("{PY_module_name}", {PY_prefix}methods,
                        {PY_prefix}_doc__,
                        (PyObject*)NULL,PYTHON_API_VERSION);
 #endif
@@ -657,17 +673,17 @@ module_middle = """
 """
 
 module_middle2 = """
-    PB_error_obj = PyErr_NewException("{lower_library}.Error", NULL, NULL);
-    if (PB_error_obj == NULL)
+    {PY_prefix}error_obj = PyErr_NewException((char *) error_name, NULL, NULL);
+    if ({PY_prefix}error_obj == NULL)
         return RETVAL;
-    st->error = PB_error_obj;
+    st->error = {PY_prefix}error_obj;
     PyModule_AddObject(m, "Error", st->error);
 """
 
 module_end = """
     /* Check for errors */
     if (PyErr_Occurred())
-        Py_FatalError("can't initialize module {lower_library}");
+        Py_FatalError("can't initialize module {PY_module_name}");
     return RETVAL;
 }}
 """

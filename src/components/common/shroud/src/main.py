@@ -89,10 +89,6 @@ class Schema(object):
                            'C_header_filename', 'wrap{library}.h')
         util.eval_template(def_options, fmt_library,
                            'C_impl_filename', 'wrap{library}.cpp')
-
-        fmt_library.PY_prefix      = def_options.get('PY_prefix', '')
-
-
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options

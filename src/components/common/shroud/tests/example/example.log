@@ -78,5 +78,5 @@ method TypeID getTypeID() const
 Close python_exclass2.cpp
 function void local_function1
 function bool isNameValid(const std::string& name)
-Close python_header.cpp
+Close python_header.hpp
 Close python_module.cpp
