@@ -13,7 +13,7 @@ copyright:
   -
 
 options:
-  library: SiDRe
+  library: Sidre
   C_prefix: ATK_
   namespace: asctoolkit sidre
   F_module_per_class: False

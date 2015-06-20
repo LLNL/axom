@@ -1,4 +1,4 @@
-// wrapSiDRe.h
+// wrapSidre.h
 // This is generated code, do not edit
 //
 // Copyright (c) 2015, Lawrence Livermore National Security, LLC.
@@ -9,7 +9,7 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
-// wrapSiDRe.h
+// wrapSidre.h
 // For C users and C++ implementation
 
 #ifndef WRAPSIDRE_H

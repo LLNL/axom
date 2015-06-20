@@ -9,7 +9,7 @@ set(sidre_headers
 )
 
 set(sidre_generated_headers
-    wrapSiDRe.h
+    wrapSidre.h
     wrapDataStore.h
     wrapDataGroup.h
     wrapDataBuffer.h
@@ -20,7 +20,7 @@ set(sidre_generated_headers
 # Specify all sources
 #
 set(sidre_generated_source
-    wrapSiDRe.cpp
+    wrapSidre.cpp
     wrapDataStore.cpp
     wrapDataGroup.cpp
     wrapDataBuffer.cpp
