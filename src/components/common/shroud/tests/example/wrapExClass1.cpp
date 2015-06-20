@@ -9,8 +9,6 @@
 #include "ExClass1.hpp"
 
 extern "C" {
-namespace example {
-namespace nested {
 
 AA_exclass1 * AA_exclass1_new(const char * name)
 {
@@ -107,6 +105,4 @@ ExClass1 *selfobj = static_cast<ExClass1 *>(self);
 // splicer end class.ExClass1.method.SplicerSpecial
 }
 
-}  // namespace example
-}  // namespace nested
 }  // extern "C"

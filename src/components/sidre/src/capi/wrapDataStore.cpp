@@ -15,8 +15,6 @@
 #include "sidre/DataStore.hpp"
 
 extern "C" {
-namespace asctoolkit {
-namespace sidre {
 
 ATK_datastore * ATK_datastore_new()
 {
@@ -88,6 +86,4 @@ return;
 // splicer end class.DataStore.method.print
 }
 
-}  // namespace asctoolkit
-}  // namespace sidre
 }  // extern "C"

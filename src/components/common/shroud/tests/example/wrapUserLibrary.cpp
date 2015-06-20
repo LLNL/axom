@@ -8,8 +8,6 @@
 #include "wrapUserLibrary.h"
 
 extern "C" {
-namespace example {
-namespace nested {
 
 void AA_local_function1()
 {
@@ -26,6 +24,4 @@ return name != NULL;
 // splicer end function.isNameValid
 }
 
-}  // namespace example
-}  // namespace nested
 }  // extern "C"

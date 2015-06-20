@@ -4,6 +4,8 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
+// splicer begin include
+// splicer end include
 
 // splicer begin C_definition
 // splicer end C_definition
@@ -92,17 +94,16 @@ static struct PyModuleDef moduledef = {
 
 #define RETVAL m
 #define INITERROR return NULL
-
-PyMODINIT_FUNC
-PyInit_userlibrary(void)
-
 #else
 #define RETVAL
 #define INITERROR return
-
-PyMODINIT_FUNC
-inituserlibrary(void)
 #endif
+
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
+PyMODINIT_FUNC
+MOD_INITBASIS(void)
 {
     PyObject *m = NULL;
     const char * error_name = "userlibrary.Error";
@@ -156,4 +157,7 @@ inituserlibrary(void)
         Py_FatalError("can't initialize module userlibrary");
     return RETVAL;
 }
+//#ifdef __cplusplus
+//}
+//#endif
 

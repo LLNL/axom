@@ -4,21 +4,21 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
+// splicer begin class.ExClass1.include
+// splicer end class.ExClass1.include
 // splicer begin class.ExClass1.C_definition
 // splicer end class.ExClass1.C_definition
 // splicer begin class.ExClass1.extra_methods
 // splicer end class.ExClass1.extra_methods
-// repr
 static PyObject *
-PP_ExClass1_repr (PP_ExClass1 *self)
+PP_ExClass1_tp_repr (PP_ExClass1 *self)
 {
 // splicer begin class.ExClass1.type.repr
     repr code
 // splicer end class.ExClass1.type.repr
 }
-// init
 static int
-PP_ExClass1_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
+PP_ExClass1_tp_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
 {
 // splicer begin class.ExClass1.type.init
     init code
@@ -235,7 +235,7 @@ PyTypeObject PP_ExClass1_Type = {
 #else
         (cmpfunc)0,                     /* tp_compare */
 #endif
-        (reprfunc)PP_ExClass1_repr,                    /* tp_repr */
+        (reprfunc)PP_ExClass1_tp_repr,                    /* tp_repr */
         /* Method suites for standard classes */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
@@ -274,7 +274,7 @@ PyTypeObject PP_ExClass1_Type = {
         (descrgetfunc)0,                /* tp_descr_get */
         (descrsetfunc)0,                /* tp_descr_set */
         0,                              /* tp_dictoffset */
-        (initproc)PP_ExClass1_init,                   /* tp_init */
+        (initproc)PP_ExClass1_tp_init,                   /* tp_init */
         (allocfunc)0,                  /* tp_alloc */
         (newfunc)0,                    /* tp_new */
         (freefunc)0,                   /* tp_free */

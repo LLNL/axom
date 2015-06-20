@@ -186,12 +186,10 @@ class Wrapc(util.WrapperMixin):
                 output.append('#include "%s"' % header)
 
         output.append('\nextern "C" {')
-        for name in namespace.split():
-            output.append('namespace %s {' % name)
+        self.namespace(node, 'begin', output)
         output.extend(self.impl)
         output.append('')
-        for name in namespace.split():
-            output.append('}  // namespace %s' % name)
+        self.namespace(node, 'end', output)
 
         output.append('}  // extern "C"')
 

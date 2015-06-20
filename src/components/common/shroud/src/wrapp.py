@@ -429,13 +429,13 @@ static PyObject *
 
         self._push_splicer('type')
         for typename in typenames:
+            tp_name = 'tp_' + typename
             if typename not in selected:
-                fmt_type['tp_' + typename] = '0'
+                fmt_type[tp_name] = '0'
                 continue
-            func_name = wformat('{PY_prefix}{cpp_class}_', fmt) + typename
-            fmt_type['tp_' + typename] = func_name
+            func_name = wformat('{PY_prefix}{cpp_class}_tp_', fmt) + typename
+            fmt_type[tp_name] = func_name
             tup = typefuncs[typename]
-            output.append('// ' + typename)
             output.append('static ' + tup[0])
             output.append(('{name} ' + tup[1]).format(name=func_name, object=PyObj))
             output.append('{')
@@ -451,6 +451,8 @@ static PyObject *
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
+        self._create_splicer('include', output)
+        self.namespace(node, 'begin', output)
         self._create_splicer('C_definition', output)
         self._create_splicer('extra_methods', output)
         fmt_type = dict(
@@ -469,6 +471,7 @@ static PyObject *
         output.append('};')
 
         output.append(wformat(PyTypeObject_template, fmt_type))
+        self.namespace(node, 'end', output)
 
         self.write_output_file(fname, self.config.binary_dir, output)
 
@@ -495,12 +498,17 @@ static PyObject *
 #define IS_PY3K
 #endif""")
         
+        self._create_splicer('include', output)
+        self.namespace(node, 'begin', output)
         output.extend(self.py_type_extern)
         self._create_splicer('C_declaration', output)
         output.extend(self.py_type_structs)
         output.append(wformat("""
 extern PyObject *{PY_prefix}error_obj;
 
+//#ifdef __cplusplus
+//extern "C" {{
+//#endif
 #ifdef IS_PY3K
 #define MOD_INITBASIS PyInit_{PY_module_name}
 #else
@@ -508,7 +516,11 @@ extern PyObject *{PY_prefix}error_obj;
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
 #endif
+//#ifdef __cplusplus
+//}}
+//#endif
 """, fmt))
+        self.namespace(node, 'end', output)
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_module(self, node):
@@ -521,8 +533,11 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
+        self._create_splicer('include', output)
         output.append('')
+        self.namespace(node, 'begin', output)
         self._create_splicer('C_definition', output)
+
         output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
 
         self._create_splicer('extra_methods', output)
@@ -540,6 +555,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output.append(wformat(module_middle2, fmt))
         self._create_splicer('C_init_body', output)
         output.append(wformat(module_end, fmt))
+        self.namespace(node, 'end', output)
 
         self.write_output_file(fname, self.config.binary_dir, output)
 
@@ -707,17 +723,16 @@ static struct PyModuleDef moduledef = {{
 
 #define RETVAL m
 #define INITERROR return NULL
-
-PyMODINIT_FUNC
-PyInit_{lower_library}(void)
-
 #else
 #define RETVAL
 #define INITERROR return
-
-PyMODINIT_FUNC
-init{PY_module_name}(void)
 #endif
+
+//#ifdef __cplusplus
+//extern "C" {{
+//#endif
+PyMODINIT_FUNC
+MOD_INITBASIS(void)
 {{
     PyObject *m = NULL;
     const char * error_name = "{lower_library}.Error";
@@ -752,4 +767,7 @@ module_end = """
         Py_FatalError("can't initialize module {PY_module_name}");
     return RETVAL;
 }}
+//#ifdef __cplusplus
+//}}
+//#endif
 """

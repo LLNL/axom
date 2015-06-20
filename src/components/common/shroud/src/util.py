@@ -113,6 +113,18 @@ class WrapperMixin(object):
 
 #####
 
+    def namespace(self, node, position, output):
+        return
+        options = node['options']
+        namespace = options.namespace
+        if position == 'begin':
+            for name in namespace.split():
+                output.append('namespace %s {' % name)
+        else:
+            for name in namespace.split():
+                output.append('}  // namespace %s' % name)
+#####
+
     def write_output_file(self, fname, directory, output):
         fp = open(os.path.join(directory, fname), 'w')
         fp.write('%s %s\n' % (self.comment, fname))

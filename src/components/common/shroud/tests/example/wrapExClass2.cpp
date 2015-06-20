@@ -10,8 +10,6 @@
 #include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
-namespace example {
-namespace nested {
 
 AA_exclass2 * AA_exclass2_ex_class2(const char * name)
 {
@@ -82,6 +80,4 @@ return rv;
 // splicer end class.ExClass2.method.getTypeID
 }
 
-}  // namespace example
-}  // namespace nested
 }  // extern "C"
