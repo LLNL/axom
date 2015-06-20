@@ -41,6 +41,10 @@ class Wrapp(object):
     def _begin_class(self):
         pass
 
+    def reset_file(self):
+        self.PyMethodBody = []
+        self.PyMethodDef = []
+
 #####
 
     def _init_splicer(self, splicers):
@@ -72,12 +76,12 @@ class Wrapp(object):
         # and they are not in sync.
         # Creating methods and derived types together.
 #X        out.append('! splicer begin %s' % name)
-        out.append('! splicer begin %s%s' % (self.splicer_path, name))
+        out.append('// splicer begin %s%s' % (self.splicer_path, name))
         if default:
             out.extend(default)
         else:
             out.extend(self.splicer_stack[-1].get(name, []))
-#X        out.append('! splicer end %s' % name)
+#X        out.append('// splicer end %s' % name)
         out.append('! splicer end %s%s' % (self.splicer_path, name))
 
 #####
@@ -177,14 +181,15 @@ class Wrapp(object):
         self._push_splicer('class', [])
         for node in self.tree['classes']:
             name = node['name']
+            self.reset_file()
             self.wrap_class(node)
             self.write_extension_type(node)
         self._pop_splicer('class', [])
 
+        self.reset_file()
         if self.tree['functions']:
             self._push_splicer('function', [])
             self._begin_class()
-            self.py_methods = []
             for node in self.tree['functions']:
                 self.wrap_method(None, node)
             self._pop_splicer('function', [])
@@ -213,8 +218,6 @@ class Wrapp(object):
 """, fmt_class))
 
 
-        self.py_methods = []
-
         # wrap methods
         self._push_splicer(name, [])
         self._push_splicer('method', [])
@@ -222,7 +225,6 @@ class Wrapp(object):
             self.wrap_method(node, method)
         self._pop_splicer('method', [])
 
-        self._create_splicer('extra_methods', self.py_methods)
         self._pop_splicer(fmt_class.lower_class, [])
 
     def wrap_method(self, cls, node):
@@ -241,9 +243,33 @@ class Wrapp(object):
 
         options = node['options']
         fmt_func = node['fmt']
+        fmt_func.doc_string = 'documentation'
+        fmt_func.PY_func_name    = 'AAA'
 
-        self.py_methods.append(wformat('wrapping {C_name}', fmt_func))
+        PY_code = []
+
+
+        self.PyMethodBody.append(wformat("""
+static char PB_stop_here__doc__[] =
+"{doc_string}"
+;
+
+static PyObject *
+{PY_func_name}(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{{
+""", fmt_func))
+        self._create_splicer(fmt_func.F_name_method, self.PyMethodBody, PY_code)
+        self.PyMethodBody.append('}')
+                                 
+
+        self.PyMethodDef.append( wformat('{{"find_package", (PyCFunction){PY_func_name}, METH_VARARGS|METH_KEYWORDS, PB_find_package__doc__}},', fmt_func))
+
+
         return
+    #######################
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
@@ -425,7 +451,16 @@ class Wrapp(object):
 
         output = []
 
-        output.extend(self.py_methods)
+        self._create_splicer('extra_methods', output)
+
+        output.extend(self.PyMethodBody)
+
+        output.append('static PyMethodDef PB_methods[] = {')
+        output.extend(self.PyMethodDef)
+        output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
+        output.append('};')
+
+        output.append(wformat(PyTypeObject_template, fmt))
 
         fp = open(os.path.join(self.config.binary_dir, fname), 'w')
         self.write_copyright(fp)
@@ -443,7 +478,16 @@ class Wrapp(object):
         fmt.PY_library_doc = 'library documentation'
 
         output = []
-        output.extend(self.py_methods)
+        self._create_splicer('extra_methods', output)
+        output.extend(self.PyMethodBody)
+
+        output.append('static PyMethodDef PB_methods[] = {')
+        output.extend(self.PyMethodDef)
+        output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
+        output.append('};')
+
+        
+
 
         output.append(wformat(module_begin, fmt))
         self._create_splicer('C_init_locals', output)
@@ -477,6 +521,84 @@ class Wrapp(object):
 
 #### Python boiler plate
 
+
+PyTypeObject_template = """
+static char PB_Dbnode__doc__[] =
+"virtual class"
+;
+
+/* static */
+PyTypeObject PB_Dbnode_Type = {{
+        PyVarObject_HEAD_INIT(NULL, 0)
+        "basis.Dbnode",                       /* tp_name */
+        sizeof(PB_DbnodeObject),         /* tp_basicsize */
+        0,                              /* tp_itemsize */
+        /* Methods to implement standard operations */
+        (destructor)0,                 /* tp_dealloc */
+        (printfunc)0,                   /* tp_print */
+        (getattrfunc)0,                 /* tp_getattr */
+        (setattrfunc)0,                 /* tp_setattr */
+#ifdef IS_PY3K
+        0,                               /* tp_reserved */
+#else
+        (cmpfunc)0,                     /* tp_compare */
+#endif
+        (reprfunc)PB_Dbnode_repr,                    /* tp_repr */
+        /* Method suites for standard classes */
+        0,                              /* tp_as_number */
+        0,                              /* tp_as_sequence */
+        0,                              /* tp_as_mapping */
+        /* More standard operations (here for binary compatibility) */
+        (hashfunc)0,                    /* tp_hash */
+        (ternaryfunc)0,                 /* tp_call */
+        (reprfunc)0,                    /* tp_str */
+        (getattrofunc)0,                /* tp_getattro */
+        (setattrofunc)0,                /* tp_setattro */
+        /* Functions to access object as input/output buffer */
+        0,                              /* tp_as_buffer */
+        /* Flags to define presence of optional/expanded features */
+        Py_TPFLAGS_DEFAULT,             /* tp_flags */
+        PB_Dbnode__doc__,         /* tp_doc */
+        /* Assigned meaning in release 2.0 */
+        /* call function for all accessible objects */
+        (traverseproc)0,                /* tp_traverse */
+        /* delete references to contained objects */
+        (inquiry)0,                     /* tp_clear */
+        /* Assigned meaning in release 2.1 */
+        /* rich comparisons */
+        (richcmpfunc)0,                 /* tp_richcompare */
+        /* weak reference enabler */
+        0,                              /* tp_weaklistoffset */
+        /* Added in release 2.2 */
+        /* Iterators */
+        (getiterfunc)0,                 /* tp_iter */
+        (iternextfunc)0,                /* tp_iternext */
+        /* Attribute descriptor and subclassing stuff */
+        0,                             /* tp_methods */
+        0,                              /* tp_members */
+        PB_Dbnode_getset,                             /* tp_getset */
+        0,                              /* tp_base */
+        0,                              /* tp_dict */
+        (descrgetfunc)0,                /* tp_descr_get */
+        (descrsetfunc)0,                /* tp_descr_set */
+        0,                              /* tp_dictoffset */
+        (initproc)PB_Dbnode_init,                   /* tp_init */
+        (allocfunc)0,                  /* tp_alloc */
+        (newfunc)0,                    /* tp_new */
+        (freefunc)0,                   /* tp_free */
+        (inquiry)0,                     /* tp_is_gc */
+        0,                              /* tp_bases */
+        0,                              /* tp_mro */
+        0,                              /* tp_cache */
+        0,                              /* tp_subclasses */
+        0,                              /* tp_weaklist */
+        (destructor)0,                 /* tp_del */
+        0,                              /* tp_version_tag */
+#ifdef IS_PY3K
+        (destructor)0,                  /* tp_finalize */
+#endif
+}};
+"""
 
 
 module_begin = """
