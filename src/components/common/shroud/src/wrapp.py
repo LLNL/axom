@@ -420,14 +420,18 @@ static PyObject *
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
-    def write_tpfunc(self, fmt, fmt_type, output):
+    def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
         # update with type function names
         # type bodies must be filled in by user, no real way to guess
         PyObj  = fmt.PY_PyObject
+        selected = node.get('python', {}).get('type', [])
 
         self._push_splicer('type', [])
         for typename in typenames:
+            if typename not in selected:
+                fmt_type['tp_' + typename] = '0'
+                continue
             func_name = wformat('{PY_prefix}{cpp_class}_', fmt) + typename
             fmt_type['tp_' + typename] = func_name
             tup = typefuncs[typename]
@@ -455,7 +459,7 @@ static PyObject *
             PY_PyTypeObject = fmt.PY_PyTypeObject,
             cpp_class       = fmt.cpp_class,
             )
-        self.write_tpfunc(fmt, fmt_type, output)
+        self.write_tp_func(node, fmt, fmt_type, output)
 
         output.extend(self.PyMethodBody)
 

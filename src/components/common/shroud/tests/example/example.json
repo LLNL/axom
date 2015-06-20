@@ -497,6 +497,12 @@
             "name": "ExClass1", 
             "options": {
                 "cpp_header": "ExClass1.hpp"
+            }, 
+            "python": {
+                "type": [
+                    "init", 
+                    "repr"
+                ]
             }
         }, 
         {
@@ -879,6 +885,26 @@
             "name": "ExClass2", 
             "options": {
                 "cpp_header": "ExClass2.hpp"
+            }, 
+            "python": {
+                "type": [
+                    "dealloc", 
+                    "print", 
+                    "compare", 
+                    "getattr", 
+                    "setattr", 
+                    "getattro", 
+                    "setattro", 
+                    "repr", 
+                    "hash", 
+                    "call", 
+                    "str", 
+                    "init", 
+                    "alloc", 
+                    "new", 
+                    "free", 
+                    "del"
+                ]
             }
         }
     ], 

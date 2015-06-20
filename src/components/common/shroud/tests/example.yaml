@@ -57,6 +57,10 @@ classes:
     options:
       cpp_header: ExClass1.hpp
       # include files to add to module
+
+    python:
+      type: [ init, repr ]
+
     methods:
     - decl: ExClass1 *new+constructor ( const string *name )
       docs: constructor
@@ -97,6 +101,12 @@ classes:
   - name: ExClass2
     options:
       cpp_header: ExClass2.hpp
+    python:
+      type: [dealloc, print, compare, getattr, setattr,
+             getattro, setattro,
+             repr, hash, call, str,
+             init, alloc, new, free, del]
+
     methods:
     - decl: ExClass2 *ExClass2+constructor (const string *name)
 
