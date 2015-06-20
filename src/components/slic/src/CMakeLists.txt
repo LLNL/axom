@@ -27,6 +27,7 @@ set(slic_headers
 set(slic_sources
     Logger.cpp
     LogStream.cpp
+    slic.cpp
 
     logstreams/GenericOutputStream.cpp
     )

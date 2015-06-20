@@ -22,7 +22,11 @@
 #define SLIC_HPP_
 
 #include "slic/Logger.hpp"
-#include "common/Utilities.hpp" // for utilities::processAbort()
+#include "slic/LogStream.hpp"
+#include "slic/MessageLevel.h"
+
+#include "common/CommonTypes.hpp" // for ATK_NULLPTR
+#include "common/Utilities.hpp"   // for utilities::processAbort()
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
@@ -51,7 +55,7 @@
 #define SLIC_ERROR( EXP, msg )                                                \
 do {                                                                          \
   if ( EXP ) {                                                                \
-    asctoolkit::slic::Logger::log(                                            \
+    asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Fatal,msg,__FILE__, __LINE__ );            \
     asctoolkit::utilities::processAbort();                                    \
   }                                                                           \
@@ -80,7 +84,7 @@ do {                                                                          \
 #define SLIC_WARNING( EXP, msg )                                              \
 do {                                                                          \
   if ( EXP ) {                                                                \
-    asctoolkit::slic::Logger::log(                                            \
+    asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Warning,msg,__FILE__, __LINE__ );          \
   }                                                                           \
 } while ( 0 )
@@ -114,7 +118,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::ends;                           \
-    asctoolkit::slic::Logger::log(                                            \
+    asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
     asctoolkit::utilities::processAbort();                                    \
   }                                                                           \
@@ -142,7 +146,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
-    asctoolkit::slic::Logger::log(                                            \
+    asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
     asctoolkit::utilities::processAbort();                                    \
   }                                                                           \
@@ -175,7 +179,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::ends;                            \
-    asctoolkit::slic::Logger::log(                                            \
+    asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );     \
   }                                                                           \
 } while ( 0 )
@@ -201,7 +205,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;       \
-    asctoolkit::slic::Logger::log(                                            \
+    asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );     \
   }                                                                           \
 } while ( 0 )
@@ -216,5 +220,122 @@ do {                                                                          \
 #define SLIC_CHECK_MSG( ignore_EXP, ignore_msg ) ( (void)0 )
 
 #endif /* END ifdef ATK_DEBUG */
+
+namespace asctoolkit {
+
+
+namespace slic {
+
+/*!
+ *******************************************************************************
+ * \brief Initializes the SLIC logging environment.
+ *******************************************************************************
+ */
+void initialize();
+
+/*!
+ *******************************************************************************
+ * \brief Checks if the SLIC logging environment is initialized.
+ * \return status true if initialized, else, false.
+ *******************************************************************************
+ */
+bool isInitialized();
+
+/*!
+ *******************************************************************************
+ * \brief Sets desired logging level.
+ * \param [in] level user-supplied level to log.
+ *******************************************************************************
+ */
+void  setLoggingLevel( message::Level level );
+
+/*!
+ *******************************************************************************
+ * \brief Adds the given stream to the the given level.
+ * \param [in] level the level to log.
+ * \pre ls != ATK_NULLPTR
+ *******************************************************************************
+ */
+void addStreamToLevel( LogStream* ls, message::Level level );
+
+/*!
+ *******************************************************************************
+ * \brief Adds the given stream to all levels.
+ * \param [in] ls pointer to the log stream.
+ * \pre ls != ATK_NULLPTR.
+ *******************************************************************************
+ */
+void addStreamToAllLevels( LogStream* ls );
+
+/*!
+ *******************************************************************************
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ *******************************************************************************
+ */
+void logMessage( message::Level level,
+                 const std::string& message );
+
+/*!
+ *******************************************************************************
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] tag user-supplied associated with this message.
+ *******************************************************************************
+ */
+void logMessage( message::Level level,
+                 const std::string& message,
+                 const std::string& tag );
+
+/*!
+ *******************************************************************************
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file this message is logged.
+ *******************************************************************************
+ */
+void logMessage( message::Level level,
+                const std::string& message,
+                const std::string& fileName,
+                int line );
+
+/*!
+ *******************************************************************************
+ * \brief Logs the given message to all registered streams.
+ * \param [in] level the level of the message being logged.
+ * \param [in] message user-supplied message.
+ * \param [in] tag user-supplied tag associated with the message.
+ * \param [in] fileName the name of the file this message is logged form.
+ * \param [in] line the line number within the file this message is logged.
+ *******************************************************************************
+ */
+void logMessage( message::Level level,
+                 const std::string& message,
+                 const std::string& tag,
+                 const std::string& fileName,
+                 int line );
+
+/*!
+ *******************************************************************************
+ * \brief Flushes all streams.
+ * \see Logger::flushStreams.
+ *******************************************************************************
+ */
+void flushStreams();
+
+/*!
+ *******************************************************************************
+ * \brief Finalizes the slic logging environment.
+ *******************************************************************************
+ */
+void finalize();
+
+} /* namespace slic */
+
+} /* namespace asctoolkit */
 
 #endif /* SLIC_HPP_ */
