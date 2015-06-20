@@ -16,6 +16,8 @@
 #include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
+namespace asctoolkit {
+namespace sidre {
 
 const char * ATK_datagroup_get_name(const ATK_datagroup * self)
 {
@@ -260,4 +262,6 @@ return;
 // splicer end class.DataGroup.method.load
 }
 
+}  // namespace asctoolkit
+}  // namespace sidre
 }  // extern "C"

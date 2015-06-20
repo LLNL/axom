@@ -114,7 +114,6 @@ class WrapperMixin(object):
 #####
 
     def namespace(self, node, position, output):
-        return
         options = node['options']
         namespace = options.namespace
         if position == 'begin':

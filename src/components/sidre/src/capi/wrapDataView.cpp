@@ -16,6 +16,8 @@
 #include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
+namespace asctoolkit {
+namespace sidre {
 
 void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len)
 {
@@ -134,4 +136,6 @@ return rv;
 // splicer end class.DataView.method.getNumberOfElements
 }
 
+}  // namespace asctoolkit
+}  // namespace sidre
 }  // extern "C"

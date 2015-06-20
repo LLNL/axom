@@ -16,6 +16,8 @@
 #include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
+namespace asctoolkit {
+namespace sidre {
 
 ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self)
 {
@@ -107,4 +109,6 @@ return rv;
 // splicer end class.DataBuffer.method.getTotalBytes
 }
 
+}  // namespace asctoolkit
+}  // namespace sidre
 }  // extern "C"

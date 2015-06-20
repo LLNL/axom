@@ -15,6 +15,8 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
+namespace asctoolkit {
+namespace sidre {
 
 bool ATK_is_name_valid(const char * name)
 {
@@ -23,4 +25,6 @@ return name != NULL;
 // splicer end function.isNameValid
 }
 
+}  // namespace asctoolkit
+}  // namespace sidre
 }  // extern "C"

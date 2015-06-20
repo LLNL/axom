@@ -506,9 +506,9 @@ static PyObject *
         output.append(wformat("""
 extern PyObject *{PY_prefix}error_obj;
 
-//#ifdef __cplusplus
-//extern "C" {{
-//#endif
+#ifdef __cplusplus
+extern "C" {{
+#endif
 #ifdef IS_PY3K
 #define MOD_INITBASIS PyInit_{PY_module_name}
 #else
@@ -516,9 +516,9 @@ extern PyObject *{PY_prefix}error_obj;
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
 #endif
-//#ifdef __cplusplus
-//}}
-//#endif
+#ifdef __cplusplus
+}}
+#endif
 """, fmt))
         self.namespace(node, 'end', output)
         self.write_output_file(fname, self.config.binary_dir, output)
@@ -728,9 +728,9 @@ static struct PyModuleDef moduledef = {{
 #define INITERROR return
 #endif
 
-//#ifdef __cplusplus
-//extern "C" {{
-//#endif
+#ifdef __cplusplus
+extern "C" {{
+#endif
 PyMODINIT_FUNC
 MOD_INITBASIS(void)
 {{
@@ -767,7 +767,7 @@ module_end = """
         Py_FatalError("can't initialize module {PY_module_name}");
     return RETVAL;
 }}
-//#ifdef __cplusplus
-//}}
-//#endif
+#ifdef __cplusplus
+}}
+#endif
 """
