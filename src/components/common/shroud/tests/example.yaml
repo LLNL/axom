@@ -17,6 +17,8 @@ options:
 #  F_module_per_class: False
   # include files to add to module
 
+  PY_prefix: PP_
+
 typedef:
   other:
     cpp_type: junk

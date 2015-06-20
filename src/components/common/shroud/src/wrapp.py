@@ -211,28 +211,34 @@ class Wrapp(util.WrapperMixin):
         options = node['options']
         fmt_func = node['fmt']
         fmt_func.doc_string = 'documentation'
-        fmt_func.PY_func_name    = 'AAA'
 
-        PY_code = []
+        if cls:
+            util.eval_template(options, fmt_func,
+                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
+        else:
+            util.eval_template(options, fmt_func,
+                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
 
+
+
+        PY_code = [ 'PyErr_SetString(PyExc_NotImplementedError, "XXX");', 'return NULL;' ]
 
         self.PyMethodBody.append(wformat("""
-static char PB_stop_here__doc__[] =
+static char {PY_prefix}{underscore_name}__doc__[] =
 "{doc_string}"
 ;
 
 static PyObject *
-{PY_func_name}(
+{PY_name_impl}(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
-{{
-""", fmt_func))
+{{""", fmt_func))
         self._create_splicer(fmt_func.F_name_method, self.PyMethodBody, PY_code)
         self.PyMethodBody.append('}')
                                  
 
-        self.PyMethodDef.append( wformat('{{"find_package", (PyCFunction){PY_func_name}, METH_VARARGS|METH_KEYWORDS, PB_find_package__doc__}},', fmt_func))
+        self.PyMethodDef.append( wformat('{{"{CPP_name}", (PyCFunction){PY_name_impl}, METH_VARARGS|METH_KEYWORDS, {PY_prefix}{underscore_name}__doc__}},', fmt_func))
 
 
         return
@@ -477,13 +483,10 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         self._create_splicer('extra_methods', output)
         output.extend(self.PyMethodBody)
 
-        output.append('static PyMethodDef PB_methods[] = {')
+        output.append(wformat('static PyMethodDef {PY_prefix}methods[] = {{', fmt))
         output.extend(self.PyMethodDef)
         output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
         output.append('};')
-
-        
-
 
         output.append(wformat(module_begin, fmt))
         self._create_splicer('C_init_locals', output)
@@ -583,7 +586,7 @@ module_begin = """
  * init{lower_library} - Initialization function for the module
  * *must* be called init{lower_library}
  */
-static char PB__doc__[] =
+static char {PY_prefix}_doc__[] =
 "{PY_library_doc}"
 ;
 
@@ -612,9 +615,9 @@ static int basis_clear(PyObject *m) {{
 static struct PyModuleDef moduledef = {{
     PyModuleDef_HEAD_INIT,
     "{lower_library}", /* m_name */
-    PB__doc__, /* m_doc */
+    {PY_prefix}_doc__, /* m_doc */
     sizeof(struct module_state), /* m_size */
-    PB_methods, /* m_methods */
+    {PY_prefix}methods, /* m_methods */
     NULL, /* m_reload */
     {lower_library}_traverse, /* m_traverse */
     {lower_library}_clear, /* m_clear */
@@ -644,8 +647,8 @@ module_middle = """
 #ifdef IS_PY3K
     m = PyModule_Create(&moduledef);
 #else
-    m = Py_InitModule4("{lower_library}", PB_methods,
-                       PB__doc__,
+    m = Py_InitModule4("{lower_library}", {PY_prefix}methods,
+                       {PY_prefix}_doc__,
                        (PyObject*)NULL,PYTHON_API_VERSION);
 #endif
     if (m == NULL)
