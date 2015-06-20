@@ -15,8 +15,6 @@ from __future__ import print_function
 
 import util
 
-import os
-
 wformat = util.wformat
 
 class Wrapc(util.WrapperMixin):
@@ -85,10 +83,10 @@ class Wrapc(util.WrapperMixin):
         fmt_library.C_this = options.get('C_this', 'self')
         fmt_library.C_const = ''
 
-        self._push_splicer('class', [])
+        self._push_splicer('class')
         for node in self.tree['classes']:
             self.write_file(node, self.wrap_class, True)
-        self._pop_splicer('class', [])
+        self._pop_splicer('class')
 
         if self.tree['functions']:
             self.write_file(self.tree, self.wrap_functions, False)
@@ -107,10 +105,10 @@ class Wrapc(util.WrapperMixin):
 
     def wrap_functions(self, tree):
         # worker function for write_file
-        self._push_splicer('function', [])
+        self._push_splicer('function')
         for node in tree['functions']:
             self.wrap_method(None, node)
-        self._pop_splicer('function', [])
+        self._pop_splicer('function')
 
     def write_header(self, node, fname, cls=False):
         guard = fname.replace(".", "_").upper()
@@ -124,7 +122,7 @@ class Wrapc(util.WrapperMixin):
                 '#define %s' % guard,
                 ])
         if cls:
-            self._push_splicer('class', output)
+            self._push_splicer('class')
 
         # headers required by typedefs
         if self.header_typedef_include:
@@ -155,7 +153,7 @@ class Wrapc(util.WrapperMixin):
         output.append('#endif')
         output.extend(self.header_proto_c);
         if cls:
-            self._pop_splicer('class', output)
+            self._pop_splicer('class')
         output.extend([
                 '',
                 '#ifdef __cplusplus',
@@ -205,7 +203,7 @@ class Wrapc(util.WrapperMixin):
         typedef = self.typedef[name]
         cname = typedef.c_type
 
-        self._push_splicer(name, [])
+        self._push_splicer(name)
 #        fmt_class = node['fmt']
 #        fmt_class.update(dict(
 #                ))
@@ -213,12 +211,12 @@ class Wrapc(util.WrapperMixin):
         # create a forward declaration for this type
         self.header_forward[cname] = True
 
-        self._push_splicer('method', [])
+        self._push_splicer('method')
         for method in node['methods']:
             self.wrap_method(node, method)
-        self._pop_splicer('method', [])
+        self._pop_splicer('method')
 
-        self._pop_splicer(name, [])
+        self._pop_splicer(name)
 
     def wrap_method(self, cls, node):
         """

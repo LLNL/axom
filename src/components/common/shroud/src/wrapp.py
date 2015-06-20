@@ -141,23 +141,23 @@ class Wrapp(util.WrapperMixin):
         self.py_type_extern = []
         self.py_type_structs = []
 
-        self._push_splicer('class', [])
+        self._push_splicer('class')
         for node in self.tree['classes']:
             name = node['name']
             self.reset_file()
-            self._push_splicer(name, [])
+            self._push_splicer(name)
             self.wrap_class(node)
             self.write_extension_type(node)
-            self._pop_splicer(name, [])
-        self._pop_splicer('class', [])
+            self._pop_splicer(name)
+        self._pop_splicer('class')
 
         self.reset_file()
         if self.tree['functions']:
-            self._push_splicer('function', [])
+            self._push_splicer('function')
             self._begin_class()
             for node in self.tree['functions']:
                 self.wrap_method(None, node)
-            self._pop_splicer('function', [])
+            self._pop_splicer('function')
 
         self.write_header(self.tree)
         self.write_module(self.tree)
@@ -198,10 +198,10 @@ class Wrapp(util.WrapperMixin):
         self.py_type_structs.append(wformat('}} {PY_PyObject};', fmt_class))
 
         # wrap methods
-        self._push_splicer('method', [])
+        self._push_splicer('method')
         for method in node['methods']:
             self.wrap_method(node, method)
-        self._pop_splicer('method', [])
+        self._pop_splicer('method')
 
     def wrap_method(self, cls, node):
         """
@@ -427,7 +427,7 @@ static PyObject *
         PyObj  = fmt.PY_PyObject
         selected = node.get('python', {}).get('type', [])
 
-        self._push_splicer('type', [])
+        self._push_splicer('type')
         for typename in typenames:
             if typename not in selected:
                 fmt_type['tp_' + typename] = '0'
@@ -440,9 +440,9 @@ static PyObject *
             output.append(('{name} ' + tup[1]).format(name=func_name, object=PyObj))
             output.append('{')
             default = self.not_implemented(typename, tup[2])
-            self._create_splicer(typename, output, default)
+            self._create_splicer(typename, output, default=default)
             output.append('}')
-        self._pop_splicer('type', [])
+        self._pop_splicer('type')
 
     def write_extension_type(self, node):
         fmt = node['fmt']

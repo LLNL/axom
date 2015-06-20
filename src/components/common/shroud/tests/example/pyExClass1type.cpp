@@ -13,8 +13,7 @@ static PyObject *
 PP_ExClass1_repr (PP_ExClass1 *self)
 {
 // splicer begin class.ExClass1.type.repr
-    PyErr_SetString(PyExc_NotImplementedError, "repr");
-    return NULL;
+    repr code
 // splicer end class.ExClass1.type.repr
 }
 // init
@@ -22,8 +21,7 @@ static int
 PP_ExClass1_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
 {
 // splicer begin class.ExClass1.type.init
-    PyErr_SetString(PyExc_NotImplementedError, "init");
-    return -1;
+    init code
 // splicer end class.ExClass1.type.init
 }
 

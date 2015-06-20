@@ -1,46 +1,35 @@
 
 
-! splicer push class.exclass1
-
-! splicer begin module_top
+! splicer begin class.ExClass1.module_top
 top of module splicer  1
-! splicer end module_top
+! splicer end class.ExClass1.module_top
 
-! splicer begin component_part
+! splicer begin class.ExClass1.component_part
   component part 1a
   component part 1b
-! splicer end   component_part
+! splicer end   class.ExClass1.component_part
 
-! splicer begin type_bound_procedure_part
+! splicer begin class.ExClass1.type_bound_procedure_part
   type bound procedure part 1
-! splicer end   type_bound_procedure_part
+! splicer end   class.ExClass1.type_bound_procedure_part
 
-! splicer push method
-
-! splicer begin splicer_special
+! splicer begin class.ExClass1.method.splicer_special
 blah blah blah
-! splicer end splicer_special
+! splicer end class.ExClass1.method.splicer_special
 
-! splicer pop method
-
-
-! splicer begin extra_methods
+! splicer begin class.ExClass1.extra_methods
   insert extra methods here
-! splicer end   extra_methods
-
-! splicer pop class.exclass1
+! splicer end   class.ExClass1.extra_methods
 
 
-! splicer push class.exclass2
-! splicer begin module_top
+! splicer begin class.ExClass2.module_top
 top of module splicer  2
-! splicer end module_top
-! splicer pop class.exclass2
+! splicer end class.ExClass2.module_top
 
 
 
 
 # test a full path
-! splicer begin  class.exclass1.method.extra_method2
+! splicer begin  class.ExClass1.method.extra_method2
   ! extra method 2
-! splicer end    class.exclass1.method.extra_method2
+! splicer end    class.ExClass1.method.extra_method2

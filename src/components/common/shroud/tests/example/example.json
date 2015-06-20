@@ -1035,6 +1035,9 @@
         ], 
         "f": [
             "fsplicer.f"
+        ], 
+        "py": [
+            "pysplicer.c"
         ]
     }, 
     "typedef": {

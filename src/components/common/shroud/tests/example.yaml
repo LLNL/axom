@@ -8,6 +8,8 @@ splicer:
   -  fsplicer.f
   c:
   -  csplicer.c
+  py:
+  -  pysplicer.c
 
 options:
 #  module_name: exclass1_mod

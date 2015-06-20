@@ -146,7 +146,7 @@ class Wrapf(util.WrapperMixin):
 
         self._begin_output_file()
         if not options.F_module_per_class:
-            self._push_splicer('class', self.impl)
+            self._push_splicer('class')
         for node in self.tree['classes']:
             self._begin_class()
 
@@ -154,10 +154,10 @@ class Wrapf(util.WrapperMixin):
             # how to decide module name, module per class
 #            module_name = node['options'].setdefault('module_name', name.lower())
             if options.F_module_per_class:
-                self._push_splicer('class', self.impl)
+                self._push_splicer('class')
             self.wrap_class(node)
             if options.F_module_per_class:
-                self._pop_splicer('class', self.impl)
+                self._pop_splicer('class')
                 self._end_output_file()
                 self.write_module(node)
                 self._begin_output_file()
@@ -174,7 +174,7 @@ class Wrapf(util.WrapperMixin):
 
         if not options.F_module_per_class:
             # put all functions and classes into one module
-            self._pop_splicer('class', self.impl)
+            self._pop_splicer('class')
             self.tree['F_module_dependencies'] = []
             self._end_output_file()
             self.write_module(self.tree)
@@ -197,18 +197,18 @@ class Wrapf(util.WrapperMixin):
         self.type_bound_part = []
 
         # wrap methods
-        self._push_splicer(fmt_class.lower_class, self.impl)
-        self._push_splicer('method', self.impl)
+        self._push_splicer(fmt_class.cpp_class)
+        self._push_splicer('method')
         for method in node['methods']:
             self.wrap_method(node, method)
-        self._pop_splicer('method', self.impl)
+        self._pop_splicer('method')
         self._create_splicer('extra_methods', self.impl)
-        self._pop_splicer(fmt_class.lower_class, self.impl)
+        self._pop_splicer(fmt_class.cpp_class)
 
 
         # type declaration
         self.f_type_decl.append('')
-        self._push_splicer(fmt_class.lower_class, self.f_type_decl)
+        self._push_splicer(fmt_class.cpp_class)
         self._create_splicer('module_top', self.f_type_decl)
         self.f_type_decl.extend([
                 '',
@@ -234,7 +234,7 @@ class Wrapf(util.WrapperMixin):
                  -1,
                  wformat('end type {F_derived_name}', fmt_class),
                  ])
-        self._pop_splicer(fmt_class.lower_class, self.f_type_decl)
+        self._pop_splicer(fmt_class.cpp_class)
 
     def wrap_method(self, cls, node):
         """

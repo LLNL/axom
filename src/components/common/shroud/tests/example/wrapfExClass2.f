@@ -10,14 +10,14 @@ module exclass2_mod
     implicit none
     
     
-    ! splicer begin class.exclass2.module_top
+    ! splicer begin class.ExClass2.module_top
     top of module splicer  2
-    ! splicer end class.exclass2.module_top
+    ! splicer end class.ExClass2.module_top
     
     type exclass2
         type(C_PTR) obj
-        ! splicer begin class.exclass2.component_part
-        ! splicer end class.exclass2.component_part
+        ! splicer begin class.ExClass2.component_part
+        ! splicer end class.ExClass2.component_part
     contains
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
@@ -25,8 +25,8 @@ module exclass2_mod
         procedure :: declare => exclass2_declare
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
-        ! splicer begin class.exclass2.type_bound_procedure_part
-        ! splicer end class.exclass2.type_bound_procedure_part
+        ! splicer begin class.ExClass2.type_bound_procedure_part
+        ! splicer end class.ExClass2.type_bound_procedure_part
     end type exclass2
     
     interface
@@ -103,19 +103,19 @@ contains
         implicit none
         character(*) :: name
         type(exclass2) :: rv
-        ! splicer begin class.exclass2.method.ex_class2
+        ! splicer begin class.ExClass2.method.ex_class2
         rv%obj = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)
-        ! splicer end class.exclass2.method.ex_class2
+        ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     
     subroutine exclass2_ex_class1(obj)
         use iso_c_binding
         implicit none
         type(exclass2) :: obj
-        ! splicer begin class.exclass2.method.ex_class1
+        ! splicer begin class.ExClass2.method.ex_class1
         call aa_exclass2_ex_class1(obj%obj)
         obj%obj = C_NULL_PTR
-        ! splicer end class.exclass2.method.ex_class1
+        ! splicer end class.ExClass2.method.ex_class1
     end subroutine exclass2_ex_class1
     
     function exclass2_get_name(obj) result(rv)
@@ -123,9 +123,9 @@ contains
         implicit none
         class(exclass2) :: obj
         character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%obj)) :: rv
-        ! splicer begin class.exclass2.method.get_name
+        ! splicer begin class.ExClass2.method.get_name
         rv = fstr(aa_exclass2_get_name(obj%obj))
-        ! splicer end class.exclass2.method.get_name
+        ! splicer end class.ExClass2.method.get_name
     end function exclass2_get_name
     
     function exclass2_get_name_length(obj) result(rv)
@@ -133,9 +133,9 @@ contains
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: rv
-        ! splicer begin class.exclass2.method.get_name_length
+        ! splicer begin class.ExClass2.method.get_name_length
         rv = aa_exclass2_get_name_length(obj%obj)
-        ! splicer end class.exclass2.method.get_name_length
+        ! splicer end class.ExClass2.method.get_name_length
     end function exclass2_get_name_length
     
     function exclass2_get_class1(obj, in) result(rv)
@@ -144,9 +144,9 @@ contains
         class(exclass2) :: obj
         type(exclass1) :: in
         type(exclass1) :: rv
-        ! splicer begin class.exclass2.method.get_class1
+        ! splicer begin class.ExClass2.method.get_class1
         rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)
-        ! splicer end class.exclass2.method.get_class1
+        ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
     subroutine exclass2_declare(obj, type, len)
@@ -155,18 +155,18 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: type
         integer(C_LONG) :: len
-        ! splicer begin class.exclass2.method.declare
+        ! splicer begin class.ExClass2.method.declare
         call aa_exclass2_declare(obj%obj, type, len)
-        ! splicer end class.exclass2.method.declare
+        ! splicer end class.ExClass2.method.declare
     end subroutine exclass2_declare
     
     subroutine exclass2_destroyall(obj)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        ! splicer begin class.exclass2.method.destroyall
+        ! splicer begin class.ExClass2.method.destroyall
         call aa_exclass2_destroyall(obj%obj)
-        ! splicer end class.exclass2.method.destroyall
+        ! splicer end class.ExClass2.method.destroyall
     end subroutine exclass2_destroyall
     
     function exclass2_get_type_id(obj) result(rv)
@@ -174,11 +174,11 @@ contains
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: rv
-        ! splicer begin class.exclass2.method.get_type_id
+        ! splicer begin class.ExClass2.method.get_type_id
         rv = aa_exclass2_get_type_id(obj%obj)
-        ! splicer end class.exclass2.method.get_type_id
+        ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
-    ! splicer begin class.exclass2.extra_methods
-    ! splicer end class.exclass2.extra_methods
+    ! splicer begin class.ExClass2.extra_methods
+    ! splicer end class.ExClass2.extra_methods
 
 end module exclass2_mod

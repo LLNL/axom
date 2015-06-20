@@ -85,13 +85,13 @@ class WrapperMixin(object):
         self.splicer_names = [ ]
         self.splicer_path = ''
 
-    def _push_splicer(self, name, out):
+    def _push_splicer(self, name):
         level = self.splicer_stack[-1].setdefault(name, {})
         self.splicer_stack.append(level)
         self.splicer_names.append(name)
         self.splicer_path = '.'.join(self.splicer_names) + '.'
 
-    def _pop_splicer(self, name, out):
+    def _pop_splicer(self, name):
         # XXX maybe use name for error checking, must pop in reverse order
         self.splicer_stack.pop()
         self.splicer_names.pop()
@@ -100,15 +100,15 @@ class WrapperMixin(object):
         else:
             self.splicer_path = ''
 
-    def _create_splicer(self, name, out, default=None):
+    def _create_splicer(self, name, out, override=None, default=[]):
         # The prefix is needed when two different sets of output are being create
         # and they are not in sync.
         # Creating methods and derived types together.
         out.append('%s splicer begin %s%s' % (self.comment, self.splicer_path, name))
-        if default:
-            out.extend(default)
+        if override:
+            out.extend(override)
         else:
-            out.extend(self.splicer_stack[-1].get(name, []))
+            out.extend(self.splicer_stack[-1].get(name, default))
         out.append('%s splicer end %s%s' % (self.comment, self.splicer_path, name))
 
 #####

@@ -23,7 +23,7 @@ def get_splicers(fname, out):
     state = state_look
 
     top = out
-    stack = [ out ]
+    stack = [ top ]
     
     begin_tag = ''
 
@@ -37,36 +37,12 @@ def get_splicers(fname, out):
                     begin_tag = tag
                     subtags = tag.split('.')
                     begin_subtag = subtags[-1]
-                    begin_nest = len(subtags) - 1
                     for subtag in subtags[:-1]:
                         top = top.setdefault(subtag, {})
                         stack.append(top)
 #                    print("BEGIN", begin_tag)
                     save = []
                     state = state_collect
-                    continue
-
-                i = line.find(str_push)
-                if i > 0:
-                    fields = line[i+len(str_push):].split()
-                    tag = fields[0]
-                    for subtag in tag.split('.'):
-                        top = top.setdefault(subtag, {})
-#                        print("PUSH", subtag)
-#                        print_tree(out)
-                        stack.append(top)
-                    continue
-
-                i = line.find(str_pop)
-                if i > 0:
-                    fields = line[i+len(str_pop):].split()
-                    tag = fields[0]
-                    subtags = tag.split('.')
-                    subtags.reverse()
-                    for subtag in subtags:
-                        stack.pop()
-                        top = stack[-1]
-#                        print("POP", subtag, top)
                     continue
 
             elif state == state_collect:
@@ -78,11 +54,10 @@ def get_splicers(fname, out):
                     if begin_tag != end_tag:
                         raise RuntimeError("Mismatched tags  '%s' '%s'", (begin_tag, end_tag))
                     if end_tag in top:
-                        raise RuntimeError("Tag already exists - '%s'" % end_tag)
+                        raise RuntimeError("Tag already exists - '%s'" % begin_tag)
                     top[begin_subtag] = save
-                    for i in range(begin_nest):
-                        stack.pop()
-#                    print_tree(out)
+                    top = out
+                    stack = [ top ]
                     state = state_look
                 else:
                     save.append(line.rstrip())
@@ -111,12 +86,10 @@ if __name__ == '__main__':
         get_splicer_based_on_suffix(name, out)
     print(json.dumps(out, indent=4, sort_keys=True))
 
-    out = {}
-    get_splicer_based_on_suffix('../tests/fsplicer.f', out)
-    print(json.dumps(out, indent=4, sort_keys=True))
 
-    out = {}
-    get_splicer_based_on_suffix('../tests/csplicer.c', out)
-    print(json.dumps(out, indent=4, sort_keys=True))
+    for name in [ 'fsplicer.f', 'csplicer.c', 'pysplicer.c' ]:
+        out = {}
+        get_splicers(os.path.join('..', 'tests', name), out)
+        print(json.dumps(out, indent=4, sort_keys=True))
 
 
