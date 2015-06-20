@@ -5,6 +5,7 @@ from __future__ import print_function
 import collections
 import string
 import json
+import os
 
 import parse_decl
 
@@ -70,6 +71,77 @@ def update(d, u):
         else:
             d[k] = u[k]
     return d
+
+
+class WrapperMixin(object):
+    """Methods common to all wrapping classes.
+    """
+
+#####
+
+    def _init_splicer(self, splicers):
+        self.splicers = splicers
+        self.splicer_stack = [ splicers ]
+        self.splicer_names = [ ]
+        self.splicer_path = ''
+
+    def _push_splicer(self, name, out):
+        level = self.splicer_stack[-1].setdefault(name, {})
+        self.splicer_stack.append(level)
+        self.splicer_names.append(name)
+        self.splicer_path = '.'.join(self.splicer_names) + '.'
+
+    def _pop_splicer(self, name, out):
+        # XXX maybe use name for error checking, must pop in reverse order
+        self.splicer_stack.pop()
+        self.splicer_names.pop()
+        if self.splicer_names:
+            self.splicer_path = '.'.join(self.splicer_names) + '.'
+        else:
+            self.splicer_path = ''
+
+    def _create_splicer(self, name, out, default=None):
+        # The prefix is needed when two different sets of output are being create
+        # and they are not in sync.
+        # Creating methods and derived types together.
+        out.append('%s splicer begin %s%s' % (self.comment, self.splicer_path, name))
+        if default:
+            out.extend(default)
+        else:
+            out.extend(self.splicer_stack[-1].get(name, []))
+        out.append('%s splicer end %s%s' % (self.comment, self.splicer_path, name))
+
+#####
+
+    def write_output_file(self, fname, directory, output):
+        fp = open(os.path.join(directory, fname), 'w')
+        fp.write('%s %s\n' % (self.comment, fname))
+        self.write_copyright(fp)
+        self.indent = 0
+        self.write_lines(fp, output)
+        fp.close()
+        self.log.write("Close %s\n" % fname)
+        print("Wrote", fname)
+
+    def write_copyright(self, fp):
+        for line in self.tree.get('copyright', []):
+            if line:
+                fp.write(self.comment + ' ' + line + '\n')
+            else:
+                fp.write(self.comment + '\n')
+
+    def write_lines(self, fp, lines):
+        """ Write lines with indention and newlines.
+        """
+        for line in lines:
+            if isinstance(line, int):
+                self.indent += int(line)
+            else:
+                for subline in line.split("\n"):
+                    fp.write('    ' * self.indent)
+                    fp.write(subline)
+                    fp.write('\n')
+
 
 
 class Typedef(object):
