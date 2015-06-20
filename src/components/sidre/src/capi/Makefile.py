@@ -10,7 +10,7 @@ CXXFLAGS = -g -fPIC $(PYTHON_INC)
 
 
 OBJS = \
-	pySiDRemodule.o \
+	pySidremodule.o \
 	pyDataStoretype.o \
 	pyDataGrouptype.o \
 	pyDataBuffertype.o \

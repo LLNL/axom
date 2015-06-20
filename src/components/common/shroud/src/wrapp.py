@@ -145,8 +145,10 @@ class Wrapp(util.WrapperMixin):
         for node in self.tree['classes']:
             name = node['name']
             self.reset_file()
+            self._push_splicer(name, [])
             self.wrap_class(node)
             self.write_extension_type(node)
+            self._pop_splicer(name, [])
         self._pop_splicer('class', [])
 
         self.reset_file()
@@ -196,13 +198,10 @@ class Wrapp(util.WrapperMixin):
         self.py_type_structs.append(wformat('}} {PY_PyObject};', fmt_class))
 
         # wrap methods
-        self._push_splicer(name, [])
         self._push_splicer('method', [])
         for method in node['methods']:
             self.wrap_method(node, method)
         self._pop_splicer('method', [])
-
-        self._pop_splicer(fmt_class.lower_class, [])
 
     def wrap_method(self, cls, node):
         """
@@ -427,6 +426,7 @@ static PyObject *
         # type bodies must be filled in by user, no real way to guess
         PyObj  = fmt.PY_PyObject
 
+        self._push_splicer('type', [])
         for typename in typenames:
             func_name = wformat('{PY_prefix}{cpp_class}_', fmt) + typename
             fmt_type['tp_' + typename] = func_name
@@ -435,8 +435,10 @@ static PyObject *
             output.append('static ' + tup[0])
             output.append(('{name} ' + tup[1]).format(name=func_name, object=PyObj))
             output.append('{')
-            output.append('return %s;' % tup[2])
+            default = self.not_implemented(typename, tup[2])
+            self._create_splicer(typename, output, default)
             output.append('}')
+        self._pop_splicer('type', [])
 
     def write_extension_type(self, node):
         fmt = node['fmt']
@@ -536,6 +538,17 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         output.append(wformat(module_end, fmt))
 
         self.write_output_file(fname, self.config.binary_dir, output)
+
+    def not_implemented(self, msg, ret):
+        '''A standard splicer for unimplemented code
+        ret is the return value (NULL or -1)
+        '''
+        return [
+            "    PyErr_SetString(PyExc_NotImplementedError, \"%s\");" % msg,
+            "    return %s;" % ret
+            ]
+
+
 
 
 #### Python boiler plate

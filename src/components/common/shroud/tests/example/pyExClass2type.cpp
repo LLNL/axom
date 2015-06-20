@@ -4,105 +4,153 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
-// splicer begin class.C_definition
-// splicer end class.C_definition
-// splicer begin class.extra_methods
-// splicer end class.extra_methods
+// splicer begin class.ExClass2.C_definition
+// splicer end class.ExClass2.C_definition
+// splicer begin class.ExClass2.extra_methods
+// splicer end class.ExClass2.extra_methods
 // dealloc
 static void
 PP_ExClass2_dealloc (PP_ExClass2 *self)
 {
-return ;
+// splicer begin class.ExClass2.type.dealloc
+    PyErr_SetString(PyExc_NotImplementedError, "dealloc");
+    return ;
+// splicer end class.ExClass2.type.dealloc
 }
 // print
 static int
 PP_ExClass2_print (PP_ExClass2 *self, FILE *fp, int flags)
 {
-return -1;
+// splicer begin class.ExClass2.type.print
+    PyErr_SetString(PyExc_NotImplementedError, "print");
+    return -1;
+// splicer end class.ExClass2.type.print
 }
 // compare
 static int
 PP_ExClass2_compare (PP_ExClass2 *self, PyObject *)
 {
-return -1;
+// splicer begin class.ExClass2.type.compare
+    PyErr_SetString(PyExc_NotImplementedError, "compare");
+    return -1;
+// splicer end class.ExClass2.type.compare
 }
 // getattr
 static PyObject *
 PP_ExClass2_getattr (PP_ExClass2 *self, char *name)
 {
-return NULL;
+// splicer begin class.ExClass2.type.getattr
+    PyErr_SetString(PyExc_NotImplementedError, "getattr");
+    return NULL;
+// splicer end class.ExClass2.type.getattr
 }
 // setattr
 static int
 PP_ExClass2_setattr (PP_ExClass2 *self, char *name, PyObject *value)
 {
-return -1;
+// splicer begin class.ExClass2.type.setattr
+    PyErr_SetString(PyExc_NotImplementedError, "setattr");
+    return -1;
+// splicer end class.ExClass2.type.setattr
 }
 // getattro
 static PyObject *
 PP_ExClass2_getattro (PP_ExClass2 *self, PyObject *name)
 {
-return NULL;
+// splicer begin class.ExClass2.type.getattro
+    PyErr_SetString(PyExc_NotImplementedError, "getattro");
+    return NULL;
+// splicer end class.ExClass2.type.getattro
 }
 // setattro
 static int
 PP_ExClass2_setattro (PP_ExClass2 *self, PyObject *name, PyObject *value)
 {
-return -1;
+// splicer begin class.ExClass2.type.setattro
+    PyErr_SetString(PyExc_NotImplementedError, "setattro");
+    return -1;
+// splicer end class.ExClass2.type.setattro
 }
 // repr
 static PyObject *
 PP_ExClass2_repr (PP_ExClass2 *self)
 {
-return NULL;
+// splicer begin class.ExClass2.type.repr
+    PyErr_SetString(PyExc_NotImplementedError, "repr");
+    return NULL;
+// splicer end class.ExClass2.type.repr
 }
 // hash
 static long
 PP_ExClass2_hash (PP_ExClass2 *self)
 {
-return -1;
+// splicer begin class.ExClass2.type.hash
+    PyErr_SetString(PyExc_NotImplementedError, "hash");
+    return -1;
+// splicer end class.ExClass2.type.hash
 }
 // call
 static PyObject *
 PP_ExClass2_call (PP_ExClass2 *self, PyObject *args, PyObject *kwds)
 {
-return NULL;
+// splicer begin class.ExClass2.type.call
+    PyErr_SetString(PyExc_NotImplementedError, "call");
+    return NULL;
+// splicer end class.ExClass2.type.call
 }
 // str
 static PyObject *
 PP_ExClass2_str (PP_ExClass2 *self)
 {
-return NULL;
+// splicer begin class.ExClass2.type.str
+    PyErr_SetString(PyExc_NotImplementedError, "str");
+    return NULL;
+// splicer end class.ExClass2.type.str
 }
 // init
 static int
 PP_ExClass2_init (PP_ExClass2 *self, PyObject *args, PyObject *kwds)
 {
-return -1;
+// splicer begin class.ExClass2.type.init
+    PyErr_SetString(PyExc_NotImplementedError, "init");
+    return -1;
+// splicer end class.ExClass2.type.init
 }
 // alloc
 static PyObject *
 PP_ExClass2_alloc (PyTypeObject *type, Py_ssize_t nitems)
 {
-return NULL;
+// splicer begin class.ExClass2.type.alloc
+    PyErr_SetString(PyExc_NotImplementedError, "alloc");
+    return NULL;
+// splicer end class.ExClass2.type.alloc
 }
 // new
 static PyObject *
 PP_ExClass2_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-return NULL;
+// splicer begin class.ExClass2.type.new
+    PyErr_SetString(PyExc_NotImplementedError, "new");
+    return NULL;
+// splicer end class.ExClass2.type.new
 }
 // free
 static void
 PP_ExClass2_free (void *op)
 {
-return ;
+// splicer begin class.ExClass2.type.free
+    PyErr_SetString(PyExc_NotImplementedError, "free");
+    return ;
+// splicer end class.ExClass2.type.free
 }
 // del
 static void
 PP_ExClass2_del (PP_ExClass2 *self)
 {
-return ;
+// splicer begin class.ExClass2.type.del
+    PyErr_SetString(PyExc_NotImplementedError, "del");
+    return ;
+// splicer end class.ExClass2.type.del
 }
 
 static char PP_exclass2_ex_class2__doc__[] =

@@ -22,21 +22,21 @@ extern PyTypeObject PP_ExClass1_Type;
 extern PyTypeObject PP_ExClass2_Type;
 // splicer begin C_declaration
 // splicer end C_declaration
-// splicer begin class.C_declaration
-// splicer end class.C_declaration
+// splicer begin class.ExClass1.C_declaration
+// splicer end class.ExClass1.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.C_object
-// splicer end class.C_object
+// splicer begin class.ExClass1.C_object
+// splicer end class.ExClass1.C_object
 } PP_ExClass1;
-// splicer begin class.C_declaration
-// splicer end class.C_declaration
+// splicer begin class.ExClass2.C_declaration
+// splicer end class.ExClass2.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.C_object
-// splicer end class.C_object
+// splicer begin class.ExClass2.C_object
+// splicer end class.ExClass2.C_object
 } PP_ExClass2;
 
 extern PyObject *PP_error_obj;
