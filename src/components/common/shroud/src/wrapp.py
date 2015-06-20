@@ -135,8 +135,8 @@ class Wrapp(util.WrapperMixin):
 
         fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
         fmt_library.PY_module_name     = fmt_library.lower_library
-        fmt_library.PY_module_filename = 'python_module.cpp'
-        fmt_library.PY_header_filename = 'python_header.hpp'
+        util.eval_template(options, fmt_library, 'PY_module_filename', 'py{library}module.cpp')
+        util.eval_template(options, fmt_library, 'PY_header_filename', 'py{library}module.hpp')
         self.py_type_object_creation = []
         self.py_type_extern = []
         self.py_type_structs = []
@@ -170,11 +170,11 @@ class Wrapp(util.WrapperMixin):
         fmt_class = node['fmt']
 
         util.eval_template(options, fmt_class,
+                           'PY_type_filename', 'py{cpp_class}type.cpp')
+        util.eval_template(options, fmt_class,
                            'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
         util.eval_template(options, fmt_class,
                            'PY_PyObject', '{PY_prefix}{cpp_class}')
-
-        fmt_class.PY_type_filename = wformat('python_{lower_class}.cpp', fmt_class)
 
         self.py_type_object_creation.append(wformat("""
 // {cpp_class}

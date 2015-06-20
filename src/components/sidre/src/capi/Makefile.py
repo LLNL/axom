@@ -9,16 +9,12 @@ CXX = /home/taylor16/gapps/gcc-4.9.0/bin/g++
 CXXFLAGS = -g -fPIC $(PYTHON_INC)
 
 
-
-
-
 OBJS = \
-    python_module.o \
-    python_datastore.o \
-    python_datagroup.o \
-    python_databuffer.o \
-    python_dataview.o
-
+	pySiDRemodule.o \
+	pyDataStoretype.o \
+	pyDataGrouptype.o \
+	pyDataBuffertype.o \
+	pyDataViewtype.o
 
 sidre.so : $(OBJS)
 	gcc -shared -fPIC -Wl,-soname,$@ -o $@ $(OBJS)
