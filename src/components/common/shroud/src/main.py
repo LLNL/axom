@@ -17,6 +17,7 @@ import parse_decl
 import splicer
 import wrapc
 import wrapf
+import wrapp
 
 wformat = util.wformat
 
@@ -370,7 +371,7 @@ if __name__ == '__main__':
 
     # accumulated input
     all = {}
-    splicers = dict(c={}, f={})
+    splicers = dict(c={}, f={}, py={})
 
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
@@ -402,6 +403,8 @@ if __name__ == '__main__':
     wrapc.Wrapc(all, config, splicers['c']).wrap_library()
 
     wrapf.Wrapf(all, config, splicers['f']).wrap_library()
+
+    wrapp.Wrapp(all, config, splicers['py']).wrap_library()
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')

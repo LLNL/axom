@@ -168,6 +168,9 @@ class Options(object):
     def __contains__(self, item):
         return hasattr(self, item)
 
+    def __repr__(self):
+        return str(self._to_dict())
+
     def get(self, key, value=None):
         """ D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None.
         """
