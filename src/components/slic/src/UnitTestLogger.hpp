@@ -19,7 +19,7 @@
 #define UNITTESTLOGGER_HPP_
 
 // slic component headers
-#include "Logger.hpp"
+#include "slic.hpp"
 #include "GenericOutputStream.hpp"
 
 namespace asctoolkit
@@ -65,7 +65,7 @@ public:
    */
   UnitTestLogger()
   {
-     Logger::initialize();
+     initialize();
 
      std::string format = 
         std::string("\n***********************************\n")+
@@ -75,8 +75,8 @@ public:
         std::string( "LINE=<LINE>\n" ) +
         std::string("***********************************\n");
 
-     Logger::setLogLevel( message::Debug );
-     Logger::addStream(new GenericOutputStream(&std::cout, format));
+     setLoggingLevel( message::Debug );
+     addStreamToAllLevels(new GenericOutputStream(&std::cout, format));
  }
 
   /*!
@@ -84,7 +84,7 @@ public:
    */
   ~UnitTestLogger()
   {
-     Logger::finalize();
+     finalize();
   }
 
 private:
