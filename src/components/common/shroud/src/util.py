@@ -116,6 +116,7 @@ class WrapperMixin(object):
     def write_output_file(self, fname, directory, output):
         fp = open(os.path.join(directory, fname), 'w')
         fp.write('%s %s\n' % (self.comment, fname))
+        fp.write(self.comment + ' This is generated code, do not edit\n')
         self.write_copyright(fp)
         self.indent = 0
         self.write_lines(fp, output)

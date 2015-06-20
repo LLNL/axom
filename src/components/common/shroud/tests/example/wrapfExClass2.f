@@ -1,4 +1,5 @@
 ! wrapfExClass2.f
+! This is generated code, do not edit
 ! blah blah
 ! yada yada
 !
