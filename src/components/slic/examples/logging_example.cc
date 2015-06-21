@@ -22,7 +22,7 @@
 #include <cstdlib> // for rand()
 
 // Logging includes
-#include "slic/Logger.hpp"
+#include "slic/slic.hpp"
 #include "slic/GenericOutputStream.hpp"
 
 using namespace asctoolkit;
@@ -41,7 +41,7 @@ int main( int argc, char** argv )
   static_cast<void>(argv);
 
   // STEP 0: initialize logging environment
-  slic::Logger::initialize();
+  slic::initialize();
 
   std::string format =  std::string( "***********************************\n" )+
                         std::string( "* <TIMESTAMP>\n\n" ) +
@@ -51,21 +51,21 @@ int main( int argc, char** argv )
                         std::string( "* LINE=<LINE>\n" ) +
                         std::string( "***********************************\n" );
 
-  slic::Logger::setLogLevel( slic::message::Debug );
-  slic::Logger::addStream(
+  slic::setLoggingLevel( slic::message::Debug );
+  slic::addStreamToAllLevels(
       new slic::GenericOutputStream( &std::cout, format ) );
 
 
   // STEP 1: loop N times and generate a random logging event
   for ( int i=0; i < N; ++i ) {
 
-    slic::Logger::log( getRandomEvent(0,slic::message::Num_Levels),
+    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
             "a random message", __FILE__,  __LINE__  );
 
   }
 
   // STEP 2: shutdown logging environment
-  slic::Logger::finalize();
+  slic::finalize();
 
   return 0;
 }
