@@ -147,14 +147,14 @@ static char PP_exclass2_ex_class2__doc__[] =
 
 static PyObject *
 PP_exclass2_ex_class2(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.ex_class2
+// splicer begin class.ExClass2.method.ExClass2
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass2.method.ex_class2
+// splicer end class.ExClass2.method.ExClass2
 }
 
 static char PP_exclass2_ex_class1__doc__[] =
@@ -163,14 +163,14 @@ static char PP_exclass2_ex_class1__doc__[] =
 
 static PyObject *
 PP_exclass2_ex_class1(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.ex_class1
+// splicer begin class.ExClass2.method.ExClass1
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass2.method.ex_class1
+// splicer end class.ExClass2.method.ExClass1
 }
 
 static char PP_exclass2_get_name__doc__[] =
@@ -179,14 +179,14 @@ static char PP_exclass2_get_name__doc__[] =
 
 static PyObject *
 PP_exclass2_get_name(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.get_name
+// splicer begin class.ExClass2.method.getName
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass2.method.get_name
+// splicer end class.ExClass2.method.getName
 }
 
 static char PP_exclass2_get_name_length__doc__[] =
@@ -195,7 +195,7 @@ static char PP_exclass2_get_name_length__doc__[] =
 
 static PyObject *
 PP_exclass2_get_name_length(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -211,7 +211,7 @@ static char PP_exclass2_get_class1__doc__[] =
 
 static PyObject *
 PP_exclass2_get_class1(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -227,7 +227,7 @@ static char PP_exclass2_declare__doc__[] =
 
 static PyObject *
 PP_exclass2_declare(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -243,7 +243,7 @@ static char PP_exclass2_destroyall__doc__[] =
 
 static PyObject *
 PP_exclass2_destroyall(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -259,16 +259,16 @@ static char PP_exclass2_get_type_id__doc__[] =
 
 static PyObject *
 PP_exclass2_get_type_id(
-  PyObject *self,    /* not used */
+  PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.get_type_id
+// splicer begin class.ExClass2.method.getTypeID
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass2.method.get_type_id
+// splicer end class.ExClass2.method.getTypeID
 }
-static PyMethodDef PB_methods[] = {
+static PyMethodDef PP_ExClass2_methods[] = {
 {"ExClass2", (PyCFunction)PP_exclass2_ex_class2, METH_VARARGS|METH_KEYWORDS, PP_exclass2_ex_class2__doc__},
 {"ExClass1", (PyCFunction)PP_exclass2_ex_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_ex_class1__doc__},
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_name__doc__},
@@ -331,7 +331,7 @@ PyTypeObject PP_ExClass2_Type = {
         (getiterfunc)0,                 /* tp_iter */
         (iternextfunc)0,                /* tp_iternext */
         /* Attribute descriptor and subclassing stuff */
-        0,                             /* tp_methods */
+        PP_ExClass2_methods,                             /* tp_methods */
         0,                              /* tp_members */
         0,                             /* tp_getset */
         0,                              /* tp_base */

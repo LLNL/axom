@@ -33,7 +33,7 @@ static char PP_exclass1_new__doc__[] =
 
 static PyObject *
 PP_exclass1_new(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -49,7 +49,7 @@ static char PP_exclass1_delete__doc__[] =
 
 static PyObject *
 PP_exclass1_delete(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -65,14 +65,14 @@ static char PP_exclass1_increment_count__doc__[] =
 
 static PyObject *
 PP_exclass1_increment_count(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.increment_count
+// splicer begin class.ExClass1.method.incrementCount
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.increment_count
+// splicer end class.ExClass1.method.incrementCount
 }
 
 static char PP_exclass1_get_name__doc__[] =
@@ -81,14 +81,14 @@ static char PP_exclass1_get_name__doc__[] =
 
 static PyObject *
 PP_exclass1_get_name(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.get_name
+// splicer begin class.ExClass1.method.getName
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.get_name
+// splicer end class.ExClass1.method.getName
 }
 
 static char PP_exclass1_get_name_length__doc__[] =
@@ -97,7 +97,7 @@ static char PP_exclass1_get_name_length__doc__[] =
 
 static PyObject *
 PP_exclass1_get_name_length(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
@@ -113,14 +113,14 @@ static char PP_exclass1_get_root__doc__[] =
 
 static PyObject *
 PP_exclass1_get_root(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.get_root
+// splicer begin class.ExClass1.method.getRoot
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.get_root
+// splicer end class.ExClass1.method.getRoot
 }
 
 static char PP_exclass1_get_value_from_int__doc__[] =
@@ -129,14 +129,14 @@ static char PP_exclass1_get_value_from_int__doc__[] =
 
 static PyObject *
 PP_exclass1_get_value_from_int(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.get_value_from_int
+// splicer begin class.ExClass1.method.getValue
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.get_value_from_int
+// splicer end class.ExClass1.method.getValue
 }
 
 static char PP_exclass1_get_value_1__doc__[] =
@@ -145,14 +145,14 @@ static char PP_exclass1_get_value_1__doc__[] =
 
 static PyObject *
 PP_exclass1_get_value_1(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.get_value_1
+// splicer begin class.ExClass1.method.getValue
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.get_value_1
+// splicer end class.ExClass1.method.getValue
 }
 
 static char PP_exclass1_get_addr__doc__[] =
@@ -161,14 +161,14 @@ static char PP_exclass1_get_addr__doc__[] =
 
 static PyObject *
 PP_exclass1_get_addr(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.get_addr
+// splicer begin class.ExClass1.method.getAddr
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.get_addr
+// splicer end class.ExClass1.method.getAddr
 }
 
 static char PP_exclass1_has_addr__doc__[] =
@@ -177,14 +177,14 @@ static char PP_exclass1_has_addr__doc__[] =
 
 static PyObject *
 PP_exclass1_has_addr(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.has_addr
+// splicer begin class.ExClass1.method.hasAddr
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.has_addr
+// splicer end class.ExClass1.method.hasAddr
 }
 
 static char PP_exclass1_splicer_special__doc__[] =
@@ -193,16 +193,16 @@ static char PP_exclass1_splicer_special__doc__[] =
 
 static PyObject *
 PP_exclass1_splicer_special(
-  PyObject *self,    /* not used */
+  PP_ExClass1 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.splicer_special
+// splicer begin class.ExClass1.method.SplicerSpecial
 PyErr_SetString(PyExc_NotImplementedError, "XXX");
 return NULL;
-// splicer end class.ExClass1.method.splicer_special
+// splicer end class.ExClass1.method.SplicerSpecial
 }
-static PyMethodDef PB_methods[] = {
+static PyMethodDef PP_ExClass1_methods[] = {
 {"new", (PyCFunction)PP_exclass1_new, METH_VARARGS|METH_KEYWORDS, PP_exclass1_new__doc__},
 {"delete", (PyCFunction)PP_exclass1_delete, METH_VARARGS|METH_KEYWORDS, PP_exclass1_delete__doc__},
 {"incrementCount", (PyCFunction)PP_exclass1_increment_count, METH_VARARGS|METH_KEYWORDS, PP_exclass1_increment_count__doc__},
@@ -268,7 +268,7 @@ PyTypeObject PP_ExClass1_Type = {
         (getiterfunc)0,                 /* tp_iter */
         (iternextfunc)0,                /* tp_iternext */
         /* Attribute descriptor and subclassing stuff */
-        0,                             /* tp_methods */
+        PP_ExClass1_methods,                             /* tp_methods */
         0,                              /* tp_members */
         0,                             /* tp_getset */
         0,                              /* tp_base */

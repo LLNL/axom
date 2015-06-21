@@ -232,18 +232,22 @@ class Wrapp(util.WrapperMixin):
 
         PY_code = [ 'PyErr_SetString(PyExc_NotImplementedError, "XXX");', 'return NULL;' ]
 
-        self.PyMethodBody.append(wformat("""
+        body = self.PyMethodBody
+        body.append(wformat("""
 static char {PY_name_impl}__doc__[] =
 "{doc_string}"
 ;
 
 static PyObject *
-{PY_name_impl}(
-  PyObject *self,    /* not used */
-  PyObject *args,
-  PyObject *kwds)
-{{""", fmt_func))
-        self._create_splicer(fmt_func.F_name_method, self.PyMethodBody, PY_code)
+{PY_name_impl}(""", fmt_func))
+        if cls:
+            body.append(wformat('  {PY_PyObject} *self,', fmt_func))
+        else:
+            body.append('  PyObject *self,    /* not used */')
+        body.append('  PyObject *args,')
+        body.append('  PyObject *kwds)')
+        body.append('{')
+        self._create_splicer(fmt_func.CPP_name, self.PyMethodBody, default=PY_code)
         self.PyMethodBody.append('}')
                                  
 
@@ -465,7 +469,8 @@ static PyObject *
 
         output.extend(self.PyMethodBody)
 
-        output.append('static PyMethodDef PB_methods[] = {')
+        fmt_type['tp_methods'] = wformat('{PY_prefix}{cpp_class}_methods', fmt)
+        output.append(wformat('static PyMethodDef {tp_methods}[] = {{', fmt_type))
         output.extend(self.PyMethodDef)
         output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
         output.append('};')
@@ -651,7 +656,7 @@ PyTypeObject {PY_PyTypeObject} = {{
         (getiterfunc)0,                 /* tp_iter */
         (iternextfunc)0,                /* tp_iternext */
         /* Attribute descriptor and subclassing stuff */
-        0,                             /* tp_methods */
+        {tp_methods},                             /* tp_methods */
         0,                              /* tp_members */
         0,                             /* tp_getset */
         0,                              /* tp_base */
