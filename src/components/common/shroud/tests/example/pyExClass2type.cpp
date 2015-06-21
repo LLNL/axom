@@ -10,8 +10,8 @@ namespace example {
 namespace nested {
 // splicer begin class.ExClass2.C_definition
 // splicer end class.ExClass2.C_definition
-// splicer begin class.ExClass2.extra_methods
-// splicer end class.ExClass2.extra_methods
+// splicer begin class.ExClass2.additional_methods
+// splicer end class.ExClass2.additional_methods
 static void
 PP_ExClass2_tp_dealloc (PP_ExClass2 *self)
 {

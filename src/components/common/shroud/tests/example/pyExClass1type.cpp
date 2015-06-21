@@ -10,8 +10,8 @@ namespace example {
 namespace nested {
 // splicer begin class.ExClass1.C_definition
 // splicer end class.ExClass1.C_definition
-// splicer begin class.ExClass1.extra_methods
-// splicer end class.ExClass1.extra_methods
+// splicer begin class.ExClass1.additional_methods
+// splicer end class.ExClass1.additional_methods
 static PyObject *
 PP_ExClass1_tp_repr (PP_ExClass1 *self)
 {

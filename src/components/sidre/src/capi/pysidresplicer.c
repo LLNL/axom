@@ -1,20 +1,44 @@
 ! C code that will be inserted into Python module via shroud splicer blocks
 
+// ----- pySidremodule.hpp
+
 // splicer begin include
 #include "sidre/sidre.hpp"
 // splicer end include
 
+// splicer begin C_declaration
+extern const char * datagroup_capsule_name;
 
-Global variables
+extern PyObject *PP_DataGroup_to_Object(DataGroup *grp);
+
+// splicer end C_declaration
+
+// ----- pySidremodule.hpp
+
 // splicer begin C_definition
 const char * datagroup_capsule_name = "DataGroup";
 // splicer end C_definition
 
 
-// splicer begin C_declaration
-extern const char * datagroup_capsule_name;
-// splicer end C_declaration
+// splicer begin additional_functions
+PyObject *PP_DataGroup_to_Object(DataGroup *grp)
+{
+    PyObject *voidobj;
+    PyObject *args;
+    PyObject *rv;
 
+    voidobj = PyCapsule_New(grp, datagroup_capsule_name, NULL);
+    args = PyTuple_New(1);
+    PyTuple_SET_ITEM(args, 0, voidobj);
+    rv = PyObject_Call((PyObject *) &PY_DataGroup_Type, args, NULL);
+    Py_DECREF(args);
+    return rv;
+}
+// splicer end additional_functions
+
+
+
+// ----- pyDataGrouptype.cpp
 
 // splicer begin class.DataStore.C_object
 DataStore * ds;
@@ -28,15 +52,7 @@ return 0;
 
 // splicer begin class.DataStore.method.getRoot
 DataGroup * grp = self->ds->getRoot();
-PyObject *voidobj;
-PyObject *args0;
-PyObject *rv;
-
-voidobj = PyCapsule_New(grp, datagroup_capsule_name, NULL);
-args0 = PyTuple_New(1);
-PyTuple_SET_ITEM(args, 0, voidobj);
-rv = PyObject_Call((PyObject *) &PY_DataGroup_Type, args0, NULL);
-Py_DECREF(args0);
+PyObject *rv = PP_DataGroup_to_Object(grp);
 return rv;
 // splicer end class.DataStore.method.getRoot
 

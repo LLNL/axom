@@ -12,8 +12,8 @@ namespace nested {
 // splicer begin C_definition
 // splicer end C_definition
 PyObject *PP_error_obj;
-// splicer begin extra_methods
-// splicer end extra_methods
+// splicer begin additional_functions
+// splicer end additional_functions
 
 static char PP_local_function1__doc__[] =
 "documentation"

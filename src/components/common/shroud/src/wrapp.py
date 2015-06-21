@@ -458,7 +458,7 @@ static PyObject *
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)
         self._create_splicer('C_definition', output)
-        self._create_splicer('extra_methods', output)
+        self._create_splicer('additional_methods', output)
         fmt_type = dict(
             PY_module_name  = fmt.PY_module_name,
             PY_PyObject     = fmt.PY_PyObject,
@@ -545,7 +545,7 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
 
         output.append(wformat('PyObject *{PY_prefix}error_obj;', fmt))
 
-        self._create_splicer('extra_methods', output)
+        self._create_splicer('additional_functions', output)
         output.extend(self.PyMethodBody)
 
         output.append(wformat('static PyMethodDef {PY_prefix}methods[] = {{', fmt))
