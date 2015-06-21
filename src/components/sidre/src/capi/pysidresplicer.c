@@ -1,5 +1,6 @@
 ! C code that will be inserted into Python module via shroud splicer blocks
 
+// ----------------------------------------------------------------------
 // ----- pySidremodule.hpp
 
 // splicer begin include
@@ -13,7 +14,28 @@ extern PyObject *PP_DataGroup_to_Object(DataGroup *grp);
 
 // splicer end C_declaration
 
-// ----- pySidremodule.hpp
+
+
+// splicer begin class.DataStore.C_object
+DataStore * ds;
+// splicer end class.DataStore.C_object
+
+// splicer begin class.DataGroup.C_object
+DataGroup * grp;
+// splicer end class.DataGroup.C_object
+
+// splicer begin class.DataBuffer.C_object
+DataBuffer * buf;
+// splicer end class.DataBuffer.C_object
+
+// splicer begin class.DataView.C_object
+DataView * view;
+// splicer end class.DataView.C_object
+
+
+
+// ----------------------------------------------------------------------
+// ----- pySidremodule.cpp
 
 // splicer begin C_definition
 const char * datagroup_capsule_name = "DataGroup";
@@ -38,11 +60,8 @@ PyObject *PP_DataGroup_to_Object(DataGroup *grp)
 
 
 
-// ----- pyDataGrouptype.cpp
-
-// splicer begin class.DataStore.C_object
-DataStore * ds;
-// splicer end class.DataStore.C_object
+// ----------------------------------------------------------------------
+// ----- pyDataStoretype.cpp
 
 // splicer begin class.DataStore.type.init
 DataStore * ds = new DataStore();
@@ -56,21 +75,34 @@ PyObject *rv = PP_DataGroup_to_Object(grp);
 return rv;
 // splicer end class.DataStore.method.getRoot
 
+// ----------------------------------------------------------------------
+// ----- pyDataGrouptype.cpp
 
-    BA_dbnode *node;
-    PyObject *nodeobj;
+// splicer begin class.DataGroup.type.init
+    PyObject *grpobj;
 
-    /* By requiring a PyCapsule, it is difficult to call directly
-     * from Python. Intended to be called from PB_dbnode_to_instance.
+    /* By requiring a PyCapsule, it is difficult to call directly from Python.
+     * But the C++ constructors are private so that makes sense.
      */
-    if (!PyArg_ParseTuple(args, "O!:dbnode_init",
-                          &PyCapsule_Type, &nodeobj))
+    if (!PyArg_ParseTuple(args, "O!:DataGroup_init",
+                          &PyCapsule_Type, &grpobj))
         return -1;
 
     /* capsule_dbnode */
-    node = (BA_dbnode *) PyCapsule_GetPointer(nodeobj, "BA_dbnode"); 
-    self->node = node;
-    if (node == NULL && PyErr_Occurred())
+    DataGroup *grp = static_cast<DataGroup *>(PyCapsule_GetPointer(grpobj, datagroup_capsule_name));
+    self->grp = grp;
+    if (grp == NULL && PyErr_Occurred())
 	return -1;
     
     return 0;
+// splicer end class.DataGroup.type.init
+
+
+// ----------------------------------------------------------------------
+// ----- pyDataBuffertype.cpp
+
+
+// ----------------------------------------------------------------------
+// ----- pyDataViewtype.cpp
+
+

@@ -66,6 +66,7 @@ typedef:
 #  InvalidID: IDTYPE -1
 
 classes:
+  ####################################################################
   - name: DataStore
     options:
       cpp_header: sidre/DataStore.hpp
@@ -86,9 +87,11 @@ classes:
 #    -  decl: void info(Node &) const
     -  decl: void print() const
 #    -  decl: void print(std::ostream& os) const
+
     python:
       type: [ init ]
 
+  ####################################################################
   - name: DataGroup
     options:
       cpp_header: sidre/DataGroup.hpp
@@ -146,6 +149,10 @@ classes:
     -  decl: void save(const std::string& obase, const std::string& protocol) const
     -  decl: void load(const std::string& obase,  const std::string& protocol)
 
+    python:
+      type: [ init ]
+
+  ####################################################################
   - name: DataBuffer
     options:
       cpp_header: sidre/DataBuffer.hpp
@@ -180,7 +187,10 @@ classes:
 #      - decl: void info(Node& n) const
 #      - decl: void print() const
 
+    python:
+      type: [ init ]
 
+  ####################################################################
   - name: DataView
     options:
       cpp_header: sidre/DataView.hpp
@@ -220,6 +230,11 @@ classes:
     - decl: size_t getNumberOfElements() const
 #    - decl: void info(Node& n) const
 #    - decl: void print() const
+
+    python:
+      type: [ init ]
+
+######################################################################
 
 functions:
   -  decl: bool isNameValid(const std::string& name)
