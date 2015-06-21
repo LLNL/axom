@@ -27,41 +27,6 @@ PP_ExClass1_tp_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
 // splicer end class.ExClass1.type.init
 }
 
-static char PP_exclass1_new__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PP_exclass1_new(
-  PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.ExClass1.method.new
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:new", kw_list,
-  &name))
-{
-    return NULL;
-}
-// splicer end class.ExClass1.method.new
-}
-
-static char PP_exclass1_delete__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PP_exclass1_delete(
-  PP_ExClass1 *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.ExClass1.method.delete
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
-// splicer end class.ExClass1.method.delete
-}
-
 static char PP_exclass1_increment_count__doc__[] =
 "documentation"
 ;
@@ -73,11 +38,14 @@ PP_exclass1_increment_count(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.incrementCount
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:incrementCount", kw_list,
-  &name))
-{
-    return NULL;
-}
+    int incr;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:incrementCount", kw_list,
+      &incr))
+    {
+        return NULL;
+    }
+    int rv = selfobj->incrementCount(incr);
 // splicer end class.ExClass1.method.incrementCount
 }
 
@@ -92,8 +60,7 @@ PP_exclass1_get_name(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getName
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const std::string & rv = selfobj->getName();
 // splicer end class.ExClass1.method.getName
 }
 
@@ -108,8 +75,7 @@ PP_exclass1_get_name_length(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.get_name_length
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const int rv = selfobj->get_name_length();
 // splicer end class.ExClass1.method.get_name_length
 }
 
@@ -124,8 +90,7 @@ PP_exclass1_get_root(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getRoot
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ExClass2 * rv = selfobj->getRoot();
 // splicer end class.ExClass1.method.getRoot
 }
 
@@ -140,11 +105,14 @@ PP_exclass1_get_value_from_int(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getValue
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
-  &name))
-{
-    return NULL;
-}
+    int value;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
+      &value))
+    {
+        return NULL;
+    }
+    int rv = selfobj->getValue(value);
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -159,11 +127,14 @@ PP_exclass1_get_value_1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getValue
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
-  &name))
-{
-    return NULL;
-}
+    long value;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
+      &value))
+    {
+        return NULL;
+    }
+    long rv = selfobj->getValue(value);
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -178,8 +149,7 @@ PP_exclass1_get_addr(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getAddr
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    void * rv = selfobj->getAddr();
 // splicer end class.ExClass1.method.getAddr
 }
 
@@ -194,11 +164,14 @@ PP_exclass1_has_addr(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.hasAddr
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasAddr", kw_list,
-  &name))
-{
-    return NULL;
-}
+    bool in;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasAddr", kw_list,
+      &in))
+    {
+        return NULL;
+    }
+    bool rv = selfobj->hasAddr(in);
 // splicer end class.ExClass1.method.hasAddr
 }
 
@@ -213,13 +186,10 @@ PP_exclass1_splicer_special(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.SplicerSpecial
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    selfobj->SplicerSpecial();
 // splicer end class.ExClass1.method.SplicerSpecial
 }
 static PyMethodDef PP_ExClass1_methods[] = {
-{"new", (PyCFunction)PP_exclass1_new, METH_VARARGS|METH_KEYWORDS, PP_exclass1_new__doc__},
-{"delete", (PyCFunction)PP_exclass1_delete, METH_NOARGS, PP_exclass1_delete__doc__},
 {"incrementCount", (PyCFunction)PP_exclass1_increment_count, METH_VARARGS|METH_KEYWORDS, PP_exclass1_increment_count__doc__},
 {"getName", (PyCFunction)PP_exclass1_get_name, METH_NOARGS, PP_exclass1_get_name__doc__},
 {"get_name_length", (PyCFunction)PP_exclass1_get_name_length, METH_NOARGS, PP_exclass1_get_name_length__doc__},

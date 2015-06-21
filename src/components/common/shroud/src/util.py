@@ -113,6 +113,48 @@ class WrapperMixin(object):
 
 #####
 
+    def std_c_type(self, lang, arg):
+        """
+        Return the C type.
+        pass-by-value default
+
+        attributes:
+        ptr - True = pass-by-reference
+        reference - True = pass-by-reference
+
+        """
+#        if lang not in [ 'c_type', 'cpp_type' ]:
+#            raise RuntimeError
+        t = []
+        typedef = self.typedef.get(arg['type'], None)
+        if typedef is None:
+            raise RuntimeError("No such type %s" % arg['type'])
+        if arg['attrs'].get('const', False):
+            t.append('const')
+        t.append(getattr(typedef, lang))
+        if arg['attrs'].get('ptr', False):
+            t.append('*')
+        elif arg['attrs'].get('reference', False):
+            if lang == 'cpp_type':
+                t.append('&')
+            else:
+                t.append('*')
+        return ' '.join(t)
+
+    def std_c_decl(self, lang, arg, name=None):
+        """
+        Return the C declaration.
+
+        If name is not supplied, use name in arg.
+        This makes it easy to reproduce the arguments.
+        """
+#        if lang not in [ 'c_type', 'cpp_type' ]:
+#            raise RuntimeError
+        typ = self.std_c_type(lang, arg)
+        return typ + ' ' + ( name or arg['name'] )
+
+#####
+
     def namespace(self, node, position, output):
         options = node['options']
         namespace = options.namespace

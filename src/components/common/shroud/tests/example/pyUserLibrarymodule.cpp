@@ -26,8 +26,7 @@ PP_local_function1(
   PyObject *kwds)
 {
 // splicer begin function.local_function1
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    local_function1();
 // splicer end function.local_function1
 }
 
@@ -42,11 +41,14 @@ PP_is_name_valid(
   PyObject *kwds)
 {
 // splicer begin function.isNameValid
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
-  &name))
-{
-    return NULL;
-}
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
+      &name))
+    {
+        return NULL;
+    }
+    bool rv = isNameValid(name);
 // splicer end function.isNameValid
 }
 static PyMethodDef PP_methods[] = {

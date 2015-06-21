@@ -141,41 +141,6 @@ PP_ExClass2_tp_del (PP_ExClass2 *self)
 // splicer end class.ExClass2.type.del
 }
 
-static char PP_exclass2_ex_class2__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PP_exclass2_ex_class2(
-  PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.ExClass2.method.ExClass2
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:ExClass2", kw_list,
-  &name))
-{
-    return NULL;
-}
-// splicer end class.ExClass2.method.ExClass2
-}
-
-static char PP_exclass2_ex_class1__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PP_exclass2_ex_class1(
-  PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.ExClass2.method.ExClass1
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
-// splicer end class.ExClass2.method.ExClass1
-}
-
 static char PP_exclass2_get_name__doc__[] =
 "documentation"
 ;
@@ -187,8 +152,7 @@ PP_exclass2_get_name(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.getName
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const std::string & rv = selfobj->getName();
 // splicer end class.ExClass2.method.getName
 }
 
@@ -203,8 +167,7 @@ PP_exclass2_get_name_length(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_name_length
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const int rv = selfobj->get_name_length();
 // splicer end class.ExClass2.method.get_name_length
 }
 
@@ -219,11 +182,14 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:get_class1", kw_list,
-  &name))
-{
-    return NULL;
-}
+    AA_exclass1 * in;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:get_class1", kw_list,
+      &in))
+    {
+        return NULL;
+    }
+    ExClass1 * rv = selfobj->get_class1(in);
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -238,11 +204,15 @@ PP_exclass2_declare(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.declare
-if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:declare", kw_list,
-  &name,&name))
-{
-    return NULL;
-}
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:declare", kw_list,
+      &type,&len))
+    {
+        return NULL;
+    }
+    selfobj->declare(len);
 // splicer end class.ExClass2.method.declare
 }
 
@@ -257,8 +227,7 @@ PP_exclass2_destroyall(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.destroyall
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    selfobj->destroyall();
 // splicer end class.ExClass2.method.destroyall
 }
 
@@ -273,13 +242,10 @@ PP_exclass2_get_type_id(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.getTypeID
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    TypeID rv = selfobj->getTypeID();
 // splicer end class.ExClass2.method.getTypeID
 }
 static PyMethodDef PP_ExClass2_methods[] = {
-{"ExClass2", (PyCFunction)PP_exclass2_ex_class2, METH_VARARGS|METH_KEYWORDS, PP_exclass2_ex_class2__doc__},
-{"ExClass1", (PyCFunction)PP_exclass2_ex_class1, METH_NOARGS, PP_exclass2_ex_class1__doc__},
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
 {"get_name_length", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},

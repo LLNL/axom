@@ -282,7 +282,7 @@ class Wrapc(util.WrapperMixin):
                 arg = self._c_decl('c_type', arg_dict)
                 arguments.append(arg)
         else:
-            fmt_func.CPP_this_call = ''  # call method syntax
+            fmt_func.CPP_this_call = ''  # call function syntax
 
 
         for arg in node.get('args', []):

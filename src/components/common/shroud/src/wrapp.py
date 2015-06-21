@@ -222,6 +222,22 @@ class Wrapp(util.WrapperMixin):
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
 
+        result = node['result']
+        result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
+
+        if node.get('return_this', False):
+            result_type = 'void'
+            result_is_ptr = False
+
+        result_typedef = self.typedef[result_type]
+        is_ctor  = result['attrs'].get('constructor', False)
+        is_dtor  = result['attrs'].get('destructor', False)
+        is_const = result['attrs'].get('const', False)
+        if is_ctor or is_dtor:
+            # need code in __init__ and __del__
+            return
+
         if cls:
             util.eval_template(options, fmt,
                                'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
@@ -229,26 +245,53 @@ class Wrapp(util.WrapperMixin):
             util.eval_template(options, fmt,
                                'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
 
+        PY_decl = []     # variables for function
         PY_code = []
         format = []      # for PyArg_ParseTupleAndKeywords
         addrargs = []    # for PyArg_ParseTupleAndKeywords
+        cpp_call_list = []
 
         # parse arguments
         args = node.get('args', [])
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
-            PY_code.extend([ 'PyErr_SetString(PyExc_NotImplementedError, "XXX");', 'return NULL;' ])
         else:
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
             for arg in node.get('args', []):
+                arg_name = arg['name']
+                arg_typedef = self.typedef[arg['type']]
                 format.append('s')
-                addrargs.append('&name')
+                addrargs.append('&' + arg_name)
+                PY_decl.append(self.std_c_decl('c_type', arg) + ';')
+                cpp_call_list = [arg_name]
+
+            PY_decl.append(' ')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ','.join(addrargs)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
             PY_code.append(wformat('  {PyArg_addrargs}))', fmt))
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
+            
+        fmt.call_list = ', '.join(cpp_call_list)
+
+        if cls:
+#                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
+#                fmt_func.C_object = wformat(template, fmt_func)
+            fmt_func.CPP_this_call = fmt_func.CPP_this + '->'  # call method syntax
+        else:
+            fmt_func.CPP_this_call = ''  # call function syntax
+
+
+        if result_type == 'void' and not result_is_ptr:
+            line = wformat('{CPP_this_call}{CPP_name}({call_list});', fmt)
+            PY_code.append(line)
+        else:
+            line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}({call_list});', fmt)
+            PY_code.append(line)
+
+
+        PY_impl = [1] + PY_decl + PY_code + [-1]
 
         body = self.PyMethodBody
         body.append(wformat("""
@@ -265,7 +308,7 @@ static PyObject *
         body.append('  PyObject *args,')
         body.append('  PyObject *kwds)')
         body.append('{')
-        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_code)
+        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
         self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
@@ -273,19 +316,6 @@ static PyObject *
 
         return
     #######################
-        result = node['result']
-        result_type = result['type']
-        result_is_ptr = result['attrs'].get('ptr', False)
-
-        if node.get('return_this', False):
-            result_type = 'void'
-            result_is_ptr = False
-
-        result_typedef = self.typedef[result_type]
-        is_ctor  = result['attrs'].get('constructor', False)
-        is_dtor  = result['attrs'].get('destructor', False)
-        is_const = result['attrs'].get('const', False)
-
         fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
         if 'F_this' in options:
             fmt_func.F_this = options.F_this
