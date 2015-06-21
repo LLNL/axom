@@ -152,8 +152,11 @@ PP_exclass2_ex_class2(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.ExClass2
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:ExClass2", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass2.method.ExClass2
 }
 
@@ -216,8 +219,11 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:get_class1", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -232,8 +238,11 @@ PP_exclass2_declare(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.declare
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:declare", kw_list,
+  &name,&name))
+{
+    return NULL;
+}
 // splicer end class.ExClass2.method.declare
 }
 

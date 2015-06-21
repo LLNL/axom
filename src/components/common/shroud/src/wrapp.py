@@ -229,9 +229,26 @@ class Wrapp(util.WrapperMixin):
             util.eval_template(options, fmt,
                                'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
 
+        PY_code = []
+        format = []      # for PyArg_ParseTupleAndKeywords
+        addrargs = []    # for PyArg_ParseTupleAndKeywords
 
-
-        PY_code = [ 'PyErr_SetString(PyExc_NotImplementedError, "XXX");', 'return NULL;' ]
+        # parse arguments
+        args = node.get('args', [])
+        if not args:
+            fmt.ml_flags = 'METH_NOARGS'
+            PY_code.extend([ 'PyErr_SetString(PyExc_NotImplementedError, "XXX");', 'return NULL;' ])
+        else:
+            fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+            for arg in node.get('args', []):
+                format.append('s')
+                addrargs.append('&name')
+            format.extend([ ':', fmt.method_name])
+            fmt.PyArg_format = ''.join(format)
+            fmt.PyArg_addrargs = ','.join(addrargs)
+            PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
+            PY_code.append(wformat('  {PyArg_addrargs}))', fmt))
+            PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
 
         body = self.PyMethodBody
         body.append(wformat("""
@@ -251,11 +268,6 @@ static PyObject *
         self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_code)
         self.PyMethodBody.append('}')
 
-        args = node.get('args', [])
-        if args:
-            fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
-        else:
-            fmt.ml_flags = 'METH_NOARGS'
         self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
 

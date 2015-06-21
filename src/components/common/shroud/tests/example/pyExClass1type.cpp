@@ -38,8 +38,11 @@ PP_exclass1_new(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.new
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:new", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass1.method.new
 }
 
@@ -70,8 +73,11 @@ PP_exclass1_increment_count(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.incrementCount
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:incrementCount", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass1.method.incrementCount
 }
 
@@ -134,8 +140,11 @@ PP_exclass1_get_value_from_int(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getValue
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -150,8 +159,11 @@ PP_exclass1_get_value_1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getValue
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -182,8 +194,11 @@ PP_exclass1_has_addr(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.hasAddr
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasAddr", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end class.ExClass1.method.hasAddr
 }
 

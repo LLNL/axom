@@ -42,8 +42,11 @@ PP_is_name_valid(
   PyObject *kwds)
 {
 // splicer begin function.isNameValid
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
+  &name))
+{
+    return NULL;
+}
 // splicer end function.isNameValid
 }
 static PyMethodDef PP_methods[] = {
