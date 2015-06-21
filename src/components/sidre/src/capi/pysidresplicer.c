@@ -98,6 +98,13 @@ return rv;
 // splicer end class.DataGroup.type.init
 
 
+// splicer begin class.DataGroup.method.getName
+const std::string & name = self->grp->getName();
+PyObject * rv = PyString_FromString(name.c_str());
+return rv;
+// splicer end class.DataGroup.method.getName
+
+
 // ----------------------------------------------------------------------
 // ----- pyDataBuffertype.cpp
 
