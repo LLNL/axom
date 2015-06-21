@@ -47,7 +47,7 @@ return NULL;
 // splicer end function.isNameValid
 }
 static PyMethodDef PP_methods[] = {
-{"local_function1", (PyCFunction)PP_local_function1, METH_VARARGS|METH_KEYWORDS, PP_local_function1__doc__},
+{"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

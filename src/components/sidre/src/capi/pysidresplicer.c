@@ -56,6 +56,21 @@ PyObject *PP_DataGroup_to_Object(DataGroup *grp)
     Py_DECREF(args);
     return rv;
 }
+
+// can be used with PyArg_ParseTupleAndKeywords().
+// Pull DataGroup pointer out of Py_DataGroup object.
+int PP_DataGroup_converter(PyObject *obj, void **addr)
+{
+    if (obj->ob_type != &PY_DataGroup_Type) {
+	// raise exception
+	return 0;	
+    }
+    PY_DataGroup * self = (PY_DataGroup *) obj;
+    *addr = self->grp;
+    
+    return 1;
+}
+
 // splicer end additional_functions
 
 

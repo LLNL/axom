@@ -270,13 +270,13 @@ return NULL;
 }
 static PyMethodDef PP_ExClass2_methods[] = {
 {"ExClass2", (PyCFunction)PP_exclass2_ex_class2, METH_VARARGS|METH_KEYWORDS, PP_exclass2_ex_class2__doc__},
-{"ExClass1", (PyCFunction)PP_exclass2_ex_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_ex_class1__doc__},
-{"getName", (PyCFunction)PP_exclass2_get_name, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_name__doc__},
-{"get_name_length", (PyCFunction)PP_exclass2_get_name_length, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_name_length__doc__},
+{"ExClass1", (PyCFunction)PP_exclass2_ex_class1, METH_NOARGS, PP_exclass2_ex_class1__doc__},
+{"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
+{"get_name_length", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
 {"declare", (PyCFunction)PP_exclass2_declare, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare__doc__},
-{"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_VARARGS|METH_KEYWORDS, PP_exclass2_destroyall__doc__},
-{"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_type_id__doc__},
+{"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
+{"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

@@ -204,16 +204,16 @@ return NULL;
 }
 static PyMethodDef PP_ExClass1_methods[] = {
 {"new", (PyCFunction)PP_exclass1_new, METH_VARARGS|METH_KEYWORDS, PP_exclass1_new__doc__},
-{"delete", (PyCFunction)PP_exclass1_delete, METH_VARARGS|METH_KEYWORDS, PP_exclass1_delete__doc__},
+{"delete", (PyCFunction)PP_exclass1_delete, METH_NOARGS, PP_exclass1_delete__doc__},
 {"incrementCount", (PyCFunction)PP_exclass1_increment_count, METH_VARARGS|METH_KEYWORDS, PP_exclass1_increment_count__doc__},
-{"getName", (PyCFunction)PP_exclass1_get_name, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_name__doc__},
-{"get_name_length", (PyCFunction)PP_exclass1_get_name_length, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_name_length__doc__},
-{"getRoot", (PyCFunction)PP_exclass1_get_root, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_root__doc__},
+{"getName", (PyCFunction)PP_exclass1_get_name, METH_NOARGS, PP_exclass1_get_name__doc__},
+{"get_name_length", (PyCFunction)PP_exclass1_get_name_length, METH_NOARGS, PP_exclass1_get_name_length__doc__},
+{"getRoot", (PyCFunction)PP_exclass1_get_root, METH_NOARGS, PP_exclass1_get_root__doc__},
 {"getValue_from_int", (PyCFunction)PP_exclass1_get_value_from_int, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_value_from_int__doc__},
 {"getValue_1", (PyCFunction)PP_exclass1_get_value_1, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_value_1__doc__},
-{"getAddr", (PyCFunction)PP_exclass1_get_addr, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_addr__doc__},
+{"getAddr", (PyCFunction)PP_exclass1_get_addr, METH_NOARGS, PP_exclass1_get_addr__doc__},
 {"hasAddr", (PyCFunction)PP_exclass1_has_addr, METH_VARARGS|METH_KEYWORDS, PP_exclass1_has_addr__doc__},
-{"SplicerSpecial", (PyCFunction)PP_exclass1_splicer_special, METH_VARARGS|METH_KEYWORDS, PP_exclass1_splicer_special__doc__},
+{"SplicerSpecial", (PyCFunction)PP_exclass1_splicer_special, METH_NOARGS, PP_exclass1_splicer_special__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

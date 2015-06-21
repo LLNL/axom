@@ -474,11 +474,11 @@ return NULL;
 // splicer end class.DataGroup.method.load
 }
 static PyMethodDef PY_DataGroup_methods[] = {
-{"getName", (PyCFunction)PY_datagroup_get_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_name__doc__},
-{"getParent", (PyCFunction)PY_datagroup_get_parent, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_parent__doc__},
-{"getDataStore", (PyCFunction)PY_datagroup_get_data_store, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_data_store__doc__},
-{"getNumViews", (PyCFunction)PY_datagroup_get_num_views, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_num_views__doc__},
-{"getNumGroups", (PyCFunction)PY_datagroup_get_num_groups, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_num_groups__doc__},
+{"getName", (PyCFunction)PY_datagroup_get_name, METH_NOARGS, PY_datagroup_get_name__doc__},
+{"getParent", (PyCFunction)PY_datagroup_get_parent, METH_NOARGS, PY_datagroup_get_parent__doc__},
+{"getDataStore", (PyCFunction)PY_datagroup_get_data_store, METH_NOARGS, PY_datagroup_get_data_store__doc__},
+{"getNumViews", (PyCFunction)PY_datagroup_get_num_views, METH_NOARGS, PY_datagroup_get_num_views__doc__},
+{"getNumGroups", (PyCFunction)PY_datagroup_get_num_groups, METH_NOARGS, PY_datagroup_get_num_groups__doc__},
 {"hasView", (PyCFunction)PY_datagroup_has_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_has_view__doc__},
 {"createViewAndBuffer_simple", (PyCFunction)PY_datagroup_create_view_and_buffer_simple, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer_simple__doc__},
 {"createViewAndBuffer_from_type", (PyCFunction)PY_datagroup_create_view_and_buffer_from_type, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer_from_type__doc__},
@@ -498,7 +498,7 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"getGroup", (PyCFunction)PY_datagroup_get_group, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group__doc__},
 {"getGroupIndex", (PyCFunction)PY_datagroup_get_group_index, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group_index__doc__},
 {"getGroupName", (PyCFunction)PY_datagroup_get_group_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group_name__doc__},
-{"print", (PyCFunction)PY_datagroup_print, METH_VARARGS|METH_KEYWORDS, PY_datagroup_print__doc__},
+{"print", (PyCFunction)PY_datagroup_print, METH_NOARGS, PY_datagroup_print__doc__},
 {"save", (PyCFunction)PY_datagroup_save, METH_VARARGS|METH_KEYWORDS, PY_datagroup_save__doc__},
 {"load", (PyCFunction)PY_datagroup_load, METH_VARARGS|METH_KEYWORDS, PY_datagroup_load__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */

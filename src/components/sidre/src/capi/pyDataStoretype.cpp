@@ -157,14 +157,14 @@ return NULL;
 // splicer end class.DataStore.method.print
 }
 static PyMethodDef PY_DataStore_methods[] = {
-{"new", (PyCFunction)PY_datastore_new, METH_VARARGS|METH_KEYWORDS, PY_datastore_new__doc__},
-{"delete", (PyCFunction)PY_datastore_delete, METH_VARARGS|METH_KEYWORDS, PY_datastore_delete__doc__},
-{"getRoot", (PyCFunction)PY_datastore_get_root, METH_VARARGS|METH_KEYWORDS, PY_datastore_get_root__doc__},
+{"new", (PyCFunction)PY_datastore_new, METH_NOARGS, PY_datastore_new__doc__},
+{"delete", (PyCFunction)PY_datastore_delete, METH_NOARGS, PY_datastore_delete__doc__},
+{"getRoot", (PyCFunction)PY_datastore_get_root, METH_NOARGS, PY_datastore_get_root__doc__},
 {"getBuffer", (PyCFunction)PY_datastore_get_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_get_buffer__doc__},
-{"createBuffer", (PyCFunction)PY_datastore_create_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_create_buffer__doc__},
+{"createBuffer", (PyCFunction)PY_datastore_create_buffer, METH_NOARGS, PY_datastore_create_buffer__doc__},
 {"destroyBuffer", (PyCFunction)PY_datastore_destroy_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_destroy_buffer__doc__},
-{"getNumBuffers", (PyCFunction)PY_datastore_get_num_buffers, METH_VARARGS|METH_KEYWORDS, PY_datastore_get_num_buffers__doc__},
-{"print", (PyCFunction)PY_datastore_print, METH_VARARGS|METH_KEYWORDS, PY_datastore_print__doc__},
+{"getNumBuffers", (PyCFunction)PY_datastore_get_num_buffers, METH_NOARGS, PY_datastore_get_num_buffers__doc__},
+{"print", (PyCFunction)PY_datastore_print, METH_NOARGS, PY_datastore_print__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

@@ -219,13 +219,14 @@ class Wrapp(util.WrapperMixin):
 
         options = node['options']
         fmt_func = node['fmt']
-        fmt_func.doc_string = 'documentation'
+        fmt = util.Options(fmt_func)
+        fmt.doc_string = 'documentation'
 
         if cls:
-            util.eval_template(options, fmt_func,
+            util.eval_template(options, fmt,
                                'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
         else:
-            util.eval_template(options, fmt_func,
+            util.eval_template(options, fmt,
                                'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
 
 
@@ -239,19 +240,23 @@ static char {PY_name_impl}__doc__[] =
 ;
 
 static PyObject *
-{PY_name_impl}(""", fmt_func))
+{PY_name_impl}(""", fmt))
         if cls:
-            body.append(wformat('  {PY_PyObject} *self,', fmt_func))
+            body.append(wformat('  {PY_PyObject} *self,', fmt))
         else:
             body.append('  PyObject *self,    /* not used */')
         body.append('  PyObject *args,')
         body.append('  PyObject *kwds)')
         body.append('{')
-        self._create_splicer(fmt_func.CPP_name, self.PyMethodBody, default=PY_code)
+        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_code)
         self.PyMethodBody.append('}')
-                                 
 
-        self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, METH_VARARGS|METH_KEYWORDS, {PY_name_impl}__doc__}},', fmt_func))
+        args = node.get('args', [])
+        if args:
+            fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+        else:
+            fmt.ml_flags = 'METH_NOARGS'
+        self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
 
         return

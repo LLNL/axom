@@ -187,16 +187,16 @@ return NULL;
 // splicer end class.DataBuffer.method.getTotalBytes
 }
 static PyMethodDef PY_DataBuffer_methods[] = {
-{"getIndex", (PyCFunction)PY_databuffer_get_index, METH_VARARGS|METH_KEYWORDS, PY_databuffer_get_index__doc__},
-{"getNumViews", (PyCFunction)PY_databuffer_get_num_views, METH_VARARGS|METH_KEYWORDS, PY_databuffer_get_num_views__doc__},
+{"getIndex", (PyCFunction)PY_databuffer_get_index, METH_NOARGS, PY_databuffer_get_index__doc__},
+{"getNumViews", (PyCFunction)PY_databuffer_get_num_views, METH_NOARGS, PY_databuffer_get_num_views__doc__},
 {"declare", (PyCFunction)PY_databuffer_declare, METH_VARARGS|METH_KEYWORDS, PY_databuffer_declare__doc__},
 {"declareExternal", (PyCFunction)PY_databuffer_declare_external, METH_VARARGS|METH_KEYWORDS, PY_databuffer_declare_external__doc__},
-{"allocate_existing", (PyCFunction)PY_databuffer_allocate_existing, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate_existing__doc__},
+{"allocate_existing", (PyCFunction)PY_databuffer_allocate_existing, METH_NOARGS, PY_databuffer_allocate_existing__doc__},
 {"allocate_from_type", (PyCFunction)PY_databuffer_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_databuffer_reallocate, METH_VARARGS|METH_KEYWORDS, PY_databuffer_reallocate__doc__},
-{"isExternal", (PyCFunction)PY_databuffer_is_external, METH_VARARGS|METH_KEYWORDS, PY_databuffer_is_external__doc__},
-{"getData", (PyCFunction)PY_databuffer_get_data, METH_VARARGS|METH_KEYWORDS, PY_databuffer_get_data__doc__},
-{"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_VARARGS|METH_KEYWORDS, PY_databuffer_get_total_bytes__doc__},
+{"isExternal", (PyCFunction)PY_databuffer_is_external, METH_NOARGS, PY_databuffer_is_external__doc__},
+{"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
+{"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
