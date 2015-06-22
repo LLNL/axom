@@ -30,9 +30,9 @@ extern PyTypeObject PP_ExClass2_Type;
 // helper functions
 extern const char *PY_ExClass1_capsule_name;
 extern const char *PY_ExClass2_capsule_name;
-PyObject *PP_ExClass1_to_Object(ExClass1 *grp);
+PyObject *PP_ExClass1_to_Object(ExClass1 *addr);
 int PP_ExClass1_from_Object(PyObject *obj, void **addr);
-PyObject *PP_ExClass2_to_Object(ExClass2 *grp);
+PyObject *PP_ExClass2_to_Object(ExClass2 *addr);
 int PP_ExClass2_from_Object(PyObject *obj, void **addr);
 
 // splicer begin class.ExClass1.C_declaration
@@ -40,16 +40,18 @@ int PP_ExClass2_from_Object(PyObject *obj, void **addr);
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.ExClass1.C_object
-// splicer end class.ExClass1.C_object
+    ExClass1 * BBB;
+    // splicer begin class.ExClass1.C_object
+    // splicer end class.ExClass1.C_object
 } PP_ExClass1;
 // splicer begin class.ExClass2.C_declaration
 // splicer end class.ExClass2.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.ExClass2.C_object
-// splicer end class.ExClass2.C_object
+    ExClass2 * BBB;
+    // splicer begin class.ExClass2.C_object
+    // splicer end class.ExClass2.C_object
 } PP_ExClass2;
 
 extern PyObject *PP_error_obj;

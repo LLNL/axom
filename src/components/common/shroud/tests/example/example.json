@@ -878,6 +878,7 @@
         null
     ], 
     "fmt": {
+        "BBB": "BBB", 
         "C_const": "", 
         "C_header_filename": "wrapUserLibrary.h", 
         "C_impl_filename": "wrapUserLibrary.cpp", 

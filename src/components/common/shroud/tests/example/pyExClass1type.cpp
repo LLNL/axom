@@ -45,7 +45,7 @@ PP_exclass1_increment_count(
     {
         return NULL;
     }
-    int rv = selfobj->incrementCount(incr);
+    int rv = self->BBB->incrementCount(incr);
     return Py_BuildValue("i", &rv);
 // splicer end class.ExClass1.method.incrementCount
 }
@@ -61,7 +61,7 @@ PP_exclass1_get_name(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getName
-    const std::string & rv = selfobj->getName();
+    const std::string & rv = self->BBB->getName();
     return Py_BuildValue("s", &rv);
 // splicer end class.ExClass1.method.getName
 }
@@ -77,7 +77,7 @@ PP_exclass1_get_name_length(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.get_name_length
-    const int rv = selfobj->get_name_length();
+    const int rv = self->BBB->get_name_length();
     return Py_BuildValue("i", &rv);
 // splicer end class.ExClass1.method.get_name_length
 }
@@ -93,7 +93,7 @@ PP_exclass1_get_root(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getRoot
-    ExClass2 * rv = selfobj->getRoot();
+    ExClass2 * rv = self->BBB->getRoot();
     return Py_BuildValue("O&", rv);
 // splicer end class.ExClass1.method.getRoot
 }
@@ -116,7 +116,7 @@ PP_exclass1_get_value_from_int(
     {
         return NULL;
     }
-    int rv = selfobj->getValue(value);
+    int rv = self->BBB->getValue(value);
     return Py_BuildValue("i", &rv);
 // splicer end class.ExClass1.method.getValue
 }
@@ -139,7 +139,7 @@ PP_exclass1_get_value_1(
     {
         return NULL;
     }
-    long rv = selfobj->getValue(value);
+    long rv = self->BBB->getValue(value);
     return Py_BuildValue("l", &rv);
 // splicer end class.ExClass1.method.getValue
 }
@@ -155,7 +155,7 @@ PP_exclass1_get_addr(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.getAddr
-    void * rv = selfobj->getAddr();
+    void * rv = self->BBB->getAddr();
     return Py_BuildValue("O", rv);
 // splicer end class.ExClass1.method.getAddr
 }
@@ -178,7 +178,7 @@ PP_exclass1_has_addr(
     {
         return NULL;
     }
-    bool rv = selfobj->hasAddr(in);
+    bool rv = self->BBB->hasAddr(in);
     return Py_BuildValue("O", &rv);
 // splicer end class.ExClass1.method.hasAddr
 }
@@ -194,7 +194,7 @@ PP_exclass1_splicer_special(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.method.SplicerSpecial
-    selfobj->SplicerSpecial();
+    self->BBB->SplicerSpecial();
     Py_RETURN_NONE;
 // splicer end class.ExClass1.method.SplicerSpecial
 }

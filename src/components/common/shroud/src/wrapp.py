@@ -139,6 +139,7 @@ class Wrapp(util.WrapperMixin):
         util.eval_template(options, fmt_library, 'PY_module_filename', 'py{library}module.cpp')
         util.eval_template(options, fmt_library, 'PY_header_filename', 'py{library}module.hpp')
         util.eval_template(options, fmt_library, 'PY_helper_filename', 'py{library}helper.cpp')
+        fmt_library.BBB = 'BBB'   # name of cpp class pointer in PyObject
         self.py_type_object_creation = []
         self.py_type_extern = []
         self.py_type_structs = []
@@ -202,7 +203,10 @@ class Wrapp(util.WrapperMixin):
         self.py_type_structs.append('')
         self.py_type_structs.append('typedef struct {')
         self.py_type_structs.append('PyObject_HEAD')
+        self.py_type_structs.append(1)
+        append_format(self.py_type_structs, '{cpp_class} * {BBB};', fmt_class)
         self._create_splicer('C_object', self.py_type_structs)
+        self.py_type_structs.append(-1)
         self.py_type_structs.append(wformat('}} {PY_PyObject};', fmt_class))
 
         # wrap methods
@@ -229,7 +233,7 @@ class Wrapp(util.WrapperMixin):
 PyObject *args;
 PyObject *rv;
 
-voidobj = PyCapsule_New(grp, {PY_capsule_name}, NULL);
+voidobj = PyCapsule_New(addr, {PY_capsule_name}, NULL);
 args = PyTuple_New(1);
 PyTuple_SET_ITEM(args, 0, voidobj);
 rv = PyObject_Call((PyObject *) &{PY_PyTypeObject}, args, NULL);
@@ -238,7 +242,7 @@ return rv;""", fmt)
         to_object = to_object.split('\n')
         
 
-        proto = wformat('PyObject *PP_{cpp_class}_to_Object({cpp_class} *grp)', fmt)
+        proto = wformat('PyObject *PP_{cpp_class}_to_Object({cpp_class} *addr)', fmt)
         self.py_helper_prototypes.append(proto + ';')
 
         self.py_helper_functions.append('')
@@ -255,7 +259,7 @@ return rv;""", fmt)
     return 0;	
 }}
 {PY_PyObject} * self = ({PY_PyObject} *) obj;
-*addr = self->grp;
+*addr = self->{BBB};
 return 1;""", fmt)
         from_object = from_object.split('\n')
 
@@ -352,16 +356,16 @@ return 1;""", fmt)
         if cls:
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
 #                fmt_func.C_object = wformat(template, fmt_func)
-            fmt_func.CPP_this_call = fmt_func.CPP_this + '->'  # call method syntax
+            fmt.PY_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
         else:
-            fmt_func.CPP_this_call = ''  # call function syntax
+            fmt.PY_this_call = ''  # call function syntax
 
 
         if result_type == 'void' and not result_is_ptr:
-            line = wformat('{CPP_this_call}{CPP_name}({call_list});', fmt)
+            line = wformat('{PY_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
         else:
-            line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}({call_list});', fmt)
+            line = wformat('{rv_decl} = {PY_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
 
         # return Object
