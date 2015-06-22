@@ -59,6 +59,7 @@ program tester
   call init_fruit
 
   call create_datastore
+  call valid_invalid
 
   call fruit_summary
   call fruit_finalize

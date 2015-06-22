@@ -82,6 +82,22 @@ PP_exclass1_get_name_length(
 // splicer end class.ExClass1.method.get_name_length
 }
 
+static char PP_exclass1_get_name_error_check__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass1_get_name_error_check(
+  PP_ExClass1 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass1.method.getNameErrorCheck
+    const std::string & rv = self->BBB->getNameErrorCheck();
+    return Py_BuildValue("s", &rv);
+// splicer end class.ExClass1.method.getNameErrorCheck
+}
+
 static char PP_exclass1_get_name_arg__doc__[] =
 "documentation"
 ;
@@ -218,6 +234,7 @@ static PyMethodDef PP_ExClass1_methods[] = {
 {"incrementCount", (PyCFunction)PP_exclass1_increment_count, METH_VARARGS|METH_KEYWORDS, PP_exclass1_increment_count__doc__},
 {"getName", (PyCFunction)PP_exclass1_get_name, METH_NOARGS, PP_exclass1_get_name__doc__},
 {"get_name_length", (PyCFunction)PP_exclass1_get_name_length, METH_NOARGS, PP_exclass1_get_name_length__doc__},
+{"getNameErrorCheck", (PyCFunction)PP_exclass1_get_name_error_check, METH_NOARGS, PP_exclass1_get_name_error_check__doc__},
 {"getNameArg", (PyCFunction)PP_exclass1_get_name_arg, METH_NOARGS, PP_exclass1_get_name_arg__doc__},
 {"getRoot", (PyCFunction)PP_exclass1_get_root, METH_NOARGS, PP_exclass1_get_root__doc__},
 {"getValue_from_int", (PyCFunction)PP_exclass1_get_value_from_int, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_value_from_int__doc__},

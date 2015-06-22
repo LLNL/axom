@@ -94,6 +94,9 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
+        
+        ! splicer begin class.ExClass2.additional_interfaces
+        ! splicer end class.ExClass2.additional_interfaces
     end interface
 
 contains
@@ -178,7 +181,8 @@ contains
         rv = aa_exclass2_get_type_id(obj%obj)
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
-    ! splicer begin class.ExClass2.extra_methods
-    ! splicer end class.ExClass2.extra_methods
+    
+    ! splicer begin class.ExClass2.additional_functions
+    ! splicer end class.ExClass2.additional_functions
 
 end module exclass2_mod

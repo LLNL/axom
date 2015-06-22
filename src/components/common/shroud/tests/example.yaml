@@ -88,6 +88,7 @@ classes:
       options:
          C_code: return selfobj->getName().length();
 
+    - decl: const string& getNameErrorCheck() const
 
     - decl: const string& getNameArg() const
     # This function will convert the return value into a argument

@@ -210,6 +210,9 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine atk_datastore_print
         
+        ! splicer begin class.DataStore.additional_interfaces
+        ! splicer end class.DataStore.additional_interfaces
+        
         pure function atk_datagroup_get_name(self) result(rv) &
                 bind(C, name="ATK_datagroup_get_name")
             use iso_c_binding
@@ -451,6 +454,9 @@ module sidre_mod
             character(kind=C_CHAR) :: protocol(*)
         end subroutine atk_datagroup_load
         
+        ! splicer begin class.DataGroup.additional_interfaces
+        ! splicer end class.DataGroup.additional_interfaces
+        
         function atk_databuffer_get_index(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_index")
             use iso_c_binding
@@ -534,6 +540,9 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_databuffer_get_total_bytes
+        
+        ! splicer begin class.DataBuffer.additional_interfaces
+        ! splicer end class.DataBuffer.additional_interfaces
         
         subroutine atk_dataview_declare(self, type, len) &
                 bind(C, name="ATK_dataview_declare")
@@ -642,6 +651,9 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_number_of_elements
         
+        ! splicer begin class.DataView.additional_interfaces
+        ! splicer end class.DataView.additional_interfaces
+        
         function atk_is_name_valid(name) result(rv) &
                 bind(C, name="ATK_is_name_valid")
             use iso_c_binding
@@ -731,8 +743,9 @@ contains
         call atk_datastore_print(obj%obj)
         ! splicer end class.DataStore.method.print
     end subroutine datastore_print
-    ! splicer begin class.DataStore.extra_methods
-    ! splicer end class.DataStore.extra_methods
+    
+    ! splicer begin class.DataStore.additional_functions
+    ! splicer end class.DataStore.additional_functions
     
     function datagroup_get_name(obj) result(rv)
         use iso_c_binding
@@ -1028,8 +1041,9 @@ contains
         call atk_datagroup_load(obj%obj, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
-    ! splicer begin class.DataGroup.extra_methods
-    ! splicer end class.DataGroup.extra_methods
+    
+    ! splicer begin class.DataGroup.additional_functions
+    ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)
         use iso_c_binding
@@ -1134,8 +1148,9 @@ contains
         rv = atk_databuffer_get_total_bytes(obj%obj)
         ! splicer end class.DataBuffer.method.get_total_bytes
     end function databuffer_get_total_bytes
-    ! splicer begin class.DataBuffer.extra_methods
-    ! splicer end class.DataBuffer.extra_methods
+    
+    ! splicer begin class.DataBuffer.additional_functions
+    ! splicer end class.DataBuffer.additional_functions
     
     subroutine dataview_declare(obj, type, len)
         use iso_c_binding
@@ -1269,17 +1284,18 @@ contains
         rv = atk_dataview_get_number_of_elements(obj%obj)
         ! splicer end class.DataView.method.get_number_of_elements
     end function dataview_get_number_of_elements
-    ! splicer begin class.DataView.extra_methods
-    ! splicer end class.DataView.extra_methods
+    
+    ! splicer begin class.DataView.additional_functions
+    ! splicer end class.DataView.additional_functions
     
     function is_name_valid(name) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: name
         logical :: rv
-        ! splicer begin class.is_name_valid
+        ! splicer begin is_name_valid
         rv = name .ne. " "
-        ! splicer end class.is_name_valid
+        ! splicer end is_name_valid
     end function is_name_valid
 
 end module sidre_mod

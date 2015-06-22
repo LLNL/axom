@@ -24,6 +24,7 @@ module exclass1_mod
         procedure :: increment_count => exclass1_increment_count
         procedure :: get_name => exclass1_get_name
         procedure :: get_name_length => exclass1_get_name_length
+        procedure :: get_name_error_check => exclass1_get_name_error_check
         procedure :: get_name_arg => exclass1_get_name_arg
         procedure :: get_root => exclass1_get_root
         procedure :: get_value_from_int => exclass1_get_value_from_int
@@ -78,6 +79,14 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass1_get_name_length
+        
+        pure function aa_exclass1_get_name_error_check(self) result(rv) &
+                bind(C, name="AA_exclass1_get_name_error_check")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR) rv
+        end function aa_exclass1_get_name_error_check
         
         pure function aa_exclass1_get_name_arg(self) result(rv) &
                 bind(C, name="AA_exclass1_get_name_arg")
@@ -136,6 +145,9 @@ module exclass1_mod
             implicit none
             type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass1_splicer_special
+        
+        ! splicer begin class.ExClass1.additional_interfaces
+        ! splicer end class.ExClass1.additional_interfaces
     end interface
 
 contains
@@ -190,6 +202,16 @@ contains
         rv = aa_exclass1_get_name_length(obj%obj)
         ! splicer end class.ExClass1.method.get_name_length
     end function exclass1_get_name_length
+    
+    function exclass1_get_name_error_check(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(exclass1) :: obj
+        character(kind=C_CHAR, len=1) :: rv
+        ! splicer begin class.ExClass1.method.get_name_error_check
+        rv = fstr(aa_exclass1_get_name_error_check(obj%obj))
+        ! splicer end class.ExClass1.method.get_name_error_check
+    end function exclass1_get_name_error_check
     
     function exclass1_get_name_arg(obj) result(rv)
         use iso_c_binding
@@ -262,8 +284,8 @@ contains
         blah blah blah
         ! splicer end class.ExClass1.method.splicer_special
     end subroutine exclass1_splicer_special
-    ! splicer begin class.ExClass1.extra_methods
-      insert extra methods here
-    ! splicer end class.ExClass1.extra_methods
+    
+    ! splicer begin class.ExClass1.additional_functions
+    ! splicer end class.ExClass1.additional_functions
 
 end module exclass1_mod

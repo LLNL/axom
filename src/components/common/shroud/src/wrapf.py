@@ -146,22 +146,20 @@ class Wrapf(util.WrapperMixin):
         fmt_library.F_C_result_clause = ''
 
         self._begin_output_file()
-        if not options.F_module_per_class:
-            self._push_splicer('class')
+#        if not options.F_module_per_class:
+        self._push_splicer('class')
         for node in self.tree['classes']:
             self._begin_class()
 
             name = node['name']
             # how to decide module name, module per class
 #            module_name = node['options'].setdefault('module_name', name.lower())
-            if options.F_module_per_class:
-                self._push_splicer('class')
             self.wrap_class(node)
             if options.F_module_per_class:
-                self._pop_splicer('class')
                 self._end_output_file()
                 self.write_module(node)
                 self._begin_output_file()
+        self._pop_splicer('class')
 
         if self.tree['functions']:
             if options.F_module_per_class:
@@ -175,7 +173,6 @@ class Wrapf(util.WrapperMixin):
 
         if not options.F_module_per_class:
             # put all functions and classes into one module
-            self._pop_splicer('class')
             self.tree['F_module_dependencies'] = []
             self._end_output_file()
             self.write_module(self.tree)
@@ -204,7 +201,8 @@ class Wrapf(util.WrapperMixin):
         for method in node['methods']:
             self.wrap_method(node, method)
         self._pop_splicer('method')
-        self._create_splicer('extra_methods', self.impl)
+        self.impl.append('')
+        self._create_splicer('additional_functions', self.impl)
         self._pop_splicer(fmt_class.cpp_class)
 
 
@@ -236,6 +234,10 @@ class Wrapf(util.WrapperMixin):
                  -1,
                  wformat('end type {F_derived_name}', fmt_class),
                  ])
+
+        self.c_interface.append('')
+        self._create_splicer('additional_interfaces', self.c_interface)
+
         self._pop_splicer(fmt_class.cpp_class)
 
     def wrap_method(self, cls, node):
@@ -385,7 +387,7 @@ class Wrapf(util.WrapperMixin):
             if result_typedef.base == 'string':
                 arg_c_decl.append('type(C_PTR) %s' % F_result)
             else:
-            # XXX - make sure ptr is set to avoid VALUE
+                # XXX - make sure ptr is set to avoid VALUE
                 arg_dict = dict(name=F_result,
                                 type=result_type,
                                 attrs=dict(ptr=True))
