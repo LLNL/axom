@@ -143,6 +143,7 @@ class Wrapf(util.WrapperMixin):
         fmt_library.F_result = options.get('F_result', 'rv')
         fmt_library.F_result_clause = ''
         fmt_library.F_pure_clause = ''
+        fmt_library.F_C_result_clause = ''
 
         self._begin_output_file()
         if not options.F_module_per_class:
@@ -179,6 +180,7 @@ class Wrapf(util.WrapperMixin):
             self._end_output_file()
             self.write_module(self.tree)
 
+        self.write_c_helper()
         fwrap_util.write_runtime(self.tree, self.config)
 
     def wrap_class(self, node):
@@ -266,6 +268,12 @@ class Wrapf(util.WrapperMixin):
         is_dtor  = result['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
+        # Special case some string handling
+        if result_typedef.base == 'string' and False:
+            result_string = True
+        else:
+            result_string = False
+
         fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
         if 'F_this' in options:
             fmt_func.F_this = options.F_this
@@ -304,9 +312,18 @@ class Wrapf(util.WrapperMixin):
         if result_type == 'void' and not result_is_ptr:
             #  void=subroutine   void *=function
             subprogram = 'subroutine'
+            fmt_func.F_C_subprogram = 'subroutine'
+        elif result_string:
+            subprogram = 'subroutine'
+            fmt_func.F_C_subprogram = 'function'
+            fmt_func.F_C_result_clause = ' result(%s)' % F_result
+            if is_const:
+                fmt_func.F_pure_clause   = 'pure '
         else:
             subprogram = 'function'
+            fmt_func.F_C_subprogram = 'function'
             fmt_func.F_result_clause = ' result(%s)' % F_result
+            fmt_func.F_C_result_clause = fmt_func.F_result_clause
             if is_const:
                 fmt_func.F_pure_clause   = 'pure '
         fmt_func.F_subprogram    = subprogram
@@ -344,6 +361,11 @@ class Wrapf(util.WrapperMixin):
             arg_f_names.append(arg['name'])
             arg_f_decl.append(self._f_decl(arg))
 
+        if result_string == 'string':
+            arg_f_names.append('rv')
+            arg_f_decl.append('character(*), intent(OUT) :: rv')
+            arg_f_decl.append('type(C_PTR) :: rv_ptr')
+
         # declare function return value after arguments
         # since arguments may be used to compute return value
         # (for example, string lengths)
@@ -352,18 +374,22 @@ class Wrapf(util.WrapperMixin):
                 # special case returning a string
                 rvlen = result['attrs'].get('len', '1')
                 fmt_func.rvlen = rvlen
-                arg_c_decl.append('type(C_PTR) %s' % F_result)
                 arg_f_decl.append(
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
                             fmt_func))
             else:
-                # XXX - make sure ptr is set to avoid VALUE
+###                arg_c_decl.append(self._c_decl(result, name=F_result))
+                arg_f_decl.append(self._f_decl(result, name=F_result))
+
+        if fmt_func.F_C_subprogram == 'function':
+            if result_typedef.base == 'string':
+                arg_c_decl.append('type(C_PTR) %s' % F_result)
+            else:
+            # XXX - make sure ptr is set to avoid VALUE
                 arg_dict = dict(name=F_result,
                                 type=result_type,
                                 attrs=dict(ptr=True))
-#                arg_c_decl.append(self._c_decl(result, name=F_result))
                 arg_c_decl.append(self._c_decl(arg_dict))
-                arg_f_decl.append(self._f_decl(result, name=F_result))
 
         if not is_ctor and not is_dtor:
             # Add method to derived type
@@ -386,6 +412,9 @@ class Wrapf(util.WrapperMixin):
             F_code = []
             if is_ctor:
                 F_code.append(wformat('{F_result}%{F_this} = {F_C_name}({F_arg_c_call})', fmt_func))
+            elif result_string:
+                F_code.append(wformat('rv_ptr = {F_C_name}({F_arg_c_call})', fmt_func))
+                F_code.append('call FccCopyPtr(rv, len(rv), rv_ptr)')
             elif subprogram == 'function':
                 fmt = result_typedef.f_return_code
                 F_code.append(wformat(fmt, fmt_func))
@@ -397,7 +426,7 @@ class Wrapf(util.WrapperMixin):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{F_pure_clause}{F_subprogram} {F_C_name}({F_C_arguments}){F_result_clause} &',
+                '{F_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
                 fmt_func))
         c_interface.append(2)  # extra indent for continued line
         c_interface.append(wformat(
@@ -408,7 +437,7 @@ class Wrapf(util.WrapperMixin):
         c_interface.append('implicit none')
         c_interface.extend(arg_c_decl)
         c_interface.append(-1)
-        c_interface.append(wformat('end {F_subprogram} {F_C_name}', fmt_func))
+        c_interface.append(wformat('end {F_C_subprogram} {F_C_name}', fmt_func))
 
         impl = self.impl
         impl.append('')
@@ -469,3 +498,8 @@ class Wrapf(util.WrapperMixin):
         output.append('end module %s' % module_name)
 
         self.write_output_file(fname, self.config.binary_dir, output)
+
+    def write_c_helper(self):
+        """ Write C helper functions that will be used by the wrappers.
+        """
+        pass

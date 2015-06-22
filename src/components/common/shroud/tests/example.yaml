@@ -91,7 +91,8 @@ classes:
 
     - decl: const string& getNameArg() const
     # This function will convert the return value into a argument
-
+#      options:
+#         F_result_as_arg: True
 
     - decl: ExClass2 *getRoot()
 
@@ -104,7 +105,7 @@ classes:
 
     - decl: void SplicerSpecial
 
-
+  ######################################################################
   - name: ExClass2
     options:
       cpp_header: ExClass2.hpp
