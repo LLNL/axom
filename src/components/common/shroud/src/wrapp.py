@@ -220,21 +220,22 @@ class Wrapp(util.WrapperMixin):
         
         fmt.PY_capsule_name = wformat('PY_{cpp_class}_capsule_name', fmt)
 
+        self._push_splicer('helper')
         append_format(self.py_helper_definition, 'const char *{PY_capsule_name} = "{cpp_class}";', fmt)
         append_format(self.py_helper_declaration, 'extern const char *{PY_capsule_name};', fmt)
 
         # To
-        to_object = wformat("""
-    PyObject *voidobj;
-    PyObject *args;
-    PyObject *rv;
+        to_object = wformat("""PyObject *voidobj;
+PyObject *args;
+PyObject *rv;
 
-    voidobj = PyCapsule_New(grp, {PY_capsule_name}, NULL);
-    args = PyTuple_New(1);
-    PyTuple_SET_ITEM(args, 0, voidobj);
-    rv = PyObject_Call((PyObject *) &{PY_PyTypeObject}, args, NULL);
-    Py_DECREF(args);
-    return rv;""", fmt)
+voidobj = PyCapsule_New(grp, {PY_capsule_name}, NULL);
+args = PyTuple_New(1);
+PyTuple_SET_ITEM(args, 0, voidobj);
+rv = PyObject_Call((PyObject *) &{PY_PyTypeObject}, args, NULL);
+Py_DECREF(args);
+return rv;""", fmt)
+        to_object = to_object.split('\n')
         
 
         proto = wformat('PyObject *PP_{cpp_class}_to_Object({cpp_class} *grp)', fmt)
@@ -243,20 +244,20 @@ class Wrapp(util.WrapperMixin):
         self.py_helper_functions.append('')
         self.py_helper_functions.append(proto)
         self.py_helper_functions.append('{')
-        self.py_helper_functions.append(to_object)
+        self.py_helper_functions.append(1)
+        self._create_splicer('to_object', self.py_helper_functions, default=to_object)
+        self.py_helper_functions.append(-1)
         self.py_helper_functions.append('}')
 
         # From
-        from_object = wformat("""
-    if (obj->ob_type != &{PY_PyTypeObject}) {{
-	// raise exception
-	return 0;	
-    }}
-    {PY_PyObject} * self = ({PY_PyObject} *) obj;
-    *addr = self->grp;
-    
-    return 1;
-""", fmt)
+        from_object = wformat("""if (obj->ob_type != &{PY_PyTypeObject}) {{
+    // raise exception
+    return 0;	
+}}
+{PY_PyObject} * self = ({PY_PyObject} *) obj;
+*addr = self->grp;
+return 1;""", fmt)
+        from_object = from_object.split('\n')
 
         proto = wformat('int PP_{cpp_class}_from_Object(PyObject *obj, void **addr)', fmt)
         self.py_helper_prototypes.append(proto + ';')
@@ -264,8 +265,12 @@ class Wrapp(util.WrapperMixin):
         self.py_helper_functions.append('')
         self.py_helper_functions.append(proto)
         self.py_helper_functions.append('{')
-        self.py_helper_functions.append(from_object)
+        self.py_helper_functions.append(1)
+        self._create_splicer('from_object', self.py_helper_functions, default=from_object)
+        self.py_helper_functions.append(-1)
         self.py_helper_functions.append('}')
+
+        self._pop_splicer('helper')
 
     def wrap_method(self, cls, node):
         """
