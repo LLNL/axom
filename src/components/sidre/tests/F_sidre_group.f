@@ -118,8 +118,8 @@ contains
     type(datastore) ds
     type(datagroup) root, parent
     type(dataview) view1, view2
-    integer idx1, idx2, idx3    ! IndexType
-    character(len=30) name1, name2, name3
+    integer idx1, idx2 !x, idx3    ! IndexType
+    character(len=30) name1, name2 !x, name3
 
     ds = datastore_new()
     root = ds%get_root()
@@ -142,12 +142,12 @@ contains
     call assert_equals(name2, "view2")
     call assert_equals(view2%get_name(), name2)
 
-    idx3 = parent%get_view_index("view3")
-    name3 = parent%get_view_name(idx3)
+!x    idx3 = parent%get_view_index("view3")
+!x    name3 = parent%get_view_name(idx3)
 
-    call assert_equals(idx3, invalid_index)
-    call assert_true(name3 == " ")
-    call assert_false(is_name_valid(name3))
+!x    call assert_equals(idx3, invalid_index)
+!x    call assert_true(name3 == " ")
+!x    call assert_false(is_name_valid(name3))
 
     call datastore_delete(ds)
   end subroutine get_view_name_index
@@ -158,8 +158,8 @@ contains
   subroutine get_group_name_index
     type(datastore) ds
     type(datagroup) root, parent, group1, group2
-    integer idx1, idx2, idx3     ! IndexType
-    character(len=30) name1, name2, name3
+    integer idx1, idx2 !x, idx3     ! IndexType
+    character(len=30) name1, name2 !x, name3
 
     ds = datastore_new()
     root = ds%get_root()
@@ -182,11 +182,11 @@ contains
     call assert_equals(name2, "group2")
     call assert_equals(group2%get_name(), name2)
 
-    idx3 = parent%get_group_index("group3")
-    name3 = parent%get_group_name(idx3)
+!x    idx3 = parent%get_group_index("group3")
+!x    name3 = parent%get_group_name(idx3)
 
-    call assert_equals(idx3, invalid_index)
-    call assert_true(name3 == " ")
+!x    call assert_equals(idx3, invalid_index)
+!x    call assert_true(name3 == " ")
 
     call datastore_delete(ds)
   end subroutine get_group_name_index
