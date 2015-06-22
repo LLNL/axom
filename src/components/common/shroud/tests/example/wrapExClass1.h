@@ -37,6 +37,8 @@ const char * AA_exclass1_get_name(const AA_exclass1 * self);
 
 const int AA_exclass1_get_name_length(const AA_exclass1 * self);
 
+const char * AA_exclass1_get_name_arg(const AA_exclass1 * self);
+
 AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self);
 
 int AA_exclass1_get_value_from_int(AA_exclass1 * self, int value);

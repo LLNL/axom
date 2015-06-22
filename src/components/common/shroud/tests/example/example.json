@@ -243,6 +243,45 @@
                 }, 
                 {
                     "args": [], 
+                    "decl": "const string& getNameArg() const", 
+                    "fmt": {
+                        "CPP_name": "getNameArg", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_const": "const ", 
+                        "C_name": "AA_exclass1_get_name_arg", 
+                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                        "C_return_type": "const char *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_name_arg", 
+                        "F_arg_c_call": "obj%obj", 
+                        "F_arguments": "obj", 
+                        "F_name_generic": "get_name_arg", 
+                        "F_name_impl": "exclass1_get_name_arg", 
+                        "F_name_method": "get_name_arg", 
+                        "F_obj": "obj%obj", 
+                        "F_pure_clause": "pure ", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getNameArg", 
+                        "rv_decl": "const std::string & rv", 
+                        "rvlen": "1", 
+                        "underscore_name": "get_name_arg"
+                    }, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "reference": true
+                        }, 
+                        "name": "getNameArg", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "args": [], 
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
                         "CPP_name": "getRoot", 

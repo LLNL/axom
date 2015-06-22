@@ -4,6 +4,7 @@ method void delete+destructor
 method int incrementCount(int incr)
 method const string& getName() const
 method get_name_length
+method const string& getNameArg() const
 method ExClass2 *getRoot()
 method int  getValue(int value)
 method long getValue(long value)
@@ -33,6 +34,7 @@ method void delete+destructor
 method int incrementCount(int incr)
 method const string& getName() const
 method get_name_length
+method const string& getNameArg() const
 method ExClass2 *getRoot()
 method int  getValue(int value)
 method long getValue(long value)
@@ -59,6 +61,7 @@ method void delete+destructor
 method int incrementCount(int incr)
 method const string& getName() const
 method get_name_length
+method const string& getNameArg() const
 method ExClass2 *getRoot()
 method int  getValue(int value)
 method long getValue(long value)

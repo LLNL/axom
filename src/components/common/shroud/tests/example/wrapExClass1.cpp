@@ -54,6 +54,15 @@ return selfobj->getName().length();
 // splicer end class.ExClass1.method.get_name_length
 }
 
+const char * AA_exclass1_get_name_arg(const AA_exclass1 * self)
+{
+const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
+// splicer begin class.ExClass1.method.getNameArg
+const std::string & rv = selfobj->getNameArg();
+return isNameValid(rv) ? rv.c_str() : NULL;
+// splicer end class.ExClass1.method.getNameArg
+}
+
 AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
