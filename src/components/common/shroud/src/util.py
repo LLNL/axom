@@ -23,9 +23,13 @@ default_template = dict(
 )
 
 
-def wformat(template, d):
+def wformat(template, dct):
     # shorthand, wrap fmt.vformat
-    return fmt.vformat(template, None, d)
+    return fmt.vformat(template, None, dct)
+
+def append_format(lst, template, dct):
+    # shorthand, wrap fmt.vformat
+    lst.append(fmt.vformat(template, None, dct))
 
 def eval_template(options, fmt, name, default=None):
     """ If a tname exists in options, use it; else use default.

@@ -80,3 +80,4 @@ function void local_function1
 function bool isNameValid(const std::string& name)
 Close pyUserLibrarymodule.hpp
 Close pyUserLibrarymodule.cpp
+Close pyUserLibraryhelper.cpp

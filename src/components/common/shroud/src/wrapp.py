@@ -12,6 +12,7 @@ import util
 
 
 wformat = util.wformat
+append_format = util.append_format
 
 class Wrapp(util.WrapperMixin):
     """Generate Python bindings.
@@ -44,7 +45,7 @@ class Wrapp(util.WrapperMixin):
         self.PyMethodBody = []
         self.PyMethodDef = []
 
-    def _c_type(self, arg):
+    def XXX_c_type(self, arg):
         """
         Return the Fortran type, and array attribute
         pass-by-value default
@@ -76,7 +77,7 @@ class Wrapp(util.WrapperMixin):
                 t.append(', intent(%s)' % intent.upper())
             return (''.join(t), arg['attrs'].get('array', False))
 
-    def _c_decl(self, arg, name=None):
+    def XXX_c_decl(self, arg, name=None):
         """
         Return the Fortran declaration.
 
@@ -89,7 +90,7 @@ class Wrapp(util.WrapperMixin):
             rv += '(*)'
         return rv
 
-    def _f_type(self, arg):
+    def XXX_f_type(self, arg):
         """
         Return the Fortran type, and array attribute
         pass-by-value default
@@ -116,7 +117,7 @@ class Wrapp(util.WrapperMixin):
 #                t.append(', value')
             return (''.join(t), arg['attrs'].get('array', False))
 
-    def _f_decl(self, arg, name=None):
+    def XXX_f_decl(self, arg, name=None):
         """
         Return the Fortran declaration.
 
@@ -137,9 +138,14 @@ class Wrapp(util.WrapperMixin):
         fmt_library.PY_module_name     = fmt_library.lower_library
         util.eval_template(options, fmt_library, 'PY_module_filename', 'py{library}module.cpp')
         util.eval_template(options, fmt_library, 'PY_header_filename', 'py{library}module.hpp')
+        util.eval_template(options, fmt_library, 'PY_helper_filename', 'py{library}helper.cpp')
         self.py_type_object_creation = []
         self.py_type_extern = []
         self.py_type_structs = []
+        self.py_helper_definition = []
+        self.py_helper_declaration = []
+        self.py_helper_prototypes = []
+        self.py_helper_functions = []
 
         self._push_splicer('class')
         for node in self.tree['classes']:
@@ -161,6 +167,7 @@ class Wrapp(util.WrapperMixin):
 
         self.write_header(self.tree)
         self.write_module(self.tree)
+        self.write_helper()
 
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
@@ -177,6 +184,7 @@ class Wrapp(util.WrapperMixin):
                            'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
         util.eval_template(options, fmt_class,
                            'PY_PyObject', '{PY_prefix}{cpp_class}')
+        self.create_class_helper_functions(node)
 
         self.py_type_object_creation.append(wformat("""
 // {cpp_class}
@@ -202,6 +210,62 @@ class Wrapp(util.WrapperMixin):
         for method in node['methods']:
             self.wrap_method(node, method)
         self._pop_splicer('method')
+
+    def create_class_helper_functions(self, node):
+        """Create some helper functions to and from a PyObject.
+        These functions are used by PyArg_ParseTupleAndKeywords and Py_BuildValue
+        node is a C++ class.
+        """
+        fmt = node['fmt']
+        
+        fmt.PY_capsule_name = wformat('PY_{cpp_class}_capsule_name', fmt)
+
+        append_format(self.py_helper_definition, 'const char *{PY_capsule_name} = "{cpp_class}";', fmt)
+        append_format(self.py_helper_declaration, 'extern const char *{PY_capsule_name};', fmt)
+
+        # To
+        to_object = wformat("""
+    PyObject *voidobj;
+    PyObject *args;
+    PyObject *rv;
+
+    voidobj = PyCapsule_New(grp, {PY_capsule_name}, NULL);
+    args = PyTuple_New(1);
+    PyTuple_SET_ITEM(args, 0, voidobj);
+    rv = PyObject_Call((PyObject *) &{PY_PyTypeObject}, args, NULL);
+    Py_DECREF(args);
+    return rv;""", fmt)
+        
+
+        proto = wformat('PyObject *PP_{cpp_class}_to_Object({cpp_class} *grp)', fmt)
+        self.py_helper_prototypes.append(proto + ';')
+
+        self.py_helper_functions.append('')
+        self.py_helper_functions.append(proto)
+        self.py_helper_functions.append('{')
+        self.py_helper_functions.append(to_object)
+        self.py_helper_functions.append('}')
+
+        # From
+        from_object = wformat("""
+    if (obj->ob_type != &{PY_PyTypeObject}) {{
+	// raise exception
+	return 0;	
+    }}
+    {PY_PyObject} * self = ({PY_PyObject} *) obj;
+    *addr = self->grp;
+    
+    return 1;
+""", fmt)
+
+        proto = wformat('int PP_{cpp_class}_from_Object(PyObject *obj, void **addr)', fmt)
+        self.py_helper_prototypes.append(proto + ';')
+
+        self.py_helper_functions.append('')
+        self.py_helper_functions.append(proto)
+        self.py_helper_functions.append('{')
+        self.py_helper_functions.append(from_object)
+        self.py_helper_functions.append('}')
 
     def wrap_method(self, cls, node):
         """
@@ -575,6 +639,13 @@ static PyObject *
         self.namespace(node, 'begin', output)
         output.extend(self.py_type_extern)
         self._create_splicer('C_declaration', output)
+
+        output.append('')
+        output.append('// helper functions')
+        output.extend(self.py_helper_declaration)
+        output.extend(self.py_helper_prototypes)
+
+        output.append('')
         output.extend(self.py_type_structs)
         output.append(wformat("""
 extern PyObject *{PY_prefix}error_obj;
@@ -631,6 +702,18 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         self.namespace(node, 'end', output)
 
         self.write_output_file(fname, self.config.binary_dir, output)
+
+    def write_helper(self):
+        node = self.tree
+        fmt = node['fmt']
+        output = []
+        output.append(wformat('#include "{PY_header_filename}"', fmt))
+        self.namespace(node, 'begin', output)
+        output.extend(self.py_helper_definition)
+        output.append('')
+        output.extend(self.py_helper_functions)
+        self.namespace(node, 'end', output)
+        self.write_output_file(fmt.PY_helper_filename, self.config.binary_dir, output)
 
     def not_implemented(self, msg, ret):
         '''A standard splicer for unimplemented code

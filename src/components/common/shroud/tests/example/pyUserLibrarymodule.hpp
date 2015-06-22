@@ -26,6 +26,15 @@ extern PyTypeObject PP_ExClass1_Type;
 extern PyTypeObject PP_ExClass2_Type;
 // splicer begin C_declaration
 // splicer end C_declaration
+
+// helper functions
+extern const char *PY_ExClass1_capsule_name;
+extern const char *PY_ExClass2_capsule_name;
+PyObject *PP_ExClass1_to_Object(ExClass1 *grp);
+int PP_ExClass1_from_Object(PyObject *obj, void **addr);
+PyObject *PP_ExClass2_to_Object(ExClass2 *grp);
+int PP_ExClass2_from_Object(PyObject *obj, void **addr);
+
 // splicer begin class.ExClass1.C_declaration
 // splicer end class.ExClass1.C_declaration
 
