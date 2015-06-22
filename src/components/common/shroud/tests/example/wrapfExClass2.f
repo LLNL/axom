@@ -15,7 +15,7 @@ module exclass2_mod
     ! splicer end class.ExClass2.module_top
     
     type exclass2
-        type(C_PTR) obj
+        type(C_PTR) voidptr
         ! splicer begin class.ExClass2.component_part
         ! splicer end class.ExClass2.component_part
     contains
@@ -107,7 +107,7 @@ contains
         character(*) :: name
         type(exclass2) :: rv
         ! splicer begin class.ExClass2.method.ex_class2
-        rv%obj = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)
+        rv%voidptr = aa_exclass2_ex_class2(trim(name) // C_NULL_CHAR)
         ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     
@@ -116,8 +116,8 @@ contains
         implicit none
         type(exclass2) :: obj
         ! splicer begin class.ExClass2.method.ex_class1
-        call aa_exclass2_ex_class1(obj%obj)
-        obj%obj = C_NULL_PTR
+        call aa_exclass2_ex_class1(obj%voidptr)
+        obj%voidptr = C_NULL_PTR
         ! splicer end class.ExClass2.method.ex_class1
     end subroutine exclass2_ex_class1
     
@@ -127,7 +127,7 @@ contains
         class(exclass2) :: obj
         character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%obj)) :: rv
         ! splicer begin class.ExClass2.method.get_name
-        rv = fstr(aa_exclass2_get_name(obj%obj))
+        rv = fstr(aa_exclass2_get_name(obj%voidptr))
         ! splicer end class.ExClass2.method.get_name
     end function exclass2_get_name
     
@@ -137,7 +137,7 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.ExClass2.method.get_name_length
-        rv = aa_exclass2_get_name_length(obj%obj)
+        rv = aa_exclass2_get_name_length(obj%voidptr)
         ! splicer end class.ExClass2.method.get_name_length
     end function exclass2_get_name_length
     
@@ -148,7 +148,7 @@ contains
         type(exclass1) :: in
         type(exclass1) :: rv
         ! splicer begin class.ExClass2.method.get_class1
-        rv%obj = aa_exclass2_get_class1(obj%obj, in%obj)
+        rv%voidptr = aa_exclass2_get_class1(obj%voidptr, in%voidptr)
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
@@ -159,7 +159,7 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.ExClass2.method.declare
-        call aa_exclass2_declare(obj%obj, type, len)
+        call aa_exclass2_declare(obj%voidptr, type, len)
         ! splicer end class.ExClass2.method.declare
     end subroutine exclass2_declare
     
@@ -168,7 +168,7 @@ contains
         implicit none
         class(exclass2) :: obj
         ! splicer begin class.ExClass2.method.destroyall
-        call aa_exclass2_destroyall(obj%obj)
+        call aa_exclass2_destroyall(obj%voidptr)
         ! splicer end class.ExClass2.method.destroyall
     end subroutine exclass2_destroyall
     
@@ -178,7 +178,7 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.ExClass2.method.get_type_id
-        rv = aa_exclass2_get_type_id(obj%obj)
+        rv = aa_exclass2_get_type_id(obj%voidptr)
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
     

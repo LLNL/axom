@@ -15,7 +15,7 @@ module exclass1_mod
     ! splicer end class.ExClass1.module_top
     
     type exclass1
-        type(C_PTR) obj
+        type(C_PTR) voidptr
         ! splicer begin class.ExClass1.component_part
           component part 1a
           component part 1b
@@ -158,7 +158,7 @@ contains
         character(*) :: name
         type(exclass1) :: rv
         ! splicer begin class.ExClass1.method.new
-        rv%obj = aa_exclass1_new(trim(name) // C_NULL_CHAR)
+        rv%voidptr = aa_exclass1_new(trim(name) // C_NULL_CHAR)
         ! splicer end class.ExClass1.method.new
     end function exclass1_new
     
@@ -167,8 +167,8 @@ contains
         implicit none
         type(exclass1) :: obj
         ! splicer begin class.ExClass1.method.delete
-        call aa_exclass1_delete(obj%obj)
-        obj%obj = C_NULL_PTR
+        call aa_exclass1_delete(obj%voidptr)
+        obj%voidptr = C_NULL_PTR
         ! splicer end class.ExClass1.method.delete
     end subroutine exclass1_delete
     
@@ -179,7 +179,7 @@ contains
         integer(C_INT) :: incr
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.increment_count
-        rv = aa_exclass1_increment_count(obj%obj, incr)
+        rv = aa_exclass1_increment_count(obj%voidptr, incr)
         ! splicer end class.ExClass1.method.increment_count
     end function exclass1_increment_count
     
@@ -189,7 +189,7 @@ contains
         class(exclass1) :: obj
         character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%obj)) :: rv
         ! splicer begin class.ExClass1.method.get_name
-        rv = fstr(aa_exclass1_get_name(obj%obj))
+        rv = fstr(aa_exclass1_get_name(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name
     end function exclass1_get_name
     
@@ -199,7 +199,7 @@ contains
         class(exclass1) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.get_name_length
-        rv = aa_exclass1_get_name_length(obj%obj)
+        rv = aa_exclass1_get_name_length(obj%voidptr)
         ! splicer end class.ExClass1.method.get_name_length
     end function exclass1_get_name_length
     
@@ -209,7 +209,7 @@ contains
         class(exclass1) :: obj
         character(kind=C_CHAR, len=1) :: rv
         ! splicer begin class.ExClass1.method.get_name_error_check
-        rv = fstr(aa_exclass1_get_name_error_check(obj%obj))
+        rv = fstr(aa_exclass1_get_name_error_check(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
@@ -219,7 +219,7 @@ contains
         class(exclass1) :: obj
         character(kind=C_CHAR, len=1) :: rv
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv = fstr(aa_exclass1_get_name_arg(obj%obj))
+        rv = fstr(aa_exclass1_get_name_arg(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name_arg
     end function exclass1_get_name_arg
     
@@ -229,7 +229,7 @@ contains
         class(exclass1) :: obj
         type(exclass2) :: rv
         ! splicer begin class.ExClass1.method.get_root
-        rv%obj = aa_exclass1_get_root(obj%obj)
+        rv%voidptr = aa_exclass1_get_root(obj%voidptr)
         ! splicer end class.ExClass1.method.get_root
     end function exclass1_get_root
     
@@ -240,7 +240,7 @@ contains
         integer(C_INT) :: value
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.get_value_from_int
-        rv = aa_exclass1_get_value_from_int(obj%obj, value)
+        rv = aa_exclass1_get_value_from_int(obj%voidptr, value)
         ! splicer end class.ExClass1.method.get_value_from_int
     end function exclass1_get_value_from_int
     
@@ -251,7 +251,7 @@ contains
         integer(C_LONG) :: value
         integer(C_LONG) :: rv
         ! splicer begin class.ExClass1.method.get_value_1
-        rv = aa_exclass1_get_value_1(obj%obj, value)
+        rv = aa_exclass1_get_value_1(obj%voidptr, value)
         ! splicer end class.ExClass1.method.get_value_1
     end function exclass1_get_value_1
     
@@ -261,7 +261,7 @@ contains
         class(exclass1) :: obj
         type(C_PTR) :: rv
         ! splicer begin class.ExClass1.method.get_addr
-        rv = aa_exclass1_get_addr(obj%obj)
+        rv = aa_exclass1_get_addr(obj%voidptr)
         ! splicer end class.ExClass1.method.get_addr
     end function exclass1_get_addr
     
@@ -272,7 +272,7 @@ contains
         logical :: in
         logical :: rv
         ! splicer begin class.ExClass1.method.has_addr
-        rv = booltological(aa_exclass1_has_addr(obj%obj, logicaltobool(in)))
+        rv = booltological(aa_exclass1_has_addr(obj%voidptr, logicaltobool(in)))
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     

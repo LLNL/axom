@@ -5,13 +5,27 @@ Generate Fortran bindings for C++ code.
 module {F_module_name}
 
 type {F_derived_name}
-  type(C_PTR) {F_this}
+  type(C_PTR) {F_derived_member}
+
 constains
   procedure :: {F_name_method} => {F_name_impl}
   generic :: {F_name_generic} => {F_name_method}, ...
 end type
 
+interface
+  {F_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
+      bind(C, name="{C_name}")
 
+  end {F_C_subprogram} {F_C_name}
+
+end interface
+
+contains
+
+ {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
+ end {F_subprogram} {F_name_impl}
+
+----------
 TODO:
   intent is kludged for now.  They're all intent(IN) because ifort
   requires them for pure functions
@@ -23,6 +37,7 @@ import util
 import fwrap_util
 
 wformat = util.wformat
+append_format = util.append_format
 
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
@@ -141,12 +156,13 @@ class Wrapf(util.WrapperMixin):
         fmt_library = self.tree['fmt']
         fmt_library.F_this = options.get('F_this', 'obj')
         fmt_library.F_result = options.get('F_result', 'rv')
+        fmt_library.F_derived_member = options.get('F_derived_member', 'voidptr')
+        fmt_library.F_instance_ptr   = wformat('{F_this}%{F_derived_member}', fmt_library)
         fmt_library.F_result_clause = ''
         fmt_library.F_pure_clause = ''
         fmt_library.F_C_result_clause = ''
 
         self._begin_output_file()
-#        if not options.F_module_per_class:
         self._push_splicer('class')
         for node in self.tree['classes']:
             self._begin_class()
@@ -214,7 +230,7 @@ class Wrapf(util.WrapperMixin):
                 '',
                 wformat('type {F_derived_name}', fmt_class),
                 1,
-                wformat('type(C_PTR) {F_this}', fmt_class),
+                wformat('type(C_PTR) {F_derived_member}', fmt_class),
                 ])
         self._create_splicer('component_part', self.f_type_decl)
         self.f_type_decl.extend([
@@ -256,6 +272,7 @@ class Wrapf(util.WrapperMixin):
 
         options = node['options']
         fmt_func = node['fmt']
+        fmt = util.Options(fmt_func)
 
         result = node['result']
         result_type = result['type']
@@ -276,7 +293,7 @@ class Wrapf(util.WrapperMixin):
         else:
             result_string = False
 
-        fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
+        fmt_func.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt_func)
         if 'F_this' in options:
             fmt_func.F_this = options.F_this
         if 'F_result' in options:
@@ -335,7 +352,7 @@ class Wrapf(util.WrapperMixin):
             if not is_ctor:
                 arg_c_names.append(C_this)
                 arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
-                arg_c_call.append(fmt_func.F_obj)
+                arg_c_call.append(fmt_func.F_instance_ptr)
                 arg_f_names.append(fmt_func.F_this)
                 if is_dtor:
                     arg_f_decl.append(wformat(
@@ -359,7 +376,8 @@ class Wrapf(util.WrapperMixin):
             arg_c_decl.append(self._c_decl(arg))
 
             rrr = self.typedef[arg['type']].fortran_to_c
-            arg_c_call.append(rrr.format(var=arg['name']))
+            fmt.var = arg['name']
+            append_format(arg_c_call, rrr, fmt)
             arg_f_names.append(arg['name'])
             arg_f_decl.append(self._f_decl(arg))
 
@@ -413,7 +431,7 @@ class Wrapf(util.WrapperMixin):
         else:
             F_code = []
             if is_ctor:
-                F_code.append(wformat('{F_result}%{F_this} = {F_C_name}({F_arg_c_call})', fmt_func))
+                F_code.append(wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})', fmt_func))
             elif result_string:
                 F_code.append(wformat('rv_ptr = {F_C_name}({F_arg_c_call})', fmt_func))
                 F_code.append('call FccCopyPtr(rv, len(rv), rv_ptr)')
@@ -423,7 +441,7 @@ class Wrapf(util.WrapperMixin):
             else:
                 F_code.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
             if is_dtor:
-                F_code.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt_func))
+                F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt_func))
 
         c_interface = self.c_interface
         c_interface.append('')

@@ -224,13 +224,13 @@ class Schema(object):
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 fortran_derived = unname,
-                fortran_to_c = '{var}%obj',
+                fortran_to_c = '{var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module = {fmt_class.F_module_name:[unname]},
 
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
-                f_return_code = '{F_result}%{F_this} = {F_C_name}({F_arg_c_call})',
+                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})',
 
                 PY_format = 'O',
                 PY_to_object = 'XX_to',

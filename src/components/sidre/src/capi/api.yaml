@@ -142,6 +142,9 @@ classes:
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
     -  decl: const std::string& getGroupName(IndexType idx) const
+#       result:
+#          attrs:
+#             len: aa_exclass1_get_group_name_length({F_class_instance})
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
