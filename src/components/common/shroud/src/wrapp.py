@@ -260,7 +260,10 @@ class Wrapp(util.WrapperMixin):
             for arg in node.get('args', []):
                 arg_name = arg['name']
                 arg_typedef = self.typedef[arg['type']]
-                format.append('s')
+                format.append(arg_typedef.PY_format)
+                if arg_typedef.PY_from_object:
+                    format.append('&')
+                    addrargs.append(arg_typedef.PY_from_object)
                 addrargs.append('&' + arg_name)
                 PY_decl.append(self.std_c_decl('c_type', arg) + ';')
                 cpp_call_list = [arg_name]
@@ -268,9 +271,11 @@ class Wrapp(util.WrapperMixin):
             PY_decl.append(' ')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
-            fmt.PyArg_addrargs = ','.join(addrargs)
+            fmt.PyArg_addrargs = ', '.join(addrargs)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
-            PY_code.append(wformat('  {PyArg_addrargs}))', fmt))
+            PY_code.append(1)
+            PY_code.append(wformat('{PyArg_addrargs}))', fmt))
+            PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
             
         fmt.call_list = ', '.join(cpp_call_list)
@@ -290,6 +295,22 @@ class Wrapp(util.WrapperMixin):
             line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
 
+        # return Object
+        if result_type == 'void' and not result_is_ptr:
+            PY_code.append('Py_RETURN_NONE;')
+        else:
+            format = [ result_typedef.PY_format ]
+            addrargs = [ ]
+            if result_typedef.PY_to_object:
+                format.append('&')
+                addrargs.append(result_typedef.PY_from_object)
+            if result_is_ptr:
+                addrargs = [ 'rv' ]
+            else:
+                addrargs = [ '&rv' ]
+            fmt.PyArg_format = ''.join(format)
+            fmt.PyArg_addrargs = ', '.join(addrargs)
+            PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))
 
         PY_impl = [1] + PY_decl + PY_code + [-1]
 

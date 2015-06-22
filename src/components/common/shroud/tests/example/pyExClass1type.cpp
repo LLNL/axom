@@ -40,12 +40,13 @@ PP_exclass1_increment_count(
 // splicer begin class.ExClass1.method.incrementCount
     int incr;
      
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:incrementCount", kw_list,
-      &incr))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:incrementCount", kw_list,
+        &incr))
     {
         return NULL;
     }
     int rv = selfobj->incrementCount(incr);
+    return Py_BuildValue("i", &rv);
 // splicer end class.ExClass1.method.incrementCount
 }
 
@@ -61,6 +62,7 @@ PP_exclass1_get_name(
 {
 // splicer begin class.ExClass1.method.getName
     const std::string & rv = selfobj->getName();
+    return Py_BuildValue("s", &rv);
 // splicer end class.ExClass1.method.getName
 }
 
@@ -76,6 +78,7 @@ PP_exclass1_get_name_length(
 {
 // splicer begin class.ExClass1.method.get_name_length
     const int rv = selfobj->get_name_length();
+    return Py_BuildValue("i", &rv);
 // splicer end class.ExClass1.method.get_name_length
 }
 
@@ -91,6 +94,7 @@ PP_exclass1_get_root(
 {
 // splicer begin class.ExClass1.method.getRoot
     ExClass2 * rv = selfobj->getRoot();
+    return Py_BuildValue("O&", rv);
 // splicer end class.ExClass1.method.getRoot
 }
 
@@ -107,12 +111,13 @@ PP_exclass1_get_value_from_int(
 // splicer begin class.ExClass1.method.getValue
     int value;
      
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
-      &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getValue", kw_list,
+        &value))
     {
         return NULL;
     }
     int rv = selfobj->getValue(value);
+    return Py_BuildValue("i", &rv);
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -129,12 +134,13 @@ PP_exclass1_get_value_1(
 // splicer begin class.ExClass1.method.getValue
     long value;
      
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getValue", kw_list,
-      &value))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:getValue", kw_list,
+        &value))
     {
         return NULL;
     }
     long rv = selfobj->getValue(value);
+    return Py_BuildValue("l", &rv);
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -150,6 +156,7 @@ PP_exclass1_get_addr(
 {
 // splicer begin class.ExClass1.method.getAddr
     void * rv = selfobj->getAddr();
+    return Py_BuildValue("O", rv);
 // splicer end class.ExClass1.method.getAddr
 }
 
@@ -166,12 +173,13 @@ PP_exclass1_has_addr(
 // splicer begin class.ExClass1.method.hasAddr
     bool in;
      
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasAddr", kw_list,
-      &in))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:hasAddr", kw_list,
+        &in))
     {
         return NULL;
     }
     bool rv = selfobj->hasAddr(in);
+    return Py_BuildValue("O", &rv);
 // splicer end class.ExClass1.method.hasAddr
 }
 
@@ -187,6 +195,7 @@ PP_exclass1_splicer_special(
 {
 // splicer begin class.ExClass1.method.SplicerSpecial
     selfobj->SplicerSpecial();
+    Py_RETURN_NONE;
 // splicer end class.ExClass1.method.SplicerSpecial
 }
 static PyMethodDef PP_ExClass1_methods[] = {

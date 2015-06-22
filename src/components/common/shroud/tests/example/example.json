@@ -1000,6 +1000,8 @@
     }, 
     "typedef": {
         "ExClass1": {
+            "PY_from_object": "XX_from", 
+            "PY_to_object": "XX_to", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<ExClass1{ptr}>({var})", 
@@ -1017,6 +1019,8 @@
             "forward": "ExClass1"
         }, 
         "ExClass2": {
+            "PY_from_object": "XX_from", 
+            "PY_to_object": "XX_to", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<ExClass2{ptr}>({var})", 
@@ -1068,12 +1072,14 @@
             "fortran_to_c": "logicaltobool({var})"
         }, 
         "int": {
+            "PY_format": "i", 
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
             "f_type": "integer(C_INT)"
         }, 
         "long": {
+            "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
@@ -1090,6 +1096,7 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
+            "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
@@ -1103,6 +1110,7 @@
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 
         "string": {
+            "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 

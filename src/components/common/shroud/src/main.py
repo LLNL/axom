@@ -113,12 +113,14 @@ class Schema(object):
                 cpp_type  = 'int',
                 c_fortran = 'integer(C_INT)',
                 f_type    = 'integer(C_INT)',
+                PY_format = 'i',
                 ),
             long   = util.Typedef('long',
                 c_type    = 'long',
                 cpp_type  = 'long',
                 c_fortran = 'integer(C_LONG)',
                 f_type    = 'integer(C_LONG)',
+                PY_format = 'l',
                 ),
             size_t   = util.Typedef('size_t',
                 c_type    = 'size_t',
@@ -145,6 +147,7 @@ class Schema(object):
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call}))',
+                PY_format = 's',
                 base = 'string',
                 ),
             )
@@ -228,6 +231,10 @@ class Schema(object):
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_this} = {F_C_name}({F_arg_c_call})',
+
+                PY_format = 'O',
+                PY_to_object = 'XX_to',
+                PY_from_object = 'XX_from',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,

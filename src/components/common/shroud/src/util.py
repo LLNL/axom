@@ -223,6 +223,10 @@ class Typedef(object):
         fortran_to_c='{var}', # expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code='{F_result} = {F_C_name}({F_arg_c_call})',
+
+        PY_format='O',        # 'format unit' for PyArg_Parse
+        PY_to_object=None,    # PyBuild - object = converter(address)
+        PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
         )
 
     def __init__(self, name, **kw):

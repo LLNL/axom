@@ -153,6 +153,7 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.getName
     const std::string & rv = selfobj->getName();
+    return Py_BuildValue("s", &rv);
 // splicer end class.ExClass2.method.getName
 }
 
@@ -168,6 +169,7 @@ PP_exclass2_get_name_length(
 {
 // splicer begin class.ExClass2.method.get_name_length
     const int rv = selfobj->get_name_length();
+    return Py_BuildValue("i", &rv);
 // splicer end class.ExClass2.method.get_name_length
 }
 
@@ -184,12 +186,13 @@ PP_exclass2_get_class1(
 // splicer begin class.ExClass2.method.get_class1
     AA_exclass1 * in;
      
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:get_class1", kw_list,
-      &in))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:get_class1", kw_list,
+        XX_from, &in))
     {
         return NULL;
     }
     ExClass1 * rv = selfobj->get_class1(in);
+    return Py_BuildValue("O&", rv);
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -207,12 +210,13 @@ PP_exclass2_declare(
     int type;
     ATK_SidreLength len;
      
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:declare", kw_list,
-      &type,&len))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+        &type, &len))
     {
         return NULL;
     }
     selfobj->declare(len);
+    Py_RETURN_NONE;
 // splicer end class.ExClass2.method.declare
 }
 
@@ -228,6 +232,7 @@ PP_exclass2_destroyall(
 {
 // splicer begin class.ExClass2.method.destroyall
     selfobj->destroyall();
+    Py_RETURN_NONE;
 // splicer end class.ExClass2.method.destroyall
 }
 
@@ -243,6 +248,7 @@ PP_exclass2_get_type_id(
 {
 // splicer begin class.ExClass2.method.getTypeID
     TypeID rv = selfobj->getTypeID();
+    return Py_BuildValue("O", &rv);
 // splicer end class.ExClass2.method.getTypeID
 }
 static PyMethodDef PP_ExClass2_methods[] = {

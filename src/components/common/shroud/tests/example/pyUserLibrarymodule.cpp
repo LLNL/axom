@@ -27,6 +27,7 @@ PP_local_function1(
 {
 // splicer begin function.local_function1
     local_function1();
+    Py_RETURN_NONE;
 // splicer end function.local_function1
 }
 
@@ -44,11 +45,12 @@ PP_is_name_valid(
     const char * name;
      
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
-      &name))
+        &name))
     {
         return NULL;
     }
     bool rv = isNameValid(name);
+    return Py_BuildValue("O", &rv);
 // splicer end function.isNameValid
 }
 static PyMethodDef PP_methods[] = {
