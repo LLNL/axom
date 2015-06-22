@@ -38,8 +38,8 @@ PY_databuffer_get_index(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.getIndex
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    IndexType rv = self->BBB->getIndex();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataBuffer.method.getIndex
 }
 
@@ -54,8 +54,8 @@ PY_databuffer_get_num_views(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.getNumViews
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getNumViews();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataBuffer.method.getNumViews
 }
 
@@ -70,8 +70,16 @@ PY_databuffer_declare(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.declare
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+        &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->declare(len);
+    Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.declare
 }
 
@@ -86,8 +94,17 @@ PY_databuffer_declare_external(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.declareExternal
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    void * external_data;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO:declareExternal", kw_list,
+        &external_data, &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->declareExternal(len);
+    Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.declareExternal
 }
 
@@ -102,8 +119,8 @@ PY_databuffer_allocate_existing(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.allocate
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    self->BBB->allocate();
+    Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.allocate
 }
 
@@ -118,8 +135,16 @@ PY_databuffer_allocate_from_type(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.allocate
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
+        &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->allocate(len);
+    Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.allocate
 }
 
@@ -134,8 +159,16 @@ PY_databuffer_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.reallocate
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
+        &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->reallocate(len);
+    Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.reallocate
 }
 
@@ -150,8 +183,8 @@ PY_databuffer_is_external(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.isExternal
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    bool rv = self->BBB->isExternal();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataBuffer.method.isExternal
 }
 
@@ -166,8 +199,8 @@ PY_databuffer_get_data(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.getData
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    void * rv = self->BBB->getData();
+    return Py_BuildValue("O", rv);
 // splicer end class.DataBuffer.method.getData
 }
 
@@ -182,8 +215,8 @@ PY_databuffer_get_total_bytes(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.getTotalBytes
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getTotalBytes();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataBuffer.method.getTotalBytes
 }
 static PyMethodDef PY_DataBuffer_methods[] = {

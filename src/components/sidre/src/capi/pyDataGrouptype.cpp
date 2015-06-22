@@ -69,8 +69,8 @@ PY_datagroup_get_parent(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getParent
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const DataGroup * rv = self->BBB->getParent();
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.getParent
 }
 
@@ -85,8 +85,8 @@ PY_datagroup_get_data_store(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getDataStore
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const DataStore * rv = self->BBB->getDataStore();
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.getDataStore
 }
 
@@ -101,8 +101,8 @@ PY_datagroup_get_num_views(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getNumViews
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getNumViews();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataGroup.method.getNumViews
 }
 
@@ -117,8 +117,8 @@ PY_datagroup_get_num_groups(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getNumGroups
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getNumGroups();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataGroup.method.getNumGroups
 }
 
@@ -133,8 +133,15 @@ PY_datagroup_has_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.hasView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasView", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    bool rv = self->BBB->hasView(name);
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataGroup.method.hasView
 }
 
@@ -149,8 +156,15 @@ PY_datagroup_create_view_and_buffer_simple(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.createViewAndBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->createViewAndBuffer(name);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.createViewAndBuffer
 }
 
@@ -165,8 +179,17 @@ PY_datagroup_create_view_and_buffer_from_type(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.createViewAndBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO:createViewAndBuffer", kw_list,
+        &name, &type, &len))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->createViewAndBuffer(len);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.createViewAndBuffer
 }
 
@@ -181,8 +204,16 @@ PY_datagroup_create_opaque_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.createOpaqueView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+    void * opaque_ptr;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:createOpaqueView", kw_list,
+        &name, &opaque_ptr))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->createOpaqueView(opaque_ptr);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.createOpaqueView
 }
 
@@ -197,8 +228,16 @@ PY_datagroup_create_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.createView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+    ATK_databuffer * buff;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:createView", kw_list,
+        &name, XX_from, &buff))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->createView(buff);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.createView
 }
 
@@ -213,8 +252,18 @@ PY_datagroup_create_external_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.createExternalView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+    void * external_data;
+    const int type;
+    const ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOOO:createExternalView", kw_list,
+        &name, &external_data, &type, &len))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->createExternalView(len);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.createExternalView
 }
 
@@ -229,8 +278,15 @@ PY_datagroup_move_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.moveView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_dataview * view;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:moveView", kw_list,
+        XX_from, &view))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->moveView(view);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.moveView
 }
 
@@ -245,8 +301,15 @@ PY_datagroup_copy_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.copyView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_dataview * view;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:copyView", kw_list,
+        XX_from, &view))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->copyView(view);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.copyView
 }
 
@@ -261,8 +324,15 @@ PY_datagroup_destroy_view_and_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.destroyViewAndBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:destroyViewAndBuffer", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    self->BBB->destroyViewAndBuffer(name);
+    Py_RETURN_NONE;
 // splicer end class.DataGroup.method.destroyViewAndBuffer
 }
 
@@ -277,8 +347,15 @@ PY_datagroup_get_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getView
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getView", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->getView(name);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.getView
 }
 
@@ -293,8 +370,15 @@ PY_datagroup_get_view_index(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getViewIndex
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getViewIndex", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    IndexType rv = self->BBB->getViewIndex(name);
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataGroup.method.getViewIndex
 }
 
@@ -309,8 +393,15 @@ PY_datagroup_get_view_name(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getViewName
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_IndexType idx;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getViewName", kw_list,
+        &idx))
+    {
+        return NULL;
+    }
+    const std::string & rv = self->BBB->getViewName(idx);
+    return Py_BuildValue("s", &rv);
 // splicer end class.DataGroup.method.getViewName
 }
 
@@ -325,8 +416,15 @@ PY_datagroup_has_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.hasGroup
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasGroup", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    bool rv = self->BBB->hasGroup(name);
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataGroup.method.hasGroup
 }
 
@@ -341,8 +439,15 @@ PY_datagroup_create_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.createGroup
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:createGroup", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    DataGroup * rv = self->BBB->createGroup(name);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.createGroup
 }
 
@@ -357,8 +462,15 @@ PY_datagroup_move_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.moveGroup
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_datagroup * grp;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:moveGroup", kw_list,
+        XX_from, &grp))
+    {
+        return NULL;
+    }
+    DataGroup * rv = self->BBB->moveGroup(grp);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.moveGroup
 }
 
@@ -373,8 +485,15 @@ PY_datagroup_destroy_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.destroyGroup
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:destroyGroup", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    self->BBB->destroyGroup(name);
+    Py_RETURN_NONE;
 // splicer end class.DataGroup.method.destroyGroup
 }
 
@@ -389,8 +508,15 @@ PY_datagroup_get_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getGroup
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getGroup", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    DataGroup * rv = self->BBB->getGroup(name);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataGroup.method.getGroup
 }
 
@@ -405,8 +531,15 @@ PY_datagroup_get_group_index(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getGroupIndex
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getGroupIndex", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    IndexType rv = self->BBB->getGroupIndex(name);
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataGroup.method.getGroupIndex
 }
 
@@ -421,8 +554,15 @@ PY_datagroup_get_group_name(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getGroupName
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_IndexType idx;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getGroupName", kw_list,
+        &idx))
+    {
+        return NULL;
+    }
+    const std::string & rv = self->BBB->getGroupName(idx);
+    return Py_BuildValue("s", &rv);
 // splicer end class.DataGroup.method.getGroupName
 }
 
@@ -437,8 +577,8 @@ PY_datagroup_print(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.print
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    self->BBB->print();
+    Py_RETURN_NONE;
 // splicer end class.DataGroup.method.print
 }
 
@@ -453,8 +593,16 @@ PY_datagroup_save(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.save
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * obase;
+    const char * protocol;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:save", kw_list,
+        &obase, &protocol))
+    {
+        return NULL;
+    }
+    self->BBB->save(protocol);
+    Py_RETURN_NONE;
 // splicer end class.DataGroup.method.save
 }
 
@@ -469,8 +617,16 @@ PY_datagroup_load(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.load
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * obase;
+    const char * protocol;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:load", kw_list,
+        &obase, &protocol))
+    {
+        return NULL;
+    }
+    self->BBB->load(protocol);
+    Py_RETURN_NONE;
 // splicer end class.DataGroup.method.load
 }
 static PyMethodDef PY_DataGroup_methods[] = {

@@ -17,38 +17,9 @@
 namespace asctoolkit {
 namespace sidre {
 // splicer begin C_definition
-const char * datagroup_capsule_name = "DataGroup";
 // splicer end C_definition
 PyObject *PY_error_obj;
 // splicer begin additional_functions
-PyObject *PP_DataGroup_to_Object(DataGroup *grp)
-{
-    PyObject *voidobj;
-    PyObject *args;
-    PyObject *rv;
-
-    voidobj = PyCapsule_New(grp, datagroup_capsule_name, NULL);
-    args = PyTuple_New(1);
-    PyTuple_SET_ITEM(args, 0, voidobj);
-    rv = PyObject_Call((PyObject *) &PY_DataGroup_Type, args, NULL);
-    Py_DECREF(args);
-    return rv;
-}
-
-// can be used with PyArg_ParseTupleAndKeywords().
-// Pull DataGroup pointer out of Py_DataGroup object.
-int PP_DataGroup_converter(PyObject *obj, void **addr)
-{
-    if (obj->ob_type != &PY_DataGroup_Type) {
-	// raise exception
-	return 0;
-    }
-    PY_DataGroup * self = (PY_DataGroup *) obj;
-    *addr = self->grp;
-
-    return 1;
-}
-
 // splicer end additional_functions
 
 static char PY_is_name_valid__doc__[] =
@@ -62,8 +33,15 @@ PY_is_name_valid(
   PyObject *kwds)
 {
 // splicer begin function.isNameValid
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const char * name;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    bool rv = isNameValid(name);
+    return Py_BuildValue("O", &rv);
 // splicer end function.isNameValid
 }
 static PyMethodDef PY_methods[] = {

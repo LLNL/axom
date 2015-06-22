@@ -28,38 +28,6 @@ return 0;
 // splicer end class.DataStore.type.init
 }
 
-static char PY_datastore_new__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_datastore_new(
-  PY_DataStore *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.DataStore.method.new
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
-// splicer end class.DataStore.method.new
-}
-
-static char PY_datastore_delete__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_datastore_delete(
-  PY_DataStore *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.DataStore.method.delete
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
-// splicer end class.DataStore.method.delete
-}
-
 static char PY_datastore_get_root__doc__[] =
 "documentation"
 ;
@@ -88,8 +56,15 @@ PY_datastore_get_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.getBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_IndexType idx;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getBuffer", kw_list,
+        &idx))
+    {
+        return NULL;
+    }
+    DataBuffer * rv = self->BBB->getBuffer(idx);
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataStore.method.getBuffer
 }
 
@@ -104,8 +79,8 @@ PY_datastore_create_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.createBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    DataBuffer * rv = self->BBB->createBuffer();
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataStore.method.createBuffer
 }
 
@@ -120,8 +95,15 @@ PY_datastore_destroy_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.destroyBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    ATK_IndexType id;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:destroyBuffer", kw_list,
+        &id))
+    {
+        return NULL;
+    }
+    self->BBB->destroyBuffer(id);
+    Py_RETURN_NONE;
 // splicer end class.DataStore.method.destroyBuffer
 }
 
@@ -136,8 +118,8 @@ PY_datastore_get_num_buffers(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.getNumBuffers
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getNumBuffers();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataStore.method.getNumBuffers
 }
 
@@ -152,13 +134,11 @@ PY_datastore_print(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.print
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    self->BBB->print();
+    Py_RETURN_NONE;
 // splicer end class.DataStore.method.print
 }
 static PyMethodDef PY_DataStore_methods[] = {
-{"new", (PyCFunction)PY_datastore_new, METH_NOARGS, PY_datastore_new__doc__},
-{"delete", (PyCFunction)PY_datastore_delete, METH_NOARGS, PY_datastore_delete__doc__},
 {"getRoot", (PyCFunction)PY_datastore_get_root, METH_NOARGS, PY_datastore_get_root__doc__},
 {"getBuffer", (PyCFunction)PY_datastore_get_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_get_buffer__doc__},
 {"createBuffer", (PyCFunction)PY_datastore_create_buffer, METH_NOARGS, PY_datastore_create_buffer__doc__},

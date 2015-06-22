@@ -38,8 +38,16 @@ PY_dataview_declare(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.declare
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+        &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->declare(len);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.declare
 }
 
@@ -54,8 +62,16 @@ PY_dataview_allocate(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.allocate
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
+        &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->allocate(len);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.allocate
 }
 
@@ -70,8 +86,16 @@ PY_dataview_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.reallocate
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    int type;
+    ATK_SidreLength len;
+     
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
+        &type, &len))
+    {
+        return NULL;
+    }
+    self->BBB->reallocate(len);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.reallocate
 }
 
@@ -86,8 +110,8 @@ PY_dataview_has_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.hasBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    bool rv = self->BBB->hasBuffer();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataView.method.hasBuffer
 }
 
@@ -102,8 +126,8 @@ PY_dataview_is_opaque(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.isOpaque
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    bool rv = self->BBB->isOpaque();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataView.method.isOpaque
 }
 
@@ -118,8 +142,8 @@ PY_dataview_get_name(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getName
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    const std::string & rv = self->BBB->getName();
+    return Py_BuildValue("s", &rv);
 // splicer end class.DataView.method.getName
 }
 
@@ -134,8 +158,8 @@ PY_dataview_get_opaque(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getOpaque
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    void * rv = self->BBB->getOpaque();
+    return Py_BuildValue("O", rv);
 // splicer end class.DataView.method.getOpaque
 }
 
@@ -150,8 +174,8 @@ PY_dataview_get_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getBuffer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    DataBuffer * rv = self->BBB->getBuffer();
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataView.method.getBuffer
 }
 
@@ -166,8 +190,8 @@ PY_dataview_get_data_pointer(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getDataPointer
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    void * rv = self->BBB->getDataPointer();
+    return Py_BuildValue("O", rv);
 // splicer end class.DataView.method.getDataPointer
 }
 
@@ -182,8 +206,8 @@ PY_dataview_get_owning_group(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getOwningGroup
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    DataGroup * rv = self->BBB->getOwningGroup();
+    return Py_BuildValue("O&", rv);
 // splicer end class.DataView.method.getOwningGroup
 }
 
@@ -198,8 +222,8 @@ PY_dataview_get_type_id(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getTypeID
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    TypeID rv = self->BBB->getTypeID();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataView.method.getTypeID
 }
 
@@ -214,8 +238,8 @@ PY_dataview_get_total_bytes(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getTotalBytes
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getTotalBytes();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataView.method.getTotalBytes
 }
 
@@ -230,8 +254,8 @@ PY_dataview_get_number_of_elements(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.getNumberOfElements
-PyErr_SetString(PyExc_NotImplementedError, "XXX");
-return NULL;
+    size_t rv = self->BBB->getNumberOfElements();
+    return Py_BuildValue("O", &rv);
 // splicer end class.DataView.method.getNumberOfElements
 }
 static PyMethodDef PY_DataView_methods[] = {

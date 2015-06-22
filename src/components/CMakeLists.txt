@@ -1,4 +1,4 @@
-add_definitions(-fPIC)
+#add_definitions(-fPIC)
 
 ## add components
 add_component(COMPONENT_NAME common DEFAULT_STATE ON)

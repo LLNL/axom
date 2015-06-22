@@ -34,46 +34,57 @@ extern PyTypeObject PY_DataGroup_Type;
 extern PyTypeObject PY_DataBuffer_Type;
 extern PyTypeObject PY_DataView_Type;
 // splicer begin C_declaration
-extern const char * datagroup_capsule_name;
-
-extern PyObject *PP_DataGroup_to_Object(DataGroup *grp);
-
 // splicer end C_declaration
+
+// helper functions
+extern const char *PY_DataStore_capsule_name;
+extern const char *PY_DataGroup_capsule_name;
+extern const char *PY_DataBuffer_capsule_name;
+extern const char *PY_DataView_capsule_name;
+PyObject *PP_DataStore_to_Object(DataStore *addr);
+int PP_DataStore_from_Object(PyObject *obj, void **addr);
+PyObject *PP_DataGroup_to_Object(DataGroup *addr);
+int PP_DataGroup_from_Object(PyObject *obj, void **addr);
+PyObject *PP_DataBuffer_to_Object(DataBuffer *addr);
+int PP_DataBuffer_from_Object(PyObject *obj, void **addr);
+PyObject *PP_DataView_to_Object(DataView *addr);
+int PP_DataView_from_Object(PyObject *obj, void **addr);
+
 // splicer begin class.DataStore.C_declaration
 // splicer end class.DataStore.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.DataStore.C_object
-DataStore * ds;
-// splicer end class.DataStore.C_object
+    DataStore * BBB;
+    // splicer begin class.DataStore.C_object
+    // splicer end class.DataStore.C_object
 } PY_DataStore;
 // splicer begin class.DataGroup.C_declaration
 // splicer end class.DataGroup.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.DataGroup.C_object
-DataGroup * grp;
-// splicer end class.DataGroup.C_object
+    DataGroup * BBB;
+    // splicer begin class.DataGroup.C_object
+    // splicer end class.DataGroup.C_object
 } PY_DataGroup;
 // splicer begin class.DataBuffer.C_declaration
 // splicer end class.DataBuffer.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.DataBuffer.C_object
-DataBuffer * buf;
-// splicer end class.DataBuffer.C_object
+    DataBuffer * BBB;
+    // splicer begin class.DataBuffer.C_object
+    // splicer end class.DataBuffer.C_object
 } PY_DataBuffer;
 // splicer begin class.DataView.C_declaration
 // splicer end class.DataView.C_declaration
 
 typedef struct {
 PyObject_HEAD
-// splicer begin class.DataView.C_object
-DataView * view;
-// splicer end class.DataView.C_object
+    DataView * BBB;
+    // splicer begin class.DataView.C_object
+    // splicer end class.DataView.C_object
 } PY_DataView;
 
 extern PyObject *PY_error_obj;
