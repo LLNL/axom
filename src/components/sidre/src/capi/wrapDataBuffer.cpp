@@ -109,6 +109,9 @@ return rv;
 // splicer end class.DataBuffer.method.getTotalBytes
 }
 
+// splicer begin class.DataBuffer.additional_functions
+// splicer end class.DataBuffer.additional_functions
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

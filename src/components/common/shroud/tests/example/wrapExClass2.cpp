@@ -82,6 +82,9 @@ return rv;
 // splicer end class.ExClass2.method.getTypeID
 }
 
+// splicer begin class.ExClass2.additional_functions
+// splicer end class.ExClass2.additional_functions
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

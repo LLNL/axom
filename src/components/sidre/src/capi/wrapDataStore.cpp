@@ -88,6 +88,9 @@ return;
 // splicer end class.DataStore.method.print
 }
 
+// splicer begin class.DataStore.additional_functions
+// splicer end class.DataStore.additional_functions
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

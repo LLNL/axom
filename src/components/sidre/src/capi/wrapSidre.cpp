@@ -25,6 +25,9 @@ return name != NULL;
 // splicer end function.isNameValid
 }
 
+// splicer begin additional_functions
+// splicer end additional_functions
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

@@ -107,6 +107,9 @@ ExClass1 *selfobj = static_cast<ExClass1 *>(self);
 // splicer end class.ExClass1.method.SplicerSpecial
 }
 
+// splicer begin class.ExClass1.additional_functions
+// splicer end class.ExClass1.additional_functions
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"

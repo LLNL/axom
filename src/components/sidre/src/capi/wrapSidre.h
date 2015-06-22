@@ -24,6 +24,9 @@ extern "C" {
 #else
 #endif
 
+// splicer begin C_definition
+// splicer end C_definition
+
 bool ATK_is_name_valid(const char * name);
 
 #ifdef __cplusplus

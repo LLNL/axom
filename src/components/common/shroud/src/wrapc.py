@@ -85,19 +85,21 @@ class Wrapc(util.WrapperMixin):
 
         self._push_splicer('class')
         for node in self.tree['classes']:
+            self._push_splicer(node['name'])
             self.write_file(node, self.wrap_class, True)
+            self._pop_splicer(node['name'])
         self._pop_splicer('class')
 
         if self.tree['functions']:
             self.write_file(self.tree, self.wrap_functions, False)
 
     def write_file(self, node, worker, cls):
-        """Write a file for the library and it's functions or
-        a class and it's methods.
+        """Write a file for the library and its functions or
+        a class and its methods.
         """
         fmt = node['fmt']
         self._begin_output_file()
-        worker(node)
+        worker(node)    # self.wrap_class or self.wrap_functions
         c_header = fmt.C_header_filename
         c_impl   = fmt.C_impl_filename
         self.write_header(node, c_header, cls)
@@ -121,9 +123,6 @@ class Wrapc(util.WrapperMixin):
                 '#ifndef %s' % guard,
                 '#define %s' % guard,
                 ])
-        if cls:
-            self._push_splicer('class')
-
         # headers required by typedefs
         if self.header_typedef_include:
 #            output.append('// header_typedef_include')
@@ -151,9 +150,9 @@ class Wrapc(util.WrapperMixin):
             output.append('struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};'.
                      format(C_type_name=name))
         output.append('#endif')
+        output.append('')
+        self._create_splicer('C_definition', output)
         output.extend(self.header_proto_c);
-        if cls:
-            self._pop_splicer('class')
         output.extend([
                 '',
                 '#ifdef __cplusplus',
@@ -189,6 +188,8 @@ class Wrapc(util.WrapperMixin):
         self.namespace(node, 'begin', output)
         output.extend(self.impl)
         output.append('')
+        self._create_splicer('additional_functions', output)
+        output.append('')
         self.namespace(node, 'end', output)
 
         output.append('}  // extern "C"')
@@ -201,7 +202,6 @@ class Wrapc(util.WrapperMixin):
         typedef = self.typedef[name]
         cname = typedef.c_type
 
-        self._push_splicer(name)
 #        fmt_class = node['fmt']
 #        fmt_class.update(dict(
 #                ))
@@ -213,8 +213,6 @@ class Wrapc(util.WrapperMixin):
         for method in node['methods']:
             self.wrap_method(node, method)
         self._pop_splicer('method')
-
-        self._pop_splicer(name)
 
     def wrap_method(self, cls, node):
         """

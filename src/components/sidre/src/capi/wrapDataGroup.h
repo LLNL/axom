@@ -39,6 +39,9 @@ struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
+// splicer begin class.DataGroup.C_definition
+// splicer end class.DataGroup.C_definition
+
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);
 
 const ATK_datagroup * ATK_datagroup_get_parent(const ATK_datagroup * self);

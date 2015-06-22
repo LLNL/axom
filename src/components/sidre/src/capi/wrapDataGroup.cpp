@@ -262,6 +262,9 @@ return;
 // splicer end class.DataGroup.method.load
 }
 
+// splicer begin class.DataGroup.additional_functions
+// splicer end class.DataGroup.additional_functions
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

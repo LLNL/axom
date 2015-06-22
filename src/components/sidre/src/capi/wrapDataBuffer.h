@@ -30,6 +30,9 @@ struct s_ATK_databuffer;
 typedef struct s_ATK_databuffer ATK_databuffer;
 #endif
 
+// splicer begin class.DataBuffer.C_definition
+// splicer end class.DataBuffer.C_definition
+
 ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_num_views(ATK_databuffer * self);

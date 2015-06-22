@@ -35,6 +35,9 @@ module sidre_mod
     integer, parameter :: ATK_C_LONG_T = 15
     integer, parameter :: ATK_C_FLOAT_T = 16
     integer, parameter :: ATK_C_DOUBLE_T = 17
+    
+    integer, parameter :: invalid_index = -1
+    
     ! splicer end module_top
     
     ! splicer begin class.DataStore.module_top

@@ -18,6 +18,9 @@ extern "C" {
 #else
 #endif
 
+// splicer begin C_definition
+// splicer end C_definition
+
 void AA_local_function1();
 
 bool AA_is_name_valid(const char * name);

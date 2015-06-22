@@ -26,6 +26,9 @@ struct s_AA_exclass2;
 typedef struct s_AA_exclass2 AA_exclass2;
 #endif
 
+// splicer begin class.ExClass2.C_definition
+// splicer end class.ExClass2.C_definition
+
 AA_exclass2 * AA_exclass2_ex_class2(const char * name);
 
 void AA_exclass2_ex_class1(AA_exclass2 * self);

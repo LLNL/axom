@@ -36,6 +36,9 @@ struct s_ATK_datastore;
 typedef struct s_ATK_datastore ATK_datastore;
 #endif
 
+// splicer begin class.DataStore.C_definition
+// splicer end class.DataStore.C_definition
+
 ATK_datastore * ATK_datastore_new();
 
 void ATK_datastore_delete(ATK_datastore * self);

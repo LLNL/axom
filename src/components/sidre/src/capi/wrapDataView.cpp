@@ -136,6 +136,9 @@ return rv;
 // splicer end class.DataView.method.getNumberOfElements
 }
 
+// splicer begin class.DataView.additional_functions
+// splicer end class.DataView.additional_functions
+
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"

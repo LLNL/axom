@@ -26,6 +26,9 @@ return name != NULL;
 // splicer end function.isNameValid
 }
 
+// splicer begin additional_functions
+// splicer end additional_functions
+
 }  // namespace example
 }  // namespace nested
 }  // extern "C"
