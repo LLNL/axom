@@ -147,9 +147,12 @@ contains
 end module sidre_buffer
 !----------------------------------------------------------------------
 
-program tester
+function fortran_test() bind(C,name="fortran_test")
   use fruit
   use sidre_buffer
+  implicit none
+  integer(C_INT) fortran_test
+
   call init_fruit
 
   call create_buffers
@@ -159,4 +162,6 @@ program tester
 
   call fruit_summary
   call fruit_finalize
-end program tester
+
+  fortran_test = 0
+end function fortran_test

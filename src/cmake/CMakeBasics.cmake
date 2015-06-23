@@ -575,7 +575,7 @@ macro(add_fortran_test)
             "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
        get_filename_component(test_name ${arg_TEST_SOURCE} NAME_WE)
-       add_executable( ${test_name} ${arg_TEST_SOURCE} )
+       add_executable( ${test_name} fortran_driver.cpp ${arg_TEST_SOURCE} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
         set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")
