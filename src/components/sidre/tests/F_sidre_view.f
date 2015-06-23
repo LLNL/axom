@@ -500,9 +500,12 @@ contains
 end module sidre_view
 !----------------------------------------------------------------------
 
-program tester
+function fortran_test() bind(C,name="fortran_test")
   use fruit
   use sidre_view
+  implicit none
+  integer(C_INT) fortran_test
+
   call init_fruit
 
   call create_views
@@ -516,4 +519,6 @@ program tester
 
   call fruit_summary
   call fruit_finalize
-end program tester
+
+  fortran_test = 0
+end function fortran_test
