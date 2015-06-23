@@ -435,7 +435,7 @@ class Wrapf(util.WrapperMixin):
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)
         if 'F_code' in options:
-            F_code = [ options.F_code ]
+            F_code = [   wformat(options.F_code, fmt) ]
         elif splicer_code:
             F_code = splicer_code
         else:
@@ -446,8 +446,8 @@ class Wrapf(util.WrapperMixin):
                 F_code.append(wformat('rv_ptr = {F_C_name}({F_arg_c_call})', fmt_func))
                 F_code.append('call FccCopyPtr(rv, len(rv), rv_ptr)')
             elif subprogram == 'function':
-                fmt = result_typedef.f_return_code
-                F_code.append(wformat(fmt, fmt_func))
+                fmt.return_value = wformat(result_typedef.f_return_code, fmt)
+                F_code.append(fmt.return_value)
             else:
                 F_code.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
             if is_dtor:

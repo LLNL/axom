@@ -465,6 +465,16 @@ module sidre_mod
         end subroutine atk_datagroup_load
         
         ! splicer begin class.DataGroup.additional_interfaces
+        
+        pure function atk_datagroup_get_group_name_with_error_check(self, idx) result(rv) &
+             bind(C, name="ATK_datagroup_get_group_name_with_error_check")
+          use iso_c_binding
+          implicit none
+          type(C_PTR), value, intent(IN) :: self
+          integer(C_INT), value, intent(IN) :: idx
+          type(C_PTR) rv
+        end function atk_datagroup_get_group_name_with_error_check
+        
         ! splicer end class.DataGroup.additional_interfaces
         
         pure function atk_databuffer_get_index(self) result(rv) &
@@ -1017,7 +1027,7 @@ contains
         integer(C_INT) :: idx
         character(kind=C_CHAR, len=atk_datagroup_get_group_name_length(obj%voidptr, idx)) :: rv
         ! splicer begin class.DataGroup.method.get_group_name
-        rv = fstr(atk_datagroup_get_group_name(obj%voidptr, idx))
+        rv = fstr(atk_datagroup_get_group_name_with_error_check(obj%voidptr, idx))
         ! splicer end class.DataGroup.method.get_group_name
     end function datagroup_get_group_name
     

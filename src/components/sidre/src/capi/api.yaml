@@ -146,9 +146,12 @@ classes:
        result:
           attrs:
              len: atk_datagroup_get_group_name_length({F_instance_ptr}, idx)
+       options:
+          F_code: rv = fstr(atk_datagroup_get_group_name_with_error_check({F_instance_ptr}, idx))
     - decl: int GetGroupNameLength(IndexType idx) const
       helper: True
       options:
+         # getGroupName returns InvalidName for error which will have 0 length
          C_code: return selfobj->getGroupName(idx).length();
 
 
@@ -255,6 +258,8 @@ functions:
 
 # Files which contain code to be inserted into generated code
 splicer:
+  c:
+  -  csidresplicer.c
   f:
   -  fsidresplicer.f
   py:
