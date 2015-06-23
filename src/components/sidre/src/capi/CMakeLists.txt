@@ -41,6 +41,9 @@ set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+            ${CMAKE_CURRENT_SOURCE_DIR}/csidresplicer.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/fsidresplicer.f
+            ${CMAKE_CURRENT_SOURCE_DIR}/pysidresplicer.c
     COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     COMMENT "Running shroud api.yaml"
