@@ -189,12 +189,12 @@ PP_exclass2_get_class1(
     char *kw_list[] = { (char *) kwcpp+0 };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:get_class1", kw_list,
-        XX_from, &in))
+        PP_ExClass1_from_Object, &in))
     {
         return NULL;
     }
     ExClass1 * rv = self->BBB->get_class1(in);
-    return Py_BuildValue("O&", rv);
+    return Py_BuildValue("O&", PP_ExClass1_to_Object, rv);
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -219,7 +219,7 @@ PP_exclass2_declare(
     {
         return NULL;
     }
-    self->BBB->declare(len);
+    self->BBB->declare(type, len);
     Py_RETURN_NONE;
 // splicer end class.ExClass2.method.declare
 }

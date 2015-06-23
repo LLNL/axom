@@ -148,6 +148,14 @@ class Wrapp(util.WrapperMixin):
         self.py_helper_prototypes = []
         self.py_helper_functions = []
 
+        # preprocess all classes first
+        for node in self.tree['classes']:
+            typedef = self.typedef[node['name']]
+            fmt = node['fmt']
+            typedef.PY_format = 'O'
+            fmt.PY_to_object_func = typedef.PY_to_object = wformat('PP_{cpp_class}_to_Object', fmt)
+            fmt.PY_from_object_func = typedef.PY_from_object = wformat('PP_{cpp_class}_from_Object', fmt)
+
         self._push_splicer('class')
         for node in self.tree['classes']:
             name = node['name']
@@ -242,7 +250,7 @@ return rv;""", fmt)
         to_object = to_object.split('\n')
         
 
-        proto = wformat('PyObject *PP_{cpp_class}_to_Object({cpp_class} *addr)', fmt)
+        proto = wformat('PyObject *{PY_to_object_func}({cpp_class} *addr)', fmt)
         self.py_helper_prototypes.append(proto + ';')
 
         self.py_helper_functions.append('')
@@ -263,7 +271,7 @@ return rv;""", fmt)
 return 1;""", fmt)
         from_object = from_object.split('\n')
 
-        proto = wformat('int PP_{cpp_class}_from_Object(PyObject *obj, void **addr)', fmt)
+        proto = wformat('int {PY_from_object_func}(PyObject *obj, void **addr)', fmt)
         self.py_helper_prototypes.append(proto + ';')
 
         self.py_helper_functions.append('')
@@ -345,7 +353,7 @@ return 1;""", fmt)
                     addrargs.append(arg_typedef.PY_from_object)
                 addrargs.append('&' + arg_name)
                 PY_decl.append(self.std_c_decl('c_type', arg) + ';')
-                cpp_call_list = [arg_name]
+                cpp_call_list.append(arg_name)
 
             # jump through some hoops for char ** const correctness for C++
             PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
@@ -385,11 +393,11 @@ return 1;""", fmt)
             addrargs = [ ]
             if result_typedef.PY_to_object:
                 format.append('&')
-                addrargs.append(result_typedef.PY_from_object)
+                addrargs.append(result_typedef.PY_to_object)
             if result_is_ptr:
-                addrargs = [ 'rv' ]
+                addrargs.append('rv')
             else:
-                addrargs = [ '&rv' ]
+                addrargs.append('&rv')
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
             PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))

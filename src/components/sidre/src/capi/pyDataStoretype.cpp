@@ -66,7 +66,7 @@ PY_datastore_get_buffer(
         return NULL;
     }
     DataBuffer * rv = self->BBB->getBuffer(idx);
-    return Py_BuildValue("O&", rv);
+    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
 // splicer end class.DataStore.method.getBuffer
 }
 
@@ -82,7 +82,7 @@ PY_datastore_create_buffer(
 {
 // splicer begin class.DataStore.method.createBuffer
     DataBuffer * rv = self->BBB->createBuffer();
-    return Py_BuildValue("O&", rv);
+    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
 // splicer end class.DataStore.method.createBuffer
 }
 

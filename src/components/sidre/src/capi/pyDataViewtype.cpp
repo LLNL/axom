@@ -48,7 +48,7 @@ PY_dataview_declare(
     {
         return NULL;
     }
-    self->BBB->declare(len);
+    self->BBB->declare(type, len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.declare
 }
@@ -74,7 +74,7 @@ PY_dataview_allocate(
     {
         return NULL;
     }
-    self->BBB->allocate(len);
+    self->BBB->allocate(type, len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.allocate
 }
@@ -100,7 +100,7 @@ PY_dataview_reallocate(
     {
         return NULL;
     }
-    self->BBB->reallocate(len);
+    self->BBB->reallocate(type, len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.reallocate
 }
@@ -181,7 +181,7 @@ PY_dataview_get_buffer(
 {
 // splicer begin class.DataView.method.getBuffer
     DataBuffer * rv = self->BBB->getBuffer();
-    return Py_BuildValue("O&", rv);
+    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
 // splicer end class.DataView.method.getBuffer
 }
 
@@ -213,7 +213,7 @@ PY_dataview_get_owning_group(
 {
 // splicer begin class.DataView.method.getOwningGroup
     DataGroup * rv = self->BBB->getOwningGroup();
-    return Py_BuildValue("O&", rv);
+    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
 // splicer end class.DataView.method.getOwningGroup
 }
 

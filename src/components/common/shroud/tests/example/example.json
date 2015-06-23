@@ -31,6 +31,8 @@
                 "PY_PyObject": "PP_ExClass1", 
                 "PY_PyTypeObject": "PP_ExClass1_Type", 
                 "PY_capsule_name": "PY_ExClass1_capsule_name", 
+                "PY_from_object_func": "PP_ExClass1_from_Object", 
+                "PY_to_object_func": "PP_ExClass1_to_Object", 
                 "PY_type_filename": "pyExClass1type.cpp", 
                 "cpp_class": "ExClass1", 
                 "lower_class": "exclass1", 
@@ -639,6 +641,8 @@
                 "PY_PyObject": "PP_ExClass2", 
                 "PY_PyTypeObject": "PP_ExClass2_Type", 
                 "PY_capsule_name": "PY_ExClass2_capsule_name", 
+                "PY_from_object_func": "PP_ExClass2_from_Object", 
+                "PY_to_object_func": "PP_ExClass2_to_Object", 
                 "PY_type_filename": "pyExClass2type.cpp", 
                 "cpp_class": "ExClass2", 
                 "lower_class": "exclass2", 
@@ -1156,8 +1160,8 @@
     }, 
     "typedef": {
         "ExClass1": {
-            "PY_from_object": "XX_from", 
-            "PY_to_object": "XX_to", 
+            "PY_from_object": "PP_ExClass1_from_Object", 
+            "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<ExClass1{ptr}>({var})", 
@@ -1175,8 +1179,8 @@
             "forward": "ExClass1"
         }, 
         "ExClass2": {
-            "PY_from_object": "XX_from", 
-            "PY_to_object": "XX_to", 
+            "PY_from_object": "PP_ExClass2_from_Object", 
+            "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
             "c_to_cpp": "static_cast<ExClass2{ptr}>({var})", 

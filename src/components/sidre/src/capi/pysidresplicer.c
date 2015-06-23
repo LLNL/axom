@@ -41,7 +41,7 @@ return rv;
         return -1;
 
     /* capsule_dbnode */
-    DataGroup *grp = static_cast<DataGroup *>(PyCapsule_GetPointer(grpobj, datagroup_capsule_name));
+    DataGroup *grp = static_cast<DataGroup *>(PyCapsule_GetPointer(grpobj, PY_DataGroup_capsule_name));
     self->BBB = grp;
     if (grp == NULL && PyErr_Occurred())
 	return -1;
