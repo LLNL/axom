@@ -229,6 +229,7 @@ class Wrapc(util.WrapperMixin):
             self.log.write("{0} {1[result][name]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
+        fmt = util.Options(fmt_func)
 
         # return type
         options = node['options']
@@ -328,7 +329,7 @@ class Wrapc(util.WrapperMixin):
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.method_name, None)
         if 'C_code' in options:
-            C_code = [ options.C_code ]
+            C_code = [   wformat(options.C_code, fmt) ]
         elif splicer_code:
             C_code = splicer_code
         else:

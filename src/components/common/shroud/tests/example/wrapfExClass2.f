@@ -35,7 +35,7 @@ module exclass2_mod
                 bind(C, name="AA_exclass2_ex_class2")
             use iso_c_binding
             implicit none
-            character(kind=C_CHAR) :: name(*)
+            character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
         end function aa_exclass2_ex_class2
         
@@ -54,7 +54,7 @@ module exclass2_mod
             type(C_PTR) rv
         end function aa_exclass2_get_name
         
-        pure function aa_exclass2_get_name_length(self) result(rv) &
+        function aa_exclass2_get_name_length(self) result(rv) &
                 bind(C, name="AA_exclass2_get_name_length")
             use iso_c_binding
             implicit none
@@ -87,7 +87,7 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass2_destroyall
         
-        function aa_exclass2_get_type_id(self) result(rv) &
+        pure function aa_exclass2_get_type_id(self) result(rv) &
                 bind(C, name="AA_exclass2_get_type_id")
             use iso_c_binding
             implicit none
@@ -125,7 +125,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%obj)) :: rv
+        character(kind=C_CHAR, len=aa_exclass2_get_name_length(obj%voidptr)) :: rv
         ! splicer begin class.ExClass2.method.get_name
         rv = fstr(aa_exclass2_get_name(obj%voidptr))
         ! splicer end class.ExClass2.method.get_name

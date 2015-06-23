@@ -20,7 +20,7 @@ module userlibrary_mod
                 bind(C, name="AA_is_name_valid")
             use iso_c_binding
             implicit none
-            character(kind=C_CHAR) :: name(*)
+            character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
         end function aa_is_name_valid
     end interface

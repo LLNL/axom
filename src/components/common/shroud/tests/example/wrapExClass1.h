@@ -35,7 +35,7 @@ int AA_exclass1_increment_count(AA_exclass1 * self, int incr);
 
 const char * AA_exclass1_get_name(const AA_exclass1 * self);
 
-const int AA_exclass1_get_name_length(const AA_exclass1 * self);
+int AA_exclass1_get_name_length(AA_exclass1 * self);
 
 const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self);
 

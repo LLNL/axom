@@ -90,6 +90,8 @@ ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * n
 
 const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx);
 
+int ATK_datagroup_get_group_name_length(ATK_datagroup * self, ATK_IndexType idx);
+
 void ATK_datagroup_print(ATK_datagroup * self);
 
 void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol);

@@ -13,7 +13,7 @@ constains
 end type
 
 interface
-  {F_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
+  {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
       bind(C, name="{C_name}")
 
   end {F_C_subprogram} {F_C_name}
@@ -22,7 +22,7 @@ end interface
 
 contains
 
- {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
+ {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
  end {F_subprogram} {F_name_impl}
 
 ----------
@@ -83,19 +83,22 @@ class Wrapf(util.WrapperMixin):
         is_ptr = (arg['attrs'].get('ptr', False) or
                   arg['attrs'].get('reference', False))
         intent = arg['attrs'].get('intent', None)
+        if intent:
+            intent_str = ', intent(%s)' % intent.upper()
+        else:
+            intent_str = ''
         is_value = arg['attrs'].get('value', False)
 
         typ = typedef.c_fortran
         if typedef.base == 'string':
-            return (typ, True)   # is array
+            return (typ + intent_str, True)  # is array
         else:
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
             t.append(typ)
             if is_value:
                 t.append(', value')
-            if intent:
-                t.append(', intent(%s)' % intent.upper())
+            t.append(intent_str)
             return (''.join(t), arg['attrs'].get('array', False))
 
     def _c_decl(self, arg, name=None):
@@ -161,6 +164,7 @@ class Wrapf(util.WrapperMixin):
         fmt_library.F_result_clause = ''
         fmt_library.F_pure_clause = ''
         fmt_library.F_C_result_clause = ''
+        fmt_library.F_C_pure_clause = ''
 
         self._begin_output_file()
         self._push_splicer('class')
@@ -274,9 +278,13 @@ class Wrapf(util.WrapperMixin):
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
 
+        func_is_const = node['qualifiers'].get('const', False)
+
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
+#        if func_is_const:
+#            print("XXXXXX", result['name'])
 
         if node.get('return_this', False):
             result_type = 'void'
@@ -336,15 +344,15 @@ class Wrapf(util.WrapperMixin):
             subprogram = 'subroutine'
             fmt_func.F_C_subprogram = 'function'
             fmt_func.F_C_result_clause = ' result(%s)' % F_result
-            if is_const:
-                fmt_func.F_pure_clause   = 'pure '
+            if func_is_const:
+                fmt_func.F_C_pure_clause = 'pure '
         else:
             subprogram = 'function'
             fmt_func.F_C_subprogram = 'function'
             fmt_func.F_result_clause = ' result(%s)' % F_result
             fmt_func.F_C_result_clause = fmt_func.F_result_clause
-            if is_const:
-                fmt_func.F_pure_clause   = 'pure '
+            if func_is_const:
+                fmt_func.F_C_pure_clause = 'pure '
         fmt_func.F_subprogram    = subprogram
 
         if cls:
@@ -390,10 +398,12 @@ class Wrapf(util.WrapperMixin):
         # since arguments may be used to compute return value
         # (for example, string lengths)
         if subprogram == 'function':
+#            if func_is_const:
+#                fmt_func.F_pure_clause = 'pure '
             if result_typedef.base == 'string':
                 # special case returning a string
                 rvlen = result['attrs'].get('len', '1')
-                fmt_func.rvlen = rvlen
+                fmt_func.rvlen = wformat(rvlen, fmt)
                 arg_f_decl.append(
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
                             fmt_func))
@@ -446,7 +456,7 @@ class Wrapf(util.WrapperMixin):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{F_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
+                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
                 fmt_func))
         c_interface.append(2)  # extra indent for continued line
         c_interface.append(wformat(

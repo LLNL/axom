@@ -271,6 +271,8 @@ class Schema(object):
 #        func.update(node)
 #        func.dump()
 
+        node['qualifiers'] = {}
+
         if 'decl' in node:
             # parse decl and add to dictionary
             values = parse_decl.check_decl(node['decl'])
@@ -285,6 +287,8 @@ class Schema(object):
             raise RuntimeError("Missing result.name")
         if 'type' not in result:
             raise RuntimeError("Missing result.type")
+        if 'attrs' not in result:
+            result['attrs'] = {}
 
         result = node['result']
 
@@ -387,6 +391,7 @@ if __name__ == '__main__':
             d = yaml.load(fp.read())
             fp.close()
             all.update(d)
+#            util.update(all, d)  # recursive update
         elif ext == '.json':
             raise NotImplemented("Can not deal with json input for now")
         else:

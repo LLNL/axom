@@ -44,7 +44,7 @@ module exclass1_mod
                 bind(C, name="AA_exclass1_new")
             use iso_c_binding
             implicit none
-            character(kind=C_CHAR) :: name(*)
+            character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
         end function aa_exclass1_new
         
@@ -187,7 +187,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%obj)) :: rv
+        character(kind=C_CHAR, len=aa_exclass1_get_name_length(obj%voidptr)) :: rv
         ! splicer begin class.ExClass1.method.get_name
         rv = fstr(aa_exclass1_get_name(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name

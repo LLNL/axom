@@ -78,6 +78,7 @@
                         "underscore_name": "new"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "constructor": true, 
@@ -114,6 +115,7 @@
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "destructor": true
@@ -161,6 +163,7 @@
                         "underscore_name": "increment_count"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "incrementCount", 
@@ -182,6 +185,7 @@
                         "C_return_type": "const char *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name", 
+                        "F_C_pure_clause": "pure ", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -190,19 +194,21 @@
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
-                        "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
                         "method_name": "getName", 
                         "rv_decl": "const std::string & rv", 
-                        "rvlen": "aa_exclass1_get_name_length(obj%obj)", 
+                        "rvlen": "aa_exclass1_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
-                            "len": "aa_exclass1_get_name_length(obj%obj)", 
+                            "len": "aa_exclass1_get_name_length({F_instance_ptr})", 
                             "reference": true
                         }, 
                         "name": "getName", 
@@ -210,19 +216,21 @@
                     }
                 }, 
                 {
+                    "args": [], 
+                    "decl": "int GetNameLength() const", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
-                        "CPP_name": "get_name_length", 
+                        "CPP_name": "GetNameLength", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const AA_exclass1 * self", 
+                        "C_arguments": "AA_exclass1 * self", 
                         "C_call_list": "", 
-                        "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name_length", 
-                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
-                        "C_return_type": "const int", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "int", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_length", 
+                        "F_C_pure_clause": "pure ", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -231,22 +239,22 @@
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
-                        "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "method_name": "get_name_length", 
-                        "rv_decl": "const int rv", 
+                        "method_name": "GetNameLength", 
+                        "rv_decl": "int rv", 
                         "underscore_name": "get_name_length"
                     }, 
+                    "helper": true, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
-                        "attrs": {
-                            "const": true, 
-                            "len": "aa_get_exclass2_name_length(obj%obj)"
-                        }, 
-                        "name": "get_name_length", 
+                        "attrs": {}, 
+                        "name": "GetNameLength", 
                         "type": "int"
                     }
                 }, 
@@ -265,6 +273,7 @@
                         "C_return_type": "const char *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_error_check", 
+                        "F_C_pure_clause": "pure ", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -273,7 +282,6 @@
                         "F_name_generic": "get_name_error_check", 
                         "F_name_impl": "exclass1_get_name_error_check", 
                         "F_name_method": "get_name_error_check", 
-                        "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
                         "method_name": "getNameErrorCheck", 
@@ -282,6 +290,9 @@
                         "underscore_name": "get_name_error_check"
                     }, 
                     "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -306,6 +317,7 @@
                         "C_return_type": "const char *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_arg", 
+                        "F_C_pure_clause": "pure ", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -314,7 +326,6 @@
                         "F_name_generic": "get_name_arg", 
                         "F_name_impl": "exclass1_get_name_arg", 
                         "F_name_method": "get_name_arg", 
-                        "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
                         "method_name": "getNameArg", 
@@ -323,6 +334,9 @@
                         "underscore_name": "get_name_arg"
                     }, 
                     "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -361,6 +375,7 @@
                         "underscore_name": "get_root"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -409,6 +424,7 @@
                     }, 
                     "method_suffix": "_from_int", 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -454,6 +470,7 @@
                         "underscore_name": "get_value"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -489,6 +506,7 @@
                         "underscore_name": "get_addr"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -535,6 +553,7 @@
                         "underscore_name": "has_addr"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "hasAddr", 
@@ -568,6 +587,7 @@
                         "underscore_name": "splicer_special"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "SplicerSpecial", 
@@ -665,6 +685,7 @@
                         "underscore_name": "ex_class2"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "constructor": true, 
@@ -701,6 +722,7 @@
                         "underscore_name": "ex_class1"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "destructor": true
@@ -711,7 +733,7 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "const string& getName", 
+                    "decl": "const string& getName const", 
                     "fmt": {
                         "CPP_name": "getName", 
                         "CPP_this": "selfobj", 
@@ -724,6 +746,7 @@
                         "C_return_type": "const char *", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name", 
+                        "F_C_pure_clause": "pure ", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -732,19 +755,21 @@
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
-                        "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
                         "method_name": "getName", 
                         "rv_decl": "const std::string & rv", 
-                        "rvlen": "aa_exclass2_get_name_length(obj%obj)", 
+                        "rvlen": "aa_exclass2_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
-                            "len": "aa_exclass2_get_name_length(obj%obj)", 
+                            "len": "aa_exclass2_get_name_length({F_instance_ptr})", 
                             "reference": true
                         }, 
                         "name": "getName", 
@@ -754,15 +779,14 @@
                 {
                     "docs": "helper function for Fortran", 
                     "fmt": {
-                        "CPP_name": "get_name_length", 
+                        "CPP_name": "GetNameLength", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const AA_exclass2 * self", 
+                        "C_arguments": "AA_exclass2 * self", 
                         "C_call_list": "", 
-                        "C_const": "const ", 
                         "C_name": "AA_exclass2_get_name_length", 
-                        "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
-                        "C_return_type": "const int", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "int", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name_length", 
                         "F_C_result_clause": " result(rv)", 
@@ -773,22 +797,19 @@
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
-                        "F_pure_clause": "pure ", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "method_name": "get_name_length", 
-                        "rv_decl": "const int rv", 
+                        "method_name": "GetNameLength", 
+                        "rv_decl": "int rv", 
                         "underscore_name": "get_name_length"
                     }, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
+                    "qualifiers": {}, 
                     "result": {
-                        "attrs": {
-                            "const": true, 
-                            "len": "exclass2_get_name_length(obj%obj)"
-                        }, 
-                        "name": "get_name_length", 
+                        "attrs": {}, 
+                        "name": "GetNameLength", 
                         "type": "int"
                     }
                 }, 
@@ -831,6 +852,7 @@
                         "underscore_name": "get_class1"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -883,6 +905,7 @@
                         "underscore_name": "declare"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -919,6 +942,7 @@
                         "underscore_name": "destroyall"
                     }, 
                     "options": {}, 
+                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "destroyall", 
@@ -939,6 +963,7 @@
                         "C_return_type": "int", 
                         "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_type_id", 
+                        "F_C_pure_clause": "pure ", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
@@ -954,6 +979,9 @@
                         "underscore_name": "get_type_id"
                     }, 
                     "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "getTypeID", 
@@ -999,6 +1027,7 @@
         "C_impl_filename": "wrapUserLibrary.cpp", 
         "C_prefix": "AA_", 
         "C_this": "self", 
+        "F_C_pure_clause": "", 
         "F_C_result_clause": "", 
         "F_derived_member": "voidptr", 
         "F_impl_filename": "wrapfuserlibrary.f", 
@@ -1048,6 +1077,7 @@
                 "underscore_name": "local_function1"
             }, 
             "options": {}, 
+            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "local_function1", 
@@ -1097,6 +1127,7 @@
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
             }, 
+            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "isNameValid", 

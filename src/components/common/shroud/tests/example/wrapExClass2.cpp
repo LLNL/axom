@@ -38,12 +38,12 @@ return isNameValid(rv) ? rv.c_str() : NULL;
 // splicer end class.ExClass2.method.getName
 }
 
-const int AA_exclass2_get_name_length(const AA_exclass2 * self)
+int AA_exclass2_get_name_length(AA_exclass2 * self)
 {
-const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);
-// splicer begin class.ExClass2.method.get_name_length
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.GetNameLength
 return selfobj->getName().length();
-// splicer end class.ExClass2.method.get_name_length
+// splicer end class.ExClass2.method.GetNameLength
 }
 
 AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in)

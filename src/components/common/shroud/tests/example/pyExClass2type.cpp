@@ -167,10 +167,10 @@ PP_exclass2_get_name_length(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.get_name_length
-    const int rv = self->BBB->get_name_length();
+// splicer begin class.ExClass2.method.GetNameLength
+    int rv = self->BBB->GetNameLength();
     return Py_BuildValue("i", &rv);
-// splicer end class.ExClass2.method.get_name_length
+// splicer end class.ExClass2.method.GetNameLength
 }
 
 static char PP_exclass2_get_class1__doc__[] =
@@ -253,7 +253,7 @@ PP_exclass2_get_type_id(
 }
 static PyMethodDef PP_ExClass2_methods[] = {
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
-{"get_name_length", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
+{"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
 {"declare", (PyCFunction)PP_exclass2_declare, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare__doc__},
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
