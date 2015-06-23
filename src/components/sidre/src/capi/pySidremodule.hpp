@@ -26,6 +26,7 @@
 #endif
 // splicer begin include
 #include "sidre/sidre.hpp"
+#include "sidre/SidreTypes.h"
 // splicer end include
 namespace asctoolkit {
 namespace sidre {

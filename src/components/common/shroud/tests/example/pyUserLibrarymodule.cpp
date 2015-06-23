@@ -43,7 +43,9 @@ PP_is_name_valid(
 {
 // splicer begin function.isNameValid
     const char * name;
-     
+    const char *kwcpp = "name";
+    char *kw_list[] = { (char *) kwcpp+0 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
         &name))
     {

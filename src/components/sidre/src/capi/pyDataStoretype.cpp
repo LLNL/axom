@@ -23,7 +23,7 @@ PY_DataStore_tp_init (PY_DataStore *self, PyObject *args, PyObject *kwds)
 {
 // splicer begin class.DataStore.type.init
 DataStore * ds = new DataStore();
-self->ds = ds;
+self->BBB = ds;
 return 0;
 // splicer end class.DataStore.type.init
 }
@@ -39,7 +39,7 @@ PY_datastore_get_root(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.getRoot
-DataGroup * grp = self->ds->getRoot();
+DataGroup * grp = self->BBB->getRoot();
 PyObject *rv = PP_DataGroup_to_Object(grp);
 return rv;
 // splicer end class.DataStore.method.getRoot
@@ -57,7 +57,9 @@ PY_datastore_get_buffer(
 {
 // splicer begin class.DataStore.method.getBuffer
     ATK_IndexType idx;
-     
+    const char *kwcpp = "idx";
+    char *kw_list[] = { (char *) kwcpp+0 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getBuffer", kw_list,
         &idx))
     {
@@ -96,7 +98,9 @@ PY_datastore_destroy_buffer(
 {
 // splicer begin class.DataStore.method.destroyBuffer
     ATK_IndexType id;
-     
+    const char *kwcpp = "id";
+    char *kw_list[] = { (char *) kwcpp+0 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:destroyBuffer", kw_list,
         &id))
     {

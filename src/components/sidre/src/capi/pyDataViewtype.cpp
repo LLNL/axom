@@ -40,7 +40,9 @@ PY_dataview_declare(
 // splicer begin class.DataView.method.declare
     int type;
     ATK_SidreLength len;
-     
+    const char *kwcpp = "type\0len";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
         &type, &len))
     {
@@ -64,7 +66,9 @@ PY_dataview_allocate(
 // splicer begin class.DataView.method.allocate
     int type;
     ATK_SidreLength len;
-     
+    const char *kwcpp = "type\0len";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
         &type, &len))
     {
@@ -88,7 +92,9 @@ PY_dataview_reallocate(
 // splicer begin class.DataView.method.reallocate
     int type;
     ATK_SidreLength len;
-     
+    const char *kwcpp = "type\0len";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
         &type, &len))
     {

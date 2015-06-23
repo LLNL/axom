@@ -330,8 +330,14 @@ return 1;""", fmt)
             fmt.ml_flags = 'METH_NOARGS'
         else:
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+            arg_names = []
+            arg_offsets  = []
+            offset = 0
             for arg in node.get('args', []):
                 arg_name = arg['name']
+                arg_names.append(arg_name)
+                arg_offsets.append( '(char *) kwcpp+%d' % offset)
+                offset += len(arg_name) + 1
                 arg_typedef = self.typedef[arg['type']]
                 format.append(arg_typedef.PY_format)
                 if arg_typedef.PY_from_object:
@@ -341,7 +347,10 @@ return 1;""", fmt)
                 PY_decl.append(self.std_c_decl('c_type', arg) + ';')
                 cpp_call_list = [arg_name]
 
-            PY_decl.append(' ')
+            # jump through some hoops for char ** const correctness for C++
+            PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
+            PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ' };')
+            PY_decl.append('')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)

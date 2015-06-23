@@ -185,7 +185,9 @@ PP_exclass2_get_class1(
 {
 // splicer begin class.ExClass2.method.get_class1
     AA_exclass1 * in;
-     
+    const char *kwcpp = "in";
+    char *kw_list[] = { (char *) kwcpp+0 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:get_class1", kw_list,
         XX_from, &in))
     {
@@ -209,7 +211,9 @@ PP_exclass2_declare(
 // splicer begin class.ExClass2.method.declare
     int type;
     ATK_SidreLength len;
-     
+    const char *kwcpp = "type\0len";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
         &type, &len))
     {

@@ -5,6 +5,7 @@
 
 // splicer begin include
 #include "sidre/sidre.hpp"
+#include "sidre/SidreTypes.h"
 // splicer end include
 
 // ----------------------------------------------------------------------
@@ -16,12 +17,12 @@
 
 // splicer begin class.DataStore.type.init
 DataStore * ds = new DataStore();
-self->ds = ds;
+self->BBB = ds;
 return 0;
 // splicer end class.DataStore.type.init
 
 // splicer begin class.DataStore.method.getRoot
-DataGroup * grp = self->ds->getRoot();
+DataGroup * grp = self->BBB->getRoot();
 PyObject *rv = PP_DataGroup_to_Object(grp);
 return rv;
 // splicer end class.DataStore.method.getRoot
@@ -41,7 +42,7 @@ return rv;
 
     /* capsule_dbnode */
     DataGroup *grp = static_cast<DataGroup *>(PyCapsule_GetPointer(grpobj, datagroup_capsule_name));
-    self->grp = grp;
+    self->BBB = grp;
     if (grp == NULL && PyErr_Occurred())
 	return -1;
     
@@ -50,7 +51,7 @@ return rv;
 
 
 // splicer begin class.DataGroup.method.getName
-const std::string & name = self->grp->getName();
+const std::string & name = self->BBB->getName();
 PyObject * rv = PyString_FromString(name.c_str());
 return rv;
 // splicer end class.DataGroup.method.getName
