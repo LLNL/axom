@@ -20,6 +20,7 @@
 #include <math.h>
 #include <vector>
 
+#include "meshapi/NullSet.hpp"
 #include "meshapi/RangeSet.hpp"
 #include "meshapi/IndirectionSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
@@ -132,8 +133,13 @@ class Domain {
 
    public:
 
+   typedef asctoolkit::meshapi::Set                    Set;
+   typedef asctoolkit::meshapi::NullSet                NullSet;
+
    typedef asctoolkit::meshapi::RangeSet               ElemSet;
    typedef asctoolkit::meshapi::RangeSet               NodeSet;
+   typedef asctoolkit::meshapi::RangeSet               CornerSet;
+   
    typedef asctoolkit::meshapi::IndirectionSet         SymmNodeSet;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceAdjacencyRelation;
@@ -141,12 +147,13 @@ class Domain {
    typedef asctoolkit::meshapi::RangeSet               RegionSet;
    typedef asctoolkit::meshapi::StaticVariableRelation RegionToElemRelation;
 
+   typedef asctoolkit::meshapi::StaticVariableRelation NodeToCornerRelation;
 
    typedef asctoolkit::meshapi::Map<Index_t>           ElemIndexMap;
    typedef asctoolkit::meshapi::Map<Int_t>             ElemIntMap;
    //typedef asctoolkit::meshapi::Map<Real_t>            ElemRealMap;
 
-   //typedef asctoolkit::meshapi::Map<Index_t>           NodeIndexMap;
+   typedef asctoolkit::meshapi::Map<Index_t>           NodeIndexMap;
    //typedef asctoolkit::meshapi::Map<Int_t>             NodeIntMap;
    //typedef asctoolkit::meshapi::Map<Real_t>            NodeRealMap;
 
@@ -154,6 +161,9 @@ class Domain {
    typedef asctoolkit::meshapi::Map<Int_t>             RegionIntMap;
    //typedef asctoolkit::meshapi::Map<Real_t>            RegionRealMap;
 
+   //typedef asctoolkit::meshapi::Map<Index_t>           CornerIndexMap;
+   //typedef asctoolkit::meshapi::Map<Int_t>             CornerIntMap;
+   typedef asctoolkit::meshapi::Map<Real_t>            CornerRealMap;
 
 
    public:
@@ -368,11 +378,27 @@ class Domain {
    // Element mass
    Real_t& elemMass(Index_t idx)  { return m_elemMass[idx] ; }
 
-   Index_t nodeElemCount(Index_t idx)
-   { return m_nodeElemStart[idx+1] - m_nodeElemStart[idx] ; }
 
-   Index_t *nodeElemCornerList(Index_t idx)
-   { return &m_nodeElemCornerList[m_nodeElemStart[idx]] ; }
+   Index_t nodeElemCount(Index_t idx) { return m_nodeCornerRelation.size(idx); }
+   const Index_t *nodeElemCornerList(Index_t idx) { return &(*m_nodeCornerRelation.begin(idx)); }
+
+
+   /**
+    * \brief Returns a const reference to the corner set when threading (omp) is enabled, otherwise, a ref to a null set (with no elements).
+    */
+   const Set& threadingCornerSet()  const {
+#if _OPENMP
+        return m_cornerSet;
+#else
+        static const NullSet s_nullSet;
+        return s_nullSet;
+#endif
+   }
+
+   /**
+    * Returns a const reference to the corner set.
+    */
+   const CornerSet& cornerSet()  const {return m_cornerSet;   }
 
    // Parameters 
 
@@ -587,13 +613,14 @@ class Domain {
 
    NodeSet m_nodeSet;
    ElemSet m_elemSet;
+   CornerSet m_cornerSet;
+   Set*      m_pNodeCorners;
 
    Index_t m_maxPlaneSize ;
    Index_t m_maxEdgeSize ;
 
    // OMP hack 
-   Index_t *m_nodeElemStart ;
-   Index_t *m_nodeElemCornerList ;
+   NodeToCornerRelation m_nodeCornerRelation;
 
    // Used in setup
    Index_t m_rowMin, m_rowMax;

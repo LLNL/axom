@@ -131,6 +131,21 @@ if (ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
 
+################################
+# OpenMP
+################################
+option(ENABLE_OMP "ENABLE OpenMP" OFF)
+if(ENABLE_OMP)
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set (CMAKE_FORTRAN_FLAGS "${CMAKE_FORTRAN_FLAGS} ${OpenMP_FORTRAN_FLAGS}")
+        message(STATUS "Found OpenMP")
+    else()
+        message(STATUS "Could not find OpenMP")
+    endif()    
+endif()
 
 ## Enable ENABLE C++ 11 features
 option(ENABLE_CXX11 "Enables C++11 features" OFF)

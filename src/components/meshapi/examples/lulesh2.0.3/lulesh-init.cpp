@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include "lulesh.hpp"
 
+
 /////////////////////////////////////////////////////////////////////
 Domain::Domain(Int_t numRanks, Index_t colLoc,
                Index_t rowLoc, Index_t planeLoc,
@@ -58,9 +59,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_sizeX = edgeElems ;
    m_sizeY = edgeElems ;
    m_sizeZ = edgeElems ;
-   m_elemSet = asctoolkit::meshapi::RangeSet(edgeElems*edgeElems*edgeElems);
-
-   m_nodeSet = asctoolkit::meshapi::RangeSet(edgeNodes*edgeNodes*edgeNodes);
+   m_elemSet = ElemSet(edgeElems*edgeElems*edgeElems);
+   m_nodeSet = NodeSet(edgeNodes*edgeNodes*edgeNodes);
+   m_cornerSet = CornerSet( m_elemSet.size() * 8);
 
 
    // Elem-centered 
@@ -104,10 +105,6 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
 #if _OPENMP
    SetupThreadSupportStructures();
-#else
-   // These arrays are not used if we're not threaded
-   m_nodeElemStart = NULL;
-   m_nodeElemCornerList = NULL;
 #endif
 
    // Setup region index sets. For now, these are constant sized
@@ -259,66 +256,41 @@ Domain::SetupThreadSupportStructures()
 #endif
 
   if (numthreads > 1) {
-    // set up node-centered indexing of elements 
-    Index_t *nodeElemCount = new Index_t[numNode()] ;
+    NodeIndexMap nodeCornerCount(&m_nodeSet);           // Keeps track of the number of corners per node
 
-    for (Index_t i=0; i<numNode(); ++i) {
-      nodeElemCount[i] = 0 ;
-    }
-
-    for (Index_t i=0; i<numElem(); ++i) {
-      const Index_t *nl = nodelist(i) ;
-      for (Index_t j=0; j < 8; ++j) {
-        ++(nodeElemCount[nl[j]] );
+    for (Index_t i=0; i<numElem(); ++i) {               // foreach elem
+      const Index_t *nl = nodelist(i) ;                 //   grab the Elem2Node relation for the element
+      for (Index_t j=0; j < 8; ++j) {                   //   for each node of the element
+        ++(nodeCornerCount[nl[j]] );                      //     increment the count for that node
       }
     }
 
-    m_nodeElemStart = new Index_t[numNode()+1] ;
+    typedef NodeToCornerRelation::RelationVec PositionsVec;
 
-    m_nodeElemStart[0] = 0;
-
+    PositionsVec nodeBegins( numNode() + 1);                // begins array for the StaticVariableRelation: Node to Corner
+    nodeBegins[0] = 0;                                      // use the counts array to set the begins array
     for (Index_t i=1; i <= numNode(); ++i) {
-      m_nodeElemStart[i] =
-        m_nodeElemStart[i-1] + nodeElemCount[i-1] ;
+        nodeBegins[i] = nodeBegins[i-1] + nodeCornerCount[i-1] ;
+      nodeCornerCount[i-1] = 0;
     }
        
-    m_nodeElemCornerList = new Index_t[m_nodeElemStart[numNode()]];
-
-    for (Index_t i=0; i < numNode(); ++i) {
-      nodeElemCount[i] = 0;
-    }
-
-    for (Index_t i=0; i < numElem(); ++i) {
-      const Index_t *nl = nodelist(i) ;
-      for (Index_t j=0; j < 8; ++j) {
-        Index_t m = nl[j];
-        Index_t k = i*8 + j ;
-        Index_t offset = m_nodeElemStart[m] + nodeElemCount[m] ;
-        m_nodeElemCornerList[offset] = k;
-        ++(nodeElemCount[m]) ;
+    PositionsVec cornerOffsets( m_cornerSet.size() );
+    for (Index_t i=0; i < numElem(); ++i) {                         // foreach elem
+      const Index_t *nl = nodelist(i) ;                             //   grab the Elem2Node relation for the elem
+      for (Index_t j=0; j < 8; ++j) {                               //   foreach node of the elem
+        Index_t m = nl[j];                                          //     m is the node index pointed to by this corner
+        Index_t k = i*8 + j ;                                       //     k is the corner index (elem*8+offset)
+        Index_t offset = nodeBegins[m] + nodeCornerCount[m] ;           //     offset is where this element belongs in the offsets array
+        cornerOffsets[offset] = k;                           //     this is the offsets array of the node to corner relation
+        ++(nodeCornerCount[m]) ;                                      //     increment the count for this node
       }
     }
 
-    Index_t clSize = m_nodeElemStart[numNode()] ;
-    for (Index_t i=0; i < clSize; ++i) {
-      Index_t clv = m_nodeElemCornerList[i] ;
-      if ((clv < 0) || (clv > numElem()*8)) {
-        fprintf(stderr,
-                "AllocateNodeElemIndexes(): nodeElemCornerList entry out of range!\n");
-#ifdef USE_MPI
-        MPI_Abort(MPI_COMM_WORLD, -1);
-#else
-        exit(-1);
-#endif
-      }
-    }
 
-    delete [] nodeElemCount ;
-  }
-  else {
-    // These arrays are not used if we're not threaded
-    m_nodeElemStart = NULL;
-    m_nodeElemCornerList = NULL;
+    // Finally create the relation over these arrays and check validity
+    m_nodeCornerRelation = NodeToCornerRelation(&m_nodeSet, &m_cornerSet);
+    m_nodeCornerRelation.bindRelationData(nodeBegins, cornerOffsets);
+    ATK_ASSERT_MSG(m_nodeCornerRelation.isValid(), "Generating Node to Corner relation: Corner index out of range." );
   }
 }
 
@@ -401,26 +373,14 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
    RegionToElemDynamicRelation reg2Elems(&m_regionSet, &m_elemSet);
 
    // Create the region material number map over the elements
-   m_elemRegNum = ElemIntMap(&m_elemSet);
-
-//   m_regElemSize = new Index_t[numReg()];
-//   m_regElemlist = new Index_t*[numReg()];
-
+   m_elemRegNum = ElemIntMap(&m_elemSet);       // replaces m_regElemSize and m_regElemlist
 
    //if we only have one region just fill it
-   // Fill out the regNumList with material numbers, which are always
-   // the region index plus one 
+   // Fill out the regNumList with material numbers, which are always the region index plus one
    if(numReg() == 1) {
-//      while (nextIndex < numElem()) {
-//         this->regNumList(nextIndex) = 1;
-//         nextIndex++;
-//      }
-//      regElemSize(0) = 0;
-
        // Create the region material number map over the elements
        const Index_t regMatID = 1;
        m_elemRegNum = ElemIntMap(&m_elemSet, regMatID);
-
    }
    //If we have more than one region distribute the elements.
    else {
@@ -538,6 +498,7 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   SymmVec loc_symmY(numSymmNodesY);
   SymmVec loc_symmZ(numSymmNodesZ);
 
+  // MeshAPI Note: We should be able to compute these directory from a cartesian product set defining a regular grid.
   Index_t nidx = 0 ;
   for (Index_t i=0; i<edgeNodes; ++i) {
     Index_t planeInc = i*edgeNodes*edgeNodes ;
@@ -556,7 +517,7 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
     }
   }
 
-  // Setup symmetry nodes sets, w/ nodes as parent
+  // Setup symmetry NodeSets, w/ the mesh's nodes as parent
   m_symmX = SymmNodeSet(&m_nodeSet);
   m_symmY = SymmNodeSet(&m_nodeSet);
   m_symmZ = SymmNodeSet(&m_nodeSet);

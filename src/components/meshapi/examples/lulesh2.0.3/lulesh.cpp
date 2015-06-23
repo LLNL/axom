@@ -530,20 +530,17 @@ void IntegrateStressForElems( Domain &domain,
    Index_t numthreads = 1;
 #endif
 
-   Index_t numElem8 = numElem * 8 ;
-   Real_t *fx_elem;
-   Real_t *fy_elem;
-   Real_t *fz_elem;
+   // For threading without explicit barriers, we use fields over the mesh corners
+   const Domain::Set& nodeCornerSet = domain.threadingCornerSet();
+   Domain::CornerRealMap fx_elem(&nodeCornerSet);
+   Domain::CornerRealMap fy_elem(&nodeCornerSet);
+   Domain::CornerRealMap fz_elem(&nodeCornerSet);
+
    Real_t fx_local[8] ;
    Real_t fy_local[8] ;
    Real_t fz_local[8] ;
 
 
-  if (numthreads > 1) {
-     fx_elem = Allocate<Real_t>(numElem8) ;
-     fy_elem = Allocate<Real_t>(numElem8) ;
-     fz_elem = Allocate<Real_t>(numElem8) ;
-  }
   // loop over all elements
 
 #pragma omp parallel for firstprivate(numElem)
@@ -568,16 +565,17 @@ void IntegrateStressForElems( Domain &domain,
     if (numthreads > 1) {
        // Eliminate thread writing conflicts at the nodes by giving
        // each element its own copy to write to
+        Index_t cornerBegin = k*8;
        SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-                                    &fx_elem[k*8],
-                                    &fy_elem[k*8],
-                                    &fz_elem[k*8] ) ;
+                                    &fx_elem[cornerBegin],
+                                    &fy_elem[cornerBegin],
+                                    &fz_elem[cornerBegin]);
     }
     else {
        SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
                                     fx_local, fy_local, fz_local ) ;
 
-       // copy nodal force contributions to global force arrray.
+       // copy nodal force contributions to global force array.
        for( Index_t lnode=0 ; lnode<8 ; ++lnode ) {
           Index_t gnode = elemToNode[lnode];
           domain.fx(gnode) += fx_local[lnode];
@@ -591,26 +589,23 @@ void IntegrateStressForElems( Domain &domain,
      // If threaded, then we need to copy the data out of the temporary
      // arrays used above into the final forces field
 #pragma omp parallel for firstprivate(numNode)
-     for( Index_t gnode=0 ; gnode<numNode ; ++gnode )
+     for( Index_t gnode=0 ; gnode<numNode ; ++gnode )                   // foreach node
      {
-        Index_t count = domain.nodeElemCount(gnode) ;
-        Index_t *cornerList = domain.nodeElemCornerList(gnode) ;
+        Index_t count = domain.nodeElemCount(gnode) ;                   //   get the number of corners in this node
+        const Index_t *cornerList = domain.nodeElemCornerList(gnode) ;        //   begin() of this node's corner indices
         Real_t fx_tmp = Real_t(0.0) ;
         Real_t fy_tmp = Real_t(0.0) ;
         Real_t fz_tmp = Real_t(0.0) ;
-        for (Index_t i=0 ; i < count ; ++i) {
-           Index_t elem = cornerList[i] ;
-           fx_tmp += fx_elem[elem] ;
-           fy_tmp += fy_elem[elem] ;
-           fz_tmp += fz_elem[elem] ;
+        for (Index_t i=0 ; i < count ; ++i) {                           //   foreach corner of the node
+           const Index_t cornerIdx = cornerList[i] ;                    //     get the corner index
+           fx_tmp += fx_elem[cornerIdx] ;                               //     and add its forces to the tmp variables
+           fy_tmp += fy_elem[cornerIdx] ;
+           fz_tmp += fz_elem[cornerIdx] ;
         }
-        domain.fx(gnode) = fx_tmp ;
+        domain.fx(gnode) = fx_tmp ;                                     //   the sum can now be placed in the node field
         domain.fy(gnode) = fy_tmp ;
         domain.fz(gnode) = fz_tmp ;
      }
-     Release(&fz_elem) ;
-     Release(&fy_elem) ;
-     Release(&fx_elem) ;
   }
 }
 
@@ -738,8 +733,8 @@ void CalcElemFBHourglassForce(Real_t *xd, Real_t *yd, Real_t *zd,  Real_t hourga
 static inline
 void CalcFBHourglassForceForElems( Domain &domain,
                                    Real_t *determ,
-                                   Real_t *x8n, Real_t *y8n, Real_t *z8n,
-                                   Real_t *dvdx, Real_t *dvdy, Real_t *dvdz,
+                                   const Domain::CornerRealMap& x8n, const Domain::CornerRealMap& y8n, const Domain::CornerRealMap& z8n,
+                                   const Domain::CornerRealMap& dvdx, const Domain::CornerRealMap& dvdy, const Domain::CornerRealMap& dvdz,
                                    Real_t hourg, Index_t numElem,
                                    Index_t numNode)
 {
@@ -756,17 +751,11 @@ void CalcFBHourglassForceForElems( Domain &domain,
     *
     *************************************************/
   
-   Index_t numElem8 = numElem * 8 ;
-
-   Real_t *fx_elem; 
-   Real_t *fy_elem; 
-   Real_t *fz_elem; 
-
-   if(numthreads > 1) {
-      fx_elem = Allocate<Real_t>(numElem8) ;
-      fy_elem = Allocate<Real_t>(numElem8) ;
-      fz_elem = Allocate<Real_t>(numElem8) ;
-   }
+   // For threading without explicit barriers, we use fields over the mesh corners
+   const Domain::Set& nodeCornerSet = domain.threadingCornerSet();
+   Domain::CornerRealMap fx_elem(&nodeCornerSet);
+   Domain::CornerRealMap fy_elem(&nodeCornerSet);
+   Domain::CornerRealMap fz_elem(&nodeCornerSet);
 
    Real_t  gamma[4][8];
 
@@ -995,26 +984,23 @@ void CalcFBHourglassForceForElems( Domain &domain,
    if (numthreads > 1) {
      // Collect the data from the local arrays into the final force arrays
 #pragma omp parallel for firstprivate(numNode)
-      for( Index_t gnode=0 ; gnode<numNode ; ++gnode )
+      for( Index_t gnode=0 ; gnode<numNode ; ++gnode )                  // foreach node
       {
-         Index_t count = domain.nodeElemCount(gnode) ;
-         Index_t *cornerList = domain.nodeElemCornerList(gnode) ;
+         Index_t count = domain.nodeElemCount(gnode) ;                  //   get the number of corners
+         const Index_t *cornerList = domain.nodeElemCornerList(gnode) ;       //   grab a pointer to the first corner
          Real_t fx_tmp = Real_t(0.0) ;
          Real_t fy_tmp = Real_t(0.0) ;
          Real_t fz_tmp = Real_t(0.0) ;
-         for (Index_t i=0 ; i < count ; ++i) {
-            Index_t elem = cornerList[i] ;
-            fx_tmp += fx_elem[elem] ;
-            fy_tmp += fy_elem[elem] ;
-            fz_tmp += fz_elem[elem] ;
+         for (Index_t i=0 ; i < count ; ++i) {                          //   foreach corner of the node
+            Index_t cornerIdx = cornerList[i] ;                         //     find its index
+            fx_tmp += fx_elem[cornerIdx] ;                              //     and add the corner forces to the tmp variable
+            fy_tmp += fy_elem[cornerIdx] ;
+            fz_tmp += fz_elem[cornerIdx] ;
          }
-         domain.fx(gnode) += fx_tmp ;
+         domain.fx(gnode) += fx_tmp ;                                   //   once we are done, we can sum the forces
          domain.fy(gnode) += fy_tmp ;
          domain.fz(gnode) += fz_tmp ;
       }
-      Release(&fz_elem) ;
-      Release(&fy_elem) ;
-      Release(&fx_elem) ;
    }
 }
 
@@ -1025,17 +1011,18 @@ void CalcHourglassControlForElems(Domain& domain,
                                   Real_t determ[], Real_t hgcoef)
 {
    Index_t numElem = domain.numElem() ;
-   Index_t numElem8 = numElem * 8 ;
-   Real_t *dvdx = Allocate<Real_t>(numElem8) ;
-   Real_t *dvdy = Allocate<Real_t>(numElem8) ;
-   Real_t *dvdz = Allocate<Real_t>(numElem8) ;
-   Real_t *x8n  = Allocate<Real_t>(numElem8) ;
-   Real_t *y8n  = Allocate<Real_t>(numElem8) ;
-   Real_t *z8n  = Allocate<Real_t>(numElem8) ;
+
+   const Domain::Set& nodeCornerSet = domain.cornerSet();   // create corner fields (regardless of omp threading ability)
+   Domain::CornerRealMap dvdx(&nodeCornerSet);
+   Domain::CornerRealMap dvdy(&nodeCornerSet);
+   Domain::CornerRealMap dvdz(&nodeCornerSet);
+   Domain::CornerRealMap x8n(&nodeCornerSet);
+   Domain::CornerRealMap y8n(&nodeCornerSet);
+   Domain::CornerRealMap z8n(&nodeCornerSet);
 
    /* start loop over elements */
 #pragma omp parallel for firstprivate(numElem)
-   for (Index_t i=0 ; i<numElem ; ++i){
+   for (Index_t i=0 ; i<numElem ; ++i){                                     // foreach elem i
       Real_t  x1[8],  y1[8],  z1[8] ;
       Real_t pfx[8], pfy[8], pfz[8] ;
 
@@ -1045,15 +1032,15 @@ void CalcHourglassControlForElems(Domain& domain,
       CalcElemVolumeDerivative(pfx, pfy, pfz, x1, y1, z1);
 
       /* load into temporary storage for FB Hour Glass control */
-      for(Index_t ii=0;ii<8;++ii){
-         Index_t jj=8*i+ii;
+      for(Index_t ii=0;ii<8;++ii){                                         //   foreach node ii
+         Index_t cornerIdx =8*i+ii;
 
-         dvdx[jj] = pfx[ii];
-         dvdy[jj] = pfy[ii];
-         dvdz[jj] = pfz[ii];
-         x8n[jj]  = x1[ii];
-         y8n[jj]  = y1[ii];
-         z8n[jj]  = z1[ii];
+         dvdx[cornerIdx] = pfx[ii];
+         dvdy[cornerIdx] = pfy[ii];
+         dvdz[cornerIdx] = pfz[ii];
+         x8n[cornerIdx]  = x1[ii];
+         y8n[cornerIdx]  = y1[ii];
+         z8n[cornerIdx]  = z1[ii];
       }
 
       determ[i] = domain.volo(i) * domain.v(i);
@@ -1073,13 +1060,6 @@ void CalcHourglassControlForElems(Domain& domain,
                                     determ, x8n, y8n, z8n, dvdx, dvdy, dvdz,
                                     hgcoef, numElem, domain.numNode()) ;
    }
-
-   Release(&z8n) ;
-   Release(&y8n) ;
-   Release(&x8n) ;
-   Release(&dvdz) ;
-   Release(&dvdy) ;
-   Release(&dvdx) ;
 
    return ;
 }
@@ -2213,7 +2193,7 @@ void CalcSoundSpeedForElems(Domain &domain,
                             Real_t *bvc, Real_t /*ss4o3*/,
                             Index_t len, const Index_t *regElemList)
 {
-#pragma omp parallel for firstprivate(rho0, ss4o3)
+#pragma omp parallel for firstprivate(rho0) //, ss4o3)
    for (Index_t i = 0; i < len ; ++i) {
       Index_t elem = regElemList[i];
       Real_t ssTmp = (pbvc[i] * enewc[i] + vnewc[elem] * vnewc[elem] *
