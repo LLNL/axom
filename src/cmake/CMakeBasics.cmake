@@ -131,14 +131,6 @@ if (ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
 
-################################
-# OpenMP
-################################
-option(ENABLE_OPENMP "ENABLE OPENMP" OFF)
-if (ENABLE_OPENMP)
-  find_package(OPENMP REQUIRED)
-endif()
-
 
 ## Enable ENABLE C++ 11 features
 option(ENABLE_CXX11 "Enables C++11 features" OFF)
@@ -322,7 +314,7 @@ endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
 ## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
-##               [WITH_MPI] [WITH_OPENMP])
+##               [WITH_MPI] )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -335,15 +327,10 @@ endmacro(add_target_definitions)
 ## supplied, the MPI include directory will be added to the compiler command
 ## and the -DUSE_MPI, as well as other compiler flags, will be included to the
 ## compiler definition.
-##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
-## supplied, the openmp compiler flag will be added to the compiler command
-## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
    set(options WITH_MPI)
-   set(options WITH_OPENMP)
    set(singleValueArgs LIBRARY_NAME)
    set(multiValueArgs LIBRARY_SOURCES)
 
@@ -354,11 +341,6 @@ macro(make_library)
    ## sanity check
    if ( arg_WITH_MPI AND NOT ENABLE_MPI )
       message( FATAL_ERROR "Building an MPI library, but MPI is disabled!" )
-   endif()
-
-   ## sanity check
-   if ( arg_WITH_OPENMP AND NOT ENABLE_OPENMP )
-      message( FATAL_ERROR "Building an OpenMP library, but OpenMP is disabled!" )
    endif()
 
    if ( BUILD_SHARED_LIBS )
@@ -384,16 +366,6 @@ macro(make_library)
             set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES LINK_FLAGS
                                    ${MPI_CXX_LINK_FLAGS} )
       endif()
-
-   endif()
-
-   if ( ${arg_WITH_OPENMP} )
-
-      add_target_definitions( TO ${arg_LIBRARY_NAME} TARGET_DEFINITIONS USE_OPENMP )
-
-      set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-
-      set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES LINK_FLAGS ${OpenMP_LINKER_FLAGS} )
 
    endif()
 
@@ -432,14 +404,10 @@ endmacro(make_library)
 ## When the "WITH_MPI" argument is supplied, the executable will be linked with
 ## the MPI C libraries and the MPI includes as well as -DUSE_MPI and other flags
 ## will be added to the compiler command.
-##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
-## supplied, the openmp compiler flag will be added to the compiler command
-## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options WITH_MPI WITH_OPENMP)
+   set(options WITH_MPI)
    set(singleValueArgs EXECUTABLE_SOURCE)
    set(multiValueArgs DEPENDS_ON)
 
@@ -450,11 +418,6 @@ macro(make_executable)
     ## sanity check
    if ( ${arg_WITH_MPI} AND NOT ENABLE_MPI )
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
-   endif()
-
-    ## sanity check
-   if ( ${arg_WITH_OPENMP} AND NOT ENABLE_OPENMP )
-      message( FATAL_ERROR "Building an OpenMP executable, but OpenMP is disabled!" )
    endif()
 
    get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
@@ -484,16 +447,6 @@ macro(make_executable)
       endif()
 
       target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
-   endif()
-
-   if ( ${arg_WITH_OPENMP} )
-
-      add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
-
-      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-
-      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS ${OpenMP_LINKER_FLAGS} )
-
    endif()
 
    if(IS_ABSOLUTE)
