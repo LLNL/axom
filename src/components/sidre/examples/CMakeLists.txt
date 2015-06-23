@@ -36,7 +36,5 @@ set(lulesh_sources
 
 set_source_files_properties( ${lulesh_sources} PROPERTIES LANGUAGE "CXX" )
 
-## Ignore omp pragmas when openMP is not defined
-set_source_files_properties(${lulesh_sources} PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas " )
 add_executable( sidreLulesh2  ${lulesh_sources} ${lulesh_headers})
 target_link_libraries( sidreLulesh2  sidre  conduit slic )
