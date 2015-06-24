@@ -13,5 +13,14 @@ TEST(utilities,atk_macros_pass)
     ATK_ASSERT( value == 5 );
     ATK_ASSERT_MSG( value == 5, "ATK_ASSERT passed, shouldn't see this");
 
-    ATK_ASSERT_MSG( value != 5, "ATK_ASSERT should have failed check of " << value << " != 5" );
+#ifdef ATK_DEBUG
+    // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+
+    // add this line to avoid a warning in the output about thread safety
+    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+    ASSERT_DEATH(
+        ATK_ASSERT_MSG( value != 5, "ATK_ASSERT should have failed check of " << value << " != 5" )
+        , ""
+        ) << "Testing AKT_ASSERT feature.";
+#endif
 }
