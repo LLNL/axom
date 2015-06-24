@@ -27,9 +27,7 @@
 #include <vector>
 
 // Other toolkit component headers
-#include "conduit/conduit.hpp"
 #include "common/CommonTypes.hpp"
-#include "common/Utilities.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
@@ -41,7 +39,6 @@ namespace asctoolkit
 namespace sidre
 {
 // using directives to make Conduit usage easier and less visible
-using conduit::DataType;
 using conduit::Node;
 using conduit::Schema;
 
@@ -114,6 +111,14 @@ public:
   }
 
   /*!
+   * \brief Return total number of bytes allocated by this DataView object.
+   */
+  size_t getTotalBytes() const
+  {
+    return m_schema.total_bytes();
+  }
+
+  /*!
    * \brief Return non-const reference to Conduit node holding data.
    */
   Node& getNode()
@@ -138,13 +143,20 @@ public:
   }
 
   /*!
-   * \brief Return pointer to view attached to this buffer identified
-   *        by the given index.
+   * \brief Return true if DataBuffer has an associated DataView with given
+   *        index; else false.
    */
-  DataView * getView(IndexType idx)
+  bool hasView( IndexType idx ) const
   {
-    return m_views[idx];
+    return ( 0 <= idx && static_cast<unsigned>(idx) < m_views.size() &&
+             m_views[idx] != ATK_NULLPTR );
   }
+
+  /*!
+   * \brief Return (non-const) pointer to data view object with given index
+   *        associated with buffer, or ATK_NULLPTR if none exists.
+   */
+  DataView * getView( IndexType idx);
 
 //@}
 
@@ -153,11 +165,13 @@ public:
 //!  @name Data declaration and allocation methods
 
   /*!
-   * \brief Declare a data object given type and number of elements.
+   * \brief Declare a buffer to OWN data of given type and number of elements.
+   *
+   * If given length is < 0, method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, long len);
+  DataBuffer * declare(TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to OWN data described as a Conduit schema.
@@ -166,25 +180,30 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(const Schema& schema)
-  {
-    m_schema.set(schema);
-    return this;
-  }
+  DataBuffer * declare(const Schema& schema);
 
   /*!
-   * \brief Declare a buffer to OWN data described as a
-   *        pre-defined Conduit data type.
+   * \brief Declare a buffer to OWN data described as a pre-defined
+   *        Conduit data type.
    *
    * Note the data must be allocated by calling allocate().
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(const DataType& dtype)
-  {
-    m_schema.set(dtype);
-    return this;
-  }
+  DataBuffer * declare(const DataType& dtype);
+
+  /*!
+   * \brief Declare a buffer to hold external data described by Sidre type
+   *        and length.
+   *
+   * The given pointer references the existing external data. The buffer
+   * cannot allocate or reallocate it, and it will not be deallocated when
+   * buffer is destroyed.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * declareExternal(void * external_data,
+                               TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to hold external data described as a
@@ -193,6 +212,9 @@ public:
    * The given pointer references the existing external data. The buffer
    * cannot allocate or reallocate it, and it will not be deallocated when
    * buffer is destroyed.
+   *
+   * If the buffer data has already been allocated or it has been declared
+   * non-external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -207,13 +229,18 @@ public:
    * cannot allocate or reallocate it, and it will not be deallocated when
    * buffer is destroyed.
    *
+   * If the buffer data has already been allocated or it has been declared
+   * non-external, this method does nothing.
+   *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * declareExternal(void * external_data,
                                const DataType& dtype);
 
   /*!
-   * \brief Allocate data previously declared using a Declare() method.
+   * \brief Allocate data previously declared using a declare() method.
+   *
+   * If buffer has been declared external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -225,14 +252,18 @@ public:
    * This is equivalent to calling declare(type, len), then allocate(),
    * and then calling apply() on this DataView object.
    *
+   * If buffer has been declared external, this method does nothing.
+   *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(TypeID type, long len);
+  DataBuffer * allocate(TypeID type, SidreLength len);
 
   /*!
    * \brief Declare and allocate data described as a Conduit schema.
    *
-   *        Equivalent to calling Declare(schema), then allocate().
+   *        Equivalent to calling declare(schema), then allocate().
+   *
+   * If buffer has been declared external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -242,16 +273,30 @@ public:
    * \brief Declare and allocate data described as a pre-defined
    *        Conduit data type.
    *
-   *        Equivalent to calling Declare(dtype), then allocate().
+   *        Equivalent to calling declare(dtype), then allocate().
+   *
+   * If buffer has been declared external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * allocate(const DataType& dtype);
 
   /*!
+   * \brief Reallocate data described with Sidre type and length.
+   *
+   *        Equivalent to calling declare(type), then allocate().
+   *
+   * If buffer has been declared external or given length is < 0,
+   * this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * reallocate(TypeID type, SidreLength len);
+
+  /*!
    * \brief Reallocate data described as a Conduit schema.
    *
-   *        Leverages Conduit Node::update() semantics.
+   * If buffer has been declared external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -261,7 +306,7 @@ public:
    * \brief Reallocate data described as a pre-defined
    *        Conduit data type.
    *
-   *        Leverages Conduit Node::update() semantics.
+   * If buffer has been declared external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -345,16 +390,16 @@ private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
-  #ifdef USE_CXX11
+#ifdef USE_CXX11
   DataBuffer() = delete;
   DataBuffer( DataBuffer&& ) = delete;
 
   DataBuffer& operator=( const DataBuffer& ) = delete;
   DataBuffer& operator=( DataBuffer&& ) = delete;
-  #else
+#else
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
-  #endif
+#endif
 
 };
 

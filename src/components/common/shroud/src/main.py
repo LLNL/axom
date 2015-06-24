@@ -14,8 +14,12 @@ import sys
 
 import util
 import parse_decl
+import splicer
 import wrapc
 import wrapf
+import wrapp
+
+wformat = util.wformat
 
 class Config(object):
     """A class to stash configuration values.
@@ -30,19 +34,18 @@ class Schema(object):
     """
     def __init__(self, config):
         self.config = config
+        self.fmt_stack = []
 
     def push_options(self, node):
         """ Push a new set of options.
         Copy current options, then update with new options.
         """
+        new = util.Options(parent=self.options_stack[-1])
         if 'options' in node and \
                 node['options'] is not None:
             if not isinstance(node['options'], dict):
                 raise TypeError("options must be a dictionary")
-            new = copy.deepcopy(self.options_stack[-1])
             new.update(node['options'])
-        else:
-            new = self.options_stack[-1]
         self.options_stack.append(new)
         node['options'] = new
         return new
@@ -50,94 +53,116 @@ class Schema(object):
     def pop_options(self):
         self.options_stack.pop()
 
-    def update_options(self, options, d):
-        """ update options with values from d,
-        if key is not already in options.
-        """
-        for key in d:
-            if key not in options:
-                options[key] = d[key]
+    def push_fmt(self, node):
+        fmt = util.Options(self.fmt_stack[-1])
+        self.fmt_stack.append(fmt)
+        node['fmt'] = fmt
+        return fmt
+
+    def pop_fmt(self):
+        self.fmt_stack.pop()
 
     def check_schema(self):
         node = self.config
 
         # default options
-        def_options = dict(
-            C_prefix='',
-            C_this='self',   # object argument name
-            F_this='obj',    # object argument name
-            F_result='rv',   # function result
-#            module_name='gen_module',  # Fortran module name
-            C_header_filename_template='wrap{cpp_class}.h',
-            C_impl_filename_template='wrap{cpp_class}.cpp',
-            F_impl_filename_template='wrapf{cpp_class}.f',
-            F_module_name_template='{lower_class}_mod',
+        def_options = util.Options(
+            parent=None,
 
-            C_name_method_template='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
-            F_name_method_template='{underscore_name}{method_suffix}',
-            F_name_generic_template='{underscore_name}',
-            F_name_impl_template  ='{lower_class}_{underscore_name}{method_suffix}',
+#            library='default_library',
+            namespace='',
+            cpp_header='',
+
+            F_module_per_class=True,
             )
         if 'options' in node:
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
+
+        fmt_library = node['fmt'] = util.Options(None)
+        fmt_library.library       = def_options.get('library', 'default_library')
+        fmt_library.lower_library = fmt_library.library.lower()
+        fmt_library.method_suffix = ''   # assume no suffix
+        fmt_library.overloaded    = False
+        fmt_library.C_prefix      = def_options.get('C_prefix', '')
+        util.eval_template(def_options, fmt_library,
+                           'C_header_filename', 'wrap{library}.h')
+        util.eval_template(def_options, fmt_library,
+                           'C_impl_filename', 'wrap{library}.cpp')
+        self.fmt_stack.append(fmt_library)
+
+        # default some options based on other options
+        # All class/methods and functions may go into this file or just functions.
+        util.eval_template(def_options, fmt_library,
+                           'F_module_name', '{lower_library}_mod')
+        util.eval_template(def_options, fmt_library,
+                           'F_impl_filename', 'wrapf{lower_library}.f')
+
         node['options'] = def_options
 
         def_types = dict(
-            void    = dict(
-                c       = 'void',
-                cpp     = 'void',
+            void    = util.Typedef('void',
+                c_type   = 'void',
+                cpp_type = 'void',
 #                fortran = 'subroutine',
                 c_fortran = 'type(C_PTR)',
-                fortran = 'type(C_PTR)',
+                f_type = 'type(C_PTR)',
                 ),
-            int    = dict(
-                c       = 'int',
-                cpp     = 'int',
+            int    = util.Typedef('int',
+                c_type    = 'int',
+                cpp_type  = 'int',
                 c_fortran = 'integer(C_INT)',
-                fortran   = 'integer(C_INT)',
+                f_type    = 'integer(C_INT)',
+                PY_format = 'i',
                 ),
-            long   = dict(
-                c       = 'long',
-                cpp     = 'long',
+            long   = util.Typedef('long',
+                c_type    = 'long',
+                cpp_type  = 'long',
                 c_fortran = 'integer(C_LONG)',
-                fortran   = 'integer(C_LONG)',
+                f_type    = 'integer(C_LONG)',
+                PY_format = 'l',
                 ),
-            size_t   = dict(
-                c       = 'size_t',
-                cpp     = 'size_t',
-                c_header = 'stdlib.h',
+            size_t   = util.Typedef('size_t',
+                c_type    = 'size_t',
+                cpp_type  = 'size_t',
+                c_header  = 'stdlib.h',
                 c_fortran = 'integer(C_SIZE_T)',
-                fortran   = 'integer(C_SIZE_T)',
+                f_type    = 'integer(C_SIZE_T)',
                 ),
-            bool   = dict(
-                c       = 'bool',
-                cpp     = 'bool',
+            bool   = util.Typedef('bool',
+                c_type    = 'bool',
+                cpp_type  = 'bool',
                 c_fortran = 'logical(C_BOOL)',
-                fortran   = 'logical',
-                f_return_code = '{F_result} = bool2logical({F_C_name}({arg_c_call}))',
+                fortran_to_c  = 'logicaltobool({var})',
+                f_type    = 'logical',
+                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call}))',
                 ),
-            string = dict(  # implies null terminated string
-                c   = 'char',    # XXX - char *
-                cpp = 'std::string',
+            string = util.Typedef('string',  # implies null terminated string
+                c_type   = 'char',    # XXX - char *
+                cpp_type = 'std::string',
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
-                fortran = 'character(*)',
+                f_type     = 'character(*)',
                 fortran_to_c = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({arg_c_call}))',
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call}))',
+                PY_format = 's',
                 base = 'string',
                 ),
             )
         def_types['std::string'] = def_types['string']
-        if 'typedef' in node:
-            def_types.update(node['typedef'])
-
-        # set some default members
-        for typ in def_types.values():
-            if 'base' not in typ:
-                typ['base'] = 'unknown'
+        if 'typedef' in node and \
+                node['typedef'] is not None:
+            if not isinstance(node['typedef'], dict):
+                raise TypeError("typedef must be a dictionary")
+            for key, value in node['typedef'].items():
+                if not isinstance(value, dict):
+                    raise TypeError("typedef '%s' must be a dictionary" % key)
+                if key in def_types:
+                    def_types[key].update(value)
+                else:
+                    def_types[key] = util.Typedef(key, **value)
 
         node['typedef'] = def_types
         self.typedef = node['typedef']
@@ -165,70 +190,96 @@ class Schema(object):
         name = node['name']
 
         options = self.push_options(node)
+        fmt_class = self.push_fmt(node)
+        fmt_class.cpp_class = name
+        fmt_class.lower_class = name.lower()
+        fmt_class.upper_class = name.upper()
+        if 'C_prefix' in options:
+            fmt_class.C_prefix = options.C_prefix
 
-        fmt_dict = dict(
-            cpp_class = name,
-            lower_class = name.lower(),
-            upper_class = name.upper(),
-            C_prefix = options['C_prefix'],
-            )
-        util.eval_templates(
-            ['C_header_filename',
-             'C_impl_filename',
-             'F_impl_filename',
-             'F_module_name'],
-            node, fmt_dict)
+        if options.F_module_per_class:
+            util.eval_template(options, fmt_class,
+                               'F_module_name', '{lower_class}_mod')
+            util.eval_template(options, fmt_class,
+                               'F_impl_filename', 'wrapf{cpp_class}.f')   # XXX lower_class
+
+        # Only one file per class for C.
+        util.eval_template(options, fmt_class,
+                           'C_header_filename', 'wrap{cpp_class}.h')
+        util.eval_template(options, fmt_class,
+                           'C_impl_filename', 'wrap{cpp_class}.cpp')
 
         # create typedef for each class before generating code
         # this allows classes to reference each other
         if name not in self.typedef:
 #            unname = util.un_camel(name)
             unname = name.lower()
-            cname = node['options']['C_prefix'] + unname
-            self.typedef[name] = dict(
-                cpp = name,
-                c = cname,
+            cname = node['options'].C_prefix + unname
+            self.typedef[name] = util.Typedef(
+                name,
+                cpp_type = name,
+#                cpp_to_c = 'static_cast<void *>({var})',
+                c_type = cname,
                 c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
                 c_fortran = 'type(C_PTR)',
-                fortran = 'type(%s)' % unname,
-                fortran_type = unname,
-                fortran_to_c = '{var}%obj',
+                f_type = 'type(%s)' % unname,
+                fortran_derived = unname,
+                fortran_to_c = '{var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
-                f_module = {node['F_module_name']:[unname]},
+                f_module = {fmt_class.F_module_name:[unname]},
 
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
-                f_return_code = '{F_result}%{F_this} = {F_C_name}({arg_c_call})',
+                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})',
+
+                PY_format = 'O',
+                PY_to_object = 'XX_to',
+                PY_from_object = 'XX_from',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
                 base = 'wrapped',
                 )
 
-        method_dict = {}
+        typedef = self.typedef[name]
+        fmt_class.C_type_name = typedef.c_type
+
+        overloaded_methods = {}
         methods = node.setdefault('methods', [])
         for method in methods:
             if not isinstance(method, dict):
                 raise TypeError("classes[n]['methods'] must be a dictionary")
             self.check_function(method)
-            method_dict.setdefault(method['result']['name'], []).append(method)
+            overloaded_methods.setdefault(method['result']['name'], []).append(method)
 
         # look for function overload and compute method_suffix
-        for mname, methods in method_dict.items():
+        for mname, methods in overloaded_methods.items():
             if len(methods) > 1:
                 for i, method in enumerate(methods):
+#                    method['fmt'].overloaded = True
                     if 'method_suffix' not in method:
-                        method['method_suffix'] = '_%d' % i
+                        method['fmt'].method_suffix =  '_%d' % i
 
+        self.pop_fmt()
         self.pop_options()
 
     def check_function(self, node):
         self.push_options(node)
+        fmt_func = self.push_fmt(node)
+
+#        func = util.FunctionNode()
+#        func.update(node)
+#        func.dump()
+
+        node['qualifiers'] = {}
 
         if 'decl' in node:
             # parse decl and add to dictionary
             values = parse_decl.check_decl(node['decl'])
             util.update(node, values)  # recursive update
+        if 'method_suffix' in node and node['method_suffix'] is None:
+            # YAML turns blanks strings to None
+            node['method_suffix'] = ''
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -236,8 +287,18 @@ class Schema(object):
             raise RuntimeError("Missing result.name")
         if 'type' not in result:
             raise RuntimeError("Missing result.type")
+        if 'attrs' not in result:
+            result['attrs'] = {}
+
+        result = node['result']
+
+        fmt_func.method_name =     result['name']
+        fmt_func.underscore_name = util.un_camel(result['name'])
+        if 'method_suffix' in node:
+            fmt_func.method_suffix =   node['method_suffix']
 
         # docs
+        self.pop_fmt()
         self.pop_options()
 
     def check_functions(self, node):
@@ -258,8 +319,8 @@ class Schema(object):
 
         modules = {}
         for typ in used_types.values():
-            if 'f_module' in typ:
-                for mname, only in typ['f_module'].items():
+            if typ.f_module:
+                for mname, only in typ.f_module.items():
                     module = modules.setdefault(mname, {})
                     if only:  # Empty list means no ONLY clause
                         for oname in only:
@@ -299,7 +360,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # check options
+    # check command line options
     if len(args.filename) == 0:
         raise SystemExit("Must give at least one input file")
     if args.indir and not os.path.isdir(args.indir):
@@ -313,7 +374,7 @@ if __name__ == '__main__':
     logpath = os.path.join(args.logdir, basename + '.log')
     log = open(logpath, 'w')
 
-    # pass around an option dictionary
+    # pass around a configuration object
     config = Config()
     config.binary_dir = args.outdir
     config.source_dir = args.indir
@@ -321,6 +382,7 @@ if __name__ == '__main__':
 
     # accumulated input
     all = {}
+    splicers = dict(c={}, f={}, py={})
 
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
@@ -329,22 +391,36 @@ if __name__ == '__main__':
             d = yaml.load(fp.read())
             fp.close()
             all.update(d)
+#            util.update(all, d)  # recursive update
+        elif ext == '.json':
+            raise NotImplemented("Can not deal with json input for now")
         else:
-            raise SystemExit("File must end in .yaml for now")
+            # process splicer file on command line
+            splicer.get_splicer_based_on_suffix(filename, splicers)
 
 #    print(all)
 
 
-
     Schema(all).check_schema()
 
-    wrapc.Wrapc(all, config).wrap()
+    if 'splicer' in all:
+        # read splicer files defined in input yaml file
+        for suffix, names in all['splicer'].items():
+            subsplicer = splicers.setdefault(suffix, {})
+            for name in names:
+                fullname = os.path.join(config.source_dir, name)
+                splicer.get_splicers(fullname, subsplicer)
 
-    wrapf.Wrapf(all, config).wrap()
+
+    wrapc.Wrapc(all, config, splicers['c']).wrap_library()
+
+    wrapf.Wrapf(all, config, splicers['f']).wrap_library()
+
+    wrapp.Wrapp(all, config, splicers['py']).wrap_library()
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')
-    json.dump(all, fp, sort_keys=True, indent=4)
+    json.dump(all, fp, cls=util.ExpandedEncoder, sort_keys=True, indent=4)
     fp.close()
 
     log.close()

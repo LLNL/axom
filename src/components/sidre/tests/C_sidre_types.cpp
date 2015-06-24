@@ -12,12 +12,14 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
-
-//#include "conduit/conduit.h"
+#include "sidre/SidreWrapperHelpers.hpp"
 
 using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::getTypeID;
+//------------------------------------------------------------------------------
+// This test verifies that the getTypeID C version and C++ (templated) version
+// returns the same types.
 //------------------------------------------------------------------------------
 
 TEST(sidre_types,get_sidre_type)
@@ -95,4 +97,23 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(CHAR8_STR_T, DataType::CHAR8_STR_T);
 
 
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

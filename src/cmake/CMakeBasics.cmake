@@ -71,7 +71,7 @@
 
  ## Set the Fortran module directory
  set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib
+     ${PROJECT_BINARY_DIR}/lib/fortran
      CACHE PATH
      "Directory where all Fortran modules will go in the build tree"
      )
@@ -90,6 +90,8 @@ mark_as_advanced(
 option(ENABLE_FORTRAN "Enables Fortran compiler support" ON)
 
 if(ENABLE_FORTRAN)
+    add_definitions(-DATK_ENABLE_FORTRAN)
+
     # if enabled but no fortran compiler, halt the configure
     if(CMAKE_Fortran_COMPILER)
         MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
@@ -97,7 +99,7 @@ if(ENABLE_FORTRAN)
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
     endif()    
 else()
-    MESSAGE(STATUS  "Fortran support disabled. (ENABLE_FORTRAN == OFF)")
+    MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
 endif()
 
 ################################
@@ -118,6 +120,9 @@ if (BUILD_TESTING)
             CACHE INTERNAL "GoogleTest include directories" FORCE)
   set(GTEST_LIBS gtest_main gtest
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
+
+  ## Add Fruit   FortRan UuIT test
+  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/fruit-3.3.9)
 
   enable_testing()
 
@@ -161,9 +166,8 @@ if(ENABLE_WARNINGS)
     if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
         add_definitions(/W2)
     else()
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-            "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            # using clang or gcc
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            # using gcc
             add_definitions(-Wall -Wextra -Werror)
         endif()
     endif()
@@ -624,7 +628,7 @@ macro(add_fortran_test)
             "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
        get_filename_component(test_name ${arg_TEST_SOURCE} NAME_WE)
-       add_executable( ${test_name} ${arg_TEST_SOURCE} )
+       add_executable( ${test_name} fortran_driver.cpp ${arg_TEST_SOURCE} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
         set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")

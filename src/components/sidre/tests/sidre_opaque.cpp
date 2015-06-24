@@ -16,8 +16,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 // Some simple types and functions used in tests
@@ -105,13 +104,13 @@ TEST(sidre_opaque,inout)
   const int ihi_val = 9;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root_gp = ds->getRoot();
+  DataGroup * root = ds->getRoot();
 
-  DataGroup * problem_gp = root_gp->createGroup("problem");
+  DataGroup * problem_gp = root->createGroup("problem");
 
   Extent * ext = new Extent(0, ihi_val);
 
-  problem_gp->createOpaqueView("ext", ext);
+  DataView * ext_view = problem_gp->createOpaqueView("ext", ext);
 #if 1
 //  problem_gp->CreateViewAndBuffer("ext");
 //  problem_gp->CreateOpaqueView("ext", ext);
@@ -126,19 +125,19 @@ TEST(sidre_opaque,inout)
 //  DataView* v = problem_gp->DetachView("ext");
 //  std::cout << "view name = " << v->GetName() << std::endl;
 //  problem_gp->DestroyView("foo");
-//  root_gp->MoveGroup(problem_gp);
-//  root_gp->CopyGroup(problem_gp);
+//  root->MoveGroup(problem_gp);
+//  root->CopyGroup(problem_gp);
 //  Can't do following: method is private...
-//  root_gp->DetachGroup("bar");
-//  root_gp->DestroyGroup("bar");
+//  root->DetachGroup("bar");
+//  root->DestroyGroup("bar");
 //  problem_gp->getView(2);
 #endif
 
-  bool test_opaque = problem_gp->getView("ext")->isOpaque();
+  bool test_opaque = ext_view->isOpaque();
   EXPECT_EQ(test_opaque, true);
 
   Extent * test_extent =
-    static_cast<Extent *>(problem_gp->getView("ext")->getOpaque());
+    static_cast<Extent *>(ext_view->getOpaque());
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
@@ -168,16 +167,16 @@ TEST(sidre_opaque,meshvar)
   const int node_var_depth = 2;
 
   DataStore * ds   = new DataStore();
-  DataGroup * root_gp = ds->getRoot();
+  DataGroup * root = ds->getRoot();
 
-  DataGroup * problem_gp = root_gp->createGroup("problem");
+  DataGroup * problem_gp = root->createGroup("problem");
 
   // Add two different mesh vars to mesh var group
   DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
-  meshvar_gp->createOpaqueView("zone_mv", zone_mv);
+  DataView * zone_mv_view = meshvar_gp->createOpaqueView("zone_mv", zone_mv);
   MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
-  meshvar_gp->createOpaqueView("node_mv", node_mv);
+  DataView * node_mv_view = meshvar_gp->createOpaqueView("node_mv", node_mv);
 
   //
   // Create domain groups, add extents
@@ -190,24 +189,20 @@ TEST(sidre_opaque,meshvar)
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createOpaqueView("ext", dom_ext);
 
-    DataGroup * mv_gp = problem_gp->getGroup("mesh_var");
-
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
     DataView * dom_zone_view = dom_gp->createViewAndBuffer("zone_data");
-    MeshVar * zonemv = static_cast<MeshVar *>(
-      mv_gp->getView("zone_mv")->getOpaque() );
-    dom_zone_view->allocate( DataType::int32(zonemv->getNumVals(dom_ext)) );
+    dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
     DataView * dom_node_view = dom_gp->createViewAndBuffer("node_data");
-    MeshVar * nodemv = static_cast<MeshVar *>(
-      mv_gp->getView("node_mv")->getOpaque() );
-    dom_node_view->allocate( DataType::float64(nodemv->getNumVals(dom_ext)) );
+    dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }
 
 //
 //  Print datastore contents to see what's going on.
 //
-//  ds->Print();
+//  ds->print();
 
 
   //
@@ -220,20 +215,15 @@ TEST(sidre_opaque,meshvar)
     Extent * dom_ext = static_cast<Extent *>(
       dom_gp->getView("ext")->getOpaque() );
 
-    DataGroup * mv_gp = problem_gp->getGroup("mesh_var");
-    MeshVar * zonemv = static_cast<MeshVar *>(
-      mv_gp->getView("zone_mv")->getOpaque() );
-    MeshVar * nodemv = static_cast<MeshVar *>(
-      mv_gp->getView("node_mv")->getOpaque() );
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
-    int test_num_zone_vals = dom_gp->getView("zone_data")->getBuffer()->
-                             getSchema().dtype().number_of_elements();
+    int test_num_zone_vals = dom_gp->getView("zone_data")->getNumberOfElements();
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = nodemv->getNumVals(dom_ext);
-    int test_num_node_vals = dom_gp->getView("node_data")->getBuffer()->
-                             getSchema().dtype().number_of_elements();
+    int test_num_node_vals = dom_gp->getView("node_data")->getNumberOfElements();
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }
@@ -247,4 +237,23 @@ TEST(sidre_opaque,meshvar)
       problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaque() );
   }
   delete ds;
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

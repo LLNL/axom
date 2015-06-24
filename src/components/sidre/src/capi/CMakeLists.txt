@@ -5,9 +5,11 @@
 set(sidre_headers
     sidre.h
     SidreTypes.h
+    SidreWrapperHelpers.hpp
 )
 
 set(sidre_generated_headers
+    wrapSidre.h
     wrapDataStore.h
     wrapDataGroup.h
     wrapDataBuffer.h
@@ -18,16 +20,17 @@ set(sidre_generated_headers
 # Specify all sources
 #
 set(sidre_generated_source
+    wrapSidre.cpp
     wrapDataStore.cpp
     wrapDataGroup.cpp
     wrapDataBuffer.cpp
     wrapDataView.cpp
-#    fstr_mod.f
-#    wrapfDataStore.f
+    fstr_mod.f
+    wrapfsidre.f
     )
 
-set(API_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-#set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+#set(API_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #
 # Generate source
 #
@@ -38,6 +41,9 @@ set(API_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+            ${CMAKE_CURRENT_SOURCE_DIR}/csidresplicer.c
+            ${CMAKE_CURRENT_SOURCE_DIR}/fsidresplicer.f
+            ${CMAKE_CURRENT_SOURCE_DIR}/pysidresplicer.c
     COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     COMMENT "Running shroud api.yaml"
@@ -60,7 +66,7 @@ foreach(file ${sidre_headers})
 #  )
 endforeach(file)
 
-# generated files
+# generated headers
 foreach(file ${sidre_generated_headers})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
 
@@ -77,7 +83,7 @@ list(APPEND generated_list ${parent_list})
 
 
 set(parent_list)
-# generated files
+# generated source
 foreach(file ${sidre_source} ${sidre_generated_source})
   list(APPEND parent_list ${API_OUTPUT_DIR}/${file} )
 
@@ -87,7 +93,8 @@ foreach(file ${sidre_source} ${sidre_generated_source})
   )
 #  SET_SOURCE_FILES_PROPERTIES(${API_OUTPUT_DIR}/${file}
 #       PROPERTIES GENERATED TRUE
-#  ) 
+#  )
+
 endforeach(file)
 set (capi_source ${parent_list} PARENT_SCOPE)
 list(APPEND generated_list ${parent_list})
@@ -98,20 +105,22 @@ ADD_CUSTOM_TARGET(sidre_generate
 )
 
 #
-# Create the wrappers during config
+# Mark the wappers as done by touching capi.time
+# This should avoid generating the wrappers unless api.yaml is changed.
 #
 execute_process(
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
-    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
-         --logdir ${CMAKE_CURRENT_BINARY_DIR}
-         --outdir ${API_OUTPUT_DIR}
-         ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
-    RESULT_VARIABLE capi_result
-    ERROR_VARIABLE capi_stderr
-    OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.output
+#--    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
+#--         --logdir ${CMAKE_CURRENT_BINARY_DIR}
+#--         --outdir ${API_OUTPUT_DIR}
+#--         ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+#--    RESULT_VARIABLE capi_result
+#--    ERROR_VARIABLE capi_stderr
+#--    OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.output
+    OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/capi.time
 )
-if(capi_result)
-  message(FATAL_ERROR "Error creating sidre wrappers:\n${capi_stderr}")
-else()
-  message(STATUS "Created sidre wrappers")
-endif()
+#--if(capi_result)
+#--  message(FATAL_ERROR "Error creating sidre wrappers:\n${capi_stderr}")
+#--else()
+#--  message(STATUS "Created sidre wrappers")
+#--endif()
