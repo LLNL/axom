@@ -184,7 +184,7 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    AA_exclass1 * in;
+    ExClass1 * in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0 };
     
@@ -219,7 +219,7 @@ PP_exclass2_declare(
     {
         return NULL;
     }
-    self->BBB->declare(type, len);
+    self->BBB->declare(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.ExClass2.method.declare
 }

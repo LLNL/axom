@@ -39,9 +39,8 @@ PY_datastore_get_root(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.getRoot
-DataGroup * grp = self->BBB->getRoot();
-PyObject *rv = PP_DataGroup_to_Object(grp);
-return rv;
+    DataGroup * rv = self->BBB->getRoot();
+    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
 // splicer end class.DataStore.method.getRoot
 }
 

@@ -52,9 +52,8 @@ PY_datagroup_get_name(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getName
-const std::string & name = self->BBB->getName();
-PyObject * rv = PyString_FromString(name.c_str());
-return rv;
+    const std::string & rv = self->BBB->getName();
+    return Py_BuildValue("s", &rv);
 // splicer end class.DataGroup.method.getName
 }
 
@@ -194,7 +193,7 @@ PY_datagroup_create_view_and_buffer_from_type(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->createViewAndBuffer(name, type, len);
+    DataView * rv = self->BBB->createViewAndBuffer(name, getTypeID(type), len);
     return Py_BuildValue("O&", PP_DataView_to_Object, rv);
 // splicer end class.DataGroup.method.createViewAndBuffer
 }
@@ -237,7 +236,7 @@ PY_datagroup_create_view(
 {
 // splicer begin class.DataGroup.method.createView
     const char * name;
-    ATK_databuffer * buff;
+    DataBuffer * buff;
     const char *kwcpp = "name\0buff";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
     
@@ -264,8 +263,8 @@ PY_datagroup_create_external_view(
 // splicer begin class.DataGroup.method.createExternalView
     const char * name;
     void * external_data;
-    const int type;
-    const ATK_SidreLength len;
+    int type;
+    ATK_SidreLength len;
     const char *kwcpp = "name\0external_data\0type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24 };
     
@@ -274,7 +273,7 @@ PY_datagroup_create_external_view(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->createExternalView(name, external_data, type, len);
+    DataView * rv = self->BBB->createExternalView(name, external_data, getTypeID(type), len);
     return Py_BuildValue("O&", PP_DataView_to_Object, rv);
 // splicer end class.DataGroup.method.createExternalView
 }
@@ -290,7 +289,7 @@ PY_datagroup_move_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.moveView
-    ATK_dataview * view;
+    DataView * view;
     const char *kwcpp = "view";
     char *kw_list[] = { (char *) kwcpp+0 };
     
@@ -315,7 +314,7 @@ PY_datagroup_copy_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.copyView
-    ATK_dataview * view;
+    DataView * view;
     const char *kwcpp = "view";
     char *kw_list[] = { (char *) kwcpp+0 };
     
@@ -490,7 +489,7 @@ PY_datagroup_move_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.moveGroup
-    ATK_datagroup * grp;
+    DataGroup * grp;
     const char *kwcpp = "grp";
     char *kw_list[] = { (char *) kwcpp+0 };
     

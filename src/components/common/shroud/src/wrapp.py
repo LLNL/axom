@@ -343,6 +343,7 @@ return 1;""", fmt)
             offset = 0
             for arg in node.get('args', []):
                 arg_name = arg['name']
+                fmt.var = arg_name
                 arg_names.append(arg_name)
                 arg_offsets.append( '(char *) kwcpp+%d' % offset)
                 offset += len(arg_name) + 1
@@ -352,8 +353,18 @@ return 1;""", fmt)
                     format.append('&')
                     addrargs.append(arg_typedef.PY_from_object)
                 addrargs.append('&' + arg_name)
-                PY_decl.append(self.std_c_decl('c_type', arg) + ';')
-                cpp_call_list.append(arg_name)
+
+                # argument for C++ function
+                if arg_typedef.PY_from_object:
+                    # already a C++ type
+                    PY_decl.append(self.std_c_decl('cpp_type', arg) + ';')
+                    cpp_call_list.append(fmt.var)
+                else:
+                    # convert to C++ type
+                    PY_decl.append(self.std_c_decl('c_type', arg) + ';')
+                    fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+                    append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
+
 
             # jump through some hoops for char ** const correctness for C++
             PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))

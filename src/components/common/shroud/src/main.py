@@ -232,10 +232,6 @@ class Schema(object):
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})',
 
-                PY_format = 'O',
-                PY_to_object = 'XX_to',
-                PY_from_object = 'XX_from',
-
                 # allow forward declarations to avoid recursive headers
                 forward = name,
                 base = 'wrapped',

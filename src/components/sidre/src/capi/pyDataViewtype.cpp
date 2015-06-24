@@ -48,7 +48,7 @@ PY_dataview_declare(
     {
         return NULL;
     }
-    self->BBB->declare(type, len);
+    self->BBB->declare(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.declare
 }
@@ -74,7 +74,7 @@ PY_dataview_allocate(
     {
         return NULL;
     }
-    self->BBB->allocate(type, len);
+    self->BBB->allocate(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.allocate
 }
@@ -100,7 +100,7 @@ PY_dataview_reallocate(
     {
         return NULL;
     }
-    self->BBB->reallocate(type, len);
+    self->BBB->reallocate(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.reallocate
 }

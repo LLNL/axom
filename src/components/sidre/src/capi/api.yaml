@@ -51,6 +51,7 @@ typedef:
     c_type   : int
     cpp_type : TypeID
     c_to_cpp : getTypeID({var})
+#    c_to_cpp : static_cast<TypeID>({var})
     c_fortran: integer(C_INT)
     f_type   : integer(C_INT)
     f_module : 
@@ -110,9 +111,9 @@ classes:
        method_suffix: _from_type
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
-#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, const TypeID type, const SidreLength len )
+#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, TypeID type, SidreLength len )
 #    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl:  DataView * createExternalView( const std::string& name, void * external_data,  const TypeID type, const SidreLength len )
+    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength len )
     -  decl: DataView *moveView(DataView *view)
     -  decl: DataView *copyView(DataView *view)
     -  decl: void destroyViewAndBuffer(const std::string &name)

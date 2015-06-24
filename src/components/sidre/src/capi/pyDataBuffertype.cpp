@@ -80,7 +80,7 @@ PY_databuffer_declare(
     {
         return NULL;
     }
-    self->BBB->declare(type, len);
+    self->BBB->declare(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.declare
 }
@@ -107,7 +107,7 @@ PY_databuffer_declare_external(
     {
         return NULL;
     }
-    self->BBB->declareExternal(external_data, type, len);
+    self->BBB->declareExternal(external_data, getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.declareExternal
 }
@@ -149,7 +149,7 @@ PY_databuffer_allocate_from_type(
     {
         return NULL;
     }
-    self->BBB->allocate(type, len);
+    self->BBB->allocate(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.allocate
 }
@@ -175,7 +175,7 @@ PY_databuffer_reallocate(
     {
         return NULL;
     }
-    self->BBB->reallocate(type, len);
+    self->BBB->reallocate(getTypeID(type), len);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.reallocate
 }

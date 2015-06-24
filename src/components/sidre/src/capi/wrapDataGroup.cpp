@@ -109,7 +109,7 @@ return rv;
 // splicer end class.DataGroup.method.createView
 }
 
-ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, const int type, const ATK_SidreLength len)
+ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength len)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
 // splicer begin class.DataGroup.method.createExternalView
