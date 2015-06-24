@@ -23,7 +23,7 @@
 #include <sstream> // for ostringstream
 
 // Logging includes
-#include "slic/Logger.hpp"
+#include "slic/slic.hpp"
 #include "slic/SynchronizedStream.hpp"
 
 // MPI
@@ -53,11 +53,11 @@ int main( int argc, char** argv )
                        std::string( "\tFILE=<FILE>\n") +
                        std::string( "\tLINE=<LINE>\n");
 
-  slic::Logger::initialize();
+  slic::initialize();
 
 
-  slic::Logger::setLogLevel( slic::message::Debug );
-  slic::Logger::addStream(
+  slic::setLoggingLevel( slic::message::Debug );
+  slic::addStreamToAllLevels(
       new slic::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
 
   // STEP 3: loop N times and generate a random logging event
@@ -66,7 +66,7 @@ int main( int argc, char** argv )
     std::ostringstream oss;
     oss << "[ " << rank << "]: message " << i << "/" << N-1;
 
-    slic::Logger::log( getRandomEvent(0,slic::message::Num_Levels),
+    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
                          oss.str(),
                          __FILE__,
                          __LINE__
@@ -75,14 +75,14 @@ int main( int argc, char** argv )
     // Flush every 5 cycles
     if ( (i % 5)==0 ) {
 
-      slic::Logger::flushStreams();
+      slic::flushStreams();
 
     } // END if
 
   }
 
   // STEP 4: shutdown logging environment
-  slic::Logger::finalize();
+  slic::finalize();
 
   // STEP 5: Finalize MPI
   MPI_Finalize();

@@ -26,7 +26,8 @@
 #include <stack>
 
 // Other CS Toolkit headers
-#include "conduit/conduit.hpp"
+#include "common/CommonTypes.hpp"
+#include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
@@ -72,17 +73,33 @@ public:
    */
   ~DataStore();
 
+  /*!
+   * \brief Return pointer to the root DataGroup.
+   */
+  DataGroup * getRoot()
+  {
+    return m_RootGroup;
+  };
+
 
 //@{
 //!  @name DataBuffer methods
 
   /*!
-   * \brief Return (non-const) pointer to data buffer object with given index.
+   * \brief Return true if DataStore owns a DataBuffer with given index;
+   *        else false.
    */
-  DataBuffer * getBuffer( IndexType idx )
+  bool hasBuffer( IndexType idx ) const
   {
-    return m_data_buffers[idx];
+    return ( 0 <= idx && static_cast<unsigned>(idx) < m_data_buffers.size() &&
+             m_data_buffers[idx] != ATK_NULLPTR );
   }
+
+  /*!
+   * \brief Return (non-const) pointer to data buffer object with given index,
+   *        or ATK_NULLPTR if none exists.
+   */
+  DataBuffer * getBuffer( IndexType idx );
 
   /*!
    * \brief Create a data buffer object and return a pointer to it.
@@ -128,14 +145,27 @@ public:
 
 //@}
 
-  /*!
-   * \brief Return pointer to the root DataGroup.
-   */
-  DataGroup * getRoot()
-  {
-    return m_RootGroup;
-  };
+//@{
+//!  @name DataBuffer iteration methods
 
+  /*!
+   * \brief Return first valid DataBuffer index (i.e., smallest index
+   *        over all DataBuffers).
+   *
+   * sidre::InvalidIndex is returned if group has no buffers.
+   */
+  IndexType getFirstValidBufferIndex() const;
+
+  /*!
+   * \brief Return next valid DataBuffer index after given index (i.e.,
+   *        smallest index over all buffer indices larger than given one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   */
+  IndexType getNextValidBufferIndex(IndexType idx) const;
+
+//@}
 
   /*!
    * \brief Copy buffer descriptions and group tree, starting at root,

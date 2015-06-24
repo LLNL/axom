@@ -16,6 +16,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
+using asctoolkit::sidre::DataType;
 
 using namespace conduit;
 
@@ -40,81 +41,85 @@ TEST(sidre_view,create_views)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,uint32_buffer_from_view)
+TEST(sidre_view,int_buffer_from_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
   DataView * dv = root->createViewAndBuffer("u0");
 
-  dv->allocate(DataType::uint32(10));
-  uint32 * data_ptr = dv->getNode().as_uint32_ptr();
+  dv->allocate(DataType::c_int(10));
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i*i;
+  }
 
   dv->getNode().print_detailed();
 
-  EXPECT_EQ(dv->getNode().schema().total_bytes(),
-            dv->getSchema().total_bytes());
+  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
 
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,uint32_buffer_from_view_conduit_value)
+TEST(sidre_view,int_buffer_from_view_conduit_value)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv = root->createViewAndBuffer("u0",DataType::uint32(10));
-  uint32 * data_ptr = dv->getValue();
+  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(10));
+  int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i*i;
+  }
 
   dv->getNode().print_detailed();
 
-  EXPECT_EQ(dv->getNode().schema().total_bytes(),
-            dv->getSchema().total_bytes());
+  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
 
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,uint32_array_multi_view)
+TEST(sidre_view,int_array_multi_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->declare(DataType::uint32(10));
+  dbuff->declare(DataType::c_int(10));
   dbuff->allocate();
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+  int * data_ptr = dbuff->getNode().as_int_ptr();
 
   for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i;
+  }
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
-
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
+  EXPECT_EQ(dbuff->getNumViews(), 2u);
 
-  dv_e->apply(DataType::uint32(5,0,8));
+  dv_e->apply(DataType::c_int(5,0,8));
 
-  dv_o->apply(DataType::uint32(5,4,8));
+  dv_o->apply(DataType::c_int(5,4,8));
 
   dv_e->getNode().print_detailed();
   dv_o->getNode().print_detailed();
 
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
+  int_array dv_e_ptr = dv_e->getNode().as_int_array();
+  int_array dv_o_ptr = dv_o->getNode().as_int_array();
   for(int i=0 ; i<5 ; i++)
   {
     std::cout << "idx:" <<  i
@@ -124,8 +129,8 @@ TEST(sidre_view,uint32_array_multi_view)
               << " om:" << dv_o_ptr[i]  % 2
               << std::endl;
 
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+    EXPECT_EQ(dv_e_ptr[i] % 2, 0);
+    EXPECT_EQ(dv_o_ptr[i] % 2, 1);
   }
   ds->print();
   delete ds;
@@ -134,40 +139,41 @@ TEST(sidre_view,uint32_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,init_uint32_array_multi_view)
+TEST(sidre_view,init_int_array_multi_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::uint32(10));
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+  dbuff->allocate(DataType::c_int(10));
+  int * data_ptr = dbuff->getNode().as_int_ptr();
 
   for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = i;
+  }
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
 
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
 
-  // uint32(num_elems, offset, stride)
-  dv_e->apply(DataType::uint32(5,0,8));
+  // c_int(num_elems, offset, stride)
+  dv_e->apply(DataType::c_int(5,0,8));
 
 
-  // uint32(num_elems, offset, stride)
-  dv_o->apply(DataType::uint32(5,4,8));
+  // c_int(num_elems, offset, stride)
+  dv_o->apply(DataType::c_int(5,4,8));
 
 
   dv_e->getNode().print_detailed();
   dv_o->getNode().print_detailed();
 
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
+  int_array dv_e_ptr = dv_e->getNode().as_int_array();
+  int_array dv_o_ptr = dv_o->getNode().as_int_array();
   for(int i=0 ; i<5 ; i++)
   {
     std::cout << "idx:" <<  i
@@ -177,8 +183,8 @@ TEST(sidre_view,init_uint32_array_multi_view)
               << " om:" << dv_o_ptr[i]  % 2
               << std::endl;
 
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+    EXPECT_EQ(dv_e_ptr[i] % 2, 0);
+    EXPECT_EQ(dv_o_ptr[i] % 2, 1);
   }
   ds->print();
   delete ds;
@@ -187,7 +193,7 @@ TEST(sidre_view,init_uint32_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,uint32_array_multi_view_resize)
+TEST(sidre_view,int_array_multi_view_resize)
 {
   ///
   /// This example creates a 4 * 10 buffer of ints,
@@ -212,20 +218,28 @@ TEST(sidre_view,uint32_array_multi_view_resize)
 
   // alloc our buffer
   // we will create 4 sub views of this array
-  base_old->allocate(DataType::uint32(40));
-  uint32 * data_ptr = base_old->getNode().as_uint32_ptr();
+  base_old->allocate(DataType::c_int(40));
+  int * data_ptr = base_old->getValue();
 
 
   // init the buff with values that align with the
   // 4 subsections.
   for(int i=0 ; i<10 ; i++)
+  {
     data_ptr[i] = 1;
+  }
   for(int i=10 ; i<20 ; i++)
+  {
     data_ptr[i] = 2;
+  }
   for(int i=20 ; i<30 ; i++)
+  {
     data_ptr[i] = 3;
+  }
   for(int i=30 ; i<40 ; i++)
+  {
     data_ptr[i] = 4;
+  }
 
 
   /// setup our 4 views
@@ -236,34 +250,34 @@ TEST(sidre_view,uint32_array_multi_view_resize)
   DataView * r2_old = r_old->createView("r2",buff_old);
   DataView * r3_old = r_old->createView("r3",buff_old);
 
-  // each view is offset by 10 * the # of bytes in a uint32
-  // uint32(num_elems, offset)
+  // each view is offset by 10 * the # of bytes in a int
+  // c_int(num_elems, offset)
   index_t offset =0;
-  r0_old->apply(DataType::uint32(10,offset));
+  r0_old->apply(DataType::c_int(10,offset));
 
-  offset += sizeof(uint32) * 10;
-  r1_old->apply(DataType::uint32(10,offset));
+  offset += sizeof(int) * 10;
+  r1_old->apply(DataType::c_int(10,offset));
 
-  offset += sizeof(uint32) * 10;
-  r2_old->apply(DataType::uint32(10,offset));
+  offset += sizeof(int) * 10;
+  r2_old->apply(DataType::c_int(10,offset));
 
-  offset += sizeof(uint32) * 10;
-  r3_old->apply(DataType::uint32(10,offset));
+  offset += sizeof(int) * 10;
+  r3_old->apply(DataType::c_int(10,offset));
 
   /// check that our views actually point to the expected data
   //
-  uint32 * r0_ptr = r0_old->getNode().as_uint32_ptr();
+  int * r0_ptr = r0_old->getValue();
   for(int i=0 ; i<10 ; i++)
   {
-    EXPECT_EQ(r0_ptr[i], 1u);
+    EXPECT_EQ(r0_ptr[i], 1);
     // check pointer relation
     EXPECT_EQ(&r0_ptr[i], &data_ptr[i]);
   }
 
-  uint32 * r3_ptr = r3_old->getNode().as_uint32_ptr();
+  int * r3_ptr = r3_old->getValue();
   for(int i=0 ; i<10 ; i++)
   {
-    EXPECT_EQ(r3_ptr[i], 4u);
+    EXPECT_EQ(r3_ptr[i], 4);
     // check pointer relation
     EXPECT_EQ(&r3_ptr[i], &data_ptr[i+30]);
   }
@@ -275,12 +289,12 @@ TEST(sidre_view,uint32_array_multi_view_resize)
 
   // alloc our buffer
   // create a buffer to hold larger subarrays
-  base_new->allocate(DataType::uint32(4 * 12));
-  uint32* base_new_data = base_new->getNode().as_uint32_ptr();
-  for (int i = 0; i < 4 * 12; ++i) 
+  base_new->allocate(DataType::c_int(4 * 12));
+  int * base_new_data = base_new->getValue();
+  for (int i = 0 ; i < 4 * 12 ; ++i)
   {
-     base_new_data[i] = 0u;
-  } 
+    base_new_data[i] = 0;
+  }
 
   DataBuffer * buff_new = base_new->getBuffer();
   buff_new->getNode().print();
@@ -292,20 +306,20 @@ TEST(sidre_view,uint32_array_multi_view_resize)
   DataView * r3_new = r_new->createView("r3",buff_new);
 
   // apply views to r0,r1,r2,r3
-  // each view is offset by 12 * the # of bytes in a uint32
+  // each view is offset by 12 * the # of bytes in a int
 
-  // uint32(num_elems, offset)
+  // c_int(num_elems, offset)
   offset =0;
-  r0_new->apply(DataType::uint32(12,offset));
+  r0_new->apply(DataType::c_int(12,offset));
 
-  offset += sizeof(uint32) * 12;
-  r1_new->apply(DataType::uint32(12,offset));
+  offset += sizeof(int) * 12;
+  r1_new->apply(DataType::c_int(12,offset));
 
-  offset += sizeof(uint32) * 12;
-  r2_new->apply(DataType::uint32(12,offset));
+  offset += sizeof(int) * 12;
+  r2_new->apply(DataType::c_int(12,offset));
 
-  offset += sizeof(uint32) * 12;
-  r3_new->apply(DataType::uint32(12,offset));
+  offset += sizeof(int) * 12;
+  r3_new->apply(DataType::c_int(12,offset));
 
   /// update r2 as an example first
   buff_new->getNode().print();
@@ -318,16 +332,16 @@ TEST(sidre_view,uint32_array_multi_view_resize)
 
 
   /// check pointer values
-  uint32 * r2_new_ptr = r2_new->getNode().as_uint32_ptr();
+  int * r2_new_ptr = r2_new->getValue();
 
   for(int i=0 ; i<10 ; i++)
   {
-    EXPECT_EQ(r2_new_ptr[i], 3u);
+    EXPECT_EQ(r2_new_ptr[i], 3);
   }
 
   for(int i=10 ; i<12 ; i++)
   {
-    EXPECT_EQ(r2_new_ptr[i], 0u);     // assumes zero-ed alloc
+    EXPECT_EQ(r2_new_ptr[i], 0);     // assumes zero-ed alloc
   }
 
 
@@ -347,7 +361,7 @@ TEST(sidre_view,uint32_array_multi_view_resize)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,uint32_array_realloc)
+TEST(sidre_view,int_array_realloc)
 {
   ///
   /// info
@@ -359,37 +373,37 @@ TEST(sidre_view,uint32_array_realloc)
   DataGroup * root = ds->getRoot();
 
   // create a view to hold the base buffer
-  DataView * a1 = root->createViewAndBuffer("a1",DataType::uint32(5));
-  DataView * a2 = root->createViewAndBuffer("a2",DataType::int32(5));
+  DataView * a1 = root->createViewAndBuffer("a1",DataType::c_float(5));
+  DataView * a2 = root->createViewAndBuffer("a2",DataType::c_int(5));
 
-  uint32 * a1_ptr = a1->getNode().as_uint32_ptr();
-  int32 * a2_ptr = a2->getNode().as_int32_ptr();
+  float * a1_ptr = a1->getValue();
+  int * a2_ptr = a2->getValue();
 
   for(int i=0 ; i<5 ; i++)
   {
-    a1_ptr[i] =  5u;
+    a1_ptr[i] =  5.0;
     a2_ptr[i] = -5;
   }
 
-  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(uint32)*5);
-  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int32)*5);
+  EXPECT_EQ(a1->getTotalBytes(), sizeof(float)*5);
+  EXPECT_EQ(a2->getTotalBytes(), sizeof(int)*5);
 
 
-  a1->reallocate(DataType::uint32(10));
-  a2->reallocate(DataType::int32(15));
+  a1->reallocate(DataType::c_float(10));
+  a2->reallocate(DataType::c_int(15));
 
-  a1_ptr = a1->getNode().as_uint32_ptr();
-  a2_ptr = a2->getNode().as_int32_ptr();
+  a1_ptr = a1->getValue();
+  a2_ptr = a2->getValue();
 
   for(int i=0 ; i<5 ; i++)
   {
-    EXPECT_EQ(a1_ptr[i],5u);
+    EXPECT_EQ(a1_ptr[i],5.0);
     EXPECT_EQ(a2_ptr[i],-5);
   }
 
   for(int i=5 ; i<10 ; i++)
   {
-    a1_ptr[i] = 10u;
+    a1_ptr[i] = 10.0;
     a2_ptr[i] = -10;
   }
 
@@ -398,8 +412,8 @@ TEST(sidre_view,uint32_array_realloc)
     a2_ptr[i] = -15;
   }
 
-  EXPECT_EQ(a1->getNode().schema().total_bytes(), sizeof(uint32)*10);
-  EXPECT_EQ(a2->getNode().schema().total_bytes(), sizeof(int32)*15);
+  EXPECT_EQ(a1->getTotalBytes(), sizeof(float)*10);
+  EXPECT_EQ(a2->getTotalBytes(), sizeof(int)*15);
 
 
   ds->print();
@@ -437,4 +451,23 @@ TEST(sidre_view,simple_opaque)
   ds->print();
   delete ds;
   delete [] src_data;
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

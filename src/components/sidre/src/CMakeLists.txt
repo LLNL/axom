@@ -2,7 +2,11 @@
 # Specify all headers
 #
 
-add_subdirectory(capi)
+# The CAPI is only built to provide a Fortran interface.  If no Fortran,
+# disable CAPI.
+if (ENABLE_FORTRAN)
+    add_subdirectory(capi)
+endif()
 
 set(sidre_headers
     core/Collections.hpp
@@ -35,10 +39,16 @@ make_library( LIBRARY_NAME
                 "${sidre_sources}"
                 "${sidre_headers}"
              )
+
 add_dependencies(sidre copy_headers_sidre)
 add_dependencies(sidre copy_headers_common)
 add_dependencies(sidre copy_headers_conduit)
+add_dependencies(sidre copy_headers_slic)
+
 add_dependencies(sidre conduit)
+add_dependencies(sidre slic)
+set_target_properties(sidre  PROPERTIES Fortran_FORMAT "FREE")
+
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 #
@@ -46,4 +56,8 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #
 copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
-add_dependencies(copy_headers_sidre sidre_generate)
+
+# Only needed if building the Fortran interface
+if (ENABLE_FORTRAN)
+    add_dependencies(copy_headers_sidre sidre_generate)
+endif()

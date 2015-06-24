@@ -12,10 +12,11 @@
 
 #include "sidre/sidre.hpp"
 
+#include "conduit/conduit.hpp"
+
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 
@@ -37,16 +38,15 @@ TEST(sidre_buffer,create_buffers)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,alloc_buffer_for_uint32_array)
+TEST(sidre_buffer,alloc_buffer_for_int_array)
 {
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  //dbuff->declare(DataType::uint32(10));
-  dbuff->declare(DataType::UINT32_T, 10);
+  dbuff->allocate(DataType::c_int(10));
   dbuff->allocate();
 
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+  int * data_ptr = dbuff->getNode().as_int_ptr();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -55,8 +55,7 @@ TEST(sidre_buffer,alloc_buffer_for_uint32_array)
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
@@ -65,13 +64,13 @@ TEST(sidre_buffer,alloc_buffer_for_uint32_array)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_buffer,init_buffer_for_uint32_array)
+TEST(sidre_buffer,init_buffer_for_int_array)
 {
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::uint32(10));
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+  dbuff->allocate(DataType::c_int(10));
+  int * data_ptr = dbuff->getNode().as_int_ptr();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -80,8 +79,7 @@ TEST(sidre_buffer,init_buffer_for_uint32_array)
 
   dbuff->getNode().print_detailed();
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
@@ -96,13 +94,11 @@ TEST(sidre_buffer,realloc_buffer)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::int64(5));
+  dbuff->allocate(DataType::c_long(5));
 
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 5);
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(int64)*5);
-
-  int64 * data_ptr = dbuff->getNode().as_int64_ptr();
+  long * data_ptr = dbuff->getNode().as_long_ptr();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -111,10 +107,10 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->getNode().print_detailed();
 
-  dbuff->reallocate(DataType::int64(10));
+  dbuff->reallocate(DataType::c_long(10));
 
   // data buffer changes
-  data_ptr = dbuff->getNode().as_int64_ptr();
+  data_ptr = dbuff->getNode().as_long_ptr();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -127,12 +123,30 @@ TEST(sidre_buffer,realloc_buffer)
   }
 
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(int64)*10);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
   dbuff->getNode().print_detailed();
 
   ds->print();
   delete ds;
 
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

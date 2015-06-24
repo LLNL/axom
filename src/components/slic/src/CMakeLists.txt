@@ -15,6 +15,7 @@ set(slic_headers
     Logger.hpp
     LogStream.hpp
     MessageLevel.h
+    UnitTestLogger.hpp
     slic.hpp
 
     logstreams/GenericOutputStream.hpp
@@ -26,6 +27,7 @@ set(slic_headers
 set(slic_sources
     Logger.cpp
     LogStream.cpp
+    slic.cpp
 
     logstreams/GenericOutputStream.cpp
     )
@@ -48,8 +50,6 @@ if ( ENABLE_MPI )
                   WITH_MPI
                   )
 
-    add_dependencies(slic copy_headers_slic)
-
 else()
 
     make_library( LIBRARY_NAME
@@ -59,9 +59,9 @@ else()
                       "${slic_headers}"
                   )
 
-    add_dependencies(slic copy_headers_slic)
-
 endif()
+add_dependencies(slic copy_headers_common)
+add_dependencies(slic copy_headers_slic)
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 

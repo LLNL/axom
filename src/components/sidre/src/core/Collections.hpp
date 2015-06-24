@@ -51,16 +51,16 @@
  *          - // Return number of items in collection.
  *
  *               size_t getNumItems() const;
- *        
+ *
  *          - // Retturn first valid item index (i.e., smallest index over
- *            // all items). 
+ *            // all items).
  *            // sidre::InvalidIndex returned if no items in collection
  *
  *               IndexType getFirstValidIndex() const;
  *
  *          - // Return next valid item index after given index (i.e., smallest
  *            // index over all indices larger than given one).
- *            // sidre::InvalidIndex returned 
+ *            // sidre::InvalidIndex returned
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  *
@@ -82,12 +82,12 @@
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
  *
- *          - // Return name of object with given index 
+ *          - // Return name of object with given index
  *            // (sidre::InvalidName if none).
  *
  *               std::string getItemName(IndexType idx) const;
  *
- *          - // Return index of object with given name 
+ *          - // Return index of object with given name
  *            // (sidre::InvalidName if none).
  *
  *               IndexType getItemIndex(const std::string& name) const;
@@ -179,10 +179,10 @@ public:
     return m_items.size();
   }
 
-  /// 
+  ///
   IndexType getFirstValidIndex() const
   {
-    return hasItem(0) ? 0 : InvalidIndex;
+    return getNextValidIndex(-1);
   }
 
   ///
@@ -332,10 +332,10 @@ TYPE * MapCollection<TYPE, MAP_TYPE>::removeItem(IndexType idx)
 
 ////////////////////////////////////////////////////////////////////////
 //
-// NewMapCollection is an attempt to improve performance over 
+// NewMapCollection is an attempt to improve performance over
 // MapCollection above by keeping an index constant for each item
-// as long as it iremains in the collection; i.e., don't shift indices 
-// around.  It has the additional benefit that users can hold on to 
+// as long as it iremains in the collection; i.e., don't shift indices
+// around.  It has the additional benefit that users can hold on to
 // item indices without them being changed without notice.
 //
 ////////////////////////////////////////////////////////////////////////
@@ -447,41 +447,35 @@ public:
   void removeAllItems()
   {
     m_items.clear();
-    while ( !m_free_ids.empty() ) 
+    while ( !m_free_ids.empty() )
     {
-       m_free_ids.pop();
+      m_free_ids.pop();
     }
     m_name2idx_map.clear();
   }
 
 private:
   std::vector<TYPE *>  m_items;
-  std::stack< IndexType > m_free_ids; 
+  std::stack< IndexType > m_free_ids;
   MAP_TYPE m_name2idx_map;
 };
 
 template <typename TYPE, typename MAP_TYPE>
 IndexType NewMapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
 {
-  IndexType idx = 0;
-  while ( static_cast<unsigned>(idx) < m_items.size() && 
-          m_items[idx] == ATK_NULLPTR )
-  {
-    idx++; 
-  }
-  return hasItem(idx) ? idx : InvalidIndex;
+  return getNextValidIndex(-1);
 }
 
 template <typename TYPE, typename MAP_TYPE>
 IndexType NewMapCollection<TYPE, MAP_TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
-  while ( static_cast<unsigned>(idx) < m_items.size() && 
+  while ( static_cast<unsigned>(idx) < m_items.size() &&
           m_items[idx] == ATK_NULLPTR )
   {
     idx++;
-  } 
-  return hasItem(idx) ? idx : InvalidIndex;
+  }
+  return ( (static_cast<unsigned>(idx) < m_items.size()) ? idx : InvalidIndex );
 }
 
 
@@ -493,30 +487,30 @@ bool NewMapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
   IndexType idx = m_items.size();
   if ( !m_free_ids.empty() )
   {
-     idx = m_free_ids.top();
-     m_free_ids.pop();
-     use_recycled_index = true;
+    idx = m_free_ids.top();
+    m_free_ids.pop();
+    use_recycled_index = true;
   }
 
   if ( m_name2idx_map.insert( std::make_pair(name, idx) ).second )
   {
     // name was inserted into map
-    if ( use_recycled_index ) 
+    if ( use_recycled_index )
     {
-       m_items[idx] = item;
-    } 
-    else 
+      m_items[idx] = item;
+    }
+    else
     {
-       m_items.push_back(item);
-    } 
+      m_items.push_back(item);
+    }
     return true;
   }
   else
   {
     // name was NOT inserted into map, return free index if necessary
-    if ( use_recycled_index ) 
+    if ( use_recycled_index )
     {
-      m_free_ids.push(idx);  
+      m_free_ids.push(idx);
     }
     return false;
   }

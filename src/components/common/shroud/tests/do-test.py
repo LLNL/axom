@@ -63,8 +63,11 @@ def do_test(name, replace_ref):
         makedirs(result_dir)
         clear_files(result_dir)
 
+    output_file = os.path.join(result_dir, 'output')
+
     cmd = [
         code_path,
+        '--indir', test_source_dir,
         '--logdir', result_dir,
         '--outdir', result_dir,
         testyaml,
@@ -80,6 +83,9 @@ def do_test(name, replace_ref):
         logging.error('Exit status: %d' % exc.returncode)
         logging.error(exc.output)
         return False
+    fp = open(output_file, 'w')
+    fp.write(output)
+    fp.close()
 
     """
     pipes = subprocess.Popen(cmnd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -115,11 +121,11 @@ def do_test(name, replace_ref):
         logging.info('Compare: ' + file)
     if mismatch:
         status = False
-        for file in cmp.mismatch:
+        for file in mismatch:
             logging.warn('Does not compare: '+ file)
     if errors:
         status = False
-        for file in cmp.errors:
+        for file in errors:
             logging.warn('Unable to compare: ' + file)
 
     if cmp.left_only:

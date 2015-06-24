@@ -11,9 +11,6 @@
 // Other CS Toolkit headers
 #include "conduit/conduit.hpp"
 
-// SiDRe project headers
-#include "sidre/SidreTypes.h"
-
 namespace asctoolkit
 {
 namespace sidre
@@ -29,14 +26,16 @@ typedef conduit::DataType::TypeID TypeID;
  */
 typedef int IndexType;
 
+typedef long int SidreLength;
+
 /*!
  * \brief Common invalid index identifier used in sidre.
  */
 const IndexType InvalidIndex = -1;
 ///
 inline bool indexIsValid(IndexType idx)
-{ 
-  return  idx != InvalidIndex;
+{
+  return idx != InvalidIndex;
 }
 
 /*!
@@ -44,79 +43,12 @@ inline bool indexIsValid(IndexType idx)
  */
 const std::string InvalidName;
 ///
-inline bool nameIsValid(const std::string& name)
+inline bool isNameValid(const std::string& name)
 {
   return name != InvalidName;
 }
 
 
-template< int TYPEID >
-inline TypeID getTypeID()
-{
-  return static_cast<TypeID>(TYPEID);
-}
-
-inline TypeID getTypeID( const ATK_TypeEnum typeID )
-{
-  TypeID rval = DataType::EMPTY_T;
-
-  switch( typeID )
-  {
-#if 0
-  case 0:
-    rval = DataType::EMPTY_T;
-    break;
-  case 1:
-    rval = DataType::OBJECT_T;
-    break;
-  case 2:
-    rval = DataType::LIST_T;
-    break;
-#endif
-  case ATK_INT8_T:
-    rval = DataType::INT8_T;
-    break;
-  case ATK_INT16_T:
-    rval = DataType::INT16_T;
-    break;
-  case ATK_INT32_T:
-    rval = DataType::INT32_T;
-    break;
-  case ATK_INT64_T:
-    rval = DataType::INT64_T;
-    break;
-  case ATK_UINT8_T:
-    rval = DataType::UINT8_T;
-    break;
-  case ATK_UINT16_T:
-    rval = DataType::UINT16_T;
-    break;
-  case ATK_UINT32_T:
-    rval = DataType::UINT32_T;
-    break;
-  case ATK_UINT64_T:
-    rval = DataType::UINT64_T;
-    break;
-  case ATK_FLOAT32_T:
-    rval = DataType::FLOAT32_T;
-    break;
-  case ATK_FLOAT64_T:
-    rval = DataType::FLOAT64_T;
-    break;
-  case ATK_CHAR8_STR_T:
-    rval = DataType::CHAR8_STR_T;
-    break;
-  default:
-    rval = DataType::EMPTY_T;
-    break;
-//      ATK_ERROR( "getTypeID(int) passed invalid type" );
-
-
-  }
-
-  return rval;
-
-}
 
 /*
  *************************************************************************
@@ -125,7 +57,8 @@ inline TypeID getTypeID( const ATK_TypeEnum typeID )
  *
  *************************************************************************
  */
-inline DataType createDataType( const TypeID type, long len )
+#if 0
+inline DataType createDataType( TypeID type, long len )
 {
   DataType rval;
 
@@ -176,6 +109,7 @@ inline DataType createDataType( const TypeID type, long len )
   return rval;
 
 }
+#endif
 
 
 
