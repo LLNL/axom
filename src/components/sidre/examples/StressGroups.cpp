@@ -20,26 +20,52 @@ int main(int argc, char *argv[])
     DataStore *ds = new DataStore();
     DataGroup *root = ds->getRoot();
 
-    int num_groups = 0;
+    size_t num_groups = 0;
     if (argc > 1) {
-       num_groups = atoi(argv[1]);
+       num_groups = static_cast<size_t>(atoi(argv[1]));
     } else {
        return 0;
     }
-    
+
+    static const char alphanum[] =
+       "0123456789"
+       "!@#$%^&*"
+       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+       "abcdefghijklmnopqrstuvwxyz";
+
+    int num_chars = sizeof(alphanum) - 1;
+
+    std::set<std::string> name_set;
+
+    while (name_set.size() < num_groups) {
+       std::string new_string;
+       for (int c = 0; c < 8; ++c) {
+          new_string += alphanum[rand() %  num_chars];
+       }
+       name_set.insert(new_string);
+    }
+
+    int i = 0;
     std::vector<std::string> names(num_groups);
+    for (std::set<std::string>::const_iterator itr = name_set.begin();
+         itr != name_set.end(); ++itr) {
+       names[i] = *itr;
+       ++i;
+    }
+
+/* 
     for (int i = 0; i < num_groups; ++i) {
        std::stringstream sstr;
        sstr << i;
 
        names[i] = sstr.str();;
     }
-
+*/
     std::random_shuffle(names.begin(), names.end());
 
     RAJA::Timer create_timer;
     create_timer.start();
-    for (int i = 0; i < num_groups; ++i) {
+    for (unsigned int i = 0; i < num_groups; ++i) {
        root->createGroup(names[i]);
     }
     create_timer.stop();
@@ -50,7 +76,7 @@ int main(int argc, char *argv[])
 
     RAJA::Timer query_timer;
     query_timer.start();
-    for (int i = 0; i < num_groups; ++i) {
+    for (unsigned int i = 0; i < num_groups; ++i) {
        if ( !root->hasGroup(names[i]) ) {
           break; 
        }
@@ -63,7 +89,7 @@ int main(int argc, char *argv[])
 
     RAJA::Timer destroy_timer;
     destroy_timer.start();
-    for (int i = 0; i < num_groups; ++i) {
+    for (unsigned int i = 0; i < num_groups; ++i) {
        root->destroyGroup(names[i]);
     }
     destroy_timer.stop();

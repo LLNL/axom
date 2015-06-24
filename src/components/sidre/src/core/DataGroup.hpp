@@ -777,9 +777,9 @@ private:
   // Original implementation (no holes in index sequence)
   ///////////////////////////////////////////////////////////////////
   //
-    typedef MapCollection<DataView, MapType> DataViewCollection;
+  //  typedef MapCollection<DataView, MapType> DataViewCollection;
   //
-    typedef MapCollection<DataGroup, MapType> DataGroupCollection;
+  //  typedef MapCollection<DataGroup, MapType> DataGroupCollection;
   //
   ///////////////////////////////////////////////////////////////////
   //
@@ -788,9 +788,9 @@ private:
   // as item is in collection, but holes in index sequence)
   ///////////////////////////////////////////////////////////////////
   //
-  // typedef NewMapCollection<DataView, MapType> DataViewCollection;
+   typedef NewMapCollection<DataView, MapType> DataViewCollection;
   //
-  // typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
+   typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
   ///////////////////////////////////////////////////////////////////
 
 
