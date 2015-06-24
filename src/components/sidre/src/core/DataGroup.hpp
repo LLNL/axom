@@ -32,6 +32,7 @@
 #else
 #include "boost/unordered_map.hpp"
 #endif
+// #include <sparsehash/dense_hash_map>
 
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
@@ -891,6 +892,7 @@ private:
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
   typedef boost::unordered_map<std::string, IndexType> MapType;
+  // typedef google::dense_hash_map<std::string, IndexType> MapType;
 #endif
   //
   ///////////////////////////////////////////////////////////////////
