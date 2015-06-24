@@ -8,8 +8,10 @@
 # Select the c and c++ compiler though the standard CMake Variables.
 ###############################################################################
 set(CMAKE_C_COMPILER "bgxlc_r" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "bgxlc++_r" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/bgxlc++_r-12.1.0.12a" CACHE PATH "")
+#set(CMAKE_CXX_COMPILER "bgxlc++_r" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "bgxlf_r" CACHE PATH "")
+set(ENABLE_FORTRAN OFF CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit
