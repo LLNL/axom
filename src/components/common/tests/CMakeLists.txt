@@ -3,7 +3,6 @@
 #
 
 set(gtest_common_tests
-   common_utilities.cpp
    )
 
 #
