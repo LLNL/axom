@@ -87,7 +87,7 @@ mark_as_advanced(
 ################################
 # Check if we want to build Fortran support.
 ################################
-option(ENABLE_FORTRAN "Enables Fortran compiler support" ON)
+option(ENABLE_FORTRAN "Enables Fortran compiler support." ON)
 
 if(ENABLE_FORTRAN)
     add_definitions(-DATK_ENABLE_FORTRAN)
@@ -101,6 +101,36 @@ if(ENABLE_FORTRAN)
 else()
     MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
 endif()
+ 
+################################
+# Enable code coverage via gcov
+# Note: Only supported for gnu.
+################################
+option(ENABLE_CODECOV "Enable/disable code coverage via gcov." ON)
+
+# These should be set in some separate macro later that sets coverage flags for each compiler.
+SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
+SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+#SET(GCC_COVERAGE_COMPILE_FLAGS "--coverage")
+#SET(GCC_COVERAGE_LINK_FLAGS    "--coverage")
+
+if(ENABLE_CODECOV)
+    if(CMAKE_BUILD_TYPE MATCHES Debug)
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            MESSAGE(STATUS "Enabling code coverage using gcov.")
+            SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
+            SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
+        else()
+            MESSAGE(FATAL_ERROR "Code coverage requires build type Debug.")
+        endif()
+
+    else()
+        MESSAGE(FATAL_ERROR "Code coverage is only supported with the gnu compiler.")
+    endif()
+else()
+    MESSAGE(FATAL_ERROR "Code coverage is only supported with the gnu compiler.")
+endif()
+
 
 ################################
 # Standard CMake Options
@@ -452,12 +482,12 @@ macro(make_executable)
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    ## sanity check MPI
+   ## sanity check MPI
    if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
    endif()
 
-    ## sanity check OpenMP
+   ## sanity check OpenMP
    if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
       message( FATAL_ERROR "Building an OpenMP executable, but OpenMP is disabled!" )
    endif()
