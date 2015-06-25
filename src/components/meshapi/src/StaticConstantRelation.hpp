@@ -13,7 +13,7 @@
 
 //#include <iostream>
 
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/Relation.hpp"
 
@@ -32,7 +32,7 @@ namespace meshapi    {
             SubscriptProxy(RelationVecConstIterator it, SetPosition stride): m_iter(it), m_stride(stride) {}
             SetPosition const& operator[](SetPosition index) const
             {
-                ATK_ASSERT_MSG( index < m_stride, "Inner array access out of bounds."
+                SLIC_ASSERT_MSG( index < m_stride, "Inner array access out of bounds."
                                              <<"\n\tPresented value: "<< index
                                              <<"\n\tMax allowed value: " << static_cast<int>(m_stride -1));
                 return m_iter[index];
@@ -116,7 +116,7 @@ namespace meshapi    {
 
         /// \}
     private:
-        inline void  verifyPosition(SetPosition fromSetIndex)       const { ATK_ASSERT( fromSetIndex < m_fromSet->size() ); }
+        inline void  verifyPosition(SetPosition fromSetIndex)       const { SLIC_ASSERT( fromSetIndex < m_fromSet->size() ); }
         inline SetPosition toSetBeginIndex(SetPosition fromSetIndex)   const { return m_stride * (fromSetIndex); }
         inline SetPosition toSetEndIndex(SetPosition fromSetIndex)     const { return m_stride * (fromSetIndex+1); }
 

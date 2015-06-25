@@ -13,7 +13,7 @@ set(example_sources
 # Build the example sources
 #
 foreach(example_source ${example_sources})
-    make_executable(EXECUTABLE_SOURCE ${example_source} DEPENDS_ON meshapi )
+    make_executable(EXECUTABLE_SOURCE ${example_source} DEPENDS_ON meshapi slic)
 endforeach()
 
 
@@ -60,6 +60,7 @@ if ( ENABLE_MPI )
                      EXECUTABLE_SOURCE 
                         ${lulesh_exe_source}
                      DEPENDS_ON 
+                        "slic"
                         "meshapi" 
                         "meshapiLuleshLib"
                      WITH_MPI
@@ -81,6 +82,7 @@ else()
                      EXECUTABLE_SOURCE 
                         ${lulesh_exe_source}
                      DEPENDS_ON 
+                        "slic"
                         "meshapi" 
                         "meshapiLuleshLib"
                    )

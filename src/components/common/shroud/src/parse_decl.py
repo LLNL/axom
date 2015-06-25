@@ -51,8 +51,8 @@ parameter_list = declarator:first ( ws ',' ws declarator)*:rest -> [first] + res
 argument_list = ( '(' ws parameter_list:l ws ')' ) -> l
                 | -> []
 
-decl = declarator:dd ws argument_list:args ws qualifier
-        -> dict( result=dd, args=args)
+decl = declarator:dd ws argument_list:args ws qualifier:qual
+        -> dict( result=dd, args=args, qualifiers=dict(qual))
 """, {})
 
 

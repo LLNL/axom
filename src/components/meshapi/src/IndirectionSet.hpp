@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "slic/slic.hpp"
 #include "meshapi/Utilities.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/NullSet.hpp"
@@ -149,7 +150,7 @@ namespace meshapi{
   private:
       void verifyPosition(PositionType pos) const
       {
-          ATK_ASSERT_MSG( pos < size()
+          SLIC_ASSERT_MSG( pos < size()
                           , "MeshAPI::IndirectionSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }

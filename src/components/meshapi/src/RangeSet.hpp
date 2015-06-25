@@ -13,7 +13,7 @@
 
 #include <boost/iterator/counting_iterator.hpp>
 
-#include "meshapi/Utilities.hpp"
+#include "slic/slic.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/NullSet.hpp"
 
@@ -73,7 +73,7 @@ namespace meshapi{
     private:
       inline void  verifyPosition(PositionType pos)       const
       {
-          ATK_ASSERT_MSG( pos < size()
+          SLIC_ASSERT_MSG( pos < size()
                           , "MeshAPI::RangeSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }

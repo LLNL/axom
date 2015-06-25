@@ -18,7 +18,9 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
+
 #include "meshapi/FileUtilities.hpp"
 
 #include "meshapi/Set.hpp"
@@ -120,7 +122,7 @@ public:
     // uses RAII to open/close the file
     SimpleVTKHeshMeshReader(std::string fileName) : vtkMesh( fileName.c_str() )
     {
-        ATK_ASSERT_MSG( vtkMesh, "fstream error -- problem opening file: '" << fileName <<"'"
+        SLIC_ASSERT_MSG( vtkMesh, "fstream error -- problem opening file: '" << fileName <<"'"
                               << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() <<"'");
     }
     ~SimpleVTKHeshMeshReader()
@@ -171,7 +173,7 @@ public:
         IndexType numNodeZoneIndices = listSize - numZones;
 
         // This is only because we're assuming Hex's.  General meshes can be different.
-        ATK_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices
+        SLIC_ASSERT_MSG( numZones * (HexMesh::NODES_PER_ZONE) == numNodeZoneIndices
                ,  "Error in reading mesh!\n" << "  numZones = " << numZones << "\n"
                                              << "  numZones*"<<(HexMesh::NODES_PER_ZONE)<< " = " << numZones* (HexMesh::NODES_PER_ZONE) << "\n"
                                              << "  numNodeZoneIndices = " << numNodeZoneIndices << "\n" );
@@ -208,7 +210,7 @@ public:
         {
            vtkMesh >> nodeCount;
 
-           ATK_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE
+           SLIC_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE
                     , "Unsupported mesh type with zone = " << *zIt<< ", nodeCount = " << nodeCount << " (expected " << HexMesh::NODES_PER_ZONE << ")");
 
            for( IndexType n = 0; n < (HexMesh::NODES_PER_ZONE); ++n )
@@ -226,8 +228,8 @@ public:
     #endif
 
         // Check that the relation is valid
-        ATK_ASSERT_MSG( mesh->relationZoneNode.isValid(), "Error creating (static) relation from zones to nodes!");
-        ATK_ASSERT_MSG( oIt == offsetsVec.end(), "Error reading nodes of zones!\n"<< offsetsVec.end() - oIt );
+        SLIC_ASSERT_MSG( mesh->relationZoneNode.isValid(), "Error creating (static) relation from zones to nodes!");
+        SLIC_ASSERT_MSG( oIt == offsetsVec.end(), "Error reading nodes of zones!\n"<< offsetsVec.end() - oIt );
     }
 private:
     std::ifstream vtkMesh;
@@ -273,7 +275,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
         }
 #endif
     }
-    ATK_ASSERT_MSG( tmpZonesOfNode.isValid(), "Error creating (dynamic) relation from nodes to zones!\n");
+    SLIC_ASSERT_MSG( tmpZonesOfNode.isValid(), "Error creating (dynamic) relation from nodes to zones!\n");
 
     // -------------------------------------------------
 
@@ -301,8 +303,8 @@ void generateNodeZoneRelation(HexMesh* mesh)
     // Send the data buffers over to the relation now and check the validity
     mesh->relationNodeZone.bindRelationData(beginsVec, offsetsVec);
 
-    ATK_ASSERT_MSG( mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
-    ATK_ASSERT_MSG( count == numZonesOfNode, "Error creating zones of Node list!\n");
+    SLIC_ASSERT_MSG( mesh->relationNodeZone.isValid(), "Error creating (static) relation from nodes to zones!\n");
+    SLIC_ASSERT_MSG( count == numZonesOfNode, "Error creating zones of Node list!\n");
 
     std::cout << "\n\tnumZonesOfNode = " << numZonesOfNode << "\n";
 }
@@ -401,6 +403,8 @@ int main()
 {
    using namespace asctoolkit::meshapi::examples::unstructured;
 
+   asctoolkit::slic::UnitTestLogger logger;
+
 #ifndef USE_ONE
    int const NUM_RESOLUTIONS = 4;
 #else
@@ -441,7 +445,7 @@ int main()
        DataType errVal = computeNodalErrors(&hexMesh);
 
        // Some error checking based on precomputed values
-       ATK_ASSERT_MSG( asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
+       SLIC_ASSERT_MSG( asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
                <<"\n\texpected: " << expectedResults[res]
                <<"\n\tactual: "   << errVal
                <<"\n\tdiff: "     << (errVal - expectedResults[res]));

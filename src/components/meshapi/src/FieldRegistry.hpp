@@ -4,7 +4,8 @@
 
 #include <sstream>
 
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
+
 #include "meshapi/Utilities.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/Map.hpp"
@@ -58,11 +59,11 @@ namespace meshapi{
 
     private:
         inline void verifyFieldsKey(KeyType key){
-            ATK_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
+            SLIC_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
                           , "Didn't find " << asctoolkit::meshapi::util::TypeToString<DataType>::to_string() << " field named " << key );
         }
         inline void verifyScalarsKey(KeyType key){
-            ATK_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
+            SLIC_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
                           , "Didn't find " << asctoolkit::meshapi::util::TypeToString<DataType>::to_string() << " scalar named " << key );
         }
     private:

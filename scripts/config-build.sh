@@ -31,7 +31,7 @@ export CMAKE_OPTS="$CMAKE_OPTS -DCMAKE_INSTALL_PREFIX=../install-debug"
 #------------------------------------------------------------------------------
 
 # first look for a specific config for this machine
-export HOST_CONFIG=../host-configs/`hostname`.cmake
+export HOST_CONFIG=../host-configs/other/`hostname`.cmake
 echo "Looking for host-config file: $HOST_CONFIG"
 if [[ -e  "$HOST_CONFIG" ]]; then
     echo "FOUND: $HOST_CONFIG"
@@ -46,7 +46,7 @@ elif [[ "$SYS_TYPE" != "" ]]; then
     fi
 else 
     # fallback to simple a uname based config (Linux / Darwin / etc)
-    export HOST_CONFIG=../host-configs/`uname`.cmake
+    export HOST_CONFIG=../host-configs/other/`uname`.cmake
     echo "Looking for uname based host-config file: $HOST_CONFIG"
     if [[ -e  "$HOST_CONFIG" ]]; then
         echo "FOUND: $HOST_CONFIG"

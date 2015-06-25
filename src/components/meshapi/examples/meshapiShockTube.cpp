@@ -39,7 +39,9 @@
 #include <iomanip>
 
 
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
+#include "slic/UnitTestLogger.hpp"
+
 #include "meshapi/FieldRegistry.hpp"
 #include "meshapi/RangeSet.hpp"
 #include "meshapi/StaticConstantRelation.hpp"
@@ -244,7 +246,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
 
    mesh->relationFaceElem = ShockTubeMesh::FaceToElemRelation(&mesh->faces, &mesh->elems);
    mesh->relationFaceElem.bindRelationData(relVec, STRIDE);
-   ATK_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
+   SLIC_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
    /// Setup the TubeElementToFace relation: A relation from the tubes subset of the elements to their incident faces
@@ -261,7 +263,7 @@ void CreateShockTubeMesh(ShockTubeMesh *mesh)
 
    mesh->relationTubeFace = ShockTubeMesh::ElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
    mesh->relationTubeFace.bindRelationData(relVec, STRIDE);
-   ATK_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
+   SLIC_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
 }
 
@@ -524,6 +526,7 @@ void dumpData(ShockTubeMesh const& mesh)
 int main(void)
 {
     using namespace asctoolkit::meshapi::examples::shocktube;
+    asctoolkit::slic::UnitTestLogger logger;
 
    // We should be able to parallelize pretty easily by
    // adding an MPI_Init() here, modifying the setup slightly,

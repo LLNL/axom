@@ -20,6 +20,7 @@
 #include <math.h>
 #include <vector>
 
+#include "slic/slic.hpp"
 #include "meshapi/NullSet.hpp"
 #include "meshapi/RangeSet.hpp"
 #include "meshapi/IndirectionSet.hpp"

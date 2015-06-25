@@ -13,7 +13,7 @@
 #include <iostream>
 
 #include "common/CommonTypes.hpp"
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/NullSet.hpp"
 
@@ -84,7 +84,7 @@ namespace meshapi    {
         /// \}
 
     private:
-        inline void  verifyPosition(SetPosition setIndex)       const { ATK_ASSERT( setIndex < m_set->size()  ); }
+        inline void  verifyPosition(SetPosition setIndex)       const { SLIC_ASSERT( setIndex < m_set->size()  ); }
 
     private:
         const Set *  m_set;

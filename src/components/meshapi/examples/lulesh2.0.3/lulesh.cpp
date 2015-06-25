@@ -162,6 +162,7 @@ Additional BSD Notice
 
 #include "lulesh.hpp"
 
+#include "slic/UnitTestLogger.hpp"
 
 /*********************************/
 /* Data structure implementation */
@@ -2663,6 +2664,8 @@ void LagrangeLeapFrog(Domain& domain)
 
 int main(int argc, char *argv[])
 {
+    asctoolkit::slic::UnitTestLogger logger;
+
   Domain *locDom ;
    Int_t numRanks ;
    Int_t myRank ;

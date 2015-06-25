@@ -48,6 +48,7 @@ class Uberenv(Package):
         cfg.write("# uncrustify from uberenv\n")
         cfg.write('set(UNCRUSTIFY_EXECUTABLE "%s" CACHE PATH "")\n\n' % uncrustify_exe)
         cfg.write("# boost headers from uberenv\n")
+        cfg.write('set(ENABLE_BOOST ON CACHE PATH "")\n')
         cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
         cfg.write("\n")
         cfg.close()        

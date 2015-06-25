@@ -8,7 +8,7 @@
 #ifndef MESHAPI_NULL_SET_H_
 #define MESHAPI_NULL_SET_H_
 
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
 #include "meshapi/Set.hpp"
 
 namespace asctoolkit{
@@ -46,7 +46,7 @@ namespace meshapi{
     private:
         void verifyPosition(PositionType pos) const
         {
-            ATK_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
+            SLIC_ASSERT_MSG(false,"Subscripting on NullSet is never valid."
                            << "\n\tAttempted to access item at index " << pos <<".");
         }
     };

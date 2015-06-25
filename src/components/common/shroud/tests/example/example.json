@@ -1,0 +1,1293 @@
+{
+    "F_module_dependencies": [], 
+    "classes": [
+        {
+            "F_module_dependencies": [
+                [
+                    "exclass1_mod", 
+                    [
+                        "exclass1"
+                    ]
+                ], 
+                [
+                    "exclass2_mod", 
+                    [
+                        "exclass2"
+                    ]
+                ], 
+                [
+                    "iso_c_binding", 
+                    []
+                ]
+            ], 
+            "fmt": {
+                "C_header_filename": "wrapExClass1.h", 
+                "C_impl_filename": "wrapExClass1.cpp", 
+                "C_prefix": "AA_", 
+                "C_type_name": "AA_exclass1", 
+                "F_derived_name": "exclass1", 
+                "F_impl_filename": "wrapfExClass1.f", 
+                "F_module_name": "exclass1_mod", 
+                "PY_PyObject": "PP_ExClass1", 
+                "PY_PyTypeObject": "PP_ExClass1_Type", 
+                "PY_capsule_name": "PY_ExClass1_capsule_name", 
+                "PY_from_object_func": "PP_ExClass1_from_Object", 
+                "PY_to_object_func": "PP_ExClass1_to_Object", 
+                "PY_type_filename": "pyExClass1type.cpp", 
+                "cpp_class": "ExClass1", 
+                "lower_class": "exclass1", 
+                "upper_class": "EXCLASS1"
+            }, 
+            "methods": [
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "decl": "ExClass1 *new+constructor ( const string *name )", 
+                    "docs": "constructor", 
+                    "fmt": {
+                        "CPP_name": "new", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const char * name", 
+                        "C_call_list": "name", 
+                        "C_name": "AA_exclass1_new", 
+                        "C_object": "ExClass1 *selfobj = new ExClass1(name);", 
+                        "C_return_type": "AA_exclass1 *", 
+                        "F_C_arguments": "name", 
+                        "F_C_name": "aa_exclass1_new", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
+                        "F_arguments": "name", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "new", 
+                        "F_name_impl": "exclass1_new", 
+                        "F_name_method": "new", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "new", 
+                        "rv_decl": "ExClass1 * rv", 
+                        "underscore_name": "new"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "ExClass1"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void delete+destructor", 
+                    "fmt": {
+                        "CPP_name": "delete", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass1_delete", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_delete", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "delete", 
+                        "F_name_impl": "exclass1_delete", 
+                        "F_name_method": "delete", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "delete", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "delete"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "destructor": true
+                        }, 
+                        "name": "delete", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "incr", 
+                            "type": "int"
+                        }
+                    ], 
+                    "decl": "int incrementCount(int incr)", 
+                    "docs": "blah blah", 
+                    "fmt": {
+                        "CPP_name": "incrementCount", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self, int incr", 
+                        "C_call_list": "incr", 
+                        "C_name": "AA_exclass1_increment_count", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self, incr", 
+                        "F_C_name": "aa_exclass1_increment_count", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr, incr", 
+                        "F_arguments": "obj, incr", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "increment_count", 
+                        "F_name_impl": "exclass1_increment_count", 
+                        "F_name_method": "increment_count", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "incrementCount", 
+                        "rv_decl": "int rv", 
+                        "underscore_name": "increment_count"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "incrementCount", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "const string& getName() const", 
+                    "fmt": {
+                        "CPP_name": "getName", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_const": "const ", 
+                        "C_name": "AA_exclass1_get_name", 
+                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                        "C_return_type": "const char *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_name", 
+                        "F_C_pure_clause": "pure ", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_name", 
+                        "F_name_impl": "exclass1_get_name", 
+                        "F_name_method": "get_name", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getName", 
+                        "rv_decl": "const std::string & rv", 
+                        "rvlen": "aa_exclass1_get_name_length(obj%voidptr)", 
+                        "underscore_name": "get_name"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "len": "aa_exclass1_get_name_length({F_instance_ptr})", 
+                            "reference": true
+                        }, 
+                        "name": "getName", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "int GetNameLength() const", 
+                    "docs": "helper function for Fortran", 
+                    "fmt": {
+                        "CPP_name": "GetNameLength", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass1_get_name_length", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_name_length", 
+                        "F_C_pure_clause": "pure ", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_name_length", 
+                        "F_name_impl": "exclass1_get_name_length", 
+                        "F_name_method": "get_name_length", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "GetNameLength", 
+                        "rv_decl": "int rv", 
+                        "underscore_name": "get_name_length"
+                    }, 
+                    "helper": true, 
+                    "options": {
+                        "C_code": "return selfobj->getName().length();"
+                    }, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "GetNameLength", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "const string& getNameErrorCheck() const", 
+                    "fmt": {
+                        "CPP_name": "getNameErrorCheck", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_const": "const ", 
+                        "C_name": "AA_exclass1_get_name_error_check", 
+                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                        "C_return_type": "const char *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_name_error_check", 
+                        "F_C_pure_clause": "pure ", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_name_error_check", 
+                        "F_name_impl": "exclass1_get_name_error_check", 
+                        "F_name_method": "get_name_error_check", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getNameErrorCheck", 
+                        "rv_decl": "const std::string & rv", 
+                        "rvlen": "1", 
+                        "underscore_name": "get_name_error_check"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "reference": true
+                        }, 
+                        "name": "getNameErrorCheck", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "const string& getNameArg() const", 
+                    "fmt": {
+                        "CPP_name": "getNameArg", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_const": "const ", 
+                        "C_name": "AA_exclass1_get_name_arg", 
+                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
+                        "C_return_type": "const char *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_name_arg", 
+                        "F_C_pure_clause": "pure ", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_name_arg", 
+                        "F_name_impl": "exclass1_get_name_arg", 
+                        "F_name_method": "get_name_arg", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getNameArg", 
+                        "rv_decl": "const std::string & rv", 
+                        "rvlen": "1", 
+                        "underscore_name": "get_name_arg"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "reference": true
+                        }, 
+                        "name": "getNameArg", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "ExClass2 *getRoot()", 
+                    "fmt": {
+                        "CPP_name": "getRoot", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass1_get_root", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "AA_exclass2 *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_root", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_root", 
+                        "F_name_impl": "exclass1_get_root", 
+                        "F_name_method": "get_root", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getRoot", 
+                        "rv_decl": "ExClass2 * rv", 
+                        "underscore_name": "get_root"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "getRoot", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "int"
+                        }
+                    ], 
+                    "decl": "int  getValue(int value)", 
+                    "fmt": {
+                        "CPP_name": "getValue", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self, int value", 
+                        "C_call_list": "value", 
+                        "C_name": "AA_exclass1_get_value_from_int", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self, value", 
+                        "F_C_name": "aa_exclass1_get_value_from_int", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr, value", 
+                        "F_arguments": "obj, value", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_value", 
+                        "F_name_impl": "exclass1_get_value_from_int", 
+                        "F_name_method": "get_value_from_int", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getValue", 
+                        "method_suffix": "_from_int", 
+                        "rv_decl": "int rv", 
+                        "underscore_name": "get_value"
+                    }, 
+                    "method_suffix": "_from_int", 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "long"
+                        }
+                    ], 
+                    "decl": "long getValue(long value)", 
+                    "fmt": {
+                        "CPP_name": "getValue", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self, long value", 
+                        "C_call_list": "value", 
+                        "C_name": "AA_exclass1_get_value_1", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "long", 
+                        "F_C_arguments": "self, value", 
+                        "F_C_name": "aa_exclass1_get_value_1", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr, value", 
+                        "F_arguments": "obj, value", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_value", 
+                        "F_name_impl": "exclass1_get_value_1", 
+                        "F_name_method": "get_value_1", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getValue", 
+                        "method_suffix": "_1", 
+                        "rv_decl": "long rv", 
+                        "underscore_name": "get_value"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "long"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void *getAddr()", 
+                    "fmt": {
+                        "CPP_name": "getAddr", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass1_get_addr", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "void *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_get_addr", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_addr", 
+                        "F_name_impl": "exclass1_get_addr", 
+                        "F_name_method": "get_addr", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getAddr", 
+                        "rv_decl": "void * rv", 
+                        "underscore_name": "get_addr"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "getAddr", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "in", 
+                            "type": "bool"
+                        }
+                    ], 
+                    "decl": "bool hasAddr(bool in)", 
+                    "fmt": {
+                        "CPP_name": "hasAddr", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self, bool in", 
+                        "C_call_list": "in", 
+                        "C_name": "AA_exclass1_has_addr", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "bool", 
+                        "F_C_arguments": "self, in", 
+                        "F_C_name": "aa_exclass1_has_addr", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr, logicaltobool(in)", 
+                        "F_arguments": "obj, in", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "has_addr", 
+                        "F_name_impl": "exclass1_has_addr", 
+                        "F_name_method": "has_addr", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "hasAddr", 
+                        "rv_decl": "bool rv", 
+                        "underscore_name": "has_addr"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "hasAddr", 
+                        "type": "bool"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void SplicerSpecial", 
+                    "fmt": {
+                        "CPP_name": "SplicerSpecial", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass1_splicer_special", 
+                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass1_splicer_special", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "splicer_special", 
+                        "F_name_impl": "exclass1_splicer_special", 
+                        "F_name_method": "splicer_special", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "SplicerSpecial", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "splicer_special"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "SplicerSpecial", 
+                        "type": "void"
+                    }
+                }
+            ], 
+            "name": "ExClass1", 
+            "options": {
+                "cpp_header": "ExClass1.hpp"
+            }, 
+            "python": {
+                "type": [
+                    "init", 
+                    "repr"
+                ]
+            }
+        }, 
+        {
+            "F_module_dependencies": [
+                [
+                    "exclass1_mod", 
+                    [
+                        "exclass1"
+                    ]
+                ], 
+                [
+                    "exclass2_mod", 
+                    [
+                        "exclass2"
+                    ]
+                ], 
+                [
+                    "iso_c_binding", 
+                    [
+                        "C_INT", 
+                        "C_LONG"
+                    ]
+                ]
+            ], 
+            "fmt": {
+                "C_header_filename": "wrapExClass2.h", 
+                "C_impl_filename": "wrapExClass2.cpp", 
+                "C_prefix": "AA_", 
+                "C_type_name": "AA_exclass2", 
+                "F_derived_name": "exclass2", 
+                "F_impl_filename": "wrapfExClass2.f", 
+                "F_module_name": "exclass2_mod", 
+                "PY_PyObject": "PP_ExClass2", 
+                "PY_PyTypeObject": "PP_ExClass2_Type", 
+                "PY_capsule_name": "PY_ExClass2_capsule_name", 
+                "PY_from_object_func": "PP_ExClass2_from_Object", 
+                "PY_to_object_func": "PP_ExClass2_to_Object", 
+                "PY_type_filename": "pyExClass2type.cpp", 
+                "cpp_class": "ExClass2", 
+                "lower_class": "exclass2", 
+                "upper_class": "EXCLASS2"
+            }, 
+            "methods": [
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
+                    "fmt": {
+                        "CPP_name": "ExClass2", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const char * name", 
+                        "C_call_list": "name", 
+                        "C_name": "AA_exclass2_ex_class2", 
+                        "C_object": "ExClass2 *selfobj = new ExClass2(name);", 
+                        "C_return_type": "AA_exclass2 *", 
+                        "F_C_arguments": "name", 
+                        "F_C_name": "aa_exclass2_ex_class2", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
+                        "F_arguments": "name", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "ex_class2", 
+                        "F_name_impl": "exclass2_ex_class2", 
+                        "F_name_method": "ex_class2", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "ExClass2", 
+                        "rv_decl": "ExClass2 * rv", 
+                        "underscore_name": "ex_class2"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "ExClass2", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void ExClass1+destructor", 
+                    "fmt": {
+                        "CPP_name": "ExClass1", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass2_ex_class1", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_ex_class1", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "ex_class1", 
+                        "F_name_impl": "exclass2_ex_class1", 
+                        "F_name_method": "ex_class1", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "ExClass1", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "ex_class1"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "destructor": true
+                        }, 
+                        "name": "ExClass1", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "const string& getName const", 
+                    "fmt": {
+                        "CPP_name": "getName", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "const AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_const": "const ", 
+                        "C_name": "AA_exclass2_get_name", 
+                        "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
+                        "C_return_type": "const char *", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_get_name", 
+                        "F_C_pure_clause": "pure ", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_name", 
+                        "F_name_impl": "exclass2_get_name", 
+                        "F_name_method": "get_name", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getName", 
+                        "rv_decl": "const std::string & rv", 
+                        "rvlen": "aa_exclass2_get_name_length(obj%voidptr)", 
+                        "underscore_name": "get_name"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": true, 
+                            "len": "aa_exclass2_get_name_length({F_instance_ptr})", 
+                            "reference": true
+                        }, 
+                        "name": "getName", 
+                        "type": "string"
+                    }
+                }, 
+                {
+                    "docs": "helper function for Fortran", 
+                    "fmt": {
+                        "CPP_name": "GetNameLength", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass2_get_name_length", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_get_name_length", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_name_length", 
+                        "F_name_impl": "exclass2_get_name_length", 
+                        "F_name_method": "get_name_length", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "GetNameLength", 
+                        "rv_decl": "int rv", 
+                        "underscore_name": "get_name_length"
+                    }, 
+                    "options": {
+                        "C_code": "return selfobj->getName().length();"
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "GetNameLength", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "in", 
+                            "type": "ExClass1"
+                        }
+                    ], 
+                    "decl": "ExClass1 *get_class1(ExClass1 *in)", 
+                    "fmt": {
+                        "CPP_name": "get_class1", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, AA_exclass1 * in", 
+                        "C_call_list": "static_cast<ExClass1 *>(in)", 
+                        "C_name": "AA_exclass2_get_class1", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "AA_exclass1 *", 
+                        "F_C_arguments": "self, in", 
+                        "F_C_name": "aa_exclass2_get_class1", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr, in%voidptr", 
+                        "F_arguments": "obj, in", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_class1", 
+                        "F_name_impl": "exclass2_get_class1", 
+                        "F_name_method": "get_class1", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "get_class1", 
+                        "rv_decl": "ExClass1 * rv", 
+                        "underscore_name": "get_class1"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "get_class1", 
+                        "type": "ExClass1"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }, 
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "len", 
+                            "type": "SidreLength"
+                        }
+                    ], 
+                    "decl": "void* declare(TypeID type, SidreLength len)", 
+                    "fmt": {
+                        "CPP_name": "declare", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
+                        "C_call_list": "getTypeID(type), len", 
+                        "C_name": "AA_exclass2_declare", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self, type, len", 
+                        "F_C_name": "aa_exclass2_declare", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr, type, len", 
+                        "F_arguments": "obj, type, len", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "declare", 
+                        "F_name_impl": "exclass2_declare", 
+                        "F_name_method": "declare", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "declare", 
+                        "rv_decl": "void * rv", 
+                        "underscore_name": "declare"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }, 
+                    "return_this": true
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void destroyall()", 
+                    "fmt": {
+                        "CPP_name": "destroyall", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass2_destroyall", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_destroyall", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "destroyall", 
+                        "F_name_impl": "exclass2_destroyall", 
+                        "F_name_method": "destroyall", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "destroyall", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "destroyall"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "destroyall", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "TypeID getTypeID() const", 
+                    "fmt": {
+                        "CPP_name": "getTypeID", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass2_get_type_id", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_get_type_id", 
+                        "F_C_pure_clause": "pure ", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_type_id", 
+                        "F_name_impl": "exclass2_get_type_id", 
+                        "F_name_method": "get_type_id", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "getTypeID", 
+                        "rv_decl": "TypeID rv", 
+                        "underscore_name": "get_type_id"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getTypeID", 
+                        "type": "TypeID"
+                    }
+                }
+            ], 
+            "name": "ExClass2", 
+            "options": {
+                "cpp_header": "ExClass2.hpp"
+            }, 
+            "python": {
+                "type": [
+                    "dealloc", 
+                    "print", 
+                    "compare", 
+                    "getattr", 
+                    "setattr", 
+                    "getattro", 
+                    "setattro", 
+                    "repr", 
+                    "hash", 
+                    "call", 
+                    "str", 
+                    "init", 
+                    "alloc", 
+                    "new", 
+                    "free", 
+                    "del"
+                ]
+            }
+        }
+    ], 
+    "copyright": [
+        "blah blah", 
+        "yada yada", 
+        null
+    ], 
+    "fmt": {
+        "BBB": "BBB", 
+        "C_const": "", 
+        "C_header_filename": "wrapUserLibrary.h", 
+        "C_impl_filename": "wrapUserLibrary.cpp", 
+        "C_prefix": "AA_", 
+        "C_this": "self", 
+        "F_C_pure_clause": "", 
+        "F_C_result_clause": "", 
+        "F_derived_member": "voidptr", 
+        "F_impl_filename": "wrapfuserlibrary.f", 
+        "F_instance_ptr": "obj%voidptr", 
+        "F_module_name": "userlibrary_mod", 
+        "F_pure_clause": "", 
+        "F_result": "rv", 
+        "F_result_clause": "", 
+        "F_this": "obj", 
+        "PY_header_filename": "pyUserLibrarymodule.hpp", 
+        "PY_helper_filename": "pyUserLibraryhelper.cpp", 
+        "PY_library_doc": "library documentation", 
+        "PY_module_filename": "pyUserLibrarymodule.cpp", 
+        "PY_module_name": "userlibrary", 
+        "PY_prefix": "PP_", 
+        "library": "UserLibrary", 
+        "lower_library": "userlibrary", 
+        "method_suffix": "", 
+        "overloaded": false
+    }, 
+    "functions": [
+        {
+            "args": [], 
+            "decl": "void local_function1", 
+            "docs": "yada yada yada", 
+            "fmt": {
+                "CPP_name": "local_function1", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "", 
+                "C_call_list": "", 
+                "C_name": "AA_local_function1", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "", 
+                "F_C_name": "aa_local_function1", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "", 
+                "F_arguments": "", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "local_function1", 
+                "F_name_impl": "local_function1", 
+                "F_name_method": "local_function1", 
+                "F_subprogram": "subroutine", 
+                "method_name": "local_function1", 
+                "rv_decl": "void rv", 
+                "underscore_name": "local_function1"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "local_function1", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "bool isNameValid(const std::string& name)", 
+            "fmt": {
+                "CPP_name": "isNameValid", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * name", 
+                "C_call_list": "name", 
+                "C_name": "AA_is_name_valid", 
+                "C_object": "", 
+                "C_return_type": "bool", 
+                "F_C_arguments": "name", 
+                "F_C_name": "aa_is_name_valid", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
+                "F_arguments": "name", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "is_name_valid", 
+                "F_name_impl": "is_name_valid", 
+                "F_name_method": "is_name_valid", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "method_name": "isNameValid", 
+                "rv_decl": "bool rv", 
+                "underscore_name": "is_name_valid"
+            }, 
+            "options": {
+                "C_code": "return name != NULL;", 
+                "F_code": "rv = name .ne. \" \""
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "isNameValid", 
+                "type": "bool"
+            }
+        }
+    ], 
+    "options": {
+        "C_prefix": "AA_", 
+        "F_module_per_class": true, 
+        "PY_prefix": "PP_", 
+        "cpp_header": "", 
+        "library": "UserLibrary", 
+        "namespace": "example nested"
+    }, 
+    "splicer": {
+        "c": [
+            "csplicer.c"
+        ], 
+        "f": [
+            "fsplicer.f"
+        ], 
+        "py": [
+            "pysplicer.c"
+        ]
+    }, 
+    "typedef": {
+        "ExClass1": {
+            "PY_from_object": "PP_ExClass1_from_Object", 
+            "PY_to_object": "PP_ExClass1_to_Object", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<ExClass1{ptr}>({var})", 
+            "c_type": "AA_exclass1", 
+            "cpp_type": "ExClass1", 
+            "f_module": {
+                "exclass1_mod": [
+                    "exclass1"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})", 
+            "f_type": "type(exclass1)", 
+            "fortran_derived": "exclass1", 
+            "fortran_to_c": "{var}%{F_derived_member}", 
+            "forward": "ExClass1"
+        }, 
+        "ExClass2": {
+            "PY_from_object": "PP_ExClass2_from_Object", 
+            "PY_to_object": "PP_ExClass2_to_Object", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<ExClass2{ptr}>({var})", 
+            "c_type": "AA_exclass2", 
+            "cpp_type": "ExClass2", 
+            "f_module": {
+                "exclass2_mod": [
+                    "exclass2"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})", 
+            "f_type": "type(exclass2)", 
+            "fortran_derived": "exclass2", 
+            "fortran_to_c": "{var}%{F_derived_member}", 
+            "forward": "ExClass2"
+        }, 
+        "SidreLength": {
+            "c_fortran": "integer(C_LONG)", 
+            "c_header": "sidre/SidreTypes.h", 
+            "c_type": "ATK_SidreLength", 
+            "cpp_type": "SidreLength", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "TypeID": {
+            "c_fortran": "integer(C_INT)", 
+            "c_header": "sidre/SidreTypes.h", 
+            "c_to_cpp": "getTypeID({var})", 
+            "c_type": "int", 
+            "cpp_header": "sidre/SidreWrapperHelpers.hpp", 
+            "cpp_type": "TypeID", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "bool": {
+            "c_fortran": "logical(C_BOOL)", 
+            "c_type": "bool", 
+            "cpp_type": "bool", 
+            "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call}))", 
+            "f_type": "logical", 
+            "fortran_to_c": "logicaltobool({var})"
+        }, 
+        "int": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_type": "integer(C_INT)"
+        }, 
+        "long": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "other": {
+            "cpp_type": "junk"
+        }, 
+        "size_t": {
+            "c_fortran": "integer(C_SIZE_T)", 
+            "c_header": "stdlib.h", 
+            "c_type": "size_t", 
+            "cpp_type": "size_t", 
+            "f_type": "integer(C_SIZE_T)"
+        }, 
+        "std::string": {
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "isNameValid({var}) ? {var}.c_str() : NULL", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "string": {
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "isNameValid({var}) ? {var}.c_str() : NULL", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "void": {
+            "c_fortran": "type(C_PTR)", 
+            "c_type": "void", 
+            "cpp_type": "void", 
+            "f_type": "type(C_PTR)"
+        }
+    }
+}

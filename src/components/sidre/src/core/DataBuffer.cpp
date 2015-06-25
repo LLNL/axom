@@ -27,7 +27,7 @@
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "DataGroup.hpp"
@@ -43,6 +43,103 @@ namespace sidre
 /*
  *************************************************************************
  *
+ * Return non-cost pointer to view with given index or null ptr.
+ *
+ *************************************************************************
+ */
+DataView * DataBuffer::getView( IndexType idx )
+{
+  SLIC_CHECK_MSG(hasView(idx), "no view exists with index == " << idx);
+
+  if ( hasView(idx) )
+  {
+    return m_views[idx];
+  }
+  else
+  {
+    return ATK_NULLPTR;
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Declare buffer to OWN data of given type and number of elements.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
+{
+  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
+
+  if ( len >= 0 )
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+    m_schema.set(dtype);
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Declare buffer to OWN data described as a Conduit schema.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::declare(const Schema& schema)
+{
+  m_schema.set(schema);
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Declare buffer to OWN data described as a Conduit data type.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::declare(const DataType& dtype)
+{
+  m_schema.set(dtype);
+  return this;
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Set buffer to externally-owned data.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::declareExternal(void * external_data,
+                                         TypeID type, SidreLength len)
+{
+  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
+  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR,
+                  "Attempting to declare buffer external, but buffer has already been allocated" );
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
+                  "Attempting to set buffer to null external data" );
+
+  if ( len >= 0 && m_data == ATK_NULLPTR && external_data != ATK_NULLPTR ) 
+  {  
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+    m_schema.set(dtype);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Set buffer to externally-owned data.
  *
  *************************************************************************
@@ -50,14 +147,18 @@ namespace sidre
 DataBuffer * DataBuffer::declareExternal(void * external_data,
                                          const Schema& schema)
 {
-  ATK_ASSERT_MSG( m_data == ATK_NULLPTR,
+  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
-  ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
                   "Attempting to set buffer to null external data" );
-  m_schema.set(schema);
-  m_data = external_data;
-  m_node.set_external(m_schema, m_data);
-  m_is_data_external = true;
+
+  if ( m_data == ATK_NULLPTR && external_data != ATK_NULLPTR )
+  {
+    m_schema.set(schema);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
   return this;
 }
 
@@ -71,30 +172,21 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
 DataBuffer * DataBuffer::declareExternal(void * external_data,
                                          const DataType& dtype)
 {
-  ATK_ASSERT_MSG( m_data == ATK_NULLPTR,
+  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
-  ATK_ASSERT_MSG( external_data != ATK_NULLPTR,
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
                   "Attempting to set buffer to null external data" );
-  m_schema.set(dtype);
-  m_data = external_data;
-  m_node.set_external(m_schema, m_data);
-  m_is_data_external = true;
+  
+  if ( m_data == ATK_NULLPTR && external_data != ATK_NULLPTR )
+  {
+    m_schema.set(dtype);
+    m_data = external_data;
+    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
   return this;
 }
 
-/*
- *************************************************************************
- *
- * Declare and allocate data described using type enum and length.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::declare(TypeID type, long len)
-{
-  ATK_ASSERT_MSG(len >= 0, "Bad Length");
-  m_schema.set(createDataType(type, len));
-  return this;
-}
 
 /*
  *************************************************************************
@@ -105,7 +197,7 @@ DataBuffer * DataBuffer::declare(TypeID type, long len)
  */
 DataBuffer * DataBuffer::allocate()
 {
-  ATK_ASSERT_MSG( !m_is_data_external,
+  SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
   if ( !m_is_data_external )
@@ -113,8 +205,6 @@ DataBuffer * DataBuffer::allocate()
     // cleanup old data
     cleanup();
     std::size_t alloc_size = m_schema.total_bytes();
-    ATK_ASSERT_MSG(alloc_size > 0,
-                   "Attempting to allocate buffer of size 0");
     m_data = allocateBytes(alloc_size);
     m_node.set_external(m_schema,m_data);
   }
@@ -129,12 +219,13 @@ DataBuffer * DataBuffer::allocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(TypeID type, long len)
+DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
 {
-  ATK_ASSERT_MSG( !m_is_data_external,
+  SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements >=0");
+  SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if ( !m_is_data_external )
+  if ( len >= 0 && !m_is_data_external )
   {
     declare(type, len);
     allocate();
@@ -152,7 +243,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, long len)
  */
 DataBuffer * DataBuffer::allocate(const Schema& schema)
 {
-  ATK_ASSERT_MSG( !m_is_data_external,
+  SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
   if ( !m_is_data_external )
@@ -173,7 +264,7 @@ DataBuffer * DataBuffer::allocate(const Schema& schema)
  */
 DataBuffer * DataBuffer::allocate(const DataType& dtype)
 {
-  ATK_ASSERT_MSG( !m_is_data_external,
+  SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
   if ( !m_is_data_external )
@@ -188,26 +279,48 @@ DataBuffer * DataBuffer::allocate(const DataType& dtype)
 /*
  *************************************************************************
  *
+ * Reallocate data using a Sidre type and length.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::reallocate( TypeID type, SidreLength len)
+{
+  SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements >=0");
+  SLIC_ASSERT_MSG( !m_is_data_external,
+                  "Attempting to re-allocate buffer holding external data");
+
+  if ( len >= 0 && !m_is_data_external )
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+
+    Schema s(dtype);
+    reallocate(s);
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Reallocate data using a Conduit schema.
  *
  *************************************************************************
  */
 DataBuffer * DataBuffer::reallocate(const Schema& schema)
 {
-  ATK_ASSERT_MSG( !m_is_data_external,
+  SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
   if ( !m_is_data_external )
   {
 
     //  make sure realloc actually makes sense
-    ATK_ASSERT_MSG(m_data != ATK_NULLPTR,
+    SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
                    "Attempting to reallocate an unallocated buffer");
 
     std::size_t realloc_size = schema.total_bytes();
-    ATK_ASSERT_MSG(realloc_size > 0,
-                   "Attempting to reallocate buffer to size 0");
-
     void * realloc_data = allocateBytes(realloc_size);
 
     // use conduit to get data from old to new schema.
@@ -241,7 +354,7 @@ DataBuffer * DataBuffer::reallocate(const Schema& schema)
  */
 DataBuffer * DataBuffer::reallocate(const DataType& dtype)
 {
-  ATK_ASSERT_MSG( !m_is_data_external,
+  SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
   if ( !m_is_data_external )
@@ -393,7 +506,6 @@ void DataBuffer::cleanup()
   if ( m_data != ATK_NULLPTR && !m_is_data_external )
   {
     releaseBytes(m_data);
-    m_data = ATK_NULLPTR;
   }
 }
 
@@ -406,7 +518,7 @@ void DataBuffer::cleanup()
  */
 void * DataBuffer::allocateBytes(std::size_t num_bytes)
 {
-  ATK_ASSERT_MSG(num_bytes > 0,
+  SLIC_ASSERT_MSG(num_bytes > 0,
                  "Attempting to allocate 0 bytes");
 
   char * data = new char[num_bytes];
@@ -425,6 +537,7 @@ void DataBuffer::releaseBytes(void * ptr)
   if ( !m_is_data_external )
   {
     delete [] ((char *)ptr);
+    m_data = ATK_NULLPTR;
   }
 }
 

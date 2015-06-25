@@ -14,7 +14,7 @@
 
 //#include <iostream>
 
-#include "common/Utilities.hpp"
+#include "slic/slic.hpp"
 #include "meshapi/Set.hpp"
 #include "meshapi/Relation.hpp"
 
@@ -115,7 +115,7 @@ namespace meshapi    {
         /// \}
 
     private:
-        inline void  verifyPosition(SetPosition fromSetIndex)       const { ATK_ASSERT( fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) ); }
+        inline void  verifyPosition(SetPosition fromSetIndex)       const { SLIC_ASSERT( fromSetIndex < static_cast<SetPosition>(m_fromSet->size() ) ); }
         inline RelationVec      & fromSetRelationsVec(SetPosition fromSetIndex)           { return m_relationsVec[fromSetIndex]; }
         inline RelationVec const& fromSetRelationsVec(SetPosition fromSetIndex)   const   { return m_relationsVec[fromSetIndex]; }
 

@@ -251,7 +251,7 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
   //               The actual data should just be referenced by the relation.
   m_nodelist.bindRelationData(local_nodelist, 8);
 
-  ATK_ASSERT( m_nodelist.isValid());
+  SLIC_ASSERT( m_nodelist.isValid());
 }
 
 
@@ -300,7 +300,7 @@ Domain::SetupThreadSupportStructures()
     // Finally create the relation over these arrays and check validity
     m_nodeCornerRelation = NodeToCornerRelation(&m_nodeSet, &m_cornerSet);
     m_nodeCornerRelation.bindRelationData(nodeBegins, cornerOffsets);
-    ATK_ASSERT_MSG(m_nodeCornerRelation.isValid(), "Generating Node to Corner relation: Corner index out of range." );
+    SLIC_ASSERT_MSG(m_nodeCornerRelation.isValid(), "Generating Node to Corner relation: Corner index out of range." );
   }
 }
 
@@ -468,7 +468,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       } 
    }
 
-   ATK_ASSERT(reg2Elems.isValid());     // Ensure that the dynamic relation is valid
+   SLIC_ASSERT(reg2Elems.isValid());     // Ensure that the dynamic relation is valid
 
    // Convert from a Dynamic to a Static relation
    typedef RegionToElemRelation::RelationVec RelVec;
@@ -491,7 +491,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
    m_regionElementsRel = RegionToElemRelation(&m_regionSet, &m_elemSet);
    m_regionElementsRel.bindRelationData(begins,offsets);
 
-   ATK_ASSERT(m_regionElementsRel.isValid());     // Ensure that the relation is valid
+   SLIC_ASSERT(m_regionElementsRel.isValid());     // Ensure that the relation is valid
 
 }
 
@@ -538,9 +538,9 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   loc_symmZ.swap(m_symmZ.data());
 
   // Verify validity of the sets.
-  ATK_ASSERT( m_symmX.isValid() && m_symmX.size() == numSymmNodesX);
-  ATK_ASSERT( m_symmY.isValid() && m_symmY.size() == numSymmNodesY);
-  ATK_ASSERT( m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ);
+  SLIC_ASSERT( m_symmX.isValid() && m_symmX.size() == numSymmNodesX);
+  SLIC_ASSERT( m_symmY.isValid() && m_symmY.size() == numSymmNodesY);
+  SLIC_ASSERT( m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ);
 }
 
 
@@ -588,12 +588,12 @@ Domain::SetupElementConnectivities(Int_t edgeElems)
    m_lzetap.bindRelationData( indices_p, 1);
 
    // Ensure that all the indices in the relations are valid
-   ATK_ASSERT( m_lxim.isValid() );
-   ATK_ASSERT( m_lxip.isValid() );
-   ATK_ASSERT( m_letam.isValid() );
-   ATK_ASSERT( m_letap.isValid() );
-   ATK_ASSERT( m_lzetam.isValid() );
-   ATK_ASSERT( m_lzetap.isValid() );
+   SLIC_ASSERT( m_lxim.isValid() );
+   SLIC_ASSERT( m_lxip.isValid() );
+   SLIC_ASSERT( m_letam.isValid() );
+   SLIC_ASSERT( m_letap.isValid() );
+   SLIC_ASSERT( m_lzetam.isValid() );
+   SLIC_ASSERT( m_lzetap.isValid() );
 }
 
 /////////////////////////////////////////////////////////////
@@ -710,12 +710,12 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
   }
 
   // Ensure that all the indices in the element adjacency relations are still valid
-  ATK_ASSERT( m_lxim.isValid() );
-  ATK_ASSERT( m_lxip.isValid() );
-  ATK_ASSERT( m_letam.isValid() );
-  ATK_ASSERT( m_letap.isValid() );
-  ATK_ASSERT( m_lzetam.isValid() );
-  ATK_ASSERT( m_lzetap.isValid() );
+  SLIC_ASSERT( m_lxim.isValid() );
+  SLIC_ASSERT( m_lxip.isValid() );
+  SLIC_ASSERT( m_letam.isValid() );
+  SLIC_ASSERT( m_letap.isValid() );
+  SLIC_ASSERT( m_lzetam.isValid() );
+  SLIC_ASSERT( m_lzetap.isValid() );
 }
 
 ///////////////////////////////////////////////////////////////////////////

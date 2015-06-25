@@ -71,7 +71,7 @@
 
  ## Set the Fortran module directory
  set(CMAKE_Fortran_MODULE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/lib
+     ${PROJECT_BINARY_DIR}/lib/fortran
      CACHE PATH
      "Directory where all Fortran modules will go in the build tree"
      )
@@ -90,6 +90,8 @@ mark_as_advanced(
 option(ENABLE_FORTRAN "Enables Fortran compiler support" ON)
 
 if(ENABLE_FORTRAN)
+    add_definitions(-DATK_ENABLE_FORTRAN)
+
     # if enabled but no fortran compiler, halt the configure
     if(CMAKE_Fortran_COMPILER)
         MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
@@ -97,7 +99,7 @@ if(ENABLE_FORTRAN)
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
     endif()    
 else()
-    MESSAGE(STATUS  "Fortran support disabled. (ENABLE_FORTRAN == OFF)")
+    MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
 endif()
 
 ################################
@@ -119,6 +121,9 @@ if (BUILD_TESTING)
   set(GTEST_LIBS gtest_main gtest
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
 
+  ## Add Fruit   FortRan UuIT test
+  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/fruit-3.3.9)
+
   enable_testing()
 
 endif()
@@ -136,13 +141,8 @@ endif()
 ################################
 option(ENABLE_OMP "ENABLE OpenMP" OFF)
 if(ENABLE_OMP)
-    find_package(OpenMP)
+    find_package(OpenMP REQUIRED)
     if (OPENMP_FOUND)
-        # Adds the openmp flag to the global compiler flags
-        # NOTE: We probably want to be selective about this. 
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set (CMAKE_FORTRAN_FLAGS "${CMAKE_FORTRAN_FLAGS} ${OpenMP_Fortran_FLAGS}")
         message(STATUS "Found OpenMP")
     else()
         message(STATUS "Could not find OpenMP")
@@ -166,9 +166,8 @@ if(ENABLE_WARNINGS)
     if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
         add_definitions(/W2)
     else()
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-            "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            # using clang or gcc
+        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            # using gcc
             add_definitions(-Wall -Wextra -Werror)
         endif()
     endif()
@@ -331,7 +330,7 @@ endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
 ## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
-##               [WITH_MPI] )
+##               [WITH_MPI] [WITH_OPENMP])
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -344,10 +343,14 @@ endmacro(add_target_definitions)
 ## supplied, the MPI include directory will be added to the compiler command
 ## and the -DUSE_MPI, as well as other compiler flags, will be included to the
 ## compiler definition.
+##
+## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
+## supplied, the openmp compiler flag will be added to the compiler command
+## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
-   set(options WITH_MPI)
+   set(options WITH_MPI WITH_OPENMP)
    set(singleValueArgs LIBRARY_NAME)
    set(multiValueArgs LIBRARY_SOURCES)
 
@@ -355,9 +358,14 @@ macro(make_library)
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-   ## sanity check
-   if ( arg_WITH_MPI AND NOT ENABLE_MPI )
+   ## sanity check MPI
+   if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
       message( FATAL_ERROR "Building an MPI library, but MPI is disabled!" )
+   endif()
+
+   ## sanity check OpenMP
+   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
+      message( FATAL_ERROR "Building an OpenMP library, but OpenMP is disabled!" )
    endif()
 
    if ( BUILD_SHARED_LIBS )
@@ -386,6 +394,14 @@ macro(make_library)
 
    endif()
 
+   if ( ${arg_WITH_OPENMP} )
+
+      add_target_definitions( TO ${arg_LIBRARY_NAME} TARGET_DEFINITIONS USE_OPENMP )
+
+      set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+
+   endif()
+
    if ( ENABLE_CXX11 )
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${arg_LIBRARY_NAME} PROPERTY CXX_STANDARD 11)
@@ -406,7 +422,7 @@ macro(make_library)
 endmacro(make_library)
 
 ##------------------------------------------------------------------------------
-## make_executable(EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...] [WITH_MPI])
+## make_executable(EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...] [WITH_MPI] [WITH_OPENMP])
 ##
 ## Adds an executable to the project.
 ##
@@ -421,10 +437,14 @@ endmacro(make_library)
 ## When the "WITH_MPI" argument is supplied, the executable will be linked with
 ## the MPI C libraries and the MPI includes as well as -DUSE_MPI and other flags
 ## will be added to the compiler command.
+##
+## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
+## supplied, the openmp compiler flag will be added to the compiler command
+## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options WITH_MPI)
+   set(options WITH_MPI WITH_OPENMP)
    set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE)
    set(multiValueArgs DEPENDS_ON)
 
@@ -432,11 +452,17 @@ macro(make_executable)
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    ## sanity check
-   if ( ${arg_WITH_MPI} AND NOT ENABLE_MPI )
+    ## sanity check MPI
+   if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
    endif()
 
+    ## sanity check OpenMP
+   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
+      message( FATAL_ERROR "Building an OpenMP executable, but OpenMP is disabled!" )
+   endif()
+
+   # Use the supplied name for the executable (if given), otherwise use the source file's name
    if( NOT "${arg_EXECUTABLE_NAME}" STREQUAL "" )
      set(exe_name ${arg_EXECUTABLE_NAME})
    else()
@@ -469,6 +495,15 @@ macro(make_executable)
       endif()
 
       target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
+   endif()
+
+   if ( ${arg_WITH_OPENMP} )
+
+      add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
+
+      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
+      
    endif()
 
    if(IS_ABSOLUTE)
@@ -593,7 +628,7 @@ macro(add_fortran_test)
             "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
        get_filename_component(test_name ${arg_TEST_SOURCE} NAME_WE)
-       add_executable( ${test_name} ${arg_TEST_SOURCE} )
+       add_executable( ${test_name} fortran_driver.cpp ${arg_TEST_SOURCE} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
         set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")

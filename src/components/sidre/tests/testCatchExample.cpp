@@ -14,7 +14,7 @@
 
 //------------------------------------------------------------------------------
 
-TEST_CASE( "This basic catch test should pass")
+TEST_CASE("basic_test", "This basic catch test should pass")
 {
 
   int one = 1;
