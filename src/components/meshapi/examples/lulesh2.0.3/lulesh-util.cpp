@@ -231,25 +231,29 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
    resultCheckMap[70] =  std::make_pair( 2402, 9.417145e+05);
    resultCheckMap[90] =  std::make_pair( 3145, 1.482403e+06);
 
-   if(resultCheckMap.find(nx) != resultCheckMap.end() )
+
+   // find the overall number of edges on the problem domain (domains per edge * num elems per domain
+   Int_t domainsPerSide = Int_t(cbrt(Real_t(numRanks))+0.5) ;
+   Int_t gEdge = nx * domainsPerSide;
+   if(resultCheckMap.find(gEdge) != resultCheckMap.end() )
    {
-       ATK_ASSERT_MSG( resultCheckMap[nx].first == locDom.cycle()
-                 , "Specs state that num cycles should be " << resultCheckMap[nx].first
+       ATK_ASSERT_MSG( resultCheckMap[gEdge].first == locDom.cycle()
+                 , "Specs state that num cycles should be " << resultCheckMap[gEdge].first
                  << " actual number of cycles was " << locDom.cycle() <<"." );
 
-       ATK_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( resultCheckMap[nx].second, locDom.e(ElemId))
-                 , "Specs state that final energy at origing must be " << resultCheckMap[nx].second
+       ATK_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( resultCheckMap[gEdge].second, locDom.e(ElemId))
+                 , "Specs state that final energy at origin must be " << resultCheckMap[gEdge].second
                  << " actual energy at origin was " << locDom.e(ElemId) <<"."
-                 << " Difference was " << std::fabs(resultCheckMap[nx].second - locDom.e(ElemId) )
+                 << " Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
        );
 
-       double diff = std::fabs(resultCheckMap[nx].second - locDom.e(ElemId) );
-       double maxFabs = std::max( std::fabs(resultCheckMap[nx].second), std::fabs(locDom.e(ElemId) ) );
+       double diff = std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) );
+       double maxFabs = std::max( std::fabs(resultCheckMap[gEdge].second), std::fabs(locDom.e(ElemId) ) );
        double relMaxFabs = 1.0e-6 * maxFabs;
        double relMaxFabsWithAbsolute = relMaxFabs + 1.0e-8;
 
 
-       std::cout << "\n**  comparing \n\t" << resultCheckMap[nx].second << " with \n\t" << locDom.e(ElemId)
+       std::cout << "\n**  comparing \n\t" << resultCheckMap[gEdge].second << " with \n\t" << locDom.e(ElemId)
                  << "\n\t fabs difference: " << diff
                  << "\n\t maxFabs * rel (1e-6): " <<  relMaxFabs
                  << "\n\t <above> with abs 1e-8: " << relMaxFabsWithAbsolute

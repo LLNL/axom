@@ -1961,12 +1961,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
    Index_t numElem = domain.numElem() ;
 
    if (numElem != 0) {
-      Int_t allElem = numElem +  /* local elem */
-            2*domain.sizeX()*domain.sizeY() + /* plane ghosts */
-            2*domain.sizeX()*domain.sizeZ() + /* row ghosts */
-            2*domain.sizeY()*domain.sizeZ() ; /* col ghosts */
-
-      domain.AllocateGradients(numElem, allElem);
+      domain.AllocateGradients(numElem, domain.numElemWithGhosts());
 
 #ifdef USE_MPI
       CommRecv(domain, MSG_MONOQ, 3,
@@ -1980,7 +1975,7 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 #ifdef USE_MPI
       Domain_member fieldData[3] ;
       
-      /* Transfer veloctiy gradients in the first order elements */
+      /* Transfer velocity gradients in the first order elements */
       /* problem->commElements->Transfer(CommElements::monoQ) ; */
 
       fieldData[0] = &Domain::delv_xi ;

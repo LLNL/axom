@@ -106,6 +106,10 @@ enum{ XI_M_SYMM   = 1 << 0
 #define CACHE_ALIGN_REAL(n) \
    (((n) + (CACHE_COHERENCE_PAD_REAL - 1)) & ~(CACHE_COHERENCE_PAD_REAL-1))
 
+#ifdef USE_MPI
+struct CommMessageMetadata;
+#endif
+
 //////////////////////////////////////////////////////
 // Primary data structure
 //////////////////////////////////////////////////////
@@ -143,6 +147,8 @@ class Domain {
    typedef asctoolkit::meshapi::IndirectionSet         SymmNodeSet;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
    typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceAdjacencyRelation;
+
+   typedef asctoolkit::meshapi::RangeSet               ExtendedElemSet;
 
    typedef asctoolkit::meshapi::RangeSet               RegionSet;
    typedef asctoolkit::meshapi::StaticVariableRelation RegionToElemRelation;
@@ -204,12 +210,12 @@ class Domain {
       m_nodelist = ElemToNodeRelation(&m_elemSet, &m_nodeSet);
 
       // elem adjacencies through face
-      m_lxim   = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
-      m_lxip   = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
-      m_letam  = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
-      m_letap  = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
-      m_lzetam = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
-      m_lzetap = ElemFaceAdjacencyRelation(&m_elemSet,&m_elemSet);
+      m_lxim   = ElemFaceAdjacencyRelation(&m_elemSet,&m_extendedElemSet);
+      m_lxip   = ElemFaceAdjacencyRelation(&m_elemSet,&m_extendedElemSet);
+      m_letam  = ElemFaceAdjacencyRelation(&m_elemSet,&m_extendedElemSet);
+      m_letap  = ElemFaceAdjacencyRelation(&m_elemSet,&m_extendedElemSet);
+      m_lzetam = ElemFaceAdjacencyRelation(&m_elemSet,&m_extendedElemSet);
+      m_lzetap = ElemFaceAdjacencyRelation(&m_elemSet,&m_extendedElemSet);
 
       m_elemBC = ElemIntMap(&m_elemSet);
 
@@ -452,8 +458,9 @@ class Domain {
    Index_t  numReg()              { return m_regionSet.size() ; }
    Int_t&  cost()                 { return m_cost ; }
 
-   Index_t  numElem()  const      { return m_elemSet.size() ; }
-   Index_t  numNode()  const      { return m_nodeSet.size() ; }
+   Index_t  numElem()           const   { return m_elemSet.size() ; }
+   Index_t  numNode()           const   { return m_nodeSet.size() ; }
+   Index_t  numElemWithGhosts() const   { return m_extendedElemSet.size() ; }
    
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
@@ -615,6 +622,7 @@ class Domain {
    ElemSet m_elemSet;
    CornerSet m_cornerSet;
    Set*      m_pNodeCorners;
+   ExtendedElemSet m_extendedElemSet;       // Has space for a elements as well as each face on the boundary
 
    Index_t m_maxPlaneSize ;
    Index_t m_maxEdgeSize ;

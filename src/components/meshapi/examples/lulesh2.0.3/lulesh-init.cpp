@@ -10,6 +10,7 @@
 #include <string.h>
 #include <limits.h>
 #include <cstdlib>
+#include <algorithm>
 #include "lulesh.hpp"
 
 
@@ -62,6 +63,15 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_elemSet = ElemSet(edgeElems*edgeElems*edgeElems);
    m_nodeSet = NodeSet(edgeNodes*edgeNodes*edgeNodes);
    m_cornerSet = CornerSet( m_elemSet.size() * 8);
+
+   Int_t facesPerPlane = edgeElems * edgeElems;
+   Int_t numExtendedElems = m_elemSet.size()    // local elem
+         + 2*facesPerPlane                      // plane ghosts
+         + 2*facesPerPlane                      // row ghosts
+         + 2*facesPerPlane                      // col ghosts
+         ;
+
+   m_extendedElemSet = ExtendedElemSet( numExtendedElems );
 
 
    // Elem-centered 
@@ -498,7 +508,7 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   SymmVec loc_symmY(numSymmNodesY);
   SymmVec loc_symmZ(numSymmNodesZ);
 
-  // MeshAPI Note: We should be able to compute these directory from a cartesian product set defining a regular grid.
+  // MeshAPI Note: We should be able to compute these directory from a Cartesian product set defining a regular grid.
   Index_t nidx = 0 ;
   for (Index_t i=0; i<edgeNodes; ++i) {
     Index_t planeInc = i*edgeNodes*edgeNodes ;
@@ -643,7 +653,6 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
   IndexVec& local_eta_p = m_letap.toSetPositionsData();
   IndexVec& local_zeta_m = m_lzetam.toSetPositionsData();
   IndexVec& local_zeta_p = m_lzetap.toSetPositionsData();
-
 
   // symmetry plane or free surface BCs 
   for (Index_t i=0; i<edgeElems; ++i) {

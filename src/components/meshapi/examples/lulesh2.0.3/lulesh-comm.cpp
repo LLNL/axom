@@ -33,10 +33,10 @@
           every value living on the face.
 
    How do you pack and unpack this data in buffers to
-   simultaneous achieve the best memory efficiency and
+   simultaneous achieve the best memory efficiency and allow
    the most thread independence?
 
-   Do do you pack field f1 through f3 tighly to reduce message
+   Do do you pack field f1 through f3 tightly to reduce message
    size?  Do you align each field on a cache coherence boundary
    within the message so that threads can pack and unpack each
    field independently?  For case (b), do you align each
@@ -54,6 +54,43 @@
 
 /******************************************/
 
+struct CommMessageMetadata {
+    Index_t rank, count, startIndex, msgID;
+    bool shouldSend;
+};
+
+/*
+void SetupCommNeighborMap(Domain& domain, Index_t dx, Index_t dy, Index_t dz)
+{
+    bool rowMin, rowMax, colMin, colMax, planeMin, planeMax ;
+
+    // assume communication to 6 neighbors by default
+    rowMin = rowMax = colMin = colMax = planeMin = planeMax = true ;
+
+    if (domain.rowLoc() == 0) {
+       rowMin = false ;
+    }
+    if (domain.rowLoc() == (domain.tp()-1)) {
+       rowMax = false ;
+    }
+    if (domain.colLoc() == 0) {
+       colMin = false ;
+    }
+    if (domain.colLoc() == (domain.tp()-1)) {
+       colMax = false ;
+    }
+    if (domain.planeLoc() == 0) {
+       planeMin = false ;
+    }
+    if (domain.planeLoc() == (domain.tp()-1)) {
+       planeMax = false ;
+    }
+
+    Index_t neighborIdx = 0;
+    // Setup Faces
+
+}
+*/
 
 /* doRecv flag only works with regular block structure */
 void CommRecv(Domain& domain, int msgType, Index_t xferFields,
@@ -62,7 +99,7 @@ void CommRecv(Domain& domain, int msgType, Index_t xferFields,
    if (domain.numRanks() == 1)
       return ;
 
-   /* post recieve buffers for all incoming messages */
+   /* post receive buffers for all incoming messages */
    int myRank ;
    Index_t maxPlaneComm = xferFields * domain.maxPlaneSize() ;
    Index_t maxEdgeComm  = xferFields * domain.maxEdgeSize() ;
@@ -362,7 +399,7 @@ void CommSend(Domain& domain, int msgType,
    if (domain.numRanks() == 1)
       return ;
 
-   /* post recieve buffers for all incoming messages */
+   /* post receive buffers for all incoming messages */
    int myRank ;
    Index_t maxPlaneComm = xferFields * domain.maxPlaneSize() ;
    Index_t maxEdgeComm  = xferFields * domain.maxEdgeSize() ;

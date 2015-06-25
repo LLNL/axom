@@ -138,9 +138,11 @@ option(ENABLE_OMP "ENABLE OpenMP" OFF)
 if(ENABLE_OMP)
     find_package(OpenMP)
     if (OPENMP_FOUND)
+        # Adds the openmp flag to the global compiler flags
+        # NOTE: We probably want to be selective about this. 
         set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set (CMAKE_FORTRAN_FLAGS "${CMAKE_FORTRAN_FLAGS} ${OpenMP_FORTRAN_FLAGS}")
+        set (CMAKE_FORTRAN_FLAGS "${CMAKE_FORTRAN_FLAGS} ${OpenMP_Fortran_FLAGS}")
         message(STATUS "Found OpenMP")
     else()
         message(STATUS "Could not find OpenMP")
@@ -423,7 +425,7 @@ endmacro(make_library)
 macro(make_executable)
 
    set(options WITH_MPI)
-   set(singleValueArgs EXECUTABLE_SOURCE)
+   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE)
    set(multiValueArgs DEPENDS_ON)
 
    ## parse the arguments to the macro
@@ -435,7 +437,12 @@ macro(make_executable)
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
    endif()
 
-   get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
+   if( NOT "${arg_EXECUTABLE_NAME}" STREQUAL "" )
+     set(exe_name ${arg_EXECUTABLE_NAME})
+   else()
+     get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
+   endif()
+      
    add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
    target_link_libraries( ${exe_name} "${arg_DEPENDS_ON}" )
 
