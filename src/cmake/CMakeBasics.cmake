@@ -106,7 +106,7 @@ endif()
 # Enable code coverage via gcov
 # Note: Only supported for gnu.
 ################################
-option(ENABLE_CODECOV "Enable/disable code coverage via gcov." ON)
+option(ENABLE_CODECOV "Enable/disable code coverage via gcov." OFF)
 
 # These should be set in some separate macro later that sets coverage flags for each compiler.
 SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
@@ -128,7 +128,7 @@ if(ENABLE_CODECOV)
         MESSAGE(FATAL_ERROR "Code coverage is only supported with the gnu compiler.")
     endif()
 else()
-    MESSAGE(FATAL_ERROR "Code coverage is only supported with the gnu compiler.")
+    MESSAGE(STATUS  "Code coverage support disabled.  (ENABLE_CODECOV == OFF)")
 endif()
 
 
