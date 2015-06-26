@@ -11,7 +11,8 @@ set(CMAKE_C_COMPILER "bgxlc_r" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/bgxlc++_r-12.1.0.12a" CACHE PATH "")
 #change back to floor version after LC has pushed out 12.1.0.12a to floor version.
 #set(CMAKE_CXX_COMPILER "bgxlc++_r" CACHE PATH "")
-set(CMAKE_Fortran_COMPILER "bgxlf_r" CACHE PATH "")
+#set(CMAKE_Fortran_COMPILER "bgxlf_r" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "bgxlf2003_r" CACHE PATH "")
 #reenable fortran after compile is fixed
 set(ENABLE_FORTRAN OFF CACHE PATH "")
 
