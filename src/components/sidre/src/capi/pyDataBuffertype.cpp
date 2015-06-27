@@ -85,32 +85,6 @@ PY_databuffer_declare(
 // splicer end class.DataBuffer.method.declare
 }
 
-static char PY_databuffer_declare_external__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_databuffer_declare_external(
-  PY_DataBuffer *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.DataBuffer.method.declareExternal
-    int type;
-    ATK_SidreLength len;
-    const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declareExternal", kw_list,
-        &type, &len))
-    {
-        return NULL;
-    }
-    self->BBB->declareExternal(type, len);
-    Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.declareExternal
-}
-
 static char PY_databuffer_set_external_data__doc__[] =
 "documentation"
 ;
@@ -255,7 +229,6 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"getIndex", (PyCFunction)PY_databuffer_get_index, METH_NOARGS, PY_databuffer_get_index__doc__},
 {"getNumViews", (PyCFunction)PY_databuffer_get_num_views, METH_NOARGS, PY_databuffer_get_num_views__doc__},
 {"declare", (PyCFunction)PY_databuffer_declare, METH_VARARGS|METH_KEYWORDS, PY_databuffer_declare__doc__},
-{"declareExternal", (PyCFunction)PY_databuffer_declare_external, METH_VARARGS|METH_KEYWORDS, PY_databuffer_declare_external__doc__},
 {"setExternalData", (PyCFunction)PY_databuffer_set_external_data, METH_VARARGS|METH_KEYWORDS, PY_databuffer_set_external_data__doc__},
 {"allocate_existing", (PyCFunction)PY_databuffer_allocate_existing, METH_NOARGS, PY_databuffer_allocate_existing__doc__},
 {"allocate_from_type", (PyCFunction)PY_databuffer_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate_from_type__doc__},

@@ -43,9 +43,9 @@ TEST(sidre_external, declare_external_buffer)
   DataBuffer * dbuff_2 = ds->createBuffer();
 
   dbuff_0->allocate(DataType::c_double(len));
-  dbuff_1->declareExternal(DataType::c_int(len));
+  dbuff_1->declare(DataType::c_int(len));
   dbuff_1->setExternalData(idata);
-  dbuff_2->declareExternal(DataType::c_double(len));
+  dbuff_2->declare(DataType::c_double(len));
   dbuff_2->setExternalData(ddata);
 
   EXPECT_EQ(dbuff_0->isExternal(), false);

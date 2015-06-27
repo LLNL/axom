@@ -46,15 +46,6 @@ return;
 // splicer end class.DataBuffer.method.declare
 }
 
-void ATK_databuffer_declare_external(ATK_databuffer * self, int type, ATK_SidreLength len)
-{
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
-// splicer begin class.DataBuffer.method.declareExternal
-selfobj->declareExternal(getTypeID(type), len);
-return;
-// splicer end class.DataBuffer.method.declareExternal
-}
-
 void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(self);

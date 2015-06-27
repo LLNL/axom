@@ -176,14 +176,6 @@ classes:
         return_this: True
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
-      - decl: DataBuffer * declareExternal(TypeID type, SidreLength len)
-        return_this: True
-#     - decl: DataBuffer * declareExternal(const Schema& schema)
-#       return_this: True
-#     - decl: DataBuffer * declareExternal(const DataType& dtype)
-#       return_this: True
-      - decl: DataBuffer * setExternalData( void* external_data)
-        return_this: True
       - decl: DataBuffer* allocate()
         method_suffix: _existing
         return_this: True
@@ -196,6 +188,8 @@ classes:
         return_this: True
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
+      - decl: DataBuffer * setExternalData( void* external_data)
+        return_this: True
       - decl: bool isExternal() const
       - decl: void* getData()
       - decl: size_t getTotalBytes() const
