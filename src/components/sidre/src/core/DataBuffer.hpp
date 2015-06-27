@@ -119,7 +119,7 @@ public:
   }
 
   /*!
-   * \brief Return total number of bytes allocated by this DataView object.
+   * \brief Return total number of bytes associated with this DataBuffer object.
    */
   size_t getTotalBytes() const
   {
