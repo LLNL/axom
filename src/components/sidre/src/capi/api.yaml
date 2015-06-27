@@ -174,10 +174,16 @@ classes:
       - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeID type, SidreLength len)
         return_this: True
-      - decl: DataBuffer * declareExternal(void * external_data, TypeID type, SidreLength len)
-        return_this: True
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
+      - decl: DataBuffer * declareExternal(TypeID type, SidreLength len)
+        return_this: True
+#     - decl: DataBuffer * declareExternal(const Schema& schema)
+#       return_this: True
+#     - decl: DataBuffer * declareExternal(const DataType& dtype)
+#       return_this: True
+      - decl: DataBuffer * setExternalData( void* external_data)
+        return_this: True
       - decl: DataBuffer* allocate()
         method_suffix: _existing
         return_this: True

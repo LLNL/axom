@@ -39,7 +39,9 @@ size_t ATK_databuffer_get_num_views(ATK_databuffer * self);
 
 void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len);
 
-void ATK_databuffer_declare_external(ATK_databuffer * self, void * external_data, int type, ATK_SidreLength len);
+void ATK_databuffer_declare_external(ATK_databuffer * self, int type, ATK_SidreLength len);
+
+void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data);
 
 void ATK_databuffer_allocate_existing(ATK_databuffer * self);
 

@@ -38,8 +38,10 @@ TEST(C_sidre_external, declare_external_buffer)
   ATK_databuffer * dbuff_2 = ATK_datastore_create_buffer(ds);
 
   ATK_databuffer_allocate_from_type(dbuff_0, ATK_C_DOUBLE_T, len);
-  ATK_databuffer_declare_external(dbuff_1, idata, ATK_C_INT_T, len);
-  ATK_databuffer_declare_external(dbuff_2, ddata, ATK_C_DOUBLE_T, len);
+  ATK_databuffer_declare_external(dbuff_1, ATK_C_INT_T, len);
+  ATK_databuffer_set_external_data(dbuff_1, idata);
+  ATK_databuffer_declare_external(dbuff_2, ATK_C_DOUBLE_T, len);
+  ATK_databuffer_set_external_data(dbuff_2, ddata);
 
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_0), false);
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_1), true);

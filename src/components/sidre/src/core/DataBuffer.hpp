@@ -196,46 +196,59 @@ public:
    * \brief Declare a buffer to hold external data described by Sidre type
    *        and length.
    *
-   * The given pointer references the existing external data. The buffer
-   * cannot allocate or reallocate it, and it will not be deallocated when
-   * buffer is destroyed.
+   * External data is not owned by the buffer (it will not be (re)allocated
+   * or deallocated by the buffer).
+   *
+   * Note that the data must be set by calling setExternal().
+   *
+   * If the buffer data has already been allocated or it has been declared
+   * non-external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declareExternal(void * external_data,
-                               TypeID type, SidreLength len);
+  DataBuffer * declareExternal(TypeID type, SidreLength len);
 
   /*!
    * \brief Declare a buffer to hold external data described as a
    *        Conduit schema.
    *
-   * The given pointer references the existing external data. The buffer
-   * cannot allocate or reallocate it, and it will not be deallocated when
-   * buffer is destroyed.
+   * External data is not owned by the buffer (it will not be (re)allocated
+   * or deallocated by the buffer).
+   *
+   * Note that the data must be set by calling setExternal().
    *
    * If the buffer data has already been allocated or it has been declared
    * non-external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declareExternal(void * external_data,
-                               const Schema& schema);
+  DataBuffer * declareExternal(const Schema& schema);
 
   /*!
-   * \brief Declare a buffer to own data described as a
+   * \brief Declare a buffer to hold external data described as a
    *        pre-defined Conduit data type.
    *
-   * The given pointer references the existing external data. The buffer
-   * cannot allocate or reallocate it, and it will not be deallocated when
-   * buffer is destroyed.
+   * External data is not owned by the buffer (it will not be (re)allocated
+   * or deallocated by the buffer).
+   *
+   * Note that the data must be set by calling setExternal().
    *
    * If the buffer data has already been allocated or it has been declared
    * non-external, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declareExternal(void * external_data,
-                               const DataType& dtype);
+  DataBuffer * declareExternal(const DataType& dtype);
+
+  /*!
+   * \brief Set buffer to external data.
+   *
+   * If buffer has not been declared or has been declared non-external or
+   * given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setExternalData(void * external_data);
 
   /*!
    * \brief Allocate data previously declared using a declare() method.

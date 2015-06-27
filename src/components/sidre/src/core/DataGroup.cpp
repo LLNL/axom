@@ -319,7 +319,8 @@ DataView * DataGroup::createExternalView( const std::string& name,
     dtype.set_number_of_elements(len);
 
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declareExternal(external_data, dtype);
+    buff->declareExternal(dtype);
+    buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
@@ -352,7 +353,8 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declareExternal(external_data, dtype);
+    buff->declareExternal(dtype);
+    buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
@@ -385,7 +387,8 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declareExternal(external_data, schema);
+    buff->declareExternal(schema);
+    buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);

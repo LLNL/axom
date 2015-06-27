@@ -112,26 +112,21 @@ DataBuffer * DataBuffer::declare(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Set buffer to externally-owned data.
+ * Declare buffer for externally-owned data.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declareExternal(void * external_data,
-                                         TypeID type, SidreLength len)
+DataBuffer * DataBuffer::declareExternal(TypeID type, SidreLength len)
 {
   SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
-  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR,
+  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR && !m_is_data_external,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
-                  "Attempting to set buffer to null external data" );
 
-  if ( len >= 0 && m_data == ATK_NULLPTR && external_data != ATK_NULLPTR ) 
-  {  
+  if ( len >= 0 && m_data == ATK_NULLPTR && !m_is_data_external ) 
+  {
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(len);
     m_schema.set(dtype);
-    m_data = external_data;
-    m_node.set_external(m_schema, m_data);
     m_is_data_external = true;
   }
   return this;
@@ -140,23 +135,38 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
 /*
  *************************************************************************
  *
- * Set buffer to externally-owned data.
+ * Declare buffer for externally-owned data.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declareExternal(void * external_data,
-                                         const Schema& schema)
+DataBuffer * DataBuffer::declareExternal(const Schema& schema)
 {
-  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR,
+  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR && !m_is_data_external,
                   "Attempting to declare buffer external, but buffer has already been allocated" );
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
-                  "Attempting to set buffer to null external data" );
 
-  if ( m_data == ATK_NULLPTR && external_data != ATK_NULLPTR )
+  if ( m_data == ATK_NULLPTR && !m_is_data_external )
   {
     m_schema.set(schema);
-    m_data = external_data;
-    m_node.set_external(m_schema, m_data);
+    m_is_data_external = true;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Declare buffer for externally-owned data.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::declareExternal(const DataType& dtype)
+{
+  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR && !m_is_data_external,
+                  "Attempting to declare buffer external, but buffer has already been allocated" );
+  
+  if ( m_data == ATK_NULLPTR && !m_is_data_external )
+  {
+    m_schema.set(dtype);
     m_is_data_external = true;
   }
   return this;
@@ -169,20 +179,17 @@ DataBuffer * DataBuffer::declareExternal(void * external_data,
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declareExternal(void * external_data,
-                                         const DataType& dtype)
+DataBuffer * DataBuffer::setExternalData(void * external_data)
 {
-  SLIC_ASSERT_MSG( m_data == ATK_NULLPTR,
-                  "Attempting to declare buffer external, but buffer has already been allocated" );
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
-                  "Attempting to set buffer to null external data" );
-  
-  if ( m_data == ATK_NULLPTR && external_data != ATK_NULLPTR )
+  SLIC_ASSERT_MSG( m_is_data_external, 
+                  "Attempting to set buffer to external data, but buffer has already been declared non-external" );
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR, 
+                  "Attempting to set buffer to external data given null pointer" );
+
+  if ( m_is_data_external && external_data != ATK_NULLPTR )
   {
-    m_schema.set(dtype);
     m_data = external_data;
     m_node.set_external(m_schema, m_data);
-    m_is_data_external = true;
   }
   return this;
 }
