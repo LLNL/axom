@@ -118,8 +118,8 @@ TEST(sidre_view,int_array_multi_view)
   dv_e->getNode().print_detailed();
   dv_o->getNode().print_detailed();
 
-  int_array dv_e_ptr = dv_e->getNode().as_int_array();
-  int_array dv_o_ptr = dv_o->getNode().as_int_array();
+  int_array dv_e_ptr = dv_e->getValue();
+  int_array dv_o_ptr = dv_o->getValue();
   for(int i=0 ; i<5 ; i++)
   {
     std::cout << "idx:" <<  i
@@ -172,8 +172,8 @@ TEST(sidre_view,init_int_array_multi_view)
   dv_e->getNode().print_detailed();
   dv_o->getNode().print_detailed();
 
-  int_array dv_e_ptr = dv_e->getNode().as_int_array();
-  int_array dv_o_ptr = dv_o->getNode().as_int_array();
+  int_array dv_e_ptr = dv_e->getValue();
+  int_array dv_o_ptr = dv_o->getValue();
   for(int i=0 ; i<5 ; i++)
   {
     std::cout << "idx:" <<  i

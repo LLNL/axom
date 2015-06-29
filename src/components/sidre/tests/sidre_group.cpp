@@ -250,6 +250,7 @@ TEST(sidre_group,view_copy_move)
   flds->createViewAndBuffer("f0")->allocate(DataType::c_float());
   flds->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
+  // TODO - change to setScalar when ready
   (*flds->getView("i0")->getNode().as_int_ptr())   = 1;
   (*flds->getView("f0")->getNode().as_float_ptr()) = 100.0;
   (*flds->getView("d0")->getNode().as_double_ptr()) = 3000.0;
@@ -300,6 +301,7 @@ TEST(sidre_group,groups_move_copy)
   gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
   gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
+  // TODO - change to setScalar when ready
   (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
   (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
   (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
@@ -459,6 +461,7 @@ TEST(sidre_group,save_restore_simple)
 
   ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
 
+  // TODO - change to setScalar when ready
   (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
 
   EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
@@ -479,7 +482,8 @@ TEST(sidre_group,save_restore_simple)
   flds = ds2->getRoot()->getGroup("fields");
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
+  int testvalue = flds->getGroup("a")->getView("i0")->getValue();
+  EXPECT_EQ(testvalue,1);
 
   ds2->print();
 
@@ -502,6 +506,7 @@ TEST(sidre_group,save_restore_complex)
   gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
   gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
+  // TODO - change to setScalar when ready
   (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
   (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
   (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
@@ -526,6 +531,7 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
+  // TODO - change to setScalar when ready
   EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
   EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getNode().as_float(),100.0,  1e-12);
   EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getNode().as_double(),3000.0, 1e-12);
