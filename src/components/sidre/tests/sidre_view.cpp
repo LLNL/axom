@@ -57,7 +57,7 @@ TEST(sidre_view,int_buffer_from_view)
     data_ptr[i] = i*i;
   }
 
-  dv->getNode().print_detailed();
+  dv->print();
 
   EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
@@ -79,7 +79,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
     data_ptr[i] = i*i;
   }
 
-  dv->getNode().print_detailed();
+  dv->print();
 
   EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
@@ -96,14 +96,14 @@ TEST(sidre_view,int_array_multi_view)
 
   dbuff->declare(DataType::c_int(10));
   dbuff->allocate();
-  int * data_ptr = dbuff->getNode().as_int_ptr();
+  int * data_ptr = dbuff->getValue();
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i;
   }
 
-  dbuff->getNode().print_detailed();
+  dbuff->getValue();
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
@@ -115,8 +115,8 @@ TEST(sidre_view,int_array_multi_view)
 
   dv_o->apply(DataType::c_int(5,4,8));
 
-  dv_e->getNode().print_detailed();
-  dv_o->getNode().print_detailed();
+  dv_e->print();
+  dv_o->print();
 
   int_array dv_e_ptr = dv_e->getValue();
   int_array dv_o_ptr = dv_o->getValue();
@@ -146,14 +146,14 @@ TEST(sidre_view,init_int_array_multi_view)
   DataBuffer * dbuff = ds->createBuffer();
 
   dbuff->allocate(DataType::c_int(10));
-  int * data_ptr = dbuff->getNode().as_int_ptr();
+  int * data_ptr = dbuff->getValue();
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i;
   }
 
-  dbuff->getNode().print_detailed();
+  dbuff->print();
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
@@ -169,8 +169,8 @@ TEST(sidre_view,init_int_array_multi_view)
   dv_o->apply(DataType::c_int(5,4,8));
 
 
-  dv_e->getNode().print_detailed();
-  dv_o->getNode().print_detailed();
+  dv_e->print();
+  dv_o->print();
 
   int_array dv_e_ptr = dv_e->getValue();
   int_array dv_o_ptr = dv_o->getValue();
@@ -244,7 +244,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   /// setup our 4 views
   DataBuffer * buff_old = base_old->getBuffer();
-  buff_old->getNode().print();
+  buff_old->print();
   DataView * r0_old = r_old->createView("r0",buff_old);
   DataView * r1_old = r_old->createView("r1",buff_old);
   DataView * r2_old = r_old->createView("r2",buff_old);
@@ -297,7 +297,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   }
 
   DataBuffer * buff_new = base_new->getBuffer();
-  buff_new->getNode().print();
+  buff_new->print();
 
   // create the 4 sub views of this array
   DataView * r0_new = r_new->createView("r0",buff_new);
@@ -322,13 +322,13 @@ TEST(sidre_view,int_array_multi_view_resize)
   r3_new->apply(DataType::c_int(12,offset));
 
   /// update r2 as an example first
-  buff_new->getNode().print();
-  r2_new->getNode().print();
+  buff_new->print();
+  r2_new->print();
 
   /// copy the subset of value
   r2_new->getNode().update(r2_old->getNode());
   r2_new->getNode().print();
-  buff_new->getNode().print();
+  buff_new->print();
 
 
   /// check pointer values
@@ -350,7 +350,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   r1_new->getNode().update(r1_old->getNode());
   r3_new->getNode().update(r3_old->getNode());
 
-  buff_new->getNode().print();
+  buff_new->print();
 
 
   ds->print();

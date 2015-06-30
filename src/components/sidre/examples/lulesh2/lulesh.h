@@ -367,9 +367,9 @@ class Domain {
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
    Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
    Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
-   bool symmXempty()          { return m_DataGroup->getView("m_symmX")->getNode().dtype().number_of_elements(); }
-   bool symmYempty()          { return m_DataGroup->getView("m_symmY")->getNode().dtype().number_of_elements(); }
-   bool symmZempty()          { return m_DataGroup->getView("m_symmZ")->getNode().dtype().number_of_elements(); }
+   bool symmXempty()          { return m_DataGroup->getView("m_symmX")->getNumberOfElements(); }
+   bool symmYempty()          { return m_DataGroup->getView("m_symmY")->getNumberOfElements(); }
+   bool symmZempty()          { return m_DataGroup->getView("m_symmZ")->getNumberOfElements(); }
 
    //
    // Element-centered

@@ -88,8 +88,8 @@ TEST(sidre_external, create_external_view)
                                   DataType::c_double(len));
   EXPECT_EQ(root->getNumViews(), 2u);
 
-  root->getView("idata")->getNode().print_detailed();
-  root->getView("ddata")->getNode().print_detailed();
+  root->getView("idata")->print();
+  root->getView("ddata")->print();
 
   int * idata_chk = root->getView("idata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
@@ -135,8 +135,8 @@ TEST(sidre_external, save_load_external_view)
   EXPECT_EQ(root->getView("idata")->getBuffer()->isExternal(), true);
   EXPECT_EQ(root->getView("ddata")->getBuffer()->isExternal(), true);
 
-  root->getView("idata")->getNode().print_detailed();
-  root->getView("ddata")->getNode().print_detailed();
+  root->getView("idata")->print();
+  root->getView("ddata")->print();
 
   ds->getRoot()->save("out_sidre_external_save_restore_external_view", "conduit");
 
