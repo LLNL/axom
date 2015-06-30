@@ -601,6 +601,7 @@ function fortran_test() bind(C,name="fortran_test")
   use sidre_group
   implicit none
   integer(C_INT) fortran_test
+  logical ok
 
   call init_fruit
 
@@ -625,5 +626,10 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_summary
   call fruit_finalize
 
-  fortran_test = 0
+  call is_all_successful(ok)
+  if (ok) then
+     fortran_test = 0
+  else
+     fortran_test = 1
+  endif
 end function fortran_test
