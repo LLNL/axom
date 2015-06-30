@@ -31,6 +31,12 @@ set(sidre_sources
 )
 
 #
+# custom target to copy header files in the "include" folder of the build tree.
+#
+copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
+                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
+
+#
 # make the library
 #
 make_library( LIBRARY_NAME
@@ -38,24 +44,15 @@ make_library( LIBRARY_NAME
               LIBRARY_SOURCES
                 "${sidre_sources}"
                 "${sidre_headers}"
+              DEPENDS_ON
+                common
+                conduit
+                slic
              )
 
-add_dependencies(sidre copy_headers_sidre)
-add_dependencies(sidre copy_headers_common)
-add_dependencies(sidre copy_headers_conduit)
-add_dependencies(sidre copy_headers_slic)
-
-add_dependencies(sidre conduit)
-add_dependencies(sidre slic)
 set_target_properties(sidre  PROPERTIES Fortran_FORMAT "FREE")
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 # Only needed if building the Fortran interface
 if (ENABLE_FORTRAN)
