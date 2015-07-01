@@ -13,24 +13,24 @@
 #endif
 
 
-namespace asctoolkit{
-namespace meshapi{
+namespace asctoolkit {
+namespace meshapi {
 namespace util {
 
-    /**
-     * \brief Helper function to print out the current working directory within the file system
-     */
-    std::string getCWD()
-    {
-        char cCurrentPath[FILENAME_MAX];
+/**
+ * \brief Helper function to print out the current working directory within the file system
+ */
+std::string getCWD()
+{
+  char cCurrentPath[FILENAME_MAX];
 
-        if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
-        {
-            std::abort();
-        }
+  if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
+  {
+    std::abort();
+  }
 
-        return std::string(cCurrentPath);
-    }
+  return std::string(cCurrentPath);
+}
 
 
 } // end namespace util

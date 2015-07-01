@@ -4,25 +4,28 @@
 #include <string>
 #include <cmath>
 
-namespace asctoolkit{
-namespace meshapi{
+namespace asctoolkit {
+namespace meshapi {
 
-    typedef int        MeshIndexType;
-    typedef int        MeshSizeType;
+typedef int MeshIndexType;
+typedef int MeshSizeType;
 
-    class NotImplementedException{};
+class NotImplementedException {};
 
 namespace util {
 
 
-    /** \brief A helper class to print the name of a few types */
-    template<typename T> struct TypeToString{ static std::string to_string(){return "<unspecialized>";} };
+/** \brief A helper class to print the name of a few types */
+template<typename T> struct TypeToString { static std::string to_string(){return "<unspecialized>"; }
+};
 
-    /** \brief A helper class to print the name of integers as 'int' */
-    template<> struct TypeToString<int>{ static std::string to_string(){return "int";} };
+/** \brief A helper class to print the name of integers as 'int' */
+template<> struct TypeToString<int>{ static std::string       to_string(){return "int"; }
+};
 
-    /** \brief A helper class to print the name of doubles as 'double' */
-    template<> struct TypeToString<double>{ static std::string to_string(){return "double";} };
+/** \brief A helper class to print the name of doubles as 'double' */
+template<> struct TypeToString<double>{ static std::string    to_string(){return "double"; }
+};
 
 
 } // end namespace util

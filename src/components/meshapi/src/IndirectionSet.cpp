@@ -16,19 +16,19 @@ const NullSet IndirectionSet::s_nullSet;
 
 bool IndirectionSet::isValid(bool verboseOutput) const
 {
-    bool bValid = true;
+  bool bValid = true;
 
-    std::stringstream errStr;
+  std::stringstream errStr;
 
-    // Not much to check here since we are essentially wrapping around an array/vector
+  // Not much to check here since we are essentially wrapping around an array/vector
 
-    if(verboseOutput)
-    {
-        if( !bValid)
-            std::cout<<" There was a problem: " << errStr.str() << std::endl;
-    }
+  if(verboseOutput)
+  {
+    if( !bValid)
+      std::cout << " There was a problem: " << errStr.str() << std::endl;
+  }
 
-    return bValid;
+  return bValid;
 }
 
 } /* namespace meshapi */

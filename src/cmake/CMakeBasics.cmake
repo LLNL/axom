@@ -270,7 +270,7 @@ macro(add_component)
     set(singleValueArgs COMPONENT_NAME DEFAULT_STATE )
     set(multiValueArgs)
 
-    ## parse the arugments to the macro
+    ## parse the arguments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -407,7 +407,7 @@ macro(make_library)
       set_property(TARGET ${arg_LIBRARY_NAME} PROPERTY CXX_STANDARD 11)
    endif()
 
-   foreach(src ${srcs})
+   foreach(src ${arg_LIBRARY_SOURCES})
        if(IS_ABSOLUTE)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
        else()

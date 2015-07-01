@@ -13,9 +13,9 @@
 
 
 typedef asctoolkit::meshapi::IndirectionSet SetType;
-typedef SetType::iterator SetIterator;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+typedef SetType::iterator                   SetIterator;
+typedef SetType::PositionType               SetPosition;
+typedef SetType::ElementType                SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
@@ -23,9 +23,9 @@ static const SetPosition MAX_SET_SIZE = 10;
 TEST(gtest_meshapi_indirection_set,construct_indirection_set)
 {
 
-    SetType s;
+  SetType s;
 
-    EXPECT_TRUE(s.isValid());
+  EXPECT_TRUE(s.isValid());
 /*
     if(MAX_SET_SIZE > SetPosition())
         EXPECT_FALSE(s.isEmpty());
@@ -61,7 +61,7 @@ TEST(gtest_meshapi_indirection_set,construct_indirection_set)
         std::cout << "\t" << s.at(pos) <<"\n";
     }
 
-#ifdef ATK_DEBUG
+   #ifdef ATK_DEBUG
     // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
 
     std::cout<<"\n --Using checked random access -- at() with invalid address" << std::endl;
@@ -69,30 +69,30 @@ TEST(gtest_meshapi_indirection_set,construct_indirection_set)
     // add this line to avoid a warning in the output about thread safety
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH(s.at(MAX_SET_SIZE),"") << "tried to access out of range element";
-#else
+   #else
     std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
-#endif
+   #endif
 
-*/
-    std::cout << "--\ndone." << std::endl;
+ */
+  std::cout << "--\ndone." << std::endl;
 
 }
 
 /*
-TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
-{
+   TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
+   {
     std::cout<<"\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;
 
 
     SetType s(MAX_SET_SIZE);
 
-#ifdef ATK_DEBUG
+   #ifdef ATK_DEBUG
     // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH( s[MAX_SET_SIZE], "");
-#else
+   #else
     std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
-#endif
-}
-*/
+   #endif
+   }
+ */
 

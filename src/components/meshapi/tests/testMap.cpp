@@ -13,60 +13,61 @@
 #include "meshapi/Map.hpp"
 
 
-typedef asctoolkit::meshapi::RangeSet SetType;
-typedef asctoolkit::meshapi::Map<int> IntMap;
-typedef asctoolkit::meshapi::Map<double> RealMap;
+typedef asctoolkit::meshapi::RangeSet     SetType;
+typedef asctoolkit::meshapi::Map<int>     IntMap;
+typedef asctoolkit::meshapi::Map<double>  RealMap;
 
-typedef SetType::PositionType PositionType;
-typedef SetType::ElementType ElementType;
+typedef SetType::PositionType             PositionType;
+typedef SetType::ElementType              ElementType;
 
-typedef SetType::iterator SetIterator;
+typedef SetType::iterator                 SetIterator;
 static PositionType const MAX_SET_SIZE = 10;
 
 TEST(gtest_meshapi_map,construct_empty_map)
 {
-    IntMap m;
+  IntMap m;
 
-    EXPECT_TRUE(m.isValid(true));
+  EXPECT_TRUE(m.isValid(true));
 }
 
 template<typename T>
 bool constructAndTestMap()
 {
-    SetType s(MAX_SET_SIZE);
+  SetType s(MAX_SET_SIZE);
 
-    std::cout<<"\nCreating set of size " << s.size() << std::endl;
-    EXPECT_EQ(s.size(), MAX_SET_SIZE);
-    EXPECT_TRUE(s.isValid());
+  std::cout << "\nCreating set of size " << s.size() << std::endl;
 
-    std::cout<<"\nCreating " << asctoolkit::meshapi::util::TypeToString<T>::to_string() << " map on the set " << std::endl;
-    asctoolkit::meshapi::Map<T> m(&s);
-    EXPECT_TRUE(m.isValid());
+  EXPECT_EQ(s.size(), MAX_SET_SIZE);
+  EXPECT_TRUE(s.isValid());
 
-    std::cout<<"\nSetting the elements.";
-    double multFac = 1.0001;
-    for(PositionType idx=0; idx < m.size(); ++idx)
-    {
-        m[idx] = static_cast<T>(idx * multFac);
-    }
+  std::cout << "\nCreating " << asctoolkit::meshapi::util::TypeToString<T>::to_string() << " map on the set " << std::endl;
+  asctoolkit::meshapi::Map<T> m(&s);
+  EXPECT_TRUE(m.isValid());
 
-    std::cout<<"\nChecking the elements.";
-    for(PositionType idx=0; idx < m.size(); ++idx)
-    {
-        EXPECT_EQ(m[idx], static_cast<T>(idx * multFac) );
-    }
+  std::cout << "\nSetting the elements.";
+  double multFac = 1.0001;
+  for(PositionType idx = 0; idx < m.size(); ++idx)
+  {
+    m[idx] = static_cast<T>(idx * multFac);
+  }
 
-    EXPECT_TRUE(m.isValid(true));
+  std::cout << "\nChecking the elements.";
+  for(PositionType idx = 0; idx < m.size(); ++idx)
+  {
+    EXPECT_EQ(m[idx], static_cast<T>(idx * multFac) );
+  }
 
-    return true;
+  EXPECT_TRUE(m.isValid(true));
+
+  return true;
 }
 
 TEST(gtest_meshapi_map,construct_int_map)
 {
-    EXPECT_TRUE( constructAndTestMap<int>() );
+  EXPECT_TRUE( constructAndTestMap<int>() );
 }
 
 TEST(gtest_meshapi_map,construct_double_map)
 {
-    EXPECT_TRUE( constructAndTestMap<double>());
+  EXPECT_TRUE( constructAndTestMap<double>());
 }
