@@ -1,9 +1,9 @@
 #include <math.h>
 #ifdef USE_MPI
-# include <mpi.h>
+  #include <mpi.h>
 #endif
 #if _OPENMP
-#include <omp.h>
+  #include <omp.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 Domain::Domain(Int_t numRanks, Index_t colLoc,
     Index_t rowLoc, Index_t planeLoc,
     Index_t nx, int tp, int nr, int balance, Int_t cost)
-    : m_e_cut(Real_t(1.0e-7))
+    : m_e_cut(Real_t(1.0e-7)),
       m_p_cut(Real_t(1.0e-7)),
       m_q_cut(Real_t(1.0e-7)),
       m_v_cut(Real_t(1.0e-10)),
