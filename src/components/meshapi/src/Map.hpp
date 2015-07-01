@@ -20,76 +20,76 @@
 namespace asctoolkit {
 namespace meshapi    {
 
-class NullSet;
+  class NullSet;
 
-template<typename DataType>
-class Map
-{
-public:
-  typedef Set::IndexType        SetIndex;
-  typedef Set::PositionType     SetPosition;
-
-  typedef std::vector<DataType> OrderedMap;
-
-  static const NullSet s_nullSet;
-
-public:
-  Map(const Set * theSet = &s_nullSet) : m_set(theSet)
+  template<typename DataType>
+  class Map
   {
-    m_data.resize( m_set->size());
-  }
+  public:
+    typedef Set::IndexType        SetIndex;
+    typedef Set::PositionType     SetPosition;
 
-  Map(const Set * theSet, DataType defaultValue) : m_set(theSet)
-  {
-    m_data.resize( m_set->size(), defaultValue );
-  }
+    typedef std::vector<DataType> OrderedMap;
 
-  ~Map(){}
+    static const NullSet s_nullSet;
 
-  const DataType & operator[](SetPosition setIndex) const
-  {
-    verifyPosition(setIndex);
-    return m_data[setIndex];
-  }
+  public:
+    Map(const Set * theSet = &s_nullSet) : m_set(theSet)
+    {
+      m_data.resize( m_set->size());
+    }
 
-  DataType & operator[](SetPosition setIndex)
-  {
-    verifyPosition(setIndex);
-    return m_data[setIndex];
-  }
+    Map(const Set * theSet, DataType defaultValue) : m_set(theSet)
+    {
+      m_data.resize( m_set->size(), defaultValue );
+    }
+
+    ~Map(){}
+
+    const DataType & operator[](SetPosition setIndex) const
+    {
+      verifyPosition(setIndex);
+      return m_data[setIndex];
+    }
+
+    DataType & operator[](SetPosition setIndex)
+    {
+      verifyPosition(setIndex);
+      return m_data[setIndex];
+    }
 
 
-  Set const*  set() const { return m_set; }
+    Set const*  set() const { return m_set; }
 
 
-  SetPosition size() const { return m_set->size(); }
+    SetPosition size() const { return m_set->size(); }
 
-  bool        isValid(bool verboseOutput = false) const;
+    bool        isValid(bool verboseOutput = false) const;
 
 
-public:
-  /**
-   * \name DirectDataAccess
-   * \brief Accessor functions to get the underlying map data
-   * \note We will have to figure out a good way to limit this access to situations where it makes sense.
-   */
+  public:
+    /**
+     * \name DirectDataAccess
+     * \brief Accessor functions to get the underlying map data
+     * \note We will have to figure out a good way to limit this access to situations where it makes sense.
+     */
 
-  /// \{
+    /// \{
 
-  //* Placeholder for function that returns the (pointer to) underlying data **/
-  OrderedMap &        data()        { return m_data; }
-  //* Placeholder for function that returns the (const pointer to) underlying data **/
-  const OrderedMap &  data() const { return m_data; }
+    //* Placeholder for function that returns the (pointer to) underlying data **/
+    OrderedMap &        data()        { return m_data; }
+    //* Placeholder for function that returns the (const pointer to) underlying data **/
+    const OrderedMap &  data() const { return m_data; }
 
-  /// \}
+    /// \}
 
-private:
-  inline void verifyPosition(SetPosition setIndex)       const { SLIC_ASSERT( setIndex < m_set->size()  ); }
+  private:
+    inline void verifyPosition(SetPosition setIndex)       const { SLIC_ASSERT( setIndex < m_set->size()  ); }
 
-private:
-  const Set *  m_set;
-  OrderedMap m_data;
-};
+  private:
+    const Set *  m_set;
+    OrderedMap m_data;
+  };
 
 
 
@@ -97,81 +97,81 @@ private:
  * \brief Definition of static instance of nullSet for all maps
  * \note Should this be a singleton or a global object?  Should the scope be public?
  */
-template<typename DataType>
-NullSet const Map<DataType>::s_nullSet;
+  template<typename DataType>
+  NullSet const Map<DataType>::s_nullSet;
 
-template<typename DataType>
-bool Map<DataType>::isValid(bool verboseOutput) const
-{
-  bool bValid = true;
-
-  std::stringstream errStr;
-
-  if(*m_set == s_nullSet)
+  template<typename DataType>
+  bool Map<DataType>::isValid(bool verboseOutput) const
   {
-    if(!m_data.empty() )
+    bool bValid = true;
+
+    std::stringstream errStr;
+
+    if(*m_set == s_nullSet)
     {
-      if(verboseOutput)
+      if(!m_data.empty() )
       {
-        errStr  << "\n\t* the underlying set was never provided, but its associated data is not empty"
-                << " , data has size " << m_data.size();
+        if(verboseOutput)
+        {
+          errStr  << "\n\t* the underlying set was never provided, but its associated data is not empty"
+                  << " , data has size " << m_data.size();
+        }
+
+        bValid = false;
       }
-
-      bValid = false;
-    }
-  }
-  else
-  {
-    if( static_cast<SetPosition>(m_data.size()) != m_set->size())
-    {
-      if(verboseOutput)
-      {
-        errStr  << "\n\t* the underlying set and its associated mapped data have different sizes"
-                << " , underlying set has size " << m_set->size()
-                << " , data has size " << m_data.size();
-        ;
-      }
-
-      bValid = false;
-    }
-  }
-
-
-  if(verboseOutput)
-  {
-    std::stringstream sstr;
-
-    sstr << "\n*** Detailed results of isValid on the map.\n";
-    if(bValid)
-    {
-      sstr << "Map was valid." << std::endl;
     }
     else
     {
-      sstr  << "Map was NOT valid.\n"
-            << sstr.str()
-            << std::endl;
-    }
-
-    if(!m_set)
-    {
-      sstr << "\n** map is empty.";
-    }
-    else
-    {
-      sstr << "\n** underlying set has size " << m_set->size() << ": ";
-
-      sstr << "\n** Mapped data:";
-      for(SetPosition idx = 0; idx < this->size(); ++idx)
+      if( static_cast<SetPosition>(m_data.size()) != m_set->size())
       {
-        sstr << "\n\telt[" << idx << "]:\t" << (*this)[idx];
+        if(verboseOutput)
+        {
+          errStr  << "\n\t* the underlying set and its associated mapped data have different sizes"
+                  << " , underlying set has size " << m_set->size()
+                  << " , data has size " << m_data.size();
+          ;
+        }
+
+        bValid = false;
       }
     }
-    std::cout << sstr.str() << std::endl;
-  }
 
-  return bValid;
-}
+
+    if(verboseOutput)
+    {
+      std::stringstream sstr;
+
+      sstr << "\n*** Detailed results of isValid on the map.\n";
+      if(bValid)
+      {
+        sstr << "Map was valid." << std::endl;
+      }
+      else
+      {
+        sstr  << "Map was NOT valid.\n"
+              << sstr.str()
+              << std::endl;
+      }
+
+      if(!m_set)
+      {
+        sstr << "\n** map is empty.";
+      }
+      else
+      {
+        sstr << "\n** underlying set has size " << m_set->size() << ": ";
+
+        sstr << "\n** Mapped data:";
+        for(SetPosition idx = 0; idx < this->size(); ++idx)
+        {
+          sstr << "\n\telt[" << idx << "]:\t" << (*this)[idx];
+        }
+      }
+      std::cout << sstr.str() << std::endl;
+    }
+
+    return bValid;
+  }
 
 
 

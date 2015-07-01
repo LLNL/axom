@@ -180,7 +180,8 @@ T *Allocate(size_t size)
 template <typename T>
 void Release(T **ptr)
 {
-  if (*ptr != NULL) {
+  if (*ptr != NULL)
+  {
     free(*ptr);
     *ptr = NULL;
   }
@@ -197,39 +198,46 @@ void TimeIncrement(Domain& domain)
 {
   Real_t targetdt = domain.stoptime() - domain.time();
 
-  if ((domain.dtfixed() <= Real_t(0.0)) && (domain.cycle() != Int_t(0))) {
+  if ((domain.dtfixed() <= Real_t(0.0)) && (domain.cycle() != Int_t(0)))
+  {
     Real_t ratio;
     Real_t olddt = domain.deltatime();
 
     /* This will require a reduction in parallel */
     Real_t gnewdt = Real_t(1.0e+20);
     Real_t newdt;
-    if (domain.dtcourant() < gnewdt) {
+    if (domain.dtcourant() < gnewdt)
+    {
       gnewdt = domain.dtcourant() / Real_t(2.0);
     }
-    if (domain.dthydro() < gnewdt) {
+    if (domain.dthydro() < gnewdt)
+    {
       gnewdt = domain.dthydro() * Real_t(2.0) / Real_t(3.0);
     }
 
 #ifdef USE_MPI
     MPI_Allreduce(&gnewdt, &newdt, 1,
-      ((sizeof(Real_t) == 4) ? MPI_FLOAT : MPI_DOUBLE),
-      MPI_MIN, MPI_COMM_WORLD);
+        ((sizeof(Real_t) == 4) ? MPI_FLOAT : MPI_DOUBLE),
+        MPI_MIN, MPI_COMM_WORLD);
 #else
     newdt = gnewdt;
 #endif
 
     ratio = newdt / olddt;
-    if (ratio >= Real_t(1.0)) {
-      if (ratio < domain.deltatimemultlb()) {
+    if (ratio >= Real_t(1.0))
+    {
+      if (ratio < domain.deltatimemultlb())
+      {
         newdt = olddt;
       }
-      else if (ratio > domain.deltatimemultub()) {
+      else if (ratio > domain.deltatimemultub())
+      {
         newdt = olddt * domain.deltatimemultub();
       }
     }
 
-    if (newdt > domain.dtmax()) {
+    if (newdt > domain.dtmax())
+    {
       newdt = domain.dtmax();
     }
     domain.deltatime() = newdt;
@@ -237,11 +245,13 @@ void TimeIncrement(Domain& domain)
 
   /* TRY TO PREVENT VERY SMALL SCALING ON THE NEXT CYCLE */
   if ((targetdt > domain.deltatime()) &&
-    (targetdt < (Real_t(4.0) * domain.deltatime() / Real_t(3.0))) ) {
+      (targetdt < (Real_t(4.0) * domain.deltatime() / Real_t(3.0))) )
+  {
     targetdt = Real_t(2.0) * domain.deltatime() / Real_t(3.0);
   }
 
-  if (targetdt < domain.deltatime()) {
+  if (targetdt < domain.deltatime())
+  {
     domain.deltatime() = targetdt;
   }
 
@@ -254,10 +264,10 @@ void TimeIncrement(Domain& domain)
 
 static inline
 void CollectDomainNodesToElemNodes(Domain &domain,
-  const Index_t* elemToNode,
-  Real_t elemX[8],
-  Real_t elemY[8],
-  Real_t elemZ[8])
+    const Index_t* elemToNode,
+    Real_t elemX[8],
+    Real_t elemY[8],
+    Real_t elemZ[8])
 {
   Index_t nd0i = elemToNode[0];
   Index_t nd1i = elemToNode[1];
@@ -301,8 +311,8 @@ void CollectDomainNodesToElemNodes(Domain &domain,
 
 static inline
 void InitStressTermsForElems(Domain &domain,
-  Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
-  Index_t numElem)
+    Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
+    Index_t numElem)
 {
   //
   // pull in the stresses appropriate to the hydro integration
@@ -319,10 +329,10 @@ void InitStressTermsForElems(Domain &domain,
 
 static inline
 void CalcElemShapeFunctionDerivatives( Real_t const x[],
-  Real_t const y[],
-  Real_t const z[],
-  Real_t b[][8],
-  Real_t* const volume )
+    Real_t const y[],
+    Real_t const z[],
+    Real_t b[][8],
+    Real_t* const volume )
 {
   const Real_t x0 = x[0];
   const Real_t x1 = x[1];
@@ -422,13 +432,13 @@ void CalcElemShapeFunctionDerivatives( Real_t const x[],
 
 static inline
 void SumElemFaceNormal(Real_t *normalX0, Real_t *normalY0, Real_t *normalZ0,
-  Real_t *normalX1, Real_t *normalY1, Real_t *normalZ1,
-  Real_t *normalX2, Real_t *normalY2, Real_t *normalZ2,
-  Real_t *normalX3, Real_t *normalY3, Real_t *normalZ3,
-  const Real_t x0, const Real_t y0, const Real_t z0,
-  const Real_t x1, const Real_t y1, const Real_t z1,
-  const Real_t x2, const Real_t y2, const Real_t z2,
-  const Real_t x3, const Real_t y3, const Real_t z3)
+    Real_t *normalX1, Real_t *normalY1, Real_t *normalZ1,
+    Real_t *normalX2, Real_t *normalY2, Real_t *normalZ2,
+    Real_t *normalX3, Real_t *normalY3, Real_t *normalZ3,
+    const Real_t x0, const Real_t y0, const Real_t z0,
+    const Real_t x1, const Real_t y1, const Real_t z1,
+    const Real_t x2, const Real_t y2, const Real_t z2,
+    const Real_t x3, const Real_t y3, const Real_t z3)
 {
   Real_t bisectX0 = Real_t(0.5) * (x3 + x2 - x1 - x0);
   Real_t bisectY0 = Real_t(0.5) * (y3 + y2 - y1 - y0);
@@ -460,11 +470,11 @@ void SumElemFaceNormal(Real_t *normalX0, Real_t *normalY0, Real_t *normalZ0,
 
 static inline
 void CalcElemNodeNormals(Real_t pfx[8],
-  Real_t pfy[8],
-  Real_t pfz[8],
-  const Real_t x[8],
-  const Real_t y[8],
-  const Real_t z[8])
+    Real_t pfy[8],
+    Real_t pfz[8],
+    const Real_t x[8],
+    const Real_t y[8],
+    const Real_t z[8])
 {
   for (Index_t i = 0; i < 8; ++i)
   {
@@ -474,56 +484,56 @@ void CalcElemNodeNormals(Real_t pfx[8],
   }
   /* evaluate face one: nodes 0, 1, 2, 3 */
   SumElemFaceNormal(&pfx[0], &pfy[0], &pfz[0],
-    &pfx[1], &pfy[1], &pfz[1],
-    &pfx[2], &pfy[2], &pfz[2],
-    &pfx[3], &pfy[3], &pfz[3],
-    x[0], y[0], z[0], x[1], y[1], z[1],
-    x[2], y[2], z[2], x[3], y[3], z[3]);
+      &pfx[1], &pfy[1], &pfz[1],
+      &pfx[2], &pfy[2], &pfz[2],
+      &pfx[3], &pfy[3], &pfz[3],
+      x[0], y[0], z[0], x[1], y[1], z[1],
+      x[2], y[2], z[2], x[3], y[3], z[3]);
   /* evaluate face two: nodes 0, 4, 5, 1 */
   SumElemFaceNormal(&pfx[0], &pfy[0], &pfz[0],
-    &pfx[4], &pfy[4], &pfz[4],
-    &pfx[5], &pfy[5], &pfz[5],
-    &pfx[1], &pfy[1], &pfz[1],
-    x[0], y[0], z[0], x[4], y[4], z[4],
-    x[5], y[5], z[5], x[1], y[1], z[1]);
+      &pfx[4], &pfy[4], &pfz[4],
+      &pfx[5], &pfy[5], &pfz[5],
+      &pfx[1], &pfy[1], &pfz[1],
+      x[0], y[0], z[0], x[4], y[4], z[4],
+      x[5], y[5], z[5], x[1], y[1], z[1]);
   /* evaluate face three: nodes 1, 5, 6, 2 */
   SumElemFaceNormal(&pfx[1], &pfy[1], &pfz[1],
-    &pfx[5], &pfy[5], &pfz[5],
-    &pfx[6], &pfy[6], &pfz[6],
-    &pfx[2], &pfy[2], &pfz[2],
-    x[1], y[1], z[1], x[5], y[5], z[5],
-    x[6], y[6], z[6], x[2], y[2], z[2]);
+      &pfx[5], &pfy[5], &pfz[5],
+      &pfx[6], &pfy[6], &pfz[6],
+      &pfx[2], &pfy[2], &pfz[2],
+      x[1], y[1], z[1], x[5], y[5], z[5],
+      x[6], y[6], z[6], x[2], y[2], z[2]);
   /* evaluate face four: nodes 2, 6, 7, 3 */
   SumElemFaceNormal(&pfx[2], &pfy[2], &pfz[2],
-    &pfx[6], &pfy[6], &pfz[6],
-    &pfx[7], &pfy[7], &pfz[7],
-    &pfx[3], &pfy[3], &pfz[3],
-    x[2], y[2], z[2], x[6], y[6], z[6],
-    x[7], y[7], z[7], x[3], y[3], z[3]);
+      &pfx[6], &pfy[6], &pfz[6],
+      &pfx[7], &pfy[7], &pfz[7],
+      &pfx[3], &pfy[3], &pfz[3],
+      x[2], y[2], z[2], x[6], y[6], z[6],
+      x[7], y[7], z[7], x[3], y[3], z[3]);
   /* evaluate face five: nodes 3, 7, 4, 0 */
   SumElemFaceNormal(&pfx[3], &pfy[3], &pfz[3],
-    &pfx[7], &pfy[7], &pfz[7],
-    &pfx[4], &pfy[4], &pfz[4],
-    &pfx[0], &pfy[0], &pfz[0],
-    x[3], y[3], z[3], x[7], y[7], z[7],
-    x[4], y[4], z[4], x[0], y[0], z[0]);
+      &pfx[7], &pfy[7], &pfz[7],
+      &pfx[4], &pfy[4], &pfz[4],
+      &pfx[0], &pfy[0], &pfz[0],
+      x[3], y[3], z[3], x[7], y[7], z[7],
+      x[4], y[4], z[4], x[0], y[0], z[0]);
   /* evaluate face six: nodes 4, 7, 6, 5 */
   SumElemFaceNormal(&pfx[4], &pfy[4], &pfz[4],
-    &pfx[7], &pfy[7], &pfz[7],
-    &pfx[6], &pfy[6], &pfz[6],
-    &pfx[5], &pfy[5], &pfz[5],
-    x[4], y[4], z[4], x[7], y[7], z[7],
-    x[6], y[6], z[6], x[5], y[5], z[5]);
+      &pfx[7], &pfy[7], &pfz[7],
+      &pfx[6], &pfy[6], &pfz[6],
+      &pfx[5], &pfy[5], &pfz[5],
+      x[4], y[4], z[4], x[7], y[7], z[7],
+      x[6], y[6], z[6], x[5], y[5], z[5]);
 }
 
 /******************************************/
 
 static inline
 void SumElemStressesToNodeForces( const Real_t B[][8],
-  const Real_t stress_xx,
-  const Real_t stress_yy,
-  const Real_t stress_zz,
-  Real_t fx[], Real_t fy[], Real_t fz[] )
+    const Real_t stress_xx,
+    const Real_t stress_yy,
+    const Real_t stress_zz,
+    Real_t fx[], Real_t fy[], Real_t fz[] )
 {
   for(Index_t i = 0; i < 8; i++)
   {
@@ -537,8 +547,8 @@ void SumElemStressesToNodeForces( const Real_t B[][8],
 
 static inline
 void IntegrateStressForElems( Domain &domain,
-  Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
-  Real_t *determ, Index_t numElem, Index_t numNode)
+    Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
+    Real_t *determ, Index_t numElem, Index_t numNode)
 {
 #if _OPENMP
   Index_t numthreads = omp_get_max_threads();
@@ -573,23 +583,24 @@ void IntegrateStressForElems( Domain &domain,
 
     // Volume calculation involves extra work for numerical consistency
     CalcElemShapeFunctionDerivatives(x_local, y_local, z_local,
-      B, &determ[k]);
+        B, &determ[k]);
 
     CalcElemNodeNormals( B[0], B[1], B[2],
-      x_local, y_local, z_local );
+        x_local, y_local, z_local );
 
-    if (numthreads > 1) {
+    if (numthreads > 1)
+    {
       // Eliminate thread writing conflicts at the nodes by giving
       // each element its own copy to write to
       Index_t cornerBegin = k * 8;
       SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-        &fx_elem[cornerBegin],
-        &fy_elem[cornerBegin],
-        &fz_elem[cornerBegin]);
+          &fx_elem[cornerBegin],
+          &fy_elem[cornerBegin],
+          &fz_elem[cornerBegin]);
     }
     else {
       SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-        fx_local, fy_local, fz_local );
+          fx_local, fy_local, fz_local );
 
       // copy nodal force contributions to global force array.
       for( Index_t lnode = 0; lnode<8; ++lnode )
@@ -602,7 +613,8 @@ void IntegrateStressForElems( Domain &domain,
     }
   }
 
-  if (numthreads > 1) {
+  if (numthreads > 1)
+  {
     // If threaded, then we need to copy the data out of the temporary
     // arrays used above into the final forces field
 #pragma omp parallel for firstprivate(numNode)
@@ -631,28 +643,28 @@ void IntegrateStressForElems( Domain &domain,
 
 static inline
 void VoluDer(const Real_t x0, const Real_t x1, const Real_t x2,
-  const Real_t x3, const Real_t x4, const Real_t x5,
-  const Real_t y0, const Real_t y1, const Real_t y2,
-  const Real_t y3, const Real_t y4, const Real_t y5,
-  const Real_t z0, const Real_t z1, const Real_t z2,
-  const Real_t z3, const Real_t z4, const Real_t z5,
-  Real_t* dvdx, Real_t* dvdy, Real_t* dvdz)
+    const Real_t x3, const Real_t x4, const Real_t x5,
+    const Real_t y0, const Real_t y1, const Real_t y2,
+    const Real_t y3, const Real_t y4, const Real_t y5,
+    const Real_t z0, const Real_t z1, const Real_t z2,
+    const Real_t z3, const Real_t z4, const Real_t z5,
+    Real_t* dvdx, Real_t* dvdy, Real_t* dvdz)
 {
   const Real_t twelfth = Real_t(1.0) / Real_t(12.0);
 
   *dvdx =
-    (y1 + y2) * (z0 + z1) - (y0 + y1) * (z1 + z2) +
-    (y0 + y4) * (z3 + z4) - (y3 + y4) * (z0 + z4) -
-    (y2 + y5) * (z3 + z5) + (y3 + y5) * (z2 + z5);
+      (y1 + y2) * (z0 + z1) - (y0 + y1) * (z1 + z2) +
+      (y0 + y4) * (z3 + z4) - (y3 + y4) * (z0 + z4) -
+      (y2 + y5) * (z3 + z5) + (y3 + y5) * (z2 + z5);
   *dvdy =
-    -(x1 + x2) * (z0 + z1) + (x0 + x1) * (z1 + z2) -
-    (x0 + x4) * (z3 + z4) + (x3 + x4) * (z0 + z4) +
-    (x2 + x5) * (z3 + z5) - (x3 + x5) * (z2 + z5);
+      -(x1 + x2) * (z0 + z1) + (x0 + x1) * (z1 + z2) -
+      (x0 + x4) * (z3 + z4) + (x3 + x4) * (z0 + z4) +
+      (x2 + x5) * (z3 + z5) - (x3 + x5) * (z2 + z5);
 
   *dvdz =
-    -(y1 + y2) * (x0 + x1) + (y0 + y1) * (x1 + x2) -
-    (y0 + y4) * (x3 + x4) + (y3 + y4) * (x0 + x4) +
-    (y2 + y5) * (x3 + x5) - (y3 + y5) * (x2 + x5);
+      -(y1 + y2) * (x0 + x1) + (y0 + y1) * (x1 + x2) -
+      (y0 + y4) * (x3 + x4) + (y3 + y4) * (x0 + x4) +
+      (y2 + y5) * (x3 + x5) - (y3 + y5) * (x2 + x5);
 
   *dvdx *= twelfth;
   *dvdy *= twelfth;
@@ -663,93 +675,93 @@ void VoluDer(const Real_t x0, const Real_t x1, const Real_t x2,
 
 static inline
 void CalcElemVolumeDerivative(Real_t dvdx[8],
-  Real_t dvdy[8],
-  Real_t dvdz[8],
-  const Real_t x[8],
-  const Real_t y[8],
-  const Real_t z[8])
+    Real_t dvdy[8],
+    Real_t dvdz[8],
+    const Real_t x[8],
+    const Real_t y[8],
+    const Real_t z[8])
 {
   VoluDer(x[1], x[2], x[3], x[4], x[5], x[7],
-    y[1], y[2], y[3], y[4], y[5], y[7],
-    z[1], z[2], z[3], z[4], z[5], z[7],
-    &dvdx[0], &dvdy[0], &dvdz[0]);
+      y[1], y[2], y[3], y[4], y[5], y[7],
+      z[1], z[2], z[3], z[4], z[5], z[7],
+      &dvdx[0], &dvdy[0], &dvdz[0]);
   VoluDer(x[0], x[1], x[2], x[7], x[4], x[6],
-    y[0], y[1], y[2], y[7], y[4], y[6],
-    z[0], z[1], z[2], z[7], z[4], z[6],
-    &dvdx[3], &dvdy[3], &dvdz[3]);
+      y[0], y[1], y[2], y[7], y[4], y[6],
+      z[0], z[1], z[2], z[7], z[4], z[6],
+      &dvdx[3], &dvdy[3], &dvdz[3]);
   VoluDer(x[3], x[0], x[1], x[6], x[7], x[5],
-    y[3], y[0], y[1], y[6], y[7], y[5],
-    z[3], z[0], z[1], z[6], z[7], z[5],
-    &dvdx[2], &dvdy[2], &dvdz[2]);
+      y[3], y[0], y[1], y[6], y[7], y[5],
+      z[3], z[0], z[1], z[6], z[7], z[5],
+      &dvdx[2], &dvdy[2], &dvdz[2]);
   VoluDer(x[2], x[3], x[0], x[5], x[6], x[4],
-    y[2], y[3], y[0], y[5], y[6], y[4],
-    z[2], z[3], z[0], z[5], z[6], z[4],
-    &dvdx[1], &dvdy[1], &dvdz[1]);
+      y[2], y[3], y[0], y[5], y[6], y[4],
+      z[2], z[3], z[0], z[5], z[6], z[4],
+      &dvdx[1], &dvdy[1], &dvdz[1]);
   VoluDer(x[7], x[6], x[5], x[0], x[3], x[1],
-    y[7], y[6], y[5], y[0], y[3], y[1],
-    z[7], z[6], z[5], z[0], z[3], z[1],
-    &dvdx[4], &dvdy[4], &dvdz[4]);
+      y[7], y[6], y[5], y[0], y[3], y[1],
+      z[7], z[6], z[5], z[0], z[3], z[1],
+      &dvdx[4], &dvdy[4], &dvdz[4]);
   VoluDer(x[4], x[7], x[6], x[1], x[0], x[2],
-    y[4], y[7], y[6], y[1], y[0], y[2],
-    z[4], z[7], z[6], z[1], z[0], z[2],
-    &dvdx[5], &dvdy[5], &dvdz[5]);
+      y[4], y[7], y[6], y[1], y[0], y[2],
+      z[4], z[7], z[6], z[1], z[0], z[2],
+      &dvdx[5], &dvdy[5], &dvdz[5]);
   VoluDer(x[5], x[4], x[7], x[2], x[1], x[3],
-    y[5], y[4], y[7], y[2], y[1], y[3],
-    z[5], z[4], z[7], z[2], z[1], z[3],
-    &dvdx[6], &dvdy[6], &dvdz[6]);
+      y[5], y[4], y[7], y[2], y[1], y[3],
+      z[5], z[4], z[7], z[2], z[1], z[3],
+      &dvdx[6], &dvdy[6], &dvdz[6]);
   VoluDer(x[6], x[5], x[4], x[3], x[2], x[0],
-    y[6], y[5], y[4], y[3], y[2], y[0],
-    z[6], z[5], z[4], z[3], z[2], z[0],
-    &dvdx[7], &dvdy[7], &dvdz[7]);
+      y[6], y[5], y[4], y[3], y[2], y[0],
+      z[6], z[5], z[4], z[3], z[2], z[0],
+      &dvdx[7], &dvdy[7], &dvdz[7]);
 }
 
 /******************************************/
 
 static inline
 void CalcElemFBHourglassForce(Real_t *xd, Real_t *yd, Real_t *zd,  Real_t hourgam[][4],
-  Real_t coefficient,
-  Real_t *hgfx, Real_t *hgfy, Real_t *hgfz )
+    Real_t coefficient,
+    Real_t *hgfx, Real_t *hgfy, Real_t *hgfz )
 {
   Real_t hxx[4];
 
   for(Index_t i = 0; i < 4; i++)
   {
     hxx[i] = hourgam[0][i] * xd[0] + hourgam[1][i] * xd[1] +
-      hourgam[2][i] * xd[2] + hourgam[3][i] * xd[3] +
-      hourgam[4][i] * xd[4] + hourgam[5][i] * xd[5] +
-      hourgam[6][i] * xd[6] + hourgam[7][i] * xd[7];
+        hourgam[2][i] * xd[2] + hourgam[3][i] * xd[3] +
+        hourgam[4][i] * xd[4] + hourgam[5][i] * xd[5] +
+        hourgam[6][i] * xd[6] + hourgam[7][i] * xd[7];
   }
   for(Index_t i = 0; i < 8; i++)
   {
     hgfx[i] = coefficient *
-      (hourgam[i][0] * hxx[0] + hourgam[i][1] * hxx[1] +
-      hourgam[i][2] * hxx[2] + hourgam[i][3] * hxx[3]);
+        (hourgam[i][0] * hxx[0] + hourgam[i][1] * hxx[1] +
+        hourgam[i][2] * hxx[2] + hourgam[i][3] * hxx[3]);
   }
   for(Index_t i = 0; i < 4; i++)
   {
     hxx[i] = hourgam[0][i] * yd[0] + hourgam[1][i] * yd[1] +
-      hourgam[2][i] * yd[2] + hourgam[3][i] * yd[3] +
-      hourgam[4][i] * yd[4] + hourgam[5][i] * yd[5] +
-      hourgam[6][i] * yd[6] + hourgam[7][i] * yd[7];
+        hourgam[2][i] * yd[2] + hourgam[3][i] * yd[3] +
+        hourgam[4][i] * yd[4] + hourgam[5][i] * yd[5] +
+        hourgam[6][i] * yd[6] + hourgam[7][i] * yd[7];
   }
   for(Index_t i = 0; i < 8; i++)
   {
     hgfy[i] = coefficient *
-      (hourgam[i][0] * hxx[0] + hourgam[i][1] * hxx[1] +
-      hourgam[i][2] * hxx[2] + hourgam[i][3] * hxx[3]);
+        (hourgam[i][0] * hxx[0] + hourgam[i][1] * hxx[1] +
+        hourgam[i][2] * hxx[2] + hourgam[i][3] * hxx[3]);
   }
   for(Index_t i = 0; i < 4; i++)
   {
     hxx[i] = hourgam[0][i] * zd[0] + hourgam[1][i] * zd[1] +
-      hourgam[2][i] * zd[2] + hourgam[3][i] * zd[3] +
-      hourgam[4][i] * zd[4] + hourgam[5][i] * zd[5] +
-      hourgam[6][i] * zd[6] + hourgam[7][i] * zd[7];
+        hourgam[2][i] * zd[2] + hourgam[3][i] * zd[3] +
+        hourgam[4][i] * zd[4] + hourgam[5][i] * zd[5] +
+        hourgam[6][i] * zd[6] + hourgam[7][i] * zd[7];
   }
   for(Index_t i = 0; i < 8; i++)
   {
     hgfz[i] = coefficient *
-      (hourgam[i][0] * hxx[0] + hourgam[i][1] * hxx[1] +
-      hourgam[i][2] * hxx[2] + hourgam[i][3] * hxx[3]);
+        (hourgam[i][0] * hxx[0] + hourgam[i][1] * hxx[1] +
+        hourgam[i][2] * hxx[2] + hourgam[i][3] * hxx[3]);
   }
 }
 
@@ -757,11 +769,11 @@ void CalcElemFBHourglassForce(Real_t *xd, Real_t *yd, Real_t *zd,  Real_t hourga
 
 static inline
 void CalcFBHourglassForceForElems( Domain &domain,
-  Real_t *determ,
-  const Domain::CornerRealMap& x8n, const Domain::CornerRealMap& y8n, const Domain::CornerRealMap& z8n,
-  const Domain::CornerRealMap& dvdx, const Domain::CornerRealMap& dvdy, const Domain::CornerRealMap& dvdz,
-  Real_t hourg, Index_t numElem,
-  Index_t numNode)
+    Real_t *determ,
+    const Domain::CornerRealMap& x8n, const Domain::CornerRealMap& y8n, const Domain::CornerRealMap& z8n,
+    const Domain::CornerRealMap& dvdx, const Domain::CornerRealMap& dvdy, const Domain::CornerRealMap& dvdz,
+    Real_t hourg, Index_t numElem,
+    Index_t numNode)
 {
 
 #if _OPENMP
@@ -840,54 +852,54 @@ void CalcFBHourglassForceForElems( Domain &domain,
     {
 
       Real_t hourmodx =
-        x8n[i3] * gamma[i1][0] + x8n[i3 + 1] * gamma[i1][1] +
-        x8n[i3 + 2] * gamma[i1][2] + x8n[i3 + 3] * gamma[i1][3] +
-        x8n[i3 + 4] * gamma[i1][4] + x8n[i3 + 5] * gamma[i1][5] +
-        x8n[i3 + 6] * gamma[i1][6] + x8n[i3 + 7] * gamma[i1][7];
+          x8n[i3] * gamma[i1][0] + x8n[i3 + 1] * gamma[i1][1] +
+          x8n[i3 + 2] * gamma[i1][2] + x8n[i3 + 3] * gamma[i1][3] +
+          x8n[i3 + 4] * gamma[i1][4] + x8n[i3 + 5] * gamma[i1][5] +
+          x8n[i3 + 6] * gamma[i1][6] + x8n[i3 + 7] * gamma[i1][7];
 
       Real_t hourmody =
-        y8n[i3] * gamma[i1][0] + y8n[i3 + 1] * gamma[i1][1] +
-        y8n[i3 + 2] * gamma[i1][2] + y8n[i3 + 3] * gamma[i1][3] +
-        y8n[i3 + 4] * gamma[i1][4] + y8n[i3 + 5] * gamma[i1][5] +
-        y8n[i3 + 6] * gamma[i1][6] + y8n[i3 + 7] * gamma[i1][7];
+          y8n[i3] * gamma[i1][0] + y8n[i3 + 1] * gamma[i1][1] +
+          y8n[i3 + 2] * gamma[i1][2] + y8n[i3 + 3] * gamma[i1][3] +
+          y8n[i3 + 4] * gamma[i1][4] + y8n[i3 + 5] * gamma[i1][5] +
+          y8n[i3 + 6] * gamma[i1][6] + y8n[i3 + 7] * gamma[i1][7];
 
       Real_t hourmodz =
-        z8n[i3] * gamma[i1][0] + z8n[i3 + 1] * gamma[i1][1] +
-        z8n[i3 + 2] * gamma[i1][2] + z8n[i3 + 3] * gamma[i1][3] +
-        z8n[i3 + 4] * gamma[i1][4] + z8n[i3 + 5] * gamma[i1][5] +
-        z8n[i3 + 6] * gamma[i1][6] + z8n[i3 + 7] * gamma[i1][7];
+          z8n[i3] * gamma[i1][0] + z8n[i3 + 1] * gamma[i1][1] +
+          z8n[i3 + 2] * gamma[i1][2] + z8n[i3 + 3] * gamma[i1][3] +
+          z8n[i3 + 4] * gamma[i1][4] + z8n[i3 + 5] * gamma[i1][5] +
+          z8n[i3 + 6] * gamma[i1][6] + z8n[i3 + 7] * gamma[i1][7];
 
       hourgam[0][i1] = gamma[i1][0] -  volinv * (dvdx[i3  ] * hourmodx +
-        dvdy[i3  ] * hourmody +
-        dvdz[i3  ] * hourmodz );
+          dvdy[i3  ] * hourmody +
+          dvdz[i3  ] * hourmodz );
 
       hourgam[1][i1] = gamma[i1][1] -  volinv * (dvdx[i3 + 1] * hourmodx +
-        dvdy[i3 + 1] * hourmody +
-        dvdz[i3 + 1] * hourmodz );
+          dvdy[i3 + 1] * hourmody +
+          dvdz[i3 + 1] * hourmodz );
 
       hourgam[2][i1] = gamma[i1][2] -  volinv * (dvdx[i3 + 2] * hourmodx +
-        dvdy[i3 + 2] * hourmody +
-        dvdz[i3 + 2] * hourmodz );
+          dvdy[i3 + 2] * hourmody +
+          dvdz[i3 + 2] * hourmodz );
 
       hourgam[3][i1] = gamma[i1][3] -  volinv * (dvdx[i3 + 3] * hourmodx +
-        dvdy[i3 + 3] * hourmody +
-        dvdz[i3 + 3] * hourmodz );
+          dvdy[i3 + 3] * hourmody +
+          dvdz[i3 + 3] * hourmodz );
 
       hourgam[4][i1] = gamma[i1][4] -  volinv * (dvdx[i3 + 4] * hourmodx +
-        dvdy[i3 + 4] * hourmody +
-        dvdz[i3 + 4] * hourmodz );
+          dvdy[i3 + 4] * hourmody +
+          dvdz[i3 + 4] * hourmodz );
 
       hourgam[5][i1] = gamma[i1][5] -  volinv * (dvdx[i3 + 5] * hourmodx +
-        dvdy[i3 + 5] * hourmody +
-        dvdz[i3 + 5] * hourmodz );
+          dvdy[i3 + 5] * hourmody +
+          dvdz[i3 + 5] * hourmodz );
 
       hourgam[6][i1] = gamma[i1][6] -  volinv * (dvdx[i3 + 6] * hourmodx +
-        dvdy[i3 + 6] * hourmody +
-        dvdz[i3 + 6] * hourmodz );
+          dvdy[i3 + 6] * hourmody +
+          dvdz[i3 + 6] * hourmodz );
 
       hourgam[7][i1] = gamma[i1][7] -  volinv * (dvdx[i3 + 7] * hourmodx +
-        dvdy[i3 + 7] * hourmody +
-        dvdz[i3 + 7] * hourmodz );
+          dvdy[i3 + 7] * hourmody +
+          dvdz[i3 + 7] * hourmodz );
 
     }
 
@@ -937,12 +949,13 @@ void CalcFBHourglassForceForElems( Domain &domain,
     coefficient = -hourg * Real_t(0.01) * ss1 * mass1 / volume13;
 
     CalcElemFBHourglassForce(xd1,yd1,zd1,
-      hourgam,
-      coefficient, hgfx, hgfy, hgfz);
+        hourgam,
+        coefficient, hgfx, hgfy, hgfz);
 
     // With the threaded version, we write into local arrays per elem
     // so we don't have to worry about race conditions
-    if (numthreads > 1) {
+    if (numthreads > 1)
+    {
       fx_local = &fx_elem[i3];
       fx_local[0] = hgfx[0];
       fx_local[1] = hgfx[1];
@@ -1008,7 +1021,8 @@ void CalcFBHourglassForceForElems( Domain &domain,
     }
   }
 
-  if (numthreads > 1) {
+  if (numthreads > 1)
+  {
     // Collect the data from the local arrays into the final force arrays
 #pragma omp parallel for firstprivate(numNode)
     for( Index_t gnode = 0; gnode<numNode; ++gnode )                    // foreach node
@@ -1036,7 +1050,7 @@ void CalcFBHourglassForceForElems( Domain &domain,
 
 static inline
 void CalcHourglassControlForElems(Domain& domain,
-  Real_t determ[], Real_t hgcoef)
+    Real_t determ[], Real_t hgcoef)
 {
   Index_t numElem = domain.numElem();
 
@@ -1076,7 +1090,8 @@ void CalcHourglassControlForElems(Domain& domain,
     determ[i] = domain.volo(i) * domain.v(i);
 
     /* Do a check for negative volumes */
-    if ( domain.v(i) <= Real_t(0.0) ) {
+    if ( domain.v(i) <= Real_t(0.0) )
+    {
 #ifdef USE_MPI
       MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
@@ -1085,10 +1100,11 @@ void CalcHourglassControlForElems(Domain& domain,
     }
   }
 
-  if ( hgcoef > Real_t(0.) ) {
+  if ( hgcoef > Real_t(0.) )
+  {
     CalcFBHourglassForceForElems( domain,
-      determ, x8n, y8n, z8n, dvdx, dvdy, dvdz,
-      hgcoef, numElem, domain.numNode());
+        determ, x8n, y8n, z8n, dvdx, dvdy, dvdz,
+        hgcoef, numElem, domain.numNode());
   }
 
   return;
@@ -1101,7 +1117,8 @@ void CalcVolumeForceForElems(Domain& domain)
 {
   Index_t numElem = domain.numElem();
 
-  if (numElem != 0) {
+  if (numElem != 0)
+  {
     Real_t hgcoef = domain.hgcoef();
     Real_t *sigxx  = Allocate<Real_t>(numElem);
     Real_t *sigyy  = Allocate<Real_t>(numElem);
@@ -1114,14 +1131,15 @@ void CalcVolumeForceForElems(Domain& domain)
     // call elemlib stress integration loop to produce nodal forces from
     // material stresses.
     IntegrateStressForElems( domain,
-      sigxx, sigyy, sigzz, determ, numElem,
-      domain.numNode());
+        sigxx, sigyy, sigzz, determ, numElem,
+        domain.numNode());
 
     // check for negative element volume
 #pragma omp parallel for firstprivate(numElem)
     for ( Index_t k = 0; k<numElem; ++k )
     {
-      if (determ[k] <= Real_t(0.0)) {
+      if (determ[k] <= Real_t(0.0))
+      {
 #ifdef USE_MPI
         MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
@@ -1147,8 +1165,8 @@ static inline void CalcForceForNodes(Domain& domain)
 
 #ifdef USE_MPI
   CommRecv(domain, MSG_COMM_SBN, 3,
-    domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-    true, false);
+      domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+      true, false);
 #endif
 
 #pragma omp parallel for firstprivate(numNode)
@@ -1169,8 +1187,8 @@ static inline void CalcForceForNodes(Domain& domain)
   fieldData[2] = &Domain::fz;
 
   CommSend(domain, MSG_COMM_SBN, 3, fieldData,
-    domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() +  1,
-    true, false);
+      domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() +  1,
+      true, false);
   CommSBN(domain, 3, fieldData);
 #endif
 }
@@ -1200,19 +1218,22 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 
 #pragma omp parallel
   {
-    if (!domain.symmXempty() != 0) {
+    if (!domain.symmXempty() != 0)
+    {
 #pragma omp for nowait firstprivate(numNodeBC)
       for(Index_t i = 0; i<numNodeBC; ++i)
         domain.xdd(domain.symmX(i)) = Real_t(0.0);
     }
 
-    if (!domain.symmYempty() != 0) {
+    if (!domain.symmYempty() != 0)
+    {
 #pragma omp for nowait firstprivate(numNodeBC)
       for(Index_t i = 0; i<numNodeBC; ++i)
         domain.ydd(domain.symmY(i)) = Real_t(0.0);
     }
 
-    if (!domain.symmZempty() != 0) {
+    if (!domain.symmZempty() != 0)
+    {
 #pragma omp for nowait firstprivate(numNodeBC)
       for(Index_t i = 0; i<numNodeBC; ++i)
         domain.zdd(domain.symmZ(i)) = Real_t(0.0);
@@ -1224,7 +1245,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 
 static inline
 void CalcVelocityForNodes(Domain &domain, const Real_t dt, const Real_t u_cut,
-  Index_t numNode)
+    Index_t numNode)
 {
 
 #pragma omp parallel for firstprivate(numNode)
@@ -1233,15 +1254,18 @@ void CalcVelocityForNodes(Domain &domain, const Real_t dt, const Real_t u_cut,
     Real_t xdtmp, ydtmp, zdtmp;
 
     xdtmp = domain.xd(i) + domain.xdd(i) * dt;
-    if( FABS(xdtmp) < u_cut ) xdtmp = Real_t(0.0);
+    if( FABS(xdtmp) < u_cut )
+      xdtmp = Real_t(0.0);
     domain.xd(i) = xdtmp;
 
     ydtmp = domain.yd(i) + domain.ydd(i) * dt;
-    if( FABS(ydtmp) < u_cut ) ydtmp = Real_t(0.0);
+    if( FABS(ydtmp) < u_cut )
+      ydtmp = Real_t(0.0);
     domain.yd(i) = ydtmp;
 
     zdtmp = domain.zd(i) + domain.zdd(i) * dt;
-    if( FABS(zdtmp) < u_cut ) zdtmp = Real_t(0.0);
+    if( FABS(zdtmp) < u_cut )
+      zdtmp = Real_t(0.0);
     domain.zd(i) = zdtmp;
   }
 }
@@ -1279,8 +1303,8 @@ void LagrangeNodal(Domain& domain)
 #ifdef USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_EARLY
   CommRecv(domain, MSG_SYNC_POS_VEL, 6,
-    domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-    false, false);
+      domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+      false, false);
 #endif
 #endif
 
@@ -1301,8 +1325,8 @@ void LagrangeNodal(Domain& domain)
   fieldData[5] = &Domain::zd;
 
   CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
-    domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-    false, false);
+      domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+      false, false);
   CommSyncPosVel(domain);
 #endif
 #endif
@@ -1314,17 +1338,17 @@ void LagrangeNodal(Domain& domain)
 
 static inline
 Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
-  const Real_t x2, const Real_t x3,
-  const Real_t x4, const Real_t x5,
-  const Real_t x6, const Real_t x7,
-  const Real_t y0, const Real_t y1,
-  const Real_t y2, const Real_t y3,
-  const Real_t y4, const Real_t y5,
-  const Real_t y6, const Real_t y7,
-  const Real_t z0, const Real_t z1,
-  const Real_t z2, const Real_t z3,
-  const Real_t z4, const Real_t z5,
-  const Real_t z6, const Real_t z7 )
+    const Real_t x2, const Real_t x3,
+    const Real_t x4, const Real_t x5,
+    const Real_t x6, const Real_t x7,
+    const Real_t y0, const Real_t y1,
+    const Real_t y2, const Real_t y3,
+    const Real_t y4, const Real_t y5,
+    const Real_t y6, const Real_t y7,
+    const Real_t z0, const Real_t z1,
+    const Real_t z2, const Real_t z3,
+    const Real_t z4, const Real_t z5,
+    const Real_t z6, const Real_t z7 )
 {
   Real_t twelveth = Real_t(1.0) / Real_t(12.0);
 
@@ -1380,15 +1404,15 @@ Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
   ((x1) * ((y2) * (z3) - (z2) * (y3)) + (x2) * ((z1) * (y3) - (y1) * (z3)) + (x3) * ((y1) * (z2) - (z1) * (y2)))
 
   Real_t volume =
-    TRIPLE_PRODUCT( dx31 + dx72,  dx63, dx20,
-      dy31 + dy72, dy63, dy20,
-      dz31 + dz72, dz63, dz20) +
-    TRIPLE_PRODUCT( dx43 + dx57,  dx64, dx70,
-      dy43 + dy57, dy64, dy70,
-      dz43 + dz57, dz64, dz70) +
-    TRIPLE_PRODUCT( dx14 + dx25,  dx61, dx50,
-      dy14 + dy25, dy61, dy50,
-      dz14 + dz25, dz61, dz50);
+      TRIPLE_PRODUCT( dx31 + dx72,  dx63, dx20,
+          dy31 + dy72, dy63, dy20,
+          dz31 + dz72, dz63, dz20) +
+      TRIPLE_PRODUCT( dx43 + dx57,  dx64, dx70,
+          dy43 + dy57, dy64, dy70,
+          dz43 + dz57, dz64, dz70) +
+      TRIPLE_PRODUCT( dx14 + dx25,  dx61, dx50,
+          dy14 + dy25, dy61, dy50,
+          dz14 + dz25, dz61, dz50);
 
 #undef TRIPLE_PRODUCT
 
@@ -1403,19 +1427,19 @@ Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
 Real_t CalcElemVolume( const Real_t x[8], const Real_t y[8], const Real_t z[8] )
 {
   return CalcElemVolume( x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7],
-           y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7],
-           z[0], z[1], z[2], z[3], z[4], z[5], z[6], z[7]);
+             y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7],
+             z[0], z[1], z[2], z[3], z[4], z[5], z[6], z[7]);
 }
 
 /******************************************/
 
 static inline
 Real_t AreaFace( const Real_t x0, const Real_t x1,
-  const Real_t x2, const Real_t x3,
-  const Real_t y0, const Real_t y1,
-  const Real_t y2, const Real_t y3,
-  const Real_t z0, const Real_t z1,
-  const Real_t z2, const Real_t z3)
+    const Real_t x2, const Real_t x3,
+    const Real_t y0, const Real_t y1,
+    const Real_t y2, const Real_t y3,
+    const Real_t z0, const Real_t z1,
+    const Real_t z2, const Real_t z3)
 {
   Real_t fx = (x2 - x0) - (x3 - x1);
   Real_t fy = (y2 - y0) - (y3 - y1);
@@ -1424,10 +1448,10 @@ Real_t AreaFace( const Real_t x0, const Real_t x1,
   Real_t gy = (y2 - y0) + (y3 - y1);
   Real_t gz = (z2 - z0) + (z3 - z1);
   Real_t area =
-    (fx * fx + fy * fy + fz * fz) *
-    (gx * gx + gy * gy + gz * gz) -
-    (fx * gx + fy * gy + fz * gz) *
-    (fx * gx + fy * gy + fz * gz);
+      (fx * fx + fy * fy + fz * fz) *
+      (gx * gx + gy * gy + gz * gz) -
+      (fx * gx + fy * gy + fz * gz) *
+      (fx * gx + fy * gy + fz * gz);
 
   return area;
 }
@@ -1436,40 +1460,40 @@ Real_t AreaFace( const Real_t x0, const Real_t x1,
 
 static inline
 Real_t CalcElemCharacteristicLength( const Real_t x[8],
-  const Real_t y[8],
-  const Real_t z[8],
-  const Real_t volume)
+    const Real_t y[8],
+    const Real_t z[8],
+    const Real_t volume)
 {
   Real_t a, charLength = Real_t(0.0);
 
   a = AreaFace(x[0],x[1],x[2],x[3],
-      y[0],y[1],y[2],y[3],
-      z[0],z[1],z[2],z[3]);
+          y[0],y[1],y[2],y[3],
+          z[0],z[1],z[2],z[3]);
   charLength = std::max(a,charLength);
 
   a = AreaFace(x[4],x[5],x[6],x[7],
-      y[4],y[5],y[6],y[7],
-      z[4],z[5],z[6],z[7]);
+          y[4],y[5],y[6],y[7],
+          z[4],z[5],z[6],z[7]);
   charLength = std::max(a,charLength);
 
   a = AreaFace(x[0],x[1],x[5],x[4],
-      y[0],y[1],y[5],y[4],
-      z[0],z[1],z[5],z[4]);
+          y[0],y[1],y[5],y[4],
+          z[0],z[1],z[5],z[4]);
   charLength = std::max(a,charLength);
 
   a = AreaFace(x[1],x[2],x[6],x[5],
-      y[1],y[2],y[6],y[5],
-      z[1],z[2],z[6],z[5]);
+          y[1],y[2],y[6],y[5],
+          z[1],z[2],z[6],z[5]);
   charLength = std::max(a,charLength);
 
   a = AreaFace(x[2],x[3],x[7],x[6],
-      y[2],y[3],y[7],y[6],
-      z[2],z[3],z[7],z[6]);
+          y[2],y[3],y[7],y[6],
+          z[2],z[3],z[7],z[6]);
   charLength = std::max(a,charLength);
 
   a = AreaFace(x[3],x[0],x[4],x[7],
-      y[3],y[0],y[4],y[7],
-      z[3],z[0],z[4],z[7]);
+          y[3],y[0],y[4],y[7],
+          z[3],z[0],z[4],z[7]);
   charLength = std::max(a,charLength);
 
   charLength = Real_t(4.0) * volume / SQRT(charLength);
@@ -1481,11 +1505,11 @@ Real_t CalcElemCharacteristicLength( const Real_t x[8],
 
 static inline
 void CalcElemVelocityGradient( const Real_t* const xvel,
-  const Real_t* const yvel,
-  const Real_t* const zvel,
-  const Real_t b[][8],
-  const Real_t detJ,
-  Real_t* const d )
+    const Real_t* const yvel,
+    const Real_t* const zvel,
+    const Real_t b[][8],
+    const Real_t detJ,
+    Real_t* const d )
 {
   const Real_t inv_detJ = Real_t(1.0) / detJ;
   Real_t dyddx, dxddy, dzddx, dxddz, dzddy, dyddz;
@@ -1494,49 +1518,49 @@ void CalcElemVelocityGradient( const Real_t* const xvel,
   const Real_t* const pfz = b[2];
 
   d[0] = inv_detJ * ( pfx[0] * (xvel[0] - xvel[6])
-    + pfx[1] * (xvel[1] - xvel[7])
-    + pfx[2] * (xvel[2] - xvel[4])
-    + pfx[3] * (xvel[3] - xvel[5]) );
+      + pfx[1] * (xvel[1] - xvel[7])
+      + pfx[2] * (xvel[2] - xvel[4])
+      + pfx[3] * (xvel[3] - xvel[5]) );
 
   d[1] = inv_detJ * ( pfy[0] * (yvel[0] - yvel[6])
-    + pfy[1] * (yvel[1] - yvel[7])
-    + pfy[2] * (yvel[2] - yvel[4])
-    + pfy[3] * (yvel[3] - yvel[5]) );
+      + pfy[1] * (yvel[1] - yvel[7])
+      + pfy[2] * (yvel[2] - yvel[4])
+      + pfy[3] * (yvel[3] - yvel[5]) );
 
   d[2] = inv_detJ * ( pfz[0] * (zvel[0] - zvel[6])
-    + pfz[1] * (zvel[1] - zvel[7])
-    + pfz[2] * (zvel[2] - zvel[4])
-    + pfz[3] * (zvel[3] - zvel[5]) );
+      + pfz[1] * (zvel[1] - zvel[7])
+      + pfz[2] * (zvel[2] - zvel[4])
+      + pfz[3] * (zvel[3] - zvel[5]) );
 
   dyddx  = inv_detJ * ( pfx[0] * (yvel[0] - yvel[6])
-    + pfx[1] * (yvel[1] - yvel[7])
-    + pfx[2] * (yvel[2] - yvel[4])
-    + pfx[3] * (yvel[3] - yvel[5]) );
+      + pfx[1] * (yvel[1] - yvel[7])
+      + pfx[2] * (yvel[2] - yvel[4])
+      + pfx[3] * (yvel[3] - yvel[5]) );
 
   dxddy  = inv_detJ * ( pfy[0] * (xvel[0] - xvel[6])
-    + pfy[1] * (xvel[1] - xvel[7])
-    + pfy[2] * (xvel[2] - xvel[4])
-    + pfy[3] * (xvel[3] - xvel[5]) );
+      + pfy[1] * (xvel[1] - xvel[7])
+      + pfy[2] * (xvel[2] - xvel[4])
+      + pfy[3] * (xvel[3] - xvel[5]) );
 
   dzddx  = inv_detJ * ( pfx[0] * (zvel[0] - zvel[6])
-    + pfx[1] * (zvel[1] - zvel[7])
-    + pfx[2] * (zvel[2] - zvel[4])
-    + pfx[3] * (zvel[3] - zvel[5]) );
+      + pfx[1] * (zvel[1] - zvel[7])
+      + pfx[2] * (zvel[2] - zvel[4])
+      + pfx[3] * (zvel[3] - zvel[5]) );
 
   dxddz  = inv_detJ * ( pfz[0] * (xvel[0] - xvel[6])
-    + pfz[1] * (xvel[1] - xvel[7])
-    + pfz[2] * (xvel[2] - xvel[4])
-    + pfz[3] * (xvel[3] - xvel[5]) );
+      + pfz[1] * (xvel[1] - xvel[7])
+      + pfz[2] * (xvel[2] - xvel[4])
+      + pfz[3] * (xvel[3] - xvel[5]) );
 
   dzddy  = inv_detJ * ( pfy[0] * (zvel[0] - zvel[6])
-    + pfy[1] * (zvel[1] - zvel[7])
-    + pfy[2] * (zvel[2] - zvel[4])
-    + pfy[3] * (zvel[3] - zvel[5]) );
+      + pfy[1] * (zvel[1] - zvel[7])
+      + pfy[2] * (zvel[2] - zvel[4])
+      + pfy[3] * (zvel[3] - zvel[5]) );
 
   dyddz  = inv_detJ * ( pfz[0] * (yvel[0] - yvel[6])
-    + pfz[1] * (yvel[1] - yvel[7])
-    + pfz[2] * (yvel[2] - yvel[4])
-    + pfz[3] * (yvel[3] - yvel[5]) );
+      + pfz[1] * (yvel[1] - yvel[7])
+      + pfz[2] * (yvel[2] - yvel[4])
+      + pfz[3] * (yvel[3] - yvel[5]) );
   d[5]  = Real_t( .5) * ( dxddy + dyddx );
   d[4]  = Real_t( .5) * ( dxddz + dzddx );
   d[3]  = Real_t( .5) * ( dzddy + dyddz );
@@ -1546,7 +1570,7 @@ void CalcElemVelocityGradient( const Real_t* const xvel,
 
 //static inline
 void CalcKinematicsForElems( Domain &domain, Real_t *vnew,
-  Real_t deltaTime, Index_t numElem )
+    Real_t deltaTime, Index_t numElem )
 {
 
   // loop over all elements
@@ -1578,7 +1602,7 @@ void CalcKinematicsForElems( Domain &domain, Real_t *vnew,
 
     // set characteristic length
     domain.arealg(k) = CalcElemCharacteristicLength(x_local, y_local, z_local,
-        volume);
+            volume);
 
     // get nodal velocities from global array and copy into local arrays.
     for( Index_t lnode = 0; lnode<8; ++lnode )
@@ -1598,10 +1622,10 @@ void CalcKinematicsForElems( Domain &domain, Real_t *vnew,
     }
 
     CalcElemShapeFunctionDerivatives( x_local, y_local, z_local,
-      B, &detJ );
+        B, &detJ );
 
     CalcElemVelocityGradient( xd_local, yd_local, zd_local,
-      B, detJ, D );
+        B, detJ, D );
 
     // put velocity gradient quantities into their global arrays.
     domain.dxx(k) = D[0];
@@ -1617,7 +1641,8 @@ void CalcLagrangeElements(Domain& domain, Real_t* vnew)
 {
   Index_t numElem = domain.numElem();
 
-  if (numElem > 0) {
+  if (numElem > 0)
+  {
     const Real_t deltatime = domain.deltatime();
 
     domain.AllocateStrains(numElem);
@@ -1805,7 +1830,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain, Real_t vnew[])
 
 static inline
 void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
-  Real_t vnew[], Real_t ptiny)
+    Real_t vnew[], Real_t ptiny)
 {
   Real_t monoq_limiter_mult = domain.monoq_limiter_mult();
   Real_t monoq_max_slope = domain.monoq_max_slope();
@@ -1833,7 +1858,7 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     case XI_M_FREE: delvm = Real_t(0.0);
       break;
     default:          fprintf(stderr, "Error in switch at %s line %d\n",
-        __FILE__, __LINE__);
+          __FILE__, __LINE__);
       delvm = 0;       /* ERROR - but quiets the compiler */
       break;
     }
@@ -1846,7 +1871,7 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     case XI_P_FREE: delvp = Real_t(0.0);
       break;
     default:          fprintf(stderr, "Error in switch at %s line %d\n",
-        __FILE__, __LINE__);
+          __FILE__, __LINE__);
       delvp = 0;       /* ERROR - but quiets the compiler */
       break;
     }
@@ -1859,10 +1884,14 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     delvm *= monoq_limiter_mult;
     delvp *= monoq_limiter_mult;
 
-    if ( delvm < phixi ) phixi = delvm;
-    if ( delvp < phixi ) phixi = delvp;
-    if ( phixi < Real_t(0.)) phixi = Real_t(0.);
-    if ( phixi > monoq_max_slope) phixi = monoq_max_slope;
+    if ( delvm < phixi )
+      phixi = delvm;
+    if ( delvp < phixi )
+      phixi = delvp;
+    if ( phixi < Real_t(0.))
+      phixi = Real_t(0.);
+    if ( phixi > monoq_max_slope)
+      phixi = monoq_max_slope;
 
 
     /*  phieta     */
@@ -1877,7 +1906,7 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     case ETA_M_FREE: delvm = Real_t(0.0);
       break;
     default:          fprintf(stderr, "Error in switch at %s line %d\n",
-        __FILE__, __LINE__);
+          __FILE__, __LINE__);
       delvm = 0;       /* ERROR - but quiets the compiler */
       break;
     }
@@ -1890,7 +1919,7 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     case ETA_P_FREE: delvp = Real_t(0.0);
       break;
     default:          fprintf(stderr, "Error in switch at %s line %d\n",
-        __FILE__, __LINE__);
+          __FILE__, __LINE__);
       delvp = 0;       /* ERROR - but quiets the compiler */
       break;
     }
@@ -1903,10 +1932,14 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     delvm *= monoq_limiter_mult;
     delvp *= monoq_limiter_mult;
 
-    if ( delvm  < phieta ) phieta = delvm;
-    if ( delvp  < phieta ) phieta = delvp;
-    if ( phieta < Real_t(0.)) phieta = Real_t(0.);
-    if ( phieta > monoq_max_slope)  phieta = monoq_max_slope;
+    if ( delvm  < phieta )
+      phieta = delvm;
+    if ( delvp  < phieta )
+      phieta = delvp;
+    if ( phieta < Real_t(0.))
+      phieta = Real_t(0.);
+    if ( phieta > monoq_max_slope)
+      phieta = monoq_max_slope;
 
     /*  phizeta     */
     norm = Real_t(1.) / ( domain.delv_zeta(i) + ptiny );
@@ -1920,7 +1953,7 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     case ZETA_M_FREE: delvm = Real_t(0.0);
       break;
     default:          fprintf(stderr, "Error in switch at %s line %d\n",
-        __FILE__, __LINE__);
+          __FILE__, __LINE__);
       delvm = 0;       /* ERROR - but quiets the compiler */
       break;
     }
@@ -1933,7 +1966,7 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     case ZETA_P_FREE: delvp = Real_t(0.0);
       break;
     default:          fprintf(stderr, "Error in switch at %s line %d\n",
-        __FILE__, __LINE__);
+          __FILE__, __LINE__);
       delvp = 0;       /* ERROR - but quiets the compiler */
       break;
     }
@@ -1946,14 +1979,19 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
     delvm *= monoq_limiter_mult;
     delvp *= monoq_limiter_mult;
 
-    if ( delvm   < phizeta ) phizeta = delvm;
-    if ( delvp   < phizeta ) phizeta = delvp;
-    if ( phizeta < Real_t(0.)) phizeta = Real_t(0.);
-    if ( phizeta > monoq_max_slope  ) phizeta = monoq_max_slope;
+    if ( delvm   < phizeta )
+      phizeta = delvm;
+    if ( delvp   < phizeta )
+      phizeta = delvp;
+    if ( phizeta < Real_t(0.))
+      phizeta = Real_t(0.);
+    if ( phizeta > monoq_max_slope  )
+      phizeta = monoq_max_slope;
 
     /* Remove length scale */
 
-    if ( domain.vdov(i) > Real_t(0.) )  {
+    if ( domain.vdov(i) > Real_t(0.) )
+    {
       qlin  = Real_t(0.);
       qquad = Real_t(0.);
     }
@@ -1962,21 +2000,24 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
       Real_t delvxeta  = domain.delv_eta(i)  * domain.delx_eta(i);
       Real_t delvxzeta = domain.delv_zeta(i) * domain.delx_zeta(i);
 
-      if ( delvxxi   > Real_t(0.) ) delvxxi   = Real_t(0.);
-      if ( delvxeta  > Real_t(0.) ) delvxeta  = Real_t(0.);
-      if ( delvxzeta > Real_t(0.) ) delvxzeta = Real_t(0.);
+      if ( delvxxi   > Real_t(0.) )
+        delvxxi   = Real_t(0.);
+      if ( delvxeta  > Real_t(0.) )
+        delvxeta  = Real_t(0.);
+      if ( delvxzeta > Real_t(0.) )
+        delvxzeta = Real_t(0.);
 
       Real_t rho = domain.elemMass(i) / (domain.volo(i) * vnew[i]);
 
       qlin = -qlc_monoq * rho *
-        (  delvxxi   * (Real_t(1.) - phixi) +
-        delvxeta  * (Real_t(1.) - phieta) +
-        delvxzeta * (Real_t(1.) - phizeta)  );
+          (  delvxxi   * (Real_t(1.) - phixi) +
+          delvxeta  * (Real_t(1.) - phieta) +
+          delvxzeta * (Real_t(1.) - phizeta)  );
 
       qquad = qqc_monoq * rho *
-        (  delvxxi * delvxxi     * (Real_t(1.) - phixi * phixi) +
-        delvxeta * delvxeta   * (Real_t(1.) - phieta * phieta) +
-        delvxzeta * delvxzeta * (Real_t(1.) - phizeta * phizeta)  );
+          (  delvxxi * delvxxi     * (Real_t(1.) - phixi * phixi) +
+          delvxeta * delvxeta   * (Real_t(1.) - phieta * phieta) +
+          delvxzeta * delvxzeta * (Real_t(1.) - phizeta * phizeta)  );
     }
 
     domain.qq(i) = qquad;
@@ -2000,7 +2041,8 @@ void CalcMonotonicQForElems(Domain& domain, Real_t vnew[])
   for (Index_t r = 0; r<domain.numReg(); ++r)
   {
 
-    if (domain.regElemSize(r) > 0) {
+    if (domain.regElemSize(r) > 0)
+    {
       CalcMonotonicQRegionForElems(domain, r, vnew, ptiny);
     }
   }
@@ -2017,13 +2059,14 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
   Index_t numElem = domain.numElem();
 
-  if (numElem != 0) {
+  if (numElem != 0)
+  {
     domain.AllocateGradients(numElem, domain.numElemWithGhosts());
 
 #ifdef USE_MPI
     CommRecv(domain, MSG_MONOQ, 3,
-      domain.sizeX(), domain.sizeY(), domain.sizeZ(),
-      true, true);
+        domain.sizeX(), domain.sizeY(), domain.sizeZ(),
+        true, true);
 #endif
 
     /* Calculate velocity gradients */
@@ -2040,8 +2083,8 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
     fieldData[2] = &Domain::delv_zeta;
 
     CommSend(domain, MSG_MONOQ, 3, fieldData,
-      domain.sizeX(), domain.sizeY(), domain.sizeZ(),
-      true, true);
+        domain.sizeX(), domain.sizeY(), domain.sizeZ(),
+        true, true);
 
     CommMonoQ(domain);
 #endif
@@ -2055,13 +2098,15 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
     Index_t idx = -1;
     for (Index_t i = 0; i<numElem; ++i)
     {
-      if ( domain.q(i) > domain.qstop() ) {
+      if ( domain.q(i) > domain.qstop() )
+      {
         idx = i;
         break;
       }
     }
 
-    if(idx >= 0) {
+    if(idx >= 0)
+    {
 #ifdef USE_MPI
       MPI_Abort(MPI_COMM_WORLD, QStopError);
 #else
@@ -2075,11 +2120,11 @@ void CalcQForElems(Domain& domain, Real_t vnew[])
 
 static inline
 void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
-  Real_t* pbvc, Real_t* e_old,
-  Real_t* compression, Real_t *vnewc,
-  Real_t pmin,
-  Real_t p_cut, Real_t eosvmax,
-  Index_t length, const Index_t *regElemList)
+    Real_t* pbvc, Real_t* e_old,
+    Real_t* compression, Real_t *vnewc,
+    Real_t pmin,
+    Real_t p_cut, Real_t eosvmax,
+    Index_t length, const Index_t *regElemList)
 {
 #pragma omp parallel for firstprivate(length)
   for (Index_t i = 0; i < length; ++i)
@@ -2111,15 +2156,15 @@ void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
 
 static inline
 void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
-  Real_t* bvc, Real_t* pbvc,
-  Real_t* p_old, Real_t* e_old, Real_t* q_old,
-  Real_t* compression, Real_t* compHalfStep,
-  Real_t* vnewc, Real_t* work, Real_t* delvc, Real_t pmin,
-  Real_t p_cut, Real_t e_cut, Real_t q_cut, Real_t emin,
-  Real_t* qq_old, Real_t* ql_old,
-  Real_t rho0,
-  Real_t eosvmax,
-  Index_t length, const Index_t *regElemList)
+    Real_t* bvc, Real_t* pbvc,
+    Real_t* p_old, Real_t* e_old, Real_t* q_old,
+    Real_t* compression, Real_t* compHalfStep,
+    Real_t* vnewc, Real_t* work, Real_t* delvc, Real_t pmin,
+    Real_t p_cut, Real_t e_cut, Real_t q_cut, Real_t emin,
+    Real_t* qq_old, Real_t* ql_old,
+    Real_t rho0,
+    Real_t eosvmax,
+    Index_t length, const Index_t *regElemList)
 {
   Real_t *pHalfStep = Allocate<Real_t>(length);
 
@@ -2127,31 +2172,35 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
   for (Index_t i = 0; i < length; ++i)
   {
     e_new[i] = e_old[i] - Real_t(0.5) * delvc[i] * (p_old[i] + q_old[i])
-      + Real_t(0.5) * work[i];
+        + Real_t(0.5) * work[i];
 
-    if (e_new[i]  < emin ) {
+    if (e_new[i]  < emin )
+    {
       e_new[i] = emin;
     }
   }
 
   CalcPressureForElems(pHalfStep, bvc, pbvc, e_new, compHalfStep, vnewc,
-    pmin, p_cut, eosvmax, length, regElemList);
+      pmin, p_cut, eosvmax, length, regElemList);
 
 #pragma omp parallel for firstprivate(length, rho0)
   for (Index_t i = 0; i < length; ++i)
   {
     Real_t vhalf = Real_t(1.) / (Real_t(1.) + compHalfStep[i]);
 
-    if ( delvc[i] > Real_t(0.) ) {
+    if ( delvc[i] > Real_t(0.) )
+    {
       q_new[i] /* = qq_old[i] = ql_old[i] */ = Real_t(0.);
     }
     else {
       Real_t ssc = ( pbvc[i] * e_new[i]
-        + vhalf * vhalf * bvc[i] * pHalfStep[i] ) / rho0;
+          + vhalf * vhalf * bvc[i] * pHalfStep[i] ) / rho0;
 
-      if ( ssc <= Real_t(.1111111e-36) ) {
+      if ( ssc <= Real_t(.1111111e-36) )
+      {
         ssc = Real_t(.3333333e-18);
-      } else {
+      }
+      else {
         ssc = SQRT(ssc);
       }
 
@@ -2159,8 +2208,8 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
     }
 
     e_new[i] = e_new[i] + Real_t(0.5) * delvc[i]
-      * (  Real_t(3.0) * (p_old[i]     + q_old[i])
-      - Real_t(4.0) * (pHalfStep[i] + q_new[i]));
+        * (  Real_t(3.0) * (p_old[i]     + q_old[i])
+        - Real_t(4.0) * (pHalfStep[i] + q_new[i]));
   }
 
 #pragma omp parallel for firstprivate(length, emin, e_cut)
@@ -2169,16 +2218,18 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
 
     e_new[i] += Real_t(0.5) * work[i];
 
-    if (FABS(e_new[i]) < e_cut) {
+    if (FABS(e_new[i]) < e_cut)
+    {
       e_new[i] = Real_t(0.);
     }
-    if (     e_new[i]  < emin ) {
+    if (     e_new[i]  < emin )
+    {
       e_new[i] = emin;
     }
   }
 
   CalcPressureForElems(p_new, bvc, pbvc, e_new, compression, vnewc,
-    pmin, p_cut, eosvmax, length, regElemList);
+      pmin, p_cut, eosvmax, length, regElemList);
 
 #pragma omp parallel for firstprivate(length, rho0, emin, e_cut)
   for (Index_t i = 0; i < length; ++i)
@@ -2187,16 +2238,19 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
     Index_t elem = regElemList[i];
     Real_t q_tilde;
 
-    if (delvc[i] > Real_t(0.)) {
+    if (delvc[i] > Real_t(0.))
+    {
       q_tilde = Real_t(0.);
     }
     else {
       Real_t ssc = ( pbvc[i] * e_new[i]
-        + vnewc[elem] * vnewc[elem] * bvc[i] * p_new[i] ) / rho0;
+          + vnewc[elem] * vnewc[elem] * bvc[i] * p_new[i] ) / rho0;
 
-      if ( ssc <= Real_t(.1111111e-36) ) {
+      if ( ssc <= Real_t(.1111111e-36) )
+      {
         ssc = Real_t(.3333333e-18);
-      } else {
+      }
+      else {
         ssc = SQRT(ssc);
       }
 
@@ -2204,38 +2258,44 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
     }
 
     e_new[i] = e_new[i] - (  Real_t(7.0) * (p_old[i]     + q_old[i])
-      - Real_t(8.0) * (pHalfStep[i] + q_new[i])
-      + (p_new[i] + q_tilde)) * delvc[i] * sixth;
+        - Real_t(8.0) * (pHalfStep[i] + q_new[i])
+        + (p_new[i] + q_tilde)) * delvc[i] * sixth;
 
-    if (FABS(e_new[i]) < e_cut) {
+    if (FABS(e_new[i]) < e_cut)
+    {
       e_new[i] = Real_t(0.);
     }
-    if (     e_new[i]  < emin ) {
+    if (     e_new[i]  < emin )
+    {
       e_new[i] = emin;
     }
   }
 
   CalcPressureForElems(p_new, bvc, pbvc, e_new, compression, vnewc,
-    pmin, p_cut, eosvmax, length, regElemList);
+      pmin, p_cut, eosvmax, length, regElemList);
 
 #pragma omp parallel for firstprivate(length, rho0, q_cut)
   for (Index_t i = 0; i < length; ++i)
   {
     Index_t elem = regElemList[i];
 
-    if ( delvc[i] <= Real_t(0.) ) {
+    if ( delvc[i] <= Real_t(0.) )
+    {
       Real_t ssc = ( pbvc[i] * e_new[i]
-        + vnewc[elem] * vnewc[elem] * bvc[i] * p_new[i] ) / rho0;
+          + vnewc[elem] * vnewc[elem] * bvc[i] * p_new[i] ) / rho0;
 
-      if ( ssc <= Real_t(.1111111e-36) ) {
+      if ( ssc <= Real_t(.1111111e-36) )
+      {
         ssc = Real_t(.3333333e-18);
-      } else {
+      }
+      else {
         ssc = SQRT(ssc);
       }
 
       q_new[i] = (ssc * ql_old[i] + qq_old[i]);
 
-      if (FABS(q_new[i]) < q_cut) q_new[i] = Real_t(0.);
+      if (FABS(q_new[i]) < q_cut)
+        q_new[i] = Real_t(0.);
     }
   }
 
@@ -2248,18 +2308,19 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
 
 static inline
 void CalcSoundSpeedForElems(Domain &domain,
-  Real_t *vnewc, Real_t rho0, Real_t *enewc,
-  Real_t *pnewc, Real_t *pbvc,
-  Real_t *bvc, Real_t /*ss4o3*/,
-  Index_t len, const Index_t *regElemList)
+    Real_t *vnewc, Real_t rho0, Real_t *enewc,
+    Real_t *pnewc, Real_t *pbvc,
+    Real_t *bvc, Real_t /*ss4o3*/,
+    Index_t len, const Index_t *regElemList)
 {
 #pragma omp parallel for firstprivate(rho0) //, ss4o3)
   for (Index_t i = 0; i < len; ++i)
   {
     Index_t elem = regElemList[i];
     Real_t ssTmp = (pbvc[i] * enewc[i] + vnewc[elem] * vnewc[elem] *
-      bvc[i] * pnewc[i]) / rho0;
-    if (ssTmp <= Real_t(.1111111e-36)) {
+        bvc[i] * pnewc[i]) / rho0;
+    if (ssTmp <= Real_t(.1111111e-36))
+    {
       ssTmp = Real_t(.3333333e-18);
     }
     else {
@@ -2273,7 +2334,7 @@ void CalcSoundSpeedForElems(Domain &domain,
 
 static inline
 void EvalEOSForElems(Domain& domain, Real_t *vnewc,
-  Int_t numElemReg, const Index_t *regElemList, Int_t rep)
+    Int_t numElemReg, const Index_t *regElemList, Int_t rep)
 {
   Real_t e_cut = domain.e_cut();
   Real_t p_cut = domain.p_cut();
@@ -2333,22 +2394,26 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
       }
 
       /* Check for v > eosvmax or v < eosvmin */
-      if ( eosvmin != Real_t(0.) ) {
+      if ( eosvmin != Real_t(0.) )
+      {
 #pragma omp for nowait firstprivate(numElemReg, eosvmin)
         for(Index_t i = 0; i<numElemReg; ++i)
         {
           Index_t elem = regElemList[i];
-          if (vnewc[elem] <= eosvmin) {      /* impossible due to calling func? */
+          if (vnewc[elem] <= eosvmin)        /* impossible due to calling func? */
+          {
             compHalfStep[i] = compression[i];
           }
         }
       }
-      if ( eosvmax != Real_t(0.) ) {
+      if ( eosvmax != Real_t(0.) )
+      {
 #pragma omp for nowait firstprivate(numElemReg, eosvmax)
         for(Index_t i = 0; i<numElemReg; ++i)
         {
           Index_t elem = regElemList[i];
-          if (vnewc[elem] >= eosvmax) {      /* impossible due to calling func? */
+          if (vnewc[elem] >= eosvmax)        /* impossible due to calling func? */
+          {
             p_old[i]        = Real_t(0.);
             compression[i]  = Real_t(0.);
             compHalfStep[i] = Real_t(0.);
@@ -2363,11 +2428,11 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
       }
     }
     CalcEnergyForElems(p_new, e_new, q_new, bvc, pbvc,
-      p_old, e_old,  q_old, compression, compHalfStep,
-      vnewc, work,  delvc, pmin,
-      p_cut, e_cut, q_cut, emin,
-      qq_old, ql_old, rho0, eosvmax,
-      numElemReg, regElemList);
+        p_old, e_old,  q_old, compression, compHalfStep,
+        vnewc, work,  delvc, pmin,
+        p_cut, e_cut, q_cut, emin,
+        qq_old, ql_old, rho0, eosvmax,
+        numElemReg, regElemList);
   }
 
 #pragma omp parallel for firstprivate(numElemReg)
@@ -2380,9 +2445,9 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
   }
 
   CalcSoundSpeedForElems(domain,
-    vnewc, rho0, e_new, p_new,
-    pbvc, bvc, ss4o3,
-    numElemReg, regElemList);
+      vnewc, rho0, e_new, p_new,
+      pbvc, bvc, ss4o3,
+      numElemReg, regElemList);
 
   Release(&pbvc);
   Release(&bvc);
@@ -2407,7 +2472,8 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
 {
   Index_t numElem = domain.numElem();
 
-  if (numElem != 0) {
+  if (numElem != 0)
+  {
     /* Expose all of the variables needed for material evaluation */
     Real_t eosvmin = domain.eosvmin();
     Real_t eosvmax = domain.eosvmax();
@@ -2415,7 +2481,8 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
 #pragma omp parallel
     {
       // Bound the updated relative volumes with eosvmin/max
-      if (eosvmin != Real_t(0.)) {
+      if (eosvmin != Real_t(0.))
+      {
 #pragma omp for firstprivate(numElem)
         for(Index_t i = 0; i<numElem; ++i)
         {
@@ -2424,7 +2491,8 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
         }
       }
 
-      if (eosvmax != Real_t(0.)) {
+      if (eosvmax != Real_t(0.))
+      {
 #pragma omp for nowait firstprivate(numElem)
         for(Index_t i = 0; i<numElem; ++i)
         {
@@ -2440,15 +2508,18 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
       for (Index_t i = 0; i<numElem; ++i)
       {
         Real_t vc = domain.v(i);
-        if (eosvmin != Real_t(0.)) {
+        if (eosvmin != Real_t(0.))
+        {
           if (vc < eosvmin)
             vc = eosvmin;
         }
-        if (eosvmax != Real_t(0.)) {
+        if (eosvmax != Real_t(0.))
+        {
           if (vc > eosvmax)
             vc = eosvmax;
         }
-        if (vc <= 0.) {
+        if (vc <= 0.)
+        {
 #ifdef USE_MPI
           MPI_Abort(MPI_COMM_WORLD, VolumeError);
 #else
@@ -2483,9 +2554,10 @@ void ApplyMaterialPropertiesForElems(Domain& domain, Real_t vnew[])
 
 static inline
 void UpdateVolumesForElems(Domain &domain, Real_t *vnew,
-  Real_t v_cut, Index_t length)
+    Real_t v_cut, Index_t length)
 {
-  if (length != 0) {
+  if (length != 0)
+  {
 #pragma omp parallel for firstprivate(length, v_cut)
     for(Index_t i = 0; i<length; ++i)
     {
@@ -2516,7 +2588,7 @@ void LagrangeElements(Domain& domain, Index_t numElem)
   ApplyMaterialPropertiesForElems(domain, vnew);
 
   UpdateVolumesForElems(domain, vnew,
-    domain.v_cut(), numElem);
+      domain.v_cut(), numElem);
 
   Release(&vnew);
 }
@@ -2525,15 +2597,16 @@ void LagrangeElements(Domain& domain, Index_t numElem)
 
 static inline
 void CalcCourantConstraintForElems(Domain &domain, Index_t length,
-  const Index_t *regElemlist,
-  Real_t qqc, Real_t& dtcourant)
+    const Index_t *regElemlist,
+    Real_t qqc, Real_t& dtcourant)
 {
 #if _OPENMP
   Index_t threads = omp_get_max_threads();
   static Index_t *courant_elem_per_thread;
   static Real_t *dtcourant_per_thread;
   static bool first = true;
-  if (first) {
+  if (first)
+  {
     courant_elem_per_thread = new Index_t[threads];
     dtcourant_per_thread = new Real_t[threads];
     first = false;
@@ -2563,17 +2636,20 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
       Index_t indx = regElemlist[i];
       Real_t dtf = domain.ss(indx) * domain.ss(indx);
 
-      if ( domain.vdov(indx) < Real_t(0.) ) {
+      if ( domain.vdov(indx) < Real_t(0.) )
+      {
         dtf = dtf
-          + qqc2 * domain.arealg(indx) * domain.arealg(indx)
-          * domain.vdov(indx) * domain.vdov(indx);
+            + qqc2 * domain.arealg(indx) * domain.arealg(indx)
+            * domain.vdov(indx) * domain.vdov(indx);
       }
 
       dtf = SQRT(dtf);
       dtf = domain.arealg(indx) / dtf;
 
-      if (domain.vdov(indx) != Real_t(0.)) {
-        if ( dtf < dtcourant_tmp ) {
+      if (domain.vdov(indx) != Real_t(0.))
+      {
+        if ( dtf < dtcourant_tmp )
+        {
           dtcourant_tmp = dtf;
           courant_elem  = indx;
         }
@@ -2586,13 +2662,15 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
 
   for (Index_t i = 1; i < threads; ++i)
   {
-    if (dtcourant_per_thread[i] < dtcourant_per_thread[0] ) {
+    if (dtcourant_per_thread[i] < dtcourant_per_thread[0] )
+    {
       dtcourant_per_thread[0]    = dtcourant_per_thread[i];
       courant_elem_per_thread[0] = courant_elem_per_thread[i];
     }
   }
 
-  if (courant_elem_per_thread[0] != -1) {
+  if (courant_elem_per_thread[0] != -1)
+  {
     dtcourant = dtcourant_per_thread[0];
   }
 
@@ -2604,14 +2682,15 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
 
 static inline
 void CalcHydroConstraintForElems(Domain &domain, Index_t length,
-  const Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
+    const Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
 {
 #if _OPENMP
   Index_t threads = omp_get_max_threads();
   static Index_t *hydro_elem_per_thread;
   static Real_t *dthydro_per_thread;
   static bool first = true;
-  if (first) {
+  if (first)
+  {
     hydro_elem_per_thread = new Index_t[threads];
     dthydro_per_thread = new Real_t[threads];
     first = false;
@@ -2638,10 +2717,12 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
     {
       Index_t indx = regElemlist[i];
 
-      if (domain.vdov(indx) != Real_t(0.)) {
+      if (domain.vdov(indx) != Real_t(0.))
+      {
         Real_t dtdvov = dvovmax / (FABS(domain.vdov(indx)) + Real_t(1.e-20));
 
-        if ( dthydro_tmp > dtdvov ) {
+        if ( dthydro_tmp > dtdvov )
+        {
           dthydro_tmp = dtdvov;
           hydro_elem = indx;
         }
@@ -2654,13 +2735,15 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
 
   for (Index_t i = 1; i < threads; ++i)
   {
-    if(dthydro_per_thread[i] < dthydro_per_thread[0]) {
+    if(dthydro_per_thread[i] < dthydro_per_thread[0])
+    {
       dthydro_per_thread[0]    = dthydro_per_thread[i];
       hydro_elem_per_thread[0] =  hydro_elem_per_thread[i];
     }
   }
 
-  if (hydro_elem_per_thread[0] != -1) {
+  if (hydro_elem_per_thread[0] != -1)
+  {
     dthydro =  dthydro_per_thread[0];
   }
 
@@ -2680,15 +2763,15 @@ void CalcTimeConstraintsForElems(Domain& domain) {
   {
     /* evaluate time constraint */
     CalcCourantConstraintForElems(domain, domain.regElemSize(r),
-      domain.regElemlist(r),
-      domain.qqc(),
-      domain.dtcourant());
+        domain.regElemlist(r),
+        domain.qqc(),
+        domain.dtcourant());
 
     /* check hydro constraint */
     CalcHydroConstraintForElems(domain, domain.regElemSize(r),
-      domain.regElemlist(r),
-      domain.dvovmax(),
-      domain.dthydro());
+        domain.regElemlist(r),
+        domain.dvovmax(),
+        domain.dthydro());
   }
 }
 
@@ -2716,8 +2799,8 @@ void LagrangeLeapFrog(Domain& domain)
 #ifdef USE_MPI
 #ifdef SEDOV_SYNC_POS_VEL_LATE
   CommRecv(domain, MSG_SYNC_POS_VEL, 6,
-    domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-    false, false);
+      domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+      false, false);
 
   fieldData[0] = &Domain::x;
   fieldData[1] = &Domain::y;
@@ -2727,8 +2810,8 @@ void LagrangeLeapFrog(Domain& domain)
   fieldData[5] = &Domain::zd;
 
   CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
-    domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
-    false, false);
+      domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+      false, false);
 #endif
 #endif
 
@@ -2777,7 +2860,8 @@ int main(int argc, char *argv[])
 
   ParseCommandLineOptions(argc, argv, myRank, &opts);
 
-  if ((myRank == 0) && (opts.quiet == 0)) {
+  if ((myRank == 0) && (opts.quiet == 0))
+  {
     printf( "Running problem size %d^3 per domain until completion\n",  opts.nx);
     printf( "Num processors: %d\n",                                     numRanks);
 #if _OPENMP
@@ -2799,7 +2883,7 @@ int main(int argc, char *argv[])
 
   // Build the main data structure and initialize it
   locDom = new Domain(numRanks, col, row, plane, opts.nx,
-      side, opts.numReg, opts.balance, opts.cost);
+          side, opts.numReg, opts.balance, opts.cost);
 
 
 #ifdef USE_MPI
@@ -2807,11 +2891,11 @@ int main(int argc, char *argv[])
 
   // Initial domain boundary communication
   CommRecv(*locDom, MSG_COMM_SBN, 1,
-    locDom->sizeX() + 1, locDom->sizeY() + 1, locDom->sizeZ() + 1,
-    true, false);
+      locDom->sizeX() + 1, locDom->sizeY() + 1, locDom->sizeZ() + 1,
+      true, false);
   CommSend(*locDom, MSG_COMM_SBN, 1, &fieldData,
-    locDom->sizeX() + 1, locDom->sizeY() + 1, locDom->sizeZ() +  1,
-    true, false);
+      locDom->sizeX() + 1, locDom->sizeY() + 1, locDom->sizeZ() +  1,
+      true, false);
   CommSBN(*locDom, 1, &fieldData);
 
   // End initialization
@@ -2834,9 +2918,9 @@ int main(int argc, char *argv[])
     TimeIncrement(*locDom);
     LagrangeLeapFrog(*locDom);
 
-    if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0)) {
-      printf("cycle = %d, time = %e, dt=%e\n",
-        locDom->cycle(), double(locDom->time()), double(locDom->deltatime()) );
+    if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0))
+    {
+      printf("cycle = %d, time = %e, dt=%e\n", locDom->cycle(), double(locDom->time()), double(locDom->deltatime()) );
       fflush(stdout);
     }
   }
@@ -2853,17 +2937,19 @@ int main(int argc, char *argv[])
   double elapsed_timeG;
 #ifdef USE_MPI
   MPI_Reduce(&elapsed_time, &elapsed_timeG, 1, MPI_DOUBLE,
-    MPI_MAX, 0, MPI_COMM_WORLD);
+      MPI_MAX, 0, MPI_COMM_WORLD);
 #else
   elapsed_timeG = elapsed_time;
 #endif
 
   // Write out final viz file */
-  if (opts.viz) {
+  if (opts.viz)
+  {
     DumpToVisit(*locDom, opts.numFiles, myRank, numRanks);
   }
 
-  if ((myRank == 0) && (opts.quiet == 0)) {
+  if ((myRank == 0) && (opts.quiet == 0))
+  {
     VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
   }
 

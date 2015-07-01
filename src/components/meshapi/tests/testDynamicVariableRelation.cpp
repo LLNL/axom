@@ -209,7 +209,3 @@ TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
 
   std::cout << "\n****** done." << std::endl;
 }
-
-
-
-

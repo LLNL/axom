@@ -12,25 +12,24 @@
 namespace asctoolkit {
 namespace meshapi {
 
-const NullSet IndirectionSet::s_nullSet;
+  const NullSet IndirectionSet::s_nullSet;
 
-bool IndirectionSet::isValid(bool verboseOutput) const
-{
-  bool bValid = true;
-
-  std::stringstream errStr;
-
-  // Not much to check here since we are essentially wrapping around an array/vector
-
-  if(verboseOutput)
+  bool IndirectionSet::isValid(bool verboseOutput) const
   {
-    if( !bValid)
-      std::cout << " There was a problem: " << errStr.str() << std::endl;
-  }
+    bool bValid = true;
 
-  return bValid;
-}
+    std::stringstream errStr;
+
+    // Not much to check here since we are essentially wrapping around an array/vector
+
+    if(verboseOutput)
+    {
+      if( !bValid)
+        std::cout << " There was a problem: " << errStr.str() << std::endl;
+    }
+
+    return bValid;
+  }
 
 } /* namespace meshapi */
 } /* namespace asctoolkit */
-

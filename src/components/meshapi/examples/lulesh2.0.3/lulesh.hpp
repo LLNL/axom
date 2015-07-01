@@ -90,7 +90,8 @@ enum { XI_M_SYMM   = 1 << 0
        , ZETA_P_SYMM = 1 << 15
        , ZETA_P_FREE = 1 << 16
        , ZETA_P_COMM = 1 << 17
-       , ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM};
+       , ZETA_P      = ZETA_P_SYMM | ZETA_P_FREE | ZETA_P_COMM}
+;
 
 // MPI Message Tags
 #define MSG_COMM_SBN      1024
@@ -176,8 +177,8 @@ public:
 
   // Constructor
   Domain(Int_t numRanks, Index_t colLoc,
-    Index_t rowLoc, Index_t planeLoc,
-    Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
+      Index_t rowLoc, Index_t planeLoc,
+      Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
   //
   // ALLOCATION
@@ -310,9 +311,9 @@ public:
   Index_t symmX(Index_t idx) { return m_symmX[idx]; }
   Index_t symmY(Index_t idx) { return m_symmY[idx]; }
   Index_t symmZ(Index_t idx) { return m_symmZ[idx]; }
-  bool    symmXempty()          { return m_symmX.isEmpty(); }
-  bool    symmYempty()          { return m_symmY.isEmpty(); }
-  bool    symmZempty()          { return m_symmZ.isEmpty(); }
+  bool    symmXempty()       { return m_symmX.isEmpty(); }
+  bool    symmYempty()       { return m_symmY.isEmpty(); }
+  bool    symmZempty()       { return m_symmZ.isEmpty(); }
 
   //
   // Element-centered
@@ -444,26 +445,26 @@ public:
   Real_t&   dtfixed()              { return m_dtfixed; }
 
   Int_t&    cycle()                { return m_cycle; }
-  Index_t&  numRanks()           { return m_numRanks; }
+  Index_t&  numRanks()             { return m_numRanks; }
 
-  Index_t&  colLoc()             { return m_colLoc; }
-  Index_t&  rowLoc()             { return m_rowLoc; }
-  Index_t&  planeLoc()           { return m_planeLoc; }
-  Index_t&  tp()                 { return m_tp; }
+  Index_t&  colLoc()               { return m_colLoc; }
+  Index_t&  rowLoc()               { return m_rowLoc; }
+  Index_t&  planeLoc()             { return m_planeLoc; }
+  Index_t&  tp()                   { return m_tp; }
 
-  Index_t&  sizeX()              { return m_sizeX; }
-  Index_t&  sizeY()              { return m_sizeY; }
-  Index_t&  sizeZ()              { return m_sizeZ; }
+  Index_t&  sizeX()                { return m_sizeX; }
+  Index_t&  sizeY()                { return m_sizeY; }
+  Index_t&  sizeZ()                { return m_sizeZ; }
 
-  Index_t   numReg()              { return m_regionSet.size(); }
+  Index_t   numReg()               { return m_regionSet.size(); }
   Int_t&    cost()                 { return m_cost; }
 
   Index_t   numElem()           const { return m_elemSet.size(); }
   Index_t   numNode()           const { return m_nodeSet.size(); }
   Index_t   numElemWithGhosts() const { return m_extendedElemSet.size(); }
 
-  Index_t&  maxPlaneSize()       { return m_maxPlaneSize; }
-  Index_t&  maxEdgeSize()        { return m_maxEdgeSize; }
+  Index_t&  maxPlaneSize()         { return m_maxPlaneSize; }
+  Index_t&  maxEdgeSize()          { return m_maxEdgeSize; }
 
   //
   // MPI-Related additional data
@@ -639,7 +640,8 @@ private:
 
 typedef Real_t & (Domain::* Domain_member )(Index_t);
 
-struct cmdLineOpts {
+struct cmdLineOpts
+{
   Int_t its;  // -i
   Int_t nx;   // -s
   Int_t numReg;  // -r
@@ -657,32 +659,26 @@ struct cmdLineOpts {
 
 // lulesh-par
 Real_t CalcElemVolume( const Real_t x[8],
-  const Real_t y[8],
-  const Real_t z[8]);
+    const Real_t y[8],
+    const Real_t z[8]);
 
 // lulesh-util
 void  ParseCommandLineOptions(int argc, char *argv[],
-  Int_t myRank, struct cmdLineOpts *opts);
+    Int_t myRank, struct cmdLineOpts *opts);
 void  VerifyAndWriteFinalOutput(Real_t elapsed_time,
-  Domain& locDom,
-  Int_t nx,
-  Int_t numRanks);
+    Domain& locDom,
+    Int_t nx,
+    Int_t numRanks);
 
 // lulesh-viz
 void  DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks);
 
 // lulesh-comm
-void  CommRecv(Domain& domain, Int_t msgType, Index_t xferFields,
-  Index_t dx, Index_t dy, Index_t dz,
-  bool doRecv, bool planeOnly);
-void  CommSend(Domain& domain, Int_t msgType,
-  Index_t xferFields, Domain_member *fieldData,
-  Index_t dx, Index_t dy, Index_t dz,
-  bool doSend, bool planeOnly);
+void  CommRecv(Domain& domain, Int_t msgType, Index_t xferFields, Index_t dx, Index_t dy, Index_t dz, bool doRecv, bool planeOnly);
+void  CommSend(Domain& domain, Int_t msgType, Index_t xferFields, Domain_member *fieldData, Index_t dx, Index_t dy, Index_t dz, bool doSend, bool planeOnly);
 void  CommSBN(Domain& domain, Int_t xferFields, Domain_member *fieldData);
 void  CommSyncPosVel(Domain& domain);
 void  CommMonoQ(Domain& domain);
 
 // lulesh-init
-void  InitMeshDecomp(Int_t numRanks, Int_t myRank,
-  Int_t *col, Int_t *row, Int_t *plane, Int_t *side);
+void  InitMeshDecomp(Int_t numRanks, Int_t myRank, Int_t *col, Int_t *row, Int_t *plane, Int_t *side);

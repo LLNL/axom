@@ -95,4 +95,3 @@ TEST(gtest_meshapi_indirection_set,construct_indirection_set)
    #endif
    }
  */
-

@@ -29,19 +29,19 @@ static
 // consistently in the prototype and definition
 void
 DumpMultiblockObjects(DBfile *db, PMPIO_baton_t *bat,
-  char basename[], int numRanks);
+    char basename[], int numRanks);
 
 // Callback prototypes for PMPIO interface (only useful if we're
 // running parallel)
 static void *
 LULESH_PMPIO_Create(const char *fname,
-  const char *dname,
-  void *udata);
+    const char *dname,
+    void *udata);
 static void *
 LULESH_PMPIO_Open(const char *fname,
-  const char *dname,
-  PMPIO_iomode_t ioMode,
-  void *udata);
+    const char *dname,
+    PMPIO_iomode_t ioMode,
+    void *udata);
 static void
 LULESH_PMPIO_Close(void *file, void *udata);
 
@@ -65,13 +65,13 @@ void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks)
 #ifdef USE_MPI
 
   PMPIO_baton_t *bat = PMPIO_Init(numFiles,
-      PMPIO_WRITE,
-      MPI_COMM_WORLD,
-      10101,
-      LULESH_PMPIO_Create,
-      LULESH_PMPIO_Open,
-      LULESH_PMPIO_Close,
-      NULL);
+          PMPIO_WRITE,
+          MPI_COMM_WORLD,
+          10101,
+          LULESH_PMPIO_Create,
+          LULESH_PMPIO_Open,
+          LULESH_PMPIO_Close,
+          NULL);
 
   int myiorank = PMPIO_GroupRank(bat, myRank);
 
@@ -88,7 +88,8 @@ void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks)
 
   // Processor 0 writes out bit of extra data to its file that
   // describes how to stitch all the pieces together
-  if (myRank == 0) {
+  if (myRank == 0)
+  {
     DumpMultiblockObjects(db, bat, basename, numRanks);
   }
 
@@ -99,7 +100,8 @@ void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks)
 
   db = (DBfile*)DBCreate(basename, DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5X);
 
-  if (db) {
+  if (db)
+  {
     DBMkDir(db, subdirName);
     DBSetDir(db, subdirName);
     DumpDomainToVisit(db, domain, myRank);
@@ -142,10 +144,10 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
     }
   }
   ok += DBPutZonelist2(db, "connectivity", domain.numElem(), 3,
-      conn, domain.numElem() * 8,
-      0,0,0,                   /* Not carrying ghost zones */
-      shapetype, shapesize, shapecnt,
-      1, NULL);
+          conn, domain.numElem() * 8,
+          0,0,0,               /* Not carrying ghost zones */
+          shapetype, shapesize, shapecnt,
+          1, NULL);
   delete [] conn;
 
   /* Write out the mesh coordinates associated with the mesh */
@@ -164,8 +166,8 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
   ok += DBAddOption(optlist, DBOPT_DTIME, &domain.time());
   ok += DBAddOption(optlist, DBOPT_CYCLE, &domain.cycle());
   ok += DBPutUcdmesh(db, "mesh", 3, (char**)&coordnames[0], (float**)coords,
-      domain.numNode(), domain.numElem(), "connectivity",
-      0, DB_FLOAT, optlist);
+          domain.numNode(), domain.numElem(), "connectivity",
+          0, DB_FLOAT, optlist);
   ok += DBFreeOptlist(optlist);
   delete [] coords[2];
   delete [] coords[1];
@@ -178,8 +180,8 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
     matnums[i] = i + 1;
 
   ok += DBPutMaterial(db, "regions", "mesh", domain.numReg(),
-      matnums, domain.regNumList(), dims, 1,
-      NULL, NULL, NULL, NULL, 0, DB_FLOAT, NULL);
+          matnums, domain.regNumList(), dims, 1,
+          NULL, NULL, NULL, NULL, 0, DB_FLOAT, NULL);
   delete [] matnums;
 
   /* Write out pressure, energy, relvol, q */
@@ -190,8 +192,8 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
     e[ei] = float(domain.e(ei));
   }
   ok += DBPutUcdvar1(db, "e", "mesh", e,
-      domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
-      NULL);
+          domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
+          NULL);
   delete [] e;
 
 
@@ -201,8 +203,8 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
     p[ei] = float(domain.p(ei));
   }
   ok += DBPutUcdvar1(db, "p", "mesh", p,
-      domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
-      NULL);
+          domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
+          NULL);
   delete [] p;
 
   float *v = new float[domain.numElem()];
@@ -211,8 +213,8 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
     v[ei] = float(domain.v(ei));
   }
   ok += DBPutUcdvar1(db, "v", "mesh", v,
-      domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
-      NULL);
+          domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
+          NULL);
   delete [] v;
 
   float *q = new float[domain.numElem()];
@@ -221,8 +223,8 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
     q[ei] = float(domain.q(ei));
   }
   ok += DBPutUcdvar1(db, "q", "mesh", q,
-      domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
-      NULL);
+          domain.numElem(), NULL, 0, DB_FLOAT, DB_ZONECENT,
+          NULL);
   delete [] q;
 
   /* Write out nodal speed, velocities */
@@ -239,28 +241,29 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
   }
 
   ok += DBPutUcdvar1(db, "speed", "mesh", speed,
-      domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
-      NULL);
+          domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
+          NULL);
   delete [] speed;
 
 
   ok += DBPutUcdvar1(db, "xd", "mesh", xd,
-      domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
-      NULL);
+          domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
+          NULL);
   delete [] xd;
 
   ok += DBPutUcdvar1(db, "yd", "mesh", yd,
-      domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
-      NULL);
+          domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
+          NULL);
   delete [] yd;
 
   ok += DBPutUcdvar1(db, "zd", "mesh", zd,
-      domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
-      NULL);
+          domain.numNode(), NULL, 0, DB_FLOAT, DB_NODECENT,
+          NULL);
   delete [] zd;
 
 
-  if (ok != 0) {
+  if (ok != 0)
+  {
     printf("Error writing out viz file - rank %d\n", myRank);
   }
 }
@@ -270,7 +273,7 @@ DumpDomainToVisit(DBfile *db, Domain& domain, int myRank)
 #ifdef USE_MPI
 void
 DumpMultiblockObjects(DBfile *db, PMPIO_baton_t *bat,
-  char basename[], int numRanks)
+    char basename[], int numRanks)
 #else
 void
 DumpMultiblockObjects(DBfile *db, char basename[], int numRanks)
@@ -324,7 +327,8 @@ DumpMultiblockObjects(DBfile *db, char basename[], int numRanks)
 #endif
 
     //delete multivarObjs[i];
-    if (iorank == 0) {
+    if (iorank == 0)
+    {
       snprintf( multimeshObjs[i], 64, "/data_%d/mesh",    i);
       snprintf( multimatObjs[i],  64, "/data_%d/regions", i);
       for(int v = 0; v<numvars; ++v)
@@ -335,26 +339,26 @@ DumpMultiblockObjects(DBfile *db, char basename[], int numRanks)
     }
     else {
       snprintf( multimeshObjs[i], 64, "%s.%03d:/data_%d/mesh",
-        basename, iorank, i);
+          basename, iorank, i);
       snprintf( multimatObjs[i],  64, "%s.%03d:/data_%d/regions",
-        basename, iorank, i);
+          basename, iorank, i);
       for(int v = 0; v<numvars; ++v)
       {
         snprintf(multivarObjs[v][i], 64, "%s.%03d:/data_%d/%s",
-          basename, iorank, i, vars[v]);
+            basename, iorank, i, vars[v]);
       }
     }
   }
 
   // Now write out the objects
   ok += DBPutMultimesh(db, "mesh", numRanks,
-      (char**)multimeshObjs, blockTypes, NULL);
+          (char**)multimeshObjs, blockTypes, NULL);
   ok += DBPutMultimat(db, "regions", numRanks,
-      (char**)multimatObjs, NULL);
+          (char**)multimatObjs, NULL);
   for(int v = 0; v<numvars; ++v)
   {
     ok += DBPutMultivar(db, vars[v], numRanks,
-        (char**)multivarObjs[v], varTypes, NULL);
+            (char**)multivarObjs[v], varTypes, NULL);
   }
 
   for(int v = 0; v < numvars; ++v)
@@ -378,7 +382,8 @@ DumpMultiblockObjects(DBfile *db, char basename[], int numRanks)
   delete [] blockTypes;
   delete [] varTypes;
 
-  if (ok != 0) {
+  if (ok != 0)
+  {
     printf("Error writing out multiXXX objs to viz file - rank 0\n");
   }
 }
@@ -389,15 +394,16 @@ DumpMultiblockObjects(DBfile *db, char basename[], int numRanks)
 
 static void *
 LULESH_PMPIO_Create(const char *fname,
-  const char *dname,
-  void *udata)
+    const char *dname,
+    void *udata)
 {
   /* Create the file */
   DBfile* db = DBCreate(fname, DB_CLOBBER, DB_LOCAL, NULL, DB_HDF5X);
 
   /* Put the data in a subdirectory, so VisIt only sees the multimesh
    * objects we write out in the base file */
-  if (db) {
+  if (db)
+  {
     DBMkDir(db, dname);
     DBSetDir(db, dname);
   }
@@ -409,16 +415,17 @@ LULESH_PMPIO_Create(const char *fname,
 
 static void *
 LULESH_PMPIO_Open(const char *fname,
-  const char *dname,
-  PMPIO_iomode_t ioMode,
-  void *udata)
+    const char *dname,
+    PMPIO_iomode_t ioMode,
+    void *udata)
 {
   /* Open the file */
   DBfile* db = DBOpen(fname, DB_UNKNOWN, DB_APPEND);
 
   /* Put the data in a subdirectory, so VisIt only sees the multimesh
    * objects we write out in the base file */
-  if (db) {
+  if (db)
+  {
     DBMkDir(db, dname);
     DBSetDir(db, dname);
   }
@@ -443,10 +450,10 @@ LULESH_PMPIO_Close(void *file, void *udata)
 
 void DumpToVisit(Domain& /*domain*/, int /*numFiles*/, int myRank, int /*numRanks*/)
 {
-  if (myRank == 0) {
+  if (myRank == 0)
+  {
     printf("Must enable -DVIZ_MESH at compile time to call DumpDomain\n");
   }
 }
 
 #endif
-

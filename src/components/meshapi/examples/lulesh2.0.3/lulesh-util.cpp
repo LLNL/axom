@@ -32,7 +32,8 @@ int StrToInt(const char *token, int *retVal)
 
 static void PrintCommandLineOptions(char *execname, int myRank)
 {
-  if (myRank == 0) {
+  if (myRank == 0)
+  {
 
     printf( "Usage: %s [opts]\n", execname);
     printf( " where [opts] is one or more of:\n");
@@ -52,7 +53,8 @@ static void PrintCommandLineOptions(char *execname, int myRank)
 
 static void ParseError(const char *message, int myRank)
 {
-  if (myRank == 0) {
+  if (myRank == 0)
+  {
     printf("%s\n", message);
 #ifdef USE_MPI
     MPI_Abort(MPI_COMM_WORLD, -1);
@@ -63,90 +65,112 @@ static void ParseError(const char *message, int myRank)
 }
 
 void ParseCommandLineOptions(int argc, char *argv[],
-  int myRank, struct cmdLineOpts *opts)
+    int myRank, struct cmdLineOpts *opts)
 {
-  if(argc > 1) {
+  if(argc > 1)
+  {
     int i = 1;
 
     while(i < argc)
     {
       int ok;
       /* -i <iterations> */
-      if(strcmp(argv[i], "-i") == 0) {
-        if (i + 1 >= argc) {
+      if(strcmp(argv[i], "-i") == 0)
+      {
+        if (i + 1 >= argc)
+        {
           ParseError("Missing integer argument to -i", myRank);
         }
         ok = StrToInt(argv[i + 1], &(opts->its));
-        if(!ok) {
+        if(!ok)
+        {
           ParseError("Parse Error on option -i integer value required after argument\n", myRank);
         }
         i += 2;
       }
       /* -s <size, sidelength> */
-      else if(strcmp(argv[i], "-s") == 0) {
-        if (i + 1 >= argc) {
+      else if(strcmp(argv[i], "-s") == 0)
+      {
+        if (i + 1 >= argc)
+        {
           ParseError("Missing integer argument to -s\n", myRank);
         }
         ok = StrToInt(argv[i + 1], &(opts->nx));
-        if(!ok) {
+        if(!ok)
+        {
           ParseError("Parse Error on option -s integer value required after argument\n", myRank);
         }
         i += 2;
       }
       /* -r <numregions> */
-      else if (strcmp(argv[i], "-r") == 0) {
-        if (i + 1 >= argc) {
+      else if (strcmp(argv[i], "-r") == 0)
+      {
+        if (i + 1 >= argc)
+        {
           ParseError("Missing integer argument to -r\n", myRank);
         }
         ok = StrToInt(argv[i + 1], &(opts->numReg));
-        if (!ok) {
+        if (!ok)
+        {
           ParseError("Parse Error on option -r integer value required after argument\n", myRank);
         }
         i += 2;
       }
       /* -f <numfilepieces> */
-      else if (strcmp(argv[i], "-f") == 0) {
-        if (i + 1 >= argc) {
+      else if (strcmp(argv[i], "-f") == 0)
+      {
+        if (i + 1 >= argc)
+        {
           ParseError("Missing integer argument to -f\n", myRank);
         }
         ok = StrToInt(argv[i + 1], &(opts->numFiles));
-        if (!ok) {
+        if (!ok)
+        {
           ParseError("Parse Error on option -f integer value required after argument\n", myRank);
         }
         i += 2;
       }
       /* -p */
-      else if (strcmp(argv[i], "-p") == 0) {
+      else if (strcmp(argv[i], "-p") == 0)
+      {
         opts->showProg = 1;
         i++;
       }
       /* -q */
-      else if (strcmp(argv[i], "-q") == 0) {
+      else if (strcmp(argv[i], "-q") == 0)
+      {
         opts->quiet = 1;
         i++;
       }
-      else if (strcmp(argv[i], "-b") == 0) {
-        if (i + 1 >= argc) {
+      else if (strcmp(argv[i], "-b") == 0)
+      {
+        if (i + 1 >= argc)
+        {
           ParseError("Missing integer argument to -b\n", myRank);
         }
         ok = StrToInt(argv[i + 1], &(opts->balance));
-        if (!ok) {
+        if (!ok)
+        {
           ParseError("Parse Error on option -b integer value required after argument\n", myRank);
         }
         i += 2;
       }
-      else if (strcmp(argv[i], "-c") == 0) {
-        if (i + 1 >= argc) {
+      else if (strcmp(argv[i], "-c") == 0)
+      {
+        if (i + 1 >= argc)
+        {
           ParseError("Missing integer argument to -c\n", myRank);
         }
         ok = StrToInt(argv[i + 1], &(opts->cost));
-        if (!ok) {
+        if (!ok)
+        {
           ParseError("Parse Error on option -c integer value required after argument\n", myRank);
         }
         i += 2;
       }
       /* -v */
-      else if (strcmp(argv[i], "-v") == 0) {
+      else if (strcmp(argv[i], "-v") == 0)
+      {
 #if VIZ_MESH
         opts->viz = 1;
 #else
@@ -155,7 +179,8 @@ void ParseCommandLineOptions(int argc, char *argv[],
         i++;
       }
       /* -h */
-      else if (strcmp(argv[i], "-h") == 0) {
+      else if (strcmp(argv[i], "-h") == 0)
+      {
         PrintCommandLineOptions(argv[0], myRank);
 #ifdef USE_MPI
         MPI_Abort(MPI_COMM_WORLD, 0);
@@ -176,9 +201,9 @@ void ParseCommandLineOptions(int argc, char *argv[],
 /////////////////////////////////////////////////////////////////////
 
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
-  Domain& locDom,
-  Int_t nx,
-  Int_t numRanks)
+    Domain& locDom,
+    Int_t nx,
+    Int_t numRanks)
 {
   // GrindTime1 only takes a single domain into account, and is thus a good way to measure
   // processor speed independent of MPI parallelism.
@@ -205,11 +230,13 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
       Real_t AbsDiff = FABS(locDom.e(j * nx + k) - locDom.e(k * nx + j));
       TotalAbsDiff  += AbsDiff;
 
-      if (MaxAbsDiff <AbsDiff) MaxAbsDiff = AbsDiff;
+      if (MaxAbsDiff <AbsDiff)
+        MaxAbsDiff = AbsDiff;
 
       Real_t RelDiff = AbsDiff / locDom.e(k * nx + j);
 
-      if (MaxRelDiff <RelDiff)  MaxRelDiff = RelDiff;
+      if (MaxRelDiff <RelDiff)
+        MaxRelDiff = RelDiff;
     }
   }
 
@@ -242,13 +269,13 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
   if(resultCheckMap.find(gEdge) != resultCheckMap.end() )
   {
     SLIC_ASSERT_MSG( resultCheckMap[gEdge].first == locDom.cycle()
-      , "Specs state that num cycles should be "  << resultCheckMap[gEdge].first
-                                                  << " actual number of cycles was " << locDom.cycle() << "." );
+        , "Specs state that num cycles should be "  << resultCheckMap[gEdge].first
+                                                    << " actual number of cycles was " << locDom.cycle() << "." );
 
     SLIC_ASSERT_MSG( asctoolkit::utilities::compareRealsRelative( resultCheckMap[gEdge].second, locDom.e(ElemId))
-      , "Specs state that final energy at origin must be "  << resultCheckMap[gEdge].second
-                                                            << " actual energy at origin was " << locDom.e(ElemId) << "."
-                                                            << " Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
+        , "Specs state that final energy at origin must be "  << resultCheckMap[gEdge].second
+                                                              << " actual energy at origin was " << locDom.e(ElemId) << "."
+                                                              << " Difference was " << std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) )
     );
 
     double diff = std::fabs(resultCheckMap[gEdge].second - locDom.e(ElemId) );

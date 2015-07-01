@@ -93,5 +93,3 @@ TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
   std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
 #endif
 }
-
-

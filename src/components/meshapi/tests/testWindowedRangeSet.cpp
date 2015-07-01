@@ -104,4 +104,3 @@ TEST(gtest_meshapi_windowed_range_set,test_windowed_range_set_parents)
   std::cout << "\n-- Checking that the child set's parent is equal to the parent set (according to the equality operator==)." << std::endl;
   EXPECT_EQ(parentSet, *childSet.parentSet());
 }
-

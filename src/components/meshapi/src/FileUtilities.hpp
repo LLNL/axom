@@ -20,17 +20,17 @@ namespace util {
 /**
  * \brief Helper function to print out the current working directory within the file system
  */
-std::string getCWD()
-{
-  char cCurrentPath[FILENAME_MAX];
-
-  if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
+  std::string getCWD()
   {
-    std::abort();
-  }
+    char cCurrentPath[FILENAME_MAX];
 
-  return std::string(cCurrentPath);
-}
+    if (!GetCurrentDir(cCurrentPath, FILENAME_MAX))
+    {
+      std::abort();
+    }
+
+    return std::string(cCurrentPath);
+  }
 
 
 } // end namespace util
