@@ -391,7 +391,7 @@ class Domain {
 
 
    /**
-    * \brief Returns a const reference to the corner set when threading (omp) is enabled, otherwise, a ref to a null set (with no elements).
+    * \brief Returns a const reference to the corner set when threading (omp) is enabled, otherwise, a ref to a NullSet (with no elements).
     */
    const Set& threadingCornerSet()  const {
 #if _OPENMP

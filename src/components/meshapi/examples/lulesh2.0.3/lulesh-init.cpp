@@ -476,14 +476,13 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 
    RelVec begins( numReg()+1 );
    RelVec offsets( numElem() );
-   RelVecIt offIt = offsets.begin();
-
+   Index_t curOffIdx = 0;
    for(Index_t regionPos=0; regionPos < numReg(); ++regionPos)
    {
-       begins[ regionPos] = std::distance( offsets.begin(), offIt);
+       begins[ regionPos] = curOffIdx;
        for(Index_t elemRelPos = 0; elemRelPos < reg2Elems.size( regionPos); ++elemRelPos)
        {
-           *offIt++ = reg2Elems[ regionPos][elemRelPos];
+           offsets[curOffIdx++] = reg2Elems[ regionPos][elemRelPos];
        }
    }
    begins[ numReg()] = offsets.size();
