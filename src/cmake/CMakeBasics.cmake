@@ -456,27 +456,35 @@ macro(add_gtest)
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-    if ( ENABLE_CXX11 )
+   # Add coverage flags (if debug build
+   if ( ENABLE_CODECOV )
+      set_target_properties( ${test_name} PROPERTIES COMPILE_FLAGS
+                             ${CMAKE_CXX_FLAGS_COVERAGE} )
+      set_target_properties( ${test_name} PROPERTIES LINK_FLAGS
+                             ${CMAKE_EXE_LINKER_FLAGS_COVERAGE} )
+   endif()
+
+   if ( ENABLE_CXX11 )
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-    endif()
+   endif()
 
-    add_test( NAME ${test_name}
-              COMMAND ${test_name}
-              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
-              )
+   add_test( NAME ${test_name}
+             COMMAND ${test_name}
+             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+             )
 
-    # add any passed source files to the running list for this project
-    if(IS_ABSOLUTE)
-        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-    else()
-          list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                      "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-    endif()
+   # add any passed source files to the running list for this project
+   if(IS_ABSOLUTE)
+      list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+   else()
+      list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
+                  "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+   endif()
 
 
-    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-        CACHE STRING "" FORCE )
+   set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
+      CACHE STRING "" FORCE )
 
 endmacro(add_gtest)
 
