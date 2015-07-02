@@ -600,7 +600,7 @@ class Domain {
 
    luleshRealData m_v ;     /* relative volume */
    luleshRealData m_volo ;  /* reference volume */
-   luleshRealData m_vnew ;  /* new relative volume -- temporary */
+   //luleshRealData m_vnew ;  /* new relative volume -- temporary */
    luleshRealData m_delv ;  /* m_vnew - m_v */
    luleshRealData m_vdov ;  /* volume derivative over volume */
 

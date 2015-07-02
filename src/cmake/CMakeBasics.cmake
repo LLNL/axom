@@ -37,6 +37,42 @@
 ###############################################################################
 
 ################################
+# Setup build options and their default values
+################################
+include(SetupCmakeOptions)
+
+################################
+# Prevent in-source builds
+################################
+include(PreventInSourceBuilds)
+
+################################
+# Setup compiler options
+################################
+include(SetupCompilerOptions)
+
+################################
+# Setup 3rd Party Libs
+################################
+include(Setup3rdParty)
+
+################################
+# Setup toolkit docs targets
+################################
+include(SetupDocs)
+
+################################
+# Setup toolkit source checks
+################################
+include(SetupCodeChecks)
+
+################################
+# Setup code metrics -
+# profiling, code coverage, etc.
+################################
+include(SetupCodeMetrics)
+
+################################
 # Standard Build Layout
 ################################
 
@@ -83,56 +119,11 @@ mark_as_advanced(
      CMAKE_Fortran_MODULE_DIRECTORY
      )
 
-
-################################
-# Check if we want to build Fortran support.
-################################
-option(ENABLE_FORTRAN "Enables Fortran compiler support." ON)
-
-if(ENABLE_FORTRAN)
-    add_definitions(-DATK_ENABLE_FORTRAN)
-
-    # if enabled but no fortran compiler, halt the configure
-    if(CMAKE_Fortran_COMPILER)
-        MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
-    else()
-        MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
-    endif()    
-else()
-    MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
-endif()
- 
-################################
-# Enable code coverage via gcov
-# Note: Only supported for gnu.
-################################
-option(ENABLE_CODECOV "Enable/disable code coverage via gcov." OFF)
-
-# These should be set in some separate macro later that sets coverage flags for each compiler.
-#SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
-#SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
-SET(GCC_COVERAGE_COMPILE_FLAGS "--coverage")
-SET(GCC_COVERAGE_LINK_FLAGS    "--coverage")
-
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        MESSAGE(STATUS "Debug build is using gnu, code coverage via gcov enabled.")
-        SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
-        SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
-    else()
-        MESSAGE(STATUS "Debug build is not using gnu, code coverage is disabled.")
-        SET(ENABLE_CODECOV OFF)
-    endif()
-endif()
-
-
 ################################
 # Standard CMake Options
 ################################
 
 include(ExternalProject)
-
-option(BUILD_TESTING "Builds unit tests" ON)
 if (BUILD_TESTING)
 
   ## add catch
@@ -155,7 +146,6 @@ endif()
 ################################
 # MPI
 ################################
-option(ENABLE_MPI "ENABLE MPI" OFF)
 if (ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
@@ -163,7 +153,6 @@ endif()
 ################################
 # OpenMP
 ################################
-option(ENABLE_OMP "ENABLE OpenMP" OFF)
 if(ENABLE_OMP)
     find_package(OpenMP REQUIRED)
     if (OPENMP_FOUND)
@@ -171,107 +160,6 @@ if(ENABLE_OMP)
     else()
         message(STATUS "Could not find OpenMP")
     endif()    
-endif()
-
-## Enable ENABLE C++ 11 features
-option(ENABLE_CXX11 "Enables C++11 features" OFF)
-if (ENABLE_CXX11)
-  # define a macro so the code can ifdef accordingly.
-  add_definitions("-DUSE_CXX11")
-endif()
-
-## Choose static or shared libraries.
-option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-
-option(ENABLE_WARNINGS "Enable Compiler warnings." ON)
-if(ENABLE_WARNINGS)
-
-    # set the warning levels we want to abide by
-    if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
-        add_definitions(/W2)
-    else()
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            # using gcc
-            add_definitions(-Wall -Wextra -Werror)
-        endif()
-    endif()
-
-endif()
-
-
-#############################################
-# Support extra compiler flags and defines
-#############################################
-#
-# We don't try to use this approach for CMake generators that support
-# multiple configurations. See: CZ JIRA: ATK-45
-#
-if(NOT CMAKE_CONFIGURATION_TYPES)
-
-    ######################################################
-    # Add define we can use when debug builds are enabled
-    ######################################################
-    if(CMAKE_BUILD_TYPE MATCHES Debug)
-        add_definitions(-DATK_DEBUG)
-    endif()
-
-    ##########################################
-    # Support Extra Flags for the C compiler.
-    ##########################################
-    if(EXTRA_C_FLAGS)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
-    endif()
-
-    # Extra Flags for the debug builds with the C compiler.
-    if(EXTRA_C_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
-        add_compile_options("${EXTRA_C_FLAGS_DEBUG}")
-    endif()
-
-    # Extra Flags for the release builds with the C compiler.
-    if(EXTRA_C_FLAGS_RELEASE AND CMAKE_BUILD_TYPE MATCHES RELEASE)
-        add_compile_options("${EXTRA_C_FLAGS_RELEASE}")
-    endif()
-
-    #############################################
-    # Support Extra Flags for the C++ compiler.
-    #############################################
-    if(EXTRA_CXX_FLAGS)
-        add_compile_options("${EXTRA_CXX_FLAGS}")
-    endif()
-
-    # Extra Flags for the debug builds with the C++ compiler.
-    if(EXTRA_CXX_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
-        add_compile_options("${EXTRA_CXX_FLAGS_DEBUG}")
-    endif()
-
-    # Extra Flags for the release builds with the C++ compiler.
-    if(EXTRA_CXX_FLAGS_RELEASE AND CMAKE_BUILD_TYPE MATCHES RELEASE)
-        add_compile_options("${EXTRA_CXX_FLAGS_RELEASE}")
-    endif()
-
-endif()
-
-################################
-# RPath Settings
-################################
-
-# use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-# when building, don't use the install RPATH already
-# (but later on when installing)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# the RPATH to be used when installing, but only if it's not a system directory
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 ################################
