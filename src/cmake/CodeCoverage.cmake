@@ -79,23 +79,21 @@ ENDIF() # NOT GCOV_PATH
 
 IF(NOT CMAKE_COMPILER_IS_GNUCXX)
 	# Clang version 3.0.0 and greater now supports gcov as well.
-	MESSAGE(WARNING "Compiler is not GNU gcc! Clang Version 3.0.0 and greater supports gcov as well, but older versions don't.")
-
 	IF(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		MESSAGE(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
+		MESSAGE(FATAL_ERROR "Compiler is not GNU gcc or Clang! Aborting...")
 	ENDIF()
 ENDIF() # NOT CMAKE_COMPILER_IS_GNUCXX
 
 SET(CMAKE_CXX_FLAGS_COVERAGE
-    "-g -O0 --coverage -fprofile-arcs -ftest-coverage"
+    "-g -O0 -fprofile-arcs -ftest-coverage"
     CACHE STRING "Flags used by the C++ compiler during coverage builds."
     FORCE )
 SET(CMAKE_C_FLAGS_COVERAGE
-    "-g -O0 --coverage -fprofile-arcs -ftest-coverage"
+    "-g -O0 -fprofile-arcs -ftest-coverage"
     CACHE STRING "Flags used by the C compiler during coverage builds."
     FORCE )
 SET(CMAKE_EXE_LINKER_FLAGS_COVERAGE
-    "--coverage -fprofile-arcs -ftest-coverage"
+    "-fprofile-arcs -ftest-coverage"
     CACHE STRING "Flags used for linking binaries during coverage builds."
     FORCE )
 SET(CMAKE_SHARED_LINKER_FLAGS_COVERAGE
@@ -140,7 +138,7 @@ FUNCTION(add_code_coverage_target _targetname _testrunner)
 
 		# Capturing lcov counters and generating report
 		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${_targetname}.info
-		COMMAND ${LCOV_PATH} --remove ${_targetname}.info '*boost-headers*' '*4.7.1*' '*gtest*' --output-file ${_targetname}.info.cleaned
+		COMMAND ${LCOV_PATH} --remove ${_targetname}.info '/usr/include/*' --output-file ${_targetname}.info.cleaned
 		COMMAND ${GENHTML_PATH} -o ${_targetname} ${_targetname}.info.cleaned
 		COMMAND ${CMAKE_COMMAND} -E remove ${_targetname}.info ${_targetname}.info.cleaned
 
