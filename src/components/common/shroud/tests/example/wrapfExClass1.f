@@ -207,7 +207,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_error_check(obj%voidptr))) :: rv
         ! splicer begin class.ExClass1.method.get_name_error_check
         rv = fstr(aa_exclass1_get_name_error_check(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name_error_check
@@ -217,7 +217,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_arg(obj%voidptr))) :: rv
         ! splicer begin class.ExClass1.method.get_name_arg
         rv = fstr(aa_exclass1_get_name_arg(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name_arg
