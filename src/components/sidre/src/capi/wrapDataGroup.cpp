@@ -235,14 +235,6 @@ return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
 // splicer end class.DataGroup.method.getGroupName
 }
 
-int ATK_datagroup_get_group_name_length(ATK_datagroup * self, ATK_IndexType idx)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin class.DataGroup.method.GetGroupNameLength
-return selfobj->getGroupName(idx).length();
-// splicer end class.DataGroup.method.GetGroupNameLength
-}
-
 void ATK_datagroup_print(ATK_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);

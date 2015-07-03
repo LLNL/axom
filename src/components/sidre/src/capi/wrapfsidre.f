@@ -90,7 +90,6 @@ module sidre_mod
         procedure :: get_group => datagroup_get_group
         procedure :: get_group_index => datagroup_get_group_index
         procedure :: get_group_name => datagroup_get_group_name
-        procedure :: get_group_name_length => datagroup_get_group_name_length
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
@@ -430,15 +429,6 @@ module sidre_mod
             type(C_PTR) rv
         end function atk_datagroup_get_group_name
         
-        pure function atk_datagroup_get_group_name_length(self, idx) result(rv) &
-                bind(C, name="ATK_datagroup_get_group_name_length")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: idx
-            integer(C_INT) :: rv
-        end function atk_datagroup_get_group_name_length
-        
         subroutine atk_datagroup_print(self) &
                 bind(C, name="ATK_datagroup_print")
             use iso_c_binding
@@ -771,7 +761,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(atk_datagroup_get_name(obj%voidptr))) :: rv
         ! splicer begin class.DataGroup.method.get_name
         rv = fstr(atk_datagroup_get_name(obj%voidptr))
         ! splicer end class.DataGroup.method.get_name
@@ -949,7 +939,7 @@ contains
         implicit none
         class(datagroup) :: obj
         integer(C_INT) :: idx
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(atk_datagroup_get_view_name(obj%voidptr, idx))) :: rv
         ! splicer begin class.DataGroup.method.get_view_name
         rv = fstr(atk_datagroup_get_view_name(obj%voidptr, idx))
         ! splicer end class.DataGroup.method.get_view_name
@@ -1025,22 +1015,11 @@ contains
         implicit none
         class(datagroup) :: obj
         integer(C_INT) :: idx
-        character(kind=C_CHAR, len=atk_datagroup_get_group_name_length(obj%voidptr, idx)) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(atk_datagroup_get_group_name(obj%voidptr, idx))) :: rv
         ! splicer begin class.DataGroup.method.get_group_name
         rv = fstr(atk_datagroup_get_group_name_with_error_check(obj%voidptr, idx))
         ! splicer end class.DataGroup.method.get_group_name
     end function datagroup_get_group_name
-    
-    function datagroup_get_group_name_length(obj, idx) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        integer(C_INT) :: idx
-        integer(C_INT) :: rv
-        ! splicer begin class.DataGroup.method.get_group_name_length
-        rv = atk_datagroup_get_group_name_length(obj%voidptr, idx)
-        ! splicer end class.DataGroup.method.get_group_name_length
-    end function datagroup_get_group_name_length
     
     subroutine datagroup_print(obj)
         use iso_c_binding
@@ -1240,7 +1219,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(atk_dataview_get_name(obj%voidptr))) :: rv
         ! splicer begin class.DataView.method.get_name
         rv = fstr(atk_dataview_get_name(obj%voidptr))
         ! splicer end class.DataView.method.get_name

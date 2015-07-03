@@ -394,6 +394,10 @@ class Wrapf(util.WrapperMixin):
             arg_f_decl.append('character(*), intent(OUT) :: rv')
             arg_f_decl.append('type(C_PTR) :: rv_ptr')
 
+        fmt_func.F_arg_c_call = ', '.join(arg_c_call)
+        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
+        fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
+
         # declare function return value after arguments
         # since arguments may be used to compute return value
         # (for example, string lengths)
@@ -402,7 +406,9 @@ class Wrapf(util.WrapperMixin):
 #                fmt_func.F_pure_clause = 'pure '
             if result_typedef.base == 'string':
                 # special case returning a string
-                rvlen = result['attrs'].get('len', '1')
+                rvlen = result['attrs'].get('len', None)
+                if rvlen is None:
+                    rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call}))', fmt_func)
                 fmt_func.rvlen = wformat(rvlen, fmt)
                 arg_f_decl.append(
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
@@ -427,10 +433,6 @@ class Wrapf(util.WrapperMixin):
             self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
             self.type_bound_part.append('procedure :: %s => %s' % (
                     F_name_method, fmt_func.F_name_impl))
-
-        fmt_func.F_arg_c_call = ', '.join(arg_c_call)
-        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
-        fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)

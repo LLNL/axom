@@ -603,31 +603,6 @@ PY_datagroup_get_group_name(
 // splicer end class.DataGroup.method.getGroupName
 }
 
-static char PY_datagroup_get_group_name_length__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_datagroup_get_group_name_length(
-  PY_DataGroup *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.DataGroup.method.GetGroupNameLength
-    ATK_IndexType idx;
-    const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:GetGroupNameLength", kw_list,
-        &idx))
-    {
-        return NULL;
-    }
-    int rv = self->BBB->GetGroupNameLength(idx);
-    return Py_BuildValue("i", &rv);
-// splicer end class.DataGroup.method.GetGroupNameLength
-}
-
 static char PY_datagroup_print__doc__[] =
 "documentation"
 ;
@@ -720,7 +695,6 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"getGroup", (PyCFunction)PY_datagroup_get_group, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group__doc__},
 {"getGroupIndex", (PyCFunction)PY_datagroup_get_group_index, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group_index__doc__},
 {"getGroupName", (PyCFunction)PY_datagroup_get_group_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group_name__doc__},
-{"GetGroupNameLength", (PyCFunction)PY_datagroup_get_group_name_length, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_group_name_length__doc__},
 {"print", (PyCFunction)PY_datagroup_print, METH_NOARGS, PY_datagroup_print__doc__},
 {"save", (PyCFunction)PY_datagroup_save, METH_VARARGS|METH_KEYWORDS, PY_datagroup_save__doc__},
 {"load", (PyCFunction)PY_datagroup_load, METH_VARARGS|METH_KEYWORDS, PY_datagroup_load__doc__},

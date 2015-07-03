@@ -144,16 +144,16 @@ classes:
     -  decl: IndexType getGroupIndex(const std::string &name) const
 
     -  decl: const std::string& getGroupName(IndexType idx) const
-       result:
-          attrs:
-             len: atk_datagroup_get_group_name_length({F_instance_ptr}, idx)
+#       result:
+#          attrs:
+#             len: atk_datagroup_get_group_name_length({F_instance_ptr}, idx)
        options:
           F_code: rv = fstr(atk_datagroup_get_group_name_with_error_check({F_instance_ptr}, idx))
-    - decl: int GetGroupNameLength(IndexType idx) const
-      helper: True
-      options:
-         # getGroupName returns InvalidName for error which will have 0 length
-         C_code: return selfobj->getGroupName(idx).length();
+#    - decl: int GetGroupNameLength(IndexType idx) const
+#      helper: True
+#      options:
+#         # getGroupName returns InvalidName for error which will have 0 length
+#         C_code: return selfobj->getGroupName(idx).length();
 
 
 #    -  decl: void destroyGroups()
