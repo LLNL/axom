@@ -25,12 +25,14 @@ contains
   subroutine get_name
     type(datastore) ds
     type(datagroup) root, group
+    character(30) name
 
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("test")
 
-    call assert_true(group%get_name() == "test" )
+    call group%get_name(name)
+    call assert_true(name == "test" )
     
     call datastore_delete(ds)
   end subroutine get_name
@@ -120,6 +122,7 @@ contains
     type(dataview) view1, view2
     integer idx1, idx2 !x, idx3    ! IndexType
     character(len=30) name1, name2 !x, name3
+    character(len=30) tmpname
 
     ds = datastore_new()
     root = ds%get_root()
@@ -133,14 +136,16 @@ contains
     idx1 = parent%get_view_index("view1")
     idx2 = parent%get_view_index("view2")
 
-    name1 = parent%get_view_name(idx1)
-    name2 = parent%get_view_name(idx2)
+    call parent%get_view_name(idx1, name1)
+    call parent%get_view_name(idx2, name2)
 
     call assert_equals(name1, "view1")
-    call assert_equals(view1%get_name(), name1)
+    call view1%get_name(tmpname)
+    call assert_equals(tmpname, name1)
     
     call assert_equals(name2, "view2")
-    call assert_equals(view2%get_name(), name2)
+    call view2%get_name(tmpname)
+    call assert_equals(tmpname, name2)
 
 !x    idx3 = parent%get_view_index("view3")
 !x    name3 = parent%get_view_name(idx3)
@@ -160,6 +165,7 @@ contains
     type(datagroup) root, parent, group1, group2
     integer idx1, idx2 !x, idx3     ! IndexType
     character(len=30) name1, name2 !x, name3
+    character(len=30) tmpname
 
     ds = datastore_new()
     root = ds%get_root()
@@ -173,14 +179,15 @@ contains
     idx1 = parent%get_group_index("group1")
     idx2 = parent%get_group_index("group2")
 
-    name1 = parent%get_group_name(idx1)
-    name2 = parent%get_group_name(idx2)
-
+    call parent%get_group_name(idx1, name1)
     call assert_equals(name1, "group1")
-    call assert_equals(group1%get_name(), name1)
+    call group1%get_name(tmpname)
+    call assert_equals(tmpname, name1)
 
+    call parent%get_group_name(idx2, name2)
     call assert_equals(name2, "group2")
-    call assert_equals(group2%get_name(), name2)
+    call group2%get_name(tmpname)
+    call assert_equals(tmpname, name2)
 
 !x    idx3 = parent%get_group_index("group3")
 !x    name3 = parent%get_group_name(idx3)

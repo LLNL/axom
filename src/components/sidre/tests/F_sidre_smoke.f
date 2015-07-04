@@ -43,7 +43,8 @@ contains
 
     root = ds%get_root()
 
-    call assert_true(root%get_group_name(idx) == " ")
+    call root%get_group_name(idx, name)
+    call assert_true(name == " ")
     call assert_true(root%get_group_index(name) == invalid_index)
 
     call datastore_delete(ds)

@@ -296,7 +296,9 @@ class Wrapf(util.WrapperMixin):
         is_const = result['attrs'].get('const', False)
 
         # Special case some string handling
-        if result_typedef.base == 'string' and False:
+        if result_typedef.base == 'string' and \
+                options.get('F_string_result_as_arg', False):
+            # convert function into subroutine with argument for result
             result_string = True
         else:
             result_string = False
@@ -389,7 +391,7 @@ class Wrapf(util.WrapperMixin):
             arg_f_names.append(arg['name'])
             arg_f_decl.append(self._f_decl(arg))
 
-        if result_string == 'string':
+        if result_string:
             arg_f_names.append('rv')
             arg_f_decl.append('character(*), intent(OUT) :: rv')
             arg_f_decl.append('type(C_PTR) :: rv_ptr')

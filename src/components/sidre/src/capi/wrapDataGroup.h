@@ -40,8 +40,6 @@ typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
 // splicer begin class.DataGroup.C_definition
-extern const char * ATK_datagroup_get_group_name_with_error_check(const ATK_datagroup * self, ATK_IndexType idx);
-
 // splicer end class.DataGroup.C_definition
 
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);

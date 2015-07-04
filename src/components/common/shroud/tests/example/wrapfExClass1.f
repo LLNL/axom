@@ -213,15 +213,17 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    function exclass1_get_name_arg(obj) result(rv)
+    subroutine exclass1_get_name_arg(obj, rv)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_arg(obj%voidptr))) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv = fstr(aa_exclass1_get_name_arg(obj%voidptr))
+        rv_ptr = aa_exclass1_get_name_arg(obj%voidptr)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.ExClass1.method.get_name_arg
-    end function exclass1_get_name_arg
+    end subroutine exclass1_get_name_arg
     
     function exclass1_get_root(obj) result(rv)
         use iso_c_binding

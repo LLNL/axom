@@ -323,19 +323,19 @@
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
                         "F_arg_c_call": "obj%voidptr", 
-                        "F_arguments": "obj", 
+                        "F_arguments": "obj, rv", 
                         "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name_arg", 
                         "F_name_impl": "exclass1_get_name_arg", 
                         "F_name_method": "get_name_arg", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
+                        "F_subprogram": "subroutine", 
                         "method_name": "getNameArg", 
                         "rv_decl": "const std::string & rv", 
-                        "rvlen": "strlen_ptr(aa_exclass1_get_name_arg(obj%voidptr))", 
                         "underscore_name": "get_name_arg"
                     }, 
-                    "options": {}, 
+                    "options": {
+                        "F_string_result_as_arg": true
+                    }, 
                     "qualifiers": {
                         "const": true
                     }, 

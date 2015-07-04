@@ -455,16 +455,6 @@ module sidre_mod
         end subroutine atk_datagroup_load
         
         ! splicer begin class.DataGroup.additional_interfaces
-        
-        pure function atk_datagroup_get_group_name_with_error_check(self, idx) result(rv) &
-             bind(C, name="ATK_datagroup_get_group_name_with_error_check")
-          use iso_c_binding
-          implicit none
-          type(C_PTR), value, intent(IN) :: self
-          integer(C_INT), value, intent(IN) :: idx
-          type(C_PTR) rv
-        end function atk_datagroup_get_group_name_with_error_check
-        
         ! splicer end class.DataGroup.additional_interfaces
         
         pure function atk_databuffer_get_index(self) result(rv) &
@@ -757,15 +747,17 @@ contains
     ! splicer begin class.DataStore.additional_functions
     ! splicer end class.DataStore.additional_functions
     
-    function datagroup_get_name(obj) result(rv)
+    subroutine datagroup_get_name(obj, rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(kind=C_CHAR, len=strlen_ptr(atk_datagroup_get_name(obj%voidptr))) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.DataGroup.method.get_name
-        rv = fstr(atk_datagroup_get_name(obj%voidptr))
+        rv_ptr = atk_datagroup_get_name(obj%voidptr)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.DataGroup.method.get_name
-    end function datagroup_get_name
+    end subroutine datagroup_get_name
     
     function datagroup_get_parent(obj) result(rv)
         use iso_c_binding
@@ -934,16 +926,18 @@ contains
         ! splicer end class.DataGroup.method.get_view_index
     end function datagroup_get_view_index
     
-    function datagroup_get_view_name(obj, idx) result(rv)
+    subroutine datagroup_get_view_name(obj, idx, rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         integer(C_INT) :: idx
-        character(kind=C_CHAR, len=strlen_ptr(atk_datagroup_get_view_name(obj%voidptr, idx))) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.DataGroup.method.get_view_name
-        rv = fstr(atk_datagroup_get_view_name(obj%voidptr, idx))
+        rv_ptr = atk_datagroup_get_view_name(obj%voidptr, idx)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.DataGroup.method.get_view_name
-    end function datagroup_get_view_name
+    end subroutine datagroup_get_view_name
     
     function datagroup_has_group(obj, name) result(rv)
         use iso_c_binding
@@ -1010,16 +1004,18 @@ contains
         ! splicer end class.DataGroup.method.get_group_index
     end function datagroup_get_group_index
     
-    function datagroup_get_group_name(obj, idx) result(rv)
+    subroutine datagroup_get_group_name(obj, idx, rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         integer(C_INT) :: idx
-        character(kind=C_CHAR, len=strlen_ptr(atk_datagroup_get_group_name(obj%voidptr, idx))) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.DataGroup.method.get_group_name
-        rv = fstr(atk_datagroup_get_group_name_with_error_check(obj%voidptr, idx))
+        rv_ptr = atk_datagroup_get_group_name(obj%voidptr, idx)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.DataGroup.method.get_group_name
-    end function datagroup_get_group_name
+    end subroutine datagroup_get_group_name
     
     subroutine datagroup_print(obj)
         use iso_c_binding
@@ -1215,15 +1211,17 @@ contains
         ! splicer end class.DataView.method.is_opaque
     end function dataview_is_opaque
     
-    function dataview_get_name(obj) result(rv)
+    subroutine dataview_get_name(obj, rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        character(kind=C_CHAR, len=strlen_ptr(atk_dataview_get_name(obj%voidptr))) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.DataView.method.get_name
-        rv = fstr(atk_dataview_get_name(obj%voidptr))
+        rv_ptr = atk_dataview_get_name(obj%voidptr)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.DataView.method.get_name
-    end function dataview_get_name
+    end subroutine dataview_get_name
     
     function dataview_get_opaque(obj) result(rv)
         use iso_c_binding

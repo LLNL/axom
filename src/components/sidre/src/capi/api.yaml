@@ -21,6 +21,12 @@ options:
   # header file for function, each class has its own header file
   cpp_header: sidre/SidreTypes.hpp
 
+  # Any C++ function which returns a string will be wrapped in
+  # Fortran as a subroutine with an additional character argument
+  # for the result.
+  F_string_result_as_arg: True
+
+
 typedef:
   IndexType:
 # defined in SidreTypes.hpp
@@ -142,20 +148,7 @@ classes:
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
-
     -  decl: const std::string& getGroupName(IndexType idx) const
-#       result:
-#          attrs:
-#             len: atk_datagroup_get_group_name_length({F_instance_ptr}, idx)
-       options:
-          F_code: rv = fstr(atk_datagroup_get_group_name_with_error_check({F_instance_ptr}, idx))
-#    - decl: int GetGroupNameLength(IndexType idx) const
-#      helper: True
-#      options:
-#         # getGroupName returns InvalidName for error which will have 0 length
-#         C_code: return selfobj->getGroupName(idx).length();
-
-
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
