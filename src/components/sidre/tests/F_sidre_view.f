@@ -51,8 +51,8 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0")
-    call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
     call dv%allocate(ATK_C_INT_T, 10_8)
+    call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
     data_ptr = dv%get_data_pointer()
     call c_f_pointer(data_ptr, data, [ 10 ])
 

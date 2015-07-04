@@ -259,7 +259,7 @@ contains
   !------------------------------------------------------------------------------
   subroutine view_copy_move
     type(datastore) ds
-    type(datagroup) root, flds
+    type(datagroup) root, flds, subgrp
     type(dataview) tmpview
 
     ds = datastore_new()
@@ -283,7 +283,8 @@ contains
     call assert_true(flds%has_view("d0"))
 
     ! test moving a view from flds to sub
-!--    call flds%create_group("sub")%moveView(flds%get_view("d0"))
+    subgrp = flds%create_group("sub")
+    tmpview = subgrp%move_view(flds%get_view("d0"))
     call flds%print()
     call assert_false(flds%has_view("d0"))
     call assert_true(flds%has_group("sub"))
@@ -314,6 +315,7 @@ contains
   subroutine groups_move_copy
     type(datastore) ds
     type(datagroup) root, flds, ga, gb, gc
+    type(datagroup) subgrp, tmpgrp
     type(dataview) tmpview
 
     ds = datastore_new()
@@ -342,7 +344,8 @@ contains
     call assert_true(flds%has_group("c"))
 
     !move "b" to a child of "sub"
-!--    call flds%create_group("sub")%moveGroup(gb)
+    subgrp = flds%create_group("sub")
+    tmpgrp = subgrp%move_group(gb)
 
     call flds%print()
 
@@ -427,7 +430,7 @@ contains
     call assert_true(grp%has_view(view_name1))
 !--    call assert_equals( grp%get_view(view_name1), view1 )
 
-    call assert_true(grp%has_view(view_name2))
+!--    call assert_true(grp%has_view(view_name2))
 !--    call assert_equals( grp%get_view(view_name2), view2 )
 
 
