@@ -131,7 +131,7 @@ contains
     view1 = parent%create_view_and_buffer("view1")
     view2 = parent%create_view_and_buffer("view2")
 
-!--    call assert_equals(parent%get_num_views(), 2)
+    call assert_true(parent%get_num_views() == 2)
 
     idx1 = parent%get_view_index("view1")
     idx2 = parent%get_view_index("view2")
