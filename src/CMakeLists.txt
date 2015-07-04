@@ -9,28 +9,9 @@ project(asctk LANGUAGES C CXX)
 enable_language(Fortran OPTIONAL)
 
 ################################
-# Prevent in-source builds
-################################
-include(PreventInSourceBuilds)
-
-################################
-# Set some standard cmake opts
+# Include standard build system logic and options
 ################################
 include(CMakeBasics)
-
-################################
-# Setup 3rd Party Libs
-################################
-include(Setup3rdParty)
-
-################################
-# Setup toolkit docs targets
-################################
-include(SetupDocs)
-
-# Setup toolkit source checks
-################################
-include(SetupCodeChecks)
 
 ################################
 # Add components

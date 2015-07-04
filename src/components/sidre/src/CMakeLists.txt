@@ -30,6 +30,9 @@ set(sidre_sources
     ${capi_source}
 )
 
+# Must tell fortran where to look for modules
+include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+
 #
 # make the library
 #

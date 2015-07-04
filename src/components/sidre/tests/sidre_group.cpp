@@ -250,9 +250,9 @@ TEST(sidre_group,view_copy_move)
   flds->createViewAndBuffer("f0")->allocate(DataType::c_float());
   flds->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
-  (*flds->getView("i0")->getNode().as_int_ptr())   = 1;
-  (*flds->getView("f0")->getNode().as_float_ptr()) = 100.0;
-  (*flds->getView("d0")->getNode().as_double_ptr()) = 3000.0;
+  flds->getView("i0")->setValue(1);
+  flds->getView("f0")->setValue(100.0);
+  flds->getView("d0")->setValue(3000.0);
 
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->hasView("f0"));
@@ -300,9 +300,9 @@ TEST(sidre_group,groups_move_copy)
   gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
   gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
-  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
-  (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
-  (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
+  ga->getView("i0")->setValue(1);
+  gb->getView("f0")->setValue(100.0);
+  gc->getView("d0")->setValue(3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
@@ -459,7 +459,7 @@ TEST(sidre_group,save_restore_simple)
 
   ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
 
-  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
+  ga->getView("i0")->setValue(1);
 
   EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
   EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
@@ -479,7 +479,8 @@ TEST(sidre_group,save_restore_simple)
   flds = ds2->getRoot()->getGroup("fields");
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
+  int testvalue = flds->getGroup("a")->getView("i0")->getValue();
+  EXPECT_EQ(testvalue,1);
 
   ds2->print();
 
@@ -502,9 +503,13 @@ TEST(sidre_group,save_restore_complex)
   gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
   gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
 
-  (*ga->getView("i0")->getNode().as_int_ptr())   = 1;
-  (*gb->getView("f0")->getNode().as_float_ptr()) = 100.0;
-  (*gc->getView("d0")->getNode().as_double_ptr()) = 3000.0;
+  ga->getView("i0")->setValue(1);
+  // Be careful on floats.  If you just hand it 100.0, the compiler will assume you want a double.
+  // Either cast the value to float, or be explicit on the template argument.
+  gb->getView("f0")->setValue( static_cast<float>(100.0) );
+  //this would have worked equally well also.
+  //gb->getView("f0")->setValue<float>(100.0);
+  gc->getView("d0")->setValue(3000.00);
 
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
@@ -526,9 +531,9 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getNode().as_int(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getNode().as_float(),100.0,  1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getNode().as_double(),3000.0, 1e-12);
+  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getValue<int>(),1);
+  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getValue<float>(),100.0,  1e-12);
+  EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getValue<double>(),3000.0, 1e-12);
 
   ds2->print();
 

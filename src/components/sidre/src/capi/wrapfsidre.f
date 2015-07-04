@@ -109,10 +109,10 @@ module sidre_mod
         procedure :: get_index => databuffer_get_index
         procedure :: get_num_views => databuffer_get_num_views
         procedure :: declare => databuffer_declare
-        procedure :: declare_external => databuffer_declare_external
         procedure :: allocate_existing => databuffer_allocate_existing
         procedure :: allocate_from_type => databuffer_allocate_from_type
         procedure :: reallocate => databuffer_reallocate
+        procedure :: set_external_data => databuffer_set_external_data
         procedure :: is_external => databuffer_is_external
         procedure :: get_data => databuffer_get_data
         procedure :: get_total_bytes => databuffer_get_total_bytes
@@ -482,16 +482,6 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_declare
         
-        subroutine atk_databuffer_declare_external(self, external_data, type, len) &
-                bind(C, name="ATK_databuffer_declare_external")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: external_data
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
-        end subroutine atk_databuffer_declare_external
-        
         subroutine atk_databuffer_allocate_existing(self) &
                 bind(C, name="ATK_databuffer_allocate_existing")
             use iso_c_binding
@@ -516,6 +506,14 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_reallocate
+        
+        subroutine atk_databuffer_set_external_data(self, external_data) &
+                bind(C, name="ATK_databuffer_set_external_data")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: external_data
+        end subroutine atk_databuffer_set_external_data
         
         pure function atk_databuffer_is_external(self) result(rv) &
                 bind(C, name="ATK_databuffer_is_external")
@@ -1082,18 +1080,6 @@ contains
         ! splicer end class.DataBuffer.method.declare
     end subroutine databuffer_declare
     
-    subroutine databuffer_declare_external(obj, external_data, type, len)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        type(C_PTR) :: external_data
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataBuffer.method.declare_external
-        call atk_databuffer_declare_external(obj%voidptr, external_data, type, len)
-        ! splicer end class.DataBuffer.method.declare_external
-    end subroutine databuffer_declare_external
-    
     subroutine databuffer_allocate_existing(obj)
         use iso_c_binding
         implicit none
@@ -1124,6 +1110,16 @@ contains
         call atk_databuffer_reallocate(obj%voidptr, type, len)
         ! splicer end class.DataBuffer.method.reallocate
     end subroutine databuffer_reallocate
+    
+    subroutine databuffer_set_external_data(obj, external_data)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        type(C_PTR) :: external_data
+        ! splicer begin class.DataBuffer.method.set_external_data
+        call atk_databuffer_set_external_data(obj%voidptr, external_data)
+        ! splicer end class.DataBuffer.method.set_external_data
+    end subroutine databuffer_set_external_data
     
     function databuffer_is_external(obj) result(rv)
         use iso_c_binding
