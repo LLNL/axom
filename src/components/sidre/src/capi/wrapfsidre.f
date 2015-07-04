@@ -116,6 +116,7 @@ module sidre_mod
         procedure :: is_external => databuffer_is_external
         procedure :: get_data => databuffer_get_data
         procedure :: get_total_bytes => databuffer_get_total_bytes
+        procedure :: print => databuffer_print
         generic :: allocate => allocate_existing, allocate_from_type
         ! splicer begin class.DataBuffer.type_bound_procedure_part
         ! splicer end class.DataBuffer.type_bound_procedure_part
@@ -142,6 +143,7 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_number_of_elements => dataview_get_number_of_elements
+        procedure :: print => dataview_print
         ! splicer begin class.DataView.type_bound_procedure_part
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
@@ -539,6 +541,13 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function atk_databuffer_get_total_bytes
         
+        subroutine atk_databuffer_print(self) &
+                bind(C, name="ATK_databuffer_print")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine atk_databuffer_print
+        
         ! splicer begin class.DataBuffer.additional_interfaces
         ! splicer end class.DataBuffer.additional_interfaces
         
@@ -648,6 +657,13 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_number_of_elements
+        
+        subroutine atk_dataview_print(self) &
+                bind(C, name="ATK_dataview_print")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine atk_dataview_print
         
         ! splicer begin class.DataView.additional_interfaces
         ! splicer end class.DataView.additional_interfaces
@@ -1151,6 +1167,15 @@ contains
         ! splicer end class.DataBuffer.method.get_total_bytes
     end function databuffer_get_total_bytes
     
+    subroutine databuffer_print(obj)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        ! splicer begin class.DataBuffer.method.print
+        call atk_databuffer_print(obj%voidptr)
+        ! splicer end class.DataBuffer.method.print
+    end subroutine databuffer_print
+    
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
     
@@ -1288,6 +1313,15 @@ contains
         rv = atk_dataview_get_number_of_elements(obj%voidptr)
         ! splicer end class.DataView.method.get_number_of_elements
     end function dataview_get_number_of_elements
+    
+    subroutine dataview_print(obj)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        ! splicer begin class.DataView.method.print
+        call atk_dataview_print(obj%voidptr)
+        ! splicer end class.DataView.method.print
+    end subroutine dataview_print
     
     ! splicer begin class.DataView.additional_functions
     ! splicer end class.DataView.additional_functions

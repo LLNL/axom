@@ -32,6 +32,7 @@ TEST(sidre_buffer,create_buffers)
 
   DataBuffer * dbuff_3 = ds->createBuffer();
   EXPECT_EQ(dbuff_3->getIndex(), 0);
+
   ds->print();
   delete ds;
 }
@@ -59,7 +60,6 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 
   ds->print();
   delete ds;
-
 }
 
 //------------------------------------------------------------------------------
@@ -83,7 +83,6 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 
   ds->print();
   delete ds;
-
 }
 
 
@@ -122,14 +121,12 @@ TEST(sidre_buffer,realloc_buffer)
     data_ptr[i] = 10;
   }
 
-
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
   dbuff->print();
 
   ds->print();
   delete ds;
-
 }
 
 //----------------------------------------------------------------------

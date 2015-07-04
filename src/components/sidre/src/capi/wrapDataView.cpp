@@ -136,6 +136,15 @@ return rv;
 // splicer end class.DataView.method.getNumberOfElements
 }
 
+void ATK_dataview_print(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.print
+selfobj->print();
+return;
+// splicer end class.DataView.method.print
+}
+
 // splicer begin class.DataView.additional_functions
 // splicer end class.DataView.additional_functions
 

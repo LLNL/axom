@@ -49,9 +49,7 @@ TEST(C_sidre_view,int_buffer_from_view)
     data_ptr[i] = i*i;
   }
 
-#ifdef XXX
-  dv->getNode().print_detailed();
-#endif
+  ATK_dataview_print(dv);
 
   EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10);
   ATK_datastore_delete(ds);
@@ -73,9 +71,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
     data_ptr[i] = i*i;
   }
 
-#ifdef XXX
-  dv->getNode().print_detailed();
-#endif
+  ATK_dataview_print(dv);
 
   EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10);
   ATK_datastore_delete(ds);
@@ -99,9 +95,7 @@ TEST(C_sidre_view,int_array_multi_view)
     data_ptr[i] = i;
   }
 
-#ifdef XXX
-  dbuff->getNode().print_detailed();
-#endif
+  ATK_databuffer_print(dbuff);
 
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
@@ -117,8 +111,8 @@ TEST(C_sidre_view,int_array_multi_view)
 
   dv_o->apply(DataType::uint32(5,4,8));
 
-  dv_e->getNode().print_detailed();
-  dv_o->getNode().print_detailed();
+  ATK_dataview_print(dv_e);
+  ATK_dataview_print(dv_o);
 
   uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
   uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
@@ -156,9 +150,8 @@ TEST(C_sidre_view,init_int_array_multi_view)
     data_ptr[i] = i;
   }
 
-#ifdef XXX
-  dbuff->getNode().print_detailed();
-#endif
+  ATK_databuffer_print(dbuff);
+
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
@@ -175,9 +168,8 @@ TEST(C_sidre_view,init_int_array_multi_view)
   // uint32(num_elems, offset, stride)
   dv_o->apply(DataType::uint32(5,4,8));
 
-
-  dv_e->getNode().print_detailed();
-  dv_o->getNode().print_detailed();
+  ATK_dataview_print(dv_e);
+  ATK_dataview_print(dv_o);
 
   uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
   uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();

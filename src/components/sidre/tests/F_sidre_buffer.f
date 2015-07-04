@@ -32,6 +32,7 @@ contains
 
     dbuff_3 = ds%create_buffer()
     call assert_equals(dbuff_3%get_index(), 0)
+
     call ds%print()
     call datastore_delete(ds)
   end subroutine create_buffers
@@ -58,7 +59,7 @@ contains
        data(i) = i * i
     enddo
 
-!    dbuff%getNode().print_detailed()
+    call dbuff%print()
 
 !    call assert_equals(dbuff%getNode().schema().total_bytes(), &
 !         dbuff%getSchema().total_bytes())
@@ -87,7 +88,7 @@ contains
        data(i) = i * i
     enddo
 
-!  dbuff%getNode().print_detailed()
+    call dbuff%print()
 
 !  call assert_equals(dbuff%getNode().schema().total_bytes(),
 !            dbuff%getSchema().total_bytes())
@@ -118,7 +119,7 @@ contains
 
     data(:) = 5
 
-    ! call dbuff%getNode().print_detailed()
+    call dbuff%print()
   
     call dbuff%reallocate(ATK_C_LONG_T, 10_8)
 
@@ -136,11 +137,10 @@ contains
 
 !  call assert_equals(dbuff%getNode().schema().total_bytes(), sizeof(long)*10)
 
-!  dbuff%getNode().print_detailed()
+    call dbuff%print()
 
     call ds%print()
     call datastore_delete(ds)
-
   end subroutine realloc_buffer
 
 !----------------------------------------------------------------------

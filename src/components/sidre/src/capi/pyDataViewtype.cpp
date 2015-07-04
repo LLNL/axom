@@ -264,6 +264,22 @@ PY_dataview_get_number_of_elements(
     return Py_BuildValue("O", &rv);
 // splicer end class.DataView.method.getNumberOfElements
 }
+
+static char PY_dataview_print__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_print(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.print
+    self->BBB->print();
+    Py_RETURN_NONE;
+// splicer end class.DataView.method.print
+}
 static PyMethodDef PY_DataView_methods[] = {
 {"declare", (PyCFunction)PY_dataview_declare, METH_VARARGS|METH_KEYWORDS, PY_dataview_declare__doc__},
 {"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
@@ -278,6 +294,7 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getTypeID", (PyCFunction)PY_dataview_get_type_id, METH_NOARGS, PY_dataview_get_type_id__doc__},
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},
 {"getNumberOfElements", (PyCFunction)PY_dataview_get_number_of_elements, METH_NOARGS, PY_dataview_get_number_of_elements__doc__},
+{"print", (PyCFunction)PY_dataview_print, METH_NOARGS, PY_dataview_print__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

@@ -109,6 +109,15 @@ return rv;
 // splicer end class.DataBuffer.method.getTotalBytes
 }
 
+void ATK_databuffer_print(ATK_databuffer * self)
+{
+DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+// splicer begin class.DataBuffer.method.print
+selfobj->print();
+return;
+// splicer end class.DataBuffer.method.print
+}
+
 // splicer begin class.DataBuffer.additional_functions
 // splicer end class.DataBuffer.additional_functions
 

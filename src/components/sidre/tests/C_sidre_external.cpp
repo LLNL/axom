@@ -81,10 +81,8 @@ TEST(C_sidre_external, create_external_view)
   ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
   EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
 
-#ifdef XXX
-  root->getView("idata")->getNode().print_detailed();
-  root->getView("ddata")->getNode().print_detailed();
-#endif
+  ATK_dataview_print(iview);
+  ATK_dataview_print(dview);
 
   int * idata_chk = (int *) ATK_dataview_get_data_pointer(iview);
   for (int ii = 0 ; ii < len ; ++ii)
@@ -131,10 +129,8 @@ TEST(C_sidre_external, save_load_external_view)
   tmpbuf = ATK_dataview_get_buffer(dview);
   EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), true);
 
-#ifdef XXX
-  iview->getNode().print_detailed();
-  dview->getNode().print_detailed();
-#endif
+  ATK_dataview_print(iview);
+  ATK_dataview_print(dview);
 
   ATK_datagroup_save(root, "out_sidre_external_save_restore_external_view", "conduit");
 

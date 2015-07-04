@@ -65,6 +65,8 @@ size_t ATK_dataview_get_total_bytes(ATK_dataview * self);
 
 size_t ATK_dataview_get_number_of_elements(ATK_dataview * self);
 
+void ATK_dataview_print(ATK_dataview * self);
+
 #ifdef __cplusplus
 }
 #endif

@@ -192,7 +192,7 @@ classes:
 #      - decl: const Schema& getSchema() const
 #      - decl: DataView* getView(IndexType idx)
 #      - decl: void info(Node& n) const
-#      - decl: void print() const
+      - decl: void print() const
 
     python:
       type: [ init ]
@@ -236,7 +236,7 @@ classes:
     - decl: size_t getTotalBytes() const
     - decl: size_t getNumberOfElements() const
 #    - decl: void info(Node& n) const
-#    - decl: void print() const
+    - decl: void print() const
 
     python:
       type: [ init ]

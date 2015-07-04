@@ -225,6 +225,22 @@ PY_databuffer_get_total_bytes(
     return Py_BuildValue("O", &rv);
 // splicer end class.DataBuffer.method.getTotalBytes
 }
+
+static char PY_databuffer_print__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_databuffer_print(
+  PY_DataBuffer *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataBuffer.method.print
+    self->BBB->print();
+    Py_RETURN_NONE;
+// splicer end class.DataBuffer.method.print
+}
 static PyMethodDef PY_DataBuffer_methods[] = {
 {"getIndex", (PyCFunction)PY_databuffer_get_index, METH_NOARGS, PY_databuffer_get_index__doc__},
 {"getNumViews", (PyCFunction)PY_databuffer_get_num_views, METH_NOARGS, PY_databuffer_get_num_views__doc__},
@@ -236,6 +252,7 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"isExternal", (PyCFunction)PY_databuffer_is_external, METH_NOARGS, PY_databuffer_is_external__doc__},
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
+{"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

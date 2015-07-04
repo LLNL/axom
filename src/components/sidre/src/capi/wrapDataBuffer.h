@@ -53,6 +53,8 @@ void * ATK_databuffer_get_data(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
 
+void ATK_databuffer_print(ATK_databuffer * self);
+
 #ifdef __cplusplus
 }
 #endif
