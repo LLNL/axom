@@ -254,7 +254,7 @@ void DataStore::print(std::ostream& os) const
   info(n);
   /// TODO: after conduit update, use new ostream variant of to_json.
   std::ostringstream oss;
-  n.to_pure_json(oss);
+  n.json_to_stream(oss);
   os << oss.str();
 }
 

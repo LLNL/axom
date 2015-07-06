@@ -801,7 +801,7 @@ void DataGroup::print(std::ostream& os) const
   info(n);
   /// TODO: after conduit update, use new ostream variant of to_json.
   std::ostringstream oss;
-  n.to_pure_json(oss);
+  n.json_to_stream(oss);
   os << oss.str();
 }
 
@@ -1163,7 +1163,7 @@ void DataGroup::copyFromNode(Node& n,
   // create the buffers
   if (n.has_path("buffers"))
   {
-    conduit::NodeIterator buffs_itr = n["buffers"].iterator();
+    conduit::NodeIterator buffs_itr = n["buffers"].children();
     while (buffs_itr.has_next())
     {
       Node& n_buff = buffs_itr.next();
@@ -1190,7 +1190,7 @@ void DataGroup::copyFromNode(Node& n,
   }
 
   // create the child views
-  conduit::NodeIterator views_itr = n["views"].iterator();
+  conduit::NodeIterator views_itr = n["views"].children();
   while (views_itr.has_next())
   {
     Node& n_view = views_itr.next();
@@ -1223,7 +1223,7 @@ void DataGroup::copyFromNode(Node& n,
   }
 
   // create the child groups
-  conduit::NodeIterator groups_itr = n["groups"].iterator();
+  conduit::NodeIterator groups_itr = n["groups"].children();
   while (groups_itr.has_next())
   {
     Node& n_group = groups_itr.next();
