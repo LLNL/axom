@@ -60,10 +60,10 @@ class DataView;
  *      object; i.e.,  DataBuffers that own data not share their data.
  *    - A DataBuffer may hold a pointer to externally-owned data. When this
  *      is the case, the buffer cannot be used to (re)allocate or deallocate
- *      the data. However, the external data can be desribed and accessed 
+ *      the data. However, the external data can be desribed and accessed
  *      via the buffer object in a similar to data that is owned by a buffer.
  *    - Typical usage is to declare the data a DataBuffer will hold and then
- *      either allocate it by calling one of the DataBuffer allocate or 
+ *      either allocate it by calling one of the DataBuffer allocate or
  *      reallocate methods, or set the buffer to reference externally-owned
  *      data by calling setExternalData().
  *    - A DataBuffer object maintains a collection of DataViews that
@@ -250,12 +250,12 @@ public:
   /*!
    * \brief Allocate data previously declared using a declare() method.
    *
-   * It is the responsibility of the caller to make sure that the buffer 
-   * object was previously declared.  If the the buffer is already 
+   * It is the responsibility of the caller to make sure that the buffer
+   * object was previously declared.  If the the buffer is already
    * holding data that it owns, that data will be deallocated and new data
    * will be allocated according to the current declared state.
    *
-   * If buffer is already set to externally-owned data, this method 
+   * If buffer is already set to externally-owned data, this method
    * does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -268,7 +268,7 @@ public:
    * This is equivalent to calling declare(type, len), then allocate().
    * on this DataBuffer object.
    *
-   * If buffer is already set to externally-owned data, this method 
+   * If buffer is already set to externally-owned data, this method
    * does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -281,7 +281,7 @@ public:
    * This is equivalent to calling declare(schema), then allocate().
    * on this DataBuffer object.
    *
-   * If buffer is already set to externally-owned data, this method 
+   * If buffer is already set to externally-owned data, this method
    * does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -295,7 +295,7 @@ public:
    * This is equivalent to calling declare(dtype), then allocate().
    * on this DataBuffer object.
    *
-   * If buffer is already set to externally-owned data, this method 
+   * If buffer is already set to externally-owned data, this method
    * does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -307,7 +307,7 @@ public:
    *
    *        Equivalent to calling declare(type), then allocate().
    *
-   * If buffer is already set to externally-owned data or given length < 0, 
+   * If buffer is already set to externally-owned data or given length < 0,
    * this method does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -317,7 +317,7 @@ public:
   /*!
    * \brief Reallocate data described as a Conduit schema.
    *
-   * If buffer is already set to externally-owned data, this method 
+   * If buffer is already set to externally-owned data, this method
    * does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -328,7 +328,7 @@ public:
    * \brief Reallocate data described as a pre-defined
    *        Conduit data type.
    *
-   * If buffer is already set to externally-owned data, this method 
+   * If buffer is already set to externally-owned data, this method
    * does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -338,9 +338,9 @@ public:
   /*!
    * \brief Set buffer to external data.
    *
-   * It is the responsibility of the caller to make sure that the buffer 
+   * It is the responsibility of the caller to make sure that the buffer
    * object was previously declared, that the data pointer is consistent
-   * with how the buffer was declared, and that the buffer is not already 
+   * with how the buffer was declared, and that the buffer is not already
    * holding data that it owns.
    *
    * If given pointer is null, this method does nothing.

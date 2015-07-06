@@ -541,7 +541,7 @@ void UpdateElemInfo(DataGroup * const problem)
 
   double const dx = problem->getView("dx")->getValue();
   double const dt = problem->getView("dt")->getValue();
-  float64& time = *problem->getView("time")->getValue<float64*>();
+  float64& time = *problem->getView("time")->getValue<float64 *>();
 
   for (i = 0 ; i < numTubeElems ; ++i)
   {
