@@ -22,15 +22,17 @@ module exclass2_mod
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
-        procedure :: declare => exclass2_declare
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
+        procedure :: declare_int => exclass2_declare_int
+        procedure :: declare_long => exclass2_declare_long
         procedure :: set_value_int => exclass2_set_value_int
         procedure :: set_value_long => exclass2_set_value_long
         procedure :: set_value_float => exclass2_set_value_float
         procedure :: set_value_double => exclass2_set_value_double
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
+        generic :: declare => declare_int, declare_long
         generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
         ! splicer begin class.ExClass2.type_bound_procedure_part
         ! splicer end class.ExClass2.type_bound_procedure_part
@@ -78,15 +80,6 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
         
-        subroutine aa_exclass2_declare(self, type, len) &
-                bind(C, name="AA_exclass2_declare")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
-        end subroutine aa_exclass2_declare
-        
         subroutine aa_exclass2_destroyall(self) &
                 bind(C, name="AA_exclass2_destroyall")
             use iso_c_binding
@@ -101,6 +94,24 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
+        
+        subroutine aa_exclass2_declare(self, type, len) &
+                bind(C, name="AA_exclass2_declare")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: len
+        end subroutine aa_exclass2_declare
+        
+        subroutine aa_exclass2_declare(self, type, len) &
+                bind(C, name="AA_exclass2_declare")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
+        end subroutine aa_exclass2_declare
         
         subroutine aa_exclass2_set_value_int(self, value) &
                 bind(C, name="AA_exclass2_set_value_int")
@@ -207,17 +218,6 @@ contains
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
-    subroutine exclass2_declare(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(exclass2) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.ExClass2.method.declare
-        call aa_exclass2_declare(obj%voidptr, type, len)
-        ! splicer end class.ExClass2.method.declare
-    end subroutine exclass2_declare
-    
     subroutine exclass2_destroyall(obj)
         use iso_c_binding
         implicit none
@@ -236,6 +236,28 @@ contains
         rv = aa_exclass2_get_type_id(obj%voidptr)
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
+    
+    subroutine exclass2_declare_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.ExClass2.method.declare_int
+        call aa_exclass2_declare(obj%voidptr, type, len)
+        ! splicer end class.ExClass2.method.declare_int
+    end subroutine exclass2_declare_int
+    
+    subroutine exclass2_declare_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.ExClass2.method.declare_long
+        call aa_exclass2_declare(obj%voidptr, type, len)
+        ! splicer end class.ExClass2.method.declare_long
+    end subroutine exclass2_declare_long
     
     subroutine exclass2_set_value_int(obj, value)
         use iso_c_binding

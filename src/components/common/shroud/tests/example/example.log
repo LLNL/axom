@@ -1,101 +1,102 @@
 class ExClass1
-method ExClass1 *new+constructor ( const string *name )
-method void delete+destructor
-method int incrementCount(int incr)
-method const string& getName() const
-method int GetNameLength() const
-method const string& getNameErrorCheck() const
-method const string& getNameArg() const
-method ExClass2 *getRoot()
-method int  getValue(int value)
-method long getValue(long value)
-method void *getAddr()
-method bool hasAddr(bool in)
-method void SplicerSpecial
+C method ExClass1 *new+constructor ( const string *name )
+C method void delete+destructor
+C method int incrementCount(int incr)
+C method const string& getName() const
+C method int GetNameLength() const
+C method const string& getNameErrorCheck() const
+C method const string& getNameArg() const
+C method ExClass2 *getRoot()
+C method int  getValue(int value)
+C method long getValue(long value)
+C method void *getAddr()
+C method bool hasAddr(bool in)
+C method void SplicerSpecial
 Close wrapExClass1.h
 Close wrapExClass1.cpp
 class ExClass2
-method ExClass2 *ExClass2+constructor (const string *name)
-method void ExClass1+destructor
-method const string& getName const
-method GetNameLength
-method ExClass1 *get_class1(ExClass1 *in)
-method void* declare(TypeID type, SidreLength len)
-method void destroyall()
-method TypeID getTypeID() const
-method void setValue(ValueType value)
-method void setValue(ValueType value)
-method void setValue(ValueType value)
-method void setValue(ValueType value)
-method ValueType getValue()
-method ValueType getValue()
+C method ExClass2 *ExClass2+constructor (const string *name)
+C method void ExClass1+destructor
+C method const string& getName const
+C method GetNameLength
+C method ExClass1 *get_class1(ExClass1 *in)
+C method void* declare(TypeID type, SidreLength len)
+C method void destroyall()
+C method TypeID getTypeID() const
+C method void setValue(ValueType value)
+C method void setValue(ValueType value)
+C method void setValue(ValueType value)
+C method void setValue(ValueType value)
+C method ValueType getValue()
+C method ValueType getValue()
 Close wrapExClass2.h
 Close wrapExClass2.cpp
-function void local_function1
-function bool isNameValid(const std::string& name)
+C function void local_function1
+C function bool isNameValid(const std::string& name)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
-method ExClass1 *new+constructor ( const string *name )
-method void delete+destructor
-method int incrementCount(int incr)
-method const string& getName() const
-method int GetNameLength() const
-method const string& getNameErrorCheck() const
-method const string& getNameArg() const
-method ExClass2 *getRoot()
-method int  getValue(int value)
-method long getValue(long value)
-method void *getAddr()
-method bool hasAddr(bool in)
-method void SplicerSpecial
+Fortran method ExClass1 *new+constructor ( const string *name )
+Fortran method void delete+destructor
+Fortran method int incrementCount(int incr)
+Fortran method const string& getName() const
+Fortran method int GetNameLength() const
+Fortran method const string& getNameErrorCheck() const
+Fortran method const string& getNameArg() const
+Fortran method ExClass2 *getRoot()
+Fortran method int  getValue(int value)
+Fortran method long getValue(long value)
+Fortran method void *getAddr()
+Fortran method bool hasAddr(bool in)
+Fortran method void SplicerSpecial
 Close wrapfExClass1.f
 class ExClass2
-method ExClass2 *ExClass2+constructor (const string *name)
-method void ExClass1+destructor
-method const string& getName const
-method GetNameLength
-method ExClass1 *get_class1(ExClass1 *in)
-method void* declare(TypeID type, SidreLength len)
-method void destroyall()
-method TypeID getTypeID() const
-method void setValue(ValueType value)
-method void setValue(ValueType value)
-method void setValue(ValueType value)
-method void setValue(ValueType value)
-method ValueType getValue()
-method ValueType getValue()
+Fortran method ExClass2 *ExClass2+constructor (const string *name)
+Fortran method void ExClass1+destructor
+Fortran method const string& getName const
+Fortran method GetNameLength
+Fortran method ExClass1 *get_class1(ExClass1 *in)
+Fortran method void destroyall()
+Fortran method TypeID getTypeID() const
+Fortran method void* declare(TypeID type, SidreLength len)
+Fortran method void* declare(TypeID type, SidreLength len)
+Fortran method void setValue(ValueType value)
+Fortran method void setValue(ValueType value)
+Fortran method void setValue(ValueType value)
+Fortran method void setValue(ValueType value)
+Fortran method ValueType getValue()
+Fortran method ValueType getValue()
 Close wrapfExClass2.f
-function void local_function1
-function bool isNameValid(const std::string& name)
+Fortran function void local_function1
+Fortran function bool isNameValid(const std::string& name)
 Close wrapfuserlibrary.f
 class ExClass1
-method ExClass1 *new+constructor ( const string *name )
-method void delete+destructor
-method int incrementCount(int incr)
-method const string& getName() const
-method int GetNameLength() const
-method const string& getNameErrorCheck() const
-method const string& getNameArg() const
-method ExClass2 *getRoot()
-method int  getValue(int value)
-method long getValue(long value)
-method void *getAddr()
-method bool hasAddr(bool in)
-method void SplicerSpecial
+Python method ExClass1 *new+constructor ( const string *name )
+Python method void delete+destructor
+Python method int incrementCount(int incr)
+Python method const string& getName() const
+Python method int GetNameLength() const
+Python method const string& getNameErrorCheck() const
+Python method const string& getNameArg() const
+Python method ExClass2 *getRoot()
+Python method int  getValue(int value)
+Python method long getValue(long value)
+Python method void *getAddr()
+Python method bool hasAddr(bool in)
+Python method void SplicerSpecial
 Close pyExClass1type.cpp
 class ExClass2
-method ExClass2 *ExClass2+constructor (const string *name)
-method void ExClass1+destructor
-method const string& getName const
-method GetNameLength
-method ExClass1 *get_class1(ExClass1 *in)
-method void* declare(TypeID type, SidreLength len)
-method void destroyall()
-method TypeID getTypeID() const
+Python method ExClass2 *ExClass2+constructor (const string *name)
+Python method void ExClass1+destructor
+Python method const string& getName const
+Python method GetNameLength
+Python method ExClass1 *get_class1(ExClass1 *in)
+Python method void* declare(TypeID type, SidreLength len)
+Python method void destroyall()
+Python method TypeID getTypeID() const
 Close pyExClass2type.cpp
-function void local_function1
-function bool isNameValid(const std::string& name)
+Python function void local_function1
+Python function bool isNameValid(const std::string& name)
 Close pyUserLibrarymodule.hpp
 Close pyUserLibrarymodule.cpp
 Close pyUserLibraryhelper.cpp
