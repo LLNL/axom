@@ -160,8 +160,8 @@ classes:
         ValueType:
         - int
         - long
-#        - float
-#        - double
+        - float
+        - double
 
 
 
