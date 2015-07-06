@@ -5,7 +5,6 @@ generate language bindings
 """
 from __future__ import print_function
 
-import copy
 import os
 import json
 import argparse
@@ -31,6 +30,16 @@ class Schema(object):
     """
     Verify that the input dictionary has the correct fields.
     Create defaults for missing fields.
+
+
+    check_schema
+      check_classes
+        check_class
+          check_function
+        check_class_depedencies
+          check_function_dependencies
+      check_functions
+        check_function
     """
     def __init__(self, config):
         self.config = config
@@ -63,6 +72,8 @@ class Schema(object):
         self.fmt_stack.pop()
 
     def check_schema(self):
+        """ Routine to check entire schema of input tree"
+        """
         node = self.config
 
         # default options
@@ -74,6 +85,10 @@ class Schema(object):
             cpp_header='',
 
             F_module_per_class=True,
+
+            wrap_c       = True,
+            wrap_fortran = True,
+            wrap_python  = True,
             )
         if 'options' in node:
             def_options.update(node['options'])
@@ -248,6 +263,13 @@ class Schema(object):
             self.check_function(method)
             overloaded_methods.setdefault(method['result']['name'], []).append(method)
 
+        # Look for templated methods
+        templated_methods = []
+        for method in methods:
+            if 'template' in method:
+                self.template_function(method, templated_methods)
+        methods.extend(templated_methods)
+
         # look for function overload and compute method_suffix
         for mname, methods in overloaded_methods.items():
             if len(methods) > 1:
@@ -260,6 +282,8 @@ class Schema(object):
         self.pop_options()
 
     def check_function(self, node):
+        """ Make sure necessary fields are present for a function.
+        """
         self.push_options(node)
         fmt_func = self.push_fmt(node)
 
@@ -297,7 +321,39 @@ class Schema(object):
         self.pop_fmt()
         self.pop_options()
 
+    def template_function(self, node, templated_methods):
+        """ Create overloaded functions for each templated method.
+        """
+        if len(node['template']) != 1:
+            # In the future it may be useful to have multiple templates
+            # That the would start creating more permutations
+            raise NotImplemented("Only one templated type for now")
+        for typename, types in node['template'].items():
+            for type in types:
+                new = util.copy_function_node(node)
+                new['generated'] = 'template'
+                new['fmt'].method_suffix = '_' + type
+                del new['template']
+                options = new['options']
+                options.wrap_c = True
+                options.wrap_fortran = True
+                options.wrap_python = False
+                templated_methods.append(new)
+                # Convert typename to type
+                for arg in new['args']:
+                    if arg['type'] == typename:
+                        arg['type'] = type
+
+        # Do not process templated node, instead process
+        # generated functions above.
+        options = node['options']
+        options.wrap_c = False
+        options.wrap_fortran = False
+        options.wrap_python = False
+
     def check_functions(self, node):
+        """ check functions which are not in a class.
+        """
         if not isinstance(node, list):
             raise TypeError("functions must be a list")
         for func in node:
@@ -327,6 +383,13 @@ class Schema(object):
         node['F_module_dependencies'] = F_modules
 
     def check_function_dependencies(self, node, used_types):
+        """Record which types are used by a function.
+        """
+        if 'template' in node:
+            # The templated type will raise an error.
+            # XXX - Maybe dummy it out
+            # XXX - process templated types
+            return
         result = node['result']
         rv_type = result['type']
         if rv_type not in self.typedef:
@@ -335,7 +398,11 @@ class Schema(object):
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
         for arg in node.get('args', []):
-            used_types[arg['type']] = self.typedef[arg['type']]
+            argtype = arg['type']
+            if argtype in self.typedef:
+                used_types[arg['type']] = self.typedef[argtype]
+            else:
+                raise RuntimeError("%s not defined" % argtype)
 
 
 if __name__ == '__main__':

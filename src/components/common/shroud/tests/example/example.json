@@ -991,6 +991,131 @@
                         "name": "getTypeID", 
                         "type": "TypeID"
                     }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "value", 
+                            "type": "ValueType"
+                        }
+                    ], 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "method_name": "setValue", 
+                        "underscore_name": "set_value"
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }, 
+                    "template": {
+                        "ValueType": [
+                            "int", 
+                            "long"
+                        ]
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "int"
+                        }
+                    ], 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_name": "setValue", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, int value", 
+                        "C_call_list": "value", 
+                        "C_name": "AA_exclass2_set_value_int", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self, value", 
+                        "F_C_name": "aa_exclass2_set_value_int", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr, value", 
+                        "F_arguments": "obj, value", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_int", 
+                        "F_name_method": "set_value_int", 
+                        "F_subprogram": "subroutine", 
+                        "method_suffix": "_int", 
+                        "rv_decl": "void rv"
+                    }, 
+                    "generated": "template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "long"
+                        }
+                    ], 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_name": "setValue", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, long value", 
+                        "C_call_list": "value", 
+                        "C_name": "AA_exclass2_set_value_long", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self, value", 
+                        "F_C_name": "aa_exclass2_set_value_long", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr, value", 
+                        "F_arguments": "obj, value", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_long", 
+                        "F_name_method": "set_value_long", 
+                        "F_subprogram": "subroutine", 
+                        "method_suffix": "_long", 
+                        "rv_decl": "void rv"
+                    }, 
+                    "generated": "template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
                 }
             ], 
             "name": "ExClass2", 
@@ -1145,7 +1270,10 @@
         "PY_prefix": "PP_", 
         "cpp_header": "", 
         "library": "UserLibrary", 
-        "namespace": "example nested"
+        "namespace": "example nested", 
+        "wrap_c": true, 
+        "wrap_fortran": true, 
+        "wrap_python": true
     }, 
     "splicer": {
         "c": [

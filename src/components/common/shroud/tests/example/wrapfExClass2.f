@@ -25,6 +25,9 @@ module exclass2_mod
         procedure :: declare => exclass2_declare
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
+        procedure :: set_value_int => exclass2_set_value_int
+        procedure :: set_value_long => exclass2_set_value_long
+        generic :: set_value => set_value_int, set_value_long
         ! splicer begin class.ExClass2.type_bound_procedure_part
         ! splicer end class.ExClass2.type_bound_procedure_part
     end type exclass2
@@ -94,6 +97,22 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
+        
+        subroutine aa_exclass2_set_value_int(self, value) &
+                bind(C, name="AA_exclass2_set_value_int")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: value
+        end subroutine aa_exclass2_set_value_int
+        
+        subroutine aa_exclass2_set_value_long(self, value) &
+                bind(C, name="AA_exclass2_set_value_long")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_LONG), value, intent(IN) :: value
+        end subroutine aa_exclass2_set_value_long
         
         ! splicer begin class.ExClass2.additional_interfaces
         ! splicer end class.ExClass2.additional_interfaces
@@ -181,6 +200,26 @@ contains
         rv = aa_exclass2_get_type_id(obj%voidptr)
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
+    
+    subroutine exclass2_set_value_int(obj, value)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: value
+        ! splicer begin class.ExClass2.method.set_value_int
+        call aa_exclass2_set_value_int(obj%voidptr, value)
+        ! splicer end class.ExClass2.method.set_value_int
+    end subroutine exclass2_set_value_int
+    
+    subroutine exclass2_set_value_long(obj, value)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_LONG) :: value
+        ! splicer begin class.ExClass2.method.set_value_long
+        call aa_exclass2_set_value_long(obj%voidptr, value)
+        ! splicer end class.ExClass2.method.set_value_long
+    end subroutine exclass2_set_value_long
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

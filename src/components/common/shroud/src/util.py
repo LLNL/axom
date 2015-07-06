@@ -3,6 +3,7 @@ from __future__ import print_function
 
 
 import collections
+import copy
 import string
 import json
 import os
@@ -337,6 +338,27 @@ class Options(object):
                 d[key] = value
         return d
 
+def copy_function_node(node):
+    """Create a copy of a function node to use with C++ template.
+    """
+    known = {}   # known fields
+    new = {}
+
+    # Deep copy dictionaries
+    for field in [ 'args', 'qualifiers', 'result' ]:
+        new[field] = copy.deepcopy(node[field])
+        known[field] = True
+
+    # Add new Options in chain.
+    for field in [ 'fmt', 'options' ]:
+        new[field] = Options(node[field])
+        known[field] = True
+
+    # Shallow copy any unknown fields
+    for key, value in node.items():
+        if key not in known:
+            new[key] = value
+    return new
 
 class XXXClassNode(object):
     """Represent a class.  Usually a C++ class.
@@ -349,7 +371,7 @@ class XXXClassNode(object):
         self.methods = []
 
 
-class FunctionNode(object):
+class XXXFunctionNode(object):
     def __init__(self):
         self.decl = None
         self.result = {}

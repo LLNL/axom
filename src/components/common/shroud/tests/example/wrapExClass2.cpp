@@ -82,6 +82,24 @@ return rv;
 // splicer end class.ExClass2.method.getTypeID
 }
 
+void AA_exclass2_set_value_int(AA_exclass2 * self, int value)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.ExClass2.method.setValue
+}
+
+void AA_exclass2_set_value_long(AA_exclass2 * self, long value)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.ExClass2.method.setValue
+}
+
 // splicer begin class.ExClass2.additional_functions
 // splicer end class.ExClass2.additional_functions
 

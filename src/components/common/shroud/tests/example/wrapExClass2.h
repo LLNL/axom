@@ -45,6 +45,10 @@ void AA_exclass2_destroyall(AA_exclass2 * self);
 
 int AA_exclass2_get_type_id(AA_exclass2 * self);
 
+void AA_exclass2_set_value_int(AA_exclass2 * self, int value);
+
+void AA_exclass2_set_value_long(AA_exclass2 * self, long value);
+
 #ifdef __cplusplus
 }
 #endif

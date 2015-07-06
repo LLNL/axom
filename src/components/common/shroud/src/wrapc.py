@@ -219,6 +219,10 @@ class Wrapc(util.WrapperMixin):
         cls  - class node or None for functions
         node - function/method node
         """
+        options = node['options']
+        if not options.wrap_c:
+            return
+
         if cls:
             cls_function = 'method'
         else:
@@ -232,7 +236,6 @@ class Wrapc(util.WrapperMixin):
         fmt = util.Options(fmt_func)
 
         # return type
-        options = node['options']
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)

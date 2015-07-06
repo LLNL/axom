@@ -207,9 +207,9 @@ classes:
       return_this: True
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
+#    - decl: DataView* allocate()
     - decl: DataView* allocate(TypeID type, SidreLength len)
       return_this: True
-#    - decl: DataView* allocate()
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
     - decl: DataView * reallocate(TypeID type, SidreLength len)
@@ -229,6 +229,20 @@ classes:
     - decl: void * getDataPointer() const
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
+#    - decl: Node::Value getValue()
+#  template<typename ValueType>
+#  ValueType getValue()
+#  template<typename ValueType>
+#  void setValue(ValueType value)
+
+#  template<typename ValueType>
+#    - decl: void setValue(ValueType value)
+#      template:
+#        ValueType
+#        - int
+#        - float
+#        - double
+
 #    - decl: const Schema& getSchema() const
     - decl: DataGroup* getOwningGroup()
 #    - decl: DataGroup const* getOwningGroup() const

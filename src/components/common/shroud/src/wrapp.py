@@ -289,6 +289,10 @@ return 1;""", fmt)
         cls  - class node or None for functions
         node - function/method node
         """
+        options = node['options']
+        if not options.wrap_python:
+            return
+
         if cls:
             cls_function = 'method'
         else:
@@ -298,7 +302,6 @@ return 1;""", fmt)
         else:
             self.log.write("{0} {1[result][name]}\n".format(cls_function, node))
 
-        options = node['options']
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
         fmt.doc_string = 'documentation'
