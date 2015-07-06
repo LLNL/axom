@@ -348,7 +348,8 @@ class Schema(object):
             for type in types:
                 new = util.copy_function_node(node)
                 new['generated'] = 'template'
-                new['fmt'].method_suffix = '_' + type
+                fmt = new['fmt']
+                fmt.method_suffix = '_' + type
                 del new['template']
                 options = new['options']
                 options.wrap_c = True
@@ -356,6 +357,9 @@ class Schema(object):
                 options.wrap_python = False
                 templated_methods.append(new)
                 # Convert typename to type
+                if new['result']['type'] == typename:
+                    new['result']['type'] = type
+                    fmt.CPP_template = '<%s>' %  type
                 for arg in new['args']:
                     if arg['type'] == typename:
                         arg['type'] = type

@@ -29,6 +29,9 @@ module exclass2_mod
         procedure :: set_value_long => exclass2_set_value_long
         procedure :: set_value_float => exclass2_set_value_float
         procedure :: set_value_double => exclass2_set_value_double
+        procedure :: get_value_int => exclass2_get_value_int
+        procedure :: get_value_double => exclass2_get_value_double
+        generic :: get_value => get_value_int, get_value_double
         generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
         ! splicer begin class.ExClass2.type_bound_procedure_part
         ! splicer end class.ExClass2.type_bound_procedure_part
@@ -131,6 +134,22 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE), value, intent(IN) :: value
         end subroutine aa_exclass2_set_value_double
+        
+        function aa_exclass2_get_value_int(self) result(rv) &
+                bind(C, name="AA_exclass2_get_value_int")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function aa_exclass2_get_value_int
+        
+        function aa_exclass2_get_value_double(self) result(rv) &
+                bind(C, name="AA_exclass2_get_value_double")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            real(C_DOUBLE) :: rv
+        end function aa_exclass2_get_value_double
         
         ! splicer begin class.ExClass2.additional_interfaces
         ! splicer end class.ExClass2.additional_interfaces
@@ -258,6 +277,26 @@ contains
         call aa_exclass2_set_value_double(obj%voidptr, value)
         ! splicer end class.ExClass2.method.set_value_double
     end subroutine exclass2_set_value_double
+    
+    function exclass2_get_value_int(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.ExClass2.method.get_value_int
+        rv = aa_exclass2_get_value_int(obj%voidptr)
+        ! splicer end class.ExClass2.method.get_value_int
+    end function exclass2_get_value_int
+    
+    function exclass2_get_value_double(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        real(C_DOUBLE) :: rv
+        ! splicer begin class.ExClass2.method.get_value_double
+        rv = aa_exclass2_get_value_double(obj%voidptr)
+        ! splicer end class.ExClass2.method.get_value_double
+    end function exclass2_get_value_double
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

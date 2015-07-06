@@ -154,7 +154,7 @@ classes:
     # return typedef'd type
     - decl: TypeID getTypeID() const
 
-#  template<typename ValueType>
+#           template<typename ValueType>
     - decl: void setValue(ValueType value)
       template:
         ValueType:
@@ -163,8 +163,14 @@ classes:
         - float
         - double
 
-
-
+#           template<typename ValueType>
+    - decl: ValueType getValue()
+      template:
+        ValueType:
+        - int
+#        - long
+#        - float
+        - double
 
 functions:
   - decl: void local_function1

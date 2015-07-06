@@ -1026,6 +1026,31 @@
                     }
                 }, 
                 {
+                    "args": [], 
+                    "decl": "ValueType getValue()", 
+                    "fmt": {
+                        "method_name": "getValue", 
+                        "underscore_name": "get_value"
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "ValueType"
+                    }, 
+                    "template": {
+                        "ValueType": [
+                            "int", 
+                            "double"
+                        ]
+                    }
+                }, 
+                {
                     "args": [
                         {
                             "attrs": {
@@ -1211,6 +1236,88 @@
                         "attrs": {}, 
                         "name": "setValue", 
                         "type": "void"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "ValueType getValue()", 
+                    "fmt": {
+                        "CPP_name": "getValue", 
+                        "CPP_template": "<int>", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass2_get_value_int", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "int", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_get_value_int", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_value", 
+                        "F_name_impl": "exclass2_get_value_int", 
+                        "F_name_method": "get_value_int", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_suffix": "_int", 
+                        "rv_decl": "int rv"
+                    }, 
+                    "generated": "template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "ValueType getValue()", 
+                    "fmt": {
+                        "CPP_name": "getValue", 
+                        "CPP_template": "<double>", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self", 
+                        "C_call_list": "", 
+                        "C_name": "AA_exclass2_get_value_double", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "double", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "aa_exclass2_get_value_double", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "get_value", 
+                        "F_name_impl": "exclass2_get_value_double", 
+                        "F_name_method": "get_value_double", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_suffix": "_double", 
+                        "rv_decl": "double rv"
+                    }, 
+                    "generated": "template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "double"
                     }
                 }
             ], 

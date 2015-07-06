@@ -118,6 +118,24 @@ return;
 // splicer end class.ExClass2.method.set_value_double
 }
 
+int AA_exclass2_get_value_int(AA_exclass2 * self)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.get_value_int
+int rv = selfobj->getValue<int>();
+return rv;
+// splicer end class.ExClass2.method.get_value_int
+}
+
+double AA_exclass2_get_value_double(AA_exclass2 * self)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.get_value_double
+double rv = selfobj->getValue<double>();
+return rv;
+// splicer end class.ExClass2.method.get_value_double
+}
+
 // splicer begin class.ExClass2.additional_functions
 // splicer end class.ExClass2.additional_functions
 

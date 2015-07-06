@@ -53,6 +53,10 @@ void AA_exclass2_set_value_float(AA_exclass2 * self, float value);
 
 void AA_exclass2_set_value_double(AA_exclass2 * self, double value);
 
+int AA_exclass2_get_value_int(AA_exclass2 * self);
+
+double AA_exclass2_get_value_double(AA_exclass2 * self);
+
 #ifdef __cplusplus
 }
 #endif

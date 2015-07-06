@@ -27,6 +27,8 @@ method void setValue(ValueType value)
 method void setValue(ValueType value)
 method void setValue(ValueType value)
 method void setValue(ValueType value)
+method ValueType getValue()
+method ValueType getValue()
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 function void local_function1
@@ -61,6 +63,8 @@ method void setValue(ValueType value)
 method void setValue(ValueType value)
 method void setValue(ValueType value)
 method void setValue(ValueType value)
+method ValueType getValue()
+method ValueType getValue()
 Close wrapfExClass2.f
 function void local_function1
 function bool isNameValid(const std::string& name)
