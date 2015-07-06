@@ -868,12 +868,18 @@
                 {
                     "args": [
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
                             "name": "type", 
                             "type": "TypeID"
                         }, 
                         {
-                            "attrs": {}, 
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
                             "name": "len", 
                             "type": "SidreLength"
                         }
@@ -888,6 +894,9 @@
                         "C_name": "AA_exclass2_declare", 
                         "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
                         "C_return_type": "void", 
+                        "F_C_arguments": "self, type, len", 
+                        "F_C_name": "aa_exclass2_declare", 
+                        "F_C_subprogram": "subroutine", 
                         "method_name": "declare", 
                         "rv_decl": "void * rv", 
                         "underscore_name": "declare"
@@ -1063,9 +1072,6 @@
                     ], 
                     "decl": "void* declare(TypeID type, SidreLength len)", 
                     "fmt": {
-                        "F_C_arguments": "self, type, len", 
-                        "F_C_name": "aa_exclass2_declare", 
-                        "F_C_subprogram": "subroutine", 
                         "F_arg_c_call": "obj%voidptr, type, len", 
                         "F_arguments": "obj, type, len", 
                         "F_instance_ptr": "obj%voidptr", 
@@ -1073,15 +1079,21 @@
                         "F_name_impl": "exclass2_declare_int", 
                         "F_name_method": "declare_int", 
                         "F_subprogram": "subroutine", 
-                        "PTR_generic": {
+                        "PTR_F_C_node": {
                             "args": [
                                 {
-                                    "attrs": {}, 
+                                    "attrs": {
+                                        "intent": "in", 
+                                        "value": true
+                                    }, 
                                     "name": "type", 
                                     "type": "TypeID"
                                 }, 
                                 {
-                                    "attrs": {}, 
+                                    "attrs": {
+                                        "intent": "in", 
+                                        "value": true
+                                    }, 
                                     "name": "len", 
                                     "type": "SidreLength"
                                 }
@@ -1096,6 +1108,9 @@
                                 "C_name": "AA_exclass2_declare", 
                                 "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
                                 "C_return_type": "void", 
+                                "F_C_arguments": "self, type, len", 
+                                "F_C_name": "aa_exclass2_declare", 
+                                "F_C_subprogram": "subroutine", 
                                 "method_name": "declare", 
                                 "rv_decl": "void * rv", 
                                 "underscore_name": "declare"
@@ -1158,9 +1173,6 @@
                     ], 
                     "decl": "void* declare(TypeID type, SidreLength len)", 
                     "fmt": {
-                        "F_C_arguments": "self, type, len", 
-                        "F_C_name": "aa_exclass2_declare", 
-                        "F_C_subprogram": "subroutine", 
                         "F_arg_c_call": "obj%voidptr, type, len", 
                         "F_arguments": "obj, type, len", 
                         "F_instance_ptr": "obj%voidptr", 
@@ -1168,15 +1180,21 @@
                         "F_name_impl": "exclass2_declare_long", 
                         "F_name_method": "declare_long", 
                         "F_subprogram": "subroutine", 
-                        "PTR_generic": {
+                        "PTR_F_C_node": {
                             "args": [
                                 {
-                                    "attrs": {}, 
+                                    "attrs": {
+                                        "intent": "in", 
+                                        "value": true
+                                    }, 
                                     "name": "type", 
                                     "type": "TypeID"
                                 }, 
                                 {
-                                    "attrs": {}, 
+                                    "attrs": {
+                                        "intent": "in", 
+                                        "value": true
+                                    }, 
                                     "name": "len", 
                                     "type": "SidreLength"
                                 }
@@ -1191,6 +1209,9 @@
                                 "C_name": "AA_exclass2_declare", 
                                 "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
                                 "C_return_type": "void", 
+                                "F_C_arguments": "self, type, len", 
+                                "F_C_name": "aa_exclass2_declare", 
+                                "F_C_subprogram": "subroutine", 
                                 "method_name": "declare", 
                                 "rv_decl": "void * rv", 
                                 "underscore_name": "declare"

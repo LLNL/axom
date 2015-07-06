@@ -264,20 +264,47 @@ class Wrapf(util.WrapperMixin):
         """
         cls  - class node or None for functions
         node - function/method node
-        """
-        options = node['options']
-        if not options.wrap_fortran:
-            return
 
+        Wrapping involves both a C interface and a Fortran wrapper.
+        For some generic functions there may be single C method with
+        multiple Fortran wrappers.
+
+        """
         if cls:
             cls_function = 'method'
         else:
             cls_function = 'function'
-        if 'decl' in node:
-            self.log.write("Fortran {0} {1[decl]}\n".format(cls_function, node))
-        else:
-            self.log.write("Fortran {0} {1[result][name]}\n".format(cls_function, node))
 
+        options = node['options']
+        wrap = []
+        if options.wrap_c:
+            wrap.append('C-interface')
+        if options.wrap_fortran:
+            wrap.append('Fortran')
+        if not wrap:
+            return
+
+        self.log.write(', '.join(wrap))
+        if 'decl' in node:
+            self.log.write(" {0} {1[decl]}\n".format(cls_function, node))
+        else:
+            self.log.write(" {0} {1[result][name]}\n".format(cls_function, node))
+
+        if options.wrap_c:
+            self.wrap_method_interface(cls, node)
+        if options.wrap_fortran:
+            self.wrap_method_impl(cls, node)
+
+    def wrap_method_interface(self, cls, node):
+        """
+        cls  - class node or None for functions
+        node - function/method node
+
+        Wrapping involves both a C interface and a Fortran wrapper.
+        For some generic functions there may be single C method with
+        multiple Fortran wrappers.
+        """
+        options = node['options']
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
 
@@ -286,8 +313,110 @@ class Wrapf(util.WrapperMixin):
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
-#        if func_is_const:
-#            print("XXXXXX", result['name'])
+
+        if node.get('return_this', False):
+            result_type = 'void'
+            result_is_ptr = False
+
+        result_typedef = self.typedef[result_type]
+        is_ctor  = result['attrs'].get('constructor', False)
+        is_const = result['attrs'].get('const', False)
+
+        if 'F_result' in options:
+            fmt_func.F_result = options.F_result
+        F_result = fmt_func.F_result
+        C_this = fmt_func.C_this
+
+        if 'F_C_name' in options:
+            fmt_func.F_C_name = options.F_C_name
+        else:
+            fmt_func.F_C_name = fmt_func.C_name.lower()
+
+        arg_c_names = [ ]
+        arg_c_decl = [ ]
+
+        # find subprogram type
+        # compute first to get order of arguments correct.
+        # Add 
+        if result_type == 'void' and not result_is_ptr:
+            #  void=subroutine   void *=function
+            fmt_func.F_C_subprogram = 'subroutine'
+        else:
+            fmt_func.F_C_subprogram = 'function'
+            fmt_func.F_C_result_clause = ' result(%s)' % F_result
+            if func_is_const:
+                fmt_func.F_C_pure_clause = 'pure '
+
+        if cls:
+            # Add 'this' argument
+            if not is_ctor:
+                arg_c_names.append(C_this)
+                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
+
+        for arg in node.get('args', []):
+            # default argument's intent
+            # XXX look at const, ptr
+            attrs = arg['attrs']
+            if 'intent' not in attrs:
+                attrs['intent'] = 'in'
+            if 'value' not in attrs:
+                attrs['value'] = True
+
+            arg_c_names.append(arg['name'])
+            arg_c_decl.append(self._c_decl(arg))
+
+            rrr = self.typedef[arg['type']].fortran_to_c
+            fmt.var = arg['name']
+
+        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
+
+        if fmt_func.F_C_subprogram == 'function':
+            if result_typedef.base == 'string':
+                arg_c_decl.append('type(C_PTR) %s' % F_result)
+            else:
+                # XXX - make sure ptr is set to avoid VALUE
+                arg_dict = dict(name=F_result,
+                                type=result_type,
+                                attrs=dict(ptr=True))
+                arg_c_decl.append(self._c_decl(arg_dict))
+
+        c_interface = self.c_interface
+        c_interface.append('')
+        c_interface.append(wformat(
+                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
+                fmt_func))
+        c_interface.append(2)  # extra indent for continued line
+        c_interface.append(wformat(
+                'bind(C, name="{C_name}")',
+                fmt_func))
+        c_interface.append(-1)
+        c_interface.append('use iso_c_binding')
+        c_interface.append('implicit none')
+        c_interface.extend(arg_c_decl)
+        c_interface.append(-1)
+        c_interface.append(wformat('end {F_C_subprogram} {F_C_name}', fmt_func))
+
+    def wrap_method_impl(self, cls, node):
+        """
+        Wrap implementation of Fortran function
+        """
+        options = node['options']
+        fmt_func = node['fmt']
+        fmt = util.Options(fmt_func)
+
+        # look for C routine to wrap
+        # usually the same node unless it is a generic function
+        if 'PTR_F_C_node' in fmt_func:
+            C_node = fmt_func.PTR_F_C_node
+            fmt.F_C_name = C_node['fmt'].F_C_name
+        else:
+            C_node = node
+
+        func_is_const = node['qualifiers'].get('const', False)
+
+        result = node['result']
+        result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
 
         if node.get('return_this', False):
             result_type = 'void'
@@ -314,11 +443,6 @@ class Wrapf(util.WrapperMixin):
         F_result = fmt_func.F_result
         C_this = fmt_func.C_this
 
-        if 'F_C_name' in options:
-            fmt_func.F_C_name = options.F_C_name
-        else:
-            fmt_func.F_C_name = fmt_func.C_name.lower()
-
         if cls:
             util.eval_template(options, fmt_func,
                                'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
@@ -330,8 +454,6 @@ class Wrapf(util.WrapperMixin):
         util.eval_template(options, fmt_func,
                             'F_name_generic', '{underscore_name}')
 
-        arg_c_names = [ ]
-        arg_c_decl = [ ]
         arg_c_call = []      # arguments to C function
 
         arg_f_names = [ ]
@@ -344,27 +466,16 @@ class Wrapf(util.WrapperMixin):
         if result_type == 'void' and not result_is_ptr:
             #  void=subroutine   void *=function
             subprogram = 'subroutine'
-            fmt_func.F_C_subprogram = 'subroutine'
         elif result_string:
             subprogram = 'subroutine'
-            fmt_func.F_C_subprogram = 'function'
-            fmt_func.F_C_result_clause = ' result(%s)' % F_result
-            if func_is_const:
-                fmt_func.F_C_pure_clause = 'pure '
         else:
             subprogram = 'function'
-            fmt_func.F_C_subprogram = 'function'
             fmt_func.F_result_clause = ' result(%s)' % F_result
-            fmt_func.F_C_result_clause = fmt_func.F_result_clause
-            if func_is_const:
-                fmt_func.F_C_pure_clause = 'pure '
         fmt_func.F_subprogram    = subprogram
 
         if cls:
             # Add 'this' argument
             if not is_ctor:
-                arg_c_names.append(C_this)
-                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
                 arg_c_call.append(fmt_func.F_instance_ptr)
                 arg_f_names.append(fmt_func.F_this)
                 if is_dtor:
@@ -385,9 +496,6 @@ class Wrapf(util.WrapperMixin):
             if 'value' not in attrs:
                 attrs['value'] = True
 
-            arg_c_names.append(arg['name'])
-            arg_c_decl.append(self._c_decl(arg))
-
             rrr = self.typedef[arg['type']].fortran_to_c
             fmt.var = arg['name']
             append_format(arg_c_call, rrr, fmt)
@@ -400,7 +508,6 @@ class Wrapf(util.WrapperMixin):
             arg_f_decl.append('type(C_PTR) :: rv_ptr')
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
-        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
         fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
         # declare function return value after arguments
@@ -419,18 +526,7 @@ class Wrapf(util.WrapperMixin):
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
                             fmt_func))
             else:
-###                arg_c_decl.append(self._c_decl(result, name=F_result))
                 arg_f_decl.append(self._f_decl(result, name=F_result))
-
-        if fmt_func.F_C_subprogram == 'function':
-            if result_typedef.base == 'string':
-                arg_c_decl.append('type(C_PTR) %s' % F_result)
-            else:
-                # XXX - make sure ptr is set to avoid VALUE
-                arg_dict = dict(name=F_result,
-                                type=result_type,
-                                attrs=dict(ptr=True))
-                arg_c_decl.append(self._c_decl(arg_dict))
 
         if not is_ctor and not is_dtor:
             # Add method to derived type
@@ -462,22 +558,6 @@ class Wrapf(util.WrapperMixin):
                 F_code.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
             if is_dtor:
                 F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt_func))
-
-        c_interface = self.c_interface
-        c_interface.append('')
-        c_interface.append(wformat(
-                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
-                fmt_func))
-        c_interface.append(2)  # extra indent for continued line
-        c_interface.append(wformat(
-                'bind(C, name="{C_name}")',
-                fmt_func))
-        c_interface.append(-1)
-        c_interface.append('use iso_c_binding')
-        c_interface.append('implicit none')
-        c_interface.extend(arg_c_decl)
-        c_interface.append(-1)
-        c_interface.append(wformat('end {F_C_subprogram} {F_C_name}', fmt_func))
 
         impl = self.impl
         impl.append('')

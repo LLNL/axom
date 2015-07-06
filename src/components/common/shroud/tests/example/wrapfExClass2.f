@@ -80,6 +80,15 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
         
+        subroutine aa_exclass2_declare(self, type, len) &
+                bind(C, name="AA_exclass2_declare")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
+        end subroutine aa_exclass2_declare
+        
         subroutine aa_exclass2_destroyall(self) &
                 bind(C, name="AA_exclass2_destroyall")
             use iso_c_binding
@@ -94,24 +103,6 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
-        
-        subroutine aa_exclass2_declare(self, type, len) &
-                bind(C, name="AA_exclass2_declare")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_INT), value, intent(IN) :: len
-        end subroutine aa_exclass2_declare
-        
-        subroutine aa_exclass2_declare(self, type, len) &
-                bind(C, name="AA_exclass2_declare")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
-        end subroutine aa_exclass2_declare
         
         subroutine aa_exclass2_set_value_int(self, value) &
                 bind(C, name="AA_exclass2_set_value_int")

@@ -386,7 +386,7 @@ class Schema(object):
                 new['generated'] = 'generic'
                 fmt = new['fmt']
                 fmt.method_suffix = '_' + type
-                fmt.PTR_generic = node
+                fmt.PTR_F_C_node = node
                 del new['generic']
                 options = new['options']
                 options.wrap_c = False

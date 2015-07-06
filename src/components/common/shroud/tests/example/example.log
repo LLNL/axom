@@ -36,39 +36,40 @@ C function bool isNameValid(const std::string& name)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
-Fortran method ExClass1 *new+constructor ( const string *name )
-Fortran method void delete+destructor
-Fortran method int incrementCount(int incr)
-Fortran method const string& getName() const
-Fortran method int GetNameLength() const
-Fortran method const string& getNameErrorCheck() const
-Fortran method const string& getNameArg() const
-Fortran method ExClass2 *getRoot()
-Fortran method int  getValue(int value)
-Fortran method long getValue(long value)
-Fortran method void *getAddr()
-Fortran method bool hasAddr(bool in)
-Fortran method void SplicerSpecial
+C-interface, Fortran method ExClass1 *new+constructor ( const string *name )
+C-interface, Fortran method void delete+destructor
+C-interface, Fortran method int incrementCount(int incr)
+C-interface, Fortran method const string& getName() const
+C-interface, Fortran method int GetNameLength() const
+C-interface, Fortran method const string& getNameErrorCheck() const
+C-interface, Fortran method const string& getNameArg() const
+C-interface, Fortran method ExClass2 *getRoot()
+C-interface, Fortran method int  getValue(int value)
+C-interface, Fortran method long getValue(long value)
+C-interface, Fortran method void *getAddr()
+C-interface, Fortran method bool hasAddr(bool in)
+C-interface, Fortran method void SplicerSpecial
 Close wrapfExClass1.f
 class ExClass2
-Fortran method ExClass2 *ExClass2+constructor (const string *name)
-Fortran method void ExClass1+destructor
-Fortran method const string& getName const
-Fortran method GetNameLength
-Fortran method ExClass1 *get_class1(ExClass1 *in)
-Fortran method void destroyall()
-Fortran method TypeID getTypeID() const
+C-interface, Fortran method ExClass2 *ExClass2+constructor (const string *name)
+C-interface, Fortran method void ExClass1+destructor
+C-interface, Fortran method const string& getName const
+C-interface, Fortran method GetNameLength
+C-interface, Fortran method ExClass1 *get_class1(ExClass1 *in)
+C-interface method void* declare(TypeID type, SidreLength len)
+C-interface, Fortran method void destroyall()
+C-interface, Fortran method TypeID getTypeID() const
 Fortran method void* declare(TypeID type, SidreLength len)
 Fortran method void* declare(TypeID type, SidreLength len)
-Fortran method void setValue(ValueType value)
-Fortran method void setValue(ValueType value)
-Fortran method void setValue(ValueType value)
-Fortran method void setValue(ValueType value)
-Fortran method ValueType getValue()
-Fortran method ValueType getValue()
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method ValueType getValue()
+C-interface, Fortran method ValueType getValue()
 Close wrapfExClass2.f
-Fortran function void local_function1
-Fortran function bool isNameValid(const std::string& name)
+C-interface, Fortran function void local_function1
+C-interface, Fortran function bool isNameValid(const std::string& name)
 Close wrapfuserlibrary.f
 class ExClass1
 Python method ExClass1 *new+constructor ( const string *name )
