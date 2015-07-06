@@ -31,98 +31,98 @@ delete selfobj;
 int AA_exclass1_increment_count(AA_exclass1 * self, int incr)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.incrementCount
+// splicer begin class.ExClass1.method.increment_count
 int rv = selfobj->incrementCount(incr);
 return rv;
-// splicer end class.ExClass1.method.incrementCount
+// splicer end class.ExClass1.method.increment_count
 }
 
 const char * AA_exclass1_get_name(const AA_exclass1 * self)
 {
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getName
+// splicer begin class.ExClass1.method.get_name
 const std::string & rv = selfobj->getName();
 return isNameValid(rv) ? rv.c_str() : NULL;
-// splicer end class.ExClass1.method.getName
+// splicer end class.ExClass1.method.get_name
 }
 
 int AA_exclass1_get_name_length(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.GetNameLength
+// splicer begin class.ExClass1.method.get_name_length
 return selfobj->getName().length();
-// splicer end class.ExClass1.method.GetNameLength
+// splicer end class.ExClass1.method.get_name_length
 }
 
 const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self)
 {
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getNameErrorCheck
+// splicer begin class.ExClass1.method.get_name_error_check
 const std::string & rv = selfobj->getNameErrorCheck();
 return isNameValid(rv) ? rv.c_str() : NULL;
-// splicer end class.ExClass1.method.getNameErrorCheck
+// splicer end class.ExClass1.method.get_name_error_check
 }
 
 const char * AA_exclass1_get_name_arg(const AA_exclass1 * self)
 {
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getNameArg
+// splicer begin class.ExClass1.method.get_name_arg
 const std::string & rv = selfobj->getNameArg();
 return isNameValid(rv) ? rv.c_str() : NULL;
-// splicer end class.ExClass1.method.getNameArg
+// splicer end class.ExClass1.method.get_name_arg
 }
 
 AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getRoot
+// splicer begin class.ExClass1.method.get_root
 ExClass2 * rv = selfobj->getRoot();
 return rv;
-// splicer end class.ExClass1.method.getRoot
+// splicer end class.ExClass1.method.get_root
 }
 
 int AA_exclass1_get_value_from_int(AA_exclass1 * self, int value)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getValue
+// splicer begin class.ExClass1.method.get_value_from_int
 int rv = selfobj->getValue(value);
 return rv;
-// splicer end class.ExClass1.method.getValue
+// splicer end class.ExClass1.method.get_value_from_int
 }
 
 long AA_exclass1_get_value_1(AA_exclass1 * self, long value)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getValue
+// splicer begin class.ExClass1.method.get_value_1
 long rv = selfobj->getValue(value);
 return rv;
-// splicer end class.ExClass1.method.getValue
+// splicer end class.ExClass1.method.get_value_1
 }
 
 void * AA_exclass1_get_addr(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.getAddr
+// splicer begin class.ExClass1.method.get_addr
 void * rv = selfobj->getAddr();
 return rv;
-// splicer end class.ExClass1.method.getAddr
+// splicer end class.ExClass1.method.get_addr
 }
 
 bool AA_exclass1_has_addr(AA_exclass1 * self, bool in)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.hasAddr
+// splicer begin class.ExClass1.method.has_addr
 bool rv = selfobj->hasAddr(in);
 return rv;
-// splicer end class.ExClass1.method.hasAddr
+// splicer end class.ExClass1.method.has_addr
 }
 
 void AA_exclass1_splicer_special(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(self);
-// splicer begin class.ExClass1.method.SplicerSpecial
+// splicer begin class.ExClass1.method.splicer_special
 //   splicer for SplicerSpecial
-// splicer end class.ExClass1.method.SplicerSpecial
+// splicer end class.ExClass1.method.splicer_special
 }
 
 // splicer begin class.ExClass1.additional_functions

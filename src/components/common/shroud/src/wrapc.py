@@ -366,6 +366,7 @@ class Wrapc(util.WrapperMixin):
         impl.append('{')
         if cls:
             impl.append(fmt_func.C_object )
-        self._create_splicer(fmt_func.method_name, impl, C_code)
+        self._create_splicer(fmt_func.underscore_name + 
+                             fmt.method_suffix, impl, C_code)
         impl.append('}')
 

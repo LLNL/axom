@@ -16,34 +16,34 @@ namespace nested {
 AA_exclass2 * AA_exclass2_ex_class2(const char * name)
 {
 ExClass2 *selfobj = new ExClass2(name);
-// splicer begin class.ExClass2.method.ExClass2
+// splicer begin class.ExClass2.method.ex_class2
 return (AA_exclass2 *) selfobj;
-// splicer end class.ExClass2.method.ExClass2
+// splicer end class.ExClass2.method.ex_class2
 }
 
 void AA_exclass2_ex_class1(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.ExClass1
+// splicer begin class.ExClass2.method.ex_class1
 delete selfobj;
-// splicer end class.ExClass2.method.ExClass1
+// splicer end class.ExClass2.method.ex_class1
 }
 
 const char * AA_exclass2_get_name(const AA_exclass2 * self)
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);
-// splicer begin class.ExClass2.method.getName
+// splicer begin class.ExClass2.method.get_name
 const std::string & rv = selfobj->getName();
 return isNameValid(rv) ? rv.c_str() : NULL;
-// splicer end class.ExClass2.method.getName
+// splicer end class.ExClass2.method.get_name
 }
 
 int AA_exclass2_get_name_length(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.GetNameLength
+// splicer begin class.ExClass2.method.get_name_length
 return selfobj->getName().length();
-// splicer end class.ExClass2.method.GetNameLength
+// splicer end class.ExClass2.method.get_name_length
 }
 
 AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in)
@@ -76,46 +76,46 @@ return;
 int AA_exclass2_get_type_id(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.getTypeID
+// splicer begin class.ExClass2.method.get_type_id
 TypeID rv = selfobj->getTypeID();
 return rv;
-// splicer end class.ExClass2.method.getTypeID
+// splicer end class.ExClass2.method.get_type_id
 }
 
 void AA_exclass2_set_value_int(AA_exclass2 * self, int value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.setValue
+// splicer begin class.ExClass2.method.set_value_int
 selfobj->setValue(value);
 return;
-// splicer end class.ExClass2.method.setValue
+// splicer end class.ExClass2.method.set_value_int
 }
 
 void AA_exclass2_set_value_long(AA_exclass2 * self, long value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.setValue
+// splicer begin class.ExClass2.method.set_value_long
 selfobj->setValue(value);
 return;
-// splicer end class.ExClass2.method.setValue
+// splicer end class.ExClass2.method.set_value_long
 }
 
 void AA_exclass2_set_value_float(AA_exclass2 * self, float value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.setValue
+// splicer begin class.ExClass2.method.set_value_float
 selfobj->setValue(value);
 return;
-// splicer end class.ExClass2.method.setValue
+// splicer end class.ExClass2.method.set_value_float
 }
 
 void AA_exclass2_set_value_double(AA_exclass2 * self, double value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.setValue
+// splicer begin class.ExClass2.method.set_value_double
 selfobj->setValue(value);
 return;
-// splicer end class.ExClass2.method.setValue
+// splicer end class.ExClass2.method.set_value_double
 }
 
 // splicer begin class.ExClass2.additional_functions
