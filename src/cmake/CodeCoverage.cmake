@@ -74,17 +74,26 @@
 # Will attempt to use lcov in uberenv first, then check for one in path.
 IF(NOT EXISTS ${LCOV_PATH})
    FIND_PROGRAM( LCOV_PATH lcov )
+   IF(NOT EXISTS ${LCOV_PATH})
+      MESSAGE(STATUS "Code coverage: Unable to find lcov, report will unavailable.")
+   ENDIF()
 ENDIF()
 
 # Will attempt to use genhtml in uberenv first, then check for one in path.
 IF(NOT EXISTS ${GENHTML_PATH})
    FIND_PROGRAM( GENHTML_PATH genhtml )
+   IF(NOT EXISTS ${GENHTML_PATH})
+      MESSAGE(STATUS "Code coverage: Unable to find genhtml (lcov), report will be unavailable.")
+   ENDIF()
 ENDIF()
 
 FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
 
-IF(NOT GCOV_PATH)
-	MESSAGE(FATAL_ERROR "GCOV_PATH was not set.  Verify your cmake cache file sets this variable to point to the gcov to run.  Should match the gnu compiler you are compiling with.")
+IF(NOT EXISTS ${GCOV_PATH})
+   FIND_PROGRAM( GCOV_PATH gcov )
+   IF(NOT EXISTS ${GCOV_PATH})
+      MESSAGE(STATUS "Code coverage: Unable to find gcov, report will be unavailable.")
+   ENDIF()
 ENDIF()
 
 IF(NOT CMAKE_COMPILER_IS_GNUCXX)
@@ -128,14 +137,6 @@ ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 # Optional fourth parameter is passed as arguments to _testrunner
 #   Pass them in list form, e.g.: "-j;2" for -j 2
 FUNCTION(add_code_coverage_target _targetname _testrunner)
-
-	#IF(NOT LCOV_PATH)
-#		SET(LCOV_PATH MESSAGE(FATAL_ERROR "lcov not found! Aborting...")
-#	ENDIF() # NOT LCOV_PATH
-
-#	IF(NOT GENHTML_PATH)
-#		MESSAGE(FATAL_ERROR "genhtml not found! Aborting...")
-#	ENDIF() # NOT GENHTML_PATH
 
 	# Setup target
 	ADD_CUSTOM_TARGET(${_targetname}
