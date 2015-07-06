@@ -507,7 +507,7 @@ contains
   subroutine save_restore_simple
     type(datastore) ds, ds2
     type(datagroup) root, root2, flds, ga
-    type(dataview) tmpview
+    type(dataview) i0_view
 
     ds = datastore_new()
     root = ds%get_root()
@@ -515,14 +515,13 @@ contains
 
     ga = flds%create_group("a")
 
-    tmpview = ga%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-!    (*ga%get_view("i0")%getNode().as_int_ptr())   = 1
+    i0_view = ga%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%set_value(1)
 
-!--    call assert_true(ds%get_root()%has_group("fields"))
-!--    call assert_true(ds%get_root()%get_group("fields")%has_group("a"))
-!_-    call assert_true(ds%get_root()%get_group("fields")%get_group("a")%has_view("i0"))
-
+    call assert_true(root%has_group("fields"))
+    call assert_true(flds%has_group("a"))
+    call assert_true(ga%has_view("i0"))
 
     call root%save("out_sidre_group_save_restore_simple","conduit")
 
@@ -538,7 +537,9 @@ contains
     flds = root2%get_group("fields")
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
-!--    call assert_equals(flds%get_group("a")%get_view("i0")%getNode().as_int(),1)
+    ga = flds%get_group("a")
+    i0_view = ga%get_view("i0")
+    call assert_equals(i0_view%get_value_int(), 1)
 
     call ds2%print()
     
@@ -551,7 +552,7 @@ contains
     type(datastore) ds, ds2
     type(datagroup) root, flds, root2
     type(datagroup) ga, gb, gc
-    type(dataview) tmpview
+    type(dataview) i0_view, f0_view, d0_view
     
     ds = datastore_new()
     root = ds%get_root()
@@ -561,17 +562,17 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    tmpview = ga%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-    !  (*ga%get_view("i0")%getNode().as_int_ptr())   = 1
+    i0_view = ga%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%set_value(1)
 
-    tmpview = gb%create_view_and_buffer("f0")
-    call tmpview%allocate(ATK_C_FLOAT_T, 1_8)
-    !  (*gb%get_view("f0")%getNode().as_float_ptr()) = 100.0
+    f0_view = gb%create_view_and_buffer("f0")
+    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    call f0_view%set_value(100.0)
 
-    tmpview = gc%create_view_and_buffer("d0")
-    call tmpview%allocate(ATK_C_DOUBLE_T, 1_8)
-    !  (*gc%get_view("d0")%getNode().as_double_ptr()) = 3000.0
+    d0_view = gc%create_view_and_buffer("d0")
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    call d0_view%set_value(3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -593,9 +594,17 @@ contains
     call assert_true(flds%has_group("b"))
     call assert_true(flds%has_group("c"))
     
-!--    call assert_equals(flds%get_group("a")%get_view("i0")%getNode().as_int(),1)
-!    EXPECT_NEAR(flds%get_group("b")%get_view("f0")%getNode().as_float(),100.0,  1e-12)
-!    EXPECT_NEAR(flds%get_group("c")%get_view("d0")%getNode().as_double(),3000.0, 1e-12)
+    ga = flds%get_group("a");
+    gb = flds%get_group("b");
+    gc = flds%get_group("c");
+
+    i0_view = ga%get_view("i0");
+    f0_view = gb%get_view("f0");
+    d0_view = gc%get_view("d0");
+
+    call assert_equals(i0_view%get_value_int(), 1)
+    call assert_equals(f0_view%get_value_float(), 100.0)
+    call assert_equals(d0_view%get_value_double(), 3000.0d0)
 
     call ds2%print()
 
