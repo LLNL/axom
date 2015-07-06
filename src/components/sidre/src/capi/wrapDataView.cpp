@@ -145,6 +145,42 @@ return;
 // splicer end class.DataView.method.print
 }
 
+void ATK_dataview_set_value_int(ATK_dataview * self, int value)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.DataView.method.setValue
+}
+
+void ATK_dataview_set_value_long(ATK_dataview * self, long value)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.DataView.method.setValue
+}
+
+void ATK_dataview_set_value_float(ATK_dataview * self, float value)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.DataView.method.setValue
+}
+
+void ATK_dataview_set_value_double(ATK_dataview * self, double value)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.DataView.method.setValue
+}
+
 // splicer begin class.DataView.additional_functions
 // splicer end class.DataView.additional_functions
 

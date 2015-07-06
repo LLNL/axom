@@ -100,6 +100,24 @@ return;
 // splicer end class.ExClass2.method.setValue
 }
 
+void AA_exclass2_set_value_float(AA_exclass2 * self, float value)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.ExClass2.method.setValue
+}
+
+void AA_exclass2_set_value_double(AA_exclass2 * self, double value)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.setValue
+selfobj->setValue(value);
+return;
+// splicer end class.ExClass2.method.setValue
+}
+
 // splicer begin class.ExClass2.additional_functions
 // splicer end class.ExClass2.additional_functions
 

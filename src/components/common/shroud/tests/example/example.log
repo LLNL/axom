@@ -25,6 +25,8 @@ method void destroyall()
 method TypeID getTypeID() const
 method void setValue(ValueType value)
 method void setValue(ValueType value)
+method void setValue(ValueType value)
+method void setValue(ValueType value)
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 function void local_function1
@@ -55,6 +57,8 @@ method ExClass1 *get_class1(ExClass1 *in)
 method void* declare(TypeID type, SidreLength len)
 method void destroyall()
 method TypeID getTypeID() const
+method void setValue(ValueType value)
+method void setValue(ValueType value)
 method void setValue(ValueType value)
 method void setValue(ValueType value)
 Close wrapfExClass2.f

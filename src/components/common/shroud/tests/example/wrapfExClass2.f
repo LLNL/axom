@@ -27,7 +27,9 @@ module exclass2_mod
         procedure :: get_type_id => exclass2_get_type_id
         procedure :: set_value_int => exclass2_set_value_int
         procedure :: set_value_long => exclass2_set_value_long
-        generic :: set_value => set_value_int, set_value_long
+        procedure :: set_value_float => exclass2_set_value_float
+        procedure :: set_value_double => exclass2_set_value_double
+        generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
         ! splicer begin class.ExClass2.type_bound_procedure_part
         ! splicer end class.ExClass2.type_bound_procedure_part
     end type exclass2
@@ -113,6 +115,22 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: value
         end subroutine aa_exclass2_set_value_long
+        
+        subroutine aa_exclass2_set_value_float(self, value) &
+                bind(C, name="AA_exclass2_set_value_float")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            real(C_FLOAT), value, intent(IN) :: value
+        end subroutine aa_exclass2_set_value_float
+        
+        subroutine aa_exclass2_set_value_double(self, value) &
+                bind(C, name="AA_exclass2_set_value_double")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            real(C_DOUBLE), value, intent(IN) :: value
+        end subroutine aa_exclass2_set_value_double
         
         ! splicer begin class.ExClass2.additional_interfaces
         ! splicer end class.ExClass2.additional_interfaces
@@ -220,6 +238,26 @@ contains
         call aa_exclass2_set_value_long(obj%voidptr, value)
         ! splicer end class.ExClass2.method.set_value_long
     end subroutine exclass2_set_value_long
+    
+    subroutine exclass2_set_value_float(obj, value)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        real(C_FLOAT) :: value
+        ! splicer begin class.ExClass2.method.set_value_float
+        call aa_exclass2_set_value_float(obj%voidptr, value)
+        ! splicer end class.ExClass2.method.set_value_float
+    end subroutine exclass2_set_value_float
+    
+    subroutine exclass2_set_value_double(obj, value)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        real(C_DOUBLE) :: value
+        ! splicer begin class.ExClass2.method.set_value_double
+        call aa_exclass2_set_value_double(obj%voidptr, value)
+        ! splicer end class.ExClass2.method.set_value_double
+    end subroutine exclass2_set_value_double
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

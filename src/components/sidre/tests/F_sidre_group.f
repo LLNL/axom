@@ -268,23 +268,23 @@ contains
   subroutine view_copy_move
     type(datastore) ds
     type(datagroup) root, flds, subgrp
-    type(dataview) tmpview
+    type(dataview) i0_view, f0_view, d0_view, tmpview
 
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")
 
-    tmpview = flds%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-!-- (*flds->getView("i0")->getNode().as_int_ptr())   = 1;
+    i0_view = flds%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%set_value(1)
 
-    tmpview = flds%create_view_and_buffer("f0")
-    call tmpview%allocate(ATK_C_FLOAT_T, 1_8)
-!--    (*flds->getView("f0")->getNode().as_float_ptr()) = 100.0;
+    f0_view = flds%create_view_and_buffer("f0")
+    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    call f0_view%set_value(100.0)
 
-    tmpview =flds%create_view_and_buffer("d0")
-    call tmpview%allocate(ATK_C_DOUBLE_T, 1_8)
-!--    (*flds->getView("d0")->getNode().as_double_ptr()) = 3000.0;
+    d0_view = flds%create_view_and_buffer("d0")
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    call d0_view%set_value(3000.0)
 
     call assert_true(flds%has_view("i0"))
     call assert_true(flds%has_view("f0"))
@@ -324,7 +324,7 @@ contains
     type(datastore) ds
     type(datagroup) root, flds, ga, gb, gc
     type(datagroup) subgrp, tmpgrp
-    type(dataview) tmpview
+    type(dataview) i0_view, f0_view, d0_view, tmpview
 
     ds = datastore_new()
     root = ds%get_root()
@@ -334,17 +334,17 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    tmpview = ga%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-    !  (*ga%get_view("i0")%getNode().as_int_ptr())   = 1
+    i0_view = ga%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%set_value(1)
 
-    tmpview = gb%create_view_and_buffer("f0")
-    call tmpview%allocate(ATK_C_FLOAT_T, 1_8)
-    !  (*gb%get_view("f0")%getNode().as_float_ptr()) = 100.0
+    f0_view = gb%create_view_and_buffer("f0")
+    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    call f0_view%set_value(100.0)
 
-    tmpview = gc%create_view_and_buffer("d0")
-    call tmpview%allocate(ATK_C_DOUBLE_T, 1_8)
-    !  (*gc%get_view("d0")%getNode().as_double_ptr()) = 3000.0
+    d0_view = gc%create_view_and_buffer("d0")
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    call d0_view%set_value(3000.0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))

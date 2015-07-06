@@ -67,6 +67,14 @@ size_t ATK_dataview_get_number_of_elements(ATK_dataview * self);
 
 void ATK_dataview_print(ATK_dataview * self);
 
+void ATK_dataview_set_value_int(ATK_dataview * self, int value);
+
+void ATK_dataview_set_value_long(ATK_dataview * self, long value);
+
+void ATK_dataview_set_value_float(ATK_dataview * self, float value);
+
+void ATK_dataview_set_value_double(ATK_dataview * self, double value);
+
 #ifdef __cplusplus
 }
 #endif

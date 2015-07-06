@@ -49,6 +49,10 @@ void AA_exclass2_set_value_int(AA_exclass2 * self, int value);
 
 void AA_exclass2_set_value_long(AA_exclass2 * self, long value);
 
+void AA_exclass2_set_value_float(AA_exclass2 * self, float value);
+
+void AA_exclass2_set_value_double(AA_exclass2 * self, double value);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1019,7 +1019,9 @@
                     "template": {
                         "ValueType": [
                             "int", 
-                            "long"
+                            "long", 
+                            "float", 
+                            "double"
                         ]
                     }
                 }, 
@@ -1102,6 +1104,100 @@
                         "F_name_method": "set_value_long", 
                         "F_subprogram": "subroutine", 
                         "method_suffix": "_long", 
+                        "rv_decl": "void rv"
+                    }, 
+                    "generated": "template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "float"
+                        }
+                    ], 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_name": "setValue", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, float value", 
+                        "C_call_list": "value", 
+                        "C_name": "AA_exclass2_set_value_float", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self, value", 
+                        "F_C_name": "aa_exclass2_set_value_float", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr, value", 
+                        "F_arguments": "obj, value", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_float", 
+                        "F_name_method": "set_value_float", 
+                        "F_subprogram": "subroutine", 
+                        "method_suffix": "_float", 
+                        "rv_decl": "void rv"
+                    }, 
+                    "generated": "template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "double"
+                        }
+                    ], 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_name": "setValue", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, double value", 
+                        "C_call_list": "value", 
+                        "C_name": "AA_exclass2_set_value_double", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self, value", 
+                        "F_C_name": "aa_exclass2_set_value_double", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr, value", 
+                        "F_arguments": "obj, value", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_double", 
+                        "F_name_method": "set_value_double", 
+                        "F_subprogram": "subroutine", 
+                        "method_suffix": "_double", 
                         "rv_decl": "void rv"
                     }, 
                     "generated": "template", 
@@ -1358,6 +1454,20 @@
             "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call}))", 
             "f_type": "logical", 
             "fortran_to_c": "logicaltobool({var})"
+        }, 
+        "double": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "float": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_type": "real(C_FLOAT)"
         }, 
         "int": {
             "PY_format": "i", 

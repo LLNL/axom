@@ -236,12 +236,13 @@ classes:
 #  void setValue(ValueType value)
 
 #  template<typename ValueType>
-#    - decl: void setValue(ValueType value)
-#      template:
-#        ValueType
-#        - int
-#        - float
-#        - double
+    - decl: void setValue(ValueType value)
+      template:
+        ValueType:
+        - int
+        - long
+        - float
+        - double
 
 #    - decl: const Schema& getSchema() const
     - decl: DataGroup* getOwningGroup()
