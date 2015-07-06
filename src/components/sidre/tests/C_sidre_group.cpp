@@ -485,13 +485,13 @@ TEST(C_sidre_group,save_restore_simple)
   EXPECT_TRUE(ATK_datagroup_has_view(ATK_datagroup_get_group(ATK_datagroup_get_group(root, "fields"), "a"), "i0"));
 
 
-  ATK_datagroup_save(root, "out_sidre_group_save_restore_simple","conduit");
+  ATK_datagroup_save(root, "C_out_sidre_group_save_restore_simple","conduit");
 
   ATK_datastore_print(ds);
 
   ATK_datastore * ds2 = ATK_datastore_new();
 
-  ATK_datagroup_load(ATK_datastore_get_root(ds2), "out_sidre_group_save_restore_simple","conduit");
+  ATK_datagroup_load(ATK_datastore_get_root(ds2), "C_out_sidre_group_save_restore_simple","conduit");
 
   ATK_datastore_print(ds2);
 
@@ -539,14 +539,14 @@ TEST(C_sidre_group,save_restore_complex)
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
 
-  ATK_datagroup_save(root, "out_sidre_group_save_restore_complex","conduit");
+  ATK_datagroup_save(root, "C_out_sidre_group_save_restore_complex","conduit");
 
   ATK_datastore_print(ds);
 
   ATK_datastore * ds2 = ATK_datastore_new();
   root = ATK_datastore_get_root(ds2);
 
-  ATK_datagroup_load(root, "out_sidre_group_save_restore_complex","conduit");
+  ATK_datagroup_load(root, "C_out_sidre_group_save_restore_complex","conduit");
 
   flds = ATK_datagroup_get_group(root, "fields");
   // check that all sub groups exist

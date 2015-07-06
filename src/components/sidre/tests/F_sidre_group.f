@@ -523,14 +523,14 @@ contains
     call assert_true(flds%has_group("a"))
     call assert_true(ga%has_view("i0"))
 
-    call root%save("out_sidre_group_save_restore_simple","conduit")
+    call root%save("F_out_sidre_group_save_restore_simple","conduit")
 
     call ds%print()
 
     ds2 = datastore_new()
     root2 = ds2%get_root()
 
-    call root2%load("out_sidre_group_save_restore_simple","conduit")
+    call root2%load("F_out_sidre_group_save_restore_simple","conduit")
 
     call ds2%print()
 
@@ -581,12 +581,12 @@ contains
 
     call ds%print()
 
-    call root%save("out_sidre_group_save_restore_complex","conduit")
+    call root%save("F_out_sidre_group_save_restore_complex","conduit")
 
     ds2 = datastore_new()
     root2 = ds2%get_root()
 
-    call root2%load("out_sidre_group_save_restore_complex","conduit")
+    call root2%load("F_out_sidre_group_save_restore_complex","conduit")
 
     flds = root2%get_group("fields")
     ! check that all sub groups exist
