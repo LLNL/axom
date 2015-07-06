@@ -1066,13 +1066,14 @@
                                 "intent": "in", 
                                 "value": true
                             }, 
+                            "cast": "int({var}, C_LONG)", 
                             "name": "len", 
                             "type": "int"
                         }
                     ], 
                     "decl": "void* declare(TypeID type, SidreLength len)", 
                     "fmt": {
-                        "F_arg_c_call": "obj%voidptr, type, len", 
+                        "F_arg_c_call": "obj%voidptr, type, int(len, C_LONG)", 
                         "F_arguments": "obj, type, len", 
                         "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "declare", 
@@ -1167,13 +1168,14 @@
                                 "intent": "in", 
                                 "value": true
                             }, 
+                            "cast": "int({var}, C_LONG)", 
                             "name": "len", 
                             "type": "long"
                         }
                     ], 
                     "decl": "void* declare(TypeID type, SidreLength len)", 
                     "fmt": {
-                        "F_arg_c_call": "obj%voidptr, type, len", 
+                        "F_arg_c_call": "obj%voidptr, type, int(len, C_LONG)", 
                         "F_arguments": "obj, type, len", 
                         "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "declare", 
@@ -1761,6 +1763,7 @@
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
+            "f_kind": "C_BOOL", 
             "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call}))", 
             "f_type": "logical", 
             "fortran_to_c": "logicaltobool({var})"
@@ -1770,6 +1773,8 @@
             "c_fortran": "real(C_DOUBLE)", 
             "c_type": "double", 
             "cpp_type": "double", 
+            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
             "f_type": "real(C_DOUBLE)"
         }, 
         "float": {
@@ -1777,6 +1782,8 @@
             "c_fortran": "real(C_FLOAT)", 
             "c_type": "float", 
             "cpp_type": "float", 
+            "f_cast": "real({var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
             "f_type": "real(C_FLOAT)"
         }, 
         "int": {
@@ -1784,23 +1791,65 @@
             "c_fortran": "integer(C_INT)", 
             "c_type": "int", 
             "cpp_type": "int", 
+            "f_cast": "int({var}, C_INT)", 
+            "f_kind": "C_INT", 
             "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_INT)": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_LONG)": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_type": "integer(C_LONG)"
         }, 
         "long": {
             "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_type": "long", 
             "cpp_type": "long", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
             "f_type": "integer(C_LONG)"
         }, 
         "other": {
             "cpp_type": "junk"
+        }, 
+        "real(C_DOUBLE)": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "real(C_FLOAT)": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_type": "real(C_FLOAT)"
         }, 
         "size_t": {
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
             "cpp_type": "size_t", 
+            "f_cast": "int({var}, C_SIZE_T)", 
+            "f_kind": "C_SIZE_T", 
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {

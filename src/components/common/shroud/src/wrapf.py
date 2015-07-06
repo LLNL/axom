@@ -365,9 +365,6 @@ class Wrapf(util.WrapperMixin):
             arg_c_names.append(arg['name'])
             arg_c_decl.append(self._c_decl(arg))
 
-            rrr = self.typedef[arg['type']].fortran_to_c
-            fmt.var = arg['name']
-
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 
         if fmt_func.F_C_subprogram == 'function':
@@ -496,11 +493,15 @@ class Wrapf(util.WrapperMixin):
             if 'value' not in attrs:
                 attrs['value'] = True
 
-            rrr = self.typedef[arg['type']].fortran_to_c
             fmt.var = arg['name']
-            append_format(arg_c_call, rrr, fmt)
-            arg_f_names.append(arg['name'])
+            arg_f_names.append(fmt.var)
             arg_f_decl.append(self._f_decl(arg))
+
+            if 'cast' in arg:
+                append_format(arg_c_call, arg['cast'], fmt)
+            else:
+                rrr = self.typedef[arg['type']].fortran_to_c
+                append_format(arg_c_call, rrr, fmt)
 
         if result_string:
             arg_f_names.append('rv')

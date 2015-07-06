@@ -235,7 +235,7 @@ contains
         integer(C_INT) :: type
         integer(C_INT) :: len
         ! splicer begin class.ExClass2.method.declare_int
-        call aa_exclass2_declare(obj%voidptr, type, len)
+        call aa_exclass2_declare(obj%voidptr, type, int(len, C_LONG))
         ! splicer end class.ExClass2.method.declare_int
     end subroutine exclass2_declare_int
     
@@ -246,7 +246,7 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.ExClass2.method.declare_long
-        call aa_exclass2_declare(obj%voidptr, type, len)
+        call aa_exclass2_declare(obj%voidptr, type, int(len, C_LONG))
         ! splicer end class.ExClass2.method.declare_long
     end subroutine exclass2_declare_long
     

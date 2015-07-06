@@ -126,6 +126,8 @@ class Schema(object):
             int    = util.Typedef('int',
                 c_type    = 'int',
                 cpp_type  = 'int',
+                f_kind    = 'C_INT',
+                f_cast    = 'int({var}, C_INT)',
                 c_fortran = 'integer(C_INT)',
                 f_type    = 'integer(C_INT)',
                 PY_format = 'i',
@@ -133,6 +135,8 @@ class Schema(object):
             long   = util.Typedef('long',
                 c_type    = 'long',
                 cpp_type  = 'long',
+                f_kind    = 'C_LONG',
+                f_cast    = 'int({var}, C_LONG)',
                 c_fortran = 'integer(C_LONG)',
                 f_type    = 'integer(C_LONG)',
                 PY_format = 'l',
@@ -141,6 +145,8 @@ class Schema(object):
                 c_type    = 'size_t',
                 cpp_type  = 'size_t',
                 c_header  = 'stdlib.h',
+                f_kind    = 'C_SIZE_T',
+                f_cast    = 'int({var}, C_SIZE_T)',
                 c_fortran = 'integer(C_SIZE_T)',
                 f_type    = 'integer(C_SIZE_T)',
                 ),
@@ -148,6 +154,8 @@ class Schema(object):
             float   = util.Typedef('float',
                 c_type    = 'float',
                 cpp_type  = 'float',
+                f_kind    = 'C_FLOAT',
+                f_cast    = 'real({var}, C_FLOAT)',
                 c_fortran = 'real(C_FLOAT)',
                 f_type    = 'real(C_FLOAT)',
                 PY_format = 'f',
@@ -155,6 +163,8 @@ class Schema(object):
             double   = util.Typedef('double',
                 c_type    = 'double',
                 cpp_type  = 'double',
+                f_kind    = 'C_DOUBLE',
+                f_cast    = 'real({var}, C_DOUBLE)',
                 c_fortran = 'real(C_DOUBLE)',
                 f_type    = 'real(C_DOUBLE)',
                 PY_format = 'd',
@@ -163,6 +173,7 @@ class Schema(object):
             bool   = util.Typedef('bool',
                 c_type    = 'bool',
                 cpp_type  = 'bool',
+                f_kind    = 'C_BOOL',
                 c_fortran = 'logical(C_BOOL)',
                 fortran_to_c  = 'logicaltobool({var})',
                 f_type    = 'logical',
@@ -182,7 +193,12 @@ class Schema(object):
                 base = 'string',
                 ),
             )
-        def_types['std::string'] = def_types['string']
+        def_types['std::string']     = def_types['string']
+        def_types['integer(C_INT)']  = def_types['int']
+        def_types['integer(C_LONG)'] = def_types['long']
+        def_types['real(C_FLOAT)']   = def_types['float']
+        def_types['real(C_DOUBLE)']  = def_types['double']
+
         if 'typedef' in node and \
                 node['typedef'] is not None:
             if not isinstance(node['typedef'], dict):
@@ -396,6 +412,13 @@ class Schema(object):
                 # Convert typename to type
                 for arg in new['args']:
                     if arg['name'] == argname:
+                        # Convert any typedef to native type with f_type
+                        argtype = arg['type']
+                        typedef = self.typedef[argtype]
+                        typedef = self.typedef[typedef.f_type]
+                        if not typedef.f_cast:
+                            raise RuntimeError("unable to case type %s in generic" % arg['type'])
+                        arg['cast'] = typedef.f_cast
                         arg['type'] = type
 
         # Do not process templated node, instead process
