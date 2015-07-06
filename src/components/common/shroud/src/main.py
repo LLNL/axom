@@ -280,11 +280,13 @@ class Schema(object):
             overloaded_methods.setdefault(method['result']['name'], []).append(method)
 
         # Look for templated methods
-        templated_methods = []
+        additional_methods = []
         for method in methods:
             if 'template' in method:
-                self.template_function(method, templated_methods)
-        methods.extend(templated_methods)
+                self.template_function(method, additional_methods)
+            if 'generic' in method:
+                self.generic_function(method, additional_methods)
+        methods.extend(additional_methods)
 
         # look for function overload and compute method_suffix
         for mname, methods in overloaded_methods.items():
@@ -337,7 +339,7 @@ class Schema(object):
         self.pop_fmt()
         self.pop_options()
 
-    def template_function(self, node, templated_methods):
+    def template_function(self, node, additional_methods):
         """ Create overloaded functions for each templated method.
         """
         if len(node['template']) != 1:
@@ -355,7 +357,7 @@ class Schema(object):
                 options.wrap_c = True
                 options.wrap_fortran = True
                 options.wrap_python = False
-                templated_methods.append(new)
+                additional_methods.append(new)
                 # Convert typename to type
                 if new['result']['type'] == typename:
                     new['result']['type'] = type
@@ -370,6 +372,38 @@ class Schema(object):
         options.wrap_c = False
         options.wrap_fortran = False
         options.wrap_python = False
+
+    def generic_function(self, node, additional_methods):
+        """ Create overloaded functions for each generic method.
+        """
+        if len(node['generic']) != 1:
+            # In the future it may be useful to have multiple generic arguments
+            # That the would start creating more permutations
+            raise NotImplemented("Only one generic arg for now")
+        for argname, types in node['generic'].items():
+            for type in types:
+                new = util.copy_function_node(node)
+                new['generated'] = 'generic'
+                fmt = new['fmt']
+                fmt.method_suffix = '_' + type
+                fmt.PTR_generic = node
+                del new['generic']
+                options = new['options']
+                options.wrap_c = False
+                options.wrap_fortran = True
+                options.wrap_python = False
+                additional_methods.append(new)
+                # Convert typename to type
+                for arg in new['args']:
+                    if arg['name'] == argname:
+                        arg['type'] = type
+
+        # Do not process templated node, instead process
+        # generated functions above.
+        options = node['options']
+#        options.wrap_c = False
+        options.wrap_fortran = False
+#        options.wrap_python = False
 
     def check_functions(self, node):
         """ check functions which are not in a class.

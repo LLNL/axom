@@ -148,6 +148,17 @@ classes:
       # make them subroutines in Fortran.
       return_this: True
 
+#      generic:
+#        len:
+#        -  type: int
+#           cast: int({var},C_INT)
+#        -  type: long
+#           cast: int({var},C_LONG)
+      generic:
+        len:
+        -  int
+        -  long
+
     # void function
     - decl: void destroyall()
 
