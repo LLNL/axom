@@ -75,6 +75,14 @@ void ATK_dataview_set_value_float(ATK_dataview * self, float value);
 
 void ATK_dataview_set_value_double(ATK_dataview * self, double value);
 
+int ATK_dataview_get_value_int(ATK_dataview * self);
+
+long ATK_dataview_get_value_long(ATK_dataview * self);
+
+float ATK_dataview_get_value_float(ATK_dataview * self);
+
+double ATK_dataview_get_value_double(ATK_dataview * self);
+
 #ifdef __cplusplus
 }
 #endif

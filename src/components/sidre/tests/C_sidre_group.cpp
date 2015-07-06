@@ -476,12 +476,9 @@ TEST(C_sidre_group,save_restore_simple)
 
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
 
-  ATK_dataview_allocate(ATK_datagroup_create_view_and_buffer_simple(ga, "i0"), ATK_C_INT_T, 1);
-
-#ifdef XXX
-  int * ival = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(ga, "i0"));
-  *ival = 1;
-#endif
+  ATK_dataview *i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
+  ATK_dataview_allocate(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_set_value_int(i0_view, 1);
 
   EXPECT_TRUE(ATK_datagroup_has_group(root, "fields"));
   EXPECT_TRUE(ATK_datagroup_has_group(ATK_datagroup_get_group(root, "fields"), "a"));
@@ -498,13 +495,14 @@ TEST(C_sidre_group,save_restore_simple)
 
   ATK_datastore_print(ds2);
 
-  flds = ATK_datagroup_get_group(ATK_datastore_get_root(ds2), "fields");
+  root = ATK_datastore_get_root(ds2);
+  flds = ATK_datagroup_get_group(root, "fields");
 
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
-#ifdef XXX
-  EXPECT_EQ(ATK_datagroup_get_group(flds, "a")->get_view("i0")->getNode().as_int32(),1);
-#endif
+  ga = ATK_datagroup_get_group(flds, "a");
+  i0_view = ATK_datagroup_get_view(ga, "i0");
+  EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
 
   ATK_datastore_print(ds2);
 
@@ -513,7 +511,6 @@ TEST(C_sidre_group,save_restore_simple)
 
 }
 
-#ifdef XXX
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_complex)
 {
@@ -525,21 +522,17 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_datagroup * gb = ATK_datagroup_create_group(flds, "b");
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
 
-  ATK_dataview * tmpview;
-  tmpview = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate(tmpview, ATK_C_INT_T, 1);
-  int * ival = (int *) ATK_dataview_get_data(tmpview);
-  *ival = 1;
+  ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
+  ATK_dataview_allocate(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_set_value_int(i0_view, 1);
 
-  tmpview = ATK_datagroup_create_view_and_buffer_simple(gb, "f0");
-  ATK_dataview_allocate(tmpview, ATK_C_FLOAT_T, 1);
-  float * fval = (float *) ATK_dataview_get_data(tmpview);
-  *fval = 100.0;
+  ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(gb, "f0");
+  ATK_dataview_allocate(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_set_value_float(f0_view, 100.0);
 
-  tmpview = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
-  ATK_dataview_allocate(tmpview, ATK_C_DOUBLE_T, 1);
-  double * dval = (double *) ATK_dataview_get_data(tmpview);
-  *dval = 3000.0;
+  ATK_dataview *d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
+  ATK_dataview_allocate(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_set_value_double(d0_view, 3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
@@ -561,11 +554,17 @@ TEST(C_sidre_group,save_restore_complex)
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
 
-#ifdef XXX
-  EXPECT_EQ(ATK_datagroup_get_group(flds, "a")->get_view("i0")->getNode().as_int(),1);
-  EXPECT_NEAR(ATK_datagroup_get_group(flds, "b")->get_view("f0")->getNode().as_float(),100.0,  1e-12);
-  EXPECT_NEAR(ATK_datagroup_get_group(flds, "c")->get_view("d0")->getNode().as_double(),3000.0, 1e-12);
-#endif
+  ga = ATK_datagroup_get_group(flds, "a");
+  gb = ATK_datagroup_get_group(flds, "b");
+  gc = ATK_datagroup_get_group(flds, "c");
+
+  i0_view = ATK_datagroup_get_view(ga, "i0");
+  f0_view = ATK_datagroup_get_view(gb, "f0");
+  d0_view = ATK_datagroup_get_view(gc, "d0");
+
+  EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
+  EXPECT_NEAR(ATK_dataview_get_value_float(f0_view), 100.0, 1e-12);
+  EXPECT_NEAR(ATK_dataview_get_value_double(d0_view), 3000.0, 1e-12);
 
   ATK_datastore_print(ds2);
 
@@ -573,7 +572,6 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_datastore_delete(ds2);
 
 }
-#endif
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

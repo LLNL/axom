@@ -148,6 +148,10 @@ module sidre_mod
         procedure :: set_value_long => dataview_set_value_long
         procedure :: set_value_float => dataview_set_value_float
         procedure :: set_value_double => dataview_set_value_double
+        procedure :: get_value_int => dataview_get_value_int
+        procedure :: get_value_long => dataview_get_value_long
+        procedure :: get_value_float => dataview_get_value_float
+        procedure :: get_value_double => dataview_get_value_double
         generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
         ! splicer begin class.DataView.type_bound_procedure_part
         ! splicer end class.DataView.type_bound_procedure_part
@@ -701,6 +705,38 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE), value, intent(IN) :: value
         end subroutine atk_dataview_set_value_double
+        
+        function atk_dataview_get_value_int(self) result(rv) &
+                bind(C, name="ATK_dataview_get_value_int")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function atk_dataview_get_value_int
+        
+        function atk_dataview_get_value_long(self) result(rv) &
+                bind(C, name="ATK_dataview_get_value_long")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_LONG) :: rv
+        end function atk_dataview_get_value_long
+        
+        function atk_dataview_get_value_float(self) result(rv) &
+                bind(C, name="ATK_dataview_get_value_float")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            real(C_FLOAT) :: rv
+        end function atk_dataview_get_value_float
+        
+        function atk_dataview_get_value_double(self) result(rv) &
+                bind(C, name="ATK_dataview_get_value_double")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            real(C_DOUBLE) :: rv
+        end function atk_dataview_get_value_double
         
         ! splicer begin class.DataView.additional_interfaces
         ! splicer end class.DataView.additional_interfaces
@@ -1399,6 +1435,46 @@ contains
         call atk_dataview_set_value_double(obj%voidptr, value)
         ! splicer end class.DataView.method.set_value_double
     end subroutine dataview_set_value_double
+    
+    function dataview_get_value_int(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataView.method.get_value_int
+        rv = atk_dataview_get_value_int(obj%voidptr)
+        ! splicer end class.DataView.method.get_value_int
+    end function dataview_get_value_int
+    
+    function dataview_get_value_long(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_LONG) :: rv
+        ! splicer begin class.DataView.method.get_value_long
+        rv = atk_dataview_get_value_long(obj%voidptr)
+        ! splicer end class.DataView.method.get_value_long
+    end function dataview_get_value_long
+    
+    function dataview_get_value_float(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        real(C_FLOAT) :: rv
+        ! splicer begin class.DataView.method.get_value_float
+        rv = atk_dataview_get_value_float(obj%voidptr)
+        ! splicer end class.DataView.method.get_value_float
+    end function dataview_get_value_float
+    
+    function dataview_get_value_double(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        real(C_DOUBLE) :: rv
+        ! splicer begin class.DataView.method.get_value_double
+        rv = atk_dataview_get_value_double(obj%voidptr)
+        ! splicer end class.DataView.method.get_value_double
+    end function dataview_get_value_double
     
     ! splicer begin class.DataView.additional_functions
     ! splicer end class.DataView.additional_functions

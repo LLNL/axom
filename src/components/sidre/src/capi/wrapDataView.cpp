@@ -181,6 +181,42 @@ return;
 // splicer end class.DataView.method.set_value_double
 }
 
+int ATK_dataview_get_value_int(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_value_int
+int rv = selfobj->getValue<int>();
+return rv;
+// splicer end class.DataView.method.get_value_int
+}
+
+long ATK_dataview_get_value_long(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_value_long
+long rv = selfobj->getValue<long>();
+return rv;
+// splicer end class.DataView.method.get_value_long
+}
+
+float ATK_dataview_get_value_float(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_value_float
+float rv = selfobj->getValue<float>();
+return rv;
+// splicer end class.DataView.method.get_value_float
+}
+
+double ATK_dataview_get_value_double(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_value_double
+double rv = selfobj->getValue<double>();
+return rv;
+// splicer end class.DataView.method.get_value_double
+}
+
 // splicer begin class.DataView.additional_functions
 // splicer end class.DataView.additional_functions
 

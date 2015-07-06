@@ -435,7 +435,10 @@ class Wrapf(util.WrapperMixin):
         if not is_ctor and not is_dtor:
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
-            self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
+            if not fmt_func.get('CPP_template', None):
+                # if return type is templated in C++, then do not set up generic
+                # since only the return type may be different (ex. getValue<T>())
+                self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
             self.type_bound_part.append('procedure :: %s => %s' % (
                     F_name_method, fmt_func.F_name_impl))
 

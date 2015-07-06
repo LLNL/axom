@@ -31,7 +31,6 @@ module exclass2_mod
         procedure :: set_value_double => exclass2_set_value_double
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
-        generic :: get_value => get_value_int, get_value_double
         generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
         ! splicer begin class.ExClass2.type_bound_procedure_part
         ! splicer end class.ExClass2.type_bound_procedure_part
