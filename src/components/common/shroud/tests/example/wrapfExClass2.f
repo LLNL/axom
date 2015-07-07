@@ -205,7 +205,9 @@ contains
         type(exclass1) :: in
         type(exclass1) :: rv
         ! splicer begin class.ExClass2.method.get_class1
-        rv%voidptr = aa_exclass2_get_class1(obj%voidptr, in%voidptr)
+        rv%voidptr = aa_exclass2_get_class1(  &
+            obj%voidptr,  &
+            in%voidptr)
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     

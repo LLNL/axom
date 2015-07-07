@@ -227,7 +227,7 @@ class Typedef(object):
         fortran_derived=None,    # Fortran derived type name
         fortran_to_c='{var}', # expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)
-        f_return_code='{F_result} = {F_C_name}({F_arg_c_call})',
+        f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})',
         f_kind = None,        # Fortran kind of type
         f_cast = None,        # Expression to convert to type
                               # e.g. intrinsics such as int and real

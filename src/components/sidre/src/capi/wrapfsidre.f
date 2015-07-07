@@ -788,7 +788,9 @@ contains
         integer(C_INT) :: idx
         type(databuffer) :: rv
         ! splicer begin class.DataStore.method.get_buffer
-        rv%voidptr = atk_datastore_get_buffer(obj%voidptr, idx)
+        rv%voidptr = atk_datastore_get_buffer(  &
+            obj%voidptr,  &
+            idx)
         ! splicer end class.DataStore.method.get_buffer
     end function datastore_get_buffer
     
@@ -895,7 +897,9 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_view
-        rv = booltological(atk_datagroup_has_view(obj%voidptr, trim(name) // C_NULL_CHAR))
+        rv = booltological(atk_datagroup_has_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR))
         ! splicer end class.DataGroup.method.has_view
     end function datagroup_has_view
     
@@ -906,7 +910,9 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_buffer_simple
-        rv%voidptr = atk_datagroup_create_view_and_buffer_simple(obj%voidptr, trim(name) // C_NULL_CHAR)
+        rv%voidptr = atk_datagroup_create_view_and_buffer_simple(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.create_view_and_buffer_simple
     end function datagroup_create_view_and_buffer_simple
     
@@ -919,7 +925,11 @@ contains
         integer(C_LONG) :: len
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_buffer_from_type
-        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(obj%voidptr, trim(name) // C_NULL_CHAR, type, len)
+        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            type,  &
+            len)
         ! splicer end class.DataGroup.method.create_view_and_buffer_from_type
     end function datagroup_create_view_and_buffer_from_type
     
@@ -931,7 +941,10 @@ contains
         type(C_PTR) :: opaque_ptr
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_opaque_view
-        rv%voidptr = atk_datagroup_create_opaque_view(obj%voidptr, trim(name) // C_NULL_CHAR, opaque_ptr)
+        rv%voidptr = atk_datagroup_create_opaque_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            opaque_ptr)
         ! splicer end class.DataGroup.method.create_opaque_view
     end function datagroup_create_opaque_view
     
@@ -943,7 +956,10 @@ contains
         type(databuffer) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view
-        rv%voidptr = atk_datagroup_create_view(obj%voidptr, trim(name) // C_NULL_CHAR, buff%voidptr)
+        rv%voidptr = atk_datagroup_create_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            buff%voidptr)
         ! splicer end class.DataGroup.method.create_view
     end function datagroup_create_view
     
@@ -957,7 +973,12 @@ contains
         integer(C_LONG) :: len
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view
-        rv%voidptr = atk_datagroup_create_external_view(obj%voidptr, trim(name) // C_NULL_CHAR, external_data, type, len)
+        rv%voidptr = atk_datagroup_create_external_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            external_data,  &
+            type,  &
+            len)
         ! splicer end class.DataGroup.method.create_external_view
     end function datagroup_create_external_view
     
@@ -968,7 +989,9 @@ contains
         type(dataview) :: view
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.move_view
-        rv%voidptr = atk_datagroup_move_view(obj%voidptr, view%voidptr)
+        rv%voidptr = atk_datagroup_move_view(  &
+            obj%voidptr,  &
+            view%voidptr)
         ! splicer end class.DataGroup.method.move_view
     end function datagroup_move_view
     
@@ -979,7 +1002,9 @@ contains
         type(dataview) :: view
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.copy_view
-        rv%voidptr = atk_datagroup_copy_view(obj%voidptr, view%voidptr)
+        rv%voidptr = atk_datagroup_copy_view(  &
+            obj%voidptr,  &
+            view%voidptr)
         ! splicer end class.DataGroup.method.copy_view
     end function datagroup_copy_view
     
@@ -1002,7 +1027,9 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view
-        rv%voidptr = atk_datagroup_get_view(obj%voidptr, trim(name) // C_NULL_CHAR)
+        rv%voidptr = atk_datagroup_get_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.get_view
     end function datagroup_get_view
     
@@ -1013,7 +1040,9 @@ contains
         character(*) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_view_index
-        rv = atk_datagroup_get_view_index(obj%voidptr, trim(name) // C_NULL_CHAR)
+        rv = atk_datagroup_get_view_index(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.get_view_index
     end function datagroup_get_view_index
     
@@ -1039,7 +1068,9 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_group
-        rv = booltological(atk_datagroup_has_group(obj%voidptr, trim(name) // C_NULL_CHAR))
+        rv = booltological(atk_datagroup_has_group(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR))
         ! splicer end class.DataGroup.method.has_group
     end function datagroup_has_group
     
@@ -1050,7 +1081,9 @@ contains
         character(*) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.create_group
-        rv%voidptr = atk_datagroup_create_group(obj%voidptr, trim(name) // C_NULL_CHAR)
+        rv%voidptr = atk_datagroup_create_group(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.create_group
     end function datagroup_create_group
     
@@ -1061,7 +1094,9 @@ contains
         type(datagroup) :: grp
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.move_group
-        rv%voidptr = atk_datagroup_move_group(obj%voidptr, grp%voidptr)
+        rv%voidptr = atk_datagroup_move_group(  &
+            obj%voidptr,  &
+            grp%voidptr)
         ! splicer end class.DataGroup.method.move_group
     end function datagroup_move_group
     
@@ -1084,7 +1119,9 @@ contains
         character(*) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.get_group
-        rv%voidptr = atk_datagroup_get_group(obj%voidptr, trim(name) // C_NULL_CHAR)
+        rv%voidptr = atk_datagroup_get_group(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.get_group
     end function datagroup_get_group
     
@@ -1095,7 +1132,9 @@ contains
         character(*) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_group_index
-        rv = atk_datagroup_get_group_index(obj%voidptr, trim(name) // C_NULL_CHAR)
+        rv = atk_datagroup_get_group_index(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.get_group_index
     end function datagroup_get_group_index
     

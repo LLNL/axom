@@ -177,7 +177,7 @@ class Schema(object):
                 c_fortran = 'logical(C_BOOL)',
                 fortran_to_c  = 'logicaltobool({var})',
                 f_type    = 'logical',
-                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call}))',
+                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))',
                 ),
             string = util.Typedef('string',  # implies null terminated string
                 c_type   = 'char',    # XXX - char *
@@ -188,7 +188,7 @@ class Schema(object):
                 fortran_to_c = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call}))',
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 base = 'string',
                 ),
@@ -277,7 +277,7 @@ class Schema(object):
 
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
-                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})',
+                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,

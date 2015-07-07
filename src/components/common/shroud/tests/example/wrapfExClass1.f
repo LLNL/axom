@@ -179,7 +179,9 @@ contains
         integer(C_INT) :: incr
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.increment_count
-        rv = aa_exclass1_increment_count(obj%voidptr, incr)
+        rv = aa_exclass1_increment_count(  &
+            obj%voidptr,  &
+            incr)
         ! splicer end class.ExClass1.method.increment_count
     end function exclass1_increment_count
     
@@ -242,7 +244,9 @@ contains
         integer(C_INT) :: value
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.get_value_from_int
-        rv = aa_exclass1_get_value_from_int(obj%voidptr, value)
+        rv = aa_exclass1_get_value_from_int(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass1.method.get_value_from_int
     end function exclass1_get_value_from_int
     
@@ -253,7 +257,9 @@ contains
         integer(C_LONG) :: value
         integer(C_LONG) :: rv
         ! splicer begin class.ExClass1.method.get_value_1
-        rv = aa_exclass1_get_value_1(obj%voidptr, value)
+        rv = aa_exclass1_get_value_1(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass1.method.get_value_1
     end function exclass1_get_value_1
     
@@ -274,7 +280,9 @@ contains
         logical :: in
         logical :: rv
         ! splicer begin class.ExClass1.method.has_addr
-        rv = booltological(aa_exclass1_has_addr(obj%voidptr, logicaltobool(in)))
+        rv = booltological(aa_exclass1_has_addr(  &
+            obj%voidptr,  &
+            logicaltobool(in)))
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     

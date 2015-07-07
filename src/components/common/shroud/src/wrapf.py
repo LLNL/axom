@@ -509,6 +509,7 @@ class Wrapf(util.WrapperMixin):
             arg_f_decl.append('type(C_PTR) :: rv_ptr')
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
+        fmt_func.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
         fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
         # declare function return value after arguments
@@ -548,21 +549,18 @@ class Wrapf(util.WrapperMixin):
         else:
             F_code = []
             if is_ctor:
-#                F_code.append(wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})', fmt_func))
-                line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}(', fmt_func)
-                self.append_method_arguments(F_code, line1, arg_c_call)
+                line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt_func)
+                self.append_method_arguments(F_code, line1)
             elif result_string:
-#                F_code.append(wformat('rv_ptr = {F_C_name}({F_arg_c_call})', fmt_func))
-                line1 = wformat('rv_ptr = {F_C_name}(', fmt_func)
-                self.append_method_arguments(F_code, line1, arg_c_call)
+                line1 = wformat('rv_ptr = {F_C_name}({F_arg_c_call_tab})', fmt_func)
+                self.append_method_arguments(F_code, line1)
                 F_code.append('call FccCopyPtr(rv, len(rv), rv_ptr)')
             elif subprogram == 'function':
-                fmt.return_value = wformat(result_typedef.f_return_code, fmt)
-                F_code.append(fmt.return_value)
+                line1 = wformat(result_typedef.f_return_code, fmt)
+                self.append_method_arguments(F_code, line1)
             else:
-#                F_code.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
-                line1 = wformat('call {F_C_name}(', fmt_func)
-                self.append_method_arguments(F_code, line1, arg_c_call)
+                line1 = wformat('call {F_C_name}({F_arg_c_call_tab})', fmt_func)
+                self.append_method_arguments(F_code, line1)
 
             if is_dtor:
                 F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt_func))
@@ -578,21 +576,23 @@ class Wrapf(util.WrapperMixin):
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
-
-    def append_method_arguments(self, F_code, line1, arg_c_call):
+    def append_method_arguments(self, F_code, line1):
         """Append each argment in arg_c_call as a line in the function.
         Must account for continuations
+        Replace tabs in line1 with continuations.
         """
-        if len(arg_c_call) == 0:
-            F_code.append(line1 + ')')
-        elif len(arg_c_call) == 1:
-            F_code.append(line1 + arg_c_call[0] + ')')
+        # part[0] = beginning
+        # part[1] = first argument
+        parts = line1.split('\t')
+
+        if len(parts) < 3:
+            F_code.append(''.join(parts))
         else:
-            F_code.append(line1 + '  &')
+            F_code.append(parts[0] + '  &')
             F_code.append(1)
-            for arg in arg_c_call[:-1]:
+            for arg in parts[1:-1]:
                 F_code.append(arg + ',  &')
-            F_code.append(arg_c_call[-1] + ')')
+            F_code.append(parts[-1])
             F_code.append(-1)
 
     def write_module(self, node):
