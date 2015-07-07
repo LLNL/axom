@@ -97,7 +97,7 @@ if(ENABLE_FORTRAN)
         MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
     else()
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
-    endif()    
+    endif()
 else()
     MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
 endif()
@@ -146,7 +146,7 @@ if(ENABLE_OMP)
         message(STATUS "Found OpenMP")
     else()
         message(STATUS "Could not find OpenMP")
-    endif()    
+    endif()
 endif()
 
 ## Enable ENABLE C++ 11 features
@@ -330,7 +330,7 @@ endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
 ## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
-##               [WITH_MPI] [WITH_OPENMP])
+##               DEPENDS_ON [dep1 ...] [WITH_MPI] [WITH_OPENMP])
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -339,20 +339,26 @@ endmacro(add_target_definitions)
 ## ON, in which case, it will create a shared library. By default, a static
 ## library is generated.
 ##
+## In addition, this macro will add the associated dependencies to the given
+## library target. Specifically, it will add a dependecy to the library's
+## "copy_headers_target" if it exists and has been defined before the call to
+## "make_library", as well as, the corresponding "copy_headers_target" of each
+## of the supplied dependencies.
+##
 ## Optionally, "WITH_MPI" can be supplied as an argument. When this argument is
 ## supplied, the MPI include directory will be added to the compiler command
 ## and the -DUSE_MPI, as well as other compiler flags, will be included to the
 ## compiler definition.
 ##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
-## supplied, the openmp compiler flag will be added to the compiler command
+## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
+## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
    set(options WITH_MPI WITH_OPENMP)
    set(singleValueArgs LIBRARY_NAME)
-   set(multiValueArgs LIBRARY_SOURCES)
+   set(multiValueArgs LIBRARY_SOURCES DEPENDS_ON)
 
    ## parse the arguments
    cmake_parse_arguments(arg
@@ -396,9 +402,11 @@ macro(make_library)
 
    if ( ${arg_WITH_OPENMP} )
 
-      add_target_definitions( TO ${arg_LIBRARY_NAME} TARGET_DEFINITIONS USE_OPENMP )
+      add_target_definitions( TO ${arg_LIBRARY_NAME}
+                              TARGET_DEFINITIONS USE_OPENMP )
 
-      set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+      set_target_properties( ${arg_LIBRARY_NAME}
+                             PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
 
    endif()
 
@@ -419,10 +427,24 @@ macro(make_library)
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
 
+   ## setup dependencies
+   set(lib_header_target "copy_headers_${arg_LIBRARY_NAME}")
+   if (TARGET ${lib_header_target})
+      add_dependencies( ${arg_LIBRARY_NAME} ${lib_header_target})
+   endif()
+
+   foreach(dependency ${arg_DEPENDS_ON})
+     set(header_target "copy_headers_${dependency}")
+     if (TARGET ${header_target})
+        add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
+     endif()
+   endforeach()
+
 endmacro(make_library)
 
 ##------------------------------------------------------------------------------
-## make_executable(EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...] [WITH_MPI] [WITH_OPENMP])
+## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
+##                  [WITH_MPI] [WITH_OPENMP])
 ##
 ## Adds an executable to the project.
 ##
@@ -438,8 +460,8 @@ endmacro(make_library)
 ## the MPI C libraries and the MPI includes as well as -DUSE_MPI and other flags
 ## will be added to the compiler command.
 ##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
-## supplied, the openmp compiler flag will be added to the compiler command
+## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
+## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_executable)
@@ -459,16 +481,18 @@ macro(make_executable)
 
     ## sanity check OpenMP
    if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
-      message( FATAL_ERROR "Building an OpenMP executable, but OpenMP is disabled!" )
+      message( FATAL_ERROR
+               "Building an OpenMP executable, but OpenMP is disabled!" )
    endif()
 
-   # Use the supplied name for the executable (if given), otherwise use the source file's name
+   # Use the supplied name for the executable (if given), otherwise use the
+   # source file's name
    if( NOT "${arg_EXECUTABLE_NAME}" STREQUAL "" )
      set(exe_name ${arg_EXECUTABLE_NAME})
    else()
      get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
    endif()
-      
+
    add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
    target_link_libraries( ${exe_name} "${arg_DEPENDS_ON}" )
 
@@ -501,9 +525,11 @@ macro(make_executable)
 
       add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
 
-      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
-      
+      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
+                             ${OpenMP_CXX_FLAGS} )
+      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
+                             ${OpenMP_CXX_FLAGS} )
+
    endif()
 
    if(IS_ABSOLUTE)
@@ -637,7 +663,7 @@ macro(add_fortran_test)
                   COMMAND ${test_name}
                   WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
                   )
-       #TODO: we aren't tracking / grouping fortran sources. 
+       #TODO: we aren't tracking / grouping fortran sources.
    endif()
 endmacro(add_fortran_test)
 
