@@ -37,46 +37,46 @@ delete selfobj;
 ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin class.DataStore.method.getRoot
+// splicer begin class.DataStore.method.get_root
 DataGroup * rv = selfobj->getRoot();
 return rv;
-// splicer end class.DataStore.method.getRoot
+// splicer end class.DataStore.method.get_root
 }
 
 ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, ATK_IndexType idx)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin class.DataStore.method.getBuffer
+// splicer begin class.DataStore.method.get_buffer
 DataBuffer * rv = selfobj->getBuffer(idx);
 return rv;
-// splicer end class.DataStore.method.getBuffer
+// splicer end class.DataStore.method.get_buffer
 }
 
 ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin class.DataStore.method.createBuffer
+// splicer begin class.DataStore.method.create_buffer
 DataBuffer * rv = selfobj->createBuffer();
 return rv;
-// splicer end class.DataStore.method.createBuffer
+// splicer end class.DataStore.method.create_buffer
 }
 
 void ATK_datastore_destroy_buffer(ATK_datastore * self, ATK_IndexType id)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin class.DataStore.method.destroyBuffer
+// splicer begin class.DataStore.method.destroy_buffer
 selfobj->destroyBuffer(id);
 return;
-// splicer end class.DataStore.method.destroyBuffer
+// splicer end class.DataStore.method.destroy_buffer
 }
 
 size_t ATK_datastore_get_num_buffers(ATK_datastore * self)
 {
 DataStore *selfobj = static_cast<DataStore *>(self);
-// splicer begin class.DataStore.method.getNumBuffers
+// splicer begin class.DataStore.method.get_num_buffers
 size_t rv = selfobj->getNumBuffers();
 return rv;
-// splicer end class.DataStore.method.getNumBuffers
+// splicer end class.DataStore.method.get_num_buffers
 }
 
 void ATK_datastore_print(ATK_datastore * self)

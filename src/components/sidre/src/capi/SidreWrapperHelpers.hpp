@@ -35,53 +35,53 @@ inline TypeID getTypeID()
  */
 inline TypeID getTypeID( const int typeID )
 {
-  TypeID rval = DataType::EMPTY_T;
+  TypeID rval = CONDUIT_EMPTY_T;
 
   switch( typeID )
   {
 #if 0
   case 0:
-    rval = DataType::EMPTY_T;
+    rval = CONDUIT_EMPTY_T;
     break;
   case 1:
-    rval = DataType::OBJECT_T;
+    rval = CONDUIT_OBJECT_T;
     break;
   case 2:
-    rval = DataType::LIST_T;
+    rval = CONDUIT_LIST_T;
     break;
 #endif
   case ATK_INT8_T:
-    rval = DataType::INT8_T;
+    rval = CONDUIT_INT8_T;
     break;
   case ATK_INT16_T:
-    rval = DataType::INT16_T;
+    rval = CONDUIT_INT16_T;
     break;
   case ATK_INT32_T:
-    rval = DataType::INT32_T;
+    rval = CONDUIT_INT32_T;
     break;
   case ATK_INT64_T:
-    rval = DataType::INT64_T;
+    rval = CONDUIT_INT64_T;
     break;
   case ATK_UINT8_T:
-    rval = DataType::UINT8_T;
+    rval = CONDUIT_UINT8_T;
     break;
   case ATK_UINT16_T:
-    rval = DataType::UINT16_T;
+    rval = CONDUIT_UINT16_T;
     break;
   case ATK_UINT32_T:
-    rval = DataType::UINT32_T;
+    rval = CONDUIT_UINT32_T;
     break;
   case ATK_UINT64_T:
-    rval = DataType::UINT64_T;
+    rval = CONDUIT_UINT64_T;
     break;
   case ATK_FLOAT32_T:
-    rval = DataType::FLOAT32_T;
+    rval = CONDUIT_FLOAT32_T;
     break;
   case ATK_FLOAT64_T:
-    rval = DataType::FLOAT64_T;
+    rval = CONDUIT_FLOAT64_T;
     break;
   case ATK_CHAR8_STR_T:
-    rval = DataType::CHAR8_STR_T;
+    rval = CONDUIT_CHAR8_STR_T;
     break;
 
   case ATK_C_INT_T:
@@ -98,7 +98,7 @@ inline TypeID getTypeID( const int typeID )
     break;
 
   default:
-    rval = DataType::EMPTY_T;
+    rval = CONDUIT_EMPTY_T;
     break;
 //      ATK_ERROR( "getTypeID(int) passed invalid type" );
 

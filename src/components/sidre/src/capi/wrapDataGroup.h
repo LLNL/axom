@@ -40,8 +40,6 @@ typedef struct s_ATK_dataview ATK_dataview;
 #endif
 
 // splicer begin class.DataGroup.C_definition
-extern const char * ATK_datagroup_get_group_name_with_error_check(const ATK_datagroup * self, ATK_IndexType idx);
-
 // splicer end class.DataGroup.C_definition
 
 const char * ATK_datagroup_get_name(const ATK_datagroup * self);
@@ -64,7 +62,7 @@ ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char
 
 ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name, ATK_databuffer * buff);
 
-ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, const int type, const ATK_SidreLength len);
+ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength len);
 
 ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view);
 
@@ -91,8 +89,6 @@ ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name)
 ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name);
 
 const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx);
-
-int ATK_datagroup_get_group_name_length(ATK_datagroup * self, ATK_IndexType idx);
 
 void ATK_datagroup_print(ATK_datagroup * self);
 

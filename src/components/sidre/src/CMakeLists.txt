@@ -30,6 +30,9 @@ set(sidre_sources
     ${capi_source}
 )
 
+# Must tell fortran where to look for modules
+include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+
 #
 # custom target to copy header files in the "include" folder of the build tree.
 #

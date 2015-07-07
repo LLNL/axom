@@ -5,7 +5,6 @@ generate language bindings
 """
 from __future__ import print_function
 
-import copy
 import os
 import json
 import argparse
@@ -31,6 +30,16 @@ class Schema(object):
     """
     Verify that the input dictionary has the correct fields.
     Create defaults for missing fields.
+
+
+    check_schema
+      check_classes
+        check_class
+          check_function
+        check_class_depedencies
+          check_function_dependencies
+      check_functions
+        check_function
     """
     def __init__(self, config):
         self.config = config
@@ -63,6 +72,8 @@ class Schema(object):
         self.fmt_stack.pop()
 
     def check_schema(self):
+        """ Routine to check entire schema of input tree"
+        """
         node = self.config
 
         # default options
@@ -74,6 +85,10 @@ class Schema(object):
             cpp_header='',
 
             F_module_per_class=True,
+
+            wrap_c       = True,
+            wrap_fortran = True,
+            wrap_python  = True,
             )
         if 'options' in node:
             def_options.update(node['options'])
@@ -111,6 +126,8 @@ class Schema(object):
             int    = util.Typedef('int',
                 c_type    = 'int',
                 cpp_type  = 'int',
+                f_kind    = 'C_INT',
+                f_cast    = 'int({var}, C_INT)',
                 c_fortran = 'integer(C_INT)',
                 f_type    = 'integer(C_INT)',
                 PY_format = 'i',
@@ -118,6 +135,8 @@ class Schema(object):
             long   = util.Typedef('long',
                 c_type    = 'long',
                 cpp_type  = 'long',
+                f_kind    = 'C_LONG',
+                f_cast    = 'int({var}, C_LONG)',
                 c_fortran = 'integer(C_LONG)',
                 f_type    = 'integer(C_LONG)',
                 PY_format = 'l',
@@ -126,16 +145,39 @@ class Schema(object):
                 c_type    = 'size_t',
                 cpp_type  = 'size_t',
                 c_header  = 'stdlib.h',
+                f_kind    = 'C_SIZE_T',
+                f_cast    = 'int({var}, C_SIZE_T)',
                 c_fortran = 'integer(C_SIZE_T)',
                 f_type    = 'integer(C_SIZE_T)',
                 ),
+
+            float   = util.Typedef('float',
+                c_type    = 'float',
+                cpp_type  = 'float',
+                f_kind    = 'C_FLOAT',
+                f_cast    = 'real({var}, C_FLOAT)',
+                c_fortran = 'real(C_FLOAT)',
+                f_type    = 'real(C_FLOAT)',
+                PY_format = 'f',
+                ),
+            double   = util.Typedef('double',
+                c_type    = 'double',
+                cpp_type  = 'double',
+                f_kind    = 'C_DOUBLE',
+                f_cast    = 'real({var}, C_DOUBLE)',
+                c_fortran = 'real(C_DOUBLE)',
+                f_type    = 'real(C_DOUBLE)',
+                PY_format = 'd',
+                ),
+
             bool   = util.Typedef('bool',
                 c_type    = 'bool',
                 cpp_type  = 'bool',
+                f_kind    = 'C_BOOL',
                 c_fortran = 'logical(C_BOOL)',
                 fortran_to_c  = 'logicaltobool({var})',
                 f_type    = 'logical',
-                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call}))',
+                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))',
                 ),
             string = util.Typedef('string',  # implies null terminated string
                 c_type   = 'char',    # XXX - char *
@@ -146,12 +188,17 @@ class Schema(object):
                 fortran_to_c = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call}))',
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 base = 'string',
                 ),
             )
-        def_types['std::string'] = def_types['string']
+        def_types['std::string']     = def_types['string']
+        def_types['integer(C_INT)']  = def_types['int']
+        def_types['integer(C_LONG)'] = def_types['long']
+        def_types['real(C_FLOAT)']   = def_types['float']
+        def_types['real(C_DOUBLE)']  = def_types['double']
+
         if 'typedef' in node and \
                 node['typedef'] is not None:
             if not isinstance(node['typedef'], dict):
@@ -230,11 +277,7 @@ class Schema(object):
 
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
-                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call})',
-
-                PY_format = 'O',
-                PY_to_object = 'XX_to',
-                PY_from_object = 'XX_from',
+                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
@@ -252,6 +295,15 @@ class Schema(object):
             self.check_function(method)
             overloaded_methods.setdefault(method['result']['name'], []).append(method)
 
+        # Look for templated methods
+        additional_methods = []
+        for method in methods:
+            if 'template' in method:
+                self.template_function(method, additional_methods)
+            if 'generic' in method:
+                self.generic_function(method, additional_methods)
+        methods.extend(additional_methods)
+
         # look for function overload and compute method_suffix
         for mname, methods in overloaded_methods.items():
             if len(methods) > 1:
@@ -264,6 +316,8 @@ class Schema(object):
         self.pop_options()
 
     def check_function(self, node):
+        """ Make sure necessary fields are present for a function.
+        """
         self.push_options(node)
         fmt_func = self.push_fmt(node)
 
@@ -301,7 +355,82 @@ class Schema(object):
         self.pop_fmt()
         self.pop_options()
 
+    def template_function(self, node, additional_methods):
+        """ Create overloaded functions for each templated method.
+        """
+        if len(node['template']) != 1:
+            # In the future it may be useful to have multiple templates
+            # That the would start creating more permutations
+            raise NotImplemented("Only one templated type for now")
+        for typename, types in node['template'].items():
+            for type in types:
+                new = util.copy_function_node(node)
+                new['generated'] = 'template'
+                fmt = new['fmt']
+                fmt.method_suffix = '_' + type
+                del new['template']
+                options = new['options']
+                options.wrap_c = True
+                options.wrap_fortran = True
+                options.wrap_python = False
+                additional_methods.append(new)
+                # Convert typename to type
+                if new['result']['type'] == typename:
+                    new['result']['type'] = type
+                    fmt.CPP_template = '<%s>' %  type
+                for arg in new['args']:
+                    if arg['type'] == typename:
+                        arg['type'] = type
+
+        # Do not process templated node, instead process
+        # generated functions above.
+        options = node['options']
+        options.wrap_c = False
+        options.wrap_fortran = False
+        options.wrap_python = False
+
+    def generic_function(self, node, additional_methods):
+        """ Create overloaded functions for each generic method.
+        """
+        if len(node['generic']) != 1:
+            # In the future it may be useful to have multiple generic arguments
+            # That the would start creating more permutations
+            raise NotImplemented("Only one generic arg for now")
+        for argname, types in node['generic'].items():
+            for type in types:
+                new = util.copy_function_node(node)
+                new['generated'] = 'generic'
+                fmt = new['fmt']
+                fmt.method_suffix = '_' + type
+                fmt.PTR_F_C_node = node
+                del new['generic']
+                options = new['options']
+                options.wrap_c = False
+                options.wrap_fortran = True
+                options.wrap_python = False
+                additional_methods.append(new)
+                # Convert typename to type
+                for arg in new['args']:
+                    if arg['name'] == argname:
+                        # Convert any typedef to native type with f_type
+                        argtype = arg['type']
+                        typedef = self.typedef[argtype]
+                        typedef = self.typedef[typedef.f_type]
+                        if not typedef.f_cast:
+                            raise RuntimeError("unable to case type %s in generic" % arg['type'])
+                        arg['cast'] = typedef.f_cast
+                        arg['type'] = type
+
+        # Do not process templated node, instead process
+        # generated functions above.
+        options = node['options']
+#        options.wrap_c = False
+        options.wrap_fortran = False
+#        options.wrap_python = False
+
     def check_functions(self, node):
+        """ check functions which are not in a class.
+        """
         if not isinstance(node, list):
             raise TypeError("functions must be a list")
         for func in node:
@@ -331,6 +460,13 @@ class Schema(object):
         node['F_module_dependencies'] = F_modules
 
     def check_function_dependencies(self, node, used_types):
+        """Record which types are used by a function.
+        """
+        if 'template' in node:
+            # The templated type will raise an error.
+            # XXX - Maybe dummy it out
+            # XXX - process templated types
+            return
         result = node['result']
         rv_type = result['type']
         if rv_type not in self.typedef:
@@ -339,7 +475,11 @@ class Schema(object):
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
         for arg in node.get('args', []):
-            used_types[arg['type']] = self.typedef[arg['type']]
+            argtype = arg['type']
+            if argtype in self.typedef:
+                used_types[arg['type']] = self.typedef[argtype]
+            else:
+                raise RuntimeError("%s not defined" % argtype)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ from __future__ import print_function
 
 
 import collections
+import copy
 import string
 import json
 import os
@@ -226,7 +227,10 @@ class Typedef(object):
         fortran_derived=None,    # Fortran derived type name
         fortran_to_c='{var}', # expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)
-        f_return_code='{F_result} = {F_C_name}({F_arg_c_call})',
+        f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})',
+        f_kind = None,        # Fortran kind of type
+        f_cast = None,        # Expression to convert to type
+                              # e.g. intrinsics such as int and real
 
         PY_format='O',        # 'format unit' for PyArg_Parse
         PY_to_object=None,    # PyBuild - object = converter(address)
@@ -337,6 +341,27 @@ class Options(object):
                 d[key] = value
         return d
 
+def copy_function_node(node):
+    """Create a copy of a function node to use with C++ template.
+    """
+    known = {}   # known fields
+    new = {}
+
+    # Deep copy dictionaries
+    for field in [ 'args', 'qualifiers', 'result' ]:
+        new[field] = copy.deepcopy(node[field])
+        known[field] = True
+
+    # Add new Options in chain.
+    for field in [ 'fmt', 'options' ]:
+        new[field] = Options(node[field])
+        known[field] = True
+
+    # Shallow copy any unknown fields
+    for key, value in node.items():
+        if key not in known:
+            new[key] = value
+    return new
 
 class XXXClassNode(object):
     """Represent a class.  Usually a C++ class.
@@ -349,7 +374,7 @@ class XXXClassNode(object):
         self.methods = []
 
 
-class FunctionNode(object):
+class XXXFunctionNode(object):
     def __init__(self):
         self.decl = None
         self.result = {}

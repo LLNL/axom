@@ -2281,7 +2281,7 @@ void CalcSoundSpeedForElems(Domain &domain,
       }
       domain.ss(elem) = ssTmp ;
    }
-   ss4o3 = ss4o3;
+   (void)ss4o3;
 }
 
 /******************************************/

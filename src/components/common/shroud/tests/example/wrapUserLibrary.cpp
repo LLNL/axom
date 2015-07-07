@@ -21,9 +21,9 @@ return;
 
 bool AA_is_name_valid(const char * name)
 {
-// splicer begin function.isNameValid
+// splicer begin function.is_name_valid
 return name != NULL;
-// splicer end function.isNameValid
+// splicer end function.is_name_valid
 }
 
 // splicer begin additional_functions

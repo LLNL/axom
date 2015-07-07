@@ -19,7 +19,8 @@ OBJS = \
 	pyDataStoretype.o \
 	pyDataGrouptype.o \
 	pyDataBuffertype.o \
-	pyDataViewtype.o
+	pyDataViewtype.o \
+	pySidrehelper.o
 
 all : clean generate sidre.so
 

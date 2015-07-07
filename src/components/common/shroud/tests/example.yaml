@@ -87,8 +87,8 @@ classes:
 
     - decl: const string& getNameArg() const
     # This function will convert the return value into a argument
-#      options:
-#         F_result_as_arg: True
+      options:
+         F_string_result_as_arg: True
 
     - decl: ExClass2 *getRoot()
 
@@ -143,16 +143,40 @@ classes:
     - decl: ExClass1 *get_class1(ExClass1 *in)
 
     # typedefs that require modules
-    - decl: void* declare(TypeID type, SidreLength len)
+    - decl: void* declare(TypeID type, SidreLength len = 1)
       # by returning this,the C++ function allows chaining.
       # make them subroutines in Fortran.
       return_this: True
+      generic:
+        len:
+        -  int
+        -  long
 
     # void function
     - decl: void destroyall()
 
     # return typedef'd type
     - decl: TypeID getTypeID() const
+
+#           template<typename ValueType>
+    - decl: void setValue(ValueType value)
+      template:
+        ValueType:
+        - int
+        - long
+        - float
+        - double
+
+#           template<typename ValueType>
+    - decl: ValueType getValue()
+      template:
+        ValueType:
+        - int
+#        - long
+#        - float
+        - double
+
+    - decl: void testoptional(int i = 1, long j=2)
 
 
 functions:

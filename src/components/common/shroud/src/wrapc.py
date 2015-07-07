@@ -219,20 +219,25 @@ class Wrapc(util.WrapperMixin):
         cls  - class node or None for functions
         node - function/method node
         """
+        options = node['options']
+        if not options.wrap_c:
+            return
+
         if cls:
             cls_function = 'method'
         else:
             cls_function = 'function'
         if 'decl' in node:
-            self.log.write("{0} {1[decl]}\n".format(cls_function, node))
+            self.log.write("C {0} {1[decl]}\n".format(cls_function, node))
         else:
-            self.log.write("{0} {1[result][name]}\n".format(cls_function, node))
+            self.log.write("C {0} {1[result][name]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
+        if 'CPP_template' not in fmt:
+            fmt.CPP_template = ''
 
         # return type
-        options = node['options']
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
@@ -340,13 +345,13 @@ class Wrapc(util.WrapperMixin):
             elif is_dtor:
                 C_code.append('delete %sobj;' % C_this)
             elif result_type == 'void' and not result_is_ptr:
-                line = wformat('{CPP_this_call}{CPP_name}({C_call_list});',
-                               fmt_func)
+                line = wformat('{CPP_this_call}{CPP_name}{CPP_template}({C_call_list});',
+                               fmt)
                 C_code.append(line)
                 C_code.append('return;')
             else:
-                line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}({C_call_list});',
-                               fmt_func)
+                line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}{CPP_template}({C_call_list});',
+                               fmt)
                 C_code.append(line)
 
                 ret = result_typedef.cpp_to_c
@@ -363,6 +368,7 @@ class Wrapc(util.WrapperMixin):
         impl.append('{')
         if cls:
             impl.append(fmt_func.C_object )
-        self._create_splicer(fmt_func.method_name, impl, C_code)
+        self._create_splicer(fmt_func.underscore_name + 
+                             fmt.method_suffix, impl, C_code)
         impl.append('}')
 

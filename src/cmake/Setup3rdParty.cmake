@@ -17,7 +17,6 @@ include(cmake/FindUncrustify.cmake)
 ################################
 # Find boost headers
 ################################
-option(ENABLE_BOOST "Enable Boost" OFF)
 if (ENABLE_BOOST)
   find_package(Boost
                 1.55
