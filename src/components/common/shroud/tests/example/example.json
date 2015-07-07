@@ -895,6 +895,7 @@
                         }, 
                         {
                             "attrs": {
+                                "default": 1, 
                                 "intent": "in", 
                                 "value": true
                             }, 
@@ -902,7 +903,7 @@
                             "type": "SidreLength"
                         }
                     ], 
-                    "decl": "void* declare(TypeID type, SidreLength len)", 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "CPP_name": "declare", 
                         "CPP_this": "selfobj", 
@@ -1075,6 +1076,60 @@
                     "args": [
                         {
                             "attrs": {
+                                "default": 1, 
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "i", 
+                            "type": "int"
+                        }, 
+                        {
+                            "attrs": {
+                                "default": 2, 
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "j", 
+                            "type": "long"
+                        }
+                    ], 
+                    "decl": "void testoptional(int i = 1, long j=2)", 
+                    "fmt": {
+                        "CPP_name": "testoptional", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "AA_exclass2 * self, int i, long j", 
+                        "C_call_list": "i, j", 
+                        "C_name": "AA_exclass2_testoptional", 
+                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self, i, j", 
+                        "F_C_name": "aa_exclass2_testoptional", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr, i, j", 
+                        "F_arg_c_call_tab": "\tobj%voidptr\ti\tj", 
+                        "F_arguments": "obj, i, j", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "testoptional", 
+                        "F_name_impl": "exclass2_testoptional", 
+                        "F_name_method": "testoptional", 
+                        "F_subprogram": "subroutine", 
+                        "method_name": "testoptional", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "testoptional"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "testoptional", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
                                 "intent": "in", 
                                 "value": true
                             }, 
@@ -1083,6 +1138,7 @@
                         }, 
                         {
                             "attrs": {
+                                "default": 1, 
                                 "intent": "in", 
                                 "value": true
                             }, 
@@ -1091,7 +1147,7 @@
                             "type": "int"
                         }
                     ], 
-                    "decl": "void* declare(TypeID type, SidreLength len)", 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_arg_c_call": "obj%voidptr, type, int(len, C_LONG)", 
                         "F_arg_c_call_tab": "\tobj%voidptr\ttype\tint(len, C_LONG)", 
@@ -1113,6 +1169,7 @@
                                 }, 
                                 {
                                     "attrs": {
+                                        "default": 1, 
                                         "intent": "in", 
                                         "value": true
                                     }, 
@@ -1120,7 +1177,7 @@
                                     "type": "SidreLength"
                                 }
                             ], 
-                            "decl": "void* declare(TypeID type, SidreLength len)", 
+                            "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                             "fmt": {
                                 "CPP_name": "declare", 
                                 "CPP_this": "selfobj", 
@@ -1186,6 +1243,7 @@
                         }, 
                         {
                             "attrs": {
+                                "default": 1, 
                                 "intent": "in", 
                                 "value": true
                             }, 
@@ -1194,7 +1252,7 @@
                             "type": "long"
                         }
                     ], 
-                    "decl": "void* declare(TypeID type, SidreLength len)", 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_arg_c_call": "obj%voidptr, type, int(len, C_LONG)", 
                         "F_arg_c_call_tab": "\tobj%voidptr\ttype\tint(len, C_LONG)", 
@@ -1216,6 +1274,7 @@
                                 }, 
                                 {
                                     "attrs": {
+                                        "default": 1, 
                                         "intent": "in", 
                                         "value": true
                                     }, 
@@ -1223,7 +1282,7 @@
                                     "type": "SidreLength"
                                 }
                             ], 
-                            "decl": "void* declare(TypeID type, SidreLength len)", 
+                            "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                             "fmt": {
                                 "CPP_name": "declare", 
                                 "CPP_this": "selfobj", 

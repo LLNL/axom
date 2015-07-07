@@ -336,6 +336,7 @@ return 1;""", fmt)
         cpp_call_list = []
 
         # parse arguments
+        optional = []
         args = node.get('args', [])
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
@@ -351,6 +352,14 @@ return 1;""", fmt)
                 arg_offsets.append( '(char *) kwcpp+%d' % offset)
                 offset += len(arg_name) + 1
                 arg_typedef = self.typedef[arg['type']]
+
+                attrs = arg['attrs']
+                if 'default' in attrs:
+                    fmt.default_value = attrs['default']
+                    if not optional:
+                        format.append('|')  # add once
+                    append_format(optional, '{var} = {default_value};', fmt)
+
                 format.append(arg_typedef.PY_format)
                 if arg_typedef.PY_from_object:
                     format.append('&')
@@ -376,6 +385,7 @@ return 1;""", fmt)
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
+            PY_code.extend(optional)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
             PY_code.append(1)
             PY_code.append(wformat('{PyArg_addrargs}))', fmt))

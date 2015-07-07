@@ -24,6 +24,7 @@ module exclass2_mod
         procedure :: get_class1 => exclass2_get_class1
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
+        procedure :: testoptional => exclass2_testoptional
         procedure :: declare_int => exclass2_declare_int
         procedure :: declare_long => exclass2_declare_long
         procedure :: set_value_int => exclass2_set_value_int
@@ -103,6 +104,15 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
+        
+        subroutine aa_exclass2_testoptional(self, i, j) &
+                bind(C, name="AA_exclass2_testoptional")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: i
+            integer(C_LONG), value, intent(IN) :: j
+        end subroutine aa_exclass2_testoptional
         
         subroutine aa_exclass2_set_value_int(self, value) &
                 bind(C, name="AA_exclass2_set_value_int")
@@ -230,12 +240,35 @@ contains
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
     
+    subroutine exclass2_testoptional(obj, i, j)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT), optional :: i
+        integer(C_LONG), optional :: j
+        if (.not. present(i)) then
+            i = 1
+        endif
+        if (.not. present(j)) then
+            j = 2
+        endif
+        ! splicer begin class.ExClass2.method.testoptional
+        call aa_exclass2_testoptional(  &
+            obj%voidptr,  &
+            i,  &
+            j)
+        ! splicer end class.ExClass2.method.testoptional
+    end subroutine exclass2_testoptional
+    
     subroutine exclass2_declare_int(obj, type, len)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: type
-        integer(C_INT) :: len
+        integer(C_INT), optional :: len
+        if (.not. present(len)) then
+            len = 1
+        endif
         ! splicer begin class.ExClass2.method.declare_int
         call aa_exclass2_declare(  &
             obj%voidptr,  &
@@ -249,7 +282,10 @@ contains
         implicit none
         class(exclass2) :: obj
         integer(C_INT) :: type
-        integer(C_LONG) :: len
+        integer(C_LONG), optional :: len
+        if (.not. present(len)) then
+            len = 1
+        endif
         ! splicer begin class.ExClass2.method.declare_long
         call aa_exclass2_declare(  &
             obj%voidptr,  &

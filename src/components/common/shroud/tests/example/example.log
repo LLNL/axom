@@ -20,9 +20,10 @@ C method void ExClass1+destructor
 C method const string& getName const
 C method GetNameLength
 C method ExClass1 *get_class1(ExClass1 *in)
-C method void* declare(TypeID type, SidreLength len)
+C method void* declare(TypeID type, SidreLength len = 1)
 C method void destroyall()
 C method TypeID getTypeID() const
+C method void testoptional(int i = 1, long j=2)
 C method void setValue(ValueType value)
 C method void setValue(ValueType value)
 C method void setValue(ValueType value)
@@ -56,11 +57,12 @@ C-interface, Fortran method void ExClass1+destructor
 C-interface, Fortran method const string& getName const
 C-interface, Fortran method GetNameLength
 C-interface, Fortran method ExClass1 *get_class1(ExClass1 *in)
-C-interface method void* declare(TypeID type, SidreLength len)
+C-interface method void* declare(TypeID type, SidreLength len = 1)
 C-interface, Fortran method void destroyall()
 C-interface, Fortran method TypeID getTypeID() const
-Fortran method void* declare(TypeID type, SidreLength len)
-Fortran method void* declare(TypeID type, SidreLength len)
+C-interface, Fortran method void testoptional(int i = 1, long j=2)
+Fortran method void* declare(TypeID type, SidreLength len = 1)
+Fortran method void* declare(TypeID type, SidreLength len = 1)
 C-interface, Fortran method void setValue(ValueType value)
 C-interface, Fortran method void setValue(ValueType value)
 C-interface, Fortran method void setValue(ValueType value)
@@ -92,9 +94,10 @@ Python method void ExClass1+destructor
 Python method const string& getName const
 Python method GetNameLength
 Python method ExClass1 *get_class1(ExClass1 *in)
-Python method void* declare(TypeID type, SidreLength len)
+Python method void* declare(TypeID type, SidreLength len = 1)
 Python method void destroyall()
 Python method TypeID getTypeID() const
+Python method void testoptional(int i = 1, long j=2)
 Close pyExClass2type.cpp
 Python function void local_function1
 Python function bool isNameValid(const std::string& name)

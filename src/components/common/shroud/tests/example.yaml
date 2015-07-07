@@ -143,17 +143,10 @@ classes:
     - decl: ExClass1 *get_class1(ExClass1 *in)
 
     # typedefs that require modules
-    - decl: void* declare(TypeID type, SidreLength len)
+    - decl: void* declare(TypeID type, SidreLength len = 1)
       # by returning this,the C++ function allows chaining.
       # make them subroutines in Fortran.
       return_this: True
-
-#      generic:
-#        len:
-#        -  type: int
-#           cast: int({var},C_INT)
-#        -  type: long
-#           cast: int({var},C_LONG)
       generic:
         len:
         -  int
@@ -182,6 +175,9 @@ classes:
 #        - long
 #        - float
         - double
+
+    - decl: void testoptional(int i = 1, long j=2)
+
 
 functions:
   - decl: void local_function1

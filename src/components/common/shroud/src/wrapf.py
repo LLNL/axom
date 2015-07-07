@@ -136,10 +136,12 @@ class Wrapf(util.WrapperMixin):
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
             t.append(typ)
+            if 'default' in arg['attrs']:
+                t.append('optional')
 #            if not (arg['attrs'].get('ptr', False) or
 #                    arg['attrs'].get('reference', False)):
 #                t.append(', value')
-            return (''.join(t), arg['attrs'].get('array', False))
+            return (', '.join(t), arg['attrs'].get('array', False))
 
     def _f_decl(self, arg, name=None):
         """
@@ -484,6 +486,7 @@ class Wrapf(util.WrapperMixin):
                             'class({F_derived_name}) :: {F_this}',
                             fmt_func))
 
+        optional = []
         for arg in node.get('args', []):
             # default argument's intent
             # XXX look at const, ptr
@@ -502,6 +505,15 @@ class Wrapf(util.WrapperMixin):
             else:
                 rrr = self.typedef[arg['type']].fortran_to_c
                 append_format(arg_c_call, rrr, fmt)
+
+            if 'default' in attrs:
+                fmt.default_value = attrs['default']
+                optional.extend([
+                        wformat('if (.not. present({var})) then', fmt),
+                        1,
+                        wformat('{var} = {default_value}', fmt),
+                        -1,
+                        'endif'])
 
         if result_string:
             arg_f_names.append('rv')
@@ -572,6 +584,7 @@ class Wrapf(util.WrapperMixin):
         impl.extend(arg_f_use)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
+        impl.extend(optional)
         self._create_splicer(fmt_func.F_name_method, impl, F_code)
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
