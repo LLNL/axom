@@ -87,7 +87,7 @@ IF(NOT EXISTS ${GENHTML_PATH})
    ENDIF()
 ENDIF()
 
-FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
+#FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
 
 IF(NOT EXISTS ${GCOV_PATH})
    FIND_PROGRAM( GCOV_PATH gcov )
@@ -142,14 +142,14 @@ FUNCTION(add_code_coverage_target _targetname _testrunner)
 	ADD_CUSTOM_TARGET(${_targetname}
 
 		# Cleanup lcov
-		${LCOV_PATH} --directory . --zerocounters
+		${LCOV_PATH} --gcov-tool ${GCOV_PATH} --directory . --zerocounters
 
 		# Run tests
 		COMMAND ${_testrunner} ${ARGV2}
 
 		# Capturing lcov counters and generating report
-		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${_targetname}.info
-		COMMAND ${LCOV_PATH} --remove ${_targetname}.info '/usr/include/*' --output-file ${_targetname}.info.cleaned
+		COMMAND ${LCOV_PATH} --gcov-tool ${GCOV_PATH} --directory . --capture --output-file ${_targetname}.info
+		COMMAND ${LCOV_PATH} --gcov-tool ${GCOV_PATH} --remove ${_targetname}.info '/usr/include/*' --output-file ${_targetname}.info.cleaned
 		COMMAND ${GENHTML_PATH} -o ${_targetname} ${_targetname}.info.cleaned
 		COMMAND ${CMAKE_COMMAND} -E remove ${_targetname}.info ${_targetname}.info.cleaned
 
