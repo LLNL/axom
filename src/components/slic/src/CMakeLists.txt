@@ -38,15 +38,27 @@ if (ENABLE_MPI)
 endif()
 
 #
+# custom target to copy header files in the "include" folder of the build tree.
+#
+copy_headers_target( ${PROJECT_NAME}
+                     "${slic_headers}"
+                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
+
+#
 # make the library
 #
 if ( ENABLE_MPI )
 
     make_library( LIBRARY_NAME
                       slic
+
                   LIBRARY_SOURCES
                       "${slic_sources}"
                       "${slic_headers}"
+
+                  DEPENDS_ON
+                      common
+
                   WITH_MPI
                   )
 
@@ -54,20 +66,15 @@ else()
 
     make_library( LIBRARY_NAME
                       slic
+
                   LIBRARY_SOURCES
                       "${slic_sources}"
                       "${slic_headers}"
+
+                  DEPENDS_ON
+                      common
                   )
 
 endif()
-add_dependencies(slic copy_headers_common)
-add_dependencies(slic copy_headers_slic)
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME}
-                     "${slic_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
