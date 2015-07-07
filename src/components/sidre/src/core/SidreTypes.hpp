@@ -17,7 +17,7 @@ namespace sidre
 {
 
 typedef conduit::DataType DataType;
-typedef conduit::DataType::TypeID TypeID;
+typedef conduit_datatype_type_id TypeID;
 
 
 /*!
