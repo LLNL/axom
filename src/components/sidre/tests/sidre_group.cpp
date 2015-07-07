@@ -506,7 +506,7 @@ TEST(sidre_group,save_restore_complex)
   ga->getView("i0")->setValue(1);
   // Be careful on floats.  If you just hand it 100.0, the compiler will assume you want a double.
   // Either cast the value to float, or be explicit on the template argument.
-  gb->getView("f0")->setValue( static_cast<float>(100.0) );
+  gb->getView("f0")->setValue( 100.0f );
   //this would have worked equally well also.
   //gb->getView("f0")->setValue<float>(100.0);
   gc->getView("d0")->setValue(3000.00);
