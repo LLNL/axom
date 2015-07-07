@@ -444,6 +444,11 @@ macro(make_executable)
 
    endif()
 
+   add_test( NAME ${exe_name}
+             COMMAND ${exe_name}
+             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+             )
+
    if(IS_ABSOLUTE)
        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
    else()
