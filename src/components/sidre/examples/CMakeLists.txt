@@ -3,7 +3,7 @@
 # List of single source file examples
 #
 set(example_sources
-    ShockTube_example.cpp
+    sidre_shocktube_example.cpp
     )
 
 #
