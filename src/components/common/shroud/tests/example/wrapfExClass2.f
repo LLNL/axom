@@ -235,7 +235,10 @@ contains
         integer(C_INT) :: type
         integer(C_INT) :: len
         ! splicer begin class.ExClass2.method.declare_int
-        call aa_exclass2_declare(obj%voidptr, type, int(len, C_LONG))
+        call aa_exclass2_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
         ! splicer end class.ExClass2.method.declare_int
     end subroutine exclass2_declare_int
     
@@ -246,7 +249,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.ExClass2.method.declare_long
-        call aa_exclass2_declare(obj%voidptr, type, int(len, C_LONG))
+        call aa_exclass2_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
         ! splicer end class.ExClass2.method.declare_long
     end subroutine exclass2_declare_long
     
@@ -256,7 +262,9 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: value
         ! splicer begin class.ExClass2.method.set_value_int
-        call aa_exclass2_set_value_int(obj%voidptr, value)
+        call aa_exclass2_set_value_int(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass2.method.set_value_int
     end subroutine exclass2_set_value_int
     
@@ -266,7 +274,9 @@ contains
         class(exclass2) :: obj
         integer(C_LONG) :: value
         ! splicer begin class.ExClass2.method.set_value_long
-        call aa_exclass2_set_value_long(obj%voidptr, value)
+        call aa_exclass2_set_value_long(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass2.method.set_value_long
     end subroutine exclass2_set_value_long
     
@@ -276,7 +286,9 @@ contains
         class(exclass2) :: obj
         real(C_FLOAT) :: value
         ! splicer begin class.ExClass2.method.set_value_float
-        call aa_exclass2_set_value_float(obj%voidptr, value)
+        call aa_exclass2_set_value_float(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass2.method.set_value_float
     end subroutine exclass2_set_value_float
     
@@ -286,7 +298,9 @@ contains
         class(exclass2) :: obj
         real(C_DOUBLE) :: value
         ! splicer begin class.ExClass2.method.set_value_double
-        call aa_exclass2_set_value_double(obj%voidptr, value)
+        call aa_exclass2_set_value_double(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass2.method.set_value_double
     end subroutine exclass2_set_value_double
     

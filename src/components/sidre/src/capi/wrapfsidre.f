@@ -808,7 +808,9 @@ contains
         class(datastore) :: obj
         integer(C_INT) :: id
         ! splicer begin class.DataStore.method.destroy_buffer
-        call atk_datastore_destroy_buffer(obj%voidptr, id)
+        call atk_datastore_destroy_buffer(  &
+            obj%voidptr,  &
+            id)
         ! splicer end class.DataStore.method.destroy_buffer
     end subroutine datastore_destroy_buffer
     
@@ -987,7 +989,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         ! splicer begin class.DataGroup.method.destroy_view_and_buffer
-        call atk_datagroup_destroy_view_and_buffer(obj%voidptr, trim(name) // C_NULL_CHAR)
+        call atk_datagroup_destroy_view_and_buffer(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.destroy_view_and_buffer
     end subroutine datagroup_destroy_view_and_buffer
     
@@ -1021,7 +1025,9 @@ contains
         character(*), intent(OUT) :: rv
         type(C_PTR) :: rv_ptr
         ! splicer begin class.DataGroup.method.get_view_name
-        rv_ptr = atk_datagroup_get_view_name(obj%voidptr, idx)
+        rv_ptr = atk_datagroup_get_view_name(  &
+            obj%voidptr,  &
+            idx)
         call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.DataGroup.method.get_view_name
     end subroutine datagroup_get_view_name
@@ -1065,7 +1071,9 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         ! splicer begin class.DataGroup.method.destroy_group
-        call atk_datagroup_destroy_group(obj%voidptr, trim(name) // C_NULL_CHAR)
+        call atk_datagroup_destroy_group(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.destroy_group
     end subroutine datagroup_destroy_group
     
@@ -1099,7 +1107,9 @@ contains
         character(*), intent(OUT) :: rv
         type(C_PTR) :: rv_ptr
         ! splicer begin class.DataGroup.method.get_group_name
-        rv_ptr = atk_datagroup_get_group_name(obj%voidptr, idx)
+        rv_ptr = atk_datagroup_get_group_name(  &
+            obj%voidptr,  &
+            idx)
         call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.DataGroup.method.get_group_name
     end subroutine datagroup_get_group_name
@@ -1120,7 +1130,10 @@ contains
         character(*) :: obase
         character(*) :: protocol
         ! splicer begin class.DataGroup.method.save
-        call atk_datagroup_save(obj%voidptr, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
+        call atk_datagroup_save(  &
+            obj%voidptr,  &
+            trim(obase) // C_NULL_CHAR,  &
+            trim(protocol) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.save
     end subroutine datagroup_save
     
@@ -1131,7 +1144,10 @@ contains
         character(*) :: obase
         character(*) :: protocol
         ! splicer begin class.DataGroup.method.load
-        call atk_datagroup_load(obj%voidptr, trim(obase) // C_NULL_CHAR, trim(protocol) // C_NULL_CHAR)
+        call atk_datagroup_load(  &
+            obj%voidptr,  &
+            trim(obase) // C_NULL_CHAR,  &
+            trim(protocol) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
     
@@ -1165,7 +1181,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataBuffer.method.declare
-        call atk_databuffer_declare(obj%voidptr, type, len)
+        call atk_databuffer_declare(  &
+            obj%voidptr,  &
+            type,  &
+            len)
         ! splicer end class.DataBuffer.method.declare
     end subroutine databuffer_declare
     
@@ -1185,7 +1204,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataBuffer.method.allocate_from_type
-        call atk_databuffer_allocate_from_type(obj%voidptr, type, len)
+        call atk_databuffer_allocate_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            len)
         ! splicer end class.DataBuffer.method.allocate_from_type
     end subroutine databuffer_allocate_from_type
     
@@ -1196,7 +1218,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataBuffer.method.reallocate
-        call atk_databuffer_reallocate(obj%voidptr, type, len)
+        call atk_databuffer_reallocate(  &
+            obj%voidptr,  &
+            type,  &
+            len)
         ! splicer end class.DataBuffer.method.reallocate
     end subroutine databuffer_reallocate
     
@@ -1206,7 +1231,9 @@ contains
         class(databuffer) :: obj
         type(C_PTR) :: external_data
         ! splicer begin class.DataBuffer.method.set_external_data
-        call atk_databuffer_set_external_data(obj%voidptr, external_data)
+        call atk_databuffer_set_external_data(  &
+            obj%voidptr,  &
+            external_data)
         ! splicer end class.DataBuffer.method.set_external_data
     end subroutine databuffer_set_external_data
     
@@ -1259,7 +1286,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataView.method.declare
-        call atk_dataview_declare(obj%voidptr, type, len)
+        call atk_dataview_declare(  &
+            obj%voidptr,  &
+            type,  &
+            len)
         ! splicer end class.DataView.method.declare
     end subroutine dataview_declare
     
@@ -1270,7 +1300,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataView.method.allocate
-        call atk_dataview_allocate(obj%voidptr, type, len)
+        call atk_dataview_allocate(  &
+            obj%voidptr,  &
+            type,  &
+            len)
         ! splicer end class.DataView.method.allocate
     end subroutine dataview_allocate
     
@@ -1281,7 +1314,10 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataView.method.reallocate
-        call atk_dataview_reallocate(obj%voidptr, type, len)
+        call atk_dataview_reallocate(  &
+            obj%voidptr,  &
+            type,  &
+            len)
         ! splicer end class.DataView.method.reallocate
     end subroutine dataview_reallocate
     
@@ -1402,7 +1438,9 @@ contains
         class(dataview) :: obj
         integer(C_INT) :: value
         ! splicer begin class.DataView.method.set_value_int
-        call atk_dataview_set_value_int(obj%voidptr, value)
+        call atk_dataview_set_value_int(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.DataView.method.set_value_int
     end subroutine dataview_set_value_int
     
@@ -1412,7 +1450,9 @@ contains
         class(dataview) :: obj
         integer(C_LONG) :: value
         ! splicer begin class.DataView.method.set_value_long
-        call atk_dataview_set_value_long(obj%voidptr, value)
+        call atk_dataview_set_value_long(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.DataView.method.set_value_long
     end subroutine dataview_set_value_long
     
@@ -1422,7 +1462,9 @@ contains
         class(dataview) :: obj
         real(C_FLOAT) :: value
         ! splicer begin class.DataView.method.set_value_float
-        call atk_dataview_set_value_float(obj%voidptr, value)
+        call atk_dataview_set_value_float(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.DataView.method.set_value_float
     end subroutine dataview_set_value_float
     
@@ -1432,7 +1474,9 @@ contains
         class(dataview) :: obj
         real(C_DOUBLE) :: value
         ! splicer begin class.DataView.method.set_value_double
-        call atk_dataview_set_value_double(obj%voidptr, value)
+        call atk_dataview_set_value_double(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.DataView.method.set_value_double
     end subroutine dataview_set_value_double
     
