@@ -115,11 +115,19 @@ classes:
        method_suffix: _simple
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
        method_suffix: _from_type
+       generic:
+         len:
+         -  int
+         -  long
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
 #    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, TypeID type, SidreLength len )
 #    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength len )
+       generic:
+         len:
+         -  int
+         -  long
     -  decl: DataView *moveView(DataView *view)
     -  decl: DataView *copyView(DataView *view)
     -  decl: void destroyViewAndBuffer(const std::string &name)
@@ -168,6 +176,10 @@ classes:
       - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeID type, SidreLength len)
         return_this: True
+        generic:
+          len:
+          -  int
+          -  long
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
@@ -176,10 +188,18 @@ classes:
       - decl: DataBuffer* allocate(TypeID type, SidreLength len)
         method_suffix: _from_type
         return_this: True
+        generic:
+          len:
+          -  int
+          -  long
 #      - decl: DataBuffer* allocate(const Schema &schema)
 #      - decl: DataBuffer* allocate(const DataType& dtype)
       - decl: DataBuffer * reallocate(TypeID type, SidreLength len)
         return_this: True
+        generic:
+          len:
+          -  int
+          -  long
 #      - decl: DataBuffer* reallocate(const Schema& schema)
 #      - decl: DataBuffer* reallocate(const DataType& dtype)
       - decl: DataBuffer * setExternalData( void* external_data)
@@ -205,15 +225,27 @@ classes:
     methods:
     - decl: DataView* declare(TypeID type, SidreLength len)
       return_this: True
+      generic:
+        len:
+        -  int
+        -  long
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
 #    - decl: DataView* allocate()
     - decl: DataView* allocate(TypeID type, SidreLength len)
       return_this: True
+      generic:
+        len:
+        -  int
+        -  long
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
     - decl: DataView * reallocate(TypeID type, SidreLength len)
       return_this: True
+      generic:
+        len:
+        -  int
+        -  long
 #    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* reallocate(const DataType& dtype)
 #    - decl: DataView* apply()

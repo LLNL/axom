@@ -73,10 +73,8 @@ module sidre_mod
         procedure :: get_num_groups => datagroup_get_num_groups
         procedure :: has_view => datagroup_has_view
         procedure :: create_view_and_buffer_simple => datagroup_create_view_and_buffer_simple
-        procedure :: create_view_and_buffer_from_type => datagroup_create_view_and_buffer_from_type
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_view => datagroup_create_view
-        procedure :: create_external_view => datagroup_create_external_view
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
@@ -93,7 +91,12 @@ module sidre_mod
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
-        generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_from_type
+        procedure :: create_view_and_buffer_int => datagroup_create_view_and_buffer_int
+        procedure :: create_view_and_buffer_long => datagroup_create_view_and_buffer_long
+        procedure :: create_external_view_int => datagroup_create_external_view_int
+        procedure :: create_external_view_long => datagroup_create_external_view_long
+        generic :: create_external_view => create_external_view_int, create_external_view_long
+        generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_int, create_view_and_buffer_long
         ! splicer begin class.DataGroup.type_bound_procedure_part
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
@@ -108,16 +111,21 @@ module sidre_mod
     contains
         procedure :: get_index => databuffer_get_index
         procedure :: get_num_views => databuffer_get_num_views
-        procedure :: declare => databuffer_declare
         procedure :: allocate_existing => databuffer_allocate_existing
-        procedure :: allocate_from_type => databuffer_allocate_from_type
-        procedure :: reallocate => databuffer_reallocate
         procedure :: set_external_data => databuffer_set_external_data
         procedure :: is_external => databuffer_is_external
         procedure :: get_data => databuffer_get_data
         procedure :: get_total_bytes => databuffer_get_total_bytes
         procedure :: print => databuffer_print
-        generic :: allocate => allocate_existing, allocate_from_type
+        procedure :: declare_int => databuffer_declare_int
+        procedure :: declare_long => databuffer_declare_long
+        procedure :: allocate_int => databuffer_allocate_int
+        procedure :: allocate_long => databuffer_allocate_long
+        procedure :: reallocate_int => databuffer_reallocate_int
+        procedure :: reallocate_long => databuffer_reallocate_long
+        generic :: allocate => allocate_existing, allocate_int, allocate_long
+        generic :: declare => declare_int, declare_long
+        generic :: reallocate => reallocate_int, reallocate_long
         ! splicer begin class.DataBuffer.type_bound_procedure_part
         ! splicer end class.DataBuffer.type_bound_procedure_part
     end type databuffer
@@ -130,9 +138,6 @@ module sidre_mod
         ! splicer begin class.DataView.component_part
         ! splicer end class.DataView.component_part
     contains
-        procedure :: declare => dataview_declare
-        procedure :: allocate => dataview_allocate
-        procedure :: reallocate => dataview_reallocate
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
@@ -144,6 +149,12 @@ module sidre_mod
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_number_of_elements => dataview_get_number_of_elements
         procedure :: print => dataview_print
+        procedure :: declare_int => dataview_declare_int
+        procedure :: declare_long => dataview_declare_long
+        procedure :: allocate_int => dataview_allocate_int
+        procedure :: allocate_long => dataview_allocate_long
+        procedure :: reallocate_int => dataview_reallocate_int
+        procedure :: reallocate_long => dataview_reallocate_long
         procedure :: set_value_int => dataview_set_value_int
         procedure :: set_value_long => dataview_set_value_long
         procedure :: set_value_float => dataview_set_value_float
@@ -152,6 +163,9 @@ module sidre_mod
         procedure :: get_value_long => dataview_get_value_long
         procedure :: get_value_float => dataview_get_value_float
         procedure :: get_value_double => dataview_get_value_double
+        generic :: allocate => allocate_int, allocate_long
+        generic :: declare => declare_int, declare_long
+        generic :: reallocate => reallocate_int, reallocate_long
         generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
         ! splicer begin class.DataView.type_bound_procedure_part
         ! splicer end class.DataView.type_bound_procedure_part
@@ -916,23 +930,6 @@ contains
         ! splicer end class.DataGroup.method.create_view_and_buffer_simple
     end function datagroup_create_view_and_buffer_simple
     
-    function datagroup_create_view_and_buffer_from_type(obj, name, type, len) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*) :: name
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_buffer_from_type
-        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(  &
-            obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
-            type,  &
-            len)
-        ! splicer end class.DataGroup.method.create_view_and_buffer_from_type
-    end function datagroup_create_view_and_buffer_from_type
-    
     function datagroup_create_opaque_view(obj, name, opaque_ptr) result(rv)
         use iso_c_binding
         implicit none
@@ -962,25 +959,6 @@ contains
             buff%voidptr)
         ! splicer end class.DataGroup.method.create_view
     end function datagroup_create_view
-    
-    function datagroup_create_external_view(obj, name, external_data, type, len) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*) :: name
-        type(C_PTR) :: external_data
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_external_view
-        rv%voidptr = atk_datagroup_create_external_view(  &
-            obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
-            external_data,  &
-            type,  &
-            len)
-        ! splicer end class.DataGroup.method.create_external_view
-    end function datagroup_create_external_view
     
     function datagroup_move_view(obj, view) result(rv)
         use iso_c_binding
@@ -1190,6 +1168,78 @@ contains
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
     
+    function datagroup_create_view_and_buffer_int(obj, name, type, len) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_and_buffer_int
+        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataGroup.method.create_view_and_buffer_int
+    end function datagroup_create_view_and_buffer_int
+    
+    function datagroup_create_view_and_buffer_long(obj, name, type, len) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_and_buffer_long
+        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataGroup.method.create_view_and_buffer_long
+    end function datagroup_create_view_and_buffer_long
+    
+    function datagroup_create_external_view_int(obj, name, external_data, type, len) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        type(C_PTR) :: external_data
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_external_view_int
+        rv%voidptr = atk_datagroup_create_external_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            external_data,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataGroup.method.create_external_view_int
+    end function datagroup_create_external_view_int
+    
+    function datagroup_create_external_view_long(obj, name, external_data, type, len) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        type(C_PTR) :: external_data
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_external_view_long
+        rv%voidptr = atk_datagroup_create_external_view(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            external_data,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataGroup.method.create_external_view_long
+    end function datagroup_create_external_view_long
+    
     ! splicer begin class.DataGroup.additional_functions
     ! splicer end class.DataGroup.additional_functions
     
@@ -1213,20 +1263,6 @@ contains
         ! splicer end class.DataBuffer.method.get_num_views
     end function databuffer_get_num_views
     
-    subroutine databuffer_declare(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataBuffer.method.declare
-        call atk_databuffer_declare(  &
-            obj%voidptr,  &
-            type,  &
-            len)
-        ! splicer end class.DataBuffer.method.declare
-    end subroutine databuffer_declare
-    
     subroutine databuffer_allocate_existing(obj)
         use iso_c_binding
         implicit none
@@ -1235,34 +1271,6 @@ contains
         call atk_databuffer_allocate_existing(obj%voidptr)
         ! splicer end class.DataBuffer.method.allocate_existing
     end subroutine databuffer_allocate_existing
-    
-    subroutine databuffer_allocate_from_type(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataBuffer.method.allocate_from_type
-        call atk_databuffer_allocate_from_type(  &
-            obj%voidptr,  &
-            type,  &
-            len)
-        ! splicer end class.DataBuffer.method.allocate_from_type
-    end subroutine databuffer_allocate_from_type
-    
-    subroutine databuffer_reallocate(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataBuffer.method.reallocate
-        call atk_databuffer_reallocate(  &
-            obj%voidptr,  &
-            type,  &
-            len)
-        ! splicer end class.DataBuffer.method.reallocate
-    end subroutine databuffer_reallocate
     
     subroutine databuffer_set_external_data(obj, external_data)
         use iso_c_binding
@@ -1315,50 +1323,92 @@ contains
         ! splicer end class.DataBuffer.method.print
     end subroutine databuffer_print
     
+    subroutine databuffer_declare_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.DataBuffer.method.declare_int
+        call atk_databuffer_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataBuffer.method.declare_int
+    end subroutine databuffer_declare_int
+    
+    subroutine databuffer_declare_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.DataBuffer.method.declare_long
+        call atk_databuffer_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataBuffer.method.declare_long
+    end subroutine databuffer_declare_long
+    
+    subroutine databuffer_allocate_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.DataBuffer.method.allocate_int
+        call atk_databuffer_allocate_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataBuffer.method.allocate_int
+    end subroutine databuffer_allocate_int
+    
+    subroutine databuffer_allocate_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.DataBuffer.method.allocate_long
+        call atk_databuffer_allocate_from_type(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataBuffer.method.allocate_long
+    end subroutine databuffer_allocate_long
+    
+    subroutine databuffer_reallocate_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.DataBuffer.method.reallocate_int
+        call atk_databuffer_reallocate(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataBuffer.method.reallocate_int
+    end subroutine databuffer_reallocate_int
+    
+    subroutine databuffer_reallocate_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.DataBuffer.method.reallocate_long
+        call atk_databuffer_reallocate(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataBuffer.method.reallocate_long
+    end subroutine databuffer_reallocate_long
+    
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
-    
-    subroutine dataview_declare(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataView.method.declare
-        call atk_dataview_declare(  &
-            obj%voidptr,  &
-            type,  &
-            len)
-        ! splicer end class.DataView.method.declare
-    end subroutine dataview_declare
-    
-    subroutine dataview_allocate(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataView.method.allocate
-        call atk_dataview_allocate(  &
-            obj%voidptr,  &
-            type,  &
-            len)
-        ! splicer end class.DataView.method.allocate
-    end subroutine dataview_allocate
-    
-    subroutine dataview_reallocate(obj, type, len)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: len
-        ! splicer begin class.DataView.method.reallocate
-        call atk_dataview_reallocate(  &
-            obj%voidptr,  &
-            type,  &
-            len)
-        ! splicer end class.DataView.method.reallocate
-    end subroutine dataview_reallocate
     
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding
@@ -1470,6 +1520,90 @@ contains
         call atk_dataview_print(obj%voidptr)
         ! splicer end class.DataView.method.print
     end subroutine dataview_print
+    
+    subroutine dataview_declare_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.DataView.method.declare_int
+        call atk_dataview_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataView.method.declare_int
+    end subroutine dataview_declare_int
+    
+    subroutine dataview_declare_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.DataView.method.declare_long
+        call atk_dataview_declare(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataView.method.declare_long
+    end subroutine dataview_declare_long
+    
+    subroutine dataview_allocate_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.DataView.method.allocate_int
+        call atk_dataview_allocate(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataView.method.allocate_int
+    end subroutine dataview_allocate_int
+    
+    subroutine dataview_allocate_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.DataView.method.allocate_long
+        call atk_dataview_allocate(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataView.method.allocate_long
+    end subroutine dataview_allocate_long
+    
+    subroutine dataview_reallocate_int(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_INT) :: len
+        ! splicer begin class.DataView.method.reallocate_int
+        call atk_dataview_reallocate(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataView.method.reallocate_int
+    end subroutine dataview_reallocate_int
+    
+    subroutine dataview_reallocate_long(obj, type, len)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: type
+        integer(C_LONG) :: len
+        ! splicer begin class.DataView.method.reallocate_long
+        call atk_dataview_reallocate(  &
+            obj%voidptr,  &
+            type,  &
+            int(len, C_LONG))
+        ! splicer end class.DataView.method.reallocate_long
+    end subroutine dataview_reallocate_long
     
     subroutine dataview_set_value_int(obj, value)
         use iso_c_binding

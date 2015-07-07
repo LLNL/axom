@@ -275,15 +275,15 @@ contains
     flds = root%create_group("fields")
 
     i0_view = flds%create_view_and_buffer("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%allocate(ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
     f0_view = flds%create_view_and_buffer("f0")
-    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    call f0_view%allocate(ATK_C_FLOAT_T, 1)
     call f0_view%set_value(100.0)
 
     d0_view = flds%create_view_and_buffer("d0")
-    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1)
     call d0_view%set_value(3000.0)
 
     call assert_true(flds%has_view("i0"))
@@ -428,7 +428,7 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    view1 = grp%create_view_and_buffer(view_name1, ATK_C_INT_T, 10_8)
+    view1 = grp%create_view_and_buffer(view_name1, ATK_C_INT_T, 10)
 
 !--    ! this one is the Schema & method
 !--    Schema s
@@ -476,7 +476,7 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10_8)
+    base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10)
     base_ptr = base%get_data_pointer()
     call c_f_pointer(base_ptr, base_vals, [10])
 
@@ -516,7 +516,7 @@ contains
     ga = flds%create_group("a")
 
     i0_view = ga%create_view_and_buffer("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%allocate(ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
     call assert_true(root%has_group("fields"))
@@ -563,15 +563,15 @@ contains
     gc = flds%create_group("c")
 
     i0_view = ga%create_view_and_buffer("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%allocate(ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
     f0_view = gb%create_view_and_buffer("f0")
-    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    call f0_view%allocate(ATK_C_FLOAT_T, 1)
     call f0_view%set_value(100.0)
 
     d0_view = gc%create_view_and_buffer("d0")
-    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1)
     call d0_view%set_value(3000.0d0)
 
     ! check that all sub groups exist
