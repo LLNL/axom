@@ -95,8 +95,17 @@ module sidre_mod
         procedure :: create_view_and_buffer_long => datagroup_create_view_and_buffer_long
         procedure :: create_external_view_int => datagroup_create_external_view_int
         procedure :: create_external_view_long => datagroup_create_external_view_long
-        generic :: create_external_view => create_external_view_int, create_external_view_long
-        generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_int, create_view_and_buffer_long
+        generic :: create_external_view => &
+            ! splicer begin class.DataGroup.generic.create_external_view
+            ! splicer end class.DataGroup.generic.create_external_view
+            create_external_view_int,  &
+            create_external_view_long
+        generic :: create_view_and_buffer => &
+            ! splicer begin class.DataGroup.generic.create_view_and_buffer
+            ! splicer end class.DataGroup.generic.create_view_and_buffer
+            create_view_and_buffer_simple,  &
+            create_view_and_buffer_int,  &
+            create_view_and_buffer_long
         ! splicer begin class.DataGroup.type_bound_procedure_part
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
@@ -123,9 +132,22 @@ module sidre_mod
         procedure :: allocate_long => databuffer_allocate_long
         procedure :: reallocate_int => databuffer_reallocate_int
         procedure :: reallocate_long => databuffer_reallocate_long
-        generic :: allocate => allocate_existing, allocate_int, allocate_long
-        generic :: declare => declare_int, declare_long
-        generic :: reallocate => reallocate_int, reallocate_long
+        generic :: allocate => &
+            ! splicer begin class.DataBuffer.generic.allocate
+            ! splicer end class.DataBuffer.generic.allocate
+            allocate_existing,  &
+            allocate_int,  &
+            allocate_long
+        generic :: declare => &
+            ! splicer begin class.DataBuffer.generic.declare
+            ! splicer end class.DataBuffer.generic.declare
+            declare_int,  &
+            declare_long
+        generic :: reallocate => &
+            ! splicer begin class.DataBuffer.generic.reallocate
+            ! splicer end class.DataBuffer.generic.reallocate
+            reallocate_int,  &
+            reallocate_long
         ! splicer begin class.DataBuffer.type_bound_procedure_part
         ! splicer end class.DataBuffer.type_bound_procedure_part
     end type databuffer
@@ -163,10 +185,28 @@ module sidre_mod
         procedure :: get_value_long => dataview_get_value_long
         procedure :: get_value_float => dataview_get_value_float
         procedure :: get_value_double => dataview_get_value_double
-        generic :: allocate => allocate_int, allocate_long
-        generic :: declare => declare_int, declare_long
-        generic :: reallocate => reallocate_int, reallocate_long
-        generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
+        generic :: allocate => &
+            ! splicer begin class.DataView.generic.allocate
+            ! splicer end class.DataView.generic.allocate
+            allocate_int,  &
+            allocate_long
+        generic :: declare => &
+            ! splicer begin class.DataView.generic.declare
+            ! splicer end class.DataView.generic.declare
+            declare_int,  &
+            declare_long
+        generic :: reallocate => &
+            ! splicer begin class.DataView.generic.reallocate
+            ! splicer end class.DataView.generic.reallocate
+            reallocate_int,  &
+            reallocate_long
+        generic :: set_value => &
+            ! splicer begin class.DataView.generic.set_value
+            ! splicer end class.DataView.generic.set_value
+            set_value_int,  &
+            set_value_long,  &
+            set_value_float,  &
+            set_value_double
         ! splicer begin class.DataView.type_bound_procedure_part
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview

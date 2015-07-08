@@ -245,11 +245,19 @@ class Wrapf(util.WrapperMixin):
         self.f_type_decl.extend(self.type_bound_part)
 
         # Look for generics
+        # splicer to extend generic
+        self._push_splicer('generic')
         for key in sorted(self.f_type_generic.keys()):
             methods = self.f_type_generic[key]
             if len(methods) > 1:
-                self.f_type_decl.append('generic :: %s => %s' % (
-                        key, ', '.join(methods)))
+                self.f_type_decl.append('generic :: %s => &' % key)
+                self.f_type_decl.append(1)
+                self._create_splicer(key, self.f_type_decl)
+                for genname in methods[:-1]:
+                    self.f_type_decl.append(genname + ',  &')
+                self.f_type_decl.append(methods[-1])
+                self.f_type_decl.append(-1)
+        self._pop_splicer('generic')
 
         self._create_splicer('type_bound_procedure_part', self.f_type_decl)
         self.f_type_decl.extend([
