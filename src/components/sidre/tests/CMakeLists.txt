@@ -2,10 +2,6 @@
 # Specify list of tests
 #
 
-set(catch_sidre_tests
-   testCatchExample.cpp
-   )
-
 set(gtest_sidre_tests
 #   testGTestExample.cpp
    sidre_smoke.cpp
@@ -33,15 +29,6 @@ set(fruit_sidre_tests
    F_sidre_buffer.f
    F_sidre_view.f
 )
-
-
-
-#
-# Add catch based tests
-#
-foreach(test ${catch_sidre_tests})
-    add_catch_test( TEST_SOURCE ${test} DEPENDS_ON sidre conduit slic)
-endforeach()
 
 #
 # Add gtest C++ based tests
