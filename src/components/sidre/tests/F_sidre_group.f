@@ -467,7 +467,6 @@ contains
     type(datagroup) root
     type(dataview) base
     type(databuffer) base_buff
-    type(C_PTR) base_ptr
     integer(C_INT), pointer :: base_vals(:)
 !--    integer i
 
@@ -477,8 +476,7 @@ contains
     ! use create + alloc convenience methods
     ! this one is the DataType & method
     base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10)
-    base_ptr = base%get_data_pointer()
-    call c_f_pointer(base_ptr, base_vals, [10])
+    call base%get_value(base_vals)
 
     base_vals(1:5) = 10
     base_vals(6:10) = 20

@@ -208,6 +208,11 @@ module sidre_mod
             set_value_float,  &
             set_value_double
         ! splicer begin class.DataView.type_bound_procedure_part
+        procedure :: dataview_get_value_int_1d_ptr
+        procedure :: dataview_get_value_float_1d_ptr
+        generic :: get_value => &
+            dataview_get_value_int_1d_ptr, &
+            dataview_get_value_float_1d_ptr
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
     
@@ -1734,6 +1739,37 @@ contains
     end function dataview_get_value_double
     
     ! splicer begin class.DataView.additional_functions
+    
+    subroutine dataview_get_value_int_1d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_INT), pointer, intent(OUT) :: value(:)
+    
+        type(C_PTR) cptr
+        integer(C_SIZE_T) nelems
+    
+        cptr = view%get_data_pointer()
+        nelems = view%get_number_of_elements()
+        call c_f_pointer(cptr, value, [ nelems ])
+    
+    end subroutine dataview_get_value_int_1d_ptr
+    
+    subroutine dataview_get_value_float_1d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), pointer, intent(OUT) :: value(:)
+    
+        type(C_PTR) cptr
+        integer(C_SIZE_T) nelems
+    
+        cptr = view%get_data_pointer()
+        nelems = view%get_number_of_elements()
+        call c_f_pointer(cptr, value, [ nelems ])
+    
+    end subroutine dataview_get_value_float_1d_ptr
+    
     ! splicer end class.DataView.additional_functions
     
     function is_name_valid(name) result(rv)

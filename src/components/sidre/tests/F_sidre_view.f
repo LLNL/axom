@@ -43,7 +43,6 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview) dv
-    type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -53,8 +52,7 @@ contains
     dv = root%create_view_and_buffer("u0")
     call dv%allocate(ATK_C_INT_T, 10_8)
     call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
-    data_ptr = dv%get_data_pointer()
-    call c_f_pointer(data_ptr, data, [ 10 ])
+    call dv%get_value(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -73,7 +71,6 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview) dv
-    type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -81,8 +78,7 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0", ATK_C_INT_T, 10_8)
-    data_ptr = dv%get_data_pointer()
-    call c_f_pointer(data_ptr, data, [ 10 ])
+    call dv%get_value(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -237,7 +233,6 @@ contains
     type(datastore) ds
     type(datagroup) root, r_old
     type(dataview) base_old
-    type(C_PTR) data_ptr
     integer(C_INT), pointer :: data(:)
     integer i
 
@@ -254,9 +249,8 @@ contains
 
     ! alloc our buffer
     ! we will create 4 sub views of this array
-    call base_old%allocate(ATK_C_INT_T, 40_8)
-    data_ptr = base_old%get_data_pointer()
-    call c_f_pointer(data_ptr, data, [ 40 ])
+    call base_old%allocate(ATK_C_INT_T, 40)
+    call base_old%get_value(data)
 
     ! init the buff with values that align with the
     ! 4 subsections.
@@ -399,7 +393,7 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview) a1, a2
-    type(C_PTR) a1_ptr, a2_ptr
+!    type(C_PTR) a1_ptr, a2_ptr
     real(C_FLOAT), pointer :: a1_data(:)
     integer(C_INT), pointer :: a2_data(:)
     integer i
@@ -411,13 +405,11 @@ contains
     root = ds%get_root()
 
     ! create a view to hold the base buffer
-    a1 = root%create_view_and_buffer("a1", ATK_C_FLOAT_T, 5_8)
-    a2 = root%create_view_and_buffer("a2", ATK_C_INT_T, 5_8)
+    a1 = root%create_view_and_buffer("a1", ATK_C_FLOAT_T, 5)
+    a2 = root%create_view_and_buffer("a2", ATK_C_INT_T, 5)
 
-    a1_ptr = a1%get_data_pointer()
-    a2_ptr = a2%get_data_pointer()
-    call c_f_pointer(a1_ptr, a1_data, [ 5 ])
-    call c_f_pointer(a2_ptr, a2_data, [ 5 ])
+    call a1%get_value(a1_data)
+    call a2%get_value(a2_data)
 
     do i = 1, 5
        a1_data(i) =  5.0
@@ -428,13 +420,11 @@ contains
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
 
 
-    call a1%reallocate(ATK_C_FLOAT_T, 10_8)
-    call a2%reallocate(ATK_C_INT_T, 15_8)
+    call a1%reallocate(ATK_C_FLOAT_T, 10)
+    call a2%reallocate(ATK_C_INT_T, 15)
 
-    a1_ptr = a1%get_data_pointer()
-    a2_ptr = a2%get_data_pointer()
-    call c_f_pointer(a1_ptr, a1_data, [ 10 ])
-    call c_f_pointer(a2_ptr, a2_data, [ 15 ])
+    call a1%get_value(a1_data)
+    call a2%get_value(a2_data)
 
     do i = 1, 5
        call assert_equals(a1_data(i), 5.0)
