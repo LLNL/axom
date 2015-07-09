@@ -16,6 +16,7 @@ set(meshapi_headers
     NullSet.hpp
     IndirectionSet.hpp
     RangeSet.hpp
+    #ProductSet.hpp
     
 	# SRM Relation headers
 	Relation.hpp

@@ -424,8 +424,6 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
     Index_t elements;
     Index_t runto = 0;
 
-    //Int_t* regBinEnd = new Int_t[numReg()];
-
     // Create the region material map over the elements
     m_elemRegNum = ElemIntMap(&m_elemSet);
 
@@ -495,7 +493,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       for(; nextIndex < runto && nextIndex < numElem(); nextIndex++)
       {
         reg2Elems.insert(regionNum - 1, nextIndex);
-        m_elemRegNum[nextIndex] = regionNum;            // MeshAPI NOTE: is this still necessary?
+        m_elemRegNum[nextIndex] = regionNum;
       }
       lastReg = regionNum;
     }
@@ -532,8 +530,8 @@ void
 Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 {
   typedef SymmNodeSet::ArrType SymmVec;
-  Int_t numSymmNodesX = m_colLoc == 0 ? edgeNodes * edgeNodes : 0;
-  Int_t numSymmNodesY = m_rowLoc == 0 ? edgeNodes * edgeNodes : 0;
+  Int_t numSymmNodesX = m_colLoc == 0   ? edgeNodes * edgeNodes : 0;
+  Int_t numSymmNodesY = m_rowLoc == 0   ? edgeNodes * edgeNodes : 0;
   Int_t numSymmNodesZ = m_planeLoc == 0 ? edgeNodes * edgeNodes : 0;
 
   SymmVec loc_symmX(numSymmNodesX);

@@ -5,9 +5,11 @@
 set(example_sources
 	meshapiShockTube.cpp
     UnstructMeshField.cpp
+    TemplateEx.cpp
     )
 
 
+#set_source_files_properties(TemplateEx.cpp PROPERTIES COMPILE_FLAGS "-S -fverbose-asm " )
 
 #
 # Build the example sources
