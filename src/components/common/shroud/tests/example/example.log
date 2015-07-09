@@ -1,3 +1,7 @@
+Read yaml example.yaml
+Read splicer csplicer.c
+Read splicer pysplicer.c
+Read splicer fsplicer.f
 class ExClass1
 C method ExClass1 *new+constructor ( const string *name )
 C method void delete+destructor

@@ -312,5 +312,6 @@ splicer:
   -  csidresplicer.c
   f:
   -  fsidresplicer.f
+  -  genfsidresplicer.f
   py:
   -  pysidresplicer.c

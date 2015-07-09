@@ -527,6 +527,7 @@ if __name__ == '__main__':
     for filename in args.filename:
         root, ext = os.path.splitext(filename)
         if ext == '.yaml':
+            log.write("Read yaml %s\n" % os.path.basename(filename))
             fp = open(filename, 'r')
             d = yaml.load(fp.read())
             fp.close()
@@ -549,6 +550,7 @@ if __name__ == '__main__':
             subsplicer = splicers.setdefault(suffix, {})
             for name in names:
                 fullname = os.path.join(config.source_dir, name)
+                log.write("Read splicer %s\n" % name)
                 splicer.get_splicers(fullname, subsplicer)
 
 
