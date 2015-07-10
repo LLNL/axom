@@ -378,9 +378,13 @@ return 1;""", fmt)
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
 
 
-            # jump through some hoops for char ** const correctness for C++
-            PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
-            PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ' };')
+            if True:
+                # jump through some hoops for char ** const correctness for C++
+                # warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+                PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
+                PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ' };')
+            else:
+                PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + '" };')
             PY_decl.append('')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)

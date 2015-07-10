@@ -6,6 +6,7 @@
 // splicer begin include
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
+#include "SidreWrapperHelpers.hpp"
 // splicer end include
 
 // ----------------------------------------------------------------------
