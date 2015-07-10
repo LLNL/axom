@@ -1,5 +1,5 @@
 /**
- * \file Relation.h
+ * \file Relation.hpp
  *
  * \brief Basic API for a topological relation between two sets
  *

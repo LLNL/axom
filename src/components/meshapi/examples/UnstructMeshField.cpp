@@ -64,8 +64,8 @@ namespace unstructured {
     enum { NODES_PER_ZONE = 8 };
 
     // types for sets
-    typedef asctoolkit::meshapi::RangeSet                 NodeSet;
-    typedef asctoolkit::meshapi::RangeSet                 ZoneSet;
+    typedef asctoolkit::meshapi::PositionSet                 NodeSet;
+    typedef asctoolkit::meshapi::PositionSet                 ZoneSet;
 
     // types for relations
     typedef asctoolkit::meshapi::StaticVariableRelation   NodeToZoneRelation;

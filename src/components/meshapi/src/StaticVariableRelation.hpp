@@ -1,5 +1,5 @@
 /**
- * \file StaticVariableRelation.h
+ * \file StaticVariableRelation.hpp
  *
  * \brief API for a topological relation between two sets in which entities from the first set
  *        can be related to an arbitrary number of entities from the second set

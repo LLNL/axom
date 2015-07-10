@@ -85,23 +85,31 @@ namespace shocktube {
   class ShockTubeMesh
   {
   public:
+
+    // other types
+    typedef asctoolkit::meshapi::Set::IndexType         IndexType;
+    typedef asctoolkit::meshapi::Set::PositionType      PositionType;
+    typedef asctoolkit::meshapi::Set::ElementType      ElementType;
+
     // types for sets
-    typedef asctoolkit::meshapi::RangeSet               ElemSet;
-    typedef asctoolkit::meshapi::RangeSet               FaceSet;
+    typedef asctoolkit::meshapi::PositionSet               ElemSet;
+    typedef asctoolkit::meshapi::PositionSet               FaceSet;
+
+    typedef asctoolkit::meshapi::policies::StrideOne<PositionType> StrideOnePolicy;
+    typedef asctoolkit::meshapi::policies::NoIndirection<PositionType,ElementType> NoIndirectionPolicy;
+    typedef asctoolkit::meshapi::policies::ConcreteParentSubset<ElemSet> TubeSubsetPolicy;
+
+    typedef asctoolkit::meshapi::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
 
     // types for relations
     typedef asctoolkit::meshapi::StaticConstantRelation ElemToFaceRelation;
     typedef asctoolkit::meshapi::StaticConstantRelation FaceToElemRelation;
 
-    // other types
-    typedef asctoolkit::meshapi::Set::IndexType         IndexType;
-    typedef asctoolkit::meshapi::Set::PositionType      PositionType;
-
   public:
     ElemSet elems;              // The entire set of elements
-    ElemSet tubeElems;          // Subset of internal elements
-    ElemSet inFlowElems;        // Subset of inflow elements (not used in this example)
-    ElemSet outFlowElems;       // Subset of outflow elements (not used in this example)
+    ElemSubset tubeElems;          // Subset of internal elements
+    ElemSubset inFlowElems;        // Subset of inflow elements (not used in this example)
+    ElemSubset outFlowElems;       // Subset of outflow elements (not used in this example)
 
     FaceSet faces;              // Faces between adjacent pairs of elements
 
@@ -224,9 +232,17 @@ namespace shocktube {
 
     // define the subsets
     ShockTubeMesh::PositionType numElems = mesh->elems.size();
-    mesh->inFlowElems    = ShockTubeMesh::ElemSet( 0,1, &(mesh->elems) );
-    mesh->tubeElems      = ShockTubeMesh::ElemSet( 1,numElems - 1, &(mesh->elems) );
-    mesh->outFlowElems   = ShockTubeMesh::ElemSet( numElems - 1,numElems, &(mesh->elems) );
+    mesh->inFlowElems    = ShockTubeMesh::ElemSubset( 0,1 );
+    mesh->tubeElems      = ShockTubeMesh::ElemSubset( 1,numElems - 1);
+    mesh->outFlowElems   = ShockTubeMesh::ElemSubset( numElems - 1,numElems);
+
+    mesh->inFlowElems.parentSet() = &(mesh->elems);
+    mesh->tubeElems.parentSet() = &(mesh->elems);
+    mesh->outFlowElems.parentSet() = &(mesh->elems);
+
+
+
+
 
     // ------------ Set up relations
 

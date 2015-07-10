@@ -1,5 +1,5 @@
 /**
- * \file Set.cpp
+ * \file IndirectionSet.cpp
  *
  *  \brief Implementation of the IndirectionSet class
  */

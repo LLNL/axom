@@ -1,5 +1,5 @@
 /**
- * \file StaticConstantRelation.h
+ * \file StaticConstantRelation.hpp
  *
  * \brief API for a topological relation between two sets in which entities from the first set
  *        can be related to a constant number of entities from the second set

@@ -9,13 +9,20 @@
 #include "gtest/gtest.h"
 
 #include "meshapi/Utilities.hpp"
+#include "meshapi/Set.hpp"
 #include "meshapi/RangeSet.hpp"
 
+typedef asctoolkit::meshapi::Set::PositionType         SetPosition;
+typedef asctoolkit::meshapi::Set::ElementType          SetElement;
 
-typedef asctoolkit::meshapi::RangeSet SetType;
+typedef asctoolkit::meshapi::policies::StrideOne<SetPosition> StrideOnePolicy;
+typedef asctoolkit::meshapi::policies::NoIndirection<SetPosition,SetElement> NoIndirectionPolicy;
+typedef asctoolkit::meshapi::policies::VirtualParentSubset SubsetPolicy;
+
+
+
+typedef asctoolkit::meshapi::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
 typedef SetType::iterator             SetIterator;
-typedef SetType::PositionType         SetPosition;
-typedef SetType::ElementType          SetElement;
 
 static const SetPosition MAX_SET_SIZE = 20;
 
@@ -89,7 +96,9 @@ TEST(gtest_meshapi_windowed_range_set,test_windowed_range_set_parents)
 
   std::cout << "\n-- Generating a parent set, one (windowed) subset and one non-windowed subset and checking validity" << std::endl;
   SetType parentSet(MAX_SET_SIZE);
-  SetType childSet(lowerIndex, upperIndex, &parentSet);
+  SetType childSet(lowerIndex, upperIndex);
+  childSet.parentSet() = &parentSet;
+
   SetType nonChildSet(lowerIndex, upperIndex);
 
   EXPECT_TRUE(parentSet.isValid());

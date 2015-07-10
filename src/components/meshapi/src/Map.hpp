@@ -1,5 +1,5 @@
 /**
- * \file Map.h
+ * \file Map.hpp
  *
  * \brief Basic API for a map from each element of a set to some domain
  *

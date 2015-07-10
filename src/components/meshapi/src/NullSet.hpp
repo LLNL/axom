@@ -1,5 +1,5 @@
 /**
- * \file NullSet.h
+ * \file NullSet.hpp
  *
  * \brief Sentinel set type indicating an empty set.
  *

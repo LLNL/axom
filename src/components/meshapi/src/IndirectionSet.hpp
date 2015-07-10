@@ -1,5 +1,5 @@
 /**
- * \file IndirectionSet.h
+ * \file IndirectionSet.hpp
  *
  * \brief Basic API for a set of entities in a simulation
  */

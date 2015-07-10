@@ -12,11 +12,12 @@ set(meshapi_headers
     FieldRegistry.hpp
     
 	# SRM Set headers
-    Set.hpp
-    NullSet.hpp
     IndirectionSet.hpp
+    NullSet.hpp
+    OrderedSet.hpp
     RangeSet.hpp
     #ProductSet.hpp
+    Set.hpp
     
 	# SRM Relation headers
 	Relation.hpp
@@ -33,8 +34,9 @@ set(meshapi_headers
 #
 set(meshapi_sources
     # SRM Set sources
-    RangeSet.cpp
+    # RangeSet.cpp
     IndirectionSet.cpp
+    OrderedSet.cpp
     
     # SRM Relation sources
     Relation.cpp

@@ -1,3 +1,7 @@
+/**
+ * \file
+ * \brief A few utility functions used by the MeshAPI component.
+ */
 #ifndef MESHAPI_UTILITIES_H_
 #define MESHAPI_UTILITIES_H_
 

@@ -1,5 +1,5 @@
 /**
- * \file Set.h
+ * \file Set.hpp
  *
  * \brief Basic API for a set of entities in a simulation
  *
@@ -95,11 +95,6 @@ namespace meshapi {
      * \return true if the set is a subset of another set, otherwise false.
      */
     virtual bool          isSubset() const       = 0;
-
-    /**
-     * \return A pointer to the parent set.  NullSet / NULL if there is no parent.
-     */
-    virtual const Set*    parentSet() const           = 0;
 
     /**
      * \brief Checks whether the set is valid.
