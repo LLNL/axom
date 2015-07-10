@@ -184,16 +184,18 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    ExClass1 * in;
+    PP_ExClass1 * in;
+    ExClass1 * in_ptr;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0 };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:get_class1", kw_list,
-        PP_ExClass1_from_Object, &in))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
+        &PP_ExClass1_Type, &in))
     {
         return NULL;
     }
-    ExClass1 * rv = self->BBB->get_class1(in);
+    in_ptr = (in ? in->BBB : NULL);
+    ExClass1 * rv = self->BBB->get_class1(in_ptr);
     return Py_BuildValue("O&", PP_ExClass1_to_Object, rv);
 // splicer end class.ExClass2.method.get_class1
 }

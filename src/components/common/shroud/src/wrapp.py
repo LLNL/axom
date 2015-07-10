@@ -148,11 +148,22 @@ class Wrapp(util.WrapperMixin):
         self.py_helper_prototypes = []
         self.py_helper_functions = []
 
-        # preprocess all classes first
+        # preprocess all classes first to allow them to reference each other
         for node in self.tree['classes']:
             typedef = self.typedef[node['name']]
             fmt = node['fmt']
             typedef.PY_format = 'O'
+
+            # PyTypeObject for class
+            util.eval_template(options, fmt,
+                               'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
+            typedef.PY_PyTypeObject = fmt.PY_PyTypeObject
+
+            # PyObject for class
+            util.eval_template(options, fmt,
+                               'PY_PyObject', '{PY_prefix}{cpp_class}')
+            typedef.PY_PyObject = fmt.PY_PyObject
+
             fmt.PY_to_object_func = typedef.PY_to_object = wformat('PP_{cpp_class}_to_Object', fmt)
             fmt.PY_from_object_func = typedef.PY_from_object = wformat('PP_{cpp_class}_from_Object', fmt)
 
@@ -189,10 +200,7 @@ class Wrapp(util.WrapperMixin):
 
         util.eval_template(options, fmt_class,
                            'PY_type_filename', 'py{cpp_class}type.cpp')
-        util.eval_template(options, fmt_class,
-                           'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
-        util.eval_template(options, fmt_class,
-                           'PY_PyObject', '{PY_prefix}{cpp_class}')
+
         self.create_class_helper_functions(node)
 
         self.py_type_object_creation.append(wformat("""
@@ -337,6 +345,7 @@ return 1;""", fmt)
 
         # parse arguments
         optional = []
+        post_parse = []
         args = node.get('args', [])
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
@@ -361,13 +370,26 @@ return 1;""", fmt)
                     append_format(optional, '{var} = {default_value};', fmt)
 
                 format.append(arg_typedef.PY_format)
-                if arg_typedef.PY_from_object:
+                if arg_typedef.PY_PyTypeObject:
+                    # Expect object of given type
+                    format.append('!')
+                    addrargs.append('&' + arg_typedef.PY_PyTypeObject)
+                elif arg_typedef.PY_from_object:
+                    # Use function to convert object
                     format.append('&')
                     addrargs.append(arg_typedef.PY_from_object)
                 addrargs.append('&' + arg_name)
 
+
                 # argument for C++ function
-                if arg_typedef.PY_from_object:
+                if arg_typedef.PY_PyTypeObject:
+                    # A Python Object
+                    fmt.var_ptr = fmt.var + '_ptr'
+                    PY_decl.append(arg_typedef.PY_PyObject + ' * ' + arg_name + ';')
+                    PY_decl.append(self.std_c_decl('cpp_type', arg, name=fmt.var_ptr) + ';')
+                    append_format(post_parse, '{var_ptr} = ({var} ? {var}->{BBB} : NULL);', fmt)
+                    cpp_call_list.append(fmt.var_ptr)
+                elif arg_typedef.PY_from_object:
                     # already a C++ type
                     PY_decl.append(self.std_c_decl('cpp_type', arg) + ';')
                     cpp_call_list.append(fmt.var)
@@ -395,6 +417,7 @@ return 1;""", fmt)
             PY_code.append(wformat('{PyArg_addrargs}))', fmt))
             PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
+            PY_code.extend(post_parse)
             
         fmt.call_list = ', '.join(cpp_call_list)
 

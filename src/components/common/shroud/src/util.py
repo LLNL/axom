@@ -233,6 +233,8 @@ class Typedef(object):
                               # e.g. intrinsics such as int and real
 
         PY_format='O',        # 'format unit' for PyArg_Parse
+        PY_PyTypeObject=None, # variable name of PyTypeObject instance
+        PY_PyObject=None,     # typedef name of PyObject instance
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
         )

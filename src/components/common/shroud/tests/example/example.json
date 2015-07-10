@@ -1785,6 +1785,8 @@
     }, 
     "typedef": {
         "ExClass1": {
+            "PY_PyObject": "PP_ExClass1", 
+            "PY_PyTypeObject": "PP_ExClass1_Type", 
             "PY_from_object": "PP_ExClass1_from_Object", 
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
@@ -1804,6 +1806,8 @@
             "forward": "ExClass1"
         }, 
         "ExClass2": {
+            "PY_PyObject": "PP_ExClass2", 
+            "PY_PyTypeObject": "PP_ExClass2_Type", 
             "PY_from_object": "PP_ExClass2_from_Object", 
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 

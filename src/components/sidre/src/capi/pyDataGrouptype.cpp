@@ -236,16 +236,18 @@ PY_datagroup_create_view(
 {
 // splicer begin class.DataGroup.method.createView
     const char * name;
-    DataBuffer * buff;
+    PY_DataBuffer * buff;
+    DataBuffer * buff_ptr;
     const char *kwcpp = "name\0buff";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:createView", kw_list,
-        &name, PP_DataBuffer_from_Object, &buff))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO!:createView", kw_list,
+        &name, &PY_DataBuffer_Type, &buff))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->createView(name, buff);
+    buff_ptr = (buff ? buff->BBB : NULL);
+    DataView * rv = self->BBB->createView(name, buff_ptr);
     return Py_BuildValue("O&", PP_DataView_to_Object, rv);
 // splicer end class.DataGroup.method.createView
 }
@@ -289,16 +291,18 @@ PY_datagroup_move_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.moveView
-    DataView * view;
+    PY_DataView * view;
+    DataView * view_ptr;
     const char *kwcpp = "view";
     char *kw_list[] = { (char *) kwcpp+0 };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:moveView", kw_list,
-        PP_DataView_from_Object, &view))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:moveView", kw_list,
+        &PY_DataView_Type, &view))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->moveView(view);
+    view_ptr = (view ? view->BBB : NULL);
+    DataView * rv = self->BBB->moveView(view_ptr);
     return Py_BuildValue("O&", PP_DataView_to_Object, rv);
 // splicer end class.DataGroup.method.moveView
 }
@@ -314,16 +318,18 @@ PY_datagroup_copy_view(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.copyView
-    DataView * view;
+    PY_DataView * view;
+    DataView * view_ptr;
     const char *kwcpp = "view";
     char *kw_list[] = { (char *) kwcpp+0 };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:copyView", kw_list,
-        PP_DataView_from_Object, &view))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:copyView", kw_list,
+        &PY_DataView_Type, &view))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->copyView(view);
+    view_ptr = (view ? view->BBB : NULL);
+    DataView * rv = self->BBB->copyView(view_ptr);
     return Py_BuildValue("O&", PP_DataView_to_Object, rv);
 // splicer end class.DataGroup.method.copyView
 }
@@ -489,16 +495,18 @@ PY_datagroup_move_group(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.moveGroup
-    DataGroup * grp;
+    PY_DataGroup * grp;
+    DataGroup * grp_ptr;
     const char *kwcpp = "grp";
     char *kw_list[] = { (char *) kwcpp+0 };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:moveGroup", kw_list,
-        PP_DataGroup_from_Object, &grp))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:moveGroup", kw_list,
+        &PY_DataGroup_Type, &grp))
     {
         return NULL;
     }
-    DataGroup * rv = self->BBB->moveGroup(grp);
+    grp_ptr = (grp ? grp->BBB : NULL);
+    DataGroup * rv = self->BBB->moveGroup(grp_ptr);
     return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
 // splicer end class.DataGroup.method.moveGroup
 }

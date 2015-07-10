@@ -5,7 +5,7 @@
 option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
 option(BUILD_TESTING "Builds unit tests" ON)
 option(ENABLE_BOOST "Enable Boost" OFF)
-option(ENABLE_CODECOV "Enable code coverage via gcov." ON)
+option(ENABLE_CODECOV "Enable code coverage via gcov." OFF)
 option(ENABLE_CXX11 "Enables C++11 language support." OFF)
 option(ENABLE_FORTRAN "Enables Fortran compiler support." ON)
 option(ENABLE_GLOBALCOMPILERWARNINGS "Enable extra compiler warnings on all build targest." ON)
