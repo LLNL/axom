@@ -29,16 +29,17 @@ typedef:
 #    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
 
   SidreLength:
+    typedef  : long
 # defined in SidreTypes.hpp
     c_header : sidre/SidreTypes.h
     c_type   : ATK_SidreLength
     cpp_type : SidreLength
-    c_fortran: integer(C_LONG)
-    f_type   : integer(C_LONG)
-#    f_module : iso_c_binding:C_LONG
-    f_module : 
-      iso_c_binding:
-      - C_LONG
+#    c_fortran: integer(C_LONG)
+#    f_type   : integer(C_LONG)
+##    f_module : iso_c_binding:C_LONG
+#    f_module : 
+#      iso_c_binding:
+#      - C_LONG
 
   TypeID:
     # enum for types

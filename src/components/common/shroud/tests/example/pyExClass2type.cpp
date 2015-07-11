@@ -219,7 +219,7 @@ PP_exclass2_declare(
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     len = 1;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|l:declare", kw_list,
         &type, &len))
     {
         return NULL;

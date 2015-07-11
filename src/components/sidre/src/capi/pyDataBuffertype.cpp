@@ -39,7 +39,7 @@ PY_databuffer_get_index(
 {
 // splicer begin class.DataBuffer.method.getIndex
     IndexType rv = self->BBB->getIndex();
-    return Py_BuildValue("O", &rv);
+    return Py_BuildValue("i", &rv);
 // splicer end class.DataBuffer.method.getIndex
 }
 
@@ -75,7 +75,7 @@ PY_databuffer_declare(
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -117,7 +117,7 @@ PY_databuffer_allocate_from_type(
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
         &type, &len))
     {
         return NULL;
@@ -143,7 +143,7 @@ PY_databuffer_reallocate(
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:reallocate", kw_list,
         &type, &len))
     {
         return NULL;

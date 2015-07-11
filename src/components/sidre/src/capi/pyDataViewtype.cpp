@@ -43,7 +43,7 @@ PY_dataview_declare(
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -69,7 +69,7 @@ PY_dataview_allocate(
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
         &type, &len))
     {
         return NULL;
@@ -95,7 +95,7 @@ PY_dataview_reallocate(
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:reallocate", kw_list,
         &type, &len))
     {
         return NULL;
@@ -233,7 +233,7 @@ PY_dataview_get_type_id(
 {
 // splicer begin class.DataView.method.getTypeID
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("O", &rv);
+    return Py_BuildValue("i", &rv);
 // splicer end class.DataView.method.getTypeID
 }
 

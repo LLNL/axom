@@ -6,7 +6,7 @@
 module exclass2_mod
     use fstr_mod
     use exclass1_mod, only : exclass1
-    use iso_c_binding, only : C_INT, C_LONG
+    use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_INT, C_LONG
     implicit none
     
     

@@ -17,7 +17,10 @@
                 ], 
                 [
                     "iso_c_binding", 
-                    []
+                    [
+                        "C_INT", 
+                        "C_LONG"
+                    ]
                 ]
             ], 
             "fmt": {
@@ -640,6 +643,8 @@
                 [
                     "iso_c_binding", 
                     [
+                        "C_DOUBLE", 
+                        "C_FLOAT", 
                         "C_INT", 
                         "C_LONG"
                     ]
@@ -1834,16 +1839,20 @@
             "forward": "ExClass2"
         }, 
         "SidreLength": {
+            "PY_format": "l", 
             "c_fortran": "integer(C_LONG)", 
             "c_header": "sidre/SidreTypes.h", 
             "c_type": "ATK_SidreLength", 
             "cpp_type": "SidreLength", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
             "f_module": {
                 "iso_c_binding": [
                     "C_LONG"
                 ]
             }, 
-            "f_type": "integer(C_LONG)"
+            "f_type": "integer(C_LONG)", 
+            "typedef": "long"
         }, 
         "TypeID": {
             "c_fortran": "integer(C_INT)", 
@@ -1875,6 +1884,11 @@
             "cpp_type": "double", 
             "f_cast": "real({var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
             "f_type": "real(C_DOUBLE)"
         }, 
         "float": {
@@ -1884,6 +1898,11 @@
             "cpp_type": "float", 
             "f_cast": "real({var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
             "f_type": "real(C_FLOAT)"
         }, 
         "int": {
@@ -1893,6 +1912,11 @@
             "cpp_type": "int", 
             "f_cast": "int({var}, C_INT)", 
             "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_INT)": {
@@ -1902,6 +1926,11 @@
             "cpp_type": "int", 
             "f_cast": "int({var}, C_INT)", 
             "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
             "f_type": "integer(C_INT)"
         }, 
         "integer(C_LONG)": {
@@ -1911,6 +1940,11 @@
             "cpp_type": "long", 
             "f_cast": "int({var}, C_LONG)", 
             "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
             "f_type": "integer(C_LONG)"
         }, 
         "long": {
@@ -1920,6 +1954,11 @@
             "cpp_type": "long", 
             "f_cast": "int({var}, C_LONG)", 
             "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
             "f_type": "integer(C_LONG)"
         }, 
         "other": {
@@ -1932,6 +1971,11 @@
             "cpp_type": "double", 
             "f_cast": "real({var}, C_DOUBLE)", 
             "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
             "f_type": "real(C_DOUBLE)"
         }, 
         "real(C_FLOAT)": {
@@ -1941,6 +1985,11 @@
             "cpp_type": "float", 
             "f_cast": "real({var}, C_FLOAT)", 
             "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
             "f_type": "real(C_FLOAT)"
         }, 
         "size_t": {
@@ -1950,6 +1999,11 @@
             "cpp_type": "size_t", 
             "f_cast": "int({var}, C_SIZE_T)", 
             "f_kind": "C_SIZE_T", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_SIZE_T"
+                ]
+            }, 
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {

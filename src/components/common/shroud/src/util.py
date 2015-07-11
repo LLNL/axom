@@ -218,6 +218,7 @@ class Typedef(object):
     defaults = dict(
         base='unknown',       # base type: 'string'
         forward=None,         # forward declaration
+        typedef=None,         # Initialize from existing type
 
         cpp_type=None,        # name of type in C++
         cpp_to_c='{var}',     # expression to convert from C++ to C
@@ -260,6 +261,10 @@ class Typedef(object):
                 setattr(self, key, d[key])
             else:
                 raise RuntimeError("Unknown key for Argument %s", key)
+
+    def copy(self):
+        n = Typedef()
+        n.update(self._to_dict())
 
     def _to_dict(self):
         """Convert instance to a dictionary for json.

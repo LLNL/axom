@@ -131,6 +131,7 @@ class Schema(object):
                 f_cast    = 'int({var}, C_INT)',
                 c_fortran = 'integer(C_INT)',
                 f_type    = 'integer(C_INT)',
+                f_module  = dict(iso_c_binding=['C_INT']),
                 PY_format = 'i',
                 ),
             long   = util.Typedef('long',
@@ -140,6 +141,7 @@ class Schema(object):
                 f_cast    = 'int({var}, C_LONG)',
                 c_fortran = 'integer(C_LONG)',
                 f_type    = 'integer(C_LONG)',
+                f_module  = dict(iso_c_binding=['C_LONG']),
                 PY_format = 'l',
                 ),
             size_t   = util.Typedef('size_t',
@@ -150,6 +152,7 @@ class Schema(object):
                 f_cast    = 'int({var}, C_SIZE_T)',
                 c_fortran = 'integer(C_SIZE_T)',
                 f_type    = 'integer(C_SIZE_T)',
+                f_module  = dict(iso_c_binding=['C_SIZE_T']),
                 ),
 
             float   = util.Typedef('float',
@@ -159,6 +162,7 @@ class Schema(object):
                 f_cast    = 'real({var}, C_FLOAT)',
                 c_fortran = 'real(C_FLOAT)',
                 f_type    = 'real(C_FLOAT)',
+                f_module  = dict(iso_c_binding=['C_FLOAT']),
                 PY_format = 'f',
                 ),
             double   = util.Typedef('double',
@@ -168,6 +172,7 @@ class Schema(object):
                 f_cast    = 'real({var}, C_DOUBLE)',
                 c_fortran = 'real(C_DOUBLE)',
                 f_type    = 'real(C_DOUBLE)',
+                f_module  = dict(iso_c_binding=['C_DOUBLE']),
                 PY_format = 'd',
                 ),
 
@@ -207,6 +212,16 @@ class Schema(object):
             for key, value in node['typedef'].items():
                 if not isinstance(value, dict):
                     raise TypeError("typedef '%s' must be a dictionary" % key)
+
+                if 'typedef' in value:
+                    copy_type = value['typedef']
+                    orig = def_types.get(copy_type, None)
+                    if not orig:
+                        raise RuntimeError("No type for typedef %s" % copy_type)
+                    def_types[key] = util.Typedef(key)
+                    def_types[key].update(def_types[copy_type]._to_dict())
+
+
                 if key in def_types:
                     def_types[key].update(value)
                 else:

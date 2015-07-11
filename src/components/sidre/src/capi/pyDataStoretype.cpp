@@ -61,7 +61,7 @@ PY_datastore_get_buffer(
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getBuffer", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getBuffer", kw_list,
         &idx))
     {
         return NULL;
@@ -106,7 +106,7 @@ PY_datastore_destroy_buffer(
     const char *kwcpp = "id";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:destroyBuffer", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:destroyBuffer", kw_list,
         &id))
     {
         return NULL;

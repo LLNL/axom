@@ -30,39 +30,26 @@ options:
 typedef:
   IndexType:
 # defined in SidreTypes.hpp
+    typedef  : int
     c_header : sidre/SidreTypes.h
     c_type   : ATK_IndexType
     cpp_type : IndexType
-    c_fortran: integer(C_INT)
-    f_type   : integer(C_INT)
-    f_module : 
-      iso_c_binding:
-      - C_INT
 
   SidreLength:
 # defined in SidreTypes.hpp
+    typedef  : long
     c_header : sidre/SidreTypes.h
     c_type   : ATK_SidreLength
     cpp_type : SidreLength
-    c_fortran: integer(C_LONG)
-    f_type   : integer(C_LONG)
-    f_module : 
-      iso_c_binding:
-      - C_LONG
 
   TypeID:
+    typedef  : int
     # enum for types
     c_header : sidre/SidreTypes.h
     cpp_header : sidre/SidreWrapperHelpers.hpp
-    c_type   : int
     cpp_type : TypeID
     c_to_cpp : getTypeID({var})
 #    c_to_cpp : static_cast<TypeID>({var})
-    c_fortran: integer(C_INT)
-    f_type   : integer(C_INT)
-    f_module : 
-      iso_c_binding:
-      - C_INT
 
 
 # XXX

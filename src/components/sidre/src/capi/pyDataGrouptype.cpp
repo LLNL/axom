@@ -194,7 +194,7 @@ PY_datagroup_create_view_and_buffer_from_type(
     const char *kwcpp = "name\0type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO:createViewAndBuffer", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sil:createViewAndBuffer", kw_list,
         &name, &type, &len))
     {
         return NULL;
@@ -282,7 +282,7 @@ PY_datagroup_create_external_view(
     const char *kwcpp = "name\0external_data\0type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOOO:createExternalView", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOil:createExternalView", kw_list,
         &name, &external_data, &type, &len))
     {
         return NULL;
@@ -425,7 +425,7 @@ PY_datagroup_get_view_index(
         return NULL;
     }
     IndexType rv = self->BBB->getViewIndex(name);
-    return Py_BuildValue("O", &rv);
+    return Py_BuildValue("i", &rv);
 // splicer end class.DataGroup.method.getViewIndex
 }
 
@@ -444,7 +444,7 @@ PY_datagroup_get_view_name(
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getViewName", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getViewName", kw_list,
         &idx))
     {
         return NULL;
@@ -613,7 +613,7 @@ PY_datagroup_get_group_index(
         return NULL;
     }
     IndexType rv = self->BBB->getGroupIndex(name);
-    return Py_BuildValue("O", &rv);
+    return Py_BuildValue("i", &rv);
 // splicer end class.DataGroup.method.getGroupIndex
 }
 
@@ -632,7 +632,7 @@ PY_datagroup_get_group_name(
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getGroupName", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getGroupName", kw_list,
         &idx))
     {
         return NULL;
