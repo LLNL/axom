@@ -586,6 +586,10 @@ PY_datagroup_get_group(
         return NULL;
     }
     DataGroup * rv = self->BBB->getGroup(name);
+    if (rv == ATK_NULLPTR) {
+        Py_RETURN_NONE;
+    }
+    
     PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;

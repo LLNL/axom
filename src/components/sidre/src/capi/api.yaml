@@ -140,6 +140,7 @@ classes:
 #    -  decl: void destroyGroup(IndexType idx)
 #    -  decl: DataGroup const * getGroup( const std::string& name ) const
     -  decl: DataGroup * getGroup( const std::string& name )
+       PY_error_pattern: PY_null_to_none
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
@@ -310,6 +311,11 @@ patterns:
         if (! isNameValid({var})) {{
             PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
             return NULL;
+        }}
+    # Convert NULL to None
+    PY_null_to_none: >
+        if ({var} == ATK_NULLPTR) {{
+            Py_RETURN_NONE;
         }}
 
 
