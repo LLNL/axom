@@ -927,7 +927,7 @@
                         "rv_decl": "void * rv", 
                         "underscore_name": "declare"
                     }, 
-                    "generic": {
+                    "fortran_generic": {
                         "len": [
                             "int", 
                             "long"
@@ -1029,6 +1029,14 @@
                             "type": "ValueType"
                         }
                     ], 
+                    "cpp_template": {
+                        "ValueType": [
+                            "int", 
+                            "long", 
+                            "float", 
+                            "double"
+                        ]
+                    }, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "method_name": "setValue", 
@@ -1044,18 +1052,16 @@
                         "attrs": {}, 
                         "name": "setValue", 
                         "type": "void"
-                    }, 
-                    "template": {
-                        "ValueType": [
-                            "int", 
-                            "long", 
-                            "float", 
-                            "double"
-                        ]
                     }
                 }, 
                 {
                     "args": [], 
+                    "cpp_template": {
+                        "ValueType": [
+                            "int", 
+                            "double"
+                        ]
+                    }, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "method_name": "getValue", 
@@ -1071,12 +1077,6 @@
                         "attrs": {}, 
                         "name": "getValue", 
                         "type": "ValueType"
-                    }, 
-                    "template": {
-                        "ValueType": [
-                            "int", 
-                            "double"
-                        ]
                     }
                 }, 
                 {
@@ -1201,7 +1201,7 @@
                                 "rv_decl": "void * rv", 
                                 "underscore_name": "declare"
                             }, 
-                            "generic": {
+                            "fortran_generic": {
                                 "len": [
                                     "int", 
                                     "long"
@@ -1222,7 +1222,7 @@
                         }, 
                         "method_suffix": "_int"
                     }, 
-                    "generated": "generic", 
+                    "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": true, 
@@ -1306,7 +1306,7 @@
                                 "rv_decl": "void * rv", 
                                 "underscore_name": "declare"
                             }, 
-                            "generic": {
+                            "fortran_generic": {
                                 "len": [
                                     "int", 
                                     "long"
@@ -1327,7 +1327,7 @@
                         }, 
                         "method_suffix": "_long"
                     }, 
-                    "generated": "generic", 
+                    "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": true, 
@@ -1378,7 +1378,7 @@
                         "method_suffix": "_int", 
                         "rv_decl": "void rv"
                     }, 
-                    "generated": "template", 
+                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1426,7 +1426,7 @@
                         "method_suffix": "_long", 
                         "rv_decl": "void rv"
                     }, 
-                    "generated": "template", 
+                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1474,7 +1474,7 @@
                         "method_suffix": "_float", 
                         "rv_decl": "void rv"
                     }, 
-                    "generated": "template", 
+                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1522,7 +1522,7 @@
                         "method_suffix": "_double", 
                         "rv_decl": "void rv"
                     }, 
-                    "generated": "template", 
+                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1564,7 +1564,7 @@
                         "method_suffix": "_int", 
                         "rv_decl": "int rv"
                     }, 
-                    "generated": "template", 
+                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1606,7 +1606,7 @@
                         "method_suffix": "_double", 
                         "rv_decl": "double rv"
                     }, 
-                    "generated": "template", 
+                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 

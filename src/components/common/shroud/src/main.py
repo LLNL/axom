@@ -316,9 +316,9 @@ class Schema(object):
         # Look for templated methods
         additional_methods = []
         for method in methods:
-            if 'template' in method:
+            if 'cpp_template' in method:
                 self.template_function(method, additional_methods)
-            if 'generic' in method:
+            if 'fortran_generic' in method:
                 self.generic_function(method, additional_methods)
         methods.extend(additional_methods)
 
@@ -376,17 +376,17 @@ class Schema(object):
     def template_function(self, node, additional_methods):
         """ Create overloaded functions for each templated method.
         """
-        if len(node['template']) != 1:
+        if len(node['cpp_template']) != 1:
             # In the future it may be useful to have multiple templates
             # That the would start creating more permutations
-            raise NotImplemented("Only one templated type for now")
-        for typename, types in node['template'].items():
+            raise NotImplemented("Only one cpp_templated type for now")
+        for typename, types in node['cpp_template'].items():
             for type in types:
                 new = util.copy_function_node(node)
-                new['generated'] = 'template'
+                new['generated'] = 'cpp_template'
                 fmt = new['fmt']
                 fmt.method_suffix = '_' + type
-                del new['template']
+                del new['cpp_template']
                 options = new['options']
                 options.wrap_c = True
                 options.wrap_fortran = True
@@ -410,18 +410,18 @@ class Schema(object):
     def generic_function(self, node, additional_methods):
         """ Create overloaded functions for each generic method.
         """
-        if len(node['generic']) != 1:
+        if len(node['fortran_generic']) != 1:
             # In the future it may be useful to have multiple generic arguments
             # That the would start creating more permutations
             raise NotImplemented("Only one generic arg for now")
-        for argname, types in node['generic'].items():
+        for argname, types in node['fortran_generic'].items():
             for type in types:
                 new = util.copy_function_node(node)
-                new['generated'] = 'generic'
+                new['generated'] = 'fortran_generic'
                 fmt = new['fmt']
                 fmt.method_suffix = '_' + type
                 fmt.PTR_F_C_node = node
-                del new['generic']
+                del new['fortran_generic']
                 options = new['options']
                 options.wrap_c = False
                 options.wrap_fortran = True
@@ -435,7 +435,7 @@ class Schema(object):
                         typedef = self.typedef[argtype]
                         typedef = self.typedef[typedef.f_type]
                         if not typedef.f_cast:
-                            raise RuntimeError("unable to case type %s in generic" % arg['type'])
+                            raise RuntimeError("unable to case type %s in fortran_generic" % arg['type'])
                         arg['cast'] = typedef.f_cast
                         arg['type'] = type
 
@@ -480,7 +480,7 @@ class Schema(object):
     def check_function_dependencies(self, node, used_types):
         """Record which types are used by a function.
         """
-        if 'template' in node:
+        if 'cpp_template' in node:
             # The templated type will raise an error.
             # XXX - Maybe dummy it out
             # XXX - process templated types

@@ -99,7 +99,7 @@ classes:
        method_suffix: _simple
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
        method_suffix: _from_type
-       generic:
+       fortran_generic:
          len:
          -  int
          -  long
@@ -108,7 +108,7 @@ classes:
 #    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, TypeID type, SidreLength len )
 #    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength len )
-       generic:
+       fortran_generic:
          len:
          -  int
          -  long
@@ -167,7 +167,7 @@ classes:
       - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeID type, SidreLength len)
         return_this: True
-        generic:
+        fortran_generic:
           len:
           -  int
           -  long
@@ -179,7 +179,7 @@ classes:
       - decl: DataBuffer* allocate(TypeID type, SidreLength len)
         method_suffix: _from_type
         return_this: True
-        generic:
+        fortran_generic:
           len:
           -  int
           -  long
@@ -187,7 +187,7 @@ classes:
 #      - decl: DataBuffer* allocate(const DataType& dtype)
       - decl: DataBuffer * reallocate(TypeID type, SidreLength len)
         return_this: True
-        generic:
+        fortran_generic:
           len:
           -  int
           -  long
@@ -216,7 +216,7 @@ classes:
     methods:
     - decl: DataView* declare(TypeID type, SidreLength len)
       return_this: True
-      generic:
+      fortran_generic:
         len:
         -  int
         -  long
@@ -225,7 +225,7 @@ classes:
 #    - decl: DataView* allocate()
     - decl: DataView* allocate(TypeID type, SidreLength len)
       return_this: True
-      generic:
+      fortran_generic:
         len:
         -  int
         -  long
@@ -233,7 +233,7 @@ classes:
 #    - decl: DataView* allocate(const DataType& dtype)
     - decl: DataView * reallocate(TypeID type, SidreLength len)
       return_this: True
-      generic:
+      fortran_generic:
         len:
         -  int
         -  long
@@ -253,14 +253,10 @@ classes:
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
 #    - decl: Node::Value getValue()
-#  template<typename ValueType>
-#  ValueType getValue()
-#  template<typename ValueType>
-#  void setValue(ValueType value)
 
 #           template<typename ValueType>
     - decl: void setValue(ValueType value)
-      template:
+      cpp_template:
         ValueType:
         - int
         - long
@@ -269,7 +265,7 @@ classes:
 
 #           template<typename ValueType>
     - decl: ValueType getValue()
-      template:
+      cpp_template:
         ValueType:
         - int
         - long
