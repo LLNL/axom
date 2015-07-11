@@ -40,7 +40,9 @@ PY_datastore_get_root(
 {
 // splicer begin class.DataStore.method.getRoot
     DataGroup * rv = self->BBB->getRoot();
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataStore.method.getRoot
 }
 
@@ -65,7 +67,9 @@ PY_datastore_get_buffer(
         return NULL;
     }
     DataBuffer * rv = self->BBB->getBuffer(idx);
-    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
+    PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataStore.method.getBuffer
 }
 
@@ -81,7 +85,9 @@ PY_datastore_create_buffer(
 {
 // splicer begin class.DataStore.method.createBuffer
     DataBuffer * rv = self->BBB->createBuffer();
-    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
+    PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataStore.method.createBuffer
 }
 

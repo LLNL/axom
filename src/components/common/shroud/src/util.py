@@ -118,10 +118,12 @@ class WrapperMixin(object):
 
 #####
 
-    def std_c_type(self, lang, arg):
+    def std_c_type(self, lang, arg, const=None):
         """
         Return the C type.
         pass-by-value default
+
+        if const is None, use const from arg.
 
         attributes:
         ptr - True = pass-by-reference
@@ -134,8 +136,12 @@ class WrapperMixin(object):
         typedef = self.typedef.get(arg['type'], None)
         if typedef is None:
             raise RuntimeError("No such type %s" % arg['type'])
-        if arg['attrs'].get('const', False):
+
+        if const is None:
+            const = arg['attrs'].get('const', False)
+        if const:
             t.append('const')
+
         t.append(getattr(typedef, lang))
         if arg['attrs'].get('ptr', False):
             t.append('*')
@@ -146,7 +152,7 @@ class WrapperMixin(object):
                 t.append('*')
         return ' '.join(t)
 
-    def std_c_decl(self, lang, arg, name=None):
+    def std_c_decl(self, lang, arg, name=None, const=None):
         """
         Return the C declaration.
 
@@ -155,7 +161,7 @@ class WrapperMixin(object):
         """
 #        if lang not in [ 'c_type', 'cpp_type' ]:
 #            raise RuntimeError
-        typ = self.std_c_type(lang, arg)
+        typ = self.std_c_type(lang, arg, const)
         return typ + ' ' + ( name or arg['name'] )
 
 #####

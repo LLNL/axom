@@ -196,7 +196,9 @@ PP_exclass2_get_class1(
     }
     in_ptr = (in ? in->BBB : NULL);
     ExClass1 * rv = self->BBB->get_class1(in_ptr);
-    return Py_BuildValue("O&", PP_ExClass1_to_Object, rv);
+    PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass2.method.get_class1
 }
 

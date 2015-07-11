@@ -68,8 +68,10 @@ PY_datagroup_get_parent(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getParent
-    const DataGroup * rv = self->BBB->getParent();
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
+    DataGroup * rv = self->BBB->getParent();
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.getParent
 }
 
@@ -84,8 +86,10 @@ PY_datagroup_get_data_store(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.getDataStore
-    const DataStore * rv = self->BBB->getDataStore();
-    return Py_BuildValue("O&", PP_DataStore_to_Object, rv);
+    DataStore * rv = self->BBB->getDataStore();
+    PY_DataStore * rv_obj = PyObject_New(PY_DataStore, &PY_DataStore_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.getDataStore
 }
 
@@ -167,7 +171,9 @@ PY_datagroup_create_view_and_buffer_simple(
         return NULL;
     }
     DataView * rv = self->BBB->createViewAndBuffer(name);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.createViewAndBuffer
 }
 
@@ -194,7 +200,9 @@ PY_datagroup_create_view_and_buffer_from_type(
         return NULL;
     }
     DataView * rv = self->BBB->createViewAndBuffer(name, getTypeID(type), len);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.createViewAndBuffer
 }
 
@@ -220,7 +228,9 @@ PY_datagroup_create_opaque_view(
         return NULL;
     }
     DataView * rv = self->BBB->createOpaqueView(name, opaque_ptr);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.createOpaqueView
 }
 
@@ -248,7 +258,9 @@ PY_datagroup_create_view(
     }
     buff_ptr = (buff ? buff->BBB : NULL);
     DataView * rv = self->BBB->createView(name, buff_ptr);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.createView
 }
 
@@ -276,7 +288,9 @@ PY_datagroup_create_external_view(
         return NULL;
     }
     DataView * rv = self->BBB->createExternalView(name, external_data, getTypeID(type), len);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.createExternalView
 }
 
@@ -303,7 +317,9 @@ PY_datagroup_move_view(
     }
     view_ptr = (view ? view->BBB : NULL);
     DataView * rv = self->BBB->moveView(view_ptr);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.moveView
 }
 
@@ -330,7 +346,9 @@ PY_datagroup_copy_view(
     }
     view_ptr = (view ? view->BBB : NULL);
     DataView * rv = self->BBB->copyView(view_ptr);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.copyView
 }
 
@@ -380,7 +398,9 @@ PY_datagroup_get_view(
         return NULL;
     }
     DataView * rv = self->BBB->getView(name);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.getView
 }
 
@@ -480,7 +500,9 @@ PY_datagroup_create_group(
         return NULL;
     }
     DataGroup * rv = self->BBB->createGroup(name);
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.createGroup
 }
 
@@ -507,7 +529,9 @@ PY_datagroup_move_group(
     }
     grp_ptr = (grp ? grp->BBB : NULL);
     DataGroup * rv = self->BBB->moveGroup(grp_ptr);
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.moveGroup
 }
 
@@ -557,7 +581,9 @@ PY_datagroup_get_group(
         return NULL;
     }
     DataGroup * rv = self->BBB->getGroup(name);
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataGroup.method.getGroup
 }
 

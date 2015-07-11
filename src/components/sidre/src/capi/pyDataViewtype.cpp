@@ -181,7 +181,9 @@ PY_dataview_get_buffer(
 {
 // splicer begin class.DataView.method.getBuffer
     DataBuffer * rv = self->BBB->getBuffer();
-    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
+    PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataView.method.getBuffer
 }
 
@@ -213,7 +215,9 @@ PY_dataview_get_owning_group(
 {
 // splicer begin class.DataView.method.getOwningGroup
     DataGroup * rv = self->BBB->getOwningGroup();
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.DataView.method.getOwningGroup
 }
 

@@ -128,7 +128,9 @@ PP_exclass1_get_root(
 {
 // splicer begin class.ExClass1.method.getRoot
     ExClass2 * rv = self->BBB->getRoot();
-    return Py_BuildValue("O&", PP_ExClass2_to_Object, rv);
+    PP_ExClass2 * rv_obj = PyObject_New(PP_ExClass2, &PP_ExClass2_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass1.method.getRoot
 }
 

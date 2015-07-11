@@ -100,6 +100,7 @@ class Schema(object):
         fmt_library.method_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', '')
+        fmt_library.rv            = 'rv'  # return value
         util.eval_template(def_options, fmt_library,
                            'C_header_filename', 'wrap{library}.h')
         util.eval_template(def_options, fmt_library,

@@ -1670,7 +1670,8 @@
         "library": "UserLibrary", 
         "lower_library": "userlibrary", 
         "method_suffix": "", 
-        "overloaded": false
+        "overloaded": false, 
+        "rv": "rv"
     }, 
     "functions": [
         {

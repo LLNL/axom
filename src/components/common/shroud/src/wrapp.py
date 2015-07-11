@@ -326,10 +326,18 @@ return 1;""", fmt)
         result_typedef = self.typedef[result_type]
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
-        is_const = result['attrs'].get('const', False)
+#        is_const = result['attrs'].get('const', False)
         if is_ctor or is_dtor:
             # need code in __init__ and __del__
             return
+
+        # XXX if a class, then knock off const since the PyObject
+        # is not const, otherwise, use const from result.
+        if result_typedef.base == 'wrapped':
+            is_const = False
+        else:
+            is_const = None
+        fmt.rv_decl = self.std_c_decl('cpp_type', result, name='rv', const=is_const)  # return value
 
         if cls:
             util.eval_template(options, fmt,
@@ -440,6 +448,14 @@ return 1;""", fmt)
         # return Object
         if result_type == 'void' and not result_is_ptr:
             PY_code.append('Py_RETURN_NONE;')
+        elif result_typedef.base == 'wrapped':
+            lfmt = util.Options(fmt)
+            lfmt.rv_obj = 'rv_obj'
+            lfmt.PY_PyObject = result_typedef.PY_PyObject
+            lfmt.PY_PyTypeObject = result_typedef.PY_PyTypeObject
+            append_format(PY_code, '{PY_PyObject} * {rv_obj} = PyObject_New({PY_PyObject}, &{PY_PyTypeObject});', lfmt)
+            append_format(PY_code, '{rv_obj}->{BBB} = {rv};', lfmt)
+            append_format(PY_code, 'return (PyObject *) {rv_obj};', lfmt)
         else:
             fmt.var = 'rv'
             format = [ result_typedef.PY_format ]
