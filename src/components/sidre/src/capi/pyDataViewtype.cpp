@@ -41,7 +41,7 @@ PY_dataview_declare(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
         &type, &len))
@@ -67,7 +67,7 @@ PY_dataview_allocate(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
         &type, &len))
@@ -93,7 +93,7 @@ PY_dataview_reallocate(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
         &type, &len))
@@ -149,7 +149,7 @@ PY_dataview_get_name(
 {
 // splicer begin class.DataView.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
+    return Py_BuildValue("s", rv.c_str());
 // splicer end class.DataView.method.getName
 }
 

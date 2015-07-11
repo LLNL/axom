@@ -10,6 +10,8 @@ print "Group", grp
 
 print "Name of Group", grp.getName()
 
+print "Name of non-existent view", grp.getViewName(100)
+
 
 
 #xx = sidre.DataGroup()

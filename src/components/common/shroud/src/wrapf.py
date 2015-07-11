@@ -34,10 +34,8 @@ TODO:
 from __future__ import print_function
 
 import util
+from util import wformat, append_format
 import fwrap_util
-
-wformat = util.wformat
-append_format = util.append_format
 
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
@@ -45,6 +43,7 @@ class Wrapf(util.WrapperMixin):
 
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
+        self.patterns = tree['patterns']
         self.config = config
         self.log = config.log
         self.typedef = tree['typedef']

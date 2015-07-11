@@ -53,7 +53,7 @@ PY_datagroup_get_name(
 {
 // splicer begin class.DataGroup.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
+    return Py_BuildValue("s", rv.c_str());
 // splicer end class.DataGroup.method.getName
 }
 
@@ -138,7 +138,7 @@ PY_datagroup_has_view(
 // splicer begin class.DataGroup.method.hasView
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasView", kw_list,
         &name))
@@ -163,7 +163,7 @@ PY_datagroup_create_view_and_buffer_simple(
 // splicer begin class.DataGroup.method.createViewAndBuffer
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
         &name))
@@ -192,7 +192,7 @@ PY_datagroup_create_view_and_buffer_from_type(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "name\0type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO:createViewAndBuffer", kw_list,
         &name, &type, &len))
@@ -220,7 +220,7 @@ PY_datagroup_create_opaque_view(
     const char * name;
     void * opaque_ptr;
     const char *kwcpp = "name\0opaque_ptr";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:createOpaqueView", kw_list,
         &name, &opaque_ptr))
@@ -249,7 +249,7 @@ PY_datagroup_create_view(
     PY_DataBuffer * buff;
     DataBuffer * buff_ptr;
     const char *kwcpp = "name\0buff";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO!:createView", kw_list,
         &name, &PY_DataBuffer_Type, &buff))
@@ -280,7 +280,7 @@ PY_datagroup_create_external_view(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "name\0external_data\0type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOOO:createExternalView", kw_list,
         &name, &external_data, &type, &len))
@@ -308,7 +308,7 @@ PY_datagroup_move_view(
     PY_DataView * view;
     DataView * view_ptr;
     const char *kwcpp = "view";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:moveView", kw_list,
         &PY_DataView_Type, &view))
@@ -337,7 +337,7 @@ PY_datagroup_copy_view(
     PY_DataView * view;
     DataView * view_ptr;
     const char *kwcpp = "view";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:copyView", kw_list,
         &PY_DataView_Type, &view))
@@ -365,7 +365,7 @@ PY_datagroup_destroy_view_and_buffer(
 // splicer begin class.DataGroup.method.destroyViewAndBuffer
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:destroyViewAndBuffer", kw_list,
         &name))
@@ -390,7 +390,7 @@ PY_datagroup_get_view(
 // splicer begin class.DataGroup.method.getView
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getView", kw_list,
         &name))
@@ -417,7 +417,7 @@ PY_datagroup_get_view_index(
 // splicer begin class.DataGroup.method.getViewIndex
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getViewIndex", kw_list,
         &name))
@@ -442,7 +442,7 @@ PY_datagroup_get_view_name(
 // splicer begin class.DataGroup.method.getViewName
     ATK_IndexType idx;
     const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getViewName", kw_list,
         &idx))
@@ -450,7 +450,12 @@ PY_datagroup_get_view_name(
         return NULL;
     }
     const std::string & rv = self->BBB->getViewName(idx);
-    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
+    if (! isNameValid(rv)) {
+        PyErr_SetString(PyExc_KeyError, "'rv'");
+        return NULL;
+    }
+    
+    return Py_BuildValue("s", rv.c_str());
 // splicer end class.DataGroup.method.getViewName
 }
 
@@ -467,7 +472,7 @@ PY_datagroup_has_group(
 // splicer begin class.DataGroup.method.hasGroup
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasGroup", kw_list,
         &name))
@@ -492,7 +497,7 @@ PY_datagroup_create_group(
 // splicer begin class.DataGroup.method.createGroup
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:createGroup", kw_list,
         &name))
@@ -520,7 +525,7 @@ PY_datagroup_move_group(
     PY_DataGroup * grp;
     DataGroup * grp_ptr;
     const char *kwcpp = "grp";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:moveGroup", kw_list,
         &PY_DataGroup_Type, &grp))
@@ -548,7 +553,7 @@ PY_datagroup_destroy_group(
 // splicer begin class.DataGroup.method.destroyGroup
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:destroyGroup", kw_list,
         &name))
@@ -573,7 +578,7 @@ PY_datagroup_get_group(
 // splicer begin class.DataGroup.method.getGroup
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getGroup", kw_list,
         &name))
@@ -600,7 +605,7 @@ PY_datagroup_get_group_index(
 // splicer begin class.DataGroup.method.getGroupIndex
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getGroupIndex", kw_list,
         &name))
@@ -625,7 +630,7 @@ PY_datagroup_get_group_name(
 // splicer begin class.DataGroup.method.getGroupName
     ATK_IndexType idx;
     const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getGroupName", kw_list,
         &idx))
@@ -633,7 +638,12 @@ PY_datagroup_get_group_name(
         return NULL;
     }
     const std::string & rv = self->BBB->getGroupName(idx);
-    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
+    if (! isNameValid(rv)) {
+        PyErr_SetString(PyExc_KeyError, "'rv'");
+        return NULL;
+    }
+    
+    return Py_BuildValue("s", rv.c_str());
 // splicer end class.DataGroup.method.getGroupName
 }
 
@@ -667,7 +677,7 @@ PY_datagroup_save(
     const char * obase;
     const char * protocol;
     const char *kwcpp = "obase\0protocol";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:save", kw_list,
         &obase, &protocol))
@@ -693,7 +703,7 @@ PY_datagroup_load(
     const char * obase;
     const char * protocol;
     const char *kwcpp = "obase\0protocol";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:load", kw_list,
         &obase, &protocol))

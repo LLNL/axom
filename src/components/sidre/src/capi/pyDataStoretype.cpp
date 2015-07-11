@@ -59,7 +59,7 @@ PY_datastore_get_buffer(
 // splicer begin class.DataStore.method.getBuffer
     ATK_IndexType idx;
     const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getBuffer", kw_list,
         &idx))
@@ -104,7 +104,7 @@ PY_datastore_destroy_buffer(
 // splicer begin class.DataStore.method.destroyBuffer
     ATK_IndexType id;
     const char *kwcpp = "id";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:destroyBuffer", kw_list,
         &id))

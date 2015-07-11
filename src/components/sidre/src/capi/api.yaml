@@ -64,9 +64,6 @@ typedef:
       iso_c_binding:
       - C_INT
 
-  string:
-    # test for valid string and return NULL if invalid instead of string object InvalidName
-    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : ATK_InvalidName"
 
 # XXX
 # parameters:
@@ -140,6 +137,9 @@ classes:
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
+       C_error_pattern: C_invalid_name
+       PY_error_pattern: PY_invalid_name
+
 #    -  decl: IndexType getFirstValidViewIndex() const
 #    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
 #    -  decl: void destroyViews()
@@ -156,7 +156,11 @@ classes:
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
+
     -  decl: const std::string& getGroupName(IndexType idx) const
+       C_error_pattern: C_invalid_name
+       PY_error_pattern: PY_invalid_name
+
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
@@ -305,6 +309,21 @@ functions:
      options:
        C_code:  return name != NULL;
        F_code:  rv = name .ne. " "
+
+
+######################################################################
+patterns:
+    C_invalid_name: >
+        if (! isNameValid({var})) {{
+            return ATK_InvalidName;
+        }}
+    PY_invalid_name: >
+        if (! isNameValid({var})) {{
+            PyErr_SetString(PyExc_KeyError, "'{var}'");
+            return NULL;
+        }}
+
+
 
 # Files which contain code to be inserted into generated code
 splicer:

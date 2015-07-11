@@ -25,8 +25,8 @@ typedef:
   other:
     cpp_type: junk
 
-  string:
-    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
+#  string:
+#    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
 
   SidreLength:
 # defined in SidreTypes.hpp
@@ -76,6 +76,8 @@ classes:
       result:
          attrs:
             len: aa_exclass1_get_name_length({F_instance_ptr})
+      C_error_pattern: C_invalid_name
+      PY_error_pattern: PY_invalid_name
 
     - decl: int GetNameLength() const
       docs: helper function for Fortran
@@ -188,3 +190,19 @@ functions:
      options:
        C_code:  "return name != NULL;"
        F_code:  rv = name .ne. " "
+
+
+
+######################################################################
+patterns:
+    C_invalid_name: >
+        if (! isNameValid({var})) {{
+            return NULL;
+        }}
+    PY_invalid_name: >
+        if (! isNameValid({var})) {{
+            PyErr_SetString(PyExc_KeyError, "'{var}'");
+            return NULL;
+        }}
+
+

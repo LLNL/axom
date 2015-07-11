@@ -212,6 +212,8 @@ class Schema(object):
                 else:
                     def_types[key] = util.Typedef(key, **value)
 
+        patterns = node.setdefault('patterns', [])
+
         node['typedef'] = def_types
         self.typedef = node['typedef']
 

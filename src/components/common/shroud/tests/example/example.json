@@ -176,6 +176,8 @@
                     }
                 }, 
                 {
+                    "C_error_pattern": "C_invalid_name", 
+                    "PY_error_pattern": "PY_invalid_name", 
                     "args": [], 
                     "decl": "const string& getName() const", 
                     "fmt": {
@@ -1773,6 +1775,10 @@
         "wrap_fortran": true, 
         "wrap_python": true
     }, 
+    "patterns": {
+        "C_invalid_name": "if (! isNameValid({var})) {{\n    return NULL;\n}}\n", 
+        "PY_invalid_name": "if (! isNameValid({var})) {{\n    PyErr_SetString(PyExc_KeyError, \"'{var}'\");\n    return NULL;\n}}\n"
+    }, 
     "splicer": {
         "c": [
             "csplicer.c"
@@ -1951,7 +1957,7 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
-            "cpp_to_c": "isNameValid({var}) ? {var}.c_str() : NULL", 
+            "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null
@@ -1965,7 +1971,7 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
-            "cpp_to_c": "isNameValid({var}) ? {var}.c_str() : NULL", 
+            "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_module": {
                 "iso_c_binding": null

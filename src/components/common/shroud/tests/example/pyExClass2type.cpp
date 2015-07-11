@@ -153,7 +153,7 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : NULL);
+    return Py_BuildValue("s", rv.c_str());
 // splicer end class.ExClass2.method.getName
 }
 
@@ -187,7 +187,7 @@ PP_exclass2_get_class1(
     PP_ExClass1 * in;
     ExClass1 * in_ptr;
     const char *kwcpp = "in";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
         &PP_ExClass1_Type, &in))
@@ -216,7 +216,7 @@ PP_exclass2_declare(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     len = 1;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O:declare", kw_list,
@@ -275,7 +275,7 @@ PP_exclass2_testoptional(
     int i;
     long j;
     const char *kwcpp = "i\0j";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
     
     i = 1;
     j = 2;

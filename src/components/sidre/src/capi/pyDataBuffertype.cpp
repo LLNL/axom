@@ -73,7 +73,7 @@ PY_databuffer_declare(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
         &type, &len))
@@ -115,7 +115,7 @@ PY_databuffer_allocate_from_type(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
         &type, &len))
@@ -141,7 +141,7 @@ PY_databuffer_reallocate(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
         &type, &len))
@@ -166,7 +166,7 @@ PY_databuffer_set_external_data(
 // splicer begin class.DataBuffer.method.setExternalData
     void * external_data;
     const char *kwcpp = "external_data";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:setExternalData", kw_list,
         &external_data))

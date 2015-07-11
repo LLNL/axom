@@ -14,6 +14,7 @@ typedef struct s_{C_type_name} {C_type_name};
 from __future__ import print_function
 
 import util
+from util import append_format
 
 wformat = util.wformat
 
@@ -23,6 +24,7 @@ class Wrapc(util.WrapperMixin):
     """
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
+        self.patterns = tree['patterns']
         self.config = config
         self.log = config.log
         self.typedef = tree['typedef']
@@ -353,6 +355,11 @@ class Wrapc(util.WrapperMixin):
                 line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
+
+                if 'C_error_pattern' in node:
+                    lfmt = util.Options(fmt)
+                    lfmt.var = fmt.rv
+                    append_format(C_code, self.patterns[node['C_error_pattern']], lfmt)
 
                 ret = result_typedef.cpp_to_c
                 line = 'return ' + ret.format(var='rv') + ';'

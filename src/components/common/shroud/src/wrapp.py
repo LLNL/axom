@@ -9,10 +9,7 @@ One Extension module per class
 from __future__ import print_function
 
 import util
-
-
-wformat = util.wformat
-append_format = util.append_format
+from util import wformat, append_format
 
 class Wrapp(util.WrapperMixin):
     """Generate Python bindings.
@@ -20,6 +17,7 @@ class Wrapp(util.WrapperMixin):
 
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
+        self.patterns = tree['patterns']
         self.config = config
         self.log = config.log
         self.typedef = tree['typedef']
@@ -413,9 +411,9 @@ return 1;""", fmt)
                 # jump through some hoops for char ** const correctness for C++
                 # warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
                 PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
-                PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ' };')
+                PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
-                PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + '" };')
+                PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
             PY_decl.append('')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
@@ -444,6 +442,11 @@ return 1;""", fmt)
         else:
             line = wformat('{rv_decl} = {PY_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
+
+        if 'PY_error_pattern' in node:
+            lfmt = util.Options(fmt)
+            lfmt.var = fmt.rv
+            append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
 
         # return Object
         if result_type == 'void' and not result_is_ptr:
