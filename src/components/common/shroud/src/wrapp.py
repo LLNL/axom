@@ -317,6 +317,7 @@ return 1;""", fmt)
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
+        result_is_ref = result['attrs'].get('reference', False)
 
         if node.get('return_this', False):
             result_type = 'void'
@@ -440,14 +441,18 @@ return 1;""", fmt)
         if result_type == 'void' and not result_is_ptr:
             PY_code.append('Py_RETURN_NONE;')
         else:
+            fmt.var = 'rv'
             format = [ result_typedef.PY_format ]
             addrargs = [ ]
             if result_typedef.PY_to_object:
                 format.append('&')
                 addrargs.append(result_typedef.PY_to_object)
             if result_is_ptr:
-                addrargs.append('rv')
+                append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
+            elif result_is_ref:
+                append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
             else:
+                # XXX intermediate variable?
                 addrargs.append('&rv')
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)

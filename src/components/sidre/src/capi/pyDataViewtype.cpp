@@ -149,7 +149,7 @@ PY_dataview_get_name(
 {
 // splicer begin class.DataView.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
 // splicer end class.DataView.method.getName
 }
 

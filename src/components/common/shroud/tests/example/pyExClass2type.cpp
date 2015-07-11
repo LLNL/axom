@@ -153,7 +153,7 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : NULL);
 // splicer end class.ExClass2.method.getName
 }
 

@@ -64,7 +64,7 @@ PP_exclass1_get_name(
 {
 // splicer begin class.ExClass1.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : NULL);
 // splicer end class.ExClass1.method.getName
 }
 
@@ -96,7 +96,7 @@ PP_exclass1_get_name_error_check(
 {
 // splicer begin class.ExClass1.method.getNameErrorCheck
     const std::string & rv = self->BBB->getNameErrorCheck();
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : NULL);
 // splicer end class.ExClass1.method.getNameErrorCheck
 }
 
@@ -112,7 +112,7 @@ PP_exclass1_get_name_arg(
 {
 // splicer begin class.ExClass1.method.getNameArg
     const std::string & rv = self->BBB->getNameArg();
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : NULL);
 // splicer end class.ExClass1.method.getNameArg
 }
 

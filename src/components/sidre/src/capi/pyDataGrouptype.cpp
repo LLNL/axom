@@ -53,7 +53,7 @@ PY_datagroup_get_name(
 {
 // splicer begin class.DataGroup.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
 // splicer end class.DataGroup.method.getName
 }
 
@@ -430,7 +430,7 @@ PY_datagroup_get_view_name(
         return NULL;
     }
     const std::string & rv = self->BBB->getViewName(idx);
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
 // splicer end class.DataGroup.method.getViewName
 }
 
@@ -607,7 +607,7 @@ PY_datagroup_get_group_name(
         return NULL;
     }
     const std::string & rv = self->BBB->getGroupName(idx);
-    return Py_BuildValue("s", &rv);
+    return Py_BuildValue("s", isNameValid(rv) ? rv.c_str() : ATK_InvalidName);
 // splicer end class.DataGroup.method.getGroupName
 }
 
