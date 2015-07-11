@@ -28,6 +28,23 @@ return 0;
 // splicer end class.DataStore.type.init
 }
 
+static char PY_datastore_delete__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datastore_delete(
+  PY_DataStore *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataStore.method.delete
+    delete self->BBB;
+    self->BBB = NULL;
+    Py_RETURN_NONE;
+// splicer end class.DataStore.method.delete
+}
+
 static char PY_datastore_get_root__doc__[] =
 "documentation"
 ;
@@ -148,6 +165,7 @@ PY_datastore_print(
 // splicer end class.DataStore.method.print
 }
 static PyMethodDef PY_DataStore_methods[] = {
+{"delete", (PyCFunction)PY_datastore_delete, METH_NOARGS, PY_datastore_delete__doc__},
 {"getRoot", (PyCFunction)PY_datastore_get_root, METH_NOARGS, PY_datastore_get_root__doc__},
 {"getBuffer", (PyCFunction)PY_datastore_get_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_get_buffer__doc__},
 {"createBuffer", (PyCFunction)PY_datastore_create_buffer, METH_NOARGS, PY_datastore_create_buffer__doc__},

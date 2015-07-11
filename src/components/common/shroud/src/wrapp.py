@@ -240,7 +240,8 @@ return 1;""", fmt)
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
 #        is_const = result['attrs'].get('const', False)
-        if is_ctor or is_dtor:
+        if is_ctor:   # or is_dtor:
+            # XXX - have explicit delete
             # need code in __init__ and __del__
             return
 
@@ -351,7 +352,10 @@ return 1;""", fmt)
             fmt.PY_this_call = ''  # call function syntax
 
 
-        if result_type == 'void' and not result_is_ptr:
+        if is_dtor:
+            append_format(PY_code, 'delete self->{BBB};', fmt)
+            append_format(PY_code, 'self->{BBB} = NULL;', fmt)
+        elif result_type == 'void' and not result_is_ptr:
             line = wformat('{PY_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
         else:

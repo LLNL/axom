@@ -27,6 +27,23 @@ PP_ExClass1_tp_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
 // splicer end class.ExClass1.type.init
 }
 
+static char PP_exclass1_delete__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass1_delete(
+  PP_ExClass1 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass1.method.delete
+    delete self->BBB;
+    self->BBB = NULL;
+    Py_RETURN_NONE;
+// splicer end class.ExClass1.method.delete
+}
+
 static char PP_exclass1_increment_count__doc__[] =
 "documentation"
 ;
@@ -246,6 +263,7 @@ PP_exclass1_splicer_special(
 // splicer end class.ExClass1.method.SplicerSpecial
 }
 static PyMethodDef PP_ExClass1_methods[] = {
+{"delete", (PyCFunction)PP_exclass1_delete, METH_NOARGS, PP_exclass1_delete__doc__},
 {"incrementCount", (PyCFunction)PP_exclass1_increment_count, METH_VARARGS|METH_KEYWORDS, PP_exclass1_increment_count__doc__},
 {"getName", (PyCFunction)PP_exclass1_get_name, METH_NOARGS, PP_exclass1_get_name__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass1_get_name_length, METH_NOARGS, PP_exclass1_get_name_length__doc__},
