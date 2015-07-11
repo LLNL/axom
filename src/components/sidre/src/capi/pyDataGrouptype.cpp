@@ -451,7 +451,7 @@ PY_datagroup_get_view_name(
     }
     const std::string & rv = self->BBB->getViewName(idx);
     if (! isNameValid(rv)) {
-        PyErr_SetString(PyExc_KeyError, "'rv'");
+        PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
         return NULL;
     }
     
@@ -639,7 +639,7 @@ PY_datagroup_get_group_name(
     }
     const std::string & rv = self->BBB->getGroupName(idx);
     if (! isNameValid(rv)) {
-        PyErr_SetString(PyExc_KeyError, "'rv'");
+        PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
         return NULL;
     }
     

@@ -125,7 +125,7 @@ classes:
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
        C_error_pattern: C_invalid_name
-       PY_error_pattern: PY_invalid_name
+       PY_error_pattern: PY_invalid_name_idx
 
 #    -  decl: IndexType getFirstValidViewIndex() const
 #    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
@@ -146,7 +146,7 @@ classes:
 
     -  decl: const std::string& getGroupName(IndexType idx) const
        C_error_pattern: C_invalid_name
-       PY_error_pattern: PY_invalid_name
+       PY_error_pattern: PY_invalid_name_idx
 
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
@@ -302,7 +302,13 @@ patterns:
         }}
     PY_invalid_name: >
         if (! isNameValid({var})) {{
-            PyErr_SetString(PyExc_KeyError, "'{var}'");
+            PyErr_SetString(PyExc_KeyError, "{var}");
+            return NULL;
+        }}
+    # report the invalid index, assume local variable idx
+    PY_invalid_name_idx: >
+        if (! isNameValid({var})) {{
+            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
             return NULL;
         }}
 

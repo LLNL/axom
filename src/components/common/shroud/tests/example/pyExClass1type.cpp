@@ -65,7 +65,7 @@ PP_exclass1_get_name(
 // splicer begin class.ExClass1.method.getName
     const std::string & rv = self->BBB->getName();
     if (! isNameValid(rv)) {
-        PyErr_SetString(PyExc_KeyError, "'rv'");
+        PyErr_SetString(PyExc_KeyError, "rv");
         return NULL;
     }
     

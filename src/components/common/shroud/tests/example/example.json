@@ -1782,7 +1782,7 @@
     }, 
     "patterns": {
         "C_invalid_name": "if (! isNameValid({var})) {{\n    return NULL;\n}}\n", 
-        "PY_invalid_name": "if (! isNameValid({var})) {{\n    PyErr_SetString(PyExc_KeyError, \"'{var}'\");\n    return NULL;\n}}\n"
+        "PY_invalid_name": "if (! isNameValid({var})) {{\n    PyErr_SetString(PyExc_KeyError, \"{var}\");\n    return NULL;\n}}\n"
     }, 
     "splicer": {
         "c": [

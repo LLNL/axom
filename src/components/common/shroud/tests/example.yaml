@@ -202,7 +202,7 @@ patterns:
         }}
     PY_invalid_name: >
         if (! isNameValid({var})) {{
-            PyErr_SetString(PyExc_KeyError, "'{var}'");
+            PyErr_SetString(PyExc_KeyError, "{var}");
             return NULL;
         }}
 
