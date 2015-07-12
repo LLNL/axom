@@ -378,6 +378,8 @@ return 1;""", fmt)
             append_format(PY_code, '{PY_PyObject} * {rv_obj} = PyObject_New({PY_PyObject}, &{PY_PyTypeObject});', lfmt)
             append_format(PY_code, '{rv_obj}->{BBB} = {rv};', lfmt)
             append_format(PY_code, 'return (PyObject *) {rv_obj};', lfmt)
+        elif result_typedef.c_type == 'bool':
+            append_format(PY_code, 'return PyBool_FromLong({rv});', fmt)
         else:
             fmt.var = 'rv'
             format = [ result_typedef.PY_format ]

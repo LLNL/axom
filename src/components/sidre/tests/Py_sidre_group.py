@@ -61,7 +61,7 @@ class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
 # Verify hasGroup()
 #------------------------------------------------------------------------------
-    def XXXtest_has_group(self):
+    def test_has_group(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 

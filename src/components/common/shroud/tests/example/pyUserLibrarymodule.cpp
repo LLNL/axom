@@ -52,7 +52,7 @@ PP_is_name_valid(
         return NULL;
     }
     bool rv = isNameValid(name);
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end function.isNameValid
 }
 static PyMethodDef PP_methods[] = {

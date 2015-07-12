@@ -150,7 +150,7 @@ PY_dataview_has_buffer(
 {
 // splicer begin class.DataView.method.hasBuffer
     bool rv = self->BBB->hasBuffer();
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end class.DataView.method.hasBuffer
 }
 
@@ -166,7 +166,7 @@ PY_dataview_is_opaque(
 {
 // splicer begin class.DataView.method.isOpaque
     bool rv = self->BBB->isOpaque();
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end class.DataView.method.isOpaque
 }
 

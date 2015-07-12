@@ -223,7 +223,7 @@ PY_databuffer_is_external(
 {
 // splicer begin class.DataBuffer.method.isExternal
     bool rv = self->BBB->isExternal();
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end class.DataBuffer.method.isExternal
 }
 

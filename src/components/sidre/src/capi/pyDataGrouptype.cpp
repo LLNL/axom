@@ -179,7 +179,7 @@ PY_datagroup_has_view(
         return NULL;
     }
     bool rv = self->BBB->hasView(name);
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end class.DataGroup.method.hasView
 }
 
@@ -513,7 +513,7 @@ PY_datagroup_has_group(
         return NULL;
     }
     bool rv = self->BBB->hasGroup(name);
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end class.DataGroup.method.hasGroup
 }
 

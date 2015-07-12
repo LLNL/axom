@@ -251,7 +251,7 @@ PP_exclass1_has_addr(
         return NULL;
     }
     bool rv = self->BBB->hasAddr(in);
-    return Py_BuildValue("O", &rv);
+    return PyBool_FromLong(rv);
 // splicer end class.ExClass1.method.hasAddr
 }
 
