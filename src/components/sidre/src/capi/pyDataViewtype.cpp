@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataView.include
-// splicer end class.DataView.include
+// splicer begin class.DataView.impl.include
+// splicer end class.DataView.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataView.C_definition
-// splicer end class.DataView.C_definition
-// splicer begin class.DataView.additional_methods
-// splicer end class.DataView.additional_methods
+// splicer begin class.DataView.impl.C_definition
+// splicer end class.DataView.impl.C_definition
+// splicer begin class.DataView.impl.additional_methods
+// splicer end class.DataView.impl.additional_methods
 static int
 PY_DataView_tp_init (PY_DataView *self, PyObject *args, PyObject *kwds)
 {

@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataGroup.include
-// splicer end class.DataGroup.include
+// splicer begin class.DataGroup.impl.include
+// splicer end class.DataGroup.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataGroup.C_definition
-// splicer end class.DataGroup.C_definition
-// splicer begin class.DataGroup.additional_methods
-// splicer end class.DataGroup.additional_methods
+// splicer begin class.DataGroup.impl.C_definition
+// splicer end class.DataGroup.impl.C_definition
+// splicer begin class.DataGroup.impl.additional_methods
+// splicer end class.DataGroup.impl.additional_methods
 static int
 PY_DataGroup_tp_init (PY_DataGroup *self, PyObject *args, PyObject *kwds)
 {

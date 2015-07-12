@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataStore.include
-// splicer end class.DataStore.include
+// splicer begin class.DataStore.impl.include
+// splicer end class.DataStore.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataStore.C_definition
-// splicer end class.DataStore.C_definition
-// splicer begin class.DataStore.additional_methods
-// splicer end class.DataStore.additional_methods
+// splicer begin class.DataStore.impl.C_definition
+// splicer end class.DataStore.impl.C_definition
+// splicer begin class.DataStore.impl.additional_methods
+// splicer end class.DataStore.impl.additional_methods
 static int
 PY_DataStore_tp_init (PY_DataStore *self, PyObject *args, PyObject *kwds)
 {

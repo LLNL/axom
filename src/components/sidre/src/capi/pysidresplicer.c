@@ -3,11 +3,11 @@
 // ----------------------------------------------------------------------
 // ----- pySidremodule.hpp
 
-// splicer begin include
+// splicer begin header.include
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
 #include "SidreWrapperHelpers.hpp"
-// splicer end include
+// splicer end header.include
 
 // ----------------------------------------------------------------------
 // ----- pySidremodule.cpp

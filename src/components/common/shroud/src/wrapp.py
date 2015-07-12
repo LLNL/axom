@@ -457,10 +457,13 @@ static PyObject *
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
+        self._push_splicer('impl')
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)
         self._create_splicer('C_definition', output)
         self._create_splicer('additional_methods', output)
+        self._pop_splicer('impl')
+
         fmt_type = dict(
             PY_module_name  = fmt.PY_module_name,
             PY_PyObject     = fmt.PY_PyObject,
@@ -505,10 +508,12 @@ static PyObject *
 #define IS_PY3K
 #endif""")
         
+        self._push_splicer('header')
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)
         output.extend(self.py_type_extern)
         self._create_splicer('C_declaration', output)
+        self._pop_splicer('header')
 
         output.append('')
         output.append('// helper functions')
