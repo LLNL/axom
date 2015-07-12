@@ -425,6 +425,11 @@ static PyObject *
         PyObj  = fmt.PY_PyObject
         selected = node.get('python', {}).get('type', [])
 
+        # Dictionary of methods for bodies
+        default_body = dict(
+            richcompare = self.not_implemented
+            )
+
         self._push_splicer('type')
         for typename in typenames:
             tp_name = 'tp_' + typename
@@ -437,7 +442,8 @@ static PyObject *
             output.append('static ' + tup[0])
             output.append(('{name} ' + tup[1]).format(name=func_name, object=PyObj))
             output.append('{')
-            default = self.not_implemented(typename, tup[2])
+            default = default_body.get(typename, self.not_implemented_error)
+            default = default(typename, tup[2])
             self._create_splicer(typename, output, default=default)
             output.append('}')
         self._pop_splicer('type')
@@ -577,13 +583,21 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         self.namespace(node, 'end', output)
         self.write_output_file(fmt.PY_helper_filename, self.config.binary_dir, output)
 
-    def not_implemented(self, msg, ret):
+    def not_implemented_error(self, msg, ret):
         '''A standard splicer for unimplemented code
         ret is the return value (NULL or -1)
         '''
         return [
             "    PyErr_SetString(PyExc_NotImplementedError, \"%s\");" % msg,
             "    return %s;" % ret
+            ]
+
+    def not_implemented(self, msg, ret):
+        '''A standard splicer for rich comparison
+        '''
+        return [
+            'Py_INCREF(Py_NotImplemented);',
+            'return Py_NotImplemented;'
             ]
 
 
@@ -595,7 +609,8 @@ typenames = ['dealloc', 'print', 'compare',
              'getattr', 'setattr',  # deprecated
              'getattro', 'setattro',
              'repr', 'hash', 'call', 'str',
-             'init', 'alloc', 'new', 'free', 'del']
+             'init', 'alloc', 'new', 'free', 'del',
+             'richcompare']
 
 # return type, prototype, default return value
 typefuncs = {
@@ -614,7 +629,8 @@ typefuncs = {
     'alloc':    ('PyObject *', '(PyTypeObject *type, Py_ssize_t nitems)',                 'NULL'),
     'new':      ('PyObject *', '(PyTypeObject *type, PyObject *args, PyObject *kwds)',    'NULL'),
     'free':     ('void',       '(void *op)',                                        ''),
-    'del':      ('void',       '({object} *self)',                                  '')
+    'del':      ('void',       '({object} *self)',                                  ''),
+    'richcompare': ('PyObject *', '({object} self, PyObject *other, int opid)',      ''),
     }
 
 PyTypeObject_template = """
@@ -661,7 +677,7 @@ PyTypeObject {PY_PyTypeObject} = {{
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc){tp_richcompare},                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

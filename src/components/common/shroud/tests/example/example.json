@@ -622,7 +622,8 @@
             "python": {
                 "type": [
                     "init", 
-                    "repr"
+                    "repr", 
+                    "richcompare"
                 ]
             }
         }, 

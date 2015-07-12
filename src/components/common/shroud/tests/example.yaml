@@ -62,7 +62,7 @@ classes:
       # include files to add to module
 
     python:
-      type: [ init, repr ]
+      type: [ init, repr, richcompare ]
 
     methods:
     - decl: ExClass1 *new+constructor ( const string *name )
