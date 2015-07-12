@@ -49,7 +49,7 @@ contains
     parent = root%create_group("parent")
     child = parent%create_group("child")
 
-!--    call assert_true( child%get_parent() == parent )
+    call assert_true( child%get_parent() == parent )
 
     call datastore_delete(ds)
   end subroutine get_parent
@@ -58,17 +58,17 @@ contains
 ! Verify get_data_store()
 !------------------------------------------------------------------------------
   subroutine get_datastore
-    type(datastore) ds
+    type(datastore) ds, const_ds
     type(datagroup) root, group
 
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("parent")
 
-!--    call assert_true( group%get_data_store() == ds )
+    call assert_true( group%get_data_store() == ds )
 
-!--    DataStore const * const_ds = group%get_data_store()
-!--    call assert_true( const_ds == ds )
+    const_ds = group%get_data_store()
+    call assert_true( const_ds == ds )
 
     call datastore_delete(ds)
   end subroutine get_datastore
@@ -85,7 +85,7 @@ contains
 
     parent = root%create_group("parent")
     child = parent%create_group("child")
-!--    call assert_true( child%get_parent() == parent )
+    call assert_true( child%get_parent() == parent )
 
     call assert_true( parent%has_group("child") )
 
@@ -106,7 +106,7 @@ contains
     parent = root%create_group("parent")
     view = parent%create_view_and_buffer("view")
 
-!--    call assert_true( view%get_owning_group() == parent )
+    call assert_true( view%get_owning_group() == parent )
 
     call assert_true( parent%has_view("view") )
 

@@ -47,6 +47,10 @@ module exclass1_mod
         module procedure exclass1_eq
     end interface
     
+    interface operator (.ne.)
+        module procedure exclass1_ne
+    end interface
+    
     interface
         
         function aa_exclass1_new(name) result(rv) &
@@ -318,5 +322,17 @@ contains
             rv = .false.
         endif
     end function exclass1_eq
+    
+    function exclass1_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass1), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass1_ne
 
 end module exclass1_mod

@@ -228,6 +228,13 @@ module sidre_mod
         module procedure dataview_eq
     end interface
     
+    interface operator (.ne.)
+        module procedure datastore_ne
+        module procedure datagroup_ne
+        module procedure databuffer_ne
+        module procedure dataview_ne
+    end interface
+    
     interface
         
         function atk_datastore_new() result(rv) &
@@ -1839,6 +1846,18 @@ contains
         endif
     end function datastore_eq
     
+    function datastore_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datastore), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datastore_ne
+    
     function datagroup_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
@@ -1850,6 +1869,18 @@ contains
             rv = .false.
         endif
     end function datagroup_eq
+    
+    function datagroup_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datagroup), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datagroup_ne
     
     function databuffer_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
@@ -1863,6 +1894,18 @@ contains
         endif
     end function databuffer_eq
     
+    function databuffer_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(databuffer), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function databuffer_ne
+    
     function dataview_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
@@ -1874,5 +1917,17 @@ contains
             rv = .false.
         endif
     end function dataview_eq
+    
+    function dataview_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(dataview), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function dataview_ne
 
 end module sidre_mod

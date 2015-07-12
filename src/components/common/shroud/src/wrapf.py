@@ -273,20 +273,36 @@ class Wrapf(util.WrapperMixin):
         self._pop_splicer(fmt_class.cpp_class)
 
         # overload operators
-        ops = self.operator_map.setdefault('.eq.', [])
+        self.overload_compare(fmt_class, '.eq.', fmt_class.lower_class + '_eq',
+                              wformat('c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
+#        self.overload_compare(fmt_class, '==', fmt_class.lower_class + '_eq', None)
+        self.overload_compare(fmt_class, '.ne.', fmt_class.lower_class + '_ne',
+                              wformat('.not. c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
+#        self.overload_compare(fmt_class, '/=', fmt_class.lower_class + '_ne', None)
+        
+    def overload_compare(self, fmt_class, operator, procedure, predicate):
+        """ Overload .eq. and .eq.
+        """
         fmt = util.Options(fmt_class)
-        fmt.F_operator_name = wformat('{lower_class}_eq', fmt)
-        ops.append(fmt.F_operator_name)
+        fmt.procedure = procedure
+        fmt.predicate = predicate
+
+        ops = self.operator_map.setdefault(operator, [])
+        ops.append(procedure)
+
+        if predicate is None:
+            # .eq. and == use same function
+            return
+
         operator = self.operator_impl
         operator.append('')
-        append_format(operator, 'function {F_operator_name}(a,b) result (rv)', fmt)
+        append_format(operator, 'function {procedure}(a,b) result (rv)', fmt)
         operator.append(1)
         operator.append('use iso_c_binding, only: c_associated')
         operator.append('implicit none')
         append_format(operator, 'type({F_derived_name}), intent(IN) ::a,b', fmt)
         operator.append('logical :: rv')
-#        append_format(operator, 'if(a%{F_derived_member} .eq. b%{F_derived_member}) then', fmt)
-        append_format(operator, 'if (c_associated(a%{F_derived_member}, b%{F_derived_member})) then', fmt)
+        append_format(operator, 'if ({predicate}) then', fmt)
         operator.append(1)
         operator.append('rv = .true.')
         operator.append(-1)
@@ -296,7 +312,7 @@ class Wrapf(util.WrapperMixin):
         operator.append(-1)
         operator.append('endif')
         operator.append(-1)
-        append_format(operator, 'end function {F_operator_name}', fmt)
+        append_format(operator, 'end function {procedure}', fmt)
 
     def wrap_method(self, cls, node):
         """
