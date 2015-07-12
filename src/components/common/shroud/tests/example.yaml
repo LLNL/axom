@@ -21,7 +21,7 @@ options:
 
   PY_prefix: PP_
 
-typedef:
+types:
   other:
     cpp_type: junk
 

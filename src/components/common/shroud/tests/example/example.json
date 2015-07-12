@@ -1796,7 +1796,7 @@
             "pysplicer.c"
         ]
     }, 
-    "typedef": {
+    "types": {
         "ExClass1": {
             "PY_PyObject": "PP_ExClass1", 
             "PY_PyTypeObject": "PP_ExClass1_Type", 

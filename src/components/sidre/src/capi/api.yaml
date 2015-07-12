@@ -27,7 +27,7 @@ options:
   F_string_result_as_arg: True
 
 
-typedef:
+types:
   IndexType:
 # defined in SidreTypes.hpp
     typedef  : int

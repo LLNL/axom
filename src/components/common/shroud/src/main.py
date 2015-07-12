@@ -207,13 +207,13 @@ class Schema(object):
         def_types['real(C_FLOAT)']   = def_types['float']
         def_types['real(C_DOUBLE)']  = def_types['double']
 
-        if 'typedef' in node and \
-                node['typedef'] is not None:
-            if not isinstance(node['typedef'], dict):
-                raise TypeError("typedef must be a dictionary")
-            for key, value in node['typedef'].items():
+        types_dict = node.get('types', None)
+        if types_dict is not None:
+            if not isinstance(types_dict, dict):
+                raise TypeError("types must be a dictionary")
+            for key, value in types_dict.items():
                 if not isinstance(value, dict):
-                    raise TypeError("typedef '%s' must be a dictionary" % key)
+                    raise TypeError("types '%s' must be a dictionary" % key)
 
                 if 'typedef' in value:
                     copy_type = value['typedef']
@@ -231,8 +231,8 @@ class Schema(object):
 
         patterns = node.setdefault('patterns', [])
 
-        node['typedef'] = def_types
-        self.typedef = node['typedef']
+        node['types'] = def_types
+        self.typedef = node['types']
 
         classes = node.setdefault('classes', [])
         self.check_classes(classes)

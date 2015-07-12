@@ -27,7 +27,7 @@ class Wrapc(util.WrapperMixin):
         self.patterns = tree['patterns']
         self.config = config
         self.log = config.log
-        self.typedef = tree['typedef']
+        self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '//'
 
