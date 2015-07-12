@@ -42,6 +42,11 @@ module exclass1_mod
         ! splicer end class.ExClass1.type_bound_procedure_part
     end type exclass1
     
+    
+    interface operator (.eq.)
+        module procedure exclass1_eq
+    end interface
+    
     interface
         
         function aa_exclass1_new(name) result(rv) &
@@ -301,5 +306,17 @@ contains
     
     ! splicer begin class.ExClass1.additional_functions
     ! splicer end class.ExClass1.additional_functions
+    
+    function exclass1_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass1), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass1_eq
 
 end module exclass1_mod

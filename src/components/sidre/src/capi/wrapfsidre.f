@@ -220,6 +220,14 @@ module sidre_mod
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
     
+    
+    interface operator (.eq.)
+        module procedure datastore_eq
+        module procedure datagroup_eq
+        module procedure databuffer_eq
+        module procedure dataview_eq
+    end interface
+    
     interface
         
         function atk_datastore_new() result(rv) &
@@ -1818,5 +1826,53 @@ contains
         rv = name .ne. " "
         ! splicer end is_name_valid
     end function is_name_valid
+    
+    function datastore_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datastore), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datastore_eq
+    
+    function datagroup_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datagroup), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datagroup_eq
+    
+    function databuffer_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(databuffer), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function databuffer_eq
+    
+    function dataview_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(dataview), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function dataview_eq
 
 end module sidre_mod

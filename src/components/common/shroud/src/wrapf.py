@@ -55,6 +55,9 @@ class Wrapf(util.WrapperMixin):
         self.f_type_decl = []
         self.c_interface = []
         self.impl = []         # implementation, after contains
+        self.operator_impl = []
+        self.operator_map = {} # list of function names by operator
+                               # {'.eq.': [ 'abc', 'def'] }
         self.c_interface.append('interface')
         self.c_interface.append(1)
 
@@ -268,6 +271,32 @@ class Wrapf(util.WrapperMixin):
         self._create_splicer('additional_interfaces', self.c_interface)
 
         self._pop_splicer(fmt_class.cpp_class)
+
+        # overload operators
+        ops = self.operator_map.setdefault('.eq.', [])
+        fmt = util.Options(fmt_class)
+        fmt.F_operator_name = wformat('{lower_class}_eq', fmt)
+        ops.append(fmt.F_operator_name)
+        operator = self.operator_impl
+        operator.append('')
+        append_format(operator, 'function {F_operator_name}(a,b) result (rv)', fmt)
+        operator.append(1)
+        operator.append('use iso_c_binding, only: c_associated')
+        operator.append('implicit none')
+        append_format(operator, 'type({F_derived_name}), intent(IN) ::a,b', fmt)
+        operator.append('logical :: rv')
+#        append_format(operator, 'if(a%{F_derived_member} .eq. b%{F_derived_member}) then', fmt)
+        append_format(operator, 'if (c_associated(a%{F_derived_member}, b%{F_derived_member})) then', fmt)
+        operator.append(1)
+        operator.append('rv = .true.')
+        operator.append(-1)
+        operator.append('else')
+        operator.append(1)
+        operator.append('rv = .false.')
+        operator.append(-1)
+        operator.append('endif')
+        operator.append(-1)
+        append_format(operator, 'end function {F_operator_name}', fmt)
 
     def wrap_method(self, cls, node):
         """
@@ -649,6 +678,20 @@ class Wrapf(util.WrapperMixin):
 #X        output.append('! splicer pop class')
         output.append('')
 
+        # Interfaces for operator overloads
+        if self.operator_map:
+            ops = self.operator_map.keys()
+            ops.sort()
+            for op in ops:
+                output.append('')
+                output.append('interface operator (%s)' % op)
+                output.append(1)
+                for opfcn in self.operator_map[op]:
+                    output.append('module procedure %s' % opfcn)
+                output.append(-1)
+                output.append('end interface')
+            output.append('')
+
         output.extend(self.c_interface)
 
         output.append(-1)
@@ -657,6 +700,8 @@ class Wrapf(util.WrapperMixin):
         output.append(1)
 
         output.extend(self.impl)
+
+        output.extend(self.operator_impl)
 
         output.append(-1)
         output.append('')

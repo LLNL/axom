@@ -354,6 +354,16 @@ class Options(object):
                 d[key] = value
         return d
 
+    def _to_full_dict(self, d=None):
+        if d is None:
+            d = self._to_dict()
+        else:
+            d.update( self._to_dict())
+        if self.__parent:
+            self.__parent._to_full_dict(d)
+        return d
+
+
 def copy_function_node(node):
     """Create a copy of a function node to use with C++ template.
     """
