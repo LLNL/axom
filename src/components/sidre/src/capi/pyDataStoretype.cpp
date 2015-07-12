@@ -27,6 +27,39 @@ self->BBB = ds;
 return 0;
 // splicer end class.DataStore.type.init
 }
+static PyObject *
+PY_DataStore_tp_richcompare (PY_DataStore *self, PyObject *other, int opid)
+{
+// splicer begin class.DataStore.type.richcompare
+PyObject *rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataStore_Type)) {
+    PY_DataStore *pyother = (PY_DataStore *) other;
+    switch (opid) {
+    case Py_EQ:
+	if (self->BBB == pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_NE:
+	if (self->BBB != pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_LT:
+    case Py_LE:
+    case Py_GE:
+    case Py_GT:
+	break;
+    }
+ }
+Py_INCREF(rv);
+return rv;
+// splicer end class.DataStore.type.richcompare
+}
 
 static char PY_datastore_delete__doc__[] =
 "documentation"
@@ -218,7 +251,7 @@ PyTypeObject PY_DataStore_Type = {
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc)PY_DataStore_tp_richcompare,                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

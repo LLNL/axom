@@ -33,7 +33,7 @@ class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
 # getParent()
 #------------------------------------------------------------------------------
-    def XXXtest_get_parent(self):
+    def test_get_parent(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
         parent = root.createGroup("parent")
@@ -46,7 +46,7 @@ class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
 # Verify getDatastore()
 #------------------------------------------------------------------------------
-    def XXXtest_get_datastore(self):
+    def test_get_datastore(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
         group = root.createGroup("parent")

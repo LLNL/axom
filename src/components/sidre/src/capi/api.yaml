@@ -80,7 +80,7 @@ classes:
 #    -  decl: void print(std::ostream& os) const
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
   ####################################################################
   - name: DataGroup
@@ -157,7 +157,7 @@ classes:
     -  decl: void load(const std::string& obase,  const std::string& protocol)
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
   ####################################################################
   - name: DataBuffer
@@ -207,7 +207,7 @@ classes:
       - decl: void print() const
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
   ####################################################################
   - name: DataView
@@ -283,7 +283,7 @@ classes:
     - decl: void print() const
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
 ######################################################################
 

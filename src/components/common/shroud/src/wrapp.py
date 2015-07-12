@@ -630,7 +630,7 @@ typefuncs = {
     'new':      ('PyObject *', '(PyTypeObject *type, PyObject *args, PyObject *kwds)',    'NULL'),
     'free':     ('void',       '(void *op)',                                        ''),
     'del':      ('void',       '({object} *self)',                                  ''),
-    'richcompare': ('PyObject *', '({object} self, PyObject *other, int opid)',      ''),
+    'richcompare': ('PyObject *', '({object} *self, PyObject *other, int opid)',      ''),
     }
 
 PyTypeObject_template = """

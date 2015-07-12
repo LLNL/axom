@@ -27,7 +27,7 @@ PP_ExClass1_tp_init (PP_ExClass1 *self, PyObject *args, PyObject *kwds)
 // splicer end class.ExClass1.type.init
 }
 static PyObject *
-PP_ExClass1_tp_richcompare (PP_ExClass1 self, PyObject *other, int opid)
+PP_ExClass1_tp_richcompare (PP_ExClass1 *self, PyObject *other, int opid)
 {
 // splicer begin class.ExClass1.type.richcompare
 Py_INCREF(Py_NotImplemented);
