@@ -8,20 +8,20 @@ namespace asctoolkit {
 namespace lumberjack {
 
 class MessageEqualityCombiner: public Combiner {
-	public:
-		bool shouldMessageInfosBeCombined(const MessageInfo& leftMessage,
-			                              const MessageInfo& rightMessage)
-		{
-			if (leftMessage.message().compare(rightMessage.message()) == 0){
-				return true;
-			}
-			return false;
-		}
+    public:
+        bool shouldMessageInfosBeCombined(const MessageInfo& leftMessage,
+                                          const MessageInfo& rightMessage)
+        {
+            if (leftMessage.message().compare(rightMessage.message()) == 0){
+                return true;
+            }
+            return false;
+        }
 
-		void combine(MessageInfo& combined, const MessageInfo& combinee, const int ranksLimit)
-		{
-			combined.addRanks(combinee.ranks(), ranksLimit);
-		}
+        void combine(MessageInfo& combined, const MessageInfo& combinee, const int ranksLimit)
+        {
+            combined.addRanks(combinee.ranks(), ranksLimit);
+        }
 };
 
 }
