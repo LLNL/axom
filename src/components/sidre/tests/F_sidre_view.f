@@ -474,7 +474,7 @@ contains
     opq_ptr = opq_view%get_opaque()
     call c_f_pointer(opq_ptr, out_data)
 
-!XX    call assert_equals(opq_ptr, src_ptr)
+    call assert_true(c_associated(opq_ptr, src_ptr))
     call assert_equals(out_data, 42)
 
     call ds%print()
