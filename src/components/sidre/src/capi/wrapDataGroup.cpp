@@ -1,3 +1,5 @@
+// wrapDataGroup.cpp
+// This is generated code, do not edit
 //
 // Copyright (c) 2015, Lawrence Livermore National Security, LLC.
 // Produced at the Lawrence Livermore National Laboratory.
@@ -11,6 +13,7 @@
 #define EXAMPLE_WRAPPER_IMPL
 #include "wrapDataGroup.h"
 #include "sidre/DataGroup.hpp"
+#include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {
@@ -19,173 +22,248 @@ namespace sidre {
 const char * ATK_datagroup_get_name(const ATK_datagroup * self)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(self);
-// splicer begin
+// splicer begin class.DataGroup.method.get_name
 const std::string & rv = selfobj->getName();
-return rv.c_str();
-// splicer end
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
+// splicer end class.DataGroup.method.get_name
 }
 
 const ATK_datagroup * ATK_datagroup_get_parent(const ATK_datagroup * self)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(self);
-// splicer begin
+// splicer begin class.DataGroup.method.get_parent
 const DataGroup * rv = selfobj->getParent();
 return rv;
-// splicer end
+// splicer end class.DataGroup.method.get_parent
 }
 
 const ATK_datastore * ATK_datagroup_get_data_store(const ATK_datagroup * self)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(self);
-// splicer begin
+// splicer begin class.DataGroup.method.get_data_store
 const DataStore * rv = selfobj->getDataStore();
 return rv;
-// splicer end
-}
-
-bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-bool rv = selfobj->hasView(name);
-return rv;
-// splicer end
-}
-
-ATK_dataview * ATK_datagroup_create_view_and_buffer(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-DataView * rv = selfobj->createViewAndBuffer(name);
-return rv;
-// splicer end
-}
-
-ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-DataView * rv = selfobj->moveView(static_cast<DataView *>(view));
-return rv;
-// splicer end
-}
-
-ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-DataView * rv = selfobj->copyView(static_cast<DataView *>(view));
-return rv;
-// splicer end
-}
-
-void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-selfobj->destroyViewAndBuffer(name);
-return;
-// splicer end
-}
-
-ATK_dataview * ATK_datagroup_get_view(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-DataView * rv = selfobj->getView(name);
-return rv;
-// splicer end
-}
-
-ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-IndexType rv = selfobj->getViewIndex(name);
-return rv;
-// splicer end
-}
-
-const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx)
-{
-const DataGroup *selfobj = static_cast<const DataGroup *>(self);
-// splicer begin
-const std::string & rv = selfobj->getViewName(idx);
-return rv.c_str();
-// splicer end
+// splicer end class.DataGroup.method.get_data_store
 }
 
 size_t ATK_datagroup_get_num_views(ATK_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
+// splicer begin class.DataGroup.method.get_num_views
 size_t rv = selfobj->getNumViews();
 return rv;
-// splicer end
-}
-
-bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-bool rv = selfobj->hasGroup(name);
-return rv;
-// splicer end
-}
-
-ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-DataGroup * rv = selfobj->createGroup(name);
-return rv;
-// splicer end
-}
-
-void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-selfobj->destroyGroup(name);
-return;
-// splicer end
-}
-
-ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
-IndexType rv = selfobj->getGroupIndex(name);
-return rv;
-// splicer end
-}
-
-const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx)
-{
-const DataGroup *selfobj = static_cast<const DataGroup *>(self);
-// splicer begin
-const std::string & rv = selfobj->getGroupName(idx);
-return rv.c_str();
-// splicer end
+// splicer end class.DataGroup.method.get_num_views
 }
 
 size_t ATK_datagroup_get_num_groups(ATK_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
+// splicer begin class.DataGroup.method.get_num_groups
 size_t rv = selfobj->getNumGroups();
 return rv;
-// splicer end
+// splicer end class.DataGroup.method.get_num_groups
+}
+
+bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.has_view
+bool rv = selfobj->hasView(name);
+return rv;
+// splicer end class.DataGroup.method.has_view
+}
+
+ATK_dataview * ATK_datagroup_create_view_and_buffer_simple(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_view_and_buffer_simple
+DataView * rv = selfobj->createViewAndBuffer(name);
+return rv;
+// splicer end class.DataGroup.method.create_view_and_buffer_simple
+}
+
+ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength len)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_view_and_buffer_from_type
+DataView * rv = selfobj->createViewAndBuffer(name, getTypeID(type), len);
+return rv;
+// splicer end class.DataGroup.method.create_view_and_buffer_from_type
+}
+
+ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_opaque_view
+DataView * rv = selfobj->createOpaqueView(name, opaque_ptr);
+return rv;
+// splicer end class.DataGroup.method.create_opaque_view
+}
+
+ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name, ATK_databuffer * buff)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_view
+DataView * rv = selfobj->createView(name, static_cast<DataBuffer *>(buff));
+return rv;
+// splicer end class.DataGroup.method.create_view
+}
+
+ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength len)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_external_view
+DataView * rv = selfobj->createExternalView(name, external_data, getTypeID(type), len);
+return rv;
+// splicer end class.DataGroup.method.create_external_view
+}
+
+ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.move_view
+DataView * rv = selfobj->moveView(static_cast<DataView *>(view));
+return rv;
+// splicer end class.DataGroup.method.move_view
+}
+
+ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.copy_view
+DataView * rv = selfobj->copyView(static_cast<DataView *>(view));
+return rv;
+// splicer end class.DataGroup.method.copy_view
+}
+
+void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.destroy_view_and_buffer
+selfobj->destroyViewAndBuffer(name);
+return;
+// splicer end class.DataGroup.method.destroy_view_and_buffer
+}
+
+ATK_dataview * ATK_datagroup_get_view(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_view
+DataView * rv = selfobj->getView(name);
+return rv;
+// splicer end class.DataGroup.method.get_view
+}
+
+ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_view_index
+IndexType rv = selfobj->getViewIndex(name);
+return rv;
+// splicer end class.DataGroup.method.get_view_index
+}
+
+const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx)
+{
+const DataGroup *selfobj = static_cast<const DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_view_name
+const std::string & rv = selfobj->getViewName(idx);
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
+// splicer end class.DataGroup.method.get_view_name
+}
+
+bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.has_group
+bool rv = selfobj->hasGroup(name);
+return rv;
+// splicer end class.DataGroup.method.has_group
+}
+
+ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_group
+DataGroup * rv = selfobj->createGroup(name);
+return rv;
+// splicer end class.DataGroup.method.create_group
+}
+
+ATK_datagroup * ATK_datagroup_move_group(ATK_datagroup * self, ATK_datagroup * grp)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.move_group
+DataGroup * rv = selfobj->moveGroup(static_cast<DataGroup *>(grp));
+return rv;
+// splicer end class.DataGroup.method.move_group
+}
+
+void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.destroy_group
+selfobj->destroyGroup(name);
+return;
+// splicer end class.DataGroup.method.destroy_group
+}
+
+ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_group
+DataGroup * rv = selfobj->getGroup(name);
+return rv;
+// splicer end class.DataGroup.method.get_group
+}
+
+ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_group_index
+IndexType rv = selfobj->getGroupIndex(name);
+return rv;
+// splicer end class.DataGroup.method.get_group_index
+}
+
+const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx)
+{
+const DataGroup *selfobj = static_cast<const DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_group_name
+const std::string & rv = selfobj->getGroupName(idx);
+return isNameValid(rv) ? rv.c_str() : ATK_InvalidName;
+// splicer end class.DataGroup.method.get_group_name
 }
 
 void ATK_datagroup_print(ATK_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin
+// splicer begin class.DataGroup.method.print
 selfobj->print();
 return;
-// splicer end
+// splicer end class.DataGroup.method.print
 }
+
+void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.save
+selfobj->save(obase, protocol);
+return;
+// splicer end class.DataGroup.method.save
+}
+
+void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.load
+selfobj->load(obase, protocol);
+return;
+// splicer end class.DataGroup.method.load
+}
+
+// splicer begin class.DataGroup.additional_functions
+// splicer end class.DataGroup.additional_functions
 
 }  // namespace asctoolkit
 }  // namespace sidre

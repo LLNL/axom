@@ -28,9 +28,15 @@ type = name:t
 string = (('"' | "'"):q <(~exactly(q) anything)*>:xs exactly(q))
                      -> xs
 
-integer = <digit*>:i -> int(i)
+digits = <digit*>
+floatPart :sign :ds = <('.' digits exponent?) | exponent>:tail
+                     -> float(sign + ds + tail)
+exponent = ('e' | 'E') ('+' | '-')? digits
 
-value = name | string | integer
+number = spaces ('-' | -> ''):sign (digits:ds (floatPart(sign ds)
+                                               | -> int(sign + ds)))
+
+value = name | string | number
 
 attr = '+' name:n ( '=' value | -> True ):v
         -> (n,v)
@@ -42,8 +48,11 @@ pointer = '*' -> [('ptr', True)]
         | '&' -> [('reference', True)]
         |     -> []
 
-declarator = qualifier:qu ws type:t ws pointer:pp ws name:n  ( ws attr )*:at
-        -> dict(type=t, name=n, attrs=dict(qu+pp+at))
+default = ws '=' ws value:default -> [('default', default)]
+                 |                -> []
+
+declarator = qualifier:qu ws type:t ws pointer:pp ws name:n  ( ws attr )*:at default:df
+        -> dict(type=t, name=n, attrs=dict(qu+pp+at+df))
 
 parameter_list = declarator:first ( ws ',' ws declarator)*:rest -> [first] + rest
                  | -> []
@@ -51,8 +60,8 @@ parameter_list = declarator:first ( ws ',' ws declarator)*:rest -> [first] + res
 argument_list = ( '(' ws parameter_list:l ws ')' ) -> l
                 | -> []
 
-decl = declarator:dd ws argument_list:args ws qualifier
-        -> dict( result=dd, args=args)
+decl = declarator:dd ws argument_list:args ws qualifier:qual
+        -> dict( result=dd, args=args, qualifiers=dict(qual))
 """, {})
 
 
@@ -91,6 +100,9 @@ if __name__ == '__main__':
         '+name="abcd"',
         "+name='def'",
         "+ii=12",
+        "+d1=-12.0",
+        "+d2=11.3e-10",
+        "+d3=11e10",
         ]:
         r = x(test).attr()
         print('attr: "{0}"'.format(test))
@@ -125,6 +137,7 @@ if __name__ == '__main__':
         "()",
         "(int arg1)",
         "(int arg1, double arg2)",
+        "(int arg1, double arg2 = 0.0)",
         ] :
         r = x(test).argument_list()
         print('argument_list: "{0}"'.format(test))

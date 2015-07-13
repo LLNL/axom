@@ -15,6 +15,7 @@ set(slic_headers
     Logger.hpp
     LogStream.hpp
     MessageLevel.h
+    UnitTestLogger.hpp
     slic.hpp
 
     logstreams/GenericOutputStream.hpp
@@ -26,6 +27,7 @@ set(slic_headers
 set(slic_sources
     Logger.cpp
     LogStream.cpp
+    slic.cpp
 
     logstreams/GenericOutputStream.cpp
     )
@@ -36,38 +38,43 @@ if (ENABLE_MPI)
 endif()
 
 #
+# custom target to copy header files in the "include" folder of the build tree.
+#
+copy_headers_target( ${PROJECT_NAME}
+                     "${slic_headers}"
+                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
+
+#
 # make the library
 #
 if ( ENABLE_MPI )
 
     make_library( LIBRARY_NAME
                       slic
+
                   LIBRARY_SOURCES
                       "${slic_sources}"
                       "${slic_headers}"
+
+                  DEPENDS_ON
+                      common
+
                   WITH_MPI
                   )
-
-    add_dependencies(slic copy_headers_slic)
 
 else()
 
     make_library( LIBRARY_NAME
                       slic
+
                   LIBRARY_SOURCES
                       "${slic_sources}"
                       "${slic_headers}"
-                  )
 
-    add_dependencies(slic copy_headers_slic)
+                  DEPENDS_ON
+                      common
+                  )
 
 endif()
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME}
-                     "${slic_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )

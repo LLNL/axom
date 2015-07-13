@@ -18,9 +18,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-
-using namespace conduit;
-
+using asctoolkit::sidre::DataType;
 
 namespace classtest
 {
@@ -45,18 +43,16 @@ public:
 
   void copyToGroup(DataGroup * gp)
   {
-    gp->createExternalView("idata", &m_idata[0],
-                           DataType::c_int(m_idata.size()));
+    gp->createExternalView("idata", &m_idata[0], DataType::c_int(m_idata.size()));
   }
 
   void copyFromGroup(DataGroup * gp)
   {
     DataView * iview = gp->getView("idata");
-    size_t ilen = iview->getBuffer()->getNode().schema().total_bytes() /
-                  sizeof(CONDUIT_NATIVE_INT);
+    size_t ilen = iview->getNumberOfElements();
     m_idata = std::vector<int>(ilen);
 
-    int * g_idata = iview->getNode().as_int_ptr();
+    int * g_idata = iview->getValue();
     for (size_t ii = 0 ; ii < ilen ; ++ii)
     {
       m_idata[ii] = g_idata[ii];
@@ -71,7 +67,7 @@ public:
   void checkState(DataGroup * gp)
   {
     int * idata_chk =
-      gp->getView("idata")->getNode().as_int_ptr();
+      gp->getView("idata")->getValue();
     checkState(idata_chk);
   }
 
@@ -113,10 +109,8 @@ public:
 
   void copyToGroup(DataGroup * gp)
   {
-    gp->createExternalView("idata", &m_idata[0],
-                           DataType::c_int(m_idata.size()));
-    gp->createExternalView("ddata", &m_ddata[0],
-                           DataType::c_double(m_ddata.size()));
+    gp->createExternalView("idata", &m_idata[0], DataType::c_int(m_idata.size()));
+    gp->createExternalView("ddata", &m_ddata[0], DataType::c_double(m_ddata.size()));
 
     DataGroup * gp1 = gp->createGroup("myclass1");
 
@@ -126,22 +120,21 @@ public:
   void copyFromGroup(DataGroup * gp)
   {
     DataView * iview = gp->getView("idata");
-    size_t ilen = iview->getBuffer()->getNode().schema().total_bytes() /
+    size_t ilen = iview->getBuffer()->getTotalBytes() /
                   sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
 
-    int * g_idata = iview->getNode().as_int_ptr();
+    int * g_idata = iview->getValue();
     for (size_t ii = 0 ; ii < ilen ; ++ii)
     {
       m_idata[ii] = g_idata[ii];
     }
 
     DataView * dview = gp->getView("ddata");
-    size_t dlen = dview->getBuffer()->getNode().schema().total_bytes() /
-                  sizeof(CONDUIT_NATIVE_DOUBLE);
+    size_t dlen = dview->getNumberOfElements();
     m_ddata = std::vector<double>(dlen);
 
-    double * g_ddata = dview->getNode().as_double_ptr();
+    double * g_ddata = dview->getValue();
     for (size_t ii = 0 ; ii < dlen ; ++ii)
     {
       m_ddata[ii] = g_ddata[ii];
@@ -159,10 +152,8 @@ public:
 
   void checkState(DataGroup * gp)
   {
-    int * idata_chk =
-      gp->getView("idata")->getNode().as_int_ptr();
-    double * ddata_chk =
-      gp->getView("ddata")->getNode().as_double_ptr();
+    int * idata_chk = gp->getView("idata")->getValue();
+    double * ddata_chk = gp->getView("ddata")->getValue();
     checkState(idata_chk, ddata_chk);
 
     DataGroup * gp1 = gp->getGroup("myclass1");
@@ -265,4 +256,23 @@ TEST(sidre_class, save_load_class_to_group)
 
   delete ds;
   delete ds2;
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

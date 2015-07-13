@@ -3,20 +3,66 @@ copyright:
   - yada yada
   -
 
+splicer:
+  f:
+  -  fsplicer.f
+  c:
+  -  csplicer.c
+  py:
+  -  pysplicer.c
+
 options:
 #  module_name: exclass1_mod
+  library: UserLibrary
   C_prefix: AA_
   namespace: example nested
-#  impl_file_per_class: True
+#  F_module_per_class: False
+  # include files to add to module
+
+  PY_prefix: PP_
 
 typedef:
   other:
-    cpp: junk
+    cpp_type: junk
+
+  string:
+    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
+
+  SidreLength:
+# defined in SidreTypes.hpp
+    c_header : sidre/SidreTypes.h
+    c_type   : ATK_SidreLength
+    cpp_type : SidreLength
+    c_fortran: integer(C_LONG)
+    f_type   : integer(C_LONG)
+#    f_module : iso_c_binding:C_LONG
+    f_module : 
+      iso_c_binding:
+      - C_LONG
+
+  TypeID:
+    # enum for types
+    c_header : sidre/SidreTypes.h
+    cpp_header : sidre/SidreWrapperHelpers.hpp
+    c_type   : int
+    cpp_type: TypeID
+#    cpp_to_c : static_cast<int>({var})
+    c_to_cpp :  getTypeID({var})
+    c_fortran: integer(C_INT)
+    f_type   : integer(C_INT)
+    f_module :
+      iso_c_binding:
+      -  C_INT
 
 classes:
   - name: ExClass1
     options:
       cpp_header: ExClass1.hpp
+      # include files to add to module
+
+    python:
+      type: [ init, repr ]
+
     methods:
     - decl: ExClass1 *new+constructor ( const string *name )
       docs: constructor
@@ -25,22 +71,24 @@ classes:
 
     - decl: int incrementCount(int incr)
       docs: blah blah
-#      C_code:   my code
 
-#    - decl: string getName+const+reference
-    - decl: const string& getName()
+    - decl: const string& getName() const
       result:
          attrs:
-            len: aa_exclass1_get_name_length(obj%obj)
+            len: aa_exclass1_get_name_length({F_instance_ptr})
 
-    - docs: helper function for Fortran
-      result:
-         name: get_name_length
-         type: int
-         attrs:
-            const: True
-            len: aa_get_exclass2_name_length(obj%obj)
-      C_code: return selfobj->getName().length();
+    - decl: int GetNameLength() const
+      docs: helper function for Fortran
+      helper: True
+      options:
+         C_code: return selfobj->getName().length();
+
+    - decl: const string& getNameErrorCheck() const
+
+    - decl: const string& getNameArg() const
+    # This function will convert the return value into a argument
+      options:
+         F_string_result_as_arg: True
 
     - decl: ExClass2 *getRoot()
 
@@ -48,31 +96,95 @@ classes:
       method_suffix: _from_int
     - decl: long getValue(long value)
 
+    - decl: void *getAddr()
+    - decl: bool hasAddr(bool in)
 
+    - decl: void SplicerSpecial
+
+  ######################################################################
   - name: ExClass2
     options:
       cpp_header: ExClass2.hpp
+    python:
+      type: [dealloc, print, compare, getattr, setattr,
+             getattro, setattro,
+             repr, hash, call, str,
+             init, alloc, new, free, del]
+
     methods:
     - decl: ExClass2 *ExClass2+constructor (const string *name)
 
+      # test annotating arguments
+      args:
+      -  name: name
+         random: 1
+         attrs:
+           random: 2
+      -  name: extra
+
     - decl: void ExClass1+destructor
 
-    - decl: const string& getName
+    - decl: const string& getName const
+      # test annotating result
       result:
          attrs:
-            len: aa_exclass2_get_name_length(obj%obj)
+            len: aa_exclass2_get_name_length({F_instance_ptr})
 
     - docs: helper function for Fortran
       result:
-         name: get_name_length
+         name: GetNameLength
          type: int
-         attrs:
-            const: True
-            len: exclass2_get_name_length(obj%obj)
-      C_code: return selfobj->getName().length();
+      qualifiers:
+         const: true
+      options:
+          C_code: return selfobj->getName().length();
 
+    # test forward declarations
+    - decl: ExClass1 *get_class1(ExClass1 *in)
+
+    # typedefs that require modules
+    - decl: void* declare(TypeID type, SidreLength len = 1)
+      # by returning this,the C++ function allows chaining.
+      # make them subroutines in Fortran.
+      return_this: True
+      generic:
+        len:
+        -  int
+        -  long
+
+    # void function
+    - decl: void destroyall()
+
+    # return typedef'd type
+    - decl: TypeID getTypeID() const
+
+#           template<typename ValueType>
+    - decl: void setValue(ValueType value)
+      template:
+        ValueType:
+        - int
+        - long
+        - float
+        - double
+
+#           template<typename ValueType>
+    - decl: ValueType getValue()
+      template:
+        ValueType:
+        - int
+#        - long
+#        - float
+        - double
+
+    - decl: void testoptional(int i = 1, long j=2)
 
 
 functions:
   - decl: void local_function1
     docs: yada yada yada
+
+  # override the C code.
+  -  decl: bool isNameValid(const std::string& name)
+     options:
+       C_code:  "return name != NULL;"
+       F_code:  rv = name .ne. " "

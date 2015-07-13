@@ -28,66 +28,58 @@ TEST(C_sidre_buffer,create_buffers)
 
   ATK_databuffer * dbuff_3 = ATK_datastore_create_buffer(ds);
   EXPECT_EQ(ATK_databuffer_get_index(dbuff_3), 0);
-  //    ds->print();
+
+  ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_buffer,alloc_buffer_for_uint32_array)
+TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, ATK_UINT32_T, 10);
-  ATK_databuffer_allocate(dbuff);
+  ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_allocate_existing(dbuff);
 
-  //    uint32_t *data_ptr = ATK_databuffer_get_data(dbuff);
-  uint32_t * data_ptr = static_cast<uint32_t *>(ATK_databuffer_get_data(dbuff));
+  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-#if 0
-  dbuff->getNode().print_detailed();
+  ATK_databuffer_print(dbuff);
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
-  ds->print();
-#endif
+  ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
-
 }
 
-#if 0
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_buffer,init_buffer_for_uint32_array)
+TEST(C_sidre_buffer,init_buffer_for_int_array)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  dbuff->allocate(DataType::uint32(10));
-  uint32 * data_ptr = dbuff->getNode().as_uint32_ptr();
+  ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
+  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  dbuff->getNode().print_detailed();
+  ATK_databuffer_print(dbuff);
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            dbuff->getSchema().total_bytes());
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
-  ds->print();
+  ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
-
 }
-#endif
 
 //------------------------------------------------------------------------------
 
@@ -96,52 +88,58 @@ TEST(C_sidre_buffer,realloc_buffer)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  //    dbuff->allocate(DataType::int64(5));
-  ATK_databuffer_declare(dbuff, ATK_INT64_T, 5);
-  ATK_databuffer_allocate(dbuff);
+  ATK_databuffer_declare(dbuff, ATK_C_LONG_T, 5);
+  ATK_databuffer_allocate_existing(dbuff);
 
-#if 0
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(int64)*5);
-#endif
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
-  //    int64 *data_ptr = dbuff->getNode().as_int64_ptr();
-  int64_t * data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
+  long * data_ptr = (long *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {
     data_ptr[i] = 5;
   }
 
-#if 0
-  dbuff->getNode().print_detailed();
+  ATK_databuffer_print(dbuff);
 
-  dbuff->reallocate(DataType::int64(10));
-#endif
+  ATK_databuffer_reallocate(dbuff, ATK_C_LONG_T, 10);
 
   // data buffer changes
-  //    data_ptr = dbuff->getNode().as_int64_ptr();
-  data_ptr = static_cast<int64_t *>(ATK_databuffer_get_data(dbuff));
+  data_ptr = (long *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(data_ptr[i],5);
   }
 
-#if 0
   for(int i=5 ; i<10 ; i++)
   {
     data_ptr[i] = 10;
   }
 
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 
-  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
-            sizeof(int64)*10);
+  ATK_databuffer_print(dbuff);
 
-  dbuff->getNode().print_detailed();
-
-  ds->print();
-#endif
+  ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
+}
 
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

@@ -2,8 +2,8 @@
 # Specify all headers
 #
 set(common_headers
-    Utilities.hpp
     CommonTypes.hpp
+    Utilities.hpp
     )
 
 #

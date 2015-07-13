@@ -18,8 +18,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-
-using namespace conduit;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 // Test DataBuffer::declareExternal()
@@ -44,19 +43,18 @@ TEST(sidre_external, declare_external_buffer)
   DataBuffer * dbuff_2 = ds->createBuffer();
 
   dbuff_0->allocate(DataType::c_double(len));
-  dbuff_1->declareExternal(idata, DataType::c_int(len));
-  dbuff_2->declareExternal(ddata, DataType::c_double(len));
+  dbuff_1->declare(DataType::c_int(len));
+  dbuff_1->setExternalData(idata);
+  dbuff_2->declare(DataType::c_double(len));
+  dbuff_2->setExternalData(ddata);
 
   EXPECT_EQ(dbuff_0->isExternal(), false);
   EXPECT_EQ(dbuff_1->isExternal(), true);
   EXPECT_EQ(dbuff_2->isExternal(), true);
 
-  EXPECT_EQ(dbuff_0->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_DOUBLE)*len);
-  EXPECT_EQ(dbuff_1->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_INT)*len);
-  EXPECT_EQ(dbuff_2->getNode().schema().total_bytes(),
-            sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+  EXPECT_EQ(dbuff_0->getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+  EXPECT_EQ(dbuff_1->getTotalBytes(), sizeof(CONDUIT_NATIVE_INT)*len);
+  EXPECT_EQ(dbuff_2->getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
 
   ds->print();
 
@@ -90,16 +88,16 @@ TEST(sidre_external, create_external_view)
                                   DataType::c_double(len));
   EXPECT_EQ(root->getNumViews(), 2u);
 
-  root->getView("idata")->getNode().print_detailed();
-  root->getView("ddata")->getNode().print_detailed();
+  root->getView("idata")->print();
+  root->getView("ddata")->print();
 
-  int * idata_chk = root->getView("idata")->getNode().as_int_ptr();
+  int * idata_chk = root->getView("idata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = root->getView("ddata")->getNode().as_double_ptr();
+  double * ddata_chk = root->getView("ddata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -137,8 +135,8 @@ TEST(sidre_external, save_load_external_view)
   EXPECT_EQ(root->getView("idata")->getBuffer()->isExternal(), true);
   EXPECT_EQ(root->getView("ddata")->getBuffer()->isExternal(), true);
 
-  root->getView("idata")->getNode().print_detailed();
-  root->getView("ddata")->getNode().print_detailed();
+  root->getView("idata")->print();
+  root->getView("ddata")->print();
 
   ds->getRoot()->save("out_sidre_external_save_restore_external_view", "conduit");
 
@@ -157,13 +155,13 @@ TEST(sidre_external, save_load_external_view)
   EXPECT_EQ(root2->getView("idata")->getBuffer()->isExternal(), false);
   EXPECT_EQ(root2->getView("ddata")->getBuffer()->isExternal(), false);
 
-  int * idata_chk = root2->getView("idata")->getNode().as_int_ptr();
+  int * idata_chk = root2->getView("idata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = root2->getView("ddata")->getNode().as_double_ptr();
+  double * ddata_chk = root2->getView("ddata")->getValue();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -173,4 +171,23 @@ TEST(sidre_external, save_load_external_view)
   delete ds2;
   delete [] idata;
   delete [] ddata;
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;   // create & initialize test logger,
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

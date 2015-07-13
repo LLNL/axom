@@ -1,3 +1,5 @@
+// wrapDataStore.h
+// This is generated code, do not edit
 //
 // Copyright (c) 2015, Lawrence Livermore National Security, LLC.
 // Produced at the Lawrence Livermore National Laboratory.
@@ -14,6 +16,7 @@
 #define WRAPDATASTORE_H
 
 #include "sidre/SidreTypes.h"
+#include "stdlib.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,15 +36,24 @@ struct s_ATK_datastore;
 typedef struct s_ATK_datastore ATK_datastore;
 #endif
 
+// splicer begin class.DataStore.C_definition
+// splicer end class.DataStore.C_definition
+
 ATK_datastore * ATK_datastore_new();
 
 void ATK_datastore_delete(ATK_datastore * self);
 
+ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
+
+ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, ATK_IndexType idx);
+
 ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self);
 
-void ATK_datastore_destroy_buffer(ATK_datastore * self, const ATK_IndexType id);
+void ATK_datastore_destroy_buffer(ATK_datastore * self, ATK_IndexType id);
 
-ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
+size_t ATK_datastore_get_num_buffers(ATK_datastore * self);
+
+void ATK_datastore_print(ATK_datastore * self);
 
 #ifdef __cplusplus
 }
