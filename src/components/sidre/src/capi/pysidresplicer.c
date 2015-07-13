@@ -195,7 +195,7 @@ return rv;
 
 
 
-// splicer begin class.DataGroup.impl.additional_methods
+// splicer begin class.DataGroup.impl.after_methods
 static char PY_datagroup_create_view_and_buffer__doc__[] =
 "documentation"
 ;
@@ -206,41 +206,33 @@ PY_datagroup_create_view_and_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-    {
-	const char * name;
-	const char *kwcpp = "name";
-	char *kw_list[] = { (char *) kwcpp+0, NULL };
-    
-	if (PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
-					&name)) {
-	    DataView * rv = self->BBB->createViewAndBuffer(name);
-	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-	    rv_obj->BBB = rv;
-	    return (PyObject *) rv_obj;
-	}
-    }
-    PyErr_Clear();  // Try again
-    {
-	const char * name;
-	int type;
-	ATK_SidreLength len;
-	const char *kwcpp = "name\0type\0len";
-	char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
-    
-	if (PyArg_ParseTupleAndKeywords(args, kwds, "sil:createViewAndBuffer", kw_list,
-        &name, &type, &len)) {
-	    DataView * rv = self->BBB->createViewAndBuffer(name, getTypeID(type), len);
-	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-	    rv_obj->BBB = rv;
-	    return (PyObject *) rv_obj;
-	}
-    }
-    PyErr_Clear();
-    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totargs = numArgs + numNamedArgs;
+    PyObject *rvobj;
 
+    if (totargs == 1) {
+        rvobj = PY_datagroup_create_view_and_buffer_simple(self, args, kwds);
+	if (!PyErr_Occurred()) {
+	    return rvobj;
+	} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+	    return rvobj;
+	}
+	PyErr_Clear();
+    }
+    if (totargs == 3) {
+	rvobj = PY_datagroup_create_view_and_buffer_from_type(self, args, kwds);
+	if (!PyErr_Occurred()) {
+	    return rvobj;
+	} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+	    return rvobj;
+	}
+	PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
     return NULL;
 }
-// splicer end class.DataGroup.impl.additional_methods
+// splicer end class.DataGroup.impl.after_methods
 
 
 // splicer begin class.DataGroup.PyMethodDef

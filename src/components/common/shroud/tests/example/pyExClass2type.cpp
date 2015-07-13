@@ -305,6 +305,8 @@ PP_exclass2_testoptional(
     Py_RETURN_NONE;
 // splicer end class.ExClass2.method.testoptional
 }
+// splicer begin class.ExClass2.impl.after_methods
+// splicer end class.ExClass2.impl.after_methods
 static PyMethodDef PP_ExClass2_methods[] = {
 {"ExClass1", (PyCFunction)PP_exclass2_ex_class1, METH_NOARGS, PP_exclass2_ex_class1__doc__},
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},

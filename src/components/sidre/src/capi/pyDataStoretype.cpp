@@ -197,6 +197,8 @@ PY_datastore_print(
     Py_RETURN_NONE;
 // splicer end class.DataStore.method.print
 }
+// splicer begin class.DataStore.impl.after_methods
+// splicer end class.DataStore.impl.after_methods
 static PyMethodDef PY_DataStore_methods[] = {
 {"delete", (PyCFunction)PY_datastore_delete, METH_NOARGS, PY_datastore_delete__doc__},
 {"getRoot", (PyCFunction)PY_datastore_get_root, METH_NOARGS, PY_datastore_get_root__doc__},

@@ -17,50 +17,6 @@ namespace sidre {
 // splicer begin class.DataGroup.impl.C_definition
 // splicer end class.DataGroup.impl.C_definition
 // splicer begin class.DataGroup.impl.additional_methods
-static char PY_datagroup_create_view_and_buffer__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_datagroup_create_view_and_buffer(
-  PY_DataGroup *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-    {
-	const char * name;
-	const char *kwcpp = "name";
-	char *kw_list[] = { (char *) kwcpp+0, NULL };
-
-	if (PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
-					&name)) {
-	    DataView * rv = self->BBB->createViewAndBuffer(name);
-	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-	    rv_obj->BBB = rv;
-	    return (PyObject *) rv_obj;
-	}
-    }
-    PyErr_Clear();  // Try again
-    {
-	const char * name;
-	int type;
-	ATK_SidreLength len;
-	const char *kwcpp = "name\0type\0len";
-	char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
-
-	if (PyArg_ParseTupleAndKeywords(args, kwds, "sil:createViewAndBuffer", kw_list,
-        &name, &type, &len)) {
-	    DataView * rv = self->BBB->createViewAndBuffer(name, getTypeID(type), len);
-	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-	    rv_obj->BBB = rv;
-	    return (PyObject *) rv_obj;
-	}
-    }
-    PyErr_Clear();
-    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
-
-    return NULL;
-}
 // splicer end class.DataGroup.impl.additional_methods
 static int
 PY_DataGroup_tp_init (PY_DataGroup *self, PyObject *args, PyObject *kwds)
@@ -795,6 +751,44 @@ PY_datagroup_load(
     Py_RETURN_NONE;
 // splicer end class.DataGroup.method.load
 }
+// splicer begin class.DataGroup.impl.after_methods
+static char PY_datagroup_create_view_and_buffer__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_create_view_and_buffer(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totargs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+
+    if (totargs == 1) {
+        rvobj = PY_datagroup_create_view_and_buffer_simple(self, args, kwds);
+	if (!PyErr_Occurred()) {
+	    return rvobj;
+	} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+	    return rvobj;
+	}
+	PyErr_Clear();
+    }
+    if (totargs == 3) {
+	rvobj = PY_datagroup_create_view_and_buffer_from_type(self, args, kwds);
+	if (!PyErr_Occurred()) {
+	    return rvobj;
+	} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+	    return rvobj;
+	}
+	PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+}
+// splicer end class.DataGroup.impl.after_methods
 static PyMethodDef PY_DataGroup_methods[] = {
 {"getName", (PyCFunction)PY_datagroup_get_name, METH_NOARGS, PY_datagroup_get_name__doc__},
 {"getParent", (PyCFunction)PY_datagroup_get_parent, METH_NOARGS, PY_datagroup_get_parent__doc__},

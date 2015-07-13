@@ -476,6 +476,10 @@ static PyObject *
 
         output.extend(self.PyMethodBody)
 
+        self._push_splicer('impl')
+        self._create_splicer('after_methods', output)
+        self._pop_splicer('impl')
+
         fmt_type['tp_methods'] = wformat('{PY_prefix}{cpp_class}_methods', fmt)
         output.append(wformat('static PyMethodDef {tp_methods}[] = {{', fmt_type))
         output.extend(self.PyMethodDef)

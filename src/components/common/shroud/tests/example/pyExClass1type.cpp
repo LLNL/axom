@@ -270,6 +270,8 @@ PP_exclass1_splicer_special(
     Py_RETURN_NONE;
 // splicer end class.ExClass1.method.SplicerSpecial
 }
+// splicer begin class.ExClass1.impl.after_methods
+// splicer end class.ExClass1.impl.after_methods
 static PyMethodDef PP_ExClass1_methods[] = {
 {"delete", (PyCFunction)PP_exclass1_delete, METH_NOARGS, PP_exclass1_delete__doc__},
 {"incrementCount", (PyCFunction)PP_exclass1_increment_count, METH_VARARGS|METH_KEYWORDS, PP_exclass1_increment_count__doc__},

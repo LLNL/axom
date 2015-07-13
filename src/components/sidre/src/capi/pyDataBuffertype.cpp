@@ -274,6 +274,8 @@ PY_databuffer_print(
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.print
 }
+// splicer begin class.DataBuffer.impl.after_methods
+// splicer end class.DataBuffer.impl.after_methods
 static PyMethodDef PY_DataBuffer_methods[] = {
 {"getIndex", (PyCFunction)PY_databuffer_get_index, METH_NOARGS, PY_databuffer_get_index__doc__},
 {"getNumViews", (PyCFunction)PY_databuffer_get_num_views, METH_NOARGS, PY_databuffer_get_num_views__doc__},

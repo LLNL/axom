@@ -317,6 +317,8 @@ PY_dataview_print(
     Py_RETURN_NONE;
 // splicer end class.DataView.method.print
 }
+// splicer begin class.DataView.impl.after_methods
+// splicer end class.DataView.impl.after_methods
 static PyMethodDef PY_DataView_methods[] = {
 {"declare", (PyCFunction)PY_dataview_declare, METH_VARARGS|METH_KEYWORDS, PY_dataview_declare__doc__},
 {"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
