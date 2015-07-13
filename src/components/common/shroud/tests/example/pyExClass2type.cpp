@@ -170,7 +170,7 @@ PP_exclass2_get_name(
 {
 // splicer begin class.ExClass2.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.ExClass2.method.getName
 }
 
@@ -186,7 +186,7 @@ PP_exclass2_get_name_length(
 {
 // splicer begin class.ExClass2.method.GetNameLength
     int rv = self->BBB->GetNameLength();
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.ExClass2.method.GetNameLength
 }
 
@@ -274,7 +274,7 @@ PP_exclass2_get_type_id(
 {
 // splicer begin class.ExClass2.method.getTypeID
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("O", &rv);
+    return Py_BuildValue("O", rv);
 // splicer end class.ExClass2.method.getTypeID
 }
 
@@ -314,6 +314,8 @@ static PyMethodDef PP_ExClass2_methods[] = {
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
 {"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
 {"testoptional", (PyCFunction)PP_exclass2_testoptional, METH_VARARGS|METH_KEYWORDS, PP_exclass2_testoptional__doc__},
+// splicer begin class.ExClass2.PyMethodDef
+// splicer end class.ExClass2.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

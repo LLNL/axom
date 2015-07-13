@@ -178,3 +178,52 @@ Py_INCREF(rv);
 return rv;
 // splicer end class.DataView.type.richcompare
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// splicer begin class.DataGroup.impl.additional_methods
+static char PY_datagroup_create_view_and_buffer__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_create_view_and_buffer(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+    {
+	const char * name;
+	const char *kwcpp = "name";
+	char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+	if (PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
+					&name)) {
+	    DataView * rv = self->BBB->createViewAndBuffer(name);
+	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+	    rv_obj->BBB = rv;
+	    return (PyObject *) rv_obj;
+	}
+    }
+    return NULL;
+}
+// splicer end class.DataGroup.impl.additional_methods
+
+
+// splicer begin class.DataGroup.PyMethodDef
+{"createViewAndBuffer", (PyCFunction)PY_datagroup_create_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer__doc__},
+// splicer end class.DataGroup.PyMethodDef

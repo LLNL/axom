@@ -182,7 +182,7 @@ PY_dataview_get_name(
 {
 // splicer begin class.DataView.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.DataView.method.getName
 }
 
@@ -266,7 +266,7 @@ PY_dataview_get_type_id(
 {
 // splicer begin class.DataView.method.getTypeID
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.DataView.method.getTypeID
 }
 
@@ -282,7 +282,7 @@ PY_dataview_get_total_bytes(
 {
 // splicer begin class.DataView.method.getTotalBytes
     size_t rv = self->BBB->getTotalBytes();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataView.method.getTotalBytes
 }
 
@@ -298,7 +298,7 @@ PY_dataview_get_number_of_elements(
 {
 // splicer begin class.DataView.method.getNumberOfElements
     size_t rv = self->BBB->getNumberOfElements();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataView.method.getNumberOfElements
 }
 
@@ -332,6 +332,8 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},
 {"getNumberOfElements", (PyCFunction)PY_dataview_get_number_of_elements, METH_NOARGS, PY_dataview_get_number_of_elements__doc__},
 {"print", (PyCFunction)PY_dataview_print, METH_NOARGS, PY_dataview_print__doc__},
+// splicer begin class.DataView.PyMethodDef
+// splicer end class.DataView.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

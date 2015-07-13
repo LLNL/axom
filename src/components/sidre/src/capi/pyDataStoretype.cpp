@@ -178,7 +178,7 @@ PY_datastore_get_num_buffers(
 {
 // splicer begin class.DataStore.method.getNumBuffers
     size_t rv = self->BBB->getNumBuffers();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataStore.method.getNumBuffers
 }
 
@@ -205,6 +205,8 @@ static PyMethodDef PY_DataStore_methods[] = {
 {"destroyBuffer", (PyCFunction)PY_datastore_destroy_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_destroy_buffer__doc__},
 {"getNumBuffers", (PyCFunction)PY_datastore_get_num_buffers, METH_NOARGS, PY_datastore_get_num_buffers__doc__},
 {"print", (PyCFunction)PY_datastore_print, METH_NOARGS, PY_datastore_print__doc__},
+// splicer begin class.DataStore.PyMethodDef
+// splicer end class.DataStore.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

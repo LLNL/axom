@@ -153,6 +153,7 @@ class Schema(object):
                 c_fortran = 'integer(C_SIZE_T)',
                 f_type    = 'integer(C_SIZE_T)',
                 f_module  = dict(iso_c_binding=['C_SIZE_T']),
+                PY_ctor   = 'PyInt_FromLong({rv})',
                 ),
 
             float   = util.Typedef('float',
@@ -184,6 +185,7 @@ class Schema(object):
                 fortran_to_c  = 'logicaltobool({var})',
                 f_type    = 'logical',
                 f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))',
+                PY_ctor   = 'PyBool_FromLong({rv})',
 #                PY_PyTypeObject = 'PyBool_Type',
 #  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
                 ),
@@ -198,6 +200,7 @@ class Schema(object):
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
+                PY_ctor = 'PyString_FromString({var})',
                 base = 'string',
                 ),
             )

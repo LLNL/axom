@@ -73,7 +73,7 @@ PP_exclass1_increment_count(
         return NULL;
     }
     int rv = self->BBB->incrementCount(incr);
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.ExClass1.method.incrementCount
 }
 
@@ -94,7 +94,7 @@ PP_exclass1_get_name(
         return NULL;
     }
     
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.ExClass1.method.getName
 }
 
@@ -110,7 +110,7 @@ PP_exclass1_get_name_length(
 {
 // splicer begin class.ExClass1.method.GetNameLength
     int rv = self->BBB->GetNameLength();
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.ExClass1.method.GetNameLength
 }
 
@@ -126,7 +126,7 @@ PP_exclass1_get_name_error_check(
 {
 // splicer begin class.ExClass1.method.getNameErrorCheck
     const std::string & rv = self->BBB->getNameErrorCheck();
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.ExClass1.method.getNameErrorCheck
 }
 
@@ -142,7 +142,7 @@ PP_exclass1_get_name_arg(
 {
 // splicer begin class.ExClass1.method.getNameArg
     const std::string & rv = self->BBB->getNameArg();
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.ExClass1.method.getNameArg
 }
 
@@ -185,7 +185,7 @@ PP_exclass1_get_value_from_int(
         return NULL;
     }
     int rv = self->BBB->getValue(value);
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -210,7 +210,7 @@ PP_exclass1_get_value_1(
         return NULL;
     }
     long rv = self->BBB->getValue(value);
-    return Py_BuildValue("l", &rv);
+    return Py_BuildValue("l", rv);
 // splicer end class.ExClass1.method.getValue
 }
 
@@ -283,6 +283,8 @@ static PyMethodDef PP_ExClass1_methods[] = {
 {"getAddr", (PyCFunction)PP_exclass1_get_addr, METH_NOARGS, PP_exclass1_get_addr__doc__},
 {"hasAddr", (PyCFunction)PP_exclass1_has_addr, METH_VARARGS|METH_KEYWORDS, PP_exclass1_has_addr__doc__},
 {"SplicerSpecial", (PyCFunction)PP_exclass1_splicer_special, METH_NOARGS, PP_exclass1_splicer_special__doc__},
+// splicer begin class.ExClass1.PyMethodDef
+// splicer end class.ExClass1.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

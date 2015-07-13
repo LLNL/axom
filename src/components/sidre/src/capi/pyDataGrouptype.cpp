@@ -17,6 +17,31 @@ namespace sidre {
 // splicer begin class.DataGroup.impl.C_definition
 // splicer end class.DataGroup.impl.C_definition
 // splicer begin class.DataGroup.impl.additional_methods
+static char PY_datagroup_create_view_and_buffer__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_create_view_and_buffer(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+    {
+	const char * name;
+	const char *kwcpp = "name";
+	char *kw_list[] = { (char *) kwcpp+0, NULL };
+
+	if (PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
+					&name)) {
+	    DataView * rv = self->BBB->createViewAndBuffer(name);
+	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+	    rv_obj->BBB = rv;
+	    return (PyObject *) rv_obj;
+	}
+    }
+    return NULL;
+}
 // splicer end class.DataGroup.impl.additional_methods
 static int
 PY_DataGroup_tp_init (PY_DataGroup *self, PyObject *args, PyObject *kwds)
@@ -86,7 +111,7 @@ PY_datagroup_get_name(
 {
 // splicer begin class.DataGroup.method.getName
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.DataGroup.method.getName
 }
 
@@ -138,7 +163,7 @@ PY_datagroup_get_num_views(
 {
 // splicer begin class.DataGroup.method.getNumViews
     size_t rv = self->BBB->getNumViews();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataGroup.method.getNumViews
 }
 
@@ -154,7 +179,7 @@ PY_datagroup_get_num_groups(
 {
 // splicer begin class.DataGroup.method.getNumGroups
     size_t rv = self->BBB->getNumGroups();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataGroup.method.getNumGroups
 }
 
@@ -458,7 +483,7 @@ PY_datagroup_get_view_index(
         return NULL;
     }
     IndexType rv = self->BBB->getViewIndex(name);
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.DataGroup.method.getViewIndex
 }
 
@@ -488,7 +513,7 @@ PY_datagroup_get_view_name(
         return NULL;
     }
     
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.DataGroup.method.getViewName
 }
 
@@ -650,7 +675,7 @@ PY_datagroup_get_group_index(
         return NULL;
     }
     IndexType rv = self->BBB->getGroupIndex(name);
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.DataGroup.method.getGroupIndex
 }
 
@@ -680,7 +705,7 @@ PY_datagroup_get_group_name(
         return NULL;
     }
     
-    return Py_BuildValue("s", rv.c_str());
+    return PyString_FromString(rv.c_str());
 // splicer end class.DataGroup.method.getGroupName
 }
 
@@ -779,6 +804,9 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"print", (PyCFunction)PY_datagroup_print, METH_NOARGS, PY_datagroup_print__doc__},
 {"save", (PyCFunction)PY_datagroup_save, METH_VARARGS|METH_KEYWORDS, PY_datagroup_save__doc__},
 {"load", (PyCFunction)PY_datagroup_load, METH_VARARGS|METH_KEYWORDS, PY_datagroup_load__doc__},
+// splicer begin class.DataGroup.PyMethodDef
+{"createViewAndBuffer", (PyCFunction)PY_datagroup_create_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer__doc__},
+// splicer end class.DataGroup.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

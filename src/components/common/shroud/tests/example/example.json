@@ -1870,6 +1870,7 @@
             "f_type": "integer(C_INT)"
         }, 
         "bool": {
+            "PY_ctor": "PyBool_FromLong({rv})", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
@@ -1994,6 +1995,7 @@
             "f_type": "real(C_FLOAT)"
         }, 
         "size_t": {
+            "PY_ctor": "PyInt_FromLong({rv})", 
             "c_fortran": "integer(C_SIZE_T)", 
             "c_header": "stdlib.h", 
             "c_type": "size_t", 
@@ -2008,6 +2010,7 @@
             "f_type": "integer(C_SIZE_T)"
         }, 
         "std::string": {
+            "PY_ctor": "PyString_FromString({var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
@@ -2022,6 +2025,7 @@
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 
         "string": {
+            "PY_ctor": "PyString_FromString({var})", 
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 

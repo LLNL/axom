@@ -72,7 +72,7 @@ PY_databuffer_get_index(
 {
 // splicer begin class.DataBuffer.method.getIndex
     IndexType rv = self->BBB->getIndex();
-    return Py_BuildValue("i", &rv);
+    return Py_BuildValue("i", rv);
 // splicer end class.DataBuffer.method.getIndex
 }
 
@@ -88,7 +88,7 @@ PY_databuffer_get_num_views(
 {
 // splicer begin class.DataBuffer.method.getNumViews
     size_t rv = self->BBB->getNumViews();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataBuffer.method.getNumViews
 }
 
@@ -255,7 +255,7 @@ PY_databuffer_get_total_bytes(
 {
 // splicer begin class.DataBuffer.method.getTotalBytes
     size_t rv = self->BBB->getTotalBytes();
-    return Py_BuildValue("O", &rv);
+    return PyInt_FromLong(rv);
 // splicer end class.DataBuffer.method.getTotalBytes
 }
 
@@ -286,6 +286,8 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
+// splicer begin class.DataBuffer.PyMethodDef
+// splicer end class.DataBuffer.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

@@ -92,7 +92,7 @@ class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
 # Verify getViewName(), getViewIndex()
 #------------------------------------------------------------------------------
-    def XXXtest_get_view_name_index(self):
+    def test_get_view_name_index(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 

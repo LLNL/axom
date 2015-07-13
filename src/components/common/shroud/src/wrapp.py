@@ -378,8 +378,10 @@ return 1;""", fmt)
             append_format(PY_code, '{PY_PyObject} * {rv_obj} = PyObject_New({PY_PyObject}, &{PY_PyTypeObject});', lfmt)
             append_format(PY_code, '{rv_obj}->{BBB} = {rv};', lfmt)
             append_format(PY_code, 'return (PyObject *) {rv_obj};', lfmt)
-        elif result_typedef.c_type == 'bool':
-            append_format(PY_code, 'return PyBool_FromLong({rv});', fmt)
+        elif result_typedef.PY_ctor:
+            fmt.var = fmt.rv
+            fmt.var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
+            append_format(PY_code, 'return ' + result_typedef.PY_ctor + ';', fmt)
         else:
             fmt.var = 'rv'
             format = [ result_typedef.PY_format ]
@@ -393,7 +395,7 @@ return 1;""", fmt)
                 append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
             else:
                 # XXX intermediate variable?
-                addrargs.append('&rv')
+                addrargs.append('rv')
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
             PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))
@@ -477,6 +479,7 @@ static PyObject *
         fmt_type['tp_methods'] = wformat('{PY_prefix}{cpp_class}_methods', fmt)
         output.append(wformat('static PyMethodDef {tp_methods}[] = {{', fmt_type))
         output.extend(self.PyMethodDef)
+        self._create_splicer('PyMethodDef', output)
         output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
         output.append('};')
 
