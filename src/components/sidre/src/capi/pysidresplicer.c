@@ -219,6 +219,25 @@ PY_datagroup_create_view_and_buffer(
 	    return (PyObject *) rv_obj;
 	}
     }
+    PyErr_Clear();  // Try again
+    {
+	const char * name;
+	int type;
+	ATK_SidreLength len;
+	const char *kwcpp = "name\0type\0len";
+	char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
+    
+	if (PyArg_ParseTupleAndKeywords(args, kwds, "sil:createViewAndBuffer", kw_list,
+        &name, &type, &len)) {
+	    DataView * rv = self->BBB->createViewAndBuffer(name, getTypeID(type), len);
+	    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+	    rv_obj->BBB = rv;
+	    return (PyObject *) rv_obj;
+	}
+    }
+    PyErr_Clear();
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+
     return NULL;
 }
 // splicer end class.DataGroup.impl.additional_methods
