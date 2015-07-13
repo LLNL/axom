@@ -1,0 +1,21 @@
+#################################################
+# Setup code metrics - coverage, profiling, etc
+#################################################
+
+################################
+# Enable code coverage via gcov
+# Note: Only supported for gnu.
+################################
+if ( (CMAKE_BUILD_TYPE STREQUAL "Debug") AND (ENABLE_CODECOV) )
+
+   if ( (CMAKE_COMPILER_IS_GNUCXX) OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") )
+      include(CodeCoverage)
+      add_code_coverage_target(coverage make test)
+      SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}" )
+      SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_COVERAGE}" )
+ 	   MESSAGE(STATUS "Code coverage: Detected clang or gnu, compiler flags added.")
+   else()
+ 	   MESSAGE(WARNING "Code coverage: Did not clang or gnu, compiler flags not added.")
+   endif()
+
+endif()

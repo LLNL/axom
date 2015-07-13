@@ -428,8 +428,9 @@ void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks)
 
    }
    std::cout<<domain.numNode();
-   numFiles = numFiles;
-   numRanks = numRanks;
+   //TODO
+   (void)numFiles;
+   (void)numRanks;
 }
 
 #endif

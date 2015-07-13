@@ -57,7 +57,15 @@ class DataView;
  *    - A DataBuffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the buffer is created.
  *    - The data object owned by a DataBuffer is unique to that DataDuffer
- *      object; i.e.,  DataBuffers do not share data.
+ *      object; i.e.,  DataBuffers that own data not share their data.
+ *    - A DataBuffer may hold a pointer to externally-owned data. When this
+ *      is the case, the buffer cannot be used to (re)allocate or deallocate
+ *      the data. However, the external data can be desribed and accessed
+ *      via the buffer object in a similar to data that is owned by a buffer.
+ *    - Typical usage is to declare the data a DataBuffer will hold and then
+ *      either allocate it by calling one of the DataBuffer allocate or
+ *      reallocate methods, or set the buffer to reference externally-owned
+ *      data by calling setExternalData().
  *    - A DataBuffer object maintains a collection of DataViews that
  *      refer to its data.
  *
@@ -111,7 +119,7 @@ public:
   }
 
   /*!
-   * \brief Return total number of bytes allocated by this DataView object.
+   * \brief Return total number of bytes associated with this DataBuffer object.
    */
   size_t getTotalBytes() const
   {
@@ -133,6 +141,48 @@ public:
   {
     return m_node;
   }
+
+  /*!
+   * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
+   * version does require enough type information for the compiler to know what to cast the Value class to.
+   * Example:
+   * int* myptr = getValue();
+   * int myint = getValue();
+   */
+  Node::Value getValue()
+  {
+    return m_node.value();
+  }
+
+  /*!
+   * \brief Set value in conduit node.
+   */
+  template<typename ValueType>
+  void setValue(ValueType value)
+  {
+    m_node.set(value);
+  }
+
+
+  /*!
+   * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
+   * were not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
+   * function template type must be explicitly provided on call.
+   *
+   * Example:
+   * // will not work, compiler does not know what type to cast to for above getValue function.
+   * assert( getValue() == 10 );
+   * // use the templated version instead
+   * assert (getValue<int>() == 10);
+   */
+  template<typename ValueType>
+  ValueType getValue()
+  {
+    ValueType valueptr = m_node.value();
+    return valueptr;
+  }
+
+
 
   /*!
    * \brief Return const reference to Conduit schema describing data.
@@ -165,7 +215,10 @@ public:
 //!  @name Data declaration and allocation methods
 
   /*!
-   * \brief Declare a buffer to OWN data of given type and number of elements.
+   * \brief Declare a buffer with data given type and number of elements.
+   *
+   * To use the buffer, the data must be allocated by calling allocate()
+   * or set to external data by calling setExternalData().
    *
    * If given length is < 0, method does nothing.
    *
@@ -174,73 +227,36 @@ public:
   DataBuffer * declare(TypeID type, SidreLength len);
 
   /*!
-   * \brief Declare a buffer to OWN data described as a Conduit schema.
+   * \brief Declare a buffer with data described as a Conduit schema.
    *
-   * Note the data must be allocated by calling allocate().
+   * To use the buffer, the data must be allocated by calling allocate()
+   * or set to external data by calling setExternalData().
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * declare(const Schema& schema);
 
   /*!
-   * \brief Declare a buffer to OWN data described as a pre-defined
+   * \brief Declare a buffer with data described as a pre-defined
    *        Conduit data type.
    *
-   * Note the data must be allocated by calling allocate().
+   * To use the buffer, the data must be allocated by calling allocate()
+   * or set to external data by calling setExternalData().
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * declare(const DataType& dtype);
 
   /*!
-   * \brief Declare a buffer to hold external data described by Sidre type
-   *        and length.
-   *
-   * The given pointer references the existing external data. The buffer
-   * cannot allocate or reallocate it, and it will not be deallocated when
-   * buffer is destroyed.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declareExternal(void * external_data,
-                               TypeID type, SidreLength len);
-
-  /*!
-   * \brief Declare a buffer to hold external data described as a
-   *        Conduit schema.
-   *
-   * The given pointer references the existing external data. The buffer
-   * cannot allocate or reallocate it, and it will not be deallocated when
-   * buffer is destroyed.
-   *
-   * If the buffer data has already been allocated or it has been declared
-   * non-external, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declareExternal(void * external_data,
-                               const Schema& schema);
-
-  /*!
-   * \brief Declare a buffer to own data described as a
-   *        pre-defined Conduit data type.
-   *
-   * The given pointer references the existing external data. The buffer
-   * cannot allocate or reallocate it, and it will not be deallocated when
-   * buffer is destroyed.
-   *
-   * If the buffer data has already been allocated or it has been declared
-   * non-external, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declareExternal(void * external_data,
-                               const DataType& dtype);
-
-  /*!
    * \brief Allocate data previously declared using a declare() method.
    *
-   * If buffer has been declared external, this method does nothing.
+   * It is the responsibility of the caller to make sure that the buffer
+   * object was previously declared.  If the the buffer is already
+   * holding data that it owns, that data will be deallocated and new data
+   * will be allocated according to the current declared state.
+   *
+   * If buffer is already set to externally-owned data, this method
+   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -249,10 +265,11 @@ public:
   /*!
    * \brief Declare and allocate data described with type and length.
    *
-   * This is equivalent to calling declare(type, len), then allocate(),
-   * and then calling apply() on this DataView object.
+   * This is equivalent to calling declare(type, len), then allocate().
+   * on this DataBuffer object.
    *
-   * If buffer has been declared external, this method does nothing.
+   * If buffer is already set to externally-owned data, this method
+   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -261,9 +278,11 @@ public:
   /*!
    * \brief Declare and allocate data described as a Conduit schema.
    *
-   *        Equivalent to calling declare(schema), then allocate().
+   * This is equivalent to calling declare(schema), then allocate().
+   * on this DataBuffer object.
    *
-   * If buffer has been declared external, this method does nothing.
+   * If buffer is already set to externally-owned data, this method
+   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -273,9 +292,11 @@ public:
    * \brief Declare and allocate data described as a pre-defined
    *        Conduit data type.
    *
-   *        Equivalent to calling declare(dtype), then allocate().
+   * This is equivalent to calling declare(dtype), then allocate().
+   * on this DataBuffer object.
    *
-   * If buffer has been declared external, this method does nothing.
+   * If buffer is already set to externally-owned data, this method
+   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -286,7 +307,7 @@ public:
    *
    *        Equivalent to calling declare(type), then allocate().
    *
-   * If buffer has been declared external or given length is < 0,
+   * If buffer is already set to externally-owned data or given length < 0,
    * this method does nothing.
    *
    * \return pointer to this DataBuffer object.
@@ -296,7 +317,8 @@ public:
   /*!
    * \brief Reallocate data described as a Conduit schema.
    *
-   * If buffer has been declared external, this method does nothing.
+   * If buffer is already set to externally-owned data, this method
+   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -306,11 +328,26 @@ public:
    * \brief Reallocate data described as a pre-defined
    *        Conduit data type.
    *
-   * If buffer has been declared external, this method does nothing.
+   * If buffer is already set to externally-owned data, this method
+   * does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * reallocate(const DataType& dtype);
+
+  /*!
+   * \brief Set buffer to external data.
+   *
+   * It is the responsibility of the caller to make sure that the buffer
+   * object was previously declared, that the data pointer is consistent
+   * with how the buffer was declared, and that the buffer is not already
+   * holding data that it owns.
+   *
+   * If given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setExternalData(void * external_data);
 
 
 //@}

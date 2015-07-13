@@ -1,5 +1,5 @@
-INCLUDE_DIRECTORIES(  
-    ${Boost_INCLUDE_DIRS}   
+INCLUDE_DIRECTORIES(
+    ${Boost_INCLUDE_DIRS}
 )
 
 #
@@ -11,7 +11,7 @@ set(meshapi_headers
     FileUtilities.hpp
     FieldRegistry.hpp
     
-	# SRM Set headers
+    # SRM Set headers
     IndirectionSet.hpp
     NullSet.hpp
     OrderedSet.hpp
@@ -19,14 +19,14 @@ set(meshapi_headers
     #ProductSet.hpp
     Set.hpp
     
-	# SRM Relation headers
-	Relation.hpp
-	StaticVariableRelation.hpp
-	StaticConstantRelation.hpp
-	DynamicVariableRelation.hpp
-	
-	# SRM Map headers
-	Map.hpp
+    # SRM Relation headers
+    Relation.hpp
+    StaticVariableRelation.hpp
+    StaticConstantRelation.hpp
+    DynamicVariableRelation.hpp
+    
+    # SRM Map headers
+    Map.hpp
     )
 
 #
@@ -41,12 +41,18 @@ set(meshapi_sources
     # SRM Relation sources
     Relation.cpp
     StaticVariableRelation.cpp
-	StaticConstantRelation.cpp
-	DynamicVariableRelation.cpp
-	
+    StaticConstantRelation.cpp
+    DynamicVariableRelation.cpp
+    
     # SRM Map sources
     )
 
+
+#
+# custom target to copy header files in the "include" folder of the build tree.
+#
+copy_headers_target(  ${PROJECT_NAME}  "${meshapi_headers}"
+                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 #
 # make the library
@@ -56,17 +62,10 @@ make_library( LIBRARY_NAME
               LIBRARY_SOURCES
                 "${meshapi_sources}"
                 "${meshapi_headers}"
+              DEPENDS_ON
+                slic
+                sidre
             )
 
-add_dependencies(meshapi copy_headers_common)
-add_dependencies(meshapi copy_headers_meshapi)
-add_dependencies(meshapi slic)
-add_dependencies(meshapi sidre)
 
 install(TARGETS meshapi DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
-
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target(  ${PROJECT_NAME}  "${meshapi_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )

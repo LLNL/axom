@@ -25,18 +25,3 @@ integer, parameter :: ATK_C_DOUBLE_T = 17
 integer, parameter :: invalid_index = -1
 
 ! splicer end module_top
-
-
-
-! splicer begin class.DataGroup.additional_interfaces
-
-pure function atk_datagroup_get_group_name_with_error_check(self, idx) result(rv) &
-     bind(C, name="ATK_datagroup_get_group_name_with_error_check")
-  use iso_c_binding
-  implicit none
-  type(C_PTR), value, intent(IN) :: self
-  integer(C_INT), value, intent(IN) :: idx
-  type(C_PTR) rv
-end function atk_datagroup_get_group_name_with_error_check
-
-! splicer end class.DataGroup.additional_interfaces

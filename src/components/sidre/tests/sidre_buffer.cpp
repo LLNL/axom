@@ -32,6 +32,7 @@ TEST(sidre_buffer,create_buffers)
 
   DataBuffer * dbuff_3 = ds->createBuffer();
   EXPECT_EQ(dbuff_3->getIndex(), 0);
+
   ds->print();
   delete ds;
 }
@@ -46,20 +47,19 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   dbuff->allocate(DataType::c_int(10));
   dbuff->allocate();
 
-  int * data_ptr = dbuff->getNode().as_int_ptr();
+  int * data_ptr = dbuff->getValue();
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  dbuff->getNode().print_detailed();
+  dbuff->print();
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
-
 }
 
 //------------------------------------------------------------------------------
@@ -70,20 +70,19 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   DataBuffer * dbuff = ds->createBuffer();
 
   dbuff->allocate(DataType::c_int(10));
-  int * data_ptr = dbuff->getNode().as_int_ptr();
+  int * data_ptr = dbuff->getValue();
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  dbuff->getNode().print_detailed();
+  dbuff->print();
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
-
 }
 
 
@@ -98,19 +97,19 @@ TEST(sidre_buffer,realloc_buffer)
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 5);
 
-  long * data_ptr = dbuff->getNode().as_long_ptr();
+  long * data_ptr = dbuff->getValue();
 
   for(int i=0 ; i<5 ; i++)
   {
     data_ptr[i] = 5;
   }
 
-  dbuff->getNode().print_detailed();
+  dbuff->print();
 
   dbuff->reallocate(DataType::c_long(10));
 
   // data buffer changes
-  data_ptr = dbuff->getNode().as_long_ptr();
+  data_ptr = dbuff->getValue();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -122,14 +121,12 @@ TEST(sidre_buffer,realloc_buffer)
     data_ptr[i] = 10;
   }
 
-
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
-  dbuff->getNode().print_detailed();
+  dbuff->print();
 
   ds->print();
   delete ds;
-
 }
 
 //----------------------------------------------------------------------

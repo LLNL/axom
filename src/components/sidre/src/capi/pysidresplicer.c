@@ -21,12 +21,6 @@ self->BBB = ds;
 return 0;
 // splicer end class.DataStore.type.init
 
-// splicer begin class.DataStore.method.getRoot
-DataGroup * grp = self->BBB->getRoot();
-PyObject *rv = PP_DataGroup_to_Object(grp);
-return rv;
-// splicer end class.DataStore.method.getRoot
-
 // ----------------------------------------------------------------------
 // ----- pyDataGrouptype.cpp
 
@@ -50,11 +44,11 @@ return rv;
 // splicer end class.DataGroup.type.init
 
 
-// splicer begin class.DataGroup.method.getName
+// splicerX begin class.DataGroup.method.getName
 const std::string & name = self->BBB->getName();
 PyObject * rv = PyString_FromString(name.c_str());
 return rv;
-// splicer end class.DataGroup.method.getName
+// splicerX end class.DataGroup.method.getName
 
 
 // ----------------------------------------------------------------------

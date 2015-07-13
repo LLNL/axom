@@ -37,6 +37,42 @@
 ###############################################################################
 
 ################################
+# Setup build options and their default values
+################################
+include(SetupCmakeOptions)
+
+################################
+# Prevent in-source builds
+################################
+include(PreventInSourceBuilds)
+
+################################
+# Setup compiler options
+################################
+include(SetupCompilerOptions)
+
+################################
+# Setup 3rd Party Libs
+################################
+include(Setup3rdParty)
+
+################################
+# Setup toolkit docs targets
+################################
+include(SetupDocs)
+
+################################
+# Setup toolkit source checks
+################################
+include(SetupCodeChecks)
+
+################################
+# Setup code metrics -
+# profiling, code coverage, etc.
+################################
+include(SetupCodeMetrics)
+
+################################
 # Standard Build Layout
 ################################
 
@@ -83,32 +119,11 @@ mark_as_advanced(
      CMAKE_Fortran_MODULE_DIRECTORY
      )
 
-
-################################
-# Check if we want to build Fortran support.
-################################
-option(ENABLE_FORTRAN "Enables Fortran compiler support" ON)
-
-if(ENABLE_FORTRAN)
-    add_definitions(-DATK_ENABLE_FORTRAN)
-
-    # if enabled but no fortran compiler, halt the configure
-    if(CMAKE_Fortran_COMPILER)
-        MESSAGE(STATUS  "Fortran support enabled. (ENABLE_FORTRAN == ON, Fortran compiler found.)")
-    else()
-        MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
-    endif()    
-else()
-    MESSAGE(STATUS  "Fortran support disabled.  (ENABLE_FORTRAN == OFF)")
-endif()
-
 ################################
 # Standard CMake Options
 ################################
 
 include(ExternalProject)
-
-option(BUILD_TESTING "Builds unit tests" ON)
 if (BUILD_TESTING)
 
   ## add catch
@@ -131,7 +146,6 @@ endif()
 ################################
 # MPI
 ################################
-option(ENABLE_MPI "ENABLE MPI" OFF)
 if (ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
@@ -139,115 +153,13 @@ endif()
 ################################
 # OpenMP
 ################################
-option(ENABLE_OMP "ENABLE OpenMP" OFF)
 if(ENABLE_OMP)
     find_package(OpenMP REQUIRED)
     if (OPENMP_FOUND)
         message(STATUS "Found OpenMP")
     else()
         message(STATUS "Could not find OpenMP")
-    endif()    
-endif()
-
-## Enable ENABLE C++ 11 features
-option(ENABLE_CXX11 "Enables C++11 features" OFF)
-if (ENABLE_CXX11)
-  # define a macro so the code can ifdef accordingly.
-  add_definitions("-DUSE_CXX11")
-endif()
-
-## Choose static or shared libraries.
-option(BUILD_SHARED_LIBS "Build shared libraries." OFF)
-
-option(ENABLE_WARNINGS "Enable Compiler warnings." ON)
-if(ENABLE_WARNINGS)
-
-    # set the warning levels we want to abide by
-    if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
-        add_definitions(/W2)
-    else()
-        if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            # using gcc
-            add_definitions(-Wall -Wextra -Werror)
-        endif()
     endif()
-
-endif()
-
-
-#############################################
-# Support extra compiler flags and defines
-#############################################
-#
-# We don't try to use this approach for CMake generators that support
-# multiple configurations. See: CZ JIRA: ATK-45
-#
-if(NOT CMAKE_CONFIGURATION_TYPES)
-
-    ######################################################
-    # Add define we can use when debug builds are enabled
-    ######################################################
-    if(CMAKE_BUILD_TYPE MATCHES Debug)
-        add_definitions(-DATK_DEBUG)
-    endif()
-
-    ##########################################
-    # Support Extra Flags for the C compiler.
-    ##########################################
-    if(EXTRA_C_FLAGS)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
-    endif()
-
-    # Extra Flags for the debug builds with the C compiler.
-    if(EXTRA_C_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
-        add_compile_options("${EXTRA_C_FLAGS_DEBUG}")
-    endif()
-
-    # Extra Flags for the release builds with the C compiler.
-    if(EXTRA_C_FLAGS_RELEASE AND CMAKE_BUILD_TYPE MATCHES RELEASE)
-        add_compile_options("${EXTRA_C_FLAGS_RELEASE}")
-    endif()
-
-    #############################################
-    # Support Extra Flags for the C++ compiler.
-    #############################################
-    if(EXTRA_CXX_FLAGS)
-        add_compile_options("${EXTRA_CXX_FLAGS}")
-    endif()
-
-    # Extra Flags for the debug builds with the C++ compiler.
-    if(EXTRA_CXX_FLAGS_DEBUG AND CMAKE_BUILD_TYPE MATCHES Debug)
-        add_compile_options("${EXTRA_CXX_FLAGS_DEBUG}")
-    endif()
-
-    # Extra Flags for the release builds with the C++ compiler.
-    if(EXTRA_CXX_FLAGS_RELEASE AND CMAKE_BUILD_TYPE MATCHES RELEASE)
-        add_compile_options("${EXTRA_CXX_FLAGS_RELEASE}")
-    endif()
-
-endif()
-
-################################
-# RPath Settings
-################################
-
-# use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-# when building, don't use the install RPATH already
-# (but later on when installing)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# the RPATH to be used when installing, but only if it's not a system directory
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 ################################
@@ -330,7 +242,7 @@ endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
 ## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
-##               [WITH_MPI] [WITH_OPENMP])
+##               DEPENDS_ON [dep1 ...] [WITH_MPI] [WITH_OPENMP])
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -339,20 +251,26 @@ endmacro(add_target_definitions)
 ## ON, in which case, it will create a shared library. By default, a static
 ## library is generated.
 ##
+## In addition, this macro will add the associated dependencies to the given
+## library target. Specifically, it will add a dependecy to the library's
+## "copy_headers_target" if it exists and has been defined before the call to
+## "make_library", as well as, the corresponding "copy_headers_target" of each
+## of the supplied dependencies.
+##
 ## Optionally, "WITH_MPI" can be supplied as an argument. When this argument is
 ## supplied, the MPI include directory will be added to the compiler command
 ## and the -DUSE_MPI, as well as other compiler flags, will be included to the
 ## compiler definition.
 ##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
-## supplied, the openmp compiler flag will be added to the compiler command
+## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
+## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
    set(options WITH_MPI WITH_OPENMP)
    set(singleValueArgs LIBRARY_NAME)
-   set(multiValueArgs LIBRARY_SOURCES)
+   set(multiValueArgs LIBRARY_SOURCES DEPENDS_ON)
 
    ## parse the arguments
    cmake_parse_arguments(arg
@@ -396,9 +314,11 @@ macro(make_library)
 
    if ( ${arg_WITH_OPENMP} )
 
-      add_target_definitions( TO ${arg_LIBRARY_NAME} TARGET_DEFINITIONS USE_OPENMP )
+      add_target_definitions( TO ${arg_LIBRARY_NAME}
+                              TARGET_DEFINITIONS USE_OPENMP )
 
-      set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
+      set_target_properties( ${arg_LIBRARY_NAME}
+                             PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
 
    endif()
 
@@ -419,10 +339,24 @@ macro(make_library)
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
 
+   ## setup dependencies
+   set(lib_header_target "copy_headers_${arg_LIBRARY_NAME}")
+   if (TARGET ${lib_header_target})
+      add_dependencies( ${arg_LIBRARY_NAME} ${lib_header_target})
+   endif()
+
+   foreach(dependency ${arg_DEPENDS_ON})
+     set(header_target "copy_headers_${dependency}")
+     if (TARGET ${header_target})
+        add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
+     endif()
+   endforeach()
+
 endmacro(make_library)
 
 ##------------------------------------------------------------------------------
-## make_executable(EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...] [WITH_MPI] [WITH_OPENMP])
+## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
+##                  [WITH_MPI] [WITH_OPENMP])
 ##
 ## Adds an executable to the project.
 ##
@@ -438,8 +372,8 @@ endmacro(make_library)
 ## the MPI C libraries and the MPI includes as well as -DUSE_MPI and other flags
 ## will be added to the compiler command.
 ##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument is
-## supplied, the openmp compiler flag will be added to the compiler command
+## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
+## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_executable)
@@ -452,23 +386,25 @@ macro(make_executable)
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    ## sanity check MPI
+   ## sanity check MPI
    if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
    endif()
 
-    ## sanity check OpenMP
+   ## sanity check OpenMP
    if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
-      message( FATAL_ERROR "Building an OpenMP executable, but OpenMP is disabled!" )
+      message( FATAL_ERROR
+               "Building an OpenMP executable, but OpenMP is disabled!" )
    endif()
 
-   # Use the supplied name for the executable (if given), otherwise use the source file's name
+   # Use the supplied name for the executable (if given), otherwise use the
+   # source file's name
    if( NOT "${arg_EXECUTABLE_NAME}" STREQUAL "" )
      set(exe_name ${arg_EXECUTABLE_NAME})
    else()
      get_filename_component(exe_name ${arg_EXECUTABLE_SOURCE} NAME_WE)
    endif()
-      
+
    add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
    target_link_libraries( ${exe_name} "${arg_DEPENDS_ON}" )
 
@@ -501,9 +437,11 @@ macro(make_executable)
 
       add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
 
-      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS ${OpenMP_CXX_FLAGS} )
-      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS ${OpenMP_CXX_FLAGS} )
-      
+      set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
+                             ${OpenMP_CXX_FLAGS} )
+      set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
+                             ${OpenMP_CXX_FLAGS} )
+
    endif()
 
    if(IS_ABSOLUTE)
@@ -544,27 +482,27 @@ macro(add_gtest)
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-    if ( ENABLE_CXX11 )
+   if ( ENABLE_CXX11 )
       ## Note, this requires cmake 3.1 and above
       set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-    endif()
+   endif()
 
-    add_test( NAME ${test_name}
-              COMMAND ${test_name}
-              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
-              )
+   add_test( NAME ${test_name}
+             COMMAND ${test_name}
+             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+             )
 
-    # add any passed source files to the running list for this project
-    if(IS_ABSOLUTE)
-        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-    else()
-          list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                      "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-    endif()
+   # add any passed source files to the running list for this project
+   if(IS_ABSOLUTE)
+      list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+   else()
+      list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
+                  "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+   endif()
 
 
-    set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-        CACHE STRING "" FORCE )
+   set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
+      CACHE STRING "" FORCE )
 
 endmacro(add_gtest)
 
@@ -629,6 +567,8 @@ macro(add_fortran_test)
 
        get_filename_component(test_name ${arg_TEST_SOURCE} NAME_WE)
        add_executable( ${test_name} fortran_driver.cpp ${arg_TEST_SOURCE} )
+
+       target_include_directories( ${test_name} PUBLIC ${CMAKE_Fortran_MODULE_DIRECTORY} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
         set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")
@@ -637,7 +577,7 @@ macro(add_fortran_test)
                   COMMAND ${test_name}
                   WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
                   )
-       #TODO: we aren't tracking / grouping fortran sources. 
+       #TODO: we aren't tracking / grouping fortran sources.
    endif()
 endmacro(add_fortran_test)
 

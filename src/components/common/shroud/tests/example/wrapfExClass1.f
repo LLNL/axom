@@ -179,7 +179,9 @@ contains
         integer(C_INT) :: incr
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.increment_count
-        rv = aa_exclass1_increment_count(obj%voidptr, incr)
+        rv = aa_exclass1_increment_count(  &
+            obj%voidptr,  &
+            incr)
         ! splicer end class.ExClass1.method.increment_count
     end function exclass1_increment_count
     
@@ -207,21 +209,23 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_error_check(obj%voidptr))) :: rv
         ! splicer begin class.ExClass1.method.get_name_error_check
         rv = fstr(aa_exclass1_get_name_error_check(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    function exclass1_get_name_arg(obj) result(rv)
+    subroutine exclass1_get_name_arg(obj, rv)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv = fstr(aa_exclass1_get_name_arg(obj%voidptr))
+        rv_ptr = aa_exclass1_get_name_arg(obj%voidptr)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.ExClass1.method.get_name_arg
-    end function exclass1_get_name_arg
+    end subroutine exclass1_get_name_arg
     
     function exclass1_get_root(obj) result(rv)
         use iso_c_binding
@@ -240,7 +244,9 @@ contains
         integer(C_INT) :: value
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.get_value_from_int
-        rv = aa_exclass1_get_value_from_int(obj%voidptr, value)
+        rv = aa_exclass1_get_value_from_int(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass1.method.get_value_from_int
     end function exclass1_get_value_from_int
     
@@ -251,7 +257,9 @@ contains
         integer(C_LONG) :: value
         integer(C_LONG) :: rv
         ! splicer begin class.ExClass1.method.get_value_1
-        rv = aa_exclass1_get_value_1(obj%voidptr, value)
+        rv = aa_exclass1_get_value_1(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass1.method.get_value_1
     end function exclass1_get_value_1
     
@@ -272,7 +280,9 @@ contains
         logical :: in
         logical :: rv
         ! splicer begin class.ExClass1.method.has_addr
-        rv = booltological(aa_exclass1_has_addr(obj%voidptr, logicaltobool(in)))
+        rv = booltological(aa_exclass1_has_addr(  &
+            obj%voidptr,  &
+            logicaltobool(in)))
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     

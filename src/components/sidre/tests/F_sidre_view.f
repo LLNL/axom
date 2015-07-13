@@ -51,8 +51,8 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0")
-    call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
     call dv%allocate(ATK_C_INT_T, 10_8)
+    call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
     data_ptr = dv%get_data_pointer()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
@@ -60,10 +60,8 @@ contains
        data(i) = i * i
     enddo
 
-!--#ifdef XXX
-!--    dv->getNode().print_detailed()
-!--#endif
-!--
+    call dv%print()
+
 !--    !  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), dv->getSchema().total_bytes())
 !--    call assert_equals(dv%get_total_bytes(), sizeof(int) * 10)
     call datastore_delete(ds)
@@ -90,9 +88,7 @@ contains
        data(i) = i * i
     enddo
 
-!--#ifdef XXX
-!--    dv->getNode().print_detailed()
-!--#endif
+    call dv%print()
 
 !--    EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10)
     call datastore_delete(ds)
@@ -122,9 +118,9 @@ contains
        data(i) = i
     enddo
 
+    call dbuff%print()
+
 !--#ifdef XXX
-!--    dbuff->getNode().print_detailed()
-!--
 !--    EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
 !--              dbuff->getSchema().total_bytes())
 !--#endif
@@ -138,8 +134,8 @@ contains
 !--
 !--  dv_o->apply(DataType::uint32(5,4,8))
 !--
-!--  dv_e->getNode().print_detailed()
-!--  dv_o->getNode().print_detailed()
+!--  call dv_e%print()
+!--  call dv_o%print()
 !--
 !--  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array()
 !--  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array()
@@ -183,9 +179,9 @@ contains
        data(i) = i
     enddo
 
+    call dbuff%print()
+
 !--#ifdef XXX
-!--  dbuff->getNode().print_detailed()
-!--
 !--  EXPECT_EQ(dbuff->getNode().schema().total_bytes(),
 !--            dbuff->getSchema().total_bytes())
 !--#endif
@@ -202,8 +198,8 @@ contains
 !--  dv_o->apply(DataType::uint32(5,4,8))
 !--
 !--
-!--  dv_e->getNode().print_detailed()
-!--  dv_o->getNode().print_detailed()
+!--  call dv_e%print()
+!--  call dv_o%print()
 !--
 !--  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array()
 !--  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array()
@@ -280,7 +276,7 @@ contains
 !--#ifdef XXX
 !--  ! setup our 4 views
 !--  ATK_databuffer * buff_old = ATK_dataview_get_buffer(base_old)
-!--  buff_old->getNode().print()
+!--  call buff_old%print()
 !--  ATK_dataview * r0_old = ATK_dataview_create_view(r_old, "r0",buff_old)
 !--  ATK_dataview * r1_old = ATK_dataview_create_view(r_old, "r1",buff_old)
 !--  ATK_dataview * r2_old = ATK_dataview_create_view(r_old, "r2",buff_old)
@@ -333,7 +329,7 @@ contains
 !--  } 
 !--
 !--  ATK_databuffer * buff_new = ATK_dataview_get_buffer(base_new)
-!--  buff_new->getNode().print()
+!--  call buff_new%print()
 !--
 !--  ! create the 4 sub views of this array
 !--  ATK_dataview * r0_new = ATK_datagroup_create_view(r_new, "r0",buff_new)
@@ -358,13 +354,13 @@ contains
 !--  r3_new->apply(DataType::uint32(12,offset))
 !--
 !--  ! update r2 as an example first
-!--  buff_new->getNode().print()
-!--  r2_new->getNode().print()
+!--  call buff_new%print()
+!--  call r2_new%print()
 !--
 !--  ! copy the subset of value
 !--  r2_new->getNode().update(r2_old->getNode())
-!--  r2_new->getNode().print()
-!--  buff_new->getNode().print()
+!--  call r2_new%print()
+!--  call buff_new%print()
 !--
 !--
 !--  ! check pointer values
@@ -386,7 +382,7 @@ contains
 !--  r1_new->getNode().update(r1_old->getNode())
 !--  r3_new->getNode().update(r3_old->getNode())
 !--
-!--  buff_new->getNode().print()
+!--  call buff_new%print()
 !--#endif
 
     call ds%print()
@@ -505,6 +501,7 @@ function fortran_test() bind(C,name="fortran_test")
   use sidre_view
   implicit none
   integer(C_INT) fortran_test
+  logical ok
 
   call init_fruit
 
@@ -520,5 +517,10 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_summary
   call fruit_finalize
 
-  fortran_test = 0
+  call is_all_successful(ok)
+  if (ok) then
+     fortran_test = 0
+  else
+     fortran_test = 1
+  endif
 end function fortran_test
