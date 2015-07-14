@@ -253,13 +253,6 @@ return 1;""", fmt)
             is_const = None
         fmt.rv_decl = self.std_c_decl('cpp_type', result, name='rv', const=is_const)  # return value
 
-        if cls:
-            util.eval_template(options, fmt,
-                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
-        else:
-            util.eval_template(options, fmt,
-                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
-
         PY_decl = []     # variables for function
         PY_code = []
         format = []      # for PyArg_ParseTupleAndKeywords
@@ -401,6 +394,17 @@ return 1;""", fmt)
             PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))
 
         PY_impl = [1] + PY_decl + PY_code + [-1]
+        self.create_method(cls, node, fmt, PY_impl)
+
+    def create_method(self, cls, node, fmt, PY_impl):
+        """Format the function."""
+        options = node['options']
+        if cls:
+            util.eval_template(options, fmt,
+                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
+        else:
+            util.eval_template(options, fmt,
+                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
 
         body = self.PyMethodBody
         body.append(wformat("""
@@ -473,6 +477,7 @@ static PyObject *
             cpp_class       = fmt.cpp_class,
             )
         self.write_tp_func(node, fmt, fmt_type, output)
+        self.multi_dispatch(node, node['methods'])
 
         output.extend(self.PyMethodBody)
 
@@ -491,6 +496,30 @@ static PyObject *
         self.namespace(node, 'end', output)
 
         self.write_output_file(fname, self.config.binary_dir, output)
+
+
+    def multi_dispatch(self, cls, methods):
+        """Look for overloaded methods.
+        When found, create a method will will call each of the
+        overloaded methods looking for the one which will accept
+        the given arguments.
+        """
+        overloaded_methods = {}
+        for method in methods:
+            overloaded_methods.setdefault(method['result']['name'], []).append(method)
+
+        fmt = util.Options(cls['fmt'])
+        fmt.methods_suffix = ''
+        out = []
+        for method, methods in overloaded_methods.items():
+            if len(methods) == 1:
+                continue
+
+            node = dict(
+                options = cls['options'],
+                )
+
+#            self.create_method(cls, methods[0], fmt, [])
 
     def write_header(self, node):
         options = node['options']
