@@ -751,7 +751,7 @@ PY_datagroup_load(
     Py_RETURN_NONE;
 // splicer end class.DataGroup.method.load
 }
-// splicer begin class.DataGroup.impl.after_methods
+
 static char PY_datagroup_create_view_and_buffer__doc__[] =
 "documentation"
 ;
@@ -762,32 +762,34 @@ PY_datagroup_create_view_and_buffer(
   PyObject *args,
   PyObject *kwds)
 {
+// splicer begin class.DataGroup.createViewAndBuffer
     int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
     int numArgs = PyTuple_GET_SIZE(args);
-    int totargs = numArgs + numNamedArgs;
+    int totArgs = numArgs + numNamedArgs;
     PyObject *rvobj;
-
-    if (totargs == 1) {
+    {
         rvobj = PY_datagroup_create_view_and_buffer_simple(self, args, kwds);
-	if (!PyErr_Occurred()) {
-	    return rvobj;
-	} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
-	    return rvobj;
-	}
-	PyErr_Clear();
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
     }
-    if (totargs == 3) {
-	rvobj = PY_datagroup_create_view_and_buffer_from_type(self, args, kwds);
-	if (!PyErr_Occurred()) {
-	    return rvobj;
-	} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
-	    return rvobj;
-	}
-	PyErr_Clear();
+    {
+        rvobj = PY_datagroup_create_view_and_buffer_from_type(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
     }
     PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
     return NULL;
+// splicer end class.DataGroup.createViewAndBuffer
 }
+// splicer begin class.DataGroup.impl.after_methods
 // splicer end class.DataGroup.impl.after_methods
 static PyMethodDef PY_DataGroup_methods[] = {
 {"getName", (PyCFunction)PY_datagroup_get_name, METH_NOARGS, PY_datagroup_get_name__doc__},
@@ -817,8 +819,8 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"print", (PyCFunction)PY_datagroup_print, METH_NOARGS, PY_datagroup_print__doc__},
 {"save", (PyCFunction)PY_datagroup_save, METH_VARARGS|METH_KEYWORDS, PY_datagroup_save__doc__},
 {"load", (PyCFunction)PY_datagroup_load, METH_VARARGS|METH_KEYWORDS, PY_datagroup_load__doc__},
-// splicer begin class.DataGroup.PyMethodDef
 {"createViewAndBuffer", (PyCFunction)PY_datagroup_create_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer__doc__},
+// splicer begin class.DataGroup.PyMethodDef
 // splicer end class.DataGroup.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

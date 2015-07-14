@@ -270,6 +270,44 @@ PP_exclass1_splicer_special(
     Py_RETURN_NONE;
 // splicer end class.ExClass1.method.SplicerSpecial
 }
+
+static char PP_exclass1_get_value__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass1_get_value(
+  PP_ExClass1 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass1.getValue
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PP_exclass1_get_value_from_int(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PP_exclass1_get_value_1(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.ExClass1.getValue
+}
 // splicer begin class.ExClass1.impl.after_methods
 // splicer end class.ExClass1.impl.after_methods
 static PyMethodDef PP_ExClass1_methods[] = {
@@ -285,6 +323,7 @@ static PyMethodDef PP_ExClass1_methods[] = {
 {"getAddr", (PyCFunction)PP_exclass1_get_addr, METH_NOARGS, PP_exclass1_get_addr__doc__},
 {"hasAddr", (PyCFunction)PP_exclass1_has_addr, METH_VARARGS|METH_KEYWORDS, PP_exclass1_has_addr__doc__},
 {"SplicerSpecial", (PyCFunction)PP_exclass1_splicer_special, METH_NOARGS, PP_exclass1_splicer_special__doc__},
+{"getValue", (PyCFunction)PP_exclass1_get_value, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_value__doc__},
 // splicer begin class.ExClass1.PyMethodDef
 // splicer end class.ExClass1.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */

@@ -274,6 +274,44 @@ PY_databuffer_print(
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.print
 }
+
+static char PY_databuffer_allocate__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_databuffer_allocate(
+  PY_DataBuffer *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataBuffer.allocate
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_databuffer_allocate_existing(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_databuffer_allocate_from_type(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataBuffer.allocate
+}
 // splicer begin class.DataBuffer.impl.after_methods
 // splicer end class.DataBuffer.impl.after_methods
 static PyMethodDef PY_DataBuffer_methods[] = {
@@ -288,6 +326,7 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
+{"allocate", (PyCFunction)PY_databuffer_allocate, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate__doc__},
 // splicer begin class.DataBuffer.PyMethodDef
 // splicer end class.DataBuffer.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */

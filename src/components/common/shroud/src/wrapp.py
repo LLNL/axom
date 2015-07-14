@@ -394,18 +394,18 @@ return 1;""", fmt)
             PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))
 
         PY_impl = [1] + PY_decl + PY_code + [-1]
-        self.create_method(cls, node, fmt, PY_impl)
 
-    def create_method(self, cls, node, fmt, PY_impl):
-        """Format the function."""
-        options = node['options']
         if cls:
-            util.eval_template(options, fmt,
+            util.eval_template(options, fmt_func,
                                'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
         else:
-            util.eval_template(options, fmt,
+            util.eval_template(options, fmt_func,
                                'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
 
+        self.create_method(cls, fmt, PY_impl)
+
+    def create_method(self, cls, fmt, PY_impl):
+        """Format the function."""
         body = self.PyMethodBody
         body.append(wformat("""
 static char {PY_name_impl}__doc__[] =
@@ -504,22 +504,62 @@ static PyObject *
         overloaded methods looking for the one which will accept
         the given arguments.
         """
+        options = cls['options']
+
         overloaded_methods = {}
         for method in methods:
-            overloaded_methods.setdefault(method['result']['name'], []).append(method)
+            if method['options'].wrap_python:
+                overloaded_methods.setdefault(method['result']['name'], []).append(method)
 
-        fmt = util.Options(cls['fmt'])
-        fmt.methods_suffix = ''
-        out = []
         for method, methods in overloaded_methods.items():
             if len(methods) == 1:
                 continue
 
-            node = dict(
-                options = cls['options'],
-                )
+            fmt_func = methods[0]['fmt']
+            fmt = util.Options(fmt_func)
+            fmt.method_suffix = ''
+            fmt.doc_string = 'documentation'
+            fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+#            fmt.CPP_name = method
+            #fmt.CPP_name = methods[0]['result']['name']
 
-#            self.create_method(cls, methods[0], fmt, [])
+            body = []
+            body.append(1)
+            body.append('int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);')
+            body.append('int numArgs = PyTuple_GET_SIZE(args);')
+            body.append('int totArgs = numArgs + numNamedArgs;')
+            body.append('PyObject *rvobj;')
+
+
+            for overload in methods:
+                body.append('{')
+                body.append(1)
+                append_format(body, 'rvobj = {PY_name_impl}(self, args, kwds);', overload['fmt'])
+                body.append('if (!PyErr_Occurred()) {')
+                body.append(1)
+                body.append('return rvobj;')
+                body.append(-1)
+                body.append('} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {')
+                body.append(1)
+                body.append('return rvobj;')
+                body.append(-1)
+                body.append('}')
+                body.append('PyErr_Clear();')
+                body.append(-1)
+                body.append('}')
+
+            body.append('PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");')
+            body.append('return NULL;')
+            body.append(-1)
+
+            if cls:
+                util.eval_template(options, fmt,
+                                   'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}')
+            else:
+                util.eval_template(options, fmt,
+                                   'PY_name_impl', '{PY_prefix}{underscore_name}')
+
+            self.create_method(cls, fmt, body)
 
     def write_header(self, node):
         options = node['options']

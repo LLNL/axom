@@ -34,7 +34,7 @@ def append_format(lst, template, dct):
 
 def eval_template(options, fmt, name, default=None):
     """ If a tname exists in options, use it; else use default.
-    fmt[vname] = option[tname]
+    fmt[name] = option[name + '_template']
     """
     if hasattr(options, name):
         setattr(fmt, name, getattr(options, name))
