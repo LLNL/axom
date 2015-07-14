@@ -311,9 +311,9 @@ public:
   Index_t symmX(Index_t idx) { return m_symmX[idx]; }
   Index_t symmY(Index_t idx) { return m_symmY[idx]; }
   Index_t symmZ(Index_t idx) { return m_symmZ[idx]; }
-  bool    symmXempty()       { return m_symmX.isEmpty(); }
-  bool    symmYempty()       { return m_symmY.isEmpty(); }
-  bool    symmZempty()       { return m_symmZ.isEmpty(); }
+  bool    symmXempty()       { return m_symmX.empty(); }
+  bool    symmYempty()       { return m_symmY.empty(); }
+  bool    symmZempty()       { return m_symmZ.empty(); }
 
   //
   // Element-centered

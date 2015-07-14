@@ -105,7 +105,7 @@ namespace meshapi {
     /**
      * \brief Checks if there are any elements in the set -- equivalent to: set.size() == 0
      */
-    virtual bool          isEmpty() const = 0;
+    virtual bool          empty() const = 0;
 
 #if 0
     /**

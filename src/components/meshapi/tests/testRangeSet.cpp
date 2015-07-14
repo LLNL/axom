@@ -28,7 +28,7 @@ TEST(gtest_meshapi_range_set,construct_range_set)
   EXPECT_TRUE(s.isValid());
 
   if(MAX_SET_SIZE > SetPosition())
-    EXPECT_FALSE(s.isEmpty());
+    EXPECT_FALSE(s.empty());
 
   std::cout << "Iterating through set of size " << s.size() << std::endl;
   EXPECT_EQ(s.size(), MAX_SET_SIZE);

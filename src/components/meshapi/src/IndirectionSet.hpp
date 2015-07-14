@@ -125,7 +125,7 @@ namespace meshapi {
     /**
      * \brief Checks whether the set has any elements
      */
-    bool                        isEmpty() const { return m_entities.empty(); }
+    bool                        empty() const { return m_entities.empty(); }
 
 
     /**

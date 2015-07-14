@@ -46,7 +46,7 @@ namespace policies {
         inline IntType size() const { return m_sz;}
         inline IntType& size()            { return m_sz;}
 
-        inline bool isEmpty() const       { return m_sz == IntType(); }
+        inline bool empty() const       { return m_sz == IntType(); }
     private:
         IntType m_sz;
     };
@@ -68,27 +68,27 @@ namespace policies {
         }
 
         inline IntType size() const { return INT_VAL;}
-        inline IntType isEmpty() const { return INT_VAL == IntType();}
+        inline IntType empty() const { return INT_VAL == IntType();}
     };
 
     /**
       * \brief A policy class for an empty set (no size)
       */
      template<typename IntType>
-     struct NoSize {
+     struct ZeroSize {
          static const IntType DEFAULT_VALUE = IntType();
 
-         NoSize(){}
+         ZeroSize(){}
 
 
-         NoSize(IntType val) {
+         ZeroSize(IntType val) {
                 SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-                               , "MeshAPI::NoSize policy-- tried to initialize a NoSize set with value with value ("
+                               , "MeshAPI::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
                               << val <<" ) but should always be zero.");
          }
 
          inline IntType size() const { return DEFAULT_VALUE;}
-         inline IntType isEmpty() const { return true;}
+         inline IntType empty() const { return true;}
      };
 
     /// \}
@@ -115,7 +115,7 @@ namespace policies {
         inline IntType offset() const { return m_off;}
         inline IntType& offset()            { return m_off;}
 
-        inline bool hasOffset() const       { return m_off == IntType(); }
+        // inline bool hasOffset() const       { return m_off == IntType(); }
     private:
         IntType m_off;
     };
@@ -135,25 +135,26 @@ namespace policies {
         }
 
         inline IntType offset() const { return INT_VAL;}
-        inline IntType hasOffset() const { return INT_VAL == IntType();}
+
+        // inline IntType hasOffset() const { return INT_VAL == IntType();}
     };
 
     /**
      * \brief A policy class for when we have no offset
      */
     template<typename IntType>
-    struct NoOffset {
+    struct ZeroOffset {
         static const IntType DEFAULT_VALUE = IntType();
 
-        NoOffset() {}
-        NoOffset(IntType val) {
+        ZeroOffset() {}
+        ZeroOffset(IntType val) {
                SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-                              , "MeshAPI::NoOffset policy -- tried to initialize a NoOffset policy with ("
+                              , "MeshAPI::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
                               << val <<", but should always be 0");
         }
 
         inline IntType offset() const { return DEFAULT_VALUE;}
-        inline IntType hasOffset() const { return false;}
+        //inline IntType hasOffset() const { return false;}
     };
 
     /// \}
@@ -179,7 +180,7 @@ namespace policies {
         inline IntType stride() const { return m_stride;}
         inline IntType& stride()            { return m_stride;}
 
-        inline bool hasStride() const       { return m_stride != IntType(); }
+        //inline bool hasStride() const       { return m_stride != IntType(); }
     private:
         IntType m_stride;
     };
@@ -200,7 +201,7 @@ namespace policies {
         }
 
         inline IntType stride() const { return INT_VAL;}
-        inline IntType hasStride() const { return INT_VAL != IntType();}
+        //inline IntType hasStride() const { return INT_VAL != IntType();}
     };
 
     /**
@@ -221,7 +222,7 @@ namespace policies {
         }
 
         inline IntType stride() const { return DEFAULT_VALUE;}
-        inline IntType hasStride() const { return DEFAULT_VALUE != IntType();}
+        //inline IntType hasStride() const { return DEFAULT_VALUE != IntType();}
     };
 
 
@@ -348,7 +349,7 @@ namespace policies {
  * \details Specifically, the element at position pos can be defined as:  static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
     template< typename SizePolicy           = policies::RuntimeSizeHolder<Set::PositionType>
-            , typename OffsetPolicy         = policies::NoOffset<Set::PositionType>
+            , typename OffsetPolicy         = policies::ZeroOffset<Set::PositionType>
             , typename StridePolicy         = policies::StrideOne<Set::PositionType>
             , typename IndirectionPolicy    = policies::NoIndirection<Set::PositionType, Set::ElementType>
             , typename SubsettingPolicy     = policies::NoSubset
@@ -396,7 +397,7 @@ public:
 
 
     inline PositionType        size()  const { return SizePolicy::size(); }
-    inline bool                isEmpty() const { return SizePolicy::isEmpty(); }
+    inline bool                empty() const { return SizePolicy::empty(); }
 
   public:   // Functions related to iteration
     iterator            begin() const { return iterator( OffsetPolicy::offset() ); }
