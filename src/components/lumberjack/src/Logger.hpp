@@ -29,8 +29,6 @@ class Logger {
         void pushMessagesOnce();
         void pushMessagesFully();
     private:
-        MPI_Comm m_mpiComm;
-        int m_mpiCommRank;
         Communicator* m_communicator;
 };
 

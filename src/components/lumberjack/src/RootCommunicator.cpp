@@ -25,10 +25,10 @@ void RootCommunicator::pushMessagesOnce()
         MPI_Status mpiStatus;
         for(int i=1; i<m_mpiCommSize; ++i){
             messageSize = -1;
-            MPI_Probe(i, 0, MPI_COMM_WORLD, &mpiStatus);
+            MPI_Probe(i, 0, m_mpiComm, &mpiStatus);
             MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
             charArray = (char*)malloc((messageSize+1)*sizeof(char));
-            MPI_Recv(charArray, messageSize, MPI_CHAR, i, 0, MPI_COMM_WORLD, &mpiStatus);
+            MPI_Recv(charArray, messageSize, MPI_CHAR, i, 0, m_mpiComm, &mpiStatus);
             charArray[messageSize] = '\0';
             std::string messageString(charArray);
             free(charArray);
@@ -41,7 +41,7 @@ void RootCommunicator::pushMessagesOnce()
         for(int i=0; i<(int)m_messages.size(); ++i){
             std::string message = m_messages[i].pack();
             MPI_Send(const_cast<char*>(message.c_str()),
-                     message.size(), MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+                     message.size(), MPI_CHAR, 0, 0, m_mpiComm);
         }
         m_messages.clear();
     }
@@ -62,8 +62,9 @@ std::vector<MessageInfo>* RootCommunicator::getMessages()
     return ATK_NULLPTR;
 }
 
-void RootCommunicator::queueMessage(MessageInfo messageInfo)
+void RootCommunicator::queueMessage(const std::string& message, const std::string& fileName, const int lineNumber)
 {
+    MessageInfo messageInfo(message, m_mpiCommRank, fileName, lineNumber);
     m_messages.push_back(messageInfo);
 }
 

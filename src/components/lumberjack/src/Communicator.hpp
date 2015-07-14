@@ -15,7 +15,7 @@ class Communicator {
         virtual void pushMessagesOnce() = 0;
         virtual void pushMessagesFully() = 0;
         virtual std::vector<MessageInfo>* getMessages() = 0;
-        virtual void queueMessage(MessageInfo messageInfo) = 0;
+        virtual void queueMessage(const std::string& message, const std::string& fileName, const int lineNumber) = 0;
 };
 
 }

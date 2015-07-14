@@ -7,10 +7,8 @@ namespace lumberjack {
 
 void Logger::initialize(MPI_Comm comm, Communicator* communicator)
 {
-    m_mpiComm = comm;
-    MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
     m_communicator = communicator;
-    m_communicator->initialize(m_mpiComm);
+    m_communicator->initialize(comm);
 }
 
 void Logger::finalize()
@@ -46,13 +44,12 @@ std::vector<MessageInfo>* Logger::getMessages()
 
 void Logger::queueMessage(const std::string& message)
 {
-    queueMessage(message, "", -1);
+    m_communicator->queueMessage(message, "", -1);
 }
 
 void Logger::queueMessage(const std::string& message, const std::string& fileName, const int lineNumber)
 {
-    MessageInfo messageInfo(message, m_mpiCommRank, fileName, lineNumber);
-    m_communicator->queueMessage(messageInfo);
+    m_communicator->queueMessage(message, fileName, lineNumber);
 }
 
 void Logger::pushMessagesOnce()

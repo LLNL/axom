@@ -20,7 +20,7 @@ class RootCommunicator: public Communicator {
         void pushMessagesOnce();
         void pushMessagesFully();
         std::vector<MessageInfo>* getMessages();
-        void queueMessage(MessageInfo messageInfo);
+        void queueMessage(const std::string& message, const std::string& fileName, const int lineNumber);
     private:
         MPI_Comm m_mpiComm;
         int m_mpiCommRank;
