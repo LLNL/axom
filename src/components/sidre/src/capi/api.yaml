@@ -309,9 +309,10 @@ patterns:
     # report the invalid index, assume local variable idx
     PY_invalid_name_idx: >
         if (! isNameValid({var})) {{
-            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
-            return NULL;
+            Py_RETURN_NONE;
         }}
+#            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
+#            return NULL;
     # Convert NULL to None
     PY_null_to_none: >
         if ({var} == ATK_NULLPTR) {{

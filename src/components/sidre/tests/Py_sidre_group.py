@@ -13,6 +13,7 @@
 
 import unittest
 import sidre
+from sidre import InvalidIndex, isNameValid
 
 class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
@@ -118,7 +119,7 @@ class SidreGroup(unittest.TestCase):
         self.assertTrue(idx3 == InvalidIndex)
 
         name3 = parent.getViewName(idx3)
-        self.assertTrue(name3.empty())
+        self.assertTrue(name3 is None)
         self.assertFalse(isNameValid(name3))
 
         ds.delete()
@@ -126,7 +127,7 @@ class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
 # Verify getGroupName(), getGroupIndex()
 #------------------------------------------------------------------------------
-    def XXXtest_get_group_name_index(self):
+    def test_get_group_name_index(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
@@ -152,7 +153,7 @@ class SidreGroup(unittest.TestCase):
         self.assertTrue(idx3 == InvalidIndex)
 
         name3 = parent.getGroupName(idx3)
-        self.assertTrue(name3.empty())
+        self.assertTrue(name3 is None)
         self.assertFalse(isNameValid(name3))
 
         ds.delete()
@@ -162,7 +163,7 @@ class SidreGroup(unittest.TestCase):
 # destroyViewAndBuffer()
 # hasView()
 #------------------------------------------------------------------------------
-    def XXXtest_create_destroy_has_viewbuffer(self):
+    def test_create_destroy_has_viewbuffer(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
         group = root.createGroup("parent")
@@ -184,7 +185,7 @@ class SidreGroup(unittest.TestCase):
 # destroyGroup()
 # hasGroup()
 #------------------------------------------------------------------------------
-    def XXXtest_create_destroy_has_group(self):
+    def test_create_destroy_has_group(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
         group = root.createGroup("group")
@@ -199,7 +200,7 @@ class SidreGroup(unittest.TestCase):
         ds.delete()
 
 #------------------------------------------------------------------------------
-    def XXXtest_group_name_collisions(self):
+    def test_group_name_collisions(self):
         ds = sidre.DataStore()
         flds = ds.getRoot().createGroup("fields")
         flds.createViewAndBuffer("a")

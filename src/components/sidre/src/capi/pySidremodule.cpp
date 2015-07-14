@@ -168,6 +168,7 @@ MOD_INITBASIS(void)
     PyModule_AddObject(m, "Error", st->error);
 
 // splicer begin C_init_body
+PyModule_AddIntConstant(m, "InvalidIndex", -1);
 // splicer end C_init_body
 
     /* Check for errors */
