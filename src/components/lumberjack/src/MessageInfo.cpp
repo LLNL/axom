@@ -57,19 +57,19 @@ void MessageInfo::lineNumber(int newLineNumber)
     m_lineNumber = newLineNumber;
 }
 
-void MessageInfo::addRank(int newRank, std::vector<int>::size_type ranksLimit)
+void MessageInfo::addRank(int newRank, int ranksLimit)
 {
-    if (m_ranks.size() < ranksLimit){
+    if (m_ranks.size() < (std::vector<int>::size_type)ranksLimit){
         m_ranks.push_back(newRank);
     }
     m_rankCount++;
 }
 
-void MessageInfo::addRanks(const std::vector<int>& newRanks, std::vector<int>::size_type ranksLimit)
+void MessageInfo::addRanks(const std::vector<int>& newRanks, int ranksLimit)
 {
     int newRanksSize = newRanks.size();
     for(int i=0; i<newRanksSize; ++i){
-        if (m_ranks.size() >= ranksLimit){
+        if (m_ranks.size() >= (std::vector<int>::size_type)ranksLimit){
             break;
         }
         m_ranks.push_back(newRanks[i]);
@@ -101,7 +101,7 @@ std::string MessageInfo::pack()
     return packedMessageInfo;
 }
 
-void MessageInfo::unpack(const std::string& packedMessage, std::vector<int>::size_type ranksLimit)
+void MessageInfo::unpack(const std::string& packedMessage, int ranksLimit)
 {
     int messageLength = (int)packedMessage.length();
     std::string currString;

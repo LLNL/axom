@@ -26,15 +26,15 @@ class MessageInfo {
             m_ranks.push_back(rank);
         }
 
-        MessageInfo(const std::string& message, std::vector<int> ranks,
-                    std::vector<int>::size_type ranksLimit,
+        MessageInfo(const std::string& message, const std::vector<int>& ranks,
+                    int rankCount, int ranksLimit,
                     const std::string& fileName, int lineNumber)
         : m_message(message)
-        , m_rankCount(0)
         , m_fileName(fileName)
         , m_lineNumber(lineNumber)
         {
             addRanks(ranks, ranksLimit);
+            m_rankCount = rankCount;
         }
 
         // Getters
@@ -49,12 +49,12 @@ class MessageInfo {
         void message(const std::string& newMessage);
         void fileName(const std::string& newFileName);
         void lineNumber(int newLineNumber);
-        void addRank(int newRank, std::vector<int>::size_type ranksLimit);
-        void addRanks(const std::vector<int>& newRanks, std::vector<int>::size_type ranksLimit);
+        void addRank(int newRank, int ranksLimit);
+        void addRanks(const std::vector<int>& newRanks, int ranksLimit);
 
         // utilities
         std::string pack();
-        void unpack(const std::string& packedMessage, std::vector<int>::size_type ranksLimit);
+        void unpack(const std::string& packedMessage, int ranksLimit);
     private:
         std::string m_message;
         std::vector<int> m_ranks;
