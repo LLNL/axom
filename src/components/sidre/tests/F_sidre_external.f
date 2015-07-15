@@ -6,7 +6,7 @@
 !
 ! This source code cannot be distributed without permission and
 ! further review from Lawrence Livermore National Laboratory.
-!/
+!
 
 module sidre_external
   use iso_c_binding
