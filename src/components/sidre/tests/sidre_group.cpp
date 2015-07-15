@@ -12,6 +12,8 @@
 
 #include "sidre/sidre.hpp"
 
+using asctoolkit::sidre::SidreLength;
+using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
@@ -23,9 +25,6 @@ using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
 using asctoolkit::slic::setAbortOnError;
 using asctoolkit::slic::setAbortOnAssert;
-
-using conduit::Schema;
-
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested
@@ -234,6 +233,8 @@ TEST(sidre_group,get_group_name_index)
 //------------------------------------------------------------------------------
 TEST(sidre_group,create_destroy_has_viewbuffer)
 {
+  setAbortOnAssert(false);
+
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataGroup * group = root->createGroup("parent");
@@ -243,13 +244,30 @@ TEST(sidre_group,create_destroy_has_viewbuffer)
   EXPECT_TRUE( view->hasBuffer() );
 
   EXPECT_TRUE( group->hasView("view") );
+  // try creating view again, should be a no-op.
+  EXPECT_TRUE( group->createViewAndBuffer("view") == ATK_NULLPTR );
 
+  group->destroyViewAndBuffer("view");
+  //destroy already destroyed group.  Should be a no-op, not a failure
   group->destroyViewAndBuffer("view");
 
   EXPECT_FALSE( group->hasView("view") );
 
-  //check error condition
-  group->destroyViewAndBuffer("view");
+  // try api call that specifies specific type and length
+  // TODO - replace this when the conduit enum is wrapped by a sidre equivalent.
+  group->createViewAndBuffer( "viewWithLength1", CONDUIT_FLOAT64_T, 50 );
+  // error condition check - try again with duplicate name, should be a no-op
+  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength1", CONDUIT_FLOAT64_T, 50 ) == ATK_NULLPTR );
+  group->destroyViewAndBuffer("viewWithLength1");
+  EXPECT_FALSE( group->hasView("viewWithLength1") );
+
+  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLengthBadLen", CONDUIT_FLOAT64_T, -1 ) == ATK_NULLPTR );
+
+  // try api call that specifies data type in another way
+  group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) );
+  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR ) ;
+  // destroy this view using index
+  group->destroyView( group->getFirstValidViewIndex() );
 
   delete ds;
 }
@@ -268,9 +286,16 @@ TEST(sidre_group,create_destroy_has_group)
 
   EXPECT_TRUE( root->hasGroup("group") );
 
-
   root->destroyGroup("group");
   EXPECT_FALSE( root->hasGroup("group") );
+
+  // should be a no-op, not a failure
+  root->destroyGroup("group");
+
+  DataGroup * group2 = root->createGroup("group2");
+  // shut up compiler about unused variable
+  (void)group2;
+  root->destroyGroup( root->getFirstValidGroupIndex() );
 
   delete ds;
 }
@@ -316,7 +341,7 @@ TEST(sidre_group,view_copy_move)
 
   // test moving a view from flds to sub
   flds->createGroup("sub")->moveView(flds->getView("d0"));
-  flds->print();
+  //flds->print();
   EXPECT_FALSE(flds->hasView("d0"));
   EXPECT_TRUE(flds->hasGroup("sub"));
   EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
@@ -330,7 +355,7 @@ TEST(sidre_group,view_copy_move)
   // test copying a view from flds to sub
   flds->getGroup("sub")->copyView(flds->getView("i0"));
 
-  flds->print();
+  //flds->print();
 
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
@@ -368,7 +393,7 @@ TEST(sidre_group,groups_move_copy)
   //move "b" to a child of "sub"
   flds->createGroup("sub")->moveGroup(gb);
 
-  flds->print();
+  //flds->print();
 
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("sub"));
@@ -380,7 +405,7 @@ TEST(sidre_group,groups_move_copy)
 }
 
 //------------------------------------------------------------------------------
-TEST(sidre_group,create_destroy_view_and_buffer)
+TEST(sidre_group,create_destroy_view_and_buffer2)
 {
   DataStore * const ds = new DataStore();
   DataGroup * const grp = ds->getRoot()->createGroup("grp");
@@ -401,12 +426,18 @@ TEST(sidre_group,create_destroy_view_and_buffer)
 
   grp->destroyViewAndBuffer(viewName1);
 
-
   EXPECT_FALSE(grp->hasView(viewName1));
   EXPECT_EQ(ds->getNumBuffers(), 1u);
 
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
   EXPECT_TRUE( buffer1 == ATK_NULLPTR );
+
+  DataView const * const view3 = grp->createViewAndBuffer("viewBuffer3");
+  grp->destroyViewsAndBuffers();
+  // should be no-op
+  grp->destroyViewsAndBuffers();
+  //shut up compiler about unused variable
+  (void)view3;
 
   delete ds;
 }
@@ -426,7 +457,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   DataView * const view1 = grp->createViewAndBuffer(viewName1,
                                                     DataType::c_int(10));
   // this one is the Schema & method
-  Schema s;
+  conduit::Schema s;
   s.set(DataType::c_double(10));
   DataView * const view2 = grp->createViewAndBuffer(viewName2,
                                                     s);
@@ -487,7 +518,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   root->createView("sub_a", base_buff, DataType::c_int(5));
   // view for the second 5 values
   //  (schema call path case)
-  Schema s(DataType::c_int(5,5*sizeof(int)));
+  conduit::Schema s(DataType::c_int(5,5*sizeof(int)));
   root->createView("sub_b",base_buff,s);
 
   int * sub_a_vals = root->getView("sub_a")->getValue();
@@ -524,13 +555,13 @@ TEST(sidre_group,save_restore_simple)
 
   ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
 
-  ds->print();
+  //ds->print();
 
   DataStore * ds2 = new DataStore();
 
   ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
 
-  ds2->print();
+  //ds2->print();
 
   flds = ds2->getRoot()->getGroup("fields");
   // check that all sub groups exist
@@ -538,7 +569,7 @@ TEST(sidre_group,save_restore_simple)
   int testvalue = flds->getGroup("a")->getView("i0")->getValue();
   EXPECT_EQ(testvalue,1);
 
-  ds2->print();
+  //ds2->print();
 
   delete ds;
   delete ds2;
@@ -572,7 +603,7 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  ds->print();
+  //ds->print();
 
   ds->getRoot()->save("out_sidre_group_save_restore_complex","conduit");
 
@@ -591,7 +622,7 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getValue<float>(),100.0,  1e-12);
   EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getValue<double>(),3000.0, 1e-12);
 
-  ds2->print();
+  //ds2->print();
 
   delete ds;
   delete ds2;
