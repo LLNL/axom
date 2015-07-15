@@ -32,6 +32,7 @@ set(fruit_sidre_tests
    F_sidre_group.f
    F_sidre_buffer.f
    F_sidre_view.f
+   F_sidre_external.f
 )
 
 
