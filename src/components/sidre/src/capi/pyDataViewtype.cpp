@@ -148,10 +148,10 @@ PY_dataview_has_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.hasBuffer
+// splicer begin class.DataView.method.has_buffer
     bool rv = self->BBB->hasBuffer();
     return PyBool_FromLong(rv);
-// splicer end class.DataView.method.hasBuffer
+// splicer end class.DataView.method.has_buffer
 }
 
 static char PY_dataview_is_opaque__doc__[] =
@@ -164,10 +164,10 @@ PY_dataview_is_opaque(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.isOpaque
+// splicer begin class.DataView.method.is_opaque
     bool rv = self->BBB->isOpaque();
     return PyBool_FromLong(rv);
-// splicer end class.DataView.method.isOpaque
+// splicer end class.DataView.method.is_opaque
 }
 
 static char PY_dataview_get_name__doc__[] =
@@ -180,10 +180,10 @@ PY_dataview_get_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getName
+// splicer begin class.DataView.method.get_name
     const std::string & rv = self->BBB->getName();
     return PyString_FromString(rv.c_str());
-// splicer end class.DataView.method.getName
+// splicer end class.DataView.method.get_name
 }
 
 static char PY_dataview_get_opaque__doc__[] =
@@ -196,10 +196,10 @@ PY_dataview_get_opaque(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getOpaque
+// splicer begin class.DataView.method.get_opaque
     void * rv = self->BBB->getOpaque();
     return Py_BuildValue("O", rv);
-// splicer end class.DataView.method.getOpaque
+// splicer end class.DataView.method.get_opaque
 }
 
 static char PY_dataview_get_buffer__doc__[] =
@@ -212,12 +212,12 @@ PY_dataview_get_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getBuffer
+// splicer begin class.DataView.method.get_buffer
     DataBuffer * rv = self->BBB->getBuffer();
     PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataView.method.getBuffer
+// splicer end class.DataView.method.get_buffer
 }
 
 static char PY_dataview_get_data_pointer__doc__[] =
@@ -230,10 +230,10 @@ PY_dataview_get_data_pointer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getDataPointer
+// splicer begin class.DataView.method.get_data_pointer
     void * rv = self->BBB->getDataPointer();
     return Py_BuildValue("O", rv);
-// splicer end class.DataView.method.getDataPointer
+// splicer end class.DataView.method.get_data_pointer
 }
 
 static char PY_dataview_get_owning_group__doc__[] =
@@ -246,12 +246,12 @@ PY_dataview_get_owning_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getOwningGroup
+// splicer begin class.DataView.method.get_owning_group
     DataGroup * rv = self->BBB->getOwningGroup();
     PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataView.method.getOwningGroup
+// splicer end class.DataView.method.get_owning_group
 }
 
 static char PY_dataview_get_type_id__doc__[] =
@@ -264,10 +264,10 @@ PY_dataview_get_type_id(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getTypeID
+// splicer begin class.DataView.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
     return Py_BuildValue("i", rv);
-// splicer end class.DataView.method.getTypeID
+// splicer end class.DataView.method.get_type_id
 }
 
 static char PY_dataview_get_total_bytes__doc__[] =
@@ -280,10 +280,10 @@ PY_dataview_get_total_bytes(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getTotalBytes
+// splicer begin class.DataView.method.get_total_bytes
     size_t rv = self->BBB->getTotalBytes();
     return PyInt_FromLong(rv);
-// splicer end class.DataView.method.getTotalBytes
+// splicer end class.DataView.method.get_total_bytes
 }
 
 static char PY_dataview_get_number_of_elements__doc__[] =
@@ -296,10 +296,10 @@ PY_dataview_get_number_of_elements(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getNumberOfElements
+// splicer begin class.DataView.method.get_number_of_elements
     size_t rv = self->BBB->getNumberOfElements();
     return PyInt_FromLong(rv);
-// splicer end class.DataView.method.getNumberOfElements
+// splicer end class.DataView.method.get_number_of_elements
 }
 
 static char PY_dataview_print__doc__[] =

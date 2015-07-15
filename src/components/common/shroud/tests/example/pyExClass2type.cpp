@@ -151,11 +151,11 @@ PP_exclass2_ex_class1(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.ExClass1
+// splicer begin class.ExClass2.method.ex_class1
     delete self->BBB;
     self->BBB = NULL;
     Py_RETURN_NONE;
-// splicer end class.ExClass2.method.ExClass1
+// splicer end class.ExClass2.method.ex_class1
 }
 
 static char PP_exclass2_get_name__doc__[] =
@@ -168,10 +168,10 @@ PP_exclass2_get_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.getName
+// splicer begin class.ExClass2.method.get_name
     const std::string & rv = self->BBB->getName();
     return PyString_FromString(rv.c_str());
-// splicer end class.ExClass2.method.getName
+// splicer end class.ExClass2.method.get_name
 }
 
 static char PP_exclass2_get_name_length__doc__[] =
@@ -184,10 +184,10 @@ PP_exclass2_get_name_length(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.GetNameLength
+// splicer begin class.ExClass2.method.get_name_length
     int rv = self->BBB->GetNameLength();
     return Py_BuildValue("i", rv);
-// splicer end class.ExClass2.method.GetNameLength
+// splicer end class.ExClass2.method.get_name_length
 }
 
 static char PP_exclass2_get_class1__doc__[] =
@@ -272,10 +272,10 @@ PP_exclass2_get_type_id(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.getTypeID
+// splicer begin class.ExClass2.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
     return Py_BuildValue("O", rv);
-// splicer end class.ExClass2.method.getTypeID
+// splicer end class.ExClass2.method.get_type_id
 }
 
 static char PP_exclass2_testoptional__doc__[] =

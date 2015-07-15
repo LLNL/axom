@@ -421,7 +421,12 @@ static PyObject *
         body.append('  PyObject *args,')
         body.append('  PyObject *kwds)')
         body.append('{')
-        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
+# use method_suffix in splicer name since a single C++ function may
+# produce several methods.
+# XXX - make splicer name customizable?
+#        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
+        self._create_splicer(fmt.underscore_name + fmt.method_suffix,
+                             self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
         self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))

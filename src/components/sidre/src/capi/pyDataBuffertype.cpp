@@ -70,10 +70,10 @@ PY_databuffer_get_index(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getIndex
+// splicer begin class.DataBuffer.method.get_index
     IndexType rv = self->BBB->getIndex();
     return Py_BuildValue("i", rv);
-// splicer end class.DataBuffer.method.getIndex
+// splicer end class.DataBuffer.method.get_index
 }
 
 static char PY_databuffer_get_num_views__doc__[] =
@@ -86,10 +86,10 @@ PY_databuffer_get_num_views(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getNumViews
+// splicer begin class.DataBuffer.method.get_num_views
     size_t rv = self->BBB->getNumViews();
     return PyInt_FromLong(rv);
-// splicer end class.DataBuffer.method.getNumViews
+// splicer end class.DataBuffer.method.get_num_views
 }
 
 static char PY_databuffer_declare__doc__[] =
@@ -128,10 +128,10 @@ PY_databuffer_allocate_existing(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.allocate
+// splicer begin class.DataBuffer.method.allocate_existing
     self->BBB->allocate();
     Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.allocate
+// splicer end class.DataBuffer.method.allocate_existing
 }
 
 static char PY_databuffer_allocate_from_type__doc__[] =
@@ -144,7 +144,7 @@ PY_databuffer_allocate_from_type(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.allocate
+// splicer begin class.DataBuffer.method.allocate_from_type
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
@@ -157,7 +157,7 @@ PY_databuffer_allocate_from_type(
     }
     self->BBB->allocate(getTypeID(type), len);
     Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.allocate
+// splicer end class.DataBuffer.method.allocate_from_type
 }
 
 static char PY_databuffer_reallocate__doc__[] =
@@ -196,7 +196,7 @@ PY_databuffer_set_external_data(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.setExternalData
+// splicer begin class.DataBuffer.method.set_external_data
     void * external_data;
     const char *kwcpp = "external_data";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -208,7 +208,7 @@ PY_databuffer_set_external_data(
     }
     self->BBB->setExternalData(external_data);
     Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.setExternalData
+// splicer end class.DataBuffer.method.set_external_data
 }
 
 static char PY_databuffer_is_external__doc__[] =
@@ -221,10 +221,10 @@ PY_databuffer_is_external(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.isExternal
+// splicer begin class.DataBuffer.method.is_external
     bool rv = self->BBB->isExternal();
     return PyBool_FromLong(rv);
-// splicer end class.DataBuffer.method.isExternal
+// splicer end class.DataBuffer.method.is_external
 }
 
 static char PY_databuffer_get_data__doc__[] =
@@ -237,10 +237,10 @@ PY_databuffer_get_data(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getData
+// splicer begin class.DataBuffer.method.get_data
     void * rv = self->BBB->getData();
     return Py_BuildValue("O", rv);
-// splicer end class.DataBuffer.method.getData
+// splicer end class.DataBuffer.method.get_data
 }
 
 static char PY_databuffer_get_total_bytes__doc__[] =
@@ -253,10 +253,10 @@ PY_databuffer_get_total_bytes(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getTotalBytes
+// splicer begin class.DataBuffer.method.get_total_bytes
     size_t rv = self->BBB->getTotalBytes();
     return PyInt_FromLong(rv);
-// splicer end class.DataBuffer.method.getTotalBytes
+// splicer end class.DataBuffer.method.get_total_bytes
 }
 
 static char PY_databuffer_print__doc__[] =

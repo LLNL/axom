@@ -62,7 +62,7 @@ PP_exclass1_increment_count(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.incrementCount
+// splicer begin class.ExClass1.method.increment_count
     int incr;
     const char *kwcpp = "incr";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -74,7 +74,7 @@ PP_exclass1_increment_count(
     }
     int rv = self->BBB->incrementCount(incr);
     return Py_BuildValue("i", rv);
-// splicer end class.ExClass1.method.incrementCount
+// splicer end class.ExClass1.method.increment_count
 }
 
 static char PP_exclass1_get_name__doc__[] =
@@ -87,7 +87,7 @@ PP_exclass1_get_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getName
+// splicer begin class.ExClass1.method.get_name
     const std::string & rv = self->BBB->getName();
     if (! isNameValid(rv)) {
         PyErr_SetString(PyExc_KeyError, "rv");
@@ -95,7 +95,7 @@ PP_exclass1_get_name(
     }
     
     return PyString_FromString(rv.c_str());
-// splicer end class.ExClass1.method.getName
+// splicer end class.ExClass1.method.get_name
 }
 
 static char PP_exclass1_get_name_length__doc__[] =
@@ -108,10 +108,10 @@ PP_exclass1_get_name_length(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.GetNameLength
+// splicer begin class.ExClass1.method.get_name_length
     int rv = self->BBB->GetNameLength();
     return Py_BuildValue("i", rv);
-// splicer end class.ExClass1.method.GetNameLength
+// splicer end class.ExClass1.method.get_name_length
 }
 
 static char PP_exclass1_get_name_error_check__doc__[] =
@@ -124,10 +124,10 @@ PP_exclass1_get_name_error_check(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getNameErrorCheck
+// splicer begin class.ExClass1.method.get_name_error_check
     const std::string & rv = self->BBB->getNameErrorCheck();
     return PyString_FromString(rv.c_str());
-// splicer end class.ExClass1.method.getNameErrorCheck
+// splicer end class.ExClass1.method.get_name_error_check
 }
 
 static char PP_exclass1_get_name_arg__doc__[] =
@@ -140,10 +140,10 @@ PP_exclass1_get_name_arg(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getNameArg
+// splicer begin class.ExClass1.method.get_name_arg
     const std::string & rv = self->BBB->getNameArg();
     return PyString_FromString(rv.c_str());
-// splicer end class.ExClass1.method.getNameArg
+// splicer end class.ExClass1.method.get_name_arg
 }
 
 static char PP_exclass1_get_root__doc__[] =
@@ -156,12 +156,12 @@ PP_exclass1_get_root(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getRoot
+// splicer begin class.ExClass1.method.get_root
     ExClass2 * rv = self->BBB->getRoot();
     PP_ExClass2 * rv_obj = PyObject_New(PP_ExClass2, &PP_ExClass2_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.ExClass1.method.getRoot
+// splicer end class.ExClass1.method.get_root
 }
 
 static char PP_exclass1_get_value_from_int__doc__[] =
@@ -174,7 +174,7 @@ PP_exclass1_get_value_from_int(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getValue
+// splicer begin class.ExClass1.method.get_value_from_int
     int value;
     const char *kwcpp = "value";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -186,7 +186,7 @@ PP_exclass1_get_value_from_int(
     }
     int rv = self->BBB->getValue(value);
     return Py_BuildValue("i", rv);
-// splicer end class.ExClass1.method.getValue
+// splicer end class.ExClass1.method.get_value_from_int
 }
 
 static char PP_exclass1_get_value_1__doc__[] =
@@ -199,7 +199,7 @@ PP_exclass1_get_value_1(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getValue
+// splicer begin class.ExClass1.method.get_value_1
     long value;
     const char *kwcpp = "value";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -211,7 +211,7 @@ PP_exclass1_get_value_1(
     }
     long rv = self->BBB->getValue(value);
     return Py_BuildValue("l", rv);
-// splicer end class.ExClass1.method.getValue
+// splicer end class.ExClass1.method.get_value_1
 }
 
 static char PP_exclass1_get_addr__doc__[] =
@@ -224,10 +224,10 @@ PP_exclass1_get_addr(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.getAddr
+// splicer begin class.ExClass1.method.get_addr
     void * rv = self->BBB->getAddr();
     return Py_BuildValue("O", rv);
-// splicer end class.ExClass1.method.getAddr
+// splicer end class.ExClass1.method.get_addr
 }
 
 static char PP_exclass1_has_addr__doc__[] =
@@ -240,7 +240,7 @@ PP_exclass1_has_addr(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.hasAddr
+// splicer begin class.ExClass1.method.has_addr
     bool in;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -252,7 +252,7 @@ PP_exclass1_has_addr(
     }
     bool rv = self->BBB->hasAddr(in);
     return PyBool_FromLong(rv);
-// splicer end class.ExClass1.method.hasAddr
+// splicer end class.ExClass1.method.has_addr
 }
 
 static char PP_exclass1_splicer_special__doc__[] =
@@ -265,10 +265,10 @@ PP_exclass1_splicer_special(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.method.SplicerSpecial
+// splicer begin class.ExClass1.method.splicer_special
     self->BBB->SplicerSpecial();
     Py_RETURN_NONE;
-// splicer end class.ExClass1.method.SplicerSpecial
+// splicer end class.ExClass1.method.splicer_special
 }
 
 static char PP_exclass1_get_value__doc__[] =
@@ -281,7 +281,7 @@ PP_exclass1_get_value(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.getValue
+// splicer begin class.ExClass1.get_value
     int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
     int numArgs = PyTuple_GET_SIZE(args);
     int totArgs = numArgs + numNamedArgs;
@@ -306,7 +306,7 @@ PP_exclass1_get_value(
     }
     PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
     return NULL;
-// splicer end class.ExClass1.getValue
+// splicer end class.ExClass1.get_value
 }
 // splicer begin class.ExClass1.impl.after_methods
 // splicer end class.ExClass1.impl.after_methods

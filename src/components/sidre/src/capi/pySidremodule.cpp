@@ -31,7 +31,7 @@ PY_is_name_valid(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.isNameValid
+// splicer begin function.is_name_valid
     const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -43,7 +43,7 @@ PY_is_name_valid(
     }
     bool rv = isNameValid(name);
     return PyBool_FromLong(rv);
-// splicer end function.isNameValid
+// splicer end function.is_name_valid
 }
 static PyMethodDef PY_methods[] = {
 {"isNameValid", (PyCFunction)PY_is_name_valid, METH_VARARGS|METH_KEYWORDS, PY_is_name_valid__doc__},

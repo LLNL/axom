@@ -88,12 +88,12 @@ PY_datastore_get_root(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.getRoot
+// splicer begin class.DataStore.method.get_root
     DataGroup * rv = self->BBB->getRoot();
     PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataStore.method.getRoot
+// splicer end class.DataStore.method.get_root
 }
 
 static char PY_datastore_get_buffer__doc__[] =
@@ -106,7 +106,7 @@ PY_datastore_get_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.getBuffer
+// splicer begin class.DataStore.method.get_buffer
     ATK_IndexType idx;
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -120,7 +120,7 @@ PY_datastore_get_buffer(
     PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataStore.method.getBuffer
+// splicer end class.DataStore.method.get_buffer
 }
 
 static char PY_datastore_create_buffer__doc__[] =
@@ -133,12 +133,12 @@ PY_datastore_create_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.createBuffer
+// splicer begin class.DataStore.method.create_buffer
     DataBuffer * rv = self->BBB->createBuffer();
     PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataStore.method.createBuffer
+// splicer end class.DataStore.method.create_buffer
 }
 
 static char PY_datastore_destroy_buffer__doc__[] =
@@ -151,7 +151,7 @@ PY_datastore_destroy_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.destroyBuffer
+// splicer begin class.DataStore.method.destroy_buffer
     ATK_IndexType id;
     const char *kwcpp = "id";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -163,7 +163,7 @@ PY_datastore_destroy_buffer(
     }
     self->BBB->destroyBuffer(id);
     Py_RETURN_NONE;
-// splicer end class.DataStore.method.destroyBuffer
+// splicer end class.DataStore.method.destroy_buffer
 }
 
 static char PY_datastore_get_num_buffers__doc__[] =
@@ -176,10 +176,10 @@ PY_datastore_get_num_buffers(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.getNumBuffers
+// splicer begin class.DataStore.method.get_num_buffers
     size_t rv = self->BBB->getNumBuffers();
     return PyInt_FromLong(rv);
-// splicer end class.DataStore.method.getNumBuffers
+// splicer end class.DataStore.method.get_num_buffers
 }
 
 static char PY_datastore_print__doc__[] =
