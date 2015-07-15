@@ -35,13 +35,13 @@ module dsopaquetest
      procedure :: getNumPts => extent_getNumPts
   end type Extent
 
-  type Meshvar
+  type MeshVar
      integer(C_INT) m_cent  ! Centering
      integer(C_INT) m_type  ! DType
      integer(C_INT) m_depth
    contains
      procedure :: getNumVals => MeshVar_getNumVals
-  end type Meshvar
+  end type MeshVar
 
 contains
 
@@ -145,96 +145,124 @@ contains
 !--    call ds.delete()
   end subroutine inout
 
-!+  !------------------------------------------------------------------------------
-!+  !
-!+  ! Test that adds "MeshVars" as opaque data objects, creates views for their
-!+  ! data on each of two domains, allocates their data (based on centering,
-!+  ! domain size, and depth), and then checks to if the allocated data
-!+  ! lengths match the expected values.
-!+  !
-!+  subroutine meshvar
-!+    use dsopaquetest
-!+
-!+    type(datastore) ds
-!+    type(datagroup) root, problem_gp, meshvar_gp
-!+    type(dataview) zone_mv_view, node_mv_view
-!+
-!+    type(datagroup) dom_gp
-!+    type(dataview) dom_zone_view, dom_node_view
-!+
-!+    integer num_zone_vals, num_node_vals
-!+    integer test_num_zone_vals, test_num_node_vals
-!+    integer idom
-!+
-!+    integer(C_INT), parameter :: ilo_val(:) = [0, 10]
-!+    integer(C_INT), parameter :: ihi_val(:) = [9, 21]
-!+    character(*), parameter :: dom_name(:) [ "domain0", "domain1") ]
-!+    integer(C_INT), parameter :: zone_var_depth = 1
-!+    integer(C_INT), parameter :: node_var_depth = 2
-!+
-!+    ds   = new_datastore()
-!+    root = ds%get_root()
-!+
-!+    problem_gp = root%create_group("problem")
-!+
-!+    ! Add two different mesh vars to mesh var group
-!+    meshvar_gp = problem_gp%create_group("mesh_var")
-!+    MeshVar * zone_mv = new MeshVar(Zone_Centering, Int_Type, zone_var_depth)
-!+    zone_mv_view = meshvar_gp%create_opaque_view("zone_mv", zone_mv)
-!+    MeshVar * node_mv = new MeshVar(Node_Centering, Double_Type, node_var_depth)
-!+    node_mv_view = meshvar_gp%create_opaque_view("node_mv", node_mv)
-!+
-!+    !
-!+    ! Create domain groups, add extents
-!+    ! Create data views for mesh var data on domains and allocate
-!+    !
-!+    do idom = 1, 2
-!+       dom_gp = problem_gp%create_group(dom_name[idom])
-!+       Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom])
-!+       dom_gp%create_opaque_view("ext", dom_ext)
-!+
-!+       MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view%get_opaque() )
-!+       dom_zone_view = dom_gp%create_view_and_buffer("zone_data")
-!+       dom_zone_view%allocate( DataType::c_int(zonemv%getNumVals(dom_ext)) )
-!+
-!+       MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view%get_opaque() )
-!+       dom_node_view = dom_gp%create_view_and_buffer("node_data")
-!+       dom_node_view%allocate( DataType::c_double(nodemv%getNumVals(dom_ext)) )
-!+    enddo
-!+
-!+!
-!+!  Print datastore contents to see what's going on.
-!+!
-!+!  ds%print()
-!+
-!+
-!+    !
-!+    ! Check data lengths
-!+    !
-!+    do idom = 1, 2
-!+       dom_gp = problem_gp%getGroup(dom_name[idom])
-!+       Extent * dom_ext = static_cast<Extent *>(dom_gp%get_view("ext")%get_opaque() )
-!+
-!+       MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view%get_opaque() )
-!+       MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view%get_opaque() )
-!+
-!+       num_zone_vals = zonemv%getNumVals(dom_ext)
-!+       test_num_zone_vals = dom_gp%get_view("zone_data")%getNumberOfElements()
-!+       call assert_equals(num_zone_vals, test_num_zone_vals)
-!+
-!+       num_node_vals = nodemv%getNumVals(dom_ext)
-!+       test_num_node_vals = dom_gp%get_view("node_data")%getNumberOfElements()
-!+       call assert_equals(num_node_vals, test_num_node_vals)
-!+    enddo
-!+
-!+    ! clean up...
-!+    delete zone_mv
-!+    delete node_mv
-!+    do idom = 1, 2
-!+       delete static_cast<Extent *>(problem_gp%getGroup(dom_name[idom])%get_view("ext")%get_opaque() )
-!+    enddo
-!+!--    call ds%delete()
-!+  end subroutine meshvar
+  !------------------------------------------------------------------------------
+  !
+  ! Test that adds "MeshVars" as opaque data objects, creates views for their
+  ! data on each of two domains, allocates their data (based on centering,
+  ! domain size, and depth), and then checks to if the allocated data
+  ! lengths match the expected values.
+  !
+  subroutine meshvar_test
+    use dsopaquetest
+
+    type(datastore) ds
+    type(datagroup) root, problem_gp, meshvar_gp
+    type(dataview) zone_mv_view, node_mv_view
+
+    type(datagroup) dom_gp
+    type(dataview) dom_zone_view, dom_node_view, ext_view
+
+    type(datagroup) tmpgroup
+    type(dataview) tmpview
+
+    integer num_zone_vals, num_node_vals
+    integer test_num_zone_vals, test_num_node_vals
+    integer idom
+
+    integer(C_INT), parameter :: ilo_val(2) = [0, 10]
+    integer(C_INT), parameter :: ihi_val(2) = [9, 21]
+    character(7), parameter :: dom_name(2) = [ "domain0", "domain1" ]
+    integer(C_INT), parameter :: zone_var_depth = 1
+    integer(C_INT), parameter :: node_var_depth = 2
+
+    type(MeshVar), allocatable, target :: zone_mv, node_mv
+    type(Extent), pointer :: dom_ext
+
+    type(MeshVar), pointer :: zonemv, nodemv
+    type(C_PTR) zonemv_ptr, nodemv_ptr, dom_ext_ptr
+
+    ds   = datastore_new()
+    root = ds%get_root()
+
+    problem_gp = root%create_group("problem")
+
+    ! Add two different mesh vars to mesh var group
+    meshvar_gp = problem_gp%create_group("mesh_var")
+    allocate(zone_mv)
+    zone_mv = MeshVar(Zone_Centering, Int_Type, zone_var_depth)
+    zone_mv_view = meshvar_gp%create_opaque_view("zone_mv", c_loc(zone_mv))
+    allocate(node_mv)
+    node_mv = MeshVar(Node_Centering, Double_Type, node_var_depth)
+    node_mv_view = meshvar_gp%create_opaque_view("node_mv", c_loc(node_mv))
+
+    !
+    ! Create domain groups, add extents
+    ! Create data views for mesh var data on domains and allocate
+    !
+    do idom = 1, 2
+       dom_gp = problem_gp%create_group(dom_name(idom))
+       allocate(dom_ext)
+       dom_ext = Extent(ilo_val(idom), ihi_val(idom))
+       ext_view = dom_gp%create_opaque_view("ext", c_loc(dom_ext))
+
+       zonemv_ptr = zone_mv_view%get_opaque()
+       call c_f_pointer(zonemv_ptr, zonemv)
+
+       dom_zone_view = dom_gp%create_view_and_buffer("zone_data")
+       call dom_zone_view%allocate(ATK_C_INT_T, zone_mv%getNumVals(dom_ext))
+
+       nodemv_ptr = node_mv_view%get_opaque()
+       call c_f_pointer(nodemv_ptr, nodemv)
+
+       dom_node_view = dom_gp%create_view_and_buffer("node_data")
+       call dom_node_view%allocate(ATK_C_DOUBLE_T, nodemv%getNumVals(dom_ext))
+    enddo
+
+!
+!  Print datastore contents to see what's going on.
+!
+!  ds%print()
+
+
+    !
+    ! Check data lengths
+    !
+    do idom = 1, 2
+       dom_gp = problem_gp%get_group(dom_name(idom))
+
+       tmpview = dom_gp%get_view("ext")
+       dom_ext_ptr = tmpview%get_opaque()
+       call c_f_pointer(dom_ext_ptr, dom_ext)
+
+       zonemv_ptr = zone_mv_view%get_opaque()
+       call c_f_pointer(zonemv_ptr, zonemv)
+
+       nodemv_ptr = node_mv_view%get_opaque()
+       call c_f_pointer(nodemv_ptr, nodemv)
+
+       num_zone_vals = zonemv%getNumVals(dom_ext)
+       tmpview = dom_gp%get_view("zone_data")
+       test_num_zone_vals = tmpview%get_number_of_elements()
+       call assert_equals(num_zone_vals, test_num_zone_vals)
+
+       num_node_vals = nodemv%getNumVals(dom_ext)
+       tmpview = dom_gp%get_view("node_data")
+       test_num_node_vals = tmpview%get_number_of_elements()
+       call assert_equals(num_node_vals, test_num_node_vals)
+    enddo
+
+    ! clean up...
+    deallocate(zone_mv)
+    deallocate(node_mv)
+    do idom = 1, 2
+       tmpgroup = problem_gp%get_group(dom_name(idom))
+       tmpview = tmpgroup%get_view("ext")
+       dom_ext_ptr = tmpview%get_opaque()
+       call c_f_pointer(dom_ext_ptr, dom_ext)
+       deallocate(dom_ext)
+    enddo
+!--    call ds%delete()
+  end subroutine meshvar_test
 
 !----------------------------------------------------------------------
 end module sidre_opaque
@@ -250,7 +278,7 @@ function fortran_test() bind(C,name="fortran_test")
   call init_fruit
 
   call inout
-!+  call meshvar
+  call meshvar_test
 
   call fruit_summary
   call fruit_finalize
