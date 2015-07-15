@@ -1,193 +1,205 @@
-/*
- * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
- */
+!
+! Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+! Produced at the Lawrence Livermore National Laboratory.
+!
+! All rights reserved.
+!
+! This source code cannot be distributed without permission and
+! further review from Lawrence Livermore National Laboratory.
+!/
 
-#include "gtest/gtest.h"
+module sidre_external
+  use iso_c_binding
+  use fruit
+  use sidre_mod
+  implicit none
 
-#include <vector>
+contains
 
-#include "sidre/sidre.hpp"
+!------------------------------------------------------------------------------
+! Test DataBuffer::declareExternal()
+!------------------------------------------------------------------------------
+  subroutine declare_external_buffer
+    type(datastore) ds
+    type(databuffer) dbuff_0, dbuff_1, dbuff_2
+    integer(C_INT), allocatable :: idata(:)
+    real(C_DOUBLE), allocatable :: ddata(:)
+    integer, parameter :: len = 11
+    integer ii
 
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
-using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataType;
+    ds = datastore_new()
 
-//------------------------------------------------------------------------------
-// Test DataBuffer::declareExternal()
-//------------------------------------------------------------------------------
-TEST(sidre_external, declare_external_buffer)
-{
-  DataStore * ds   = new DataStore();
+    allocate(idata(len))
+    allocate(ddata(len))
 
-  const int len = 11;
+    do ii = 1, len
+       idata(ii) = ii
+       ddata(ii) = idata(ii) * 2.0
+    enddo
 
-  int * idata = new int[len];
-  double * ddata = new double[len];
+    dbuff_0 = ds%createBuffer()
+    dbuff_1 = ds%createBuffer()
+    dbuff_2 = ds%createBuffer()
 
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    idata[ii] = ii;
-    ddata[ii] = idata[ii] * 2.0;
-  }
+    call dbuff_0%allocate(ATK_C_DOUBLE_T, len)
+    call dbuff_1%declare(ATK_C_INT, len)
+    call dbuff_1%setExternalData(idata)
+    call dbuff_2%declare(ATK_C_DOUBLE_T, len)
+    call dbuff_2%setExternalData(ddata)
 
-  DataBuffer * dbuff_0 = ds->createBuffer();
-  DataBuffer * dbuff_1 = ds->createBuffer();
-  DataBuffer * dbuff_2 = ds->createBuffer();
+    call assert_equals(dbuff_0%isExternal(), .false.)
+    call assert_equals(dbuff_1%isExternal(), .true.)
+    call assert_equals(dbuff_2%isExternal(), .true.)
 
-  dbuff_0->allocate(DataType::c_double(len));
-  dbuff_1->declare(DataType::c_int(len));
-  dbuff_1->setExternalData(idata);
-  dbuff_2->declare(DataType::c_double(len));
-  dbuff_2->setExternalData(ddata);
+    call assert_equals(dbuff_0%getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len)
+    call assert_equals(dbuff_1%getTotalBytes(), sizeof(CONDUIT_NATIVE_INT)*len)
+    call assert_equals(dbuff_2%getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len)
 
-  EXPECT_EQ(dbuff_0->isExternal(), false);
-  EXPECT_EQ(dbuff_1->isExternal(), true);
-  EXPECT_EQ(dbuff_2->isExternal(), true);
+    call ds%print()
 
-  EXPECT_EQ(dbuff_0->getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
-  EXPECT_EQ(dbuff_1->getTotalBytes(), sizeof(CONDUIT_NATIVE_INT)*len);
-  EXPECT_EQ(dbuff_2->getTotalBytes(), sizeof(CONDUIT_NATIVE_DOUBLE)*len);
+    call ds%delete()
+    deallocate(idata)
+    deallocate(ddata)
+  end subroutine declare_external_buffer
 
-  ds->print();
+!------------------------------------------------------------------------------
+! Test DataGroup::createExternalView()
+!------------------------------------------------------------------------------
+  subroutine create_external_view
+    type(datastore) ds
+    type(dataroot) root
+    type(dataview) iview, dview
+    integer(C_INT), allocatable :: idata(:)
+    real(C_DOUBLE), allocatable :: ddata(:)
+    integer(C_INT), allocatable :: idata_chk(:)
+    real(C_DOUBLE), allocatable :: ddata_chk(:)
+    integer, parameter :: len = 11
+    integer ii
 
-  delete ds;
-  delete [] idata;
-  delete [] ddata;
-}
+    ds = datastore_new()
+    root = ds%getRoot()
 
-//------------------------------------------------------------------------------
-// Test DataGroup::createExternalView()
-//------------------------------------------------------------------------------
-TEST(sidre_external, create_external_view)
-{
-  DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+    allocate(idata(len))
+    allocate(ddata(len))
 
-  const int len = 11;
+    do ii = 1, len
+       idata(ii) = ii
+       ddata(ii) = idata(ii) * 2.0
+    enddo
 
-  int * idata = new int[len];
-  double * ddata = new double[len];
+    iview = root%createExternalView("idata", idata, ATK_C_INT_T, len)
+    dview = root%createExternalView("ddata", ddata, ATK_C_DOUBLE_T, len)
+    call assert_true(root%getNumViews() .eq. 2)
 
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    idata[ii] = ii;
-    ddata[ii] = idata[ii] * 2.0;
-  }
+    call iview%print()
+    call dview%print()
 
-  (void) root->createExternalView("idata", idata,
-                                  DataType::c_int(len));
-  (void) root->createExternalView("ddata", ddata,
-                                  DataType::c_double(len));
-  EXPECT_EQ(root->getNumViews(), 2u);
+    call iview%getValue(idata_chk)
+    do ii = 1, len
+       call assert_equals(idata_chk(ii), idata(ii))
+    enddo
 
-  root->getView("idata")->print();
-  root->getView("ddata")->print();
+    call dview%getValue(ddata_chk)
+    do ii = 1, len
+       call assert_equals(ddata_chk(ii), ddata(ii))
+    enddo
 
-  int * idata_chk = root->getView("idata")->getValue();
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    EXPECT_EQ(idata_chk[ii], idata[ii]);
-  }
+    delete ds
+    deallocate(idata)
+    deallocate(ddata)
+  end subroutine create_external_view
 
-  double * ddata_chk = root->getView("ddata")->getValue();
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    EXPECT_EQ(ddata_chk[ii], ddata[ii]);
-  }
+!------------------------------------------------------------------------------
+! Test DataGroup::save(), DataGroup::load() with external buffers
+!------------------------------------------------------------------------------
+  subroutine save_load_external_view
+    type(datastore) ds, ds2
+    type(datagroup) root, root2
+    type(dataview)  iview, dview
+    integer(C_INT), allocatable :: idata(:)
+    real(C_DOUBLE), allocatable :: ddata(:)
+    integer(C_INT), pointer :: idata_chk(:)
+    real(C_DOUBLE), pointer :: ddata_chk(:)
+    integer, parameter :: len = 11
+    integer ii
 
-  delete ds;
-  delete [] idata;
-  delete [] ddata;
-}
+    ds = datastore_new()
+    root = ds%getRoot()
 
-//------------------------------------------------------------------------------
-// Test DataGroup::save(), DataGroup::load() with external buffers
-//------------------------------------------------------------------------------
-TEST(sidre_external, save_load_external_view)
-{
-  DataStore * ds   = new DataStore();
-  DataGroup * root = ds->getRoot();
+    allocate(idata(len))
+    allocate(ddata(len))
 
-  const int len = 11;
+    do ii = 1, len
+       idata(ii) = ii
+       ddata(ii) = idata(ii) * 2.0
+    enddo
 
-  int * idata = new int[len];
-  double * ddata = new double[len];
+    iview = root%createExternalView("idata", idata, ATK_INT_C_T, len)
+    dview = root%createExternalView("ddata", ddata, ATK_DOUBLE_C_T, len)
+    call assert_equals(root%getNumViews(), 2)
+    call assert_equals(root%getView("idata")%getBuffer()%isExternal(), .true.)
+    call assert_equals(root%getView("ddata")%getBuffer()%isExternal(), .true.)
 
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    idata[ii] = ii;
-    ddata[ii] = idata[ii] * 2.0;
-  }
+    call iview%print()
+    call dview%print()
 
-  (void) root->createExternalView("idata", idata,
-                                  DataType::c_int(len));
-  (void) root->createExternalView("ddata", ddata,
-                                  DataType::c_double(len));
-  EXPECT_EQ(root->getNumViews(), 2u);
-  EXPECT_EQ(root->getView("idata")->getBuffer()->isExternal(), true);
-  EXPECT_EQ(root->getView("ddata")->getBuffer()->isExternal(), true);
+    call root%save("out_sidre_external_save_restore_external_view", "conduit")
 
-  root->getView("idata")->print();
-  root->getView("ddata")->print();
-
-  ds->getRoot()->save("out_sidre_external_save_restore_external_view", "conduit");
-
-  ds->print();
+    ds%print()
 
 
-  DataStore * ds2 = new DataStore();
+    ds2 = datastore_new()
+    root2 = ds2%getRoot()
 
-  ds2->getRoot()->load("out_sidre_external_save_restore_external_view","conduit");
+    call ds2%load("out_sidre_external_save_restore_external_view","conduit")
 
-  ds2->print();
+    call ds2%print()
 
-  DataGroup * root2 = ds2->getRoot();
+    call assert_equals(root2%getNumViews(), 2)
+    call assert_equals(root2%getView("idata")%getBuffer()%isExternal(), .false.)
+    call assert_equals(root2%getView("ddata")%getBuffer()%isExternal(), .false.)
 
-  EXPECT_EQ(root2->getNumViews(), 2u);
-  EXPECT_EQ(root2->getView("idata")->getBuffer()->isExternal(), false);
-  EXPECT_EQ(root2->getView("ddata")->getBuffer()->isExternal(), false);
+    call root2%getView("idata")%getValue(idata_chk)
+    do ii = 1, len
+       call assert_equals(idata_chk(ii), idata(ii))
+    enddo
 
-  int * idata_chk = root2->getView("idata")->getValue();
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    EXPECT_EQ(idata_chk[ii], idata[ii]);
-  }
+    call root2%getView("ddata")%getValue(ddata_chk)
+    do ii = 1, len
+       call assert_equals(ddata_chk(ii), ddata(ii))
+    enddo
 
-  double * ddata_chk = root2->getView("ddata")->getValue();
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    EXPECT_EQ(ddata_chk[ii], ddata[ii]);
-  }
+    call ds%delete()
+    call ds2%delete()
+    deallocate(idata)
+    deallocate(ddata)
+  end subroutine save_load_external_view
 
-  delete ds;
-  delete ds2;
-  delete [] idata;
-  delete [] ddata;
-}
+!----------------------------------------------------------------------
+end module sidre_external
+!----------------------------------------------------------------------
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
+function fortran_test() bind(C,name="fortran_test")
+  use fruit
+  use sidre_group
+  implicit none
+  integer(C_INT) fortran_test
+  logical ok
 
-int main(int argc, char * argv[])
-{
-  int result = 0;
+  call init_fruit
 
-  ::testing::InitGoogleTest(&argc, argv);
+  call declare_external_buffer
+  call create_external_view
+  call save_load_external_view
 
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
 
-  result = RUN_ALL_TESTS();
+  call fruit_summary
+  call fruit_finalize
 
-  return result;
-}
+  call is_all_successful(ok)
+  if (ok) then
+     fortran_test = 0
+  else
+     fortran_test = 1
+  endif
+end function fortran_test
