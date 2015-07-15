@@ -21,8 +21,10 @@ using asctoolkit::sidre::InvalidIndex;
 using asctoolkit::sidre::isNameValid;
 using asctoolkit::sidre::indexIsValid;
 using asctoolkit::sidre::DataType;
+using asctoolkit::slic::setAbortOnError;
+using asctoolkit::slic::setAbortOnAssert;
 
-using namespace conduit;
+using conduit::Schema;
 
 
 // API coverage tests
@@ -78,9 +80,9 @@ TEST(sidre_group,get_datastore)
 }
 
 //------------------------------------------------------------------------------
-// Verify hasGroup()
+// Verify getGroup()
 //------------------------------------------------------------------------------
-TEST(sidre_group,has_group)
+TEST(sidre_group,get_group)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -89,15 +91,17 @@ TEST(sidre_group,has_group)
   DataGroup * child = parent->createGroup("child");
   EXPECT_TRUE( child->getParent() == parent );
 
-  EXPECT_TRUE( parent->hasGroup("child") );
+  EXPECT_TRUE( parent->getGroup("child") == child );
+  // check error condition
+  EXPECT_TRUE( parent->getGroup("non-existant group") == ATK_NULLPTR );
 
   delete ds;
 }
 
 //------------------------------------------------------------------------------
-// Verify hasView()
+// Verify getView()
 //------------------------------------------------------------------------------
-TEST(sidre_group,has_view)
+TEST(sidre_group,get_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -105,17 +109,17 @@ TEST(sidre_group,has_view)
   DataGroup * parent = root->createGroup("parent");
   DataView * view = parent->createViewAndBuffer("view");
 
-  EXPECT_TRUE( view->getOwningGroup() == parent );
+  EXPECT_TRUE( parent->getView("view") == view );
 
-  EXPECT_TRUE( parent->hasView("view") );
+  // check error condition
+  EXPECT_TRUE( parent->getView("non-existant view") == ATK_NULLPTR );
 
   delete ds;
 }
-
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------
-TEST(sidre_group,get_view_name_index)
+TEST(sidre_group,get_view_names_and_indicies)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -138,6 +142,7 @@ TEST(sidre_group,get_view_name_index)
   EXPECT_EQ(name2, std::string("view2"));
   EXPECT_EQ(view2->getName(), name2);
 
+  // check error conditions
   IndexType idx3 = parent->getViewIndex("view3");
   EXPECT_TRUE(idx3 == InvalidIndex);
 
@@ -148,6 +153,43 @@ TEST(sidre_group,get_view_name_index)
   delete ds;
 }
 
+//------------------------------------------------------------------------------
+// Verify getFirstValidViewIndex, getNextValidGroupIndex
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_first_and_next_view_index)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataGroup * parent = root->createGroup("parent");
+  DataView * view1 = parent->createViewAndBuffer("view1");
+  DataView * view2 = parent->createViewAndBuffer("view2");
+
+  DataGroup * emptyGroup = root->createGroup("emptyGroup");
+
+  EXPECT_EQ(parent->getNumViews(), 2u);
+
+  IndexType idx1 = parent->getFirstValidViewIndex();
+  IndexType idx2 = parent->getNextValidViewIndex(idx1);
+
+  const std::string& name1 = parent->getViewName(idx1);
+  const std::string& name2 = parent->getViewName(idx2);
+
+  EXPECT_EQ(name1, std::string("view1"));
+  EXPECT_EQ(view1->getName(), name1);
+
+  EXPECT_EQ(name2, std::string("view2"));
+  EXPECT_EQ(view2->getName(), name2);
+
+  // check error conditions
+  IndexType badidx1 = emptyGroup->getFirstValidViewIndex();
+  IndexType badidx2 = emptyGroup->getNextValidViewIndex(badidx1);
+
+  EXPECT_TRUE(badidx1 == InvalidIndex);
+  EXPECT_TRUE(badidx2 == InvalidIndex);
+
+  delete ds;
+}
 //------------------------------------------------------------------------------
 // Verify getGroupName(), getGroupIndex()
 //------------------------------------------------------------------------------
@@ -174,6 +216,7 @@ TEST(sidre_group,get_group_name_index)
   EXPECT_EQ(name2, std::string("group2"));
   EXPECT_EQ(group2->getName(), name2);
 
+  // check error conditions
   IndexType idx3 = parent->getGroupIndex("group3");
   EXPECT_TRUE(idx3 == InvalidIndex);
 
@@ -204,6 +247,9 @@ TEST(sidre_group,create_destroy_has_viewbuffer)
   group->destroyViewAndBuffer("view");
 
   EXPECT_FALSE( group->hasView("view") );
+
+  //check error condition
+  group->destroyViewAndBuffer("view");
 
   delete ds;
 }
@@ -237,6 +283,16 @@ TEST(sidre_group,group_name_collisions)
   flds->createViewAndBuffer("a");
 
   EXPECT_TRUE(flds->hasView("a"));
+
+  // attempt to create duplicate group name
+
+  setAbortOnAssert(false);
+  DataGroup * badGroup = ds->getRoot()->createGroup("fields");
+  EXPECT_TRUE( badGroup == ATK_NULLPTR );
+  
+  //check error condition
+  // attempt to create duplicate view name.
+  EXPECT_TRUE(flds->createViewAndBuffer("a") == ATK_NULLPTR);
 
   delete ds;
 }
