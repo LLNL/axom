@@ -28,13 +28,22 @@ return;
 // splicer end class.DataView.method.declare
 }
 
-void ATK_dataview_allocate(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_allocate_simple(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin class.DataView.method.allocate
+// splicer begin class.DataView.method.allocate_simple
+selfobj->allocate();
+return;
+// splicer end class.DataView.method.allocate_simple
+}
+
+void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.allocate_from_type
 selfobj->allocate(getTypeID(type), len);
 return;
-// splicer end class.DataView.method.allocate
+// splicer end class.DataView.method.allocate_from_type
 }
 
 void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len)

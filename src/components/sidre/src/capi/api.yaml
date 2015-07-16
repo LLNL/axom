@@ -223,8 +223,11 @@ classes:
         -  long
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
-#    - decl: DataView* allocate()
+    - decl: DataView* allocate()
+      method_suffix: _simple
+      return_this: True
     - decl: DataView* allocate(TypeID type, SidreLength len)
+      method_suffix: _from_type
       return_this: True
       fortran_generic:
         len:

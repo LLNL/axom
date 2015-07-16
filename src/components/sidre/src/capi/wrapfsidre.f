@@ -161,6 +161,7 @@ module sidre_mod
         ! splicer begin class.DataView.component_part
         ! splicer end class.DataView.component_part
     contains
+        procedure :: allocate_simple => dataview_allocate_simple
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
@@ -189,6 +190,7 @@ module sidre_mod
         generic :: allocate => &
             ! splicer begin class.DataView.generic.allocate
             ! splicer end class.DataView.generic.allocate
+            allocate_simple,  &
             allocate_int,  &
             allocate_long
         generic :: declare => &
@@ -656,14 +658,21 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_declare
         
-        subroutine atk_dataview_allocate(self, type, len) &
-                bind(C, name="ATK_dataview_allocate")
+        subroutine atk_dataview_allocate_simple(self) &
+                bind(C, name="ATK_dataview_allocate_simple")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine atk_dataview_allocate_simple
+        
+        subroutine atk_dataview_allocate_from_type(self, type, len) &
+                bind(C, name="ATK_dataview_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
-        end subroutine atk_dataview_allocate
+        end subroutine atk_dataview_allocate_from_type
         
         subroutine atk_dataview_reallocate(self, type, len) &
                 bind(C, name="ATK_dataview_reallocate")
@@ -1483,6 +1492,15 @@ contains
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
     
+    subroutine dataview_allocate_simple(obj)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        ! splicer begin class.DataView.method.allocate_simple
+        call atk_dataview_allocate_simple(obj%voidptr)
+        ! splicer end class.DataView.method.allocate_simple
+    end subroutine dataview_allocate_simple
+    
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -1629,7 +1647,7 @@ contains
         integer(C_INT) :: type
         integer(C_INT) :: len
         ! splicer begin class.DataView.method.allocate_int
-        call atk_dataview_allocate(  &
+        call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(len, C_LONG))
@@ -1643,7 +1661,7 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataView.method.allocate_long
-        call atk_dataview_allocate(  &
+        call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(len, C_LONG))

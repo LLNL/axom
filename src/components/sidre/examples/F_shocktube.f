@@ -242,9 +242,9 @@ subroutine CreateShockTubeMesh(prob)
   integer outflow(1)
 
   tmpview = prob%get_view("numElems")
-  call tmpview%get_value(numElems)
+  numElems = tmpview%get_value_int()
   tmpview = prob%get_view("numFaces")
-  call tmpview%get_value(numFaces)
+  numFaces = tmpview%get_value_int()
 
   ! create element and face classes
 
@@ -305,8 +305,8 @@ subroutine CreateShockTubeMesh(prob)
 !!  allocate(elemToFace(2, numElems))
 
   do i=1, numElems
-    elemToFace(IUPWIND, i) = i ! same map as above by coincidence
-    elemToFace(IDOWNWIND, i) = i + 1
+    elemToFace((i-1) * 2 + IUPWIND) = i ! same map as above by coincidence
+    elemToFace((i-1) * 2 + IDOWNWIND) = i + 1
   enddo
 
   return
@@ -331,6 +331,7 @@ subroutine InitializeShockTube(prob)
   real(8) pressureInitial
   real(8) energyInitial
   real(8) dratio, pratio
+  real(C_DOUBLE), pointer :: mass(:), momentum(:), energy(:), pressure(:)
   real(C_DOUBLE) dx
 
   ! These were created in GetUserInput()
@@ -338,15 +339,15 @@ subroutine InitializeShockTube(prob)
   face = prob%get_group("face")
 
   tmpview = prob%get_view("numElems")
-  call tmpview%get_value(numElems)
+  numElems = tmpview%get_value_int()
 
   tmpview = prob%get_view("numFaces")
-  call tmpview%get_value(numFaces)
+  numFaces = tmpview%get_value_int()
 
   ! Create element centered quantities
 
-  tmpview = elem%create_view_and_buffer("mass", ATK_C_DOUBLE_T, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_buffer("mass")
+  call tmpview%allocate(ATK_C_DOUBLE_T, numElems)
   call tmpview%get_value(mass)
 
   tmpview = elem%create_view_and_buffer("momentum", ATK_C_DOUBLE_T, numElems)
@@ -417,13 +418,13 @@ subroutine InitializeShockTube(prob)
   enddo
 
   ! Create needed time info
-  call CreateScalarFloatBufferViewAndSetVal(prob, "time", 0.0)
+  call CreateScalarFloatBufferViewAndSetVal(prob, "time", 0.0d0)
   call CreateScalarIntBufferViewAndSetVal(prob, "cycle", 0)
 
-  call CreateScalarFloatBufferViewAndSetVal(prob, "dx", 1.0 / endTube)
+  call CreateScalarFloatBufferViewAndSetVal(prob, "dx", 1.0d0 / endTube)
   tmpview = prob%get_view("dx")
-  call tmpview%get_value(dx)
-  call CreateScalarFloatBufferViewAndSetVal(prob, "dt", 0.4 * dx)
+  dx = tmpview%get_value_double()
+  call CreateScalarFloatBufferViewAndSetVal(prob, "dt", 0.4d0 * dx)
 
   time = 0.0d0
   cycle = 0
@@ -483,75 +484,75 @@ subroutine ComputeFaceInfo(prob)
   call tmpview%get_value(energy)
 
   do i=1, numFaces
-    ! each face has an upwind and downwind element.
-    upWind = faceToElem(IUPWIND, i) ! upwind element
-    downWind = faceToElem(IDOWNWIND, i) ! downwind element
+     ! each face has an upwind and downwind element.
+     upWind = faceToElem((i-1) * 2 + IUPWIND)  ! upwind element
+     downWind = faceToElem((i-1) * 2 + IDOWNWIND)  ! downwind element
 
-    ! calculate face centered quantities
-    massf = 0.5d0 * (mass(upWind) + mass(downWind))
-    momentumf = 0.5d0 * (momentum(upWind) + momentum(downWind))
-    energyf = 0.5d0 * (energy(upWind) + energy(downWind))
-    pressuref = (gammaa - 1.0) * (energyf - 0.5d0 * momentumf * momentumf / massf)
-    c = sqrt(gammaa * pressuref / massf)
-    v = momentumf / massf
+     ! calculate face centered quantities
+     massf = 0.5d0 * (mass(upWind) + mass(downWind))
+     momentumf = 0.5d0 * (momentum(upWind) + momentum(downWind))
+     energyf = 0.5d0 * (energy(upWind) + energy(downWind))
+     pressuref = (gammaa - 1.0) * (energyf - 0.5d0 * momentumf * momentumf / massf)
+     c = sqrt(gammaa * pressuref / massf)
+     v = momentumf / massf
 
-    ! Now that we have the wave speeds, we might want to
-    ! look for the max wave speed here, and update dt
-    ! appropriately right before leaving this function.
-    ! ...
+     ! Now that we have the wave speeds, we might want to
+     ! look for the max wave speed here, and update dt
+     ! appropriately right before leaving this function.
+     ! ...
 
-    ! OK, calculate face quantities
+     ! OK, calculate face quantities
 
-    F0(i) = 0.0d0
-    F1(i) = 0.0d0
-    F2(i) = 0.0d0
+     F0(i) = 0.0d0
+     F1(i) = 0.0d0
+     F2(i) = 0.0d0
 
-    if (v >= 0.0d0) then
-       contributor = upWind
-    else
-       contributor = downWind
-    endif
-    massf = mass(contributor)
-    momentumf = momentum(contributor)
-    energyf = energy(contributor)
-    pressuref = energyf - 0.5d0 * momentumf * momentumf / massf
-    ev = v * (gammaa - 1.0d0)
+     if (v >= 0.0d0) then
+        contributor = upWind
+     else
+        contributor = downWind
+     endif
+     massf = mass(contributor)
+     momentumf = momentum(contributor)
+     energyf = energy(contributor)
+     pressuref = energyf - 0.5d0 * momentumf * momentumf / massf
+     ev = v * (gammaa - 1.0d0)
 
-    F0(i) = F0(i) + ev * massf
-    F1(i) = F1(i) + ev * momentumf
-    F2(i) = F2(i) + ev * (energyf - pressuref)
+     F0(i) = F0(i) + ev * massf
+     F1(i) = F1(i) + ev * momentumf
+     F2(i) = F2(i) + ev * (energyf - pressuref)
+     
+     if (v + c >= 0.0d0) then
+        contributor = upWind
+     else
+        contributor = downWind
+     endif
+     massf = mass(contributor)
+     momentumf = momentum(contributor)
+     energyf = energy(contributor)
+     pressuref = (gammaa - 1.0d0) * (energyf - 0.5d0 * momentumf * momentumf / massf)
+     ev = 0.5d0 * (v + c)
+     cLocal = sqrt(gammaa * pressuref / massf)
 
-    if (v + c >= 0.0d0) then
-       contributor = upWind
-    else
-       contributor = downWind
-    endif
-    massf = mass(contributor)
-    momentumf = momentum(contributor)
-    energyf = energy(contributor)
-    pressuref = (gammaa - 1.0d0) * (energyf - 0.5d0 * momentumf * momentumf / massf)
-    ev = 0.5d0 * (v + c)
-    cLocal = sqrt(gammaa * pressuref / massf)
+     F0(i) = F0(i) + ev * massf
+     F1(i) = F1(i) + ev * (momentumf + massf * cLocal)
+     F2(i) = F2(i) + ev * (energyf + pressuref + momentumf * cLocal)
 
-    F0(i) = F0(i) + ev * massf
-    F1(i) = F1(i) + ev * (momentumf + massf * cLocal)
-    F2(i) = F2(i) + ev * (energyf + pressuref + momentumf * cLocal)
+     if (v - c >= 0.0d0) then
+        contributor = upWind
+     else
+        contributor = downWind
+     endif
+     massf = mass(contributor)
+     momentumf = momentum(contributor)
+     energyf = energy(contributor)
+     pressuref = (gammaa - 1.0d0) * (energyf - 0.5d0 * momentumf * momentumf / massf)
+     ev = 0.5d0 * (v - c)
+     cLocal = sqrt(gammaa * pressuref / massf)
 
-    if (v - c >= 0.0d0) then
-       contributor = upWind
-    else
-       contributor = downWind
-    endif
-    massf = mass(contributor)
-    momentumf = momentum(contributor)
-    energyf = energy(contributor)
-    pressuref = (gammaa - 1.0d0) * (energyf - 0.5d0 * momentumf * momentumf / massf)
-    ev = 0.5d0 * (v - c)
-    cLocal = sqrt(gammaa * pressuref / massf)
-
-    F0(i) = F0(i) + ev * massf
-    F1(i) = F1(i) + ev * (momentumf - massf * cLocal)
-    F2(i) = F2(i) + ev * (energyf + pressuref - momentumf * cLocal)
+     F0(i) = F0(i) + ev * massf
+     F1(i) = F1(i) + ev * (momentumf - massf * cLocal)
+     F2(i) = F2(i) + ev * (energyf + pressuref - momentumf * cLocal)
   enddo
 
   return
@@ -570,7 +571,7 @@ subroutine UpdateElemInfo(prob)
   type(datagroup) elem, face, tube
   type(dataview) tmpview
 
-  real(C_FLOAT) dx, dt, time
+  real(C_DOUBLE) dx, dt, time
   integer(C_INT), pointer :: elemToFace(:)
   integer i
   integer elemIdx, upWind, downWind
@@ -613,18 +614,18 @@ subroutine UpdateElemInfo(prob)
   call tmpview%get_value(F2)
 
   tmpview = prob%get_view("dx")
-  call tmpview%get_value(dx)
+  dx = tmpview%get_value_double()
   tmpview = prob%get_view("dt")
-  call tmpview%get_value(dt)
+  dt = tmpview%get_value_double()
   tmpview = prob%get_view("time")
-  call tmpview%get_value(time)
+  time = tmpview%get_value_double()
 
   do i=1, numTubeElems
      ! recalculate elements in the shocktube, don't touch inflow/outflow
      elemIdx = mapToElems(i)
      ! each element inside the tube has an upwind and downwind face
-     upWind = elemToFace(IUPWIND, i) ! upwind face
-     downWind = elemToFace(IDOWNWIND, i) ! downwind face
+     upWind = elemToFace((i-1)*2 + IUPWIND)  ! upwind face
+     downWind = elemToFace((i-1)*2 + IDOWNWIND)  ! downwind face
 
      mass(elemIdx) = mass(elemIdx) - (gammaaInverse * (F0(downWind) - F0(upWind)) * dt / dx)
      momentum(elemIdx) = momentum(elemIdx) - (gammaaInverse * (F1(downWind) - F1(upWind)) * dt / dx)
