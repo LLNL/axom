@@ -28,7 +28,7 @@
 
 program main
 
-  use tk_datastore
+  use sidre_mod
   implicit none
 
   integer, parameter :: IUPWIND = 1, IDOWNWIND = 2
@@ -67,9 +67,9 @@ program main
   !DataStoreNS::DataStore* const dataStore = &DATASTORE
   !DataStoreNS::DataGroup* const rootGroup = dataStore->GetRootDataGroup()
   !DataStoreNS::DataGroup* const problem = rootGroup->CreateDataGroup("problem")
-  call create_datastore(ds)
-  call get_root_datagroup(ds, rootGroup)
-  call create_datagroup(rootGroup, problem, "problem")
+  ds   = datastore_new()
+  root = ds%get_root()
+  problem = root%create_group("problem")
 
   call GetUserInput(problem)
   call CreateShockTubeMesh(problem)
@@ -94,9 +94,9 @@ program main
 
   call DumpUltra(problem) ! One last dump
 
-  call delete_datastore(ds)
+  call datastore_delete(ds)
 
-  contains
+contains
 
 !*************************************************************************
 ! Subroutine:  GetUserInput
@@ -127,10 +127,10 @@ subroutine GetUserInput(problem)
   pratio = -1.0
   dratio = -1.0
 
-#if 0
-  print *, "What cfl number would you like to use? "
-  read *, cfl
-#endif
+!--#if 0
+!--  print *, "What cfl number would you like to use? "
+!--  read *, cfl
+!-#endif
 
   do while (pratio < 0.0 .or. pratio > 1.0)
      print *, "What pressure ratio would you like (0 <= x <= 1)? "
@@ -534,89 +534,89 @@ subroutine DumpUltra( problem )
    integer fp
    character(100) fname
 
-#if 0
-   char *tail
-
-!--//   VHashTraverse_t content
-
-!   const DataGroup* const elem = prob->GetDataGroup("elem")
-
-   fname = "problem"
-
-   ! Skip past the junk
-!   for (tail=fname isalpha(*tail) ++tail)
-
-!   sprintf(tail, "_%04d", *(prob->GetDataObject("cycle")->GetData<int*>()) )
-
-   
-   fp = open(fname, "w")) == NULL)
-   {
-      print *, "Could not open file " // trim(fname) // ". Aborting.")
-      stop
-   }
-
-   write(fp, "# Ultra Plot File\n")
-   write(fp, "# Problem: %s\n", "problem" )
-
-
-
-   {
-   const DataGroup::dataArrayType& dataObjects = prob->GetDataObjects()
-   const DataGroup::lookupType& dataObjectLookup = prob->GetDataObjectLookup()
-
-   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
-   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
-
-   for( obj!=dataObjects.end() ++obj, ++lookup )
-   {
-     const int length = (*obj)->GetDataShape().m_dimensions(0)
-     const std::string& name = lookup->first
-     if( length <= 1 )
-     {
-       if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
-       {
-         write(fp, "# %s = %d\n", name.c_str(), *((*obj)->GetData<int*>()))
-       }
-       else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
-       {
-         write(fp, "# %s = %f\n", name.c_str(), *((*obj)->GetData<real(8)*>()))
-       }
-     }
-   }
-   }
-
-   {
-!--//   for( auto obj : elem->GetDataObjects() )
-   const DataGroup::dataArrayType& dataObjects = elem->GetDataObjects()
-   const DataGroup::lookupType& dataObjectLookup = elem->GetDataObjectLookup()
-
-   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
-   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
-
-   for( obj!=dataObjects.end() ++obj, ++lookup )
-   {
-     const int length = (*obj)->GetDataShape().m_dimensions(0)
-     const std::string& name = lookup->first
-     fprintf(fp, "# %s\n", name.c_str() )
-     if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
-     {
-       int const * const data = (*obj)->GetData<int*>()
-       for ( int i=0 i<length ++i)
-          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i))
-       write(fp, "\n")
-     }
-     else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
-     {
-       real(8) const * const data = (*obj)->GetData<real(8)*>()
-       for ( int i=0 i<length ++i)
-          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i) )
-       write(fp, "\n")
-     }
-   }
-   }
-
-   close(fp)
-#endif
+!--#if 0
+!--   char *tail
+!--
+!--!--//   VHashTraverse_t content
+!--
+!--!   const DataGroup* const elem = prob->GetDataGroup("elem")
+!--
+!--   fname = "problem"
+!--
+!--   ! Skip past the junk
+!--!   for (tail=fname isalpha(*tail) ++tail)
+!--
+!--!   sprintf(tail, "_%04d", *(prob->GetDataObject("cycle")->GetData<int*>()) )
+!--
+!--   
+!--   fp = open(fname, "w")) == NULL)
+!--   {
+!--      print *, "Could not open file " // trim(fname) // ". Aborting.")
+!--      stop
+!--   }
+!--
+!--   write(fp, "# Ultra Plot File\n")
+!--   write(fp, "# Problem: %s\n", "problem" )
+!--
+!--
+!--
+!--   {
+!--   const DataGroup::dataArrayType& dataObjects = prob->GetDataObjects()
+!--   const DataGroup::lookupType& dataObjectLookup = prob->GetDataObjectLookup()
+!--
+!--   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
+!--   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
+!--
+!--   for( obj!=dataObjects.end() ++obj, ++lookup )
+!--   {
+!--     const int length = (*obj)->GetDataShape().m_dimensions(0)
+!--     const std::string& name = lookup->first
+!--     if( length <= 1 )
+!--     {
+!--       if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
+!--       {
+!--         write(fp, "# %s = %d\n", name.c_str(), *((*obj)->GetData<int*>()))
+!--       }
+!--       else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
+!--       {
+!--         write(fp, "# %s = %f\n", name.c_str(), *((*obj)->GetData<real(8)*>()))
+!--       }
+!--     }
+!--   }
+!--   }
+!--
+!--   {
+!--!--//   for( auto obj : elem->GetDataObjects() )
+!--   const DataGroup::dataArrayType& dataObjects = elem->GetDataObjects()
+!--   const DataGroup::lookupType& dataObjectLookup = elem->GetDataObjectLookup()
+!--
+!--   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
+!--   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
+!--
+!--   for( obj!=dataObjects.end() ++obj, ++lookup )
+!--   {
+!--     const int length = (*obj)->GetDataShape().m_dimensions(0)
+!--     const std::string& name = lookup->first
+!--     fprintf(fp, "# %s\n", name.c_str() )
+!--     if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
+!--     {
+!--       int const * const data = (*obj)->GetData<int*>()
+!--       for ( int i=0 i<length ++i)
+!--          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i))
+!--       write(fp, "\n")
+!--     }
+!--     else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
+!--     {
+!--       real(8) const * const data = (*obj)->GetData<real(8)*>()
+!--       for ( int i=0 i<length ++i)
+!--          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i) )
+!--       write(fp, "\n")
+!--     }
+!--   }
+!--   }
+!--
+!--   close(fp)
+!--#endif
    return
  end subroutine DumpUltra
 
