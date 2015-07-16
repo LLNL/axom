@@ -111,7 +111,7 @@ void GetUserInput(DataGroup * const prob)
   }
 
   /********************/
-  /* Get pyhsics info */
+  /* Get physics info */
   /********************/
   {
     double pratio = -1.0, dratio = -1.0;
@@ -216,7 +216,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
 
 
-  int32 numTubeElems = (numElems - 2);
+  int32 numTubeElems = numElems - 2;
   DataGroup * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
 #if 0

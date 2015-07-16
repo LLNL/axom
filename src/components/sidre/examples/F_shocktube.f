@@ -46,23 +46,10 @@ program main
 
   type(datastore) ds
   type(datagroup) root, prob
+  type(dataview) tmpview
 
-  integer currCycle
-  integer numCyclesPerDump
-  integer numUltraDumps
-  integer numTotalCycles
-  integer numElems
-  integer numFaces
-  integer numTubeElems
-  real(8) time
-  integer cycle
-  real(8) dx, dt
-  real(8) pressureRatio
-  real(8) densityRatio
-!  real(8), allocatable :: mass(:), momentum(:), energy(:), pressure(:)
-!  integer, allocatable :: elemToFace(:,:), mapToElems(:)
-!  integer, allocatable :: faceToElem(:,:)
-!  real(8), allocatable :: F0(:), F1(:), F2(:)
+  integer(C_INT) numTotalCycles, dumpInterval
+  integer(C_INT), pointer :: currCycle
 
   ds   = datastore_new()
   root = ds%get_root()
@@ -72,16 +59,17 @@ program main
   call CreateShockTubeMesh(prob)
   call InitializeShockTube(prob)
 
-
-  ! use a reference when you want to update the param directly
-!  currCycle = integer* const currCycle = prob->GetDataObject("cycle")->GetData<int*>()
-!  numTotalCycles = *(prob->GetDataObject("numTotalCycles")->GetData<int*>())
-!  dumpInterval = *(prob->GetDataObject("numCyclesPerDump")->GetData<int*>())
-
-!!!  for (*currCycle = 0 *currCycle < numTotalCycles ++(*currCycle) )
+  ! use a pointer when you want to update the param directly
+  tmpview = prob%get_view("cycle")
+  call tmpview%get_value(currCycle)
+  tmpview = prob%get_view("numTotalCycles")
+  numTotalCycles = tmpview%get_value_int()
+  tmpview = prob%get_view("numCyclesPerDump")
+  dumpInterval = tmpview%get_value_int()
+  
   do currCycle = 1, numTotalcycles
     ! dump the ultra file, based on the user chosen attribute mask
-    if ( mod(currCycle, numCyclesperDump) == 0) then
+    if ( mod(currCycle, dumpInterval) == 0) then
       call DumpUltra(prob)
    endif
 
@@ -127,7 +115,9 @@ contains
 subroutine GetUserInput(prob)
 
   type(datagroup), intent(IN) :: prob
-  real(8) :: pratio, dratio
+  real(C_DOUBLE) :: pratio, dratio
+  integer(C_INT) numUltraDumps, numCyclesPerDump
+  integer(C_INT) numElems, numFaces
 
   !********************************!
   ! Get mesh info, and create mesh !
@@ -190,8 +180,6 @@ subroutine GetUserInput(prob)
 
   call CreateScalarIntBufferViewAndSetVal(prob, "numTotalCycles", numUltraDumps * numCyclesPerDump)
 
-!!  numTotalCycles = numUltraDumps * numCyclesPerDump
-
   return
 end subroutine GetUserInput
 
@@ -231,6 +219,7 @@ subroutine CreateShockTubeMesh(prob)
   integer i, k
   integer numElems
   integer numFaces
+  integer numTubeElems
   integer inflow(1)
   integer outflow(1)
 
@@ -314,6 +303,7 @@ subroutine InitializeShockTube(prob)
 
   type(datagroup) elem, face
   type(dataview) tmpview
+  integer(C_INT) numElems, numFaces
   integer startTube
   integer endTube
   integer midTube
@@ -321,7 +311,7 @@ subroutine InitializeShockTube(prob)
   real(8) momentumInitial
   real(8) pressureInitial
   real(8) energyInitial
-  real(8) dratio, pratio
+  real(C_DOUBLE) dratio, pratio
   real(C_DOUBLE), pointer :: mass(:), momentum(:), energy(:), pressure(:)
   real(C_DOUBLE) dx
 
@@ -391,10 +381,10 @@ subroutine InitializeShockTube(prob)
   enddo
 
   ! adjust parameters for low pressure portion of tube
-!  dratio = *(prob%GetDataObject("densityRatio")%GetData<real(8)*>())
-!  pratio = *(prob%GetDataObject("pressureRatio")%GetData<real(8)*>())
-  dratio = densityRatio
-  pratio = pressureRatio
+  tmpview = prob%get_view("densityRatio")
+  dratio = tmpview%get_value_double()
+  tmpview = prob%get_view("pressureRatio")
+  pratio = tmpview%get_value_double()
 
   massInitial = massInitial * dratio
   pressureInitial = pressureInitial * pratio
@@ -416,11 +406,6 @@ subroutine InitializeShockTube(prob)
   tmpview = prob%get_view("dx")
   dx = tmpview%get_value_double()
   call CreateScalarFloatBufferViewAndSetVal(prob, "dt", 0.4d0 * dx)
-
-  time = 0.0d0
-  cycle = 0
-  dx = 1.0d0 / endTube
-  dt = 0.4d0 * dx
 
   return
 end subroutine InitializeShockTube
@@ -464,7 +449,7 @@ subroutine ComputeFaceInfo(prob)
   tmpview = face%get_view("F2")
   call tmpview%get_value(F2)
 
-  numFaces = tmpview%get_number_of_elements();
+  numFaces = tmpview%get_number_of_elements()
 
   elem = prob%get_group("elem")
   tmpview = elem%get_view("mass")
@@ -562,8 +547,10 @@ subroutine UpdateElemInfo(prob)
   type(datagroup) elem, face, tube
   type(dataview) tmpview
 
-  real(C_DOUBLE) dx, dt, time
+  real(C_DOUBLE) dx, dt
+  real(C_DOUBLE), pointer :: time
   integer(C_INT), pointer :: elemToFace(:)
+  integer numTubeElems
   integer i
   integer elemIdx, upWind, downWind
   integer(C_INT), pointer :: is(:)
@@ -594,6 +581,7 @@ subroutine UpdateElemInfo(prob)
 !--//  int *is = tube%map()
   tmpview = tube%get_view("mapToElems")
   call tmpview%get_value(is)
+  numTubeElems = tmpview%get_number_of_elements()
 
 
   ! The element update is calculated as the flux between faces
@@ -610,7 +598,7 @@ subroutine UpdateElemInfo(prob)
   tmpview = prob%get_view("dt")
   dt = tmpview%get_value_double()
   tmpview = prob%get_view("time")
-  time = tmpview%get_value_double()
+  call tmpview%get_value(time)
 
   do i=1, numTubeElems
      ! recalculate elements in the shocktube, don't touch inflow/outflow
