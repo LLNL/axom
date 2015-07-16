@@ -47,7 +47,6 @@ program main
   type(datastore) ds
   type(datagroup) root, prob
 
-! 'database'
   integer currCycle
   integer numCyclesPerDump
   integer numUltraDumps
@@ -60,14 +59,11 @@ program main
   real(8) dx, dt
   real(8) pressureRatio
   real(8) densityRatio
-  real(8), allocatable :: mass(:), momentum(:), energy(:), pressure(:)
-  integer, allocatable :: elemToFace(:,:), mapToElems(:)
-  integer, allocatable :: faceToElem(:,:)
-  real(8), allocatable :: F0(:), F1(:), F2(:)
+!  real(8), allocatable :: mass(:), momentum(:), energy(:), pressure(:)
+!  integer, allocatable :: elemToFace(:,:), mapToElems(:)
+!  integer, allocatable :: faceToElem(:,:)
+!  real(8), allocatable :: F0(:), F1(:), F2(:)
 
-  !DataStoreNS::DataStore* const dataStore = &DATASTORE
-  !DataStoreNS::DataGroup* const rootGroup = dataStore->GetRootDataGroup()
-  !DataStoreNS::DataGroup* const prob = rootGroup->CreateDataGroup("prob")
   ds   = datastore_new()
   root = ds%get_root()
   prob = root%create_group("problem")
@@ -104,13 +100,11 @@ contains
     type(datagroup) grp
     character(*) name
     integer(C_INT) value
-!    DataBuffer * const buffer = grp->getDataStore()->createBuffer()
-!    ->declare(DataType::int32())
-!    ->allocate();
+    type(dataview) tmpview
 
-
-!    DataView * const view = grp->createView(name, buffer)->apply(DataType::int32());
-!    view->setValue(value);
+    tmpview = grp%create_view_and_buffer(name, ATK_C_INT_T, 1)
+    call tmpview%allocate()
+    call tmpview%set_value(value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
 
@@ -118,12 +112,11 @@ contains
     type(datagroup) grp
     character(*) name
     real(C_DOUBLE) value
-!    DataBuffer * const buffer = grp->getDataStore()->createBuffer()
-!    ->declare(DataType::float64())
-!    ->allocate();
-!
-!    DataView * const view = grp->createView(name,buffer)->apply(DataType::float64());
-!    view->setValue(value);
+    type(dataview) tmpview
+
+    tmpview = grp%create_view_and_buffer(name, ATK_C_DOUBLE_T, 1)
+    call tmpview%allocate()
+    call tmpview%set_value(value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
 
 !*************************************************************************
@@ -230,10 +223,10 @@ subroutine CreateShockTubeMesh(prob)
   type(datagroup) ingrp, outgrp  ! XXX unused
   type(dataview) tmpview
   type(dataview) mapToElemsView
-  type(dataview) faceToElemsView
+  type(dataview) faceToElemView
   type(dataview) elemToFaceView
   integer(C_INT), pointer :: mapToElems(:)
-  integer(C_INT), pointer :: faceToElems(:)
+  integer(C_INT), pointer :: faceToElem(:)
   integer(C_INT), pointer :: elemToFace(:)
   integer i, k
   integer numElems
@@ -283,22 +276,20 @@ subroutine CreateShockTubeMesh(prob)
 
   ! Each face connects to two elements
 
-  faceToElemsView = tube%create_view_and_buffer("faceToElems", ATK_C_INT_T, 2*numFaces)
-  call faceToElemsView%allocate()
+  faceToElemView = tube%create_view_and_buffer("faceToElem", ATK_C_INT_T, 2*numFaces)
+  call faceToElemView%allocate()
 
-  call faceToElemsView%get_value(faceToElems)
+  call faceToElemView%get_value(faceToElem)
 !--  allocate(faceToElem(2, numFaces))
 
   do i=1, numFaces
-    faceToElem(IUPWIND, i) = i
-    faceToElem(IDOWNWIND, i) = i + 1
+    faceToElem((i-1) * 2 + IUPWIND) = i
+    faceToElem((i-1) * 2 + IDOWNWIND) = i + 1
   enddo
 
   ! Each element connects to two faces
 !--//  Relation &elemToFace = *tube%relationCreate("elemToFace", 2)
 !  dims(0) = numElems
-!  DataStoreNS::DataShape desc2(2, dims)
-!  integer * const elemToFace = tube%CreateDataObject("elemToFace")%SetType<int>()%SetDataShape(desc2)%Allocate()%GetData<int*>()
   elemToFaceView = tube%create_view_and_buffer("elemToFace", ATK_C_INT_T, 2*numElems);
   call elemToFaceView%allocate()
   call elemToFaceView%get_value(elemToFace)
@@ -575,6 +566,7 @@ subroutine UpdateElemInfo(prob)
   integer(C_INT), pointer :: elemToFace(:)
   integer i
   integer elemIdx, upWind, downWind
+  integer(C_INT), pointer :: is(:)
   real(C_DOUBLE), pointer :: F0(:), F1(:), F2(:)
   real(C_DOUBLE), pointer :: mass(:), momentum(:), energy(:), pressure(:)
 
@@ -600,8 +592,8 @@ subroutine UpdateElemInfo(prob)
 !  integer numTubeElems = tube%GetDataShape().m_dimensions(0)
 
 !--//  int *is = tube%map()
-!  integer* const is = tube%get_view("mapToElems")%GetData<int*>()
-
+  tmpview = tube%get_view("mapToElems")
+  call tmpview%get_value(is)
 
 
   ! The element update is calculated as the flux between faces
@@ -622,7 +614,7 @@ subroutine UpdateElemInfo(prob)
 
   do i=1, numTubeElems
      ! recalculate elements in the shocktube, don't touch inflow/outflow
-     elemIdx = mapToElems(i)
+     elemIdx = is(i)
      ! each element inside the tube has an upwind and downwind face
      upWind = elemToFace((i-1)*2 + IUPWIND)  ! upwind face
      downWind = elemToFace((i-1)*2 + IDOWNWIND)  ! downwind face
@@ -641,92 +633,77 @@ end subroutine UpdateElemInfo
 
 subroutine DumpUltra( prob )
   type(datagroup), intent(IN) :: prob
-   integer fp
-   character(100) fname
+  character(100) fname
 
-!--#if 0
-!--   char *tail
-!--
-!--!--//   VHashTraverse_t content
-!--
-!--!   const DataGroup* const elem = prob%get_group("elem")
-!--
-!--   fname = "prob"
-!--
-!--   ! Skip past the junk
-!--!   for (tail=fname isalpha(*tail) ++tail)
-!--
-!--!   sprintf(tail, "_%04d", *(prob%get_view("cycle")%GetData<int*>()) )
-!--
-!--   
-!--   fp = open(fname, "w")) == NULL)
-!--   {
-!--      print *, "Could not open file " // trim(fname) // ". Aborting.")
-!--      stop
-!--   }
-!--
-!--   write(fp, "# Ultra Plot File\n")
-!--   write(fp, "# Problem: %s\n", "problem" )
-!--
-!--
-!--
-!--   {
-!--   const DataGroup::dataArrayType& dataObjects = prob%get_views()
-!--   const DataGroup::lookupType& dataObjectLookup = prob%get_viewLookup()
-!--
-!--   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
-!--   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
-!--
-!--   for( obj!=dataObjects.end() ++obj, ++lookup )
-!--   {
-!--     const int length = (*obj)%GetDataShape().m_dimensions(0)
-!--     const std::string& name = lookup%first
-!--     if( length <= 1 )
-!--     {
-!--       if( (*obj)%GetType() == DataStoreNS::rtTypes::int32_id )
-!--       {
-!--         write(fp, "# %s = %d\n", name.c_str(), *((*obj)%GetData<int*>()))
-!--       }
-!--       else if( (*obj)%GetType() == DataStoreNS::rtTypes::real64_id )
-!--       {
-!--         write(fp, "# %s = %f\n", name.c_str(), *((*obj)%GetData<real(8)*>()))
-!--       }
-!--     }
-!--   }
-!--   }
-!--
-!--   {
-!--!--//   for( auto obj : elem%get_views() )
-!--   const DataGroup::dataArrayType& dataObjects = elem%get_views()
-!--   const DataGroup::lookupType& dataObjectLookup = elem%get_viewLookup()
-!--
-!--   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
-!--   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
-!--
-!--   for( obj!=dataObjects.end() ++obj, ++lookup )
-!--   {
-!--     const int length = (*obj)%GetDataShape().m_dimensions(0)
-!--     const std::string& name = lookup%first
-!--     fprintf(fp, "# %s\n", name.c_str() )
-!--     if( (*obj)%GetType() == DataStoreNS::rtTypes::int32_id )
-!--     {
-!--       int const * const data = (*obj)%GetData<int*>()
-!--       for ( int i=0 i<length ++i)
-!--          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i))
-!--       write(fp, "\n")
-!--     }
-!--     else if( (*obj)%GetType() == DataStoreNS::rtTypes::real64_id )
-!--     {
-!--       real(8) const * const data = (*obj)%GetData<real(8)*>()
-!--       for ( int i=0 i<length ++i)
-!--          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i) )
-!--       write(fp, "\n")
-!--     }
-!--   }
-!--   }
-!--
-!--   close(fp)
-!--#endif
+  type(datagroup) elem
+  type(dataview) view
+  integer, parameter :: fp = 8
+  integer i
+  integer ierr
+  character(30) name
+  integer length
+
+  elem = prob%get_group("elem")
+
+  fname = "problem"
+
+  view = prob%get_view("cycle")
+
+  write(fname, '(a,"_", i04, ".ult")') trim(fname), view%get_value_int()
+  open(fp, file=fname, iostat=ierr)
+  if (ierr /= 0) then
+     print *, "Could not open file ", trim(fname), ". Aborting."
+!     exit (-1)
+  endif
+
+  write(fp, '(a)') "# Ultra Plot File"
+  write(fp, '(a)') "# Problem: problem"
+
+  do i=1, prob%get_num_views()
+     view = prob%get_view(i)
+     length = view%get_number_of_elements()
+     call view%get_name(name)
+     if ( length <= 1 ) then
+        select case (view%get_type_id())
+        case (ATK_C_INT_T)
+           write(fp, '("# ", a, " = ", i4)') name, view%get_value_int()
+        case (ATK_C_DOUBLE_T)
+           write(fp, '("# ", a, " = ", f12.5)') name, view%get_value_double()
+        end select
+    endif
+  enddo
+
+
+!+  for(size_t i=0  i<elem%getNumViews()  i++)
+!+  {
+!+    DataView * const view = elem%get_view(i)
+!+    const int length = view%getSchema().dtype().number_of_elements()
+!+    const std::string& name = view%get_name()
+!+    write(fp, "# %s\n", name.c_str() )
+!+
+!+    if( view%getSchema().dtype().id() == DataType::INT32_T )
+!+    {
+!+      int32 const * const data = view%getValue()
+!+      for ( int i=0  i<length  ++i)
+!+      {
+!+        write(fp, "%f %f\n", (double) i, (double) data[i])
+!+      }
+!+      write(fp, "\n")
+!+    }
+!+    else if( view%getSchema().dtype().id() == DataType::FLOAT64_T )
+!+    {
+!+      float64 const * const data = view%getValue()
+!+      for ( int i=0  i<length  ++i)
+!+      {
+!+        write(fp, "%f %f\n", (double) i, (double) data[i])
+!+      }
+!+      write(fp, "\n")
+!+    }
+!+  }
+!+
+!+
+  close(fp)
+
    return
  end subroutine DumpUltra
 

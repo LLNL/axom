@@ -636,18 +636,17 @@ void DumpUltra( DataGroup * const prob)
   for(size_t i=0 ; i<prob->getNumViews() ; i++)
   {
     DataView * const view = prob->getView(i);
-    const int length = view->getSchema().dtype().number_of_elements();
+    const int length = view->getNumberOfElements();
     const std::string& name = view->getName();
     if( length <= 1 )
     {
-      if( view->getSchema().dtype().id() == DataType::INT32_T )
+      if( view->getTypeID() == CONDUIT_INT32_T )
       {
         fprintf(fp, "# %s = %d\n",
                 name.c_str(),
                 view->getValue<int>());
       }
-      else if( view->getSchema().dtype().id() ==
-               DataType::FLOAT64_T )
+      else if( view->getTypeID() == CONDUIT_FLOAT64_T )
       {
         fprintf(fp, "# %s = %f\n",
                 name.c_str(),
@@ -664,7 +663,7 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 
-    if( view->getSchema().dtype().id() == DataType::INT32_T )
+    if( view->getTypeID() == CONDUIT_INT32_T )
     {
       int32 const * const data = view->getValue();
       for ( int i=0 ; i<length ; ++i)
@@ -673,7 +672,7 @@ void DumpUltra( DataGroup * const prob)
       }
       fprintf(fp, "\n");
     }
-    else if( view->getSchema().dtype().id() == DataType::FLOAT64_T )
+    else if( view->getTypeID() == CONDUIT_FLOAT64_T )
     {
       float64 const * const data = view->getValue();
       for ( int i=0 ; i<length ; ++i)

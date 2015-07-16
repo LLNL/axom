@@ -79,7 +79,8 @@ module sidre_mod
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
-        procedure :: get_view => datagroup_get_view
+        procedure :: get_view_from_name => datagroup_get_view_from_name
+        procedure :: get_view_from_index => datagroup_get_view_from_index
         procedure :: get_view_index => datagroup_get_view_index
         procedure :: get_view_name => datagroup_get_view_name
         procedure :: has_group => datagroup_has_group
@@ -107,6 +108,11 @@ module sidre_mod
             create_view_and_buffer_simple,  &
             create_view_and_buffer_int,  &
             create_view_and_buffer_long
+        generic :: get_view => &
+            ! splicer begin class.DataGroup.generic.get_view
+            ! splicer end class.DataGroup.generic.get_view
+            get_view_from_name,  &
+            get_view_from_index
         ! splicer begin class.DataGroup.type_bound_procedure_part
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
@@ -440,14 +446,23 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine atk_datagroup_destroy_view_and_buffer
         
-        function atk_datagroup_get_view(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_get_view")
+        function atk_datagroup_get_view_from_name(self, name) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_from_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_get_view
+        end function atk_datagroup_get_view_from_name
+        
+        function atk_datagroup_get_view_from_index(self, idx) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_from_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_view_from_index
         
         pure function atk_datagroup_get_view_index(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_get_view_index")
@@ -1080,18 +1095,31 @@ contains
         ! splicer end class.DataGroup.method.destroy_view_and_buffer
     end subroutine datagroup_destroy_view_and_buffer
     
-    function datagroup_get_view(obj, name) result(rv)
+    function datagroup_get_view_from_name(obj, name) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*) :: name
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.get_view
-        rv%voidptr = atk_datagroup_get_view(  &
+        ! splicer begin class.DataGroup.method.get_view_from_name
+        rv%voidptr = atk_datagroup_get_view_from_name(  &
             obj%voidptr,  &
             trim(name) // C_NULL_CHAR)
-        ! splicer end class.DataGroup.method.get_view
-    end function datagroup_get_view
+        ! splicer end class.DataGroup.method.get_view_from_name
+    end function datagroup_get_view_from_name
+    
+    function datagroup_get_view_from_index(obj, idx) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT) :: idx
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.get_view_from_index
+        rv%voidptr = atk_datagroup_get_view_from_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.DataGroup.method.get_view_from_index
+    end function datagroup_get_view_from_index
     
     function datagroup_get_view_index(obj, name) result(rv)
         use iso_c_binding

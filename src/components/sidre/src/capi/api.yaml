@@ -119,8 +119,10 @@ classes:
 #    -  decl: void destroyView(const std::string &name)
 #    -  decl: void destroyView(IndexType idx)
     -  decl: DataView *getView( const std::string& name )
+       method_suffix: _from_name
 #    -  decl: DataView const * getView( const std::string& name ) const
-#    -  decl: DataView *getView( const IndexType idx )
+    -  decl: DataView *getView( const IndexType idx )
+       method_suffix: _from_index
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const

@@ -202,19 +202,19 @@ TEST(C_sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
     ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
-    ATK_dataview * ext_view = ATK_datagroup_get_view(dom_gp, "ext");
+    ATK_dataview * ext_view = ATK_datagroup_get_view_from_name(dom_gp, "ext");
     AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
 
     AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
     AA_meshvar * nodemv = (AA_meshvar *) ATK_dataview_get_opaque(node_mv_view);
 
     int num_zone_vals = AA_get_num_vals(zonemv, dom_ext);
-    ATK_dataview * dom_zone_data_view = ATK_datagroup_get_view(dom_gp, "zone_data");
+    ATK_dataview * dom_zone_data_view = ATK_datagroup_get_view_from_name(dom_gp, "zone_data");
     int test_num_zone_vals = ATK_dataview_get_number_of_elements(dom_zone_data_view);
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = AA_get_num_vals(nodemv, dom_ext);
-    ATK_dataview * dom_node_data_view = ATK_datagroup_get_view(dom_gp, "node_data");
+    ATK_dataview * dom_node_data_view = ATK_datagroup_get_view_from_name(dom_gp, "node_data");
     int test_num_node_vals = ATK_dataview_get_number_of_elements(dom_node_data_view);
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
@@ -226,7 +226,7 @@ TEST(C_sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
     ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
-    ATK_dataview * ext_view = ATK_datagroup_get_view(dom_gp, "ext");
+    ATK_dataview * ext_view = ATK_datagroup_get_view_from_name(dom_gp, "ext");
     AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
     AA_extent_delete(dom_ext);
   }

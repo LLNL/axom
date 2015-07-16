@@ -410,17 +410,17 @@ PY_datagroup_destroy_view_and_buffer(
 // splicer end class.DataGroup.method.destroy_view_and_buffer
 }
 
-static char PY_datagroup_get_view__doc__[] =
+static char PY_datagroup_get_view_from_name__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_datagroup_get_view(
+PY_datagroup_get_view_from_name(
   PY_DataGroup *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.get_view
+// splicer begin class.DataGroup.method.get_view_from_name
     const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -434,7 +434,34 @@ PY_datagroup_get_view(
     PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataGroup.method.get_view
+// splicer end class.DataGroup.method.get_view_from_name
+}
+
+static char PY_datagroup_get_view_from_index__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_get_view_from_index(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataGroup.method.get_view_from_index
+    const ATK_IndexType idx;
+    const char *kwcpp = "idx";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getView", kw_list,
+        &idx))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->getView(idx);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.get_view_from_index
 }
 
 static char PY_datagroup_get_view_index__doc__[] =
@@ -750,6 +777,44 @@ PY_datagroup_load(
 // splicer end class.DataGroup.method.load
 }
 
+static char PY_datagroup_get_view__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_get_view(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataGroup.get_view
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_datagroup_get_view_from_name(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_datagroup_get_view_from_index(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataGroup.get_view
+}
+
 static char PY_datagroup_create_view_and_buffer__doc__[] =
 "documentation"
 ;
@@ -804,7 +869,8 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"moveView", (PyCFunction)PY_datagroup_move_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_move_view__doc__},
 {"copyView", (PyCFunction)PY_datagroup_copy_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_copy_view__doc__},
 {"destroyViewAndBuffer", (PyCFunction)PY_datagroup_destroy_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_destroy_view_and_buffer__doc__},
-{"getView", (PyCFunction)PY_datagroup_get_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view__doc__},
+{"getView_from_name", (PyCFunction)PY_datagroup_get_view_from_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_from_name__doc__},
+{"getView_from_index", (PyCFunction)PY_datagroup_get_view_from_index, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_from_index__doc__},
 {"getViewIndex", (PyCFunction)PY_datagroup_get_view_index, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_index__doc__},
 {"getViewName", (PyCFunction)PY_datagroup_get_view_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_name__doc__},
 {"hasGroup", (PyCFunction)PY_datagroup_has_group, METH_VARARGS|METH_KEYWORDS, PY_datagroup_has_group__doc__},
@@ -817,6 +883,7 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"print", (PyCFunction)PY_datagroup_print, METH_NOARGS, PY_datagroup_print__doc__},
 {"save", (PyCFunction)PY_datagroup_save, METH_VARARGS|METH_KEYWORDS, PY_datagroup_save__doc__},
 {"load", (PyCFunction)PY_datagroup_load, METH_VARARGS|METH_KEYWORDS, PY_datagroup_load__doc__},
+{"getView", (PyCFunction)PY_datagroup_get_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view__doc__},
 {"createViewAndBuffer", (PyCFunction)PY_datagroup_create_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer__doc__},
 // splicer begin class.DataGroup.PyMethodDef
 // splicer end class.DataGroup.PyMethodDef

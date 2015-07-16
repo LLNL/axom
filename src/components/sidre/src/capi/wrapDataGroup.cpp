@@ -145,13 +145,22 @@ return;
 // splicer end class.DataGroup.method.destroy_view_and_buffer
 }
 
-ATK_dataview * ATK_datagroup_get_view(ATK_datagroup * self, const char * name)
+ATK_dataview * ATK_datagroup_get_view_from_name(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
-// splicer begin class.DataGroup.method.get_view
+// splicer begin class.DataGroup.method.get_view_from_name
 DataView * rv = selfobj->getView(name);
 return rv;
-// splicer end class.DataGroup.method.get_view
+// splicer end class.DataGroup.method.get_view_from_name
+}
+
+ATK_dataview * ATK_datagroup_get_view_from_index(ATK_datagroup * self, const ATK_IndexType idx)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_view_from_index
+DataView * rv = selfobj->getView(idx);
+return rv;
+// splicer end class.DataGroup.method.get_view_from_index
 }
 
 ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
