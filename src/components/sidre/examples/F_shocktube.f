@@ -28,6 +28,7 @@
 
 program main
 
+  use iso_c_binding
   use sidre_mod
   implicit none
 
@@ -44,7 +45,7 @@ program main
   ! and calling MPI_Finalize() at the end of main()
 
   type(datastore) ds
-  type(datagroup) root, problem
+  type(datagroup) root, prob
 
 ! 'database'
   integer currCycle
@@ -66,46 +67,73 @@ program main
 
   !DataStoreNS::DataStore* const dataStore = &DATASTORE
   !DataStoreNS::DataGroup* const rootGroup = dataStore->GetRootDataGroup()
-  !DataStoreNS::DataGroup* const problem = rootGroup->CreateDataGroup("problem")
+  !DataStoreNS::DataGroup* const prob = rootGroup->CreateDataGroup("prob")
   ds   = datastore_new()
   root = ds%get_root()
-  problem = root%create_group("problem")
+  prob = root%create_group("problem")
 
-  call GetUserInput(problem)
-  call CreateShockTubeMesh(problem)
-  call InitializeShockTube(problem)
+  call GetUserInput(prob)
+  call CreateShockTubeMesh(prob)
+  call InitializeShockTube(prob)
 
 
   ! use a reference when you want to update the param directly
-!  currCycle = integer* const currCycle = problem->GetDataObject("cycle")->GetData<int*>()
-!  numTotalCycles = *(problem->GetDataObject("numTotalCycles")->GetData<int*>())
-!  dumpInterval = *(problem->GetDataObject("numCyclesPerDump")->GetData<int*>())
+!  currCycle = integer* const currCycle = prob->GetDataObject("cycle")->GetData<int*>()
+!  numTotalCycles = *(prob->GetDataObject("numTotalCycles")->GetData<int*>())
+!  dumpInterval = *(prob->GetDataObject("numCyclesPerDump")->GetData<int*>())
 
 !!!  for (*currCycle = 0 *currCycle < numTotalCycles ++(*currCycle) )
   do currCycle = 1, numTotalcycles
     ! dump the ultra file, based on the user chosen attribute mask
     if ( mod(currCycle, numCyclesperDump) == 0) then
-      call DumpUltra(problem)
+      call DumpUltra(prob)
    endif
 
-    call ComputeFaceInfo(problem)
-    call UpdateElemInfo(problem)
+    call ComputeFaceInfo(prob)
+    call UpdateElemInfo(prob)
   enddo
 
-  call DumpUltra(problem) ! One last dump
+  call DumpUltra(prob) ! One last dump
 
   call datastore_delete(ds)
 
 contains
+
+
+  subroutine CreateScalarIntBufferViewAndSetVal(grp, name, value)
+    type(datagroup) grp
+    character(*) name
+    integer(C_INT) value
+!    DataBuffer * const buffer = grp->getDataStore()->createBuffer()
+!    ->declare(DataType::int32())
+!    ->allocate();
+
+
+!    DataView * const view = grp->createView(name, buffer)->apply(DataType::int32());
+!    view->setValue(value);
+  end subroutine CreateScalarIntBufferViewAndSetVal
+
+
+  subroutine CreateScalarFloatBufferViewAndSetVal(grp, name, value)
+    type(datagroup) grp
+    character(*) name
+    real(C_DOUBLE) value
+!    DataBuffer * const buffer = grp->getDataStore()->createBuffer()
+!    ->declare(DataType::float64())
+!    ->allocate();
+!
+!    DataView * const view = grp->createView(name,buffer)->apply(DataType::float64());
+!    view->setValue(value);
+  end subroutine CreateScalarFloatBufferViewAndSetVal
 
 !*************************************************************************
 ! Subroutine:  GetUserInput
 ! Purpose   :  Ask for control and output information
 !*************************************************************************
 
-subroutine GetUserInput(problem)
+subroutine GetUserInput(prob)
 
-  type(datagroup), intent(IN) :: problem
+  type(datagroup), intent(IN) :: prob
   real(8) :: pratio, dratio
 
   !********************************!
@@ -118,8 +146,9 @@ subroutine GetUserInput(problem)
   numElems = numElems + 2 ! add an inflow and outflow zone
   numFaces = numElems - 1
 
-!    *(problem->CreateDataObject("numElems")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numElems
-!    *(problem->CreateDataObject("numFaces")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numFaces
+  call CreateScalarIntBufferViewAndSetVal(prob, "numElems", numElems)
+
+  call CreateScalarIntBufferViewAndSetVal(prob, "numFaces", numFaces)
 
   !******************!
   ! Get physics info !
@@ -145,10 +174,11 @@ subroutine GetUserInput(problem)
   enddo
 
 
-!    *(problem->CreateDataObject("pressureRatio")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = pratio
-!    *(problem->CreateDataObject("densityRatio")->SetType<double>()->SetDataShape(1)->Allocate()->GetData<double*>()) = dratio
-  pressureRatio = pratio
-  densityRatio = dratio
+  call CreateScalarFloatBufferViewAndSetVal(prob, "pressureRatio", pratio)
+
+  call CreateScalarFloatBufferViewAndSetVal(prob, "densityRatio", dratio)
+!!  pressureRatio = pratio
+!!  densityRatio = dratio
 
   !******************!
   ! Get output  info !
@@ -160,10 +190,14 @@ subroutine GetUserInput(problem)
   print *, "How many cycles per Ultra dump would you like? "
 !--//    read *, numCyclesPerDump
   numCyclesPerDump = 10
-!    *(problem->CreateDataObject("numUltraDumps")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numUltraDumps
-!    *(problem->CreateDataObject("numCyclesPerDump")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numCyclesPerDump
-!    *(problem->CreateDataObject("numTotalCycles")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = numUltraDumps * numCyclesPerDump
-  numTotalCycles = numUltraDumps * numCyclesPerDump
+
+  call CreateScalarIntBufferViewAndSetVal(prob, "numUltraDumps", numUltraDumps)
+
+  call CreateScalarIntBufferViewAndSetVal(prob, "numCyclesPerDump", numCyclesPerDump)
+
+  call CreateScalarIntBufferViewAndSetVal(prob, "numTotalCycles", numUltraDumps * numCyclesPerDump)
+
+!!  numTotalCycles = numUltraDumps * numCyclesPerDump
 
   return
 end subroutine GetUserInput
@@ -190,28 +224,42 @@ end subroutine GetUserInput
 !
 !**************************************************************************
 
-subroutine CreateShockTubeMesh(problem)
-  type(datagroup), intent(IN) :: problem
+subroutine CreateShockTubeMesh(prob)
+  type(datagroup), intent(IN) :: prob
+  type(datagroup) elem, face, tube
+  type(datagroup) ingrp, outgrp  ! XXX unused
+  type(dataview) tmpview
+  type(dataview) mapToElemsView
+  type(dataview) faceToElemsView
+  type(dataview) elemToFaceView
+  integer(C_INT), pointer :: mapToElems(:)
+  integer(C_INT), pointer :: faceToElems(:)
+  integer(C_INT), pointer :: elemToFace(:)
   integer i, k
-!  integer numElems = *(prob->GetDataObject("numElems")->GetData<int*>())
-!  integer numFaces = *(prob->GetDataObject("numFaces")->GetData<int*>())
+  integer numElems
+  integer numFaces
   integer inflow(1)
   integer outflow(1)
 
+  tmpview = prob%get_view("numElems")
+  call tmpview%get_value(numElems)
+  tmpview = prob%get_view("numFaces")
+  call tmpview%get_value(numFaces)
+
   ! create element and face classes
 
-!  DataGroup* const elem = prob->CreateDataGroup("elem")->SetDataShape( DataStoreNS::DataShape(numElems))
-!  DataGroup* const face = prob->CreateDataGroup("face")->SetDataShape( DataStoreNS::DataShape(numFaces))
+  elem = prob%create_group("elem")
+  face = prob%create_group("face")
 
   ! set up some important views
 
   inflow(1) = 1 ! identify inflow elements
 !--//  elem->viewCreate("inflow", new IndexSet(1, inflow))
-!  elem->CreateDataGroup("inflow")
+  ingrp = elem%create_group("inflow")
 
   outflow(1) = numElems ! identify outflow elements
 !--//  elem->viewCreate("outflow", new IndexSet(1, outflow))
-!  elem->CreateDataGroup("outflow")
+  outgrp = elem%create_group("outflow")
 
   ! identify shock tube elements - set up basic map
 !--//  View *tube = elem->viewCreate("tube", new IndexSet(numElems - 2))
@@ -219,11 +267,13 @@ subroutine CreateShockTubeMesh(problem)
   ! (shocktube element numbers are one through numElems-1 inclusive)
 !--//  tube->indexSet()->shift(1)
   numTubeElems = numElems - 2
-!  DataGroup* const tube = elem->CreateDataGroup("tube")->SetDataShape(DataStoreNS::DataShape(numTubeElems))
-!  int* const mapToElems = tube->CreateDataObject("mapToElems")
-!                              ->SetType<int>()
-!                              ->Allocate()->GetData<int*>()
-  allocate(mapToElems(numTubeElems))
+  tube = elem%create_group("tube")
+
+  mapToElemsView = tube%create_view_and_buffer("mapToElems", ATK_C_INT_T, numTubeElems)
+  call mapToElemsView%allocate()
+
+  call mapToElemsView%get_value(mapToElems)
+!--  allocate(mapToElem(nuMTubeElems))
 
   do k=1, numTubeElems
     mapToElems(k) = k + 1
@@ -232,15 +282,12 @@ subroutine CreateShockTubeMesh(problem)
   ! Set up some important data relations
 
   ! Each face connects to two elements
-!--//  Relation &faceToElem = *face->relationCreate("faceToElem", 2)
-!  std::size_t dims(2) = { numFaces, 2 }
-!  DataStoreNS::DataShape desc(2, dims)
 
-!  integer * const faceToElem = face->CreateDataObject("faceToElem")
-!                                ->SetDataShape(desc)
-!                                ->SetType<int>()
-!                                ->Allocate()->GetData<int*>()
-  allocate(faceToElem(2, numFaces))
+  faceToElemsView = tube%create_view_and_buffer("faceToElems", ATK_C_INT_T, 2*numFaces)
+  call faceToElemsView%allocate()
+
+  call faceToElemsView%get_value(faceToElems)
+!--  allocate(faceToElem(2, numFaces))
 
   do i=1, numFaces
     faceToElem(IUPWIND, i) = i
@@ -248,11 +295,14 @@ subroutine CreateShockTubeMesh(problem)
   enddo
 
   ! Each element connects to two faces
-!--//  Relation &elemToFace = *tube->relationCreate("elemToFace", 2)
+!--//  Relation &elemToFace = *tube%relationCreate("elemToFace", 2)
 !  dims(0) = numElems
 !  DataStoreNS::DataShape desc2(2, dims)
-!  integer * const elemToFace = tube->CreateDataObject("elemToFace")->SetType<int>()->SetDataShape(desc2)->Allocate()->GetData<int*>()
-  allocate(elemToFace(2, numElems))
+!  integer * const elemToFace = tube%CreateDataObject("elemToFace")%SetType<int>()%SetDataShape(desc2)%Allocate()%GetData<int*>()
+  elemToFaceView = tube%create_view_and_buffer("elemToFace", ATK_C_INT_T, 2*numElems);
+  call elemToFaceView%allocate()
+  call elemToFaceView%get_value(elemToFace)
+!!  allocate(elemToFace(2, numElems))
 
   do i=1, numElems
     elemToFace(IUPWIND, i) = i ! same map as above by coincidence
@@ -267,10 +317,12 @@ end subroutine CreateShockTubeMesh
 ! Purpose   :  Populate the mesh with values
 !************************************************************************
 
-subroutine InitializeShockTube(problem)
-  type(datagroup), intent(IN) :: problem
+subroutine InitializeShockTube(prob)
+  type(datagroup), intent(IN) :: prob
   integer i
 
+  type(datagroup) elem, face
+  type(dataview) tmpview
   integer startTube
   integer endTube
   integer midTube
@@ -279,34 +331,56 @@ subroutine InitializeShockTube(problem)
   real(8) pressureInitial
   real(8) energyInitial
   real(8) dratio, pratio
+  real(C_DOUBLE) dx
 
   ! These were created in GetUserInput()
-!  DataGroup* const elem = (prob->GetDataGroup("elem"))
-!  DataGroup* const face = (prob->GetDataGroup("face"))
+  elem = prob%get_group("elem")
+  face = prob%get_group("face")
+
+  tmpview = prob%get_view("numElems")
+  call tmpview%get_value(numElems)
+
+  tmpview = prob%get_view("numFaces")
+  call tmpview%get_value(numFaces)
 
   ! Create element centered quantities
-!  double *mass = elem->CreateDataObject("mass")->SetType<double>()->Allocate()->GetData<double*>()
-!  double *momentum = elem->CreateDataObject("momentum")->SetType<double>()->Allocate()->GetData<double*>()
-!  double *energy = elem->CreateDataObject("energy")->SetType<double>()->Allocate()->GetData<double*>()
-!  double *pressure = elem->CreateDataObject("pressure")->SetType<double>()->Allocate()->GetData<double*>()
-  allocate(mass(numElems))
-  allocate(momentum(numElems))
-  allocate(energy(numElems))
-  allocate(pressure(numElems))
+
+  tmpview = elem%create_view_and_buffer("mass", ATK_C_DOUBLE_T, numElems)
+  call tmpview%allocate()
+  call tmpview%get_value(mass)
+
+  tmpview = elem%create_view_and_buffer("momentum", ATK_C_DOUBLE_T, numElems)
+  call tmpview%allocate()
+  call tmpview%get_value(momentum)
+
+  tmpview = elem%create_view_and_buffer("energy", ATK_C_DOUBLE_T, numElems)
+  call tmpview%allocate()
+  call tmpview%get_value(energy)
+
+  tmpview = elem%create_view_and_buffer("pressure", ATK_C_DOUBLE_T, numElems)
+  call tmpview%allocate()
+  call tmpview%get_value(pressure)
+!!  allocate(mass(numElems))
+!!  allocate(momentum(numElems))
+!!  allocate(energy(numElems))
+!!  allocate(pressure(numElems))
 
   ! Create face centered quantities
-!  face->CreateDataObject("F0")->SetType<double>()->Allocate()
-!  face->CreateDataObject("F1")->SetType<double>()->Allocate()
-!  face->CreateDataObject("F2")->SetType<double>()->Allocate()
-  allocate(F0(numFaces))
-  allocate(F1(numFaces))
-  allocate(F2(numFaces))
+  tmpview = elem%create_view_and_buffer("F0", ATK_C_DOUBLE_T, numFaces)
+  call tmpview%allocate()
+  tmpview = elem%create_view_and_buffer("F1", ATK_C_DOUBLE_T, numFaces)
+  call tmpview%allocate()
+  tmpview = elem%create_view_and_buffer("F2", ATK_C_DOUBLE_T, numFaces)
+  call tmpview%allocate()
+!!  allocate(F0(numFaces))
+!!  allocate(F1(numFaces))
+!!  allocate(F2(numFaces))
 
-!--//  face->fieldCreateReal("F", 3) ! mv, mv^2+P, and v(E+P)
+!--//  face%fieldCreateReal("F", 3) ! mv, mv^2+P, and v(E+P)
 
   ! Fill left half with high pressure, right half with low pressure
   startTube = 1
-  endTube = numElems  ! elem->GetDataShape().m_dimensions(0)
+  endTube = numElems  ! elem%GetDataShape().m_dimensions(0)
   midTube = endTube / 2
 
   ! Non-dimensionalized reference values
@@ -325,8 +399,8 @@ subroutine InitializeShockTube(problem)
   enddo
 
   ! adjust parameters for low pressure portion of tube
-!  dratio = *(prob->GetDataObject("densityRatio")->GetData<real(8)*>())
-!  pratio = *(prob->GetDataObject("pressureRatio")->GetData<real(8)*>())
+!  dratio = *(prob%GetDataObject("densityRatio")%GetData<real(8)*>())
+!  pratio = *(prob%GetDataObject("pressureRatio")%GetData<real(8)*>())
   dratio = densityRatio
   pratio = pressureRatio
 
@@ -343,11 +417,13 @@ subroutine InitializeShockTube(problem)
   enddo
 
   ! Create needed time info
-!  *(prob->CreateDataObject("time")->SetType<real(8)>()->SetDataShape(1)->Allocate()->GetData<real(8)*>()) = 0.0
-!  *(prob->CreateDataObject("cycle")->SetType<int>()->SetDataShape(1)->Allocate()->GetData<int*>()) = 0
-!  *(prob->CreateDataObject("dx")->SetType<real(8)>()->SetDataShape(1)->Allocate()->GetData<real(8)*>()) = (1.0 / ((real(8)) endTube))
-!  real(8) dx = *(prob->GetDataObject("dx")->GetData<real(8)*>())
-!  *(prob->CreateDataObject("dt")->SetType<real(8)>()->SetDataShape(1)->Allocate()->GetData<real(8)*>()) = 0.4 * dx
+  call CreateScalarFloatBufferViewAndSetVal(prob, "time", 0.0)
+  call CreateScalarIntBufferViewAndSetVal(prob, "cycle", 0)
+
+  call CreateScalarFloatBufferViewAndSetVal(prob, "dx", 1.0 / endTube)
+  tmpview = prob%get_view("dx")
+  call tmpview%get_value(dx)
+  call CreateScalarFloatBufferViewAndSetVal(prob, "dt", 0.4 * dx)
 
   time = 0.0d0
   cycle = 0
@@ -369,26 +445,42 @@ end subroutine InitializeShockTube
 !
 !*************************************************************************
 
-subroutine ComputeFaceInfo(problem)
-  type(datagroup), intent(IN) :: problem
+subroutine ComputeFaceInfo(prob)
+  type(datagroup), intent(IN) :: prob
+
+  type(datagroup) face, elem
+  type(dataview) tmpview
 
   integer i
   integer upWind, downWind, contributor
   real(8) massf, momentumf, energyf, pressuref, c, v, ev, cLocal
-!  DataGroup* const face = problem->GetDataGroup("face")
-!--//  Relation &faceToElem = *face->relation("faceToElem")
-!  integer const * const faceToElem = face->GetDataObject("faceToElem")->GetData<int*>()
 
-!  real(8) * const F0 = face->GetDataObject("F0")->GetData<real(8)*>()
-!  real(8) * const F1 = face->GetDataObject("F1")->GetData<real(8)*>()
-!  real(8) * const F2 = face->GetDataObject("F2")->GetData<real(8)*>()
-!  integer numFaces = face->GetDataShape().m_dimensions(0)
+  real(C_DOUBLE), pointer :: F0(:), F1(:), F2(:)
+  integer(C_INT), pointer :: faceToElem(:)
+  integer(C_INT) numFaces
+  real(C_DOUBLE), pointer :: mass(:), momentum(:), energy(:)
 
-!  DataGroup* const elem = problem->GetDataGroup("elem")
-!  real(8) *mass = elem->GetDataObject("mass")->GetData<real(8)*>()
-!  real(8) *momentum = elem->GetDataObject("momentum")->GetData<real(8)*>()
-!  real(8) *energy = elem->GetDataObject("energy")->GetData<real(8)*>()
+  face = prob%get_group("face")
 
+  tmpview = face%get_view("faceToElem")
+  call tmpview%get_value(faceToElem)
+
+  tmpview = face%get_view("F0")
+  call tmpview%get_value(F0)
+  tmpview = face%get_view("F1")
+  call tmpview%get_value(F1)
+  tmpview = face%get_view("F2")
+  call tmpview%get_value(F2)
+
+  numFaces = tmpview%get_number_of_elements();
+
+  elem = prob%get_group("elem")
+  tmpview = elem%get_view("mass")
+  call tmpview%get_value(mass)
+  tmpview = elem%get_view("momentum")
+  call tmpview%get_value(momentum)
+  tmpview = elem%get_view("energy")
+  call tmpview%get_value(energy)
 
   do i=1, numFaces
     ! each face has an upwind and downwind element.
@@ -473,42 +565,59 @@ end subroutine ComputeFaceInfo
 !
 !*************************************************************************
 
-subroutine UpdateElemInfo(problem)
-  type(datagroup), intent(IN) :: problem
+subroutine UpdateElemInfo(prob)
+  type(datagroup), intent(IN) :: prob
+  type(datagroup) elem, face, tube
+  type(dataview) tmpview
 
+  real(C_FLOAT) dx, dt, time
+  integer(C_INT), pointer :: elemToFace(:)
   integer i
   integer elemIdx, upWind, downWind
+  real(C_DOUBLE), pointer :: F0(:), F1(:), F2(:)
+  real(C_DOUBLE), pointer :: mass(:), momentum(:), energy(:), pressure(:)
 
   ! get the element quantities we want to update
-!  DataGroup* const elem = problem->GetDataGroup("elem")
-!  real(8) * const mass = elem->GetDataObject("mass")->GetData<real(8)*>()
-!  real(8) * const momentum = elem->GetDataObject("momentum")->GetData<real(8)*>()
-!  real(8) * const energy = elem->GetDataObject("energy")->GetData<real(8)*>()
-!  real(8) * const pressure = elem->GetDataObject("pressure")->GetData<real(8)*>()
+  elem = prob%get_group("elem")
+
+  tmpview = elem%get_view("mass")
+  call tmpview%get_value(mass)
+  tmpview = elem%get_view("momentum")
+  call tmpview%get_value(momentum)
+  tmpview = elem%get_view("energy")
+  call tmpview%get_value(energy)
+  tmpview = elem%get_view("pressure")
+  call tmpview%get_value(pressure)
 
   ! focus on just the elements within the shock tube
-!  DataGroup* const tube = elem->GetDataGroup("tube")
-!  integer * const elemToFace = tube->GetDataObject("elemToFace")->GetData<int*>()
+  tube = elem%get_group("tube")
 
-!--//  Relation &elemToFace = *tube->relation("elemToFace")
-!  integer numTubeElems = tube->GetDataShape().m_dimensions(0)
+  tmpview = tube%get_view("elemToFace")
+  call tmpview%get_value(elemToFace)
 
-!--//  int *is = tube->map()
-!  integer* const is = tube->GetDataObject("mapToElems")->GetData<int*>()
+!--//  Relation &elemToFace = *tube%relation("elemToFace")
+!  integer numTubeElems = tube%GetDataShape().m_dimensions(0)
+
+!--//  int *is = tube%map()
+!  integer* const is = tube%get_view("mapToElems")%GetData<int*>()
 
 
 
   ! The element update is calculated as the flux between faces
-!  DataGroup* const face = problem->GetDataGroup("face")
-!  real(8) *F0 = face->GetDataObject("F0")->GetData<real(8)*>()
-!  real(8) *F1 = face->GetDataObject("F1")->GetData<real(8)*>()
-!  real(8) *F2 = face->GetDataObject("F2")->GetData<real(8)*>()
+  face = prob%get_group("face")
+  tmpview = face%get_view("F0")
+  call tmpview%get_value(F0)
+  tmpview = face%get_view("F1")
+  call tmpview%get_value(F1)
+  tmpview = face%get_view("F2")
+  call tmpview%get_value(F2)
 
-!  real(8) dx = *(problem->GetDataObject("dx")->GetData<real(8)*>())
-!  real(8) dt = *(problem->GetDataObject("dt")->GetData<real(8)*>())
-!  real(8)& time = *(problem->GetDataObject("time")->GetData<real(8)*>())
-
-
+  tmpview = prob%get_view("dx")
+  call tmpview%get_value(dx)
+  tmpview = prob%get_view("dt")
+  call tmpview%get_value(dt)
+  tmpview = prob%get_view("time")
+  call tmpview%get_value(time)
 
   do i=1, numTubeElems
      ! recalculate elements in the shocktube, don't touch inflow/outflow
@@ -529,8 +638,8 @@ subroutine UpdateElemInfo(problem)
   return
 end subroutine UpdateElemInfo
 
-subroutine DumpUltra( problem )
-  type(datagroup), intent(IN) :: problem
+subroutine DumpUltra( prob )
+  type(datagroup), intent(IN) :: prob
    integer fp
    character(100) fname
 
@@ -539,14 +648,14 @@ subroutine DumpUltra( problem )
 !--
 !--!--//   VHashTraverse_t content
 !--
-!--!   const DataGroup* const elem = prob->GetDataGroup("elem")
+!--!   const DataGroup* const elem = prob%get_group("elem")
 !--
-!--   fname = "problem"
+!--   fname = "prob"
 !--
 !--   ! Skip past the junk
 !--!   for (tail=fname isalpha(*tail) ++tail)
 !--
-!--!   sprintf(tail, "_%04d", *(prob->GetDataObject("cycle")->GetData<int*>()) )
+!--!   sprintf(tail, "_%04d", *(prob%get_view("cycle")%GetData<int*>()) )
 !--
 !--   
 !--   fp = open(fname, "w")) == NULL)
@@ -561,53 +670,53 @@ subroutine DumpUltra( problem )
 !--
 !--
 !--   {
-!--   const DataGroup::dataArrayType& dataObjects = prob->GetDataObjects()
-!--   const DataGroup::lookupType& dataObjectLookup = prob->GetDataObjectLookup()
+!--   const DataGroup::dataArrayType& dataObjects = prob%get_views()
+!--   const DataGroup::lookupType& dataObjectLookup = prob%get_viewLookup()
 !--
 !--   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
 !--   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
 !--
 !--   for( obj!=dataObjects.end() ++obj, ++lookup )
 !--   {
-!--     const int length = (*obj)->GetDataShape().m_dimensions(0)
-!--     const std::string& name = lookup->first
+!--     const int length = (*obj)%GetDataShape().m_dimensions(0)
+!--     const std::string& name = lookup%first
 !--     if( length <= 1 )
 !--     {
-!--       if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
+!--       if( (*obj)%GetType() == DataStoreNS::rtTypes::int32_id )
 !--       {
-!--         write(fp, "# %s = %d\n", name.c_str(), *((*obj)->GetData<int*>()))
+!--         write(fp, "# %s = %d\n", name.c_str(), *((*obj)%GetData<int*>()))
 !--       }
-!--       else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
+!--       else if( (*obj)%GetType() == DataStoreNS::rtTypes::real64_id )
 !--       {
-!--         write(fp, "# %s = %f\n", name.c_str(), *((*obj)->GetData<real(8)*>()))
+!--         write(fp, "# %s = %f\n", name.c_str(), *((*obj)%GetData<real(8)*>()))
 !--       }
 !--     }
 !--   }
 !--   }
 !--
 !--   {
-!--!--//   for( auto obj : elem->GetDataObjects() )
-!--   const DataGroup::dataArrayType& dataObjects = elem->GetDataObjects()
-!--   const DataGroup::lookupType& dataObjectLookup = elem->GetDataObjectLookup()
+!--!--//   for( auto obj : elem%get_views() )
+!--   const DataGroup::dataArrayType& dataObjects = elem%get_views()
+!--   const DataGroup::lookupType& dataObjectLookup = elem%get_viewLookup()
 !--
 !--   DataGroup::dataArrayType::const_iterator obj=dataObjects.begin()
 !--   DataGroup::lookupType::const_iterator lookup=dataObjectLookup.begin()
 !--
 !--   for( obj!=dataObjects.end() ++obj, ++lookup )
 !--   {
-!--     const int length = (*obj)->GetDataShape().m_dimensions(0)
-!--     const std::string& name = lookup->first
+!--     const int length = (*obj)%GetDataShape().m_dimensions(0)
+!--     const std::string& name = lookup%first
 !--     fprintf(fp, "# %s\n", name.c_str() )
-!--     if( (*obj)->GetType() == DataStoreNS::rtTypes::int32_id )
+!--     if( (*obj)%GetType() == DataStoreNS::rtTypes::int32_id )
 !--     {
-!--       int const * const data = (*obj)->GetData<int*>()
+!--       int const * const data = (*obj)%GetData<int*>()
 !--       for ( int i=0 i<length ++i)
 !--          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i))
 !--       write(fp, "\n")
 !--     }
-!--     else if( (*obj)->GetType() == DataStoreNS::rtTypes::real64_id )
+!--     else if( (*obj)%GetType() == DataStoreNS::rtTypes::real64_id )
 !--     {
-!--       real(8) const * const data = (*obj)->GetData<real(8)*>()
+!--       real(8) const * const data = (*obj)%GetData<real(8)*>()
 !--       for ( int i=0 i<length ++i)
 !--          write(fp, "%f %f\n", (real(8)) i, (real(8)) data(i) )
 !--       write(fp, "\n")
