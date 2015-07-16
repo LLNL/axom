@@ -142,7 +142,7 @@ contains
 
     ! clean up...
     deallocate(ext)
-!--    call ds.delete()
+    call ds%delete()
   end subroutine inout
 
   !------------------------------------------------------------------------------
@@ -261,7 +261,7 @@ contains
        call c_f_pointer(dom_ext_ptr, dom_ext)
        deallocate(dom_ext)
     enddo
-!--    call ds%delete()
+    call ds%delete()
   end subroutine meshvar_test
 
 !----------------------------------------------------------------------

@@ -57,7 +57,7 @@ contains
 
     call ds%print()
 
-!--    call ds%delete()
+    call ds%delete()
     deallocate(idata)
     deallocate(ddata)
   end subroutine declare_external_buffer
@@ -104,7 +104,7 @@ contains
        call assert_equals(ddata_chk(ii), ddata(ii))
     enddo
 
-!--  call ds%delete()
+    call ds%delete()
     deallocate(idata)
     deallocate(ddata)
   end subroutine create_external_view
@@ -180,8 +180,8 @@ contains
        call assert_equals(ddata_chk(ii), ddata(ii))
     enddo
 
-!--    call ds%delete()
-!--    call ds2%delete()
+    call ds%delete()
+    call ds2%delete()
     deallocate(idata)
     deallocate(ddata)
   end subroutine save_load_external_view

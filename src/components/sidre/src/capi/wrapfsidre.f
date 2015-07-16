@@ -48,6 +48,7 @@ module sidre_mod
         ! splicer begin class.DataStore.component_part
         ! splicer end class.DataStore.component_part
     contains
+        procedure :: delete => datastore_delete
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
         procedure :: create_buffer => datastore_create_buffer
@@ -850,7 +851,7 @@ contains
     subroutine datastore_delete(obj)
         use iso_c_binding
         implicit none
-        type(datastore) :: obj
+        class(datastore) :: obj
         ! splicer begin class.DataStore.method.delete
         call atk_datastore_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR

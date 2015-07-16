@@ -141,21 +141,21 @@ PP_ExClass2_tp_del (PP_ExClass2 *self)
 // splicer end class.ExClass2.type.del
 }
 
-static char PP_exclass2_ex_class1__doc__[] =
+static char PP_exclass2_delete__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PP_exclass2_ex_class1(
+PP_exclass2_delete(
   PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.ex_class1
+// splicer begin class.ExClass2.method.delete
     delete self->BBB;
     self->BBB = NULL;
     Py_RETURN_NONE;
-// splicer end class.ExClass2.method.ex_class1
+// splicer end class.ExClass2.method.delete
 }
 
 static char PP_exclass2_get_name__doc__[] =
@@ -308,7 +308,7 @@ PP_exclass2_testoptional(
 // splicer begin class.ExClass2.impl.after_methods
 // splicer end class.ExClass2.impl.after_methods
 static PyMethodDef PP_ExClass2_methods[] = {
-{"ExClass1", (PyCFunction)PP_exclass2_ex_class1, METH_NOARGS, PP_exclass2_ex_class1__doc__},
+{"delete", (PyCFunction)PP_exclass2_delete, METH_NOARGS, PP_exclass2_delete__doc__},
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},

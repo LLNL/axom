@@ -20,7 +20,7 @@ Close wrapExClass1.h
 Close wrapExClass1.cpp
 class ExClass2
 C method ExClass2 *ExClass2+constructor (const string *name)
-C method void ExClass1+destructor
+C method void delete+destructor
 C method const string& getName const
 C method GetNameLength
 C method ExClass1 *get_class1(ExClass1 *in)
@@ -57,7 +57,7 @@ C-interface, Fortran method void SplicerSpecial
 Close wrapfExClass1.f
 class ExClass2
 C-interface, Fortran method ExClass2 *ExClass2+constructor (const string *name)
-C-interface, Fortran method void ExClass1+destructor
+C-interface, Fortran method void delete+destructor
 C-interface, Fortran method const string& getName const
 C-interface, Fortran method GetNameLength
 C-interface, Fortran method ExClass1 *get_class1(ExClass1 *in)
@@ -94,7 +94,7 @@ Python method void SplicerSpecial
 Close pyExClass1type.cpp
 class ExClass2
 Python method ExClass2 *ExClass2+constructor (const string *name)
-Python method void ExClass1+destructor
+Python method void delete+destructor
 Python method const string& getName const
 Python method GetNameLength
 Python method ExClass1 *get_class1(ExClass1 *in)

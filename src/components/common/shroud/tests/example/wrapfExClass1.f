@@ -21,6 +21,7 @@ module exclass1_mod
           component part 1b
         ! splicer end class.ExClass1.component_part
     contains
+        procedure :: delete => exclass1_delete
         procedure :: increment_count => exclass1_increment_count
         procedure :: get_name => exclass1_get_name
         procedure :: get_name_length => exclass1_get_name_length
@@ -178,7 +179,7 @@ contains
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none
-        type(exclass1) :: obj
+        class(exclass1) :: obj
         ! splicer begin class.ExClass1.method.delete
         call aa_exclass1_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR

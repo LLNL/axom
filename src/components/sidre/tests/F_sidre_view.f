@@ -34,7 +34,7 @@ contains
 
     call assert_equals(db_0%get_index(), 0)
     call assert_equals(db_1%get_index(), 1)
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_views
 
 !------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ contains
 
 !--    !  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), dv->getSchema().total_bytes())
 !--    call assert_equals(dv%get_total_bytes(), sizeof(int) * 10)
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine int_buffer_from_view
 
 !------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ contains
     call dv%print()
 
 !--    EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10)
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine int_buffer_from_view_conduit_value
 
 !------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ contains
 !--  }
 !--#endif
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine int_array_multi_view
 
 !------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ contains
 !--#endif
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine init_int_array_multi_view
 
 !------------------------------------------------------------------------------
@@ -380,7 +380,7 @@ contains
 !--#endif
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
 
   end subroutine int_array_multi_view_resize
 
@@ -440,7 +440,7 @@ contains
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*15)
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
 
   end subroutine int_array_realloc
 
@@ -478,7 +478,7 @@ contains
     call assert_equals(out_data, 42)
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
 !--  free(src_data)
   end subroutine simple_opaque
 

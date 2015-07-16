@@ -529,14 +529,9 @@ class Wrapf(util.WrapperMixin):
             if not is_ctor:
                 arg_c_call.append(fmt_func.F_instance_ptr)
                 arg_f_names.append(fmt_func.F_this)
-                if is_dtor:
-                    arg_f_decl.append(wformat(
-                            'type({F_derived_name}) :: {F_this}',
-                            fmt_func))
-                else:
-                    arg_f_decl.append(wformat(
-                            'class({F_derived_name}) :: {F_this}',
-                            fmt_func))
+                arg_f_decl.append(wformat(
+                        'class({F_derived_name}) :: {F_this}',
+                        fmt_func))
 
         optional = []
         for arg in node.get('args', []):
@@ -594,7 +589,7 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_f_decl.append(self._f_decl(result, name=F_result))
 
-        if not is_ctor and not is_dtor:
+        if not is_ctor:
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
             if not fmt_func.get('CPP_template', None):

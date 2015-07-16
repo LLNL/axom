@@ -19,6 +19,7 @@ module exclass2_mod
         ! splicer begin class.ExClass2.component_part
         ! splicer end class.ExClass2.component_part
     contains
+        procedure :: delete => exclass2_delete
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
@@ -68,12 +69,12 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_ex_class2
         
-        subroutine aa_exclass2_ex_class1(self) &
-                bind(C, name="AA_exclass2_ex_class1")
+        subroutine aa_exclass2_delete(self) &
+                bind(C, name="AA_exclass2_delete")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine aa_exclass2_ex_class1
+        end subroutine aa_exclass2_delete
         
         pure function aa_exclass2_get_name(self) result(rv) &
                 bind(C, name="AA_exclass2_get_name")
@@ -197,15 +198,15 @@ contains
         ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     
-    subroutine exclass2_ex_class1(obj)
+    subroutine exclass2_delete(obj)
         use iso_c_binding
         implicit none
-        type(exclass2) :: obj
-        ! splicer begin class.ExClass2.method.ex_class1
-        call aa_exclass2_ex_class1(obj%voidptr)
+        class(exclass2) :: obj
+        ! splicer begin class.ExClass2.method.delete
+        call aa_exclass2_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR
-        ! splicer end class.ExClass2.method.ex_class1
-    end subroutine exclass2_ex_class1
+        ! splicer end class.ExClass2.method.delete
+    end subroutine exclass2_delete
     
     function exclass2_get_name(obj) result(rv)
         use iso_c_binding

@@ -125,7 +125,7 @@ classes:
            random: 2
       -  name: extra
 
-    - decl: void ExClass1+destructor
+    - decl: void delete+destructor
 
     - decl: const string& getName const
       # test annotating result

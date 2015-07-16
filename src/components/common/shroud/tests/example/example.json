@@ -735,31 +735,31 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "void ExClass1+destructor", 
+                    "decl": "void delete+destructor", 
                     "fmt": {
-                        "CPP_name": "ExClass1", 
+                        "CPP_name": "delete", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self", 
                         "C_call_list": "", 
-                        "C_name": "AA_exclass2_ex_class1", 
+                        "C_name": "AA_exclass2_delete", 
                         "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
                         "C_return_type": "void", 
                         "F_C_arguments": "self", 
-                        "F_C_name": "aa_exclass2_ex_class1", 
+                        "F_C_name": "aa_exclass2_delete", 
                         "F_C_subprogram": "subroutine", 
                         "F_arg_c_call": "obj%voidptr", 
                         "F_arg_c_call_tab": "\tobj%voidptr", 
                         "F_arguments": "obj", 
                         "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "ex_class1", 
-                        "F_name_impl": "exclass2_ex_class1", 
-                        "F_name_method": "ex_class1", 
+                        "F_name_generic": "delete", 
+                        "F_name_impl": "exclass2_delete", 
+                        "F_name_method": "delete", 
                         "F_subprogram": "subroutine", 
-                        "PY_name_impl": "PP_exclass2_ex_class1", 
-                        "method_name": "ExClass1", 
+                        "PY_name_impl": "PP_exclass2_delete", 
+                        "method_name": "delete", 
                         "rv_decl": "void rv", 
-                        "underscore_name": "ex_class1"
+                        "underscore_name": "delete"
                     }, 
                     "options": {}, 
                     "qualifiers": {}, 
@@ -767,7 +767,7 @@
                         "attrs": {
                             "destructor": true
                         }, 
-                        "name": "ExClass1", 
+                        "name": "delete", 
                         "type": "void"
                     }
                 }, 

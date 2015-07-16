@@ -34,7 +34,7 @@ contains
     call group%get_name(name)
     call assert_true(name == "test" )
     
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_name
 
   !------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ contains
 
     call assert_true( child%get_parent() == parent )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_parent
 
 !------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ contains
     const_ds = group%get_data_store()
     call assert_true( const_ds == ds )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_datastore
 
   !------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ contains
 
     call assert_true( parent%has_group("child") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine has_group
 
 !------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ contains
 
     call assert_true( parent%has_view("view") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine has_view
 
 !------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ contains
     call assert_true(name3 == " ")
     call assert_false(is_name_valid(name3))
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_view_name_index
 
 !------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ contains
     call assert_true(name3 == " ")
     call assert_false(is_name_valid(name3))
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_group_name_index
 
   !------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ contains
 
     call assert_false( group%has_view("view") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_has_viewbuffer
 
   !------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ contains
     call root%destroy_group("group")
     call assert_false( root%has_group("group") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_has_group
 
   !------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ contains
 
     call assert_true(flds%has_view("a"))
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine group_name_collisions
 
   !------------------------------------------------------------------------------
@@ -314,7 +314,7 @@ contains
 !--    call assert_equals(flds%get_view("i0")%getDataBuffer(),
 !--    call flds%get_group("sub")%get_view("i0")%getDataBuffer())
     
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine view_copy_move
 
   !------------------------------------------------------------------------------
@@ -361,7 +361,7 @@ contains
     
     call assert_true(tmpgrp == gb)
     
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine groups_move_copy
 
   !------------------------------------------------------------------------------
@@ -405,7 +405,7 @@ contains
 !--    if( buffer1 == ATK_NULLPTR ) buffValid = .false.
 !XX    call assert_false(buffValid)
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_view_and_buffer
 
 
@@ -458,7 +458,7 @@ contains
     call grp%destroy_view_and_buffer(view_name1)
 !--    call grp%destroy_view_and_buffer(view_name2)
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_alloc_view_and_buffer
 
   !------------------------------------------------------------------------------
@@ -499,7 +499,7 @@ contains
 !--       call assert_equals(sub_b_vals(i), 20)
 !--    enddo
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_view_of_buffer_with_schema
 
   !------------------------------------------------------------------------------
@@ -542,8 +542,8 @@ contains
 
     call ds2%print()
     
-    call datastore_delete(ds)
-    call datastore_delete(ds2)
+    call ds%delete()
+    call ds2%delete()
   end subroutine save_restore_simple
 
   !------------------------------------------------------------------------------
@@ -607,8 +607,8 @@ contains
 
     call ds2%print()
 
-    call datastore_delete(ds)
-    call datastore_delete(ds2)
+    call ds%delete()
+    call ds2%delete()
   end subroutine save_restore_complex
 
 !----------------------------------------------------------------------
