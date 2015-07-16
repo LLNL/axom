@@ -3,10 +3,10 @@
 #
 
 set(gtest_sidre_tests
-#   testGTestExample.cpp
    sidre_smoke.cpp
    sidre_buffer.cpp
    sidre_class.cpp
+   sidre_datastore.cpp
    sidre_external.cpp
    sidre_group.cpp
    sidre_opaque.cpp
