@@ -613,8 +613,6 @@ void DumpUltra( DataGroup * const prob)
 
 //   VHashTraverse_t content ;
 
-  DataGroup * const elem = prob->getGroup("elem");
-
   strcpy(fname, "problem" );
 
   /* Skip past the junk */
@@ -656,28 +654,30 @@ void DumpUltra( DataGroup * const prob)
   }
 
 
+  DataGroup * const elem = prob->getGroup("elem");
+
   for(size_t i=0 ; i<elem->getNumViews() ; i++)
   {
     DataView * const view = elem->getView(i);
-    const int length = view->getSchema().dtype().number_of_elements();
+    const int length = view->getNumberOfElements();
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 
     if( view->getTypeID() == CONDUIT_INT32_T )
     {
       int32 const * const data = view->getValue();
-      for ( int i=0 ; i<length ; ++i)
+      for ( int j=0 ; j<length ; ++j)
       {
-        fprintf(fp, "%f %f\n", (double) i, (double) data[i]);
+        fprintf(fp, "%f %f\n", (double) j, (double) data[j]);
       }
       fprintf(fp, "\n");
     }
     else if( view->getTypeID() == CONDUIT_FLOAT64_T )
     {
       float64 const * const data = view->getValue();
-      for ( int i=0 ; i<length ; ++i)
+      for ( int j=0 ; j<length ; ++j)
       {
-        fprintf(fp, "%f %f\n", (double) i, (double) data[i]);
+        fprintf(fp, "%f %f\n", (double) j, (double) data[j]);
       }
       fprintf(fp, "\n");
     }

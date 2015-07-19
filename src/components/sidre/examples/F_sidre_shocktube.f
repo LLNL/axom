@@ -220,8 +220,8 @@ subroutine CreateShockTubeMesh(prob)
   integer numElems
   integer numFaces
   integer numTubeElems
-  integer inflow(1)
-  integer outflow(1)
+!  integer inflow(1)
+!  integer outflow(1)
 
   tmpview = prob%get_view("numElems")
   numElems = tmpview%get_value_int()
@@ -235,11 +235,11 @@ subroutine CreateShockTubeMesh(prob)
 
   ! set up some important views
 
-  inflow(1) = 1 ! identify inflow elements
+!  inflow(1) = 1 ! identify inflow elements
 !--//  elem->viewCreate("inflow", new IndexSet(1, inflow))
   ingrp = elem%create_group("inflow")
 
-  outflow(1) = numElems ! identify outflow elements
+!  outflow(1) = numElems ! identify outflow elements
 !--//  elem->viewCreate("outflow", new IndexSet(1, outflow))
   outgrp = elem%create_group("outflow")
 
@@ -258,22 +258,22 @@ subroutine CreateShockTubeMesh(prob)
 !--  allocate(mapToElem(nuMTubeElems))
 
   do k=1, numTubeElems
-    mapToElems(k) = k + 1
+    mapToElems(k) = k  ! XXX + 1
   enddo
 
   ! Set up some important data relations
 
   ! Each face connects to two elements
 
-  faceToElemView = tube%create_view_and_buffer("faceToElem", ATK_C_INT_T, 2*numFaces)
+  faceToElemView = face%create_view_and_buffer("faceToElem", ATK_C_INT_T, 2*numFaces)
   call faceToElemView%allocate()
 
   call faceToElemView%get_value(faceToElem)
 !--  allocate(faceToElem(2, numFaces))
 
   do i=1, numFaces
-    faceToElem((i-1) * 2 + IUPWIND) = i
-    faceToElem((i-1) * 2 + IDOWNWIND) = i + 1
+    faceToElem((i-1) * 2 + IUPWIND) = i - 1 ! XXX
+    faceToElem((i-1) * 2 + IDOWNWIND) = i ! XXX  + 1
   enddo
 
   ! Each element connects to two faces
@@ -285,8 +285,8 @@ subroutine CreateShockTubeMesh(prob)
 !!  allocate(elemToFace(2, numElems))
 
   do i=1, numElems
-    elemToFace((i-1) * 2 + IUPWIND) = i ! same map as above by coincidence
-    elemToFace((i-1) * 2 + IDOWNWIND) = i + 1
+    elemToFace((i-1) * 2 + IUPWIND) = i  - 1! XXX ! same map as above by coincidence
+    elemToFace((i-1) * 2 + IDOWNWIND) = i ! XXX  + 1
   enddo
 
   return
@@ -348,11 +348,11 @@ subroutine InitializeShockTube(prob)
 !!  allocate(pressure(numElems))
 
   ! Create face centered quantities
-  tmpview = elem%create_view_and_buffer("F0", ATK_C_DOUBLE_T, numFaces)
+  tmpview = face%create_view_and_buffer("F0", ATK_C_DOUBLE_T, numFaces)
   call tmpview%allocate()
-  tmpview = elem%create_view_and_buffer("F1", ATK_C_DOUBLE_T, numFaces)
+  tmpview = face%create_view_and_buffer("F1", ATK_C_DOUBLE_T, numFaces)
   call tmpview%allocate()
-  tmpview = elem%create_view_and_buffer("F2", ATK_C_DOUBLE_T, numFaces)
+  tmpview = face%create_view_and_buffer("F2", ATK_C_DOUBLE_T, numFaces)
   call tmpview%allocate()
 !!  allocate(F0(numFaces))
 !!  allocate(F1(numFaces))
@@ -373,7 +373,6 @@ subroutine InitializeShockTube(prob)
 
   ! Initialize zonal quantities
   do i=startTube, midTube
-!  for (i = startTube i < midTube ++i)
     mass(i) = massInitial
     momentum(i) = momentumInitial
     pressure(i) = pressureInitial
@@ -391,7 +390,6 @@ subroutine InitializeShockTube(prob)
   energyInitial = pressureInitial / (gammaa - 1.0d0)
 
   do i=midTube, endTube
-!  for (i = midTube i < endTube ++i)
     mass(i) = massInitial
     momentum(i) = momentumInitial
     pressure(i) = pressureInitial
@@ -626,18 +624,18 @@ subroutine DumpUltra( prob )
   type(datagroup) elem
   type(dataview) view
   integer, parameter :: fp = 8
-  integer i
+  integer i, j
   integer ierr
   character(30) name
   integer length
+  integer(C_INT), pointer :: idata(:)
+  real(C_DOUBLE), pointer :: ddata(:)
 
-  elem = prob%get_group("elem")
-
-  fname = "problem"
+  fname = "F_problem"
 
   view = prob%get_view("cycle")
 
-  write(fname, '(a,"_", i04, ".ult")') trim(fname), view%get_value_int()
+  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), view%get_value_int()
   open(fp, file=fname, iostat=ierr)
   if (ierr /= 0) then
      print *, "Could not open file ", trim(fname), ". Aborting."
@@ -648,51 +646,45 @@ subroutine DumpUltra( prob )
   write(fp, '(a)') "# Problem: problem"
 
   do i=1, prob%get_num_views()
-     view = prob%get_view(i)
+     view = prob%get_view(i-1)
      length = view%get_number_of_elements()
      call view%get_name(name)
      if ( length <= 1 ) then
         select case (view%get_type_id())
-        case (ATK_C_INT_T)
+        case (ATK_INT32_T)
            write(fp, '("# ", a, " = ", i4)') name, view%get_value_int()
-        case (ATK_C_DOUBLE_T)
-           write(fp, '("# ", a, " = ", f12.5)') name, view%get_value_double()
+        case (ATK_FLOAT64_T)
+           write(fp, '("# ", a, " = ", f16.5)') name, view%get_value_double()
         end select
     endif
   enddo
 
+  elem = prob%get_group("elem")
 
-!+  for(size_t i=0  i<elem%getNumViews()  i++)
-!+  {
-!+    DataView * const view = elem%get_view(i)
-!+    const int length = view%getSchema().dtype().number_of_elements()
-!+    const std::string& name = view%get_name()
-!+    write(fp, "# %s\n", name.c_str() )
-!+
-!+    if( view%getSchema().dtype().id() == DataType::INT32_T )
-!+    {
-!+      int32 const * const data = view%getValue()
-!+      for ( int i=0  i<length  ++i)
-!+      {
-!+        write(fp, "%f %f\n", (double) i, (double) data[i])
-!+      }
-!+      write(fp, "\n")
-!+    }
-!+    else if( view%getSchema().dtype().id() == DataType::FLOAT64_T )
-!+    {
-!+      float64 const * const data = view%getValue()
-!+      for ( int i=0  i<length  ++i)
-!+      {
-!+        write(fp, "%f %f\n", (double) i, (double) data[i])
-!+      }
-!+      write(fp, "\n")
-!+    }
-!+  }
-!+
-!+
+  do i=1, elem%get_num_views()
+     view = elem%get_view(i-1)
+     length = view%get_number_of_elements()
+     call view%get_name(name)
+     write(fp, '("# ", a)') trim(name)
+
+     select case (view%get_type_id())
+     case (ATK_INT32_T)
+        call view%get_value(idata)
+        do j = 1, length
+           write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), real(idata(j), C_DOUBLE)
+        enddo
+     case (ATK_FLOAT64_T)
+        call view%get_value(ddata)
+        do j = 1, length
+           write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), ddata(j)
+        enddo
+     end select
+  enddo
+
+
   close(fp)
 
-   return
- end subroutine DumpUltra
+  return
+end subroutine DumpUltra
 
 end program main
