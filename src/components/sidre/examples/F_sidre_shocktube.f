@@ -67,7 +67,7 @@ program main
   tmpview = prob%get_view("numCyclesPerDump")
   dumpInterval = tmpview%get_value_int()
   
-  do currCycle = 1, numTotalcycles
+  do currCycle = 0, numTotalcycles-1
     ! dump the ultra file, based on the user chosen attribute mask
     if ( mod(currCycle, dumpInterval) == 0) then
       call DumpUltra(prob)
@@ -389,7 +389,7 @@ subroutine InitializeShockTube(prob)
   pressureInitial = pressureInitial * pratio
   energyInitial = pressureInitial / (gammaa - 1.0d0)
 
-  do i=midTube, endTube
+  do i=midTube+1, endTube
     mass(i) = massInitial
     momentum(i) = momentumInitial
     pressure(i) = pressureInitial
@@ -459,8 +459,8 @@ subroutine ComputeFaceInfo(prob)
 
   do i=1, numFaces
      ! each face has an upwind and downwind element.
-     upWind = faceToElem((i-1) * 2 + IUPWIND)  ! upwind element
-     downWind = faceToElem((i-1) * 2 + IDOWNWIND)  ! downwind element
+     upWind = faceToElem((i-1) * 2 + IUPWIND) + 1 ! upwind element
+     downWind = faceToElem((i-1) * 2 + IDOWNWIND) + 1 ! downwind element
 
      ! calculate face centered quantities
      massf = 0.5d0 * (mass(upWind) + mass(downWind))
@@ -600,10 +600,10 @@ subroutine UpdateElemInfo(prob)
 
   do i=1, numTubeElems
      ! recalculate elements in the shocktube, don't touch inflow/outflow
-     elemIdx = is(i)
+     elemIdx = is(i) + 1
      ! each element inside the tube has an upwind and downwind face
-     upWind = elemToFace((i-1)*2 + IUPWIND)  ! upwind face
-     downWind = elemToFace((i-1)*2 + IDOWNWIND)  ! downwind face
+     upWind = elemToFace((i-1)*2 + IUPWIND) + 1 ! upwind face
+     downWind = elemToFace((i-1)*2 + IDOWNWIND) + 1  ! downwind face
 
      mass(elemIdx) = mass(elemIdx) - (gammaaInverse * (F0(downWind) - F0(upWind)) * dt / dx)
      momentum(elemIdx) = momentum(elemIdx) - (gammaaInverse * (F1(downWind) - F1(upWind)) * dt / dx)

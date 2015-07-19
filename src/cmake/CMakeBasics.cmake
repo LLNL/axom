@@ -72,6 +72,9 @@ include(SetupCodeChecks)
 ################################
 include(SetupCodeMetrics)
 
+# XXX this should move to some better place and be based on compiler
+#set (CMAKE_Fortran_FLAGS_DEBUG   "${CMAKE_Fortran_FLAGS_DEBUG} -fcheck=bounds")
+
 ################################
 # Standard Build Layout
 ################################
