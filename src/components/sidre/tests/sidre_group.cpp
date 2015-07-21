@@ -267,7 +267,7 @@ TEST(sidre_group,create_destroy_has_viewbuffer)
   group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) );
   EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR ) ;
   // destroy this view using index
-  group->destroyView( group->getFirstValidViewIndex() );
+  group->destroyViewAndBuffer( group->getFirstValidViewIndex() );
 
   delete ds;
 }
