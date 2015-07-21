@@ -24,18 +24,19 @@
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
 #endif
-// splicer begin include
+// splicer begin header.include
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
-// splicer end include
+#include "SidreWrapperHelpers.hpp"
+// splicer end header.include
 namespace asctoolkit {
 namespace sidre {
 extern PyTypeObject PY_DataStore_Type;
 extern PyTypeObject PY_DataGroup_Type;
 extern PyTypeObject PY_DataBuffer_Type;
 extern PyTypeObject PY_DataView_Type;
-// splicer begin C_declaration
-// splicer end C_declaration
+// splicer begin header.C_declaration
+// splicer end header.C_declaration
 
 // helper functions
 extern const char *PY_DataStore_capsule_name;

@@ -20,7 +20,7 @@ contains
     type(datastore) ds
 
     ds = datastore_new()
-    call datastore_delete(ds)
+    call ds%delete()
 
     call assert_true(.true.)
   end subroutine create_datastore
@@ -43,10 +43,11 @@ contains
 
     root = ds%get_root()
 
-    call assert_true(root%get_group_name(idx) == " ")
+    call root%get_group_name(idx, name)
+    call assert_true(name == " ")
     call assert_true(root%get_group_index(name) == invalid_index)
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine valid_invalid
 
 !------------------------------------------------------------------------------
@@ -59,6 +60,7 @@ function fortran_test() bind(C,name="fortran_test")
   use sidre_smoke
   implicit none
   integer(C_INT) fortran_test
+  logical ok
 
   call init_fruit
 
@@ -68,5 +70,10 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_summary
   call fruit_finalize
 
-  fortran_test = 0
+  call is_all_successful(ok)
+  if (ok) then
+     fortran_test = 0
+  else
+     fortran_test = 1
+  endif
 end function fortran_test

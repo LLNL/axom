@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataStore.include
-// splicer end class.DataStore.include
+// splicer begin class.DataStore.impl.include
+// splicer end class.DataStore.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataStore.C_definition
-// splicer end class.DataStore.C_definition
-// splicer begin class.DataStore.additional_methods
-// splicer end class.DataStore.additional_methods
+// splicer begin class.DataStore.impl.C_definition
+// splicer end class.DataStore.impl.C_definition
+// splicer begin class.DataStore.impl.additional_methods
+// splicer end class.DataStore.impl.additional_methods
 static int
 PY_DataStore_tp_init (PY_DataStore *self, PyObject *args, PyObject *kwds)
 {
@@ -26,6 +26,56 @@ DataStore * ds = new DataStore();
 self->BBB = ds;
 return 0;
 // splicer end class.DataStore.type.init
+}
+static PyObject *
+PY_DataStore_tp_richcompare (PY_DataStore *self, PyObject *other, int opid)
+{
+// splicer begin class.DataStore.type.richcompare
+PyObject *rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataStore_Type)) {
+    PY_DataStore *pyother = (PY_DataStore *) other;
+    switch (opid) {
+    case Py_EQ:
+	if (self->BBB == pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_NE:
+	if (self->BBB != pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_LT:
+    case Py_LE:
+    case Py_GE:
+    case Py_GT:
+	break;
+    }
+ }
+Py_INCREF(rv);
+return rv;
+// splicer end class.DataStore.type.richcompare
+}
+
+static char PY_datastore_delete__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datastore_delete(
+  PY_DataStore *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataStore.method.delete
+    delete self->BBB;
+    self->BBB = NULL;
+    Py_RETURN_NONE;
+// splicer end class.DataStore.method.delete
 }
 
 static char PY_datastore_get_root__doc__[] =
@@ -38,11 +88,12 @@ PY_datastore_get_root(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.getRoot
-DataGroup * grp = self->BBB->getRoot();
-PyObject *rv = PP_DataGroup_to_Object(grp);
-return rv;
-// splicer end class.DataStore.method.getRoot
+// splicer begin class.DataStore.method.get_root
+    DataGroup * rv = self->BBB->getRoot();
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataStore.method.get_root
 }
 
 static char PY_datastore_get_buffer__doc__[] =
@@ -55,19 +106,21 @@ PY_datastore_get_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.getBuffer
+// splicer begin class.DataStore.method.get_buffer
     ATK_IndexType idx;
     const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getBuffer", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getBuffer", kw_list,
         &idx))
     {
         return NULL;
     }
     DataBuffer * rv = self->BBB->getBuffer(idx);
-    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
-// splicer end class.DataStore.method.getBuffer
+    PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataStore.method.get_buffer
 }
 
 static char PY_datastore_create_buffer__doc__[] =
@@ -80,10 +133,12 @@ PY_datastore_create_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.createBuffer
+// splicer begin class.DataStore.method.create_buffer
     DataBuffer * rv = self->BBB->createBuffer();
-    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
-// splicer end class.DataStore.method.createBuffer
+    PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataStore.method.create_buffer
 }
 
 static char PY_datastore_destroy_buffer__doc__[] =
@@ -96,19 +151,19 @@ PY_datastore_destroy_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.destroyBuffer
+// splicer begin class.DataStore.method.destroy_buffer
     ATK_IndexType id;
     const char *kwcpp = "id";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:destroyBuffer", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:destroyBuffer", kw_list,
         &id))
     {
         return NULL;
     }
     self->BBB->destroyBuffer(id);
     Py_RETURN_NONE;
-// splicer end class.DataStore.method.destroyBuffer
+// splicer end class.DataStore.method.destroy_buffer
 }
 
 static char PY_datastore_get_num_buffers__doc__[] =
@@ -121,10 +176,10 @@ PY_datastore_get_num_buffers(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataStore.method.getNumBuffers
+// splicer begin class.DataStore.method.get_num_buffers
     size_t rv = self->BBB->getNumBuffers();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataStore.method.getNumBuffers
+    return PyInt_FromLong(rv);
+// splicer end class.DataStore.method.get_num_buffers
 }
 
 static char PY_datastore_print__doc__[] =
@@ -142,13 +197,18 @@ PY_datastore_print(
     Py_RETURN_NONE;
 // splicer end class.DataStore.method.print
 }
+// splicer begin class.DataStore.impl.after_methods
+// splicer end class.DataStore.impl.after_methods
 static PyMethodDef PY_DataStore_methods[] = {
+{"delete", (PyCFunction)PY_datastore_delete, METH_NOARGS, PY_datastore_delete__doc__},
 {"getRoot", (PyCFunction)PY_datastore_get_root, METH_NOARGS, PY_datastore_get_root__doc__},
 {"getBuffer", (PyCFunction)PY_datastore_get_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_get_buffer__doc__},
 {"createBuffer", (PyCFunction)PY_datastore_create_buffer, METH_NOARGS, PY_datastore_create_buffer__doc__},
 {"destroyBuffer", (PyCFunction)PY_datastore_destroy_buffer, METH_VARARGS|METH_KEYWORDS, PY_datastore_destroy_buffer__doc__},
 {"getNumBuffers", (PyCFunction)PY_datastore_get_num_buffers, METH_NOARGS, PY_datastore_get_num_buffers__doc__},
 {"print", (PyCFunction)PY_datastore_print, METH_NOARGS, PY_datastore_print__doc__},
+// splicer begin class.DataStore.PyMethodDef
+// splicer end class.DataStore.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
@@ -195,7 +255,7 @@ PyTypeObject PY_DataStore_Type = {
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc)PY_DataStore_tp_richcompare,                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

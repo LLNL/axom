@@ -32,8 +32,9 @@ contains
 
     dbuff_3 = ds%create_buffer()
     call assert_equals(dbuff_3%get_index(), 0)
+
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_buffers
 
 !------------------------------------------------------------------------------
@@ -58,13 +59,13 @@ contains
        data(i) = i * i
     enddo
 
-!    dbuff%getNode().print_detailed()
+    call dbuff%print()
 
 !    call assert_equals(dbuff%getNode().schema().total_bytes(), &
 !         dbuff%getSchema().total_bytes())
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine alloc_buffer_for_int_array
 
 !------------------------------------------------------------------------------
@@ -87,13 +88,13 @@ contains
        data(i) = i * i
     enddo
 
-!  dbuff%getNode().print_detailed()
+    call dbuff%print()
 
 !  call assert_equals(dbuff%getNode().schema().total_bytes(),
 !            dbuff%getSchema().total_bytes())
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine init_buffer_for_int_array
 
 !------------------------------------------------------------------------------
@@ -118,7 +119,7 @@ contains
 
     data(:) = 5
 
-    ! call dbuff%getNode().print_detailed()
+    call dbuff%print()
   
     call dbuff%reallocate(ATK_C_LONG_T, 10_8)
 
@@ -136,11 +137,10 @@ contains
 
 !  call assert_equals(dbuff%getNode().schema().total_bytes(), sizeof(long)*10)
 
-!  dbuff%getNode().print_detailed()
+    call dbuff%print()
 
     call ds%print()
-    call datastore_delete(ds)
-
+    call ds%delete()
   end subroutine realloc_buffer
 
 !----------------------------------------------------------------------
@@ -152,6 +152,7 @@ function fortran_test() bind(C,name="fortran_test")
   use sidre_buffer
   implicit none
   integer(C_INT) fortran_test
+  logical ok
 
   call init_fruit
 
@@ -163,5 +164,10 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_summary
   call fruit_finalize
 
-  fortran_test = 0
+  call is_all_successful(ok)
+  if (ok) then
+     fortran_test = 0
+  else
+     fortran_test = 1
+  endif
 end function fortran_test

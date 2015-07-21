@@ -69,6 +69,25 @@ contains
     cstr(len_trim(s)+1) = c_null_char
   end function cstr
 
+  ! Copy NULL terminated string ptr into out.
+  subroutine fcccopyptr(out, lenout, ptr)
+    use iso_c_binding
+    implicit none
+    integer, intent(IN) ::  lenout
+    character(len=lenout), intent(OUT) :: out
+    type(C_PTR), intent(IN) :: ptr
+    character(kind=C_CHAR), pointer :: cptr(:)
+    integer i
+    integer lenin
+    out = " "
+    if (C_associated(ptr)) then
+      lenin = strlen_ptr(ptr)
+      call c_f_pointer(ptr, cptr, [lenin])
+      do i = 1, min(lenout, lenin)
+         out(i:i) = cptr(i)
+      enddo
+    endif
+  end subroutine fcccopyptr
 
   pure function booltological(value) result(rv)
      use, intrinsic ::  iso_c_binding, only : C_BOOL

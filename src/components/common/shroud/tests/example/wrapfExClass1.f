@@ -6,7 +6,7 @@
 module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2
-    use iso_c_binding
+    use iso_c_binding, only : C_INT, C_LONG
     implicit none
     
     
@@ -21,6 +21,7 @@ module exclass1_mod
           component part 1b
         ! splicer end class.ExClass1.component_part
     contains
+        procedure :: delete => exclass1_delete
         procedure :: increment_count => exclass1_increment_count
         procedure :: get_name => exclass1_get_name
         procedure :: get_name_length => exclass1_get_name_length
@@ -32,11 +33,24 @@ module exclass1_mod
         procedure :: get_addr => exclass1_get_addr
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
-        generic :: get_value => get_value_from_int, get_value_1
+        generic :: get_value => &
+            ! splicer begin class.ExClass1.generic.get_value
+            ! splicer end class.ExClass1.generic.get_value
+            get_value_from_int,  &
+            get_value_1
         ! splicer begin class.ExClass1.type_bound_procedure_part
           type bound procedure part 1
         ! splicer end class.ExClass1.type_bound_procedure_part
     end type exclass1
+    
+    
+    interface operator (.eq.)
+        module procedure exclass1_eq
+    end interface
+    
+    interface operator (.ne.)
+        module procedure exclass1_ne
+    end interface
     
     interface
         
@@ -165,7 +179,7 @@ contains
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none
-        type(exclass1) :: obj
+        class(exclass1) :: obj
         ! splicer begin class.ExClass1.method.delete
         call aa_exclass1_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR
@@ -179,7 +193,9 @@ contains
         integer(C_INT) :: incr
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.increment_count
-        rv = aa_exclass1_increment_count(obj%voidptr, incr)
+        rv = aa_exclass1_increment_count(  &
+            obj%voidptr,  &
+            incr)
         ! splicer end class.ExClass1.method.increment_count
     end function exclass1_increment_count
     
@@ -207,21 +223,23 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(aa_exclass1_get_name_error_check(obj%voidptr))) :: rv
         ! splicer begin class.ExClass1.method.get_name_error_check
         rv = fstr(aa_exclass1_get_name_error_check(obj%voidptr))
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    function exclass1_get_name_arg(obj) result(rv)
+    subroutine exclass1_get_name_arg(obj, rv)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(kind=C_CHAR, len=1) :: rv
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv = fstr(aa_exclass1_get_name_arg(obj%voidptr))
+        rv_ptr = aa_exclass1_get_name_arg(obj%voidptr)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end class.ExClass1.method.get_name_arg
-    end function exclass1_get_name_arg
+    end subroutine exclass1_get_name_arg
     
     function exclass1_get_root(obj) result(rv)
         use iso_c_binding
@@ -240,7 +258,9 @@ contains
         integer(C_INT) :: value
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.get_value_from_int
-        rv = aa_exclass1_get_value_from_int(obj%voidptr, value)
+        rv = aa_exclass1_get_value_from_int(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass1.method.get_value_from_int
     end function exclass1_get_value_from_int
     
@@ -251,7 +271,9 @@ contains
         integer(C_LONG) :: value
         integer(C_LONG) :: rv
         ! splicer begin class.ExClass1.method.get_value_1
-        rv = aa_exclass1_get_value_1(obj%voidptr, value)
+        rv = aa_exclass1_get_value_1(  &
+            obj%voidptr,  &
+            value)
         ! splicer end class.ExClass1.method.get_value_1
     end function exclass1_get_value_1
     
@@ -272,7 +294,9 @@ contains
         logical :: in
         logical :: rv
         ! splicer begin class.ExClass1.method.has_addr
-        rv = booltological(aa_exclass1_has_addr(obj%voidptr, logicaltobool(in)))
+        rv = booltological(aa_exclass1_has_addr(  &
+            obj%voidptr,  &
+            logicaltobool(in)))
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     
@@ -287,5 +311,29 @@ contains
     
     ! splicer begin class.ExClass1.additional_functions
     ! splicer end class.ExClass1.additional_functions
+    
+    function exclass1_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass1), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass1_eq
+    
+    function exclass1_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass1), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass1_ne
 
 end module exclass1_mod

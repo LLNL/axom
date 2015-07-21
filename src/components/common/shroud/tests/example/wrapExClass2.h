@@ -31,7 +31,7 @@ typedef struct s_AA_exclass2 AA_exclass2;
 
 AA_exclass2 * AA_exclass2_ex_class2(const char * name);
 
-void AA_exclass2_ex_class1(AA_exclass2 * self);
+void AA_exclass2_delete(AA_exclass2 * self);
 
 const char * AA_exclass2_get_name(const AA_exclass2 * self);
 
@@ -44,6 +44,20 @@ void AA_exclass2_declare(AA_exclass2 * self, int type, ATK_SidreLength len);
 void AA_exclass2_destroyall(AA_exclass2 * self);
 
 int AA_exclass2_get_type_id(AA_exclass2 * self);
+
+void AA_exclass2_testoptional(AA_exclass2 * self, int i, long j);
+
+void AA_exclass2_set_value_int(AA_exclass2 * self, int value);
+
+void AA_exclass2_set_value_long(AA_exclass2 * self, long value);
+
+void AA_exclass2_set_value_float(AA_exclass2 * self, float value);
+
+void AA_exclass2_set_value_double(AA_exclass2 * self, double value);
+
+int AA_exclass2_get_value_int(AA_exclass2 * self);
+
+double AA_exclass2_get_value_double(AA_exclass2 * self);
 
 #ifdef __cplusplus
 }

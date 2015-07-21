@@ -11,8 +11,6 @@
 //
 #include "pySidremodule.hpp"
 // splicer begin include
-#include "sidre/sidre.hpp"
-#include "sidre/SidreTypes.h"
 // splicer end include
 
 namespace asctoolkit {
@@ -33,10 +31,10 @@ PY_is_name_valid(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.isNameValid
+// splicer begin function.is_name_valid
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
         &name))
@@ -44,8 +42,8 @@ PY_is_name_valid(
         return NULL;
     }
     bool rv = isNameValid(name);
-    return Py_BuildValue("O", &rv);
-// splicer end function.isNameValid
+    return PyBool_FromLong(rv);
+// splicer end function.is_name_valid
 }
 static PyMethodDef PY_methods[] = {
 {"isNameValid", (PyCFunction)PY_is_name_valid, METH_VARARGS|METH_KEYWORDS, PY_is_name_valid__doc__},
@@ -170,6 +168,7 @@ MOD_INITBASIS(void)
     PyModule_AddObject(m, "Error", st->error);
 
 // splicer begin C_init_body
+PyModule_AddIntConstant(m, "InvalidIndex", -1);
 // splicer end C_init_body
 
     /* Check for errors */

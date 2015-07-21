@@ -14,15 +14,17 @@ class Uberenv(Package):
     version('1.3.1', '8786a194acf9673464c5455b11fd4332')
     
     # all of these theses are custom
+    depends_on("cmake")
+    depends_on("lcov")
     depends_on("python")
     depends_on("py-sphinx")
     depends_on("py-breathe")
     depends_on("py-pyyaml")
     depends_on("py-parsley")
-    depends_on("cmake")
 
     # boost, header only
     depends_on("boost-headers")
+    depends_on("sparsehash-headers")
 
     # this was pushed to develop, but not yet in the diy branch
     depends_on("uncrustify")
@@ -50,6 +52,8 @@ class Uberenv(Package):
         cfg.write("# boost headers from uberenv\n")
         cfg.write('set(ENABLE_BOOST ON CACHE PATH "")\n')
         cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
+        cfg.write("# sparsehash headers from uberenv\n")
+        cfg.write('set(SPARSEHAST_ROOT "%s" CACHE PATH "")\n\n' % spec['sparsehash-headers'].prefix)
         cfg.write("\n")
         cfg.close()        
         

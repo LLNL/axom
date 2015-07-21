@@ -28,7 +28,8 @@ TEST(C_sidre_buffer,create_buffers)
 
   ATK_databuffer * dbuff_3 = ATK_datastore_create_buffer(ds);
   EXPECT_EQ(ATK_databuffer_get_index(dbuff_3), 0);
-  //    ds->print();
+
+  ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 }
 
@@ -49,15 +50,12 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
     data_ptr[i] = i*i;
   }
 
-#if 0
-  dbuff->getNode().print_detailed();
-#endif
+  ATK_databuffer_print(dbuff);
 
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
-
 }
 
 //------------------------------------------------------------------------------
@@ -75,14 +73,12 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
     data_ptr[i] = i*i;
   }
 
-#ifdef XXX
-  dbuff->getNode().print_detailed();
-#endif
+  ATK_databuffer_print(dbuff);
+
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
-
 }
 
 //------------------------------------------------------------------------------
@@ -104,9 +100,7 @@ TEST(C_sidre_buffer,realloc_buffer)
     data_ptr[i] = 5;
   }
 
-#ifdef XXX
-  dbuff->getNode().print_detailed();
-#endif
+  ATK_databuffer_print(dbuff);
 
   ATK_databuffer_reallocate(dbuff, ATK_C_LONG_T, 10);
 
@@ -124,13 +118,11 @@ TEST(C_sidre_buffer,realloc_buffer)
   }
 
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
-#ifdef XXX
-  dbuff->getNode().print_detailed();
-#endif
+
+  ATK_databuffer_print(dbuff);
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
-
 }
 
 //----------------------------------------------------------------------

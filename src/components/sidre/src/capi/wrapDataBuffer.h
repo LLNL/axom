@@ -39,19 +39,21 @@ size_t ATK_databuffer_get_num_views(ATK_databuffer * self);
 
 void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len);
 
-void ATK_databuffer_declare_external(ATK_databuffer * self, void * external_data, int type, ATK_SidreLength len);
-
 void ATK_databuffer_allocate_existing(ATK_databuffer * self);
 
 void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len);
 
 void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len);
 
+void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data);
+
 bool ATK_databuffer_is_external(ATK_databuffer * self);
 
 void * ATK_databuffer_get_data(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
+
+void ATK_databuffer_print(ATK_databuffer * self);
 
 #ifdef __cplusplus
 }

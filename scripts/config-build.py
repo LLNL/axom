@@ -78,7 +78,7 @@ if args.eclipse:
     cmakeline += ' -G "Eclipse CDT4 - Unix Makefiles"'
 
 if args.cmakeoption:
-    cmakeline += " " + parser.extraoptions
+    cmakeline += " " + args.cmakeoption
 
 cmakeline += " %s/../src " % scriptsdir
 

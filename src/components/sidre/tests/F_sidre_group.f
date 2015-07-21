@@ -25,14 +25,16 @@ contains
   subroutine get_name
     type(datastore) ds
     type(datagroup) root, group
+    character(30) name
 
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("test")
 
-    call assert_true(group%get_name() == "test" )
+    call group%get_name(name)
+    call assert_true(name == "test" )
     
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_name
 
   !------------------------------------------------------------------------------
@@ -47,28 +49,28 @@ contains
     parent = root%create_group("parent")
     child = parent%create_group("child")
 
-!--    call assert_true( child%get_parent() == parent )
+    call assert_true( child%get_parent() == parent )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_parent
 
 !------------------------------------------------------------------------------
 ! Verify get_data_store()
 !------------------------------------------------------------------------------
   subroutine get_datastore
-    type(datastore) ds
+    type(datastore) ds, const_ds
     type(datagroup) root, group
 
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("parent")
 
-!--    call assert_true( group%get_data_store() == ds )
+    call assert_true( group%get_data_store() == ds )
 
-!--    DataStore const * const_ds = group%get_data_store()
-!--    call assert_true( const_ds == ds )
+    const_ds = group%get_data_store()
+    call assert_true( const_ds == ds )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_datastore
 
   !------------------------------------------------------------------------------
@@ -83,11 +85,11 @@ contains
 
     parent = root%create_group("parent")
     child = parent%create_group("child")
-!--    call assert_true( child%get_parent() == parent )
+    call assert_true( child%get_parent() == parent )
 
     call assert_true( parent%has_group("child") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine has_group
 
 !------------------------------------------------------------------------------
@@ -104,11 +106,11 @@ contains
     parent = root%create_group("parent")
     view = parent%create_view_and_buffer("view")
 
-!--    call assert_true( view%get_owning_group() == parent )
+    call assert_true( view%get_owning_group() == parent )
 
     call assert_true( parent%has_view("view") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine has_view
 
 !------------------------------------------------------------------------------
@@ -118,8 +120,9 @@ contains
     type(datastore) ds
     type(datagroup) root, parent
     type(dataview) view1, view2
-    integer idx1, idx2 !x, idx3    ! IndexType
-    character(len=30) name1, name2 !x, name3
+    integer idx1, idx2, idx3    ! IndexType
+    character(len=30) name1, name2, name3
+    character(len=30) tmpname
 
     ds = datastore_new()
     root = ds%get_root()
@@ -128,28 +131,30 @@ contains
     view1 = parent%create_view_and_buffer("view1")
     view2 = parent%create_view_and_buffer("view2")
 
-!--    call assert_equals(parent%get_num_views(), 2)
+    call assert_true(parent%get_num_views() == 2)
 
     idx1 = parent%get_view_index("view1")
     idx2 = parent%get_view_index("view2")
 
-    name1 = parent%get_view_name(idx1)
-    name2 = parent%get_view_name(idx2)
+    call parent%get_view_name(idx1, name1)
+    call parent%get_view_name(idx2, name2)
 
     call assert_equals(name1, "view1")
-    call assert_equals(view1%get_name(), name1)
+    call view1%get_name(tmpname)
+    call assert_equals(tmpname, name1)
     
     call assert_equals(name2, "view2")
-    call assert_equals(view2%get_name(), name2)
+    call view2%get_name(tmpname)
+    call assert_equals(tmpname, name2)
 
-!x    idx3 = parent%get_view_index("view3")
-!x    name3 = parent%get_view_name(idx3)
+    idx3 = parent%get_view_index("view3")
+    call assert_equals(idx3, invalid_index)
 
-!x    call assert_equals(idx3, invalid_index)
-!x    call assert_true(name3 == " ")
-!x    call assert_false(is_name_valid(name3))
+    call parent%get_view_name(idx3, name3)
+    call assert_true(name3 == " ")
+    call assert_false(is_name_valid(name3))
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_view_name_index
 
 !------------------------------------------------------------------------------
@@ -158,8 +163,9 @@ contains
   subroutine get_group_name_index
     type(datastore) ds
     type(datagroup) root, parent, group1, group2
-    integer idx1, idx2 !x, idx3     ! IndexType
-    character(len=30) name1, name2 !x, name3
+    integer idx1, idx2, idx3     ! IndexType
+    character(len=30) name1, name2, name3
+    character(len=30) tmpname
 
     ds = datastore_new()
     root = ds%get_root()
@@ -168,27 +174,30 @@ contains
     group1 = parent%create_group("group1")
     group2 = parent%create_group("group2")
 
-!--    call assert_equals(parent%get_num_groups(), 2)
+!--    call assert_equals(parent%get_num_groups(), 2)  ! size_t
+    call assert_true(parent%get_num_groups() == 2)
 
     idx1 = parent%get_group_index("group1")
     idx2 = parent%get_group_index("group2")
 
-    name1 = parent%get_group_name(idx1)
-    name2 = parent%get_group_name(idx2)
-
+    call parent%get_group_name(idx1, name1)
     call assert_equals(name1, "group1")
-    call assert_equals(group1%get_name(), name1)
+    call group1%get_name(tmpname)
+    call assert_equals(tmpname, name1)
 
+    call parent%get_group_name(idx2, name2)
     call assert_equals(name2, "group2")
-    call assert_equals(group2%get_name(), name2)
+    call group2%get_name(tmpname)
+    call assert_equals(tmpname, name2)
 
-!x    idx3 = parent%get_group_index("group3")
-!x    name3 = parent%get_group_name(idx3)
+    idx3 = parent%get_group_index("group3")
+    call assert_equals(idx3, invalid_index)
 
-!x    call assert_equals(idx3, invalid_index)
-!x    call assert_true(name3 == " ")
+    call parent%get_group_name(idx3, name3)
+    call assert_true(name3 == " ")
+    call assert_false(is_name_valid(name3))
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine get_group_name_index
 
   !------------------------------------------------------------------------------
@@ -206,7 +215,7 @@ contains
     group = root%create_group("parent")
 
     view = group%create_view_and_buffer("view")
-!--    call assert_true( group%get_parent() == root )
+    call assert_true( group%get_parent() == root )
     call assert_true( view%has_buffer() )
 
     call assert_true( group%has_view("view") )
@@ -215,7 +224,7 @@ contains
 
     call assert_false( group%has_view("view") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_has_viewbuffer
 
   !------------------------------------------------------------------------------
@@ -230,14 +239,14 @@ contains
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("group")
-!--    call assert_true( group%get_parent() == root )
+    call assert_true( group%get_parent() == root )
 
     call assert_true( root%has_group("group") )
 
     call root%destroy_group("group")
     call assert_false( root%has_group("group") )
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_has_group
 
   !------------------------------------------------------------------------------
@@ -253,68 +262,67 @@ contains
 
     call assert_true(flds%has_view("a"))
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine group_name_collisions
 
   !------------------------------------------------------------------------------
   subroutine view_copy_move
     type(datastore) ds
-    type(datagroup) root, flds
-    type(dataview) tmpview
+    type(datagroup) root, flds, subgrp
+    type(dataview) i0_view, f0_view, d0_view, tmpview
 
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")
 
-    tmpview = flds%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-!-- (*flds->getView("i0")->getNode().as_int_ptr())   = 1;
+    i0_view = flds%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1)
+    call i0_view%set_value(1)
 
-    tmpview = flds%create_view_and_buffer("f0")
-    call tmpview%allocate(ATK_C_FLOAT_T, 1_8)
-!--    (*flds->getView("f0")->getNode().as_float_ptr()) = 100.0;
+    f0_view = flds%create_view_and_buffer("f0")
+    call f0_view%allocate(ATK_C_FLOAT_T, 1)
+    call f0_view%set_value(100.0)
 
-    tmpview =flds%create_view_and_buffer("d0")
-    call tmpview%allocate(ATK_C_DOUBLE_T, 1_8)
-!--    (*flds->getView("d0")->getNode().as_double_ptr()) = 3000.0;
+    d0_view = flds%create_view_and_buffer("d0")
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1)
+    call d0_view%set_value(3000.0d0)  ! XXX without d0, error in get_value_double
 
     call assert_true(flds%has_view("i0"))
     call assert_true(flds%has_view("f0"))
     call assert_true(flds%has_view("d0"))
 
     ! test moving a view from flds to sub
-!--    call flds%create_group("sub")%moveView(flds%get_view("d0"))
+    subgrp = flds%create_group("sub")
+    tmpview = subgrp%move_view(flds%get_view("d0"))
     call flds%print()
     call assert_false(flds%has_view("d0"))
     call assert_true(flds%has_group("sub"))
-!--    call assert_true(flds%get_group("sub")%has_view("d0"))
+    call assert_true(subgrp%has_view("d0"))
 
     ! check the data value
-!--    double * d0_data =  flds%get_group("sub")
-!--    %get_view("d0")
-!--    %getValue()
-!--    EXPECT_NEAR(d0_data[0],3000.0,1e-12)
+    call assert_equals(tmpview%get_value_double(), 3000.0_C_DOUBLE)
 
     ! test copying a view from flds to sub
-!--    flds%get_group("sub")%copyView(flds%get_view("i0"))
+    tmpview = subgrp%copy_view(flds%get_view("i0"))
 
     call flds%print()
 
     call assert_true(flds%has_view("i0"))
-!--    call assert_true(flds%get_group("sub")%has_view("i0"))
+    call assert_true(subgrp%has_view("i0"))
 
     ! we expect the actual data  pointers to be the same
 !--    call assert_equals(flds%get_view("i0")%getDataBuffer(),
 !--    call flds%get_group("sub")%get_view("i0")%getDataBuffer())
     
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine view_copy_move
 
   !------------------------------------------------------------------------------
   subroutine groups_move_copy
     type(datastore) ds
     type(datagroup) root, flds, ga, gb, gc
-    type(dataview) tmpview
+    type(datagroup) subgrp, tmpgrp
+    type(dataview) i0_view, f0_view, d0_view, tmpview
 
     ds = datastore_new()
     root = ds%get_root()
@@ -324,17 +332,17 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    tmpview = ga%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-    !  (*ga%get_view("i0")%getNode().as_int_ptr())   = 1
+    i0_view = ga%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    call i0_view%set_value(1)
 
-    tmpview = gb%create_view_and_buffer("f0")
-    call tmpview%allocate(ATK_C_FLOAT_T, 1_8)
-    !  (*gb%get_view("f0")%getNode().as_float_ptr()) = 100.0
+    f0_view = gb%create_view_and_buffer("f0")
+    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    call f0_view%set_value(100.0)
 
-    tmpview = gc%create_view_and_buffer("d0")
-    call tmpview%allocate(ATK_C_DOUBLE_T, 1_8)
-    !  (*gc%get_view("d0")%getNode().as_double_ptr()) = 3000.0
+    d0_view = gc%create_view_and_buffer("d0")
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    call d0_view%set_value(3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -342,7 +350,8 @@ contains
     call assert_true(flds%has_group("c"))
 
     !move "b" to a child of "sub"
-!--    call flds%create_group("sub")%moveGroup(gb)
+    subgrp = flds%create_group("sub")
+    tmpgrp = subgrp%move_group(gb)
 
     call flds%print()
 
@@ -350,9 +359,9 @@ contains
     call assert_true(flds%has_group("sub"))
     call assert_true(flds%has_group("c"))
     
-!--    call assert_equals(flds%get_group("sub")%get_group("b"),gb)
+    call assert_true(tmpgrp == gb)
     
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine groups_move_copy
 
   !------------------------------------------------------------------------------
@@ -377,10 +386,10 @@ contains
     view2 = grp%create_view_and_buffer(view_name2)
 
     call assert_true(grp%has_view(view_name1))
-!--    call assert_equals( grp%get_view(view_name1), view1 )
+    call assert_true(grp%get_view(view_name1) == view1)
 
     call assert_true(grp%has_view(view_name2))
-!--    call assert_equals( grp%get_view(view_name2), view2 )
+    call assert_true(grp%get_view(view_name2) == view2)
 
     tmpbuf = view1%get_buffer()
     bufferid1 = tmpbuf%get_index()
@@ -389,14 +398,14 @@ contains
 
 
     call assert_false(grp%has_view(view_name1))
-!--    call assert_equals(ds%get_num_buffers(), 1)
+    call assert_true(ds%get_num_buffers() == 1)
 
 !XX    buffer1 = ds%get_buffer(bufferId1)
 !XX   buffvalid = .true.
 !--    if( buffer1 == ATK_NULLPTR ) buffValid = .false.
 !XX    call assert_false(buffValid)
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_view_and_buffer
 
 
@@ -405,8 +414,10 @@ contains
     type(datastore) ds
     type(datagroup) root, grp
     type(dataview) view1
-!--    integer i
+    integer i
     character(len=30) view_name1, view_name2
+    integer(C_INT), pointer :: v1_vals(:)
+!--    real(C_DOUBLE), pointer :: v2_vals(:)
 
     ds = datastore_new()
     root = ds%get_root()
@@ -417,7 +428,7 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    view1 = grp%create_view_and_buffer(view_name1, ATK_C_INT_T, 10_8)
+    view1 = grp%create_view_and_buffer(view_name1, ATK_C_INT_T, 10)
 
 !--    ! this one is the Schema & method
 !--    Schema s
@@ -425,21 +436,21 @@ contains
 !--    DataView * const view2 = grp%create_view_and_buffer(view_name2,
 
     call assert_true(grp%has_view(view_name1))
-!--    call assert_equals( grp%get_view(view_name1), view1 )
+    call assert_true(grp%get_view(view_name1) == view1)
 
-    call assert_true(grp%has_view(view_name2))
+!--    call assert_true(grp%has_view(view_name2))
 !--    call assert_equals( grp%get_view(view_name2), view2 )
 
 
-!--    int * v1_vals = view1%getValue()
-!--    double * v2_vals = view2%getValue()
+    call view1%get_value(v1_vals)
+!--    double * v2_vals = view2%get_value()
   
-!--    do i = 1, 10
-!--       v1_vals(i) = i
+    do i = 1, 10
+       v1_vals(i) = i
 !--       v2_vals(i) = i * 3.1415
-!--    enddo
+    enddo
 
-!--    call assert_equals(view1%get_number_of_elements(), 10)
+    call assert_true(view1%get_number_of_elements() == 10)
 !--    call assert_equals(view2%get_number_of_elements(), 10)
 !--    call assert_equals(view1%get_total_bytes(), 10 * sizeof(int))
 !--    call assert_equals(view2%get_total_bytes(), 10 * sizeof(double))
@@ -447,7 +458,7 @@ contains
     call grp%destroy_view_and_buffer(view_name1)
 !--    call grp%destroy_view_and_buffer(view_name2)
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_destroy_alloc_view_and_buffer
 
   !------------------------------------------------------------------------------
@@ -456,18 +467,17 @@ contains
     type(datagroup) root
     type(dataview) base
     type(databuffer) base_buff
-    type(C_PTR) base_ptr
     integer(C_INT), pointer :: base_vals(:)
 !--    integer i
+!    integer(C_INT), pointer :: sub_a_vals(:)
 
     ds = datastore_new()
     root = ds%get_root()
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10_8)
-    base_ptr = base%get_data_pointer()
-    call c_f_pointer(base_ptr, base_vals, [10])
+    base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10)
+    call base%get_value(base_vals)
 
     base_vals(1:5) = 10
     base_vals(6:10) = 20
@@ -481,22 +491,22 @@ contains
 !--    Schema s(DataType::c_int(5,5*sizeof(int)))
 !--    root%createView("sub_b",base_buff,s)
 
-!--    int * sub_a_vals = root%get_view("sub_a")%getValue()
-!--    int * sub_b_vals = root%get_view("sub_b")%getValue()
+!--    int * sub_a_vals = root%get_view("sub_a")%get_value(sub_a_vals)
+!--    int * sub_b_vals = root%get_view("sub_b")%get_value(sub_b_vals)
 
 !--    do i = 1, 5
 !--       call assert_equals(sub_a_vals(i), 10)
 !--       call assert_equals(sub_b_vals(i), 20)
 !--    enddo
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_view_of_buffer_with_schema
 
   !------------------------------------------------------------------------------
   subroutine save_restore_simple
     type(datastore) ds, ds2
     type(datagroup) root, root2, flds, ga
-    type(dataview) tmpview
+    type(dataview) i0_view
 
     ds = datastore_new()
     root = ds%get_root()
@@ -504,35 +514,36 @@ contains
 
     ga = flds%create_group("a")
 
-    tmpview = ga%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-!    (*ga%get_view("i0")%getNode().as_int_ptr())   = 1
+    i0_view = ga%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1)
+    call i0_view%set_value(1)
 
-!--    call assert_true(ds%get_root()%has_group("fields"))
-!--    call assert_true(ds%get_root()%get_group("fields")%has_group("a"))
-!_-    call assert_true(ds%get_root()%get_group("fields")%get_group("a")%has_view("i0"))
+    call assert_true(root%has_group("fields"))
+    call assert_true(flds%has_group("a"))
+    call assert_true(ga%has_view("i0"))
 
-
-    call root%save("out_sidre_group_save_restore_simple","conduit")
+    call root%save("F_out_sidre_group_save_restore_simple","conduit")
 
     call ds%print()
 
     ds2 = datastore_new()
     root2 = ds2%get_root()
 
-    call root2%load("out_sidre_group_save_restore_simple","conduit")
+    call root2%load("F_out_sidre_group_save_restore_simple","conduit")
 
     call ds2%print()
 
     flds = root2%get_group("fields")
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
-!--    call assert_equals(flds%get_group("a")%get_view("i0")%getNode().as_int(),1)
+    ga = flds%get_group("a")
+    i0_view = ga%get_view("i0")
+    call assert_equals(i0_view%get_value_int(), 1)
 
     call ds2%print()
     
-    call datastore_delete(ds)
-    call datastore_delete(ds2)
+    call ds%delete()
+    call ds2%delete()
   end subroutine save_restore_simple
 
   !------------------------------------------------------------------------------
@@ -540,7 +551,7 @@ contains
     type(datastore) ds, ds2
     type(datagroup) root, flds, root2
     type(datagroup) ga, gb, gc
-    type(dataview) tmpview
+    type(dataview) i0_view, f0_view, d0_view
     
     ds = datastore_new()
     root = ds%get_root()
@@ -550,17 +561,17 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    tmpview = ga%create_view_and_buffer("i0")
-    call tmpview%allocate(ATK_C_INT_T, 1_8)
-    !  (*ga%get_view("i0")%getNode().as_int_ptr())   = 1
+    i0_view = ga%create_view_and_buffer("i0")
+    call i0_view%allocate(ATK_C_INT_T, 1)
+    call i0_view%set_value(1)
 
-    tmpview = gb%create_view_and_buffer("f0")
-    call tmpview%allocate(ATK_C_FLOAT_T, 1_8)
-    !  (*gb%get_view("f0")%getNode().as_float_ptr()) = 100.0
+    f0_view = gb%create_view_and_buffer("f0")
+    call f0_view%allocate(ATK_C_FLOAT_T, 1)
+    call f0_view%set_value(100.0)
 
-    tmpview = gc%create_view_and_buffer("d0")
-    call tmpview%allocate(ATK_C_DOUBLE_T, 1_8)
-    !  (*gc%get_view("d0")%getNode().as_double_ptr()) = 3000.0
+    d0_view = gc%create_view_and_buffer("d0")
+    call d0_view%allocate(ATK_C_DOUBLE_T, 1)
+    call d0_view%set_value(3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -569,12 +580,12 @@ contains
 
     call ds%print()
 
-    call root%save("out_sidre_group_save_restore_complex","conduit")
+    call root%save("F_out_sidre_group_save_restore_complex","conduit")
 
     ds2 = datastore_new()
     root2 = ds2%get_root()
 
-    call root2%load("out_sidre_group_save_restore_complex","conduit")
+    call root2%load("F_out_sidre_group_save_restore_complex","conduit")
 
     flds = root2%get_group("fields")
     ! check that all sub groups exist
@@ -582,14 +593,22 @@ contains
     call assert_true(flds%has_group("b"))
     call assert_true(flds%has_group("c"))
     
-!--    call assert_equals(flds%get_group("a")%get_view("i0")%getNode().as_int(),1)
-!    EXPECT_NEAR(flds%get_group("b")%get_view("f0")%getNode().as_float(),100.0,  1e-12)
-!    EXPECT_NEAR(flds%get_group("c")%get_view("d0")%getNode().as_double(),3000.0, 1e-12)
+    ga = flds%get_group("a");
+    gb = flds%get_group("b");
+    gc = flds%get_group("c");
+
+    i0_view = ga%get_view("i0");
+    f0_view = gb%get_view("f0");
+    d0_view = gc%get_view("d0");
+
+    call assert_equals(i0_view%get_value_int(), 1)
+    call assert_equals(f0_view%get_value_float(), 100.0)
+    call assert_equals(d0_view%get_value_double(), 3000.0d0)
 
     call ds2%print()
 
-    call datastore_delete(ds)
-    call datastore_delete(ds2)
+    call ds%delete()
+    call ds2%delete()
   end subroutine save_restore_complex
 
 !----------------------------------------------------------------------
@@ -601,6 +620,7 @@ function fortran_test() bind(C,name="fortran_test")
   use sidre_group
   implicit none
   integer(C_INT) fortran_test
+  logical ok
 
   call init_fruit
 
@@ -625,5 +645,10 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_summary
   call fruit_finalize
 
-  fortran_test = 0
+  call is_all_successful(ok)
+  if (ok) then
+     fortran_test = 0
+  else
+     fortran_test = 1
+  endif
 end function fortran_test

@@ -21,24 +21,25 @@ options:
 
   PY_prefix: PP_
 
-typedef:
+types:
   other:
     cpp_type: junk
 
-  string:
-    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
+#  string:
+#    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : NULL"
 
   SidreLength:
+    typedef  : long
 # defined in SidreTypes.hpp
     c_header : sidre/SidreTypes.h
     c_type   : ATK_SidreLength
     cpp_type : SidreLength
-    c_fortran: integer(C_LONG)
-    f_type   : integer(C_LONG)
-#    f_module : iso_c_binding:C_LONG
-    f_module : 
-      iso_c_binding:
-      - C_LONG
+#    c_fortran: integer(C_LONG)
+#    f_type   : integer(C_LONG)
+##    f_module : iso_c_binding:C_LONG
+#    f_module : 
+#      iso_c_binding:
+#      - C_LONG
 
   TypeID:
     # enum for types
@@ -61,7 +62,7 @@ classes:
       # include files to add to module
 
     python:
-      type: [ init, repr ]
+      type: [ init, repr, richcompare ]
 
     methods:
     - decl: ExClass1 *new+constructor ( const string *name )
@@ -76,6 +77,8 @@ classes:
       result:
          attrs:
             len: aa_exclass1_get_name_length({F_instance_ptr})
+      C_error_pattern: C_invalid_name
+      PY_error_pattern: PY_invalid_name
 
     - decl: int GetNameLength() const
       docs: helper function for Fortran
@@ -87,8 +90,8 @@ classes:
 
     - decl: const string& getNameArg() const
     # This function will convert the return value into a argument
-#      options:
-#         F_result_as_arg: True
+      options:
+         F_string_result_as_arg: True
 
     - decl: ExClass2 *getRoot()
 
@@ -122,7 +125,7 @@ classes:
            random: 2
       -  name: extra
 
-    - decl: void ExClass1+destructor
+    - decl: void delete+destructor
 
     - decl: const string& getName const
       # test annotating result
@@ -143,16 +146,40 @@ classes:
     - decl: ExClass1 *get_class1(ExClass1 *in)
 
     # typedefs that require modules
-    - decl: void* declare(TypeID type, SidreLength len)
+    - decl: void* declare(TypeID type, SidreLength len = 1)
       # by returning this,the C++ function allows chaining.
       # make them subroutines in Fortran.
       return_this: True
+      fortran_generic:
+        len:
+        -  int
+        -  long
 
     # void function
     - decl: void destroyall()
 
     # return typedef'd type
     - decl: TypeID getTypeID() const
+
+#           template<typename ValueType>
+    - decl: void setValue(ValueType value)
+      cpp_template:
+        ValueType:
+        - int
+        - long
+        - float
+        - double
+
+#           template<typename ValueType>
+    - decl: ValueType getValue()
+      cpp_template:
+        ValueType:
+        - int
+#        - long
+#        - float
+        - double
+
+    - decl: void testoptional(int i = 1, long j=2)
 
 
 functions:
@@ -164,3 +191,19 @@ functions:
      options:
        C_code:  "return name != NULL;"
        F_code:  rv = name .ne. " "
+
+
+
+######################################################################
+patterns:
+    C_invalid_name: >
+        if (! isNameValid({var})) {{
+            return NULL;
+        }}
+    PY_invalid_name: >
+        if (! isNameValid({var})) {{
+            PyErr_SetString(PyExc_KeyError, "{var}");
+            return NULL;
+        }}
+
+

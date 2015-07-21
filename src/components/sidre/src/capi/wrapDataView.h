@@ -41,7 +41,9 @@ typedef struct s_ATK_dataview ATK_dataview;
 
 void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len);
 
-void ATK_dataview_allocate(ATK_dataview * self, int type, ATK_SidreLength len);
+void ATK_dataview_allocate_simple(ATK_dataview * self);
+
+void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len);
 
 void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len);
 
@@ -64,6 +66,24 @@ int ATK_dataview_get_type_id(ATK_dataview * self);
 size_t ATK_dataview_get_total_bytes(ATK_dataview * self);
 
 size_t ATK_dataview_get_number_of_elements(ATK_dataview * self);
+
+void ATK_dataview_print(ATK_dataview * self);
+
+void ATK_dataview_set_value_int(ATK_dataview * self, int value);
+
+void ATK_dataview_set_value_long(ATK_dataview * self, long value);
+
+void ATK_dataview_set_value_float(ATK_dataview * self, float value);
+
+void ATK_dataview_set_value_double(ATK_dataview * self, double value);
+
+int ATK_dataview_get_value_int(ATK_dataview * self);
+
+long ATK_dataview_get_value_long(ATK_dataview * self);
+
+float ATK_dataview_get_value_float(ATK_dataview * self);
+
+double ATK_dataview_get_value_double(ATK_dataview * self);
 
 #ifdef __cplusplus
 }
