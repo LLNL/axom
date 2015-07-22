@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataBuffer.include
-// splicer end class.DataBuffer.include
+// splicer begin class.DataBuffer.impl.include
+// splicer end class.DataBuffer.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataBuffer.C_definition
-// splicer end class.DataBuffer.C_definition
-// splicer begin class.DataBuffer.additional_methods
-// splicer end class.DataBuffer.additional_methods
+// splicer begin class.DataBuffer.impl.C_definition
+// splicer end class.DataBuffer.impl.C_definition
+// splicer begin class.DataBuffer.impl.additional_methods
+// splicer end class.DataBuffer.impl.additional_methods
 static int
 PY_DataBuffer_tp_init (PY_DataBuffer *self, PyObject *args, PyObject *kwds)
 {
@@ -25,6 +25,39 @@ PY_DataBuffer_tp_init (PY_DataBuffer *self, PyObject *args, PyObject *kwds)
     PyErr_SetString(PyExc_NotImplementedError, "init");
     return -1;
 // splicer end class.DataBuffer.type.init
+}
+static PyObject *
+PY_DataBuffer_tp_richcompare (PY_DataBuffer *self, PyObject *other, int opid)
+{
+// splicer begin class.DataBuffer.type.richcompare
+PyObject *rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataBuffer_Type)) {
+    PY_DataBuffer *pyother = (PY_DataBuffer *) other;
+    switch (opid) {
+    case Py_EQ:
+	if (self->BBB == pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_NE:
+	if (self->BBB != pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_LT:
+    case Py_LE:
+    case Py_GE:
+    case Py_GT:
+	break;
+    }
+ }
+Py_INCREF(rv);
+return rv;
+// splicer end class.DataBuffer.type.richcompare
 }
 
 static char PY_databuffer_get_index__doc__[] =
@@ -37,10 +70,10 @@ PY_databuffer_get_index(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getIndex
+// splicer begin class.DataBuffer.method.get_index
     IndexType rv = self->BBB->getIndex();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataBuffer.method.getIndex
+    return Py_BuildValue("i", rv);
+// splicer end class.DataBuffer.method.get_index
 }
 
 static char PY_databuffer_get_num_views__doc__[] =
@@ -53,10 +86,10 @@ PY_databuffer_get_num_views(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getNumViews
+// splicer begin class.DataBuffer.method.get_num_views
     size_t rv = self->BBB->getNumViews();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataBuffer.method.getNumViews
+    return PyInt_FromLong(rv);
+// splicer end class.DataBuffer.method.get_num_views
 }
 
 static char PY_databuffer_declare__doc__[] =
@@ -73,9 +106,9 @@ PY_databuffer_declare(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -95,10 +128,10 @@ PY_databuffer_allocate_existing(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.allocate
+// splicer begin class.DataBuffer.method.allocate_existing
     self->BBB->allocate();
     Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.allocate
+// splicer end class.DataBuffer.method.allocate_existing
 }
 
 static char PY_databuffer_allocate_from_type__doc__[] =
@@ -111,20 +144,20 @@ PY_databuffer_allocate_from_type(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.allocate
+// splicer begin class.DataBuffer.method.allocate_from_type
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
         &type, &len))
     {
         return NULL;
     }
     self->BBB->allocate(getTypeID(type), len);
     Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.allocate
+// splicer end class.DataBuffer.method.allocate_from_type
 }
 
 static char PY_databuffer_reallocate__doc__[] =
@@ -141,9 +174,9 @@ PY_databuffer_reallocate(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:reallocate", kw_list,
         &type, &len))
     {
         return NULL;
@@ -163,10 +196,10 @@ PY_databuffer_set_external_data(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.setExternalData
+// splicer begin class.DataBuffer.method.set_external_data
     void * external_data;
     const char *kwcpp = "external_data";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:setExternalData", kw_list,
         &external_data))
@@ -175,7 +208,7 @@ PY_databuffer_set_external_data(
     }
     self->BBB->setExternalData(external_data);
     Py_RETURN_NONE;
-// splicer end class.DataBuffer.method.setExternalData
+// splicer end class.DataBuffer.method.set_external_data
 }
 
 static char PY_databuffer_is_external__doc__[] =
@@ -188,10 +221,10 @@ PY_databuffer_is_external(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.isExternal
+// splicer begin class.DataBuffer.method.is_external
     bool rv = self->BBB->isExternal();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataBuffer.method.isExternal
+    return PyBool_FromLong(rv);
+// splicer end class.DataBuffer.method.is_external
 }
 
 static char PY_databuffer_get_data__doc__[] =
@@ -204,10 +237,10 @@ PY_databuffer_get_data(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getData
+// splicer begin class.DataBuffer.method.get_data
     void * rv = self->BBB->getData();
     return Py_BuildValue("O", rv);
-// splicer end class.DataBuffer.method.getData
+// splicer end class.DataBuffer.method.get_data
 }
 
 static char PY_databuffer_get_total_bytes__doc__[] =
@@ -220,10 +253,10 @@ PY_databuffer_get_total_bytes(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.getTotalBytes
+// splicer begin class.DataBuffer.method.get_total_bytes
     size_t rv = self->BBB->getTotalBytes();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataBuffer.method.getTotalBytes
+    return PyInt_FromLong(rv);
+// splicer end class.DataBuffer.method.get_total_bytes
 }
 
 static char PY_databuffer_print__doc__[] =
@@ -241,6 +274,46 @@ PY_databuffer_print(
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.print
 }
+
+static char PY_databuffer_allocate__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_databuffer_allocate(
+  PY_DataBuffer *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataBuffer.allocate
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_databuffer_allocate_existing(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_databuffer_allocate_from_type(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataBuffer.allocate
+}
+// splicer begin class.DataBuffer.impl.after_methods
+// splicer end class.DataBuffer.impl.after_methods
 static PyMethodDef PY_DataBuffer_methods[] = {
 {"getIndex", (PyCFunction)PY_databuffer_get_index, METH_NOARGS, PY_databuffer_get_index__doc__},
 {"getNumViews", (PyCFunction)PY_databuffer_get_num_views, METH_NOARGS, PY_databuffer_get_num_views__doc__},
@@ -253,6 +326,9 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
+{"allocate", (PyCFunction)PY_databuffer_allocate, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate__doc__},
+// splicer begin class.DataBuffer.PyMethodDef
+// splicer end class.DataBuffer.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
@@ -299,7 +375,7 @@ PyTypeObject PY_DataBuffer_Type = {
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc)PY_DataBuffer_tp_richcompare,                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

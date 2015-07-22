@@ -57,7 +57,41 @@ do {                                                                          \
   if ( EXP ) {                                                                \
     asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Fatal,msg,__FILE__, __LINE__ );            \
-    asctoolkit::utilities::processAbort();                                    \
+    if ( asctoolkit::slic::getAbortOnError() ) {                             \
+       asctoolkit::utilities::processAbort();                                 \
+    }                                                                         \
+  }                                                                           \
+} while ( 0 )
+
+/// @}
+
+/*!
+ ******************************************************************************
+ * \def SLIC_ERROR_MSG( EXP, msg )
+ * \brief Same as SLIC_ERROR, but with a custom error message.
+ * \param [in] EXP user-supplied boolean expression.
+ * \param [in] msg user-supplied message
+ * \note The SLIC_ERROR_MSG is always active.
+ * \warning This macro calls processAbort() if EXP is false.
+ * \see SLIC_ERROR( EXP )
+ *
+ * Usage:
+ * \code
+ *   SLIC_ERROR_MSG( my_val >= 0, "my_val must always be positive" );
+ * \endcode
+ *
+ ******************************************************************************
+ */
+#define SLIC_ERROR_MSG( EXP, msg )                                            \
+do {                                                                          \
+  if ( !(EXP) ) {                                                             \
+    std::ostringstream oss;                                                   \
+    oss << "Failed Error: " << # EXP << std::endl << msg << std::ends;        \
+    asctoolkit::slic::logMessage(                                             \
+        asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
+    if ( asctoolkit::slic::getAbortOnError() ) {                             \
+       asctoolkit::utilities::processAbort();                                 \
+    }                                                                         \
   }                                                                           \
 } while ( 0 )
 
@@ -120,7 +154,9 @@ do {                                                                          \
     oss << "Failed Assert: " << # EXP << std::ends;                           \
     asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    asctoolkit::utilities::processAbort();                                    \
+    if ( asctoolkit::slic::getAbortOnAssert() ) {                            \
+       asctoolkit::utilities::processAbort();                                 \
+    }                                                                         \
   }                                                                           \
 } while ( 0 )
 
@@ -148,7 +184,9 @@ do {                                                                          \
     oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
     asctoolkit::slic::logMessage(                                             \
         asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    asctoolkit::utilities::processAbort();                                    \
+    if ( asctoolkit::slic::getAbortOnAssert() ) {                            \
+       asctoolkit::utilities::processAbort();                                 \
+    }                                                                         \
   }                                                                           \
 } while ( 0 )
 
@@ -226,6 +264,12 @@ namespace asctoolkit {
 
 namespace slic {
 
+struct RuntimeAbortBehavior
+{
+   static bool willAbortOnAssert;
+   static bool willAbortOnError;
+};
+
 /*!
  *******************************************************************************
  * \brief Initializes the SLIC logging environment.
@@ -247,7 +291,44 @@ bool isInitialized();
  * \param [in] level user-supplied level to log.
  *******************************************************************************
  */
-void  setLoggingLevel( message::Level level );
+void setLoggingLevel( message::Level level );
+
+/*!
+ *******************************************************************************
+ * \brief Sets abort behavior when a SLIC_ASSERT is evaluated to false.  The
+ *  default setting is for SLIC_ASSERT to abort the process.
+ * \param [in] sets whether a SLIC_ASSERT failed evaluation will abort the
+ * process.
+ *******************************************************************************
+ */
+void setAbortOnAssert( bool willAbort );
+
+/*!
+ *******************************************************************************
+ * \brief Gets abort behavior when a SLIC_ASSERT is evaluated to false.  The
+ *  default setting is for SLIC_ASSERT to abort the process.
+ * \return if true, a SLIC_ASSERT failed evaluation will abort the process.
+ *******************************************************************************
+ */
+bool getAbortOnAssert();
+
+/*!
+ *******************************************************************************
+ * \brief Sets abort behavior when a SLIC_ERROR is evaluated to false.  The
+ * default behavior is for SLIC_ERROR to abort a process.
+ * \param [in] if true, a SLIC_ERROR failed evaluation will abort the process.
+ *******************************************************************************
+ */
+void setAbortOnError( bool willAbort );
+
+/*!
+ *******************************************************************************
+ * \brief Gets abort behavior when a SLIC_ERROR is evaluated to false.  The
+ * default behavior is for SLIC_ERROR to abort a process.
+ * \return if true, a SLIC_ERROR failed evaluation will abort the process.
+ *******************************************************************************
+ */
+bool getAbortOnError();
 
 /*!
  *******************************************************************************

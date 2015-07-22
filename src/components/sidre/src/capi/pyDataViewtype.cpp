@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataView.include
-// splicer end class.DataView.include
+// splicer begin class.DataView.impl.include
+// splicer end class.DataView.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataView.C_definition
-// splicer end class.DataView.C_definition
-// splicer begin class.DataView.additional_methods
-// splicer end class.DataView.additional_methods
+// splicer begin class.DataView.impl.C_definition
+// splicer end class.DataView.impl.C_definition
+// splicer begin class.DataView.impl.additional_methods
+// splicer end class.DataView.impl.additional_methods
 static int
 PY_DataView_tp_init (PY_DataView *self, PyObject *args, PyObject *kwds)
 {
@@ -25,6 +25,39 @@ PY_DataView_tp_init (PY_DataView *self, PyObject *args, PyObject *kwds)
     PyErr_SetString(PyExc_NotImplementedError, "init");
     return -1;
 // splicer end class.DataView.type.init
+}
+static PyObject *
+PY_DataView_tp_richcompare (PY_DataView *self, PyObject *other, int opid)
+{
+// splicer begin class.DataView.type.richcompare
+PyObject *rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataView_Type)) {
+    PY_DataView *pyother = (PY_DataView *) other;
+    switch (opid) {
+    case Py_EQ:
+	if (self->BBB == pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_NE:
+	if (self->BBB != pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_LT:
+    case Py_LE:
+    case Py_GE:
+    case Py_GT:
+	break;
+    }
+ }
+Py_INCREF(rv);
+return rv;
+// splicer end class.DataView.type.richcompare
 }
 
 static char PY_dataview_declare__doc__[] =
@@ -41,9 +74,9 @@ PY_dataview_declare(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -53,30 +86,46 @@ PY_dataview_declare(
 // splicer end class.DataView.method.declare
 }
 
-static char PY_dataview_allocate__doc__[] =
+static char PY_dataview_allocate_simple__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_dataview_allocate(
+PY_dataview_allocate_simple(
   PY_DataView *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.allocate
+// splicer begin class.DataView.method.allocate_simple
+    self->BBB->allocate();
+    Py_RETURN_NONE;
+// splicer end class.DataView.method.allocate_simple
+}
+
+static char PY_dataview_allocate_from_type__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_allocate_from_type(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.allocate_from_type
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:allocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
         &type, &len))
     {
         return NULL;
     }
     self->BBB->allocate(getTypeID(type), len);
     Py_RETURN_NONE;
-// splicer end class.DataView.method.allocate
+// splicer end class.DataView.method.allocate_from_type
 }
 
 static char PY_dataview_reallocate__doc__[] =
@@ -93,9 +142,9 @@ PY_dataview_reallocate(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO:reallocate", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:reallocate", kw_list,
         &type, &len))
     {
         return NULL;
@@ -115,10 +164,10 @@ PY_dataview_has_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.hasBuffer
+// splicer begin class.DataView.method.has_buffer
     bool rv = self->BBB->hasBuffer();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataView.method.hasBuffer
+    return PyBool_FromLong(rv);
+// splicer end class.DataView.method.has_buffer
 }
 
 static char PY_dataview_is_opaque__doc__[] =
@@ -131,10 +180,10 @@ PY_dataview_is_opaque(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.isOpaque
+// splicer begin class.DataView.method.is_opaque
     bool rv = self->BBB->isOpaque();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataView.method.isOpaque
+    return PyBool_FromLong(rv);
+// splicer end class.DataView.method.is_opaque
 }
 
 static char PY_dataview_get_name__doc__[] =
@@ -147,10 +196,10 @@ PY_dataview_get_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getName
+// splicer begin class.DataView.method.get_name
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
-// splicer end class.DataView.method.getName
+    return PyString_FromString(rv.c_str());
+// splicer end class.DataView.method.get_name
 }
 
 static char PY_dataview_get_opaque__doc__[] =
@@ -163,10 +212,10 @@ PY_dataview_get_opaque(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getOpaque
+// splicer begin class.DataView.method.get_opaque
     void * rv = self->BBB->getOpaque();
     return Py_BuildValue("O", rv);
-// splicer end class.DataView.method.getOpaque
+// splicer end class.DataView.method.get_opaque
 }
 
 static char PY_dataview_get_buffer__doc__[] =
@@ -179,10 +228,12 @@ PY_dataview_get_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getBuffer
+// splicer begin class.DataView.method.get_buffer
     DataBuffer * rv = self->BBB->getBuffer();
-    return Py_BuildValue("O&", PP_DataBuffer_to_Object, rv);
-// splicer end class.DataView.method.getBuffer
+    PY_DataBuffer * rv_obj = PyObject_New(PY_DataBuffer, &PY_DataBuffer_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataView.method.get_buffer
 }
 
 static char PY_dataview_get_data_pointer__doc__[] =
@@ -195,10 +246,10 @@ PY_dataview_get_data_pointer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getDataPointer
+// splicer begin class.DataView.method.get_data_pointer
     void * rv = self->BBB->getDataPointer();
     return Py_BuildValue("O", rv);
-// splicer end class.DataView.method.getDataPointer
+// splicer end class.DataView.method.get_data_pointer
 }
 
 static char PY_dataview_get_owning_group__doc__[] =
@@ -211,10 +262,12 @@ PY_dataview_get_owning_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getOwningGroup
+// splicer begin class.DataView.method.get_owning_group
     DataGroup * rv = self->BBB->getOwningGroup();
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
-// splicer end class.DataView.method.getOwningGroup
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataView.method.get_owning_group
 }
 
 static char PY_dataview_get_type_id__doc__[] =
@@ -227,10 +280,10 @@ PY_dataview_get_type_id(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getTypeID
+// splicer begin class.DataView.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataView.method.getTypeID
+    return Py_BuildValue("i", rv);
+// splicer end class.DataView.method.get_type_id
 }
 
 static char PY_dataview_get_total_bytes__doc__[] =
@@ -243,10 +296,10 @@ PY_dataview_get_total_bytes(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getTotalBytes
+// splicer begin class.DataView.method.get_total_bytes
     size_t rv = self->BBB->getTotalBytes();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataView.method.getTotalBytes
+    return PyInt_FromLong(rv);
+// splicer end class.DataView.method.get_total_bytes
 }
 
 static char PY_dataview_get_number_of_elements__doc__[] =
@@ -259,10 +312,10 @@ PY_dataview_get_number_of_elements(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.getNumberOfElements
+// splicer begin class.DataView.method.get_number_of_elements
     size_t rv = self->BBB->getNumberOfElements();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataView.method.getNumberOfElements
+    return PyInt_FromLong(rv);
+// splicer end class.DataView.method.get_number_of_elements
 }
 
 static char PY_dataview_print__doc__[] =
@@ -280,9 +333,50 @@ PY_dataview_print(
     Py_RETURN_NONE;
 // splicer end class.DataView.method.print
 }
+
+static char PY_dataview_allocate__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_allocate(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.allocate
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_dataview_allocate_simple(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_dataview_allocate_from_type(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataView.allocate
+}
+// splicer begin class.DataView.impl.after_methods
+// splicer end class.DataView.impl.after_methods
 static PyMethodDef PY_DataView_methods[] = {
 {"declare", (PyCFunction)PY_dataview_declare, METH_VARARGS|METH_KEYWORDS, PY_dataview_declare__doc__},
-{"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
+{"allocate_simple", (PyCFunction)PY_dataview_allocate_simple, METH_NOARGS, PY_dataview_allocate_simple__doc__},
+{"allocate_from_type", (PyCFunction)PY_dataview_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_dataview_reallocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_reallocate__doc__},
 {"hasBuffer", (PyCFunction)PY_dataview_has_buffer, METH_NOARGS, PY_dataview_has_buffer__doc__},
 {"isOpaque", (PyCFunction)PY_dataview_is_opaque, METH_NOARGS, PY_dataview_is_opaque__doc__},
@@ -295,6 +389,9 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},
 {"getNumberOfElements", (PyCFunction)PY_dataview_get_number_of_elements, METH_NOARGS, PY_dataview_get_number_of_elements__doc__},
 {"print", (PyCFunction)PY_dataview_print, METH_NOARGS, PY_dataview_print__doc__},
+{"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
+// splicer begin class.DataView.PyMethodDef
+// splicer end class.DataView.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
@@ -341,7 +438,7 @@ PyTypeObject PY_DataView_Type = {
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc)PY_DataView_tp_richcompare,                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

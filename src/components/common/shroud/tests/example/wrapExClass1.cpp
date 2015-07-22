@@ -42,7 +42,11 @@ const char * AA_exclass1_get_name(const AA_exclass1 * self)
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
 // splicer begin class.ExClass1.method.get_name
 const std::string & rv = selfobj->getName();
-return isNameValid(rv) ? rv.c_str() : NULL;
+if (! isNameValid(rv)) {
+    return NULL;
+}
+
+return rv.c_str();
 // splicer end class.ExClass1.method.get_name
 }
 
@@ -59,7 +63,7 @@ const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self)
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
 // splicer begin class.ExClass1.method.get_name_error_check
 const std::string & rv = selfobj->getNameErrorCheck();
-return isNameValid(rv) ? rv.c_str() : NULL;
+return rv.c_str();
 // splicer end class.ExClass1.method.get_name_error_check
 }
 
@@ -68,7 +72,7 @@ const char * AA_exclass1_get_name_arg(const AA_exclass1 * self)
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);
 // splicer begin class.ExClass1.method.get_name_arg
 const std::string & rv = selfobj->getNameArg();
-return isNameValid(rv) ? rv.c_str() : NULL;
+return rv.c_str();
 // splicer end class.ExClass1.method.get_name_arg
 }
 

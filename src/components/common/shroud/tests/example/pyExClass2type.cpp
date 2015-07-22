@@ -4,14 +4,14 @@
 // yada yada
 //
 #include "pyUserLibrarymodule.hpp"
-// splicer begin class.ExClass2.include
-// splicer end class.ExClass2.include
+// splicer begin class.ExClass2.impl.include
+// splicer end class.ExClass2.impl.include
 namespace example {
 namespace nested {
-// splicer begin class.ExClass2.C_definition
-// splicer end class.ExClass2.C_definition
-// splicer begin class.ExClass2.additional_methods
-// splicer end class.ExClass2.additional_methods
+// splicer begin class.ExClass2.impl.C_definition
+// splicer end class.ExClass2.impl.C_definition
+// splicer begin class.ExClass2.impl.additional_methods
+// splicer end class.ExClass2.impl.additional_methods
 static void
 PP_ExClass2_tp_dealloc (PP_ExClass2 *self)
 {
@@ -141,6 +141,23 @@ PP_ExClass2_tp_del (PP_ExClass2 *self)
 // splicer end class.ExClass2.type.del
 }
 
+static char PP_exclass2_delete__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_exclass2_delete(
+  PP_ExClass2 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.ExClass2.method.delete
+    delete self->BBB;
+    self->BBB = NULL;
+    Py_RETURN_NONE;
+// splicer end class.ExClass2.method.delete
+}
+
 static char PP_exclass2_get_name__doc__[] =
 "documentation"
 ;
@@ -151,10 +168,10 @@ PP_exclass2_get_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.getName
+// splicer begin class.ExClass2.method.get_name
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
-// splicer end class.ExClass2.method.getName
+    return PyString_FromString(rv.c_str());
+// splicer end class.ExClass2.method.get_name
 }
 
 static char PP_exclass2_get_name_length__doc__[] =
@@ -167,10 +184,10 @@ PP_exclass2_get_name_length(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.GetNameLength
+// splicer begin class.ExClass2.method.get_name_length
     int rv = self->BBB->GetNameLength();
-    return Py_BuildValue("i", &rv);
-// splicer end class.ExClass2.method.GetNameLength
+    return Py_BuildValue("i", rv);
+// splicer end class.ExClass2.method.get_name_length
 }
 
 static char PP_exclass2_get_class1__doc__[] =
@@ -184,17 +201,21 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    ExClass1 * in;
+    PP_ExClass1 * in;
+    ExClass1 * in_ptr;
     const char *kwcpp = "in";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:get_class1", kw_list,
-        PP_ExClass1_from_Object, &in))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
+        &PP_ExClass1_Type, &in))
     {
         return NULL;
     }
-    ExClass1 * rv = self->BBB->get_class1(in);
-    return Py_BuildValue("O&", PP_ExClass1_to_Object, rv);
+    in_ptr = (in ? in->BBB : NULL);
+    ExClass1 * rv = self->BBB->get_class1(in_ptr);
+    PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
 // splicer end class.ExClass2.method.get_class1
 }
 
@@ -212,10 +233,10 @@ PP_exclass2_declare(
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     len = 1;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O:declare", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|l:declare", kw_list,
         &type, &len))
     {
         return NULL;
@@ -251,10 +272,10 @@ PP_exclass2_get_type_id(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.getTypeID
+// splicer begin class.ExClass2.method.get_type_id
     TypeID rv = self->BBB->getTypeID();
-    return Py_BuildValue("O", &rv);
-// splicer end class.ExClass2.method.getTypeID
+    return Py_BuildValue("O", rv);
+// splicer end class.ExClass2.method.get_type_id
 }
 
 static char PP_exclass2_testoptional__doc__[] =
@@ -271,7 +292,7 @@ PP_exclass2_testoptional(
     int i;
     long j;
     const char *kwcpp = "i\0j";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
     
     i = 1;
     j = 2;
@@ -284,7 +305,10 @@ PP_exclass2_testoptional(
     Py_RETURN_NONE;
 // splicer end class.ExClass2.method.testoptional
 }
+// splicer begin class.ExClass2.impl.after_methods
+// splicer end class.ExClass2.impl.after_methods
 static PyMethodDef PP_ExClass2_methods[] = {
+{"delete", (PyCFunction)PP_exclass2_delete, METH_NOARGS, PP_exclass2_delete__doc__},
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
@@ -292,6 +316,8 @@ static PyMethodDef PP_ExClass2_methods[] = {
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
 {"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
 {"testoptional", (PyCFunction)PP_exclass2_testoptional, METH_VARARGS|METH_KEYWORDS, PP_exclass2_testoptional__doc__},
+// splicer begin class.ExClass2.PyMethodDef
+// splicer end class.ExClass2.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

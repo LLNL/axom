@@ -41,7 +41,9 @@ typedef struct s_ATK_dataview ATK_dataview;
 
 void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len);
 
-void ATK_dataview_allocate(ATK_dataview * self, int type, ATK_SidreLength len);
+void ATK_dataview_allocate_simple(ATK_dataview * self);
+
+void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len);
 
 void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len);
 

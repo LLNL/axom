@@ -20,7 +20,7 @@ contains
     type(datastore) ds
 
     ds = datastore_new()
-    call datastore_delete(ds)
+    call ds%delete()
 
     call assert_true(.true.)
   end subroutine create_datastore
@@ -47,7 +47,7 @@ contains
     call assert_true(name == " ")
     call assert_true(root%get_group_index(name) == invalid_index)
 
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine valid_invalid
 
 !------------------------------------------------------------------------------

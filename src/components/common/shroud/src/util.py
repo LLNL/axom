@@ -34,7 +34,7 @@ def append_format(lst, template, dct):
 
 def eval_template(options, fmt, name, default=None):
     """ If a tname exists in options, use it; else use default.
-    fmt[vname] = option[tname]
+    fmt[name] = option[name + '_template']
     """
     if hasattr(options, name):
         setattr(fmt, name, getattr(options, name))
@@ -118,10 +118,12 @@ class WrapperMixin(object):
 
 #####
 
-    def std_c_type(self, lang, arg):
+    def std_c_type(self, lang, arg, const=None):
         """
         Return the C type.
         pass-by-value default
+
+        if const is None, use const from arg.
 
         attributes:
         ptr - True = pass-by-reference
@@ -134,8 +136,12 @@ class WrapperMixin(object):
         typedef = self.typedef.get(arg['type'], None)
         if typedef is None:
             raise RuntimeError("No such type %s" % arg['type'])
-        if arg['attrs'].get('const', False):
+
+        if const is None:
+            const = arg['attrs'].get('const', False)
+        if const:
             t.append('const')
+
         t.append(getattr(typedef, lang))
         if arg['attrs'].get('ptr', False):
             t.append('*')
@@ -146,7 +152,7 @@ class WrapperMixin(object):
                 t.append('*')
         return ' '.join(t)
 
-    def std_c_decl(self, lang, arg, name=None):
+    def std_c_decl(self, lang, arg, name=None, const=None):
         """
         Return the C declaration.
 
@@ -155,7 +161,7 @@ class WrapperMixin(object):
         """
 #        if lang not in [ 'c_type', 'cpp_type' ]:
 #            raise RuntimeError
-        typ = self.std_c_type(lang, arg)
+        typ = self.std_c_type(lang, arg, const)
         return typ + ' ' + ( name or arg['name'] )
 
 #####
@@ -212,6 +218,7 @@ class Typedef(object):
     defaults = dict(
         base='unknown',       # base type: 'string'
         forward=None,         # forward declaration
+        typedef=None,         # Initialize from existing type
 
         cpp_type=None,        # name of type in C++
         cpp_to_c='{var}',     # expression to convert from C++ to C
@@ -233,6 +240,10 @@ class Typedef(object):
                               # e.g. intrinsics such as int and real
 
         PY_format='O',        # 'format unit' for PyArg_Parse
+        PY_PyTypeObject=None, # variable name of PyTypeObject instance
+        PY_PyObject=None,     # typedef name of PyObject instance
+        PY_ctor=None,         # expression to create object.
+                              # ex. PyBool_FromLong({rv})
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
         )
@@ -252,6 +263,10 @@ class Typedef(object):
                 setattr(self, key, d[key])
             else:
                 raise RuntimeError("Unknown key for Argument %s", key)
+
+    def copy(self):
+        n = Typedef()
+        n.update(self._to_dict())
 
     def _to_dict(self):
         """Convert instance to a dictionary for json.
@@ -340,6 +355,16 @@ class Options(object):
             if not key.startswith(skip):
                 d[key] = value
         return d
+
+    def _to_full_dict(self, d=None):
+        if d is None:
+            d = self._to_dict()
+        else:
+            d.update( self._to_dict())
+        if self.__parent:
+            self.__parent._to_full_dict(d)
+        return d
+
 
 def copy_function_node(node):
     """Create a copy of a function node to use with C++ template.

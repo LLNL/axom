@@ -31,7 +31,7 @@ typedef struct s_AA_exclass2 AA_exclass2;
 
 AA_exclass2 * AA_exclass2_ex_class2(const char * name);
 
-void AA_exclass2_ex_class1(AA_exclass2 * self);
+void AA_exclass2_delete(AA_exclass2 * self);
 
 const char * AA_exclass2_get_name(const AA_exclass2 * self);
 

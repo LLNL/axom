@@ -9,10 +9,7 @@ One Extension module per class
 from __future__ import print_function
 
 import util
-
-
-wformat = util.wformat
-append_format = util.append_format
+from util import wformat, append_format
 
 class Wrapp(util.WrapperMixin):
     """Generate Python bindings.
@@ -20,9 +17,10 @@ class Wrapp(util.WrapperMixin):
 
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
+        self.patterns = tree['patterns']
         self.config = config
         self.log = config.log
-        self.typedef = tree['typedef']
+        self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '//'
 
@@ -45,91 +43,6 @@ class Wrapp(util.WrapperMixin):
         self.PyMethodBody = []
         self.PyMethodDef = []
 
-    def XXX_c_type(self, arg):
-        """
-        Return the Fortran type, and array attribute
-        pass-by-value default
-
-        attributes:
-        ptr - True = pass-by-reference
-        reference - True = pass-by-reference
-
-        """
-        t = []
-        typedef = self.typedef.get(arg['type'], None)
-        if typedef is None:
-            raise RuntimeError("No such type %s" % arg['type'])
-        is_ptr = (arg['attrs'].get('ptr', False) or
-                  arg['attrs'].get('reference', False))
-        intent = arg['attrs'].get('intent', None)
-        is_value = arg['attrs'].get('value', False)
-
-        typ = typedef.c_fortran
-        if typedef.base == 'string':
-            return (typ, True)   # is array
-        else:
-            #        if arg['attrs'].get('const', False):
-            #            t.append('const')
-            t.append(typ)
-            if is_value:
-                t.append(', value')
-            if intent:
-                t.append(', intent(%s)' % intent.upper())
-            return (''.join(t), arg['attrs'].get('array', False))
-
-    def XXX_c_decl(self, arg, name=None):
-        """
-        Return the Fortran declaration.
-
-        If name is not supplied, use name in arg.
-        This makes it easy to reproduce the arguments.
-        """
-        typ, arr = self._c_type(arg)
-        rv = typ + ' :: ' + ( name or arg['name'] )
-        if arr:
-            rv += '(*)'
-        return rv
-
-    def XXX_f_type(self, arg):
-        """
-        Return the Fortran type, and array attribute
-        pass-by-value default
-
-        attributes:
-        ptr - True = pass-by-reference
-        reference - True = pass-by-reference
-
-        """
-        t = []
-        typedef = self.typedef.get(arg['type'], None)
-        if typedef is None:
-            raise RuntimeError("No such type %s" % arg['type'])
-
-        typ = typedef.f_type
-        if typedef.base == 'string':
-            return (typ, False)  # not array
-        else:
-            #        if arg['attrs'].get('const', False):
-            #            t.append('const')
-            t.append(typ)
-#            if not (arg['attrs'].get('ptr', False) or
-#                    arg['attrs'].get('reference', False)):
-#                t.append(', value')
-            return (''.join(t), arg['attrs'].get('array', False))
-
-    def XXX_f_decl(self, arg, name=None):
-        """
-        Return the Fortran declaration.
-
-        If name is not supplied, use name in arg.
-        This makes it easy to reproduce the arguments.
-        """
-        typ, arr = self._f_type(arg)
-        rv = typ + ' :: ' + ( name or arg['name'] )
-        if arr:
-            rv += '(*)'
-        return rv
-
     def wrap_library(self):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
@@ -148,11 +61,22 @@ class Wrapp(util.WrapperMixin):
         self.py_helper_prototypes = []
         self.py_helper_functions = []
 
-        # preprocess all classes first
+        # preprocess all classes first to allow them to reference each other
         for node in self.tree['classes']:
             typedef = self.typedef[node['name']]
             fmt = node['fmt']
             typedef.PY_format = 'O'
+
+            # PyTypeObject for class
+            util.eval_template(options, fmt,
+                               'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
+            typedef.PY_PyTypeObject = fmt.PY_PyTypeObject
+
+            # PyObject for class
+            util.eval_template(options, fmt,
+                               'PY_PyObject', '{PY_prefix}{cpp_class}')
+            typedef.PY_PyObject = fmt.PY_PyObject
+
             fmt.PY_to_object_func = typedef.PY_to_object = wformat('PP_{cpp_class}_to_Object', fmt)
             fmt.PY_from_object_func = typedef.PY_from_object = wformat('PP_{cpp_class}_from_Object', fmt)
 
@@ -189,10 +113,7 @@ class Wrapp(util.WrapperMixin):
 
         util.eval_template(options, fmt_class,
                            'PY_type_filename', 'py{cpp_class}type.cpp')
-        util.eval_template(options, fmt_class,
-                           'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
-        util.eval_template(options, fmt_class,
-                           'PY_PyObject', '{PY_prefix}{cpp_class}')
+
         self.create_class_helper_functions(node)
 
         self.py_type_object_creation.append(wformat("""
@@ -309,6 +230,7 @@ return 1;""", fmt)
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
+        result_is_ref = result['attrs'].get('reference', False)
 
         if node.get('return_this', False):
             result_type = 'void'
@@ -317,17 +239,19 @@ return 1;""", fmt)
         result_typedef = self.typedef[result_type]
         is_ctor  = result['attrs'].get('constructor', False)
         is_dtor  = result['attrs'].get('destructor', False)
-        is_const = result['attrs'].get('const', False)
-        if is_ctor or is_dtor:
+#        is_const = result['attrs'].get('const', False)
+        if is_ctor:   # or is_dtor:
+            # XXX - have explicit delete
             # need code in __init__ and __del__
             return
 
-        if cls:
-            util.eval_template(options, fmt,
-                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
+        # XXX if a class, then knock off const since the PyObject
+        # is not const, otherwise, use const from result.
+        if result_typedef.base == 'wrapped':
+            is_const = False
         else:
-            util.eval_template(options, fmt,
-                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
+            is_const = None
+        fmt.rv_decl = self.std_c_decl('cpp_type', result, name='rv', const=is_const)  # return value
 
         PY_decl = []     # variables for function
         PY_code = []
@@ -337,6 +261,7 @@ return 1;""", fmt)
 
         # parse arguments
         optional = []
+        post_parse = []
         args = node.get('args', [])
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
@@ -361,13 +286,26 @@ return 1;""", fmt)
                     append_format(optional, '{var} = {default_value};', fmt)
 
                 format.append(arg_typedef.PY_format)
-                if arg_typedef.PY_from_object:
+                if arg_typedef.PY_PyTypeObject:
+                    # Expect object of given type
+                    format.append('!')
+                    addrargs.append('&' + arg_typedef.PY_PyTypeObject)
+                elif arg_typedef.PY_from_object:
+                    # Use function to convert object
                     format.append('&')
                     addrargs.append(arg_typedef.PY_from_object)
                 addrargs.append('&' + arg_name)
 
+
                 # argument for C++ function
-                if arg_typedef.PY_from_object:
+                if arg_typedef.PY_PyTypeObject:
+                    # A Python Object
+                    fmt.var_ptr = fmt.var + '_ptr'
+                    PY_decl.append(arg_typedef.PY_PyObject + ' * ' + arg_name + ';')
+                    PY_decl.append(self.std_c_decl('cpp_type', arg, name=fmt.var_ptr) + ';')
+                    append_format(post_parse, '{var_ptr} = ({var} ? {var}->{BBB} : NULL);', fmt)
+                    cpp_call_list.append(fmt.var_ptr)
+                elif arg_typedef.PY_from_object:
                     # already a C++ type
                     PY_decl.append(self.std_c_decl('cpp_type', arg) + ';')
                     cpp_call_list.append(fmt.var)
@@ -378,9 +316,13 @@ return 1;""", fmt)
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
 
 
-            # jump through some hoops for char ** const correctness for C++
-            PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
-            PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ' };')
+            if True:
+                # jump through some hoops for char ** const correctness for C++
+                # warning: deprecated conversion from string constant to 'char*' [-Wwrite-strings]
+                PY_decl.append('const char *kwcpp = "%s";' % '\\0'.join(arg_names))
+                PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
+            else:
+                PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
             PY_decl.append('')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
@@ -391,6 +333,7 @@ return 1;""", fmt)
             PY_code.append(wformat('{PyArg_addrargs}))', fmt))
             PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
+            PY_code.extend(post_parse)
             
         fmt.call_list = ', '.join(cpp_call_list)
 
@@ -402,32 +345,67 @@ return 1;""", fmt)
             fmt.PY_this_call = ''  # call function syntax
 
 
-        if result_type == 'void' and not result_is_ptr:
+        if is_dtor:
+            append_format(PY_code, 'delete self->{BBB};', fmt)
+            append_format(PY_code, 'self->{BBB} = NULL;', fmt)
+        elif result_type == 'void' and not result_is_ptr:
             line = wformat('{PY_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
         else:
             line = wformat('{rv_decl} = {PY_this_call}{CPP_name}({call_list});', fmt)
             PY_code.append(line)
 
+        if 'PY_error_pattern' in node:
+            lfmt = util.Options(fmt)
+            lfmt.var = fmt.rv
+            append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
+
         # return Object
         if result_type == 'void' and not result_is_ptr:
             PY_code.append('Py_RETURN_NONE;')
+        elif result_typedef.base == 'wrapped':
+            lfmt = util.Options(fmt)
+            lfmt.rv_obj = 'rv_obj'
+            lfmt.PY_PyObject = result_typedef.PY_PyObject
+            lfmt.PY_PyTypeObject = result_typedef.PY_PyTypeObject
+            append_format(PY_code, '{PY_PyObject} * {rv_obj} = PyObject_New({PY_PyObject}, &{PY_PyTypeObject});', lfmt)
+            append_format(PY_code, '{rv_obj}->{BBB} = {rv};', lfmt)
+            append_format(PY_code, 'return (PyObject *) {rv_obj};', lfmt)
+        elif result_typedef.PY_ctor:
+            fmt.var = fmt.rv
+            fmt.var = wformat(result_typedef.cpp_to_c, fmt)  # if C++
+            append_format(PY_code, 'return ' + result_typedef.PY_ctor + ';', fmt)
         else:
+            fmt.var = 'rv'
             format = [ result_typedef.PY_format ]
             addrargs = [ ]
             if result_typedef.PY_to_object:
                 format.append('&')
                 addrargs.append(result_typedef.PY_to_object)
             if result_is_ptr:
-                addrargs.append('rv')
+                append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
+            elif result_is_ref:
+                append_format(addrargs, result_typedef.cpp_to_c, fmt)  # if C++
             else:
-                addrargs.append('&rv')
+                # XXX intermediate variable?
+                addrargs.append('rv')
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
             PY_code.append(wformat('return Py_BuildValue("{PyArg_format}", {PyArg_addrargs});', fmt))
 
         PY_impl = [1] + PY_decl + PY_code + [-1]
 
+        if cls:
+            util.eval_template(options, fmt_func,
+                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
+        else:
+            util.eval_template(options, fmt_func,
+                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
+
+        self.create_method(cls, fmt, PY_impl)
+
+    def create_method(self, cls, fmt, PY_impl):
+        """Format the function."""
         body = self.PyMethodBody
         body.append(wformat("""
 static char {PY_name_impl}__doc__[] =
@@ -443,168 +421,15 @@ static PyObject *
         body.append('  PyObject *args,')
         body.append('  PyObject *kwds)')
         body.append('{')
-        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
+# use method_suffix in splicer name since a single C++ function may
+# produce several methods.
+# XXX - make splicer name customizable?
+#        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
+        self._create_splicer(fmt.underscore_name + fmt.method_suffix,
+                             self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
         self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
-
-
-        return
-    #######################
-        fmt_func.F_obj = wformat('{F_this}%{F_this}', fmt_func)
-        if 'F_this' in options:
-            fmt_func.F_this = options.F_this
-        if 'F_result' in options:
-            fmt_func.F_result = options.F_result
-        F_result = fmt_func.F_result
-        C_this = fmt_func.C_this
-
-        if 'F_C_name' in options:
-            fmt_func.F_C_name = options.F_C_name
-        else:
-            fmt_func.F_C_name = fmt_func.C_name.lower()
-
-        if cls:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
-        else:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', '{underscore_name}{method_suffix}')
-        util.eval_template(options, fmt_func,
-                            'F_name_method', '{underscore_name}{method_suffix}')
-        util.eval_template(options, fmt_func,
-                            'F_name_generic', '{underscore_name}')
-
-        arg_c_names = [ ]
-        arg_c_decl = [ ]
-        arg_c_call = []      # arguments to C function
-
-        arg_f_names = [ ]
-        arg_f_decl = [ ]
-        arg_f_use  = [ 'use iso_c_binding' ]  # XXX totally brain dead for now
-
-        # find subprogram type
-        # compute first to get order of arguments correct.
-        # Add 
-        if result_type == 'void' and not result_is_ptr:
-            #  void=subroutine   void *=function
-            subprogram = 'subroutine'
-        else:
-            subprogram = 'function'
-            fmt_func.F_result_clause = ' result(%s)' % F_result
-            if is_const:
-                fmt_func.F_pure_clause   = 'pure '
-        fmt_func.F_subprogram    = subprogram
-
-        if cls:
-            # Add 'this' argument
-            if not is_ctor:
-                arg_c_names.append(C_this)
-                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
-                arg_c_call.append(fmt_func.F_obj)
-                arg_f_names.append(fmt_func.F_this)
-                if is_dtor:
-                    arg_f_decl.append(wformat(
-                            'type({F_derived_name}) :: {F_this}',
-                            fmt_func))
-                else:
-                    arg_f_decl.append(wformat(
-                            'class({F_derived_name}) :: {F_this}',
-                            fmt_func))
-
-        for arg in node.get('args', []):
-            # default argument's intent
-            # XXX look at const, ptr
-            attrs = arg['attrs']
-            if 'intent' not in attrs:
-                attrs['intent'] = 'in'
-            if 'value' not in attrs:
-                attrs['value'] = True
-
-            arg_c_names.append(arg['name'])
-            arg_c_decl.append(self._c_decl(arg))
-
-            rrr = self.typedef[arg['type']].fortran_to_c
-            arg_c_call.append(rrr.format(var=arg['name']))
-            arg_f_names.append(arg['name'])
-            arg_f_decl.append(self._f_decl(arg))
-
-        # declare function return value after arguments
-        # since arguments may be used to compute return value
-        # (for example, string lengths)
-        if subprogram == 'function':
-            if result_typedef.base == 'string':
-                # special case returning a string
-                rvlen = result['attrs'].get('len', '1')
-                fmt_func.rvlen = rvlen
-                arg_c_decl.append('type(C_PTR) %s' % F_result)
-                arg_f_decl.append(
-                    wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
-                            fmt_func))
-            else:
-                # XXX - make sure ptr is set to avoid VALUE
-                arg_dict = dict(name=F_result,
-                                type=result_type,
-                                attrs=dict(ptr=True))
-#                arg_c_decl.append(self._c_decl(result, name=F_result))
-                arg_c_decl.append(self._c_decl(arg_dict))
-                arg_f_decl.append(self._f_decl(result, name=F_result))
-
-        if not is_ctor and not is_dtor:
-            # Add method to derived type
-            F_name_method = fmt_func.F_name_method
-            self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
-            self.type_bound_part.append('procedure :: %s => %s' % (
-                    F_name_method, fmt_func.F_name_impl))
-
-        fmt_func.F_arg_c_call = ', '.join(arg_c_call)
-        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
-        fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
-
-        # body of function
-        splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)
-        if 'F_code' in options:
-            F_code = [ options.F_code ]
-        elif splicer_code:
-            F_code = splicer_code
-        else:
-            F_code = []
-            if is_ctor:
-                F_code.append(wformat('{F_result}%{F_this} = {F_C_name}({F_arg_c_call})', fmt_func))
-            elif subprogram == 'function':
-                fmt = result_typedef.f_return_code
-                F_code.append(wformat(fmt, fmt_func))
-            else:
-                F_code.append(wformat('call {F_C_name}({F_arg_c_call})', fmt_func))
-            if is_dtor:
-                F_code.append(wformat('{F_this}%{F_this} = C_NULL_PTR', fmt_func))
-
-        c_interface = self.c_interface
-        c_interface.append('')
-        c_interface.append(wformat(
-                '{F_pure_clause}{F_subprogram} {F_C_name}({F_C_arguments}){F_result_clause} &',
-                fmt_func))
-        c_interface.append(2)  # extra indent for continued line
-        c_interface.append(wformat(
-                'bind(C, name="{C_name}")',
-                fmt_func))
-        c_interface.append(-1)
-        c_interface.append('use iso_c_binding')
-        c_interface.append('implicit none')
-        c_interface.extend(arg_c_decl)
-        c_interface.append(-1)
-        c_interface.append(wformat('end {F_subprogram} {F_C_name}', fmt_func))
-
-        impl = self.impl
-        impl.append('')
-        impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt_func))
-        impl.append(1)
-        impl.extend(arg_f_use)
-        impl.append('implicit none')
-        impl.extend(arg_f_decl)
-        self._create_splicer(fmt_func.F_name_method, impl, F_code)
-        impl.append(-1)
-        impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
 
     def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
@@ -612,6 +437,11 @@ static PyObject *
         # type bodies must be filled in by user, no real way to guess
         PyObj  = fmt.PY_PyObject
         selected = node.get('python', {}).get('type', [])
+
+        # Dictionary of methods for bodies
+        default_body = dict(
+            richcompare = self.not_implemented
+            )
 
         self._push_splicer('type')
         for typename in typenames:
@@ -625,7 +455,8 @@ static PyObject *
             output.append('static ' + tup[0])
             output.append(('{name} ' + tup[1]).format(name=func_name, object=PyObj))
             output.append('{')
-            default = self.not_implemented(typename, tup[2])
+            default = default_body.get(typename, self.not_implemented_error)
+            default = default(typename, tup[2])
             self._create_splicer(typename, output, default=default)
             output.append('}')
         self._pop_splicer('type')
@@ -637,10 +468,13 @@ static PyObject *
         output = []
 
         output.append(wformat('#include "{PY_header_filename}"', fmt))
+        self._push_splicer('impl')
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)
         self._create_splicer('C_definition', output)
         self._create_splicer('additional_methods', output)
+        self._pop_splicer('impl')
+
         fmt_type = dict(
             PY_module_name  = fmt.PY_module_name,
             PY_PyObject     = fmt.PY_PyObject,
@@ -648,12 +482,18 @@ static PyObject *
             cpp_class       = fmt.cpp_class,
             )
         self.write_tp_func(node, fmt, fmt_type, output)
+        self.multi_dispatch(node, node['methods'])
 
         output.extend(self.PyMethodBody)
+
+        self._push_splicer('impl')
+        self._create_splicer('after_methods', output)
+        self._pop_splicer('impl')
 
         fmt_type['tp_methods'] = wformat('{PY_prefix}{cpp_class}_methods', fmt)
         output.append(wformat('static PyMethodDef {tp_methods}[] = {{', fmt_type))
         output.extend(self.PyMethodDef)
+        self._create_splicer('PyMethodDef', output)
         output.append('{NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */')
         output.append('};')
 
@@ -661,6 +501,70 @@ static PyObject *
         self.namespace(node, 'end', output)
 
         self.write_output_file(fname, self.config.binary_dir, output)
+
+
+    def multi_dispatch(self, cls, methods):
+        """Look for overloaded methods.
+        When found, create a method will will call each of the
+        overloaded methods looking for the one which will accept
+        the given arguments.
+        """
+        options = cls['options']
+
+        overloaded_methods = {}
+        for method in methods:
+            if method['options'].wrap_python:
+                overloaded_methods.setdefault(method['result']['name'], []).append(method)
+
+        for method, methods in overloaded_methods.items():
+            if len(methods) == 1:
+                continue
+
+            fmt_func = methods[0]['fmt']
+            fmt = util.Options(fmt_func)
+            fmt.method_suffix = ''
+            fmt.doc_string = 'documentation'
+            fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
+#            fmt.CPP_name = method
+            #fmt.CPP_name = methods[0]['result']['name']
+
+            body = []
+            body.append(1)
+            body.append('int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);')
+            body.append('int numArgs = PyTuple_GET_SIZE(args);')
+            body.append('int totArgs = numArgs + numNamedArgs;')
+            body.append('PyObject *rvobj;')
+
+
+            for overload in methods:
+                body.append('{')
+                body.append(1)
+                append_format(body, 'rvobj = {PY_name_impl}(self, args, kwds);', overload['fmt'])
+                body.append('if (!PyErr_Occurred()) {')
+                body.append(1)
+                body.append('return rvobj;')
+                body.append(-1)
+                body.append('} else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {')
+                body.append(1)
+                body.append('return rvobj;')
+                body.append(-1)
+                body.append('}')
+                body.append('PyErr_Clear();')
+                body.append(-1)
+                body.append('}')
+
+            body.append('PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");')
+            body.append('return NULL;')
+            body.append(-1)
+
+            if cls:
+                util.eval_template(options, fmt,
+                                   'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}')
+            else:
+                util.eval_template(options, fmt,
+                                   'PY_name_impl', '{PY_prefix}{underscore_name}')
+
+            self.create_method(cls, fmt, body)
 
     def write_header(self, node):
         options = node['options']
@@ -685,10 +589,12 @@ static PyObject *
 #define IS_PY3K
 #endif""")
         
+        self._push_splicer('header')
         self._create_splicer('include', output)
         self.namespace(node, 'begin', output)
         output.extend(self.py_type_extern)
         self._create_splicer('C_declaration', output)
+        self._pop_splicer('header')
 
         output.append('')
         output.append('// helper functions')
@@ -765,13 +671,21 @@ PyMODINIT_FUNC MOD_INITBASIS(void);
         self.namespace(node, 'end', output)
         self.write_output_file(fmt.PY_helper_filename, self.config.binary_dir, output)
 
-    def not_implemented(self, msg, ret):
+    def not_implemented_error(self, msg, ret):
         '''A standard splicer for unimplemented code
         ret is the return value (NULL or -1)
         '''
         return [
             "    PyErr_SetString(PyExc_NotImplementedError, \"%s\");" % msg,
             "    return %s;" % ret
+            ]
+
+    def not_implemented(self, msg, ret):
+        '''A standard splicer for rich comparison
+        '''
+        return [
+            'Py_INCREF(Py_NotImplemented);',
+            'return Py_NotImplemented;'
             ]
 
 
@@ -783,7 +697,8 @@ typenames = ['dealloc', 'print', 'compare',
              'getattr', 'setattr',  # deprecated
              'getattro', 'setattro',
              'repr', 'hash', 'call', 'str',
-             'init', 'alloc', 'new', 'free', 'del']
+             'init', 'alloc', 'new', 'free', 'del',
+             'richcompare']
 
 # return type, prototype, default return value
 typefuncs = {
@@ -802,7 +717,8 @@ typefuncs = {
     'alloc':    ('PyObject *', '(PyTypeObject *type, Py_ssize_t nitems)',                 'NULL'),
     'new':      ('PyObject *', '(PyTypeObject *type, PyObject *args, PyObject *kwds)',    'NULL'),
     'free':     ('void',       '(void *op)',                                        ''),
-    'del':      ('void',       '({object} *self)',                                  '')
+    'del':      ('void',       '({object} *self)',                                  ''),
+    'richcompare': ('PyObject *', '({object} *self, PyObject *other, int opid)',      ''),
     }
 
 PyTypeObject_template = """
@@ -849,7 +765,7 @@ PyTypeObject {PY_PyTypeObject} = {{
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc){tp_richcompare},                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

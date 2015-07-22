@@ -30,7 +30,7 @@ set(CMAKE_Fortran_COMPILER "bgxlf2003_r" CACHE PATH "")
 
 # boost headers from uberenv
 set(ENABLE_BOOST ON CACHE PATH "")
-set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.55.0" CACHE PATH "")
+set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.58.0" CACHE PATH "")
 
 ###############################################################################
 # Additional Compiler Flags

@@ -237,11 +237,11 @@ TEST(C_sidre_group,view_copy_move)
   ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(flds, "i0");
-  ATK_dataview_allocate(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
   ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(flds, "f0");
-  ATK_dataview_allocate(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
   ATK_dataview * d0_view = ATK_datagroup_create_view_and_buffer_simple(flds, "d0");
-  ATK_dataview_allocate(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
 
   ATK_dataview_set_value_int(i0_view, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
@@ -254,7 +254,7 @@ TEST(C_sidre_group,view_copy_move)
   // test moving a view form feds7 to sub
   // flds->createGroup("sub")->moveView(flds->getView("d0"));
   ATK_datagroup * sub = ATK_datagroup_create_group(flds, "sub");
-  ATK_datagroup_move_view(sub, ATK_datagroup_get_view(flds, "d0"));
+  ATK_datagroup_move_view(sub, ATK_datagroup_get_view_from_name(flds, "d0"));
   ATK_datagroup_print(flds);
   EXPECT_FALSE(ATK_datagroup_has_view(flds, "d0"));
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "sub"));
@@ -266,14 +266,14 @@ TEST(C_sidre_group,view_copy_move)
   //                        ->getNode().as_double_ptr();
   double * d0_data;
   {
-    ATK_dataview * tmpview = ATK_datagroup_get_view(sub, "d0");
+    ATK_dataview * tmpview = ATK_datagroup_get_view_from_name(sub, "d0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
     d0_data = (double *) ATK_databuffer_get_data(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds top sub
-  ATK_datagroup_copy_view(sub, ATK_datagroup_get_view(flds, "i0"));
+  ATK_datagroup_copy_view(sub, ATK_datagroup_get_view_from_name(flds, "i0"));
 
   ATK_datagroup_print(flds);
 
@@ -301,11 +301,11 @@ TEST(C_sidre_group,groups_move_copy)
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
   ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(gb, "f0");
-  ATK_dataview_allocate(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
   ATK_dataview * d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
-  ATK_dataview_allocate(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
 
   ATK_dataview_set_value_int(i0_view, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
@@ -347,10 +347,10 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
   ATK_dataview * view2 = ATK_datagroup_create_view_and_buffer_simple(grp, viewName2);
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
-  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName1), view1 );
+  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName1), view1 );
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
-  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName2), view2 );
+  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName2), view2 );
 
   ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(view1);
   ATK_IndexType bufferId1 = ATK_databuffer_get_index(tmpbuf);
@@ -393,10 +393,10 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
                                  (grp, viewName2, ATK_C_DOUBLE_T, 10);
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
-  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName1), view1 );
+  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName1), view1 );
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
-  EXPECT_EQ( ATK_datagroup_get_view(grp, viewName2), view2 );
+  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName2), view2 );
 
 #ifdef XXX
   int * v1_vals = (int *) ATK_dataview_get_data(view1);
@@ -454,8 +454,8 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   Schema s(DataType::uint32(5, 5*sizeof(int)));
   ATK_datagroup_createView(root, "sub_b", base_buff, s);
 
-  int * sub_a_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(root, "sub_a"));
-  int * sub_b_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view(root, "sub_b"));
+  int * sub_a_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view_from_name(root, "sub_a"));
+  int * sub_b_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view_from_name(root, "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -477,7 +477,7 @@ TEST(C_sidre_group,save_restore_simple)
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
 
   ATK_dataview *i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
   ATK_dataview_set_value_int(i0_view, 1);
 
   EXPECT_TRUE(ATK_datagroup_has_group(root, "fields"));
@@ -501,7 +501,7 @@ TEST(C_sidre_group,save_restore_simple)
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
   ga = ATK_datagroup_get_group(flds, "a");
-  i0_view = ATK_datagroup_get_view(ga, "i0");
+  i0_view = ATK_datagroup_get_view_from_name(ga, "i0");
   EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
 
   ATK_datastore_print(ds2);
@@ -523,15 +523,15 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
   ATK_dataview_set_value_int(i0_view, 1);
 
   ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(gb, "f0");
-  ATK_dataview_allocate(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
 
   ATK_dataview *d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
-  ATK_dataview_allocate(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
   ATK_dataview_set_value_double(d0_view, 3000.0);
 
   // check that all sub groups exist
@@ -558,9 +558,9 @@ TEST(C_sidre_group,save_restore_complex)
   gb = ATK_datagroup_get_group(flds, "b");
   gc = ATK_datagroup_get_group(flds, "c");
 
-  i0_view = ATK_datagroup_get_view(ga, "i0");
-  f0_view = ATK_datagroup_get_view(gb, "f0");
-  d0_view = ATK_datagroup_get_view(gc, "d0");
+  i0_view = ATK_datagroup_get_view_from_name(ga, "i0");
+  f0_view = ATK_datagroup_get_view_from_name(gb, "f0");
+  d0_view = ATK_datagroup_get_view_from_name(gc, "d0");
 
   EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
   EXPECT_NEAR(ATK_dataview_get_value_float(f0_view), 100.0, 1e-12);
