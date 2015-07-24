@@ -2849,7 +2849,7 @@ int main(int argc, char *argv[])
 
   /* Set defaults that can be overridden by command line opts */
   opts.its = 9999999;
-  opts.nx  = 30;
+  opts.nx  = 5;
   opts.numReg = 11;
   opts.numFiles = (int)(numRanks + 10) / 9;
   opts.showProg = 0;

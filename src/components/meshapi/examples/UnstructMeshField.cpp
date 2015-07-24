@@ -121,10 +121,17 @@ namespace unstructured {
   {
   public:
     // uses RAII to open/close the file
-    SimpleVTKHeshMeshReader(std::string fileName) : vtkMesh( fileName.c_str() )
+    SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
     {
-      SLIC_ASSERT_MSG( vtkMesh
-          , "fstream error -- problem opening file: '"  << fileName << "'"
+        // check if the file opened, if not try one directory higher
+        if(!vtkMesh)
+        {
+            std::string pFileName = "../" + fileName;
+            vtkMesh.open( pFileName.c_str() );
+        }
+
+        SLIC_ERROR_MSG( vtkMesh
+          , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName <<"')"
                                                         << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() << "'");
     }
     ~SimpleVTKHeshMeshReader()

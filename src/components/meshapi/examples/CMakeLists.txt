@@ -3,7 +3,7 @@
 # List of example sources
 #
 set(example_sources
-	meshapiShockTube.cpp
+	ShockTube.cpp
     UnstructMeshField.cpp
     TemplateEx.cpp
     )
@@ -15,7 +15,8 @@ set(example_sources
 # Build the example sources
 #
 foreach(example_source ${example_sources})
-    make_executable(EXECUTABLE_SOURCE ${example_source} DEPENDS_ON meshapi slic)
+    get_filename_component(example_name ${example_source} NAME_WE)
+    make_executable(EXECUTABLE_NAME "meshapi${example_name}" EXECUTABLE_SOURCE ${example_source} DEPENDS_ON meshapi slic)
 endforeach()
 
 
@@ -46,21 +47,16 @@ set_source_files_properties(${lulesh_lib_sources} PROPERTIES COMPILE_FLAGS " -Wn
 set_source_files_properties(${lulesh_exe_source}  PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas " )
 
 if ( ENABLE_MPI )
-    make_library( LIBRARY_NAME 
-                    meshapiLuleshLib
-                  LIBRARY_SOURCES 
-                    "${lulesh_lib_sources}" 
-                    "${lulesh_lib_headers}"
+    make_library( LIBRARY_NAME      meshapiLuleshLib
+                  LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
                   WITH_MPI
                   ) 
     
     add_dependencies(meshapiLuleshLib meshapi)
     target_link_libraries( meshapiLuleshLib  meshapi )
                       
-    make_executable( EXECUTABLE_NAME 
-                        meshapiLulesh 
-                     EXECUTABLE_SOURCE 
-                        ${lulesh_exe_source}
+    make_executable( EXECUTABLE_NAME    meshapiLulesh 
+                     EXECUTABLE_SOURCE  ${lulesh_exe_source}
                      DEPENDS_ON 
                         "slic"
                         "meshapi" 
@@ -69,20 +65,15 @@ if ( ENABLE_MPI )
                    )
                        
 else()
-    make_library( LIBRARY_NAME 
-                    meshapiLuleshLib
-                  LIBRARY_SOURCES 
-                    "${lulesh_lib_sources}" 
-                    "${lulesh_lib_headers}"
+    make_library( LIBRARY_NAME      meshapiLuleshLib
+                  LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
                   ) 
     
     add_dependencies(meshapiLuleshLib meshapi)
     target_link_libraries( meshapiLuleshLib  meshapi )
                       
-    make_executable( EXECUTABLE_NAME 
-                        meshapiLulesh 
-                     EXECUTABLE_SOURCE 
-                        ${lulesh_exe_source}
+    make_executable( EXECUTABLE_NAME    meshapiLulesh 
+                     EXECUTABLE_SOURCE  ${lulesh_exe_source}
                      DEPENDS_ON 
                         "slic"
                         "meshapi" 
@@ -93,8 +84,8 @@ endif()
 
 
 # ---- Placed here temporarily --  determines whether to build the original lulesh 2.0 code
-set(buildOrigLuleshMPI FALSE)
-if ( ${buildOrigLuleshMPI} AND ENABLE_MPI)
+set(buildOrigLulesh TRUE)
+if ( ${buildOrigLulesh} )
     set(lulesh_dir lulesh2.0.3_orig  )
 
     set(lulesh_lib_headers
@@ -112,10 +103,18 @@ if ( ${buildOrigLuleshMPI} AND ENABLE_MPI)
         ${lulesh_dir}/lulesh.cc
         )
     
-    set_source_files_properties(${lulesh_lib_sources} PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas -Wno-unused-parameter" )
-    set_source_files_properties(${lulesh_exe_source}  PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas -Wno-unused-parameter" )
 
+  if(ENABLE_MPI)
+    set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}  
+                                PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas -Wno-unused-parameter -DUSE_MPI=1" )
     make_library( LIBRARY_NAME meshapiLuleshOrigLib LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}" WITH_MPI )
     make_executable( EXECUTABLE_NAME meshapiOrigLulesh EXECUTABLE_SOURCE ${lulesh_exe_source} DEPENDS_ON "meshapiLuleshOrigLib" WITH_MPI )
+  else()
+    set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}  
+                                PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas -Wno-unused-parameter -DUSE_MPI=0" )    
+    make_library( LIBRARY_NAME meshapiLuleshOrigLib LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  )
+    make_executable( EXECUTABLE_NAME meshapiOrigLulesh EXECUTABLE_SOURCE ${lulesh_exe_source} DEPENDS_ON "meshapiLuleshOrigLib" ) 
+  endif()
+  
 endif()
                    

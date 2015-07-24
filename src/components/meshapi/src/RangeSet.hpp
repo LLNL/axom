@@ -88,14 +88,14 @@ namespace meshapi {
    * \details The ElementType here needs to be computable as offsets (of PositionType) from the lowerIndex
    *          Examples include: signed and unsigned integral types
    */
-    class RangeSet : public OrderedSet< policies::RuntimeSizeHolder<int>
-                                      , policies::RuntimeOffsetHolder<int>
+    class RangeSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
+                                      , policies::RuntimeOffsetHolder<Set::PositionType>
                                       >
     {
 
     private:
-        typedef OrderedSet< policies::RuntimeSizeHolder<int>
-                          , policies::RuntimeOffsetHolder<int>  >  OrderedSetType;
+        typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
+                          , policies::RuntimeOffsetHolder<Set::PositionType>  >  OrderedSetType;
 
     public:
         typedef typename OrderedSetType::PositionType PositionType;

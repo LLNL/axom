@@ -11,7 +11,18 @@
 #include <cstddef>
 #include <vector>
 
-#include <boost/iterator/counting_iterator.hpp>
+
+#ifndef MESHAPI_USE_COUNTING_ITERATOR
+//    #define MESHAPI_USE_COUNTING_ITERATOR
+#endif
+
+#ifdef MESHAPI_USE_COUNTING_ITERATOR
+    #include <boost/iterator/counting_iterator.hpp>
+#else
+    #include <boost/iterator/iterator_facade.hpp>
+    #include <boost/utility/enable_if.hpp>
+    #include <boost/type_traits.hpp>
+#endif
 
 #include "common/CommonTypes.hpp" // for ATK_NULLPTR
 #include "slic/slic.hpp"
@@ -43,8 +54,11 @@ namespace policies {
 
         RuntimeSizeHolder(IntType sz = DEFAULT_VALUE) : m_sz(sz) {}
 
-        inline IntType size() const { return m_sz;}
-        inline IntType& size()            { return m_sz;}
+        inline const IntType  size()       const { return m_sz;}
+        inline       IntType& size()             { return m_sz;}
+
+        inline const IntType  operator()() const { return size();}
+        inline       IntType& operator()()       { return size();}
 
         inline bool empty() const       { return m_sz == IntType(); }
     private:
@@ -58,16 +72,15 @@ namespace policies {
     struct CompileTimeSizeHolder {
         static const IntType DEFAULT_VALUE = INT_VAL;
 
-        CompileTimeSizeHolder(){}
-
-
-        CompileTimeSizeHolder(IntType val) {
+        CompileTimeSizeHolder(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == INT_VAL
                               , "MeshAPI::CompileTimeSizeHolder -- tried to initialize a compile time size policy with value ("
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
-        inline IntType size() const { return INT_VAL;}
+        inline const IntType size()       const { return INT_VAL;}
+        inline const IntType operator()() const { return size();}
+
         inline IntType empty() const { return INT_VAL == IntType();}
     };
 
@@ -78,16 +91,14 @@ namespace policies {
      struct ZeroSize {
          static const IntType DEFAULT_VALUE = IntType();
 
-         ZeroSize(){}
-
-
-         ZeroSize(IntType val) {
+         ZeroSize(IntType val = DEFAULT_VALUE) {
                 SLIC_ASSERT_MSG( val == DEFAULT_VALUE
                                , "MeshAPI::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
                               << val <<" ) but should always be zero.");
          }
 
-         inline IntType size() const { return DEFAULT_VALUE;}
+         inline const IntType size()        const { return DEFAULT_VALUE;}
+         inline const IntType operator()()  const { return size();}
          inline IntType empty() const { return true;}
      };
 
@@ -109,11 +120,14 @@ namespace policies {
     public:
         static const IntType DEFAULT_VALUE = IntType();
 
+        RuntimeOffsetHolder(IntType off = DEFAULT_VALUE) : m_off(off) {}
 
-        RuntimeOffsetHolder(IntType off) : m_off(off) {}
+        inline const IntType offset() const { return m_off;}
+        inline       IntType& offset()            { return m_off;}
 
-        inline IntType offset() const { return m_off;}
-        inline IntType& offset()            { return m_off;}
+        inline const IntType  operator()() const { return offset();}
+        inline       IntType& operator()()       { return offset();}
+
 
         // inline bool hasOffset() const       { return m_off == IntType(); }
     private:
@@ -128,15 +142,14 @@ namespace policies {
     struct CompileTimeOffsetHolder {
         static const IntType DEFAULT_VALUE = INT_VAL;
 
-        CompileTimeOffsetHolder(IntType val) {
+        CompileTimeOffsetHolder(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == INT_VAL
                               , "MeshAPI::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
-        inline IntType offset() const { return INT_VAL;}
-
-        // inline IntType hasOffset() const { return INT_VAL == IntType();}
+        inline const IntType  offset()      const { return INT_VAL;}
+        inline const IntType operator()()  const { return offset();}
     };
 
     /**
@@ -146,15 +159,14 @@ namespace policies {
     struct ZeroOffset {
         static const IntType DEFAULT_VALUE = IntType();
 
-        ZeroOffset() {}
-        ZeroOffset(IntType val) {
+        ZeroOffset(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == DEFAULT_VALUE
                               , "MeshAPI::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
                               << val <<", but should always be 0");
         }
 
-        inline IntType offset() const { return DEFAULT_VALUE;}
-        //inline IntType hasOffset() const { return false;}
+        inline const IntType offset()     const { return DEFAULT_VALUE;}
+        inline const IntType operator()() const { return offset();}
     };
 
     /// \}
@@ -177,8 +189,12 @@ namespace policies {
 
         RuntimeStrideHolder(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
 
-        inline IntType stride() const { return m_stride;}
-        inline IntType& stride()            { return m_stride;}
+        inline const IntType  stride()      const { return m_stride;}
+        inline       IntType& stride()            { return m_stride;}
+
+        inline const IntType  operator()()  const { return stride();}
+        inline       IntType& operator()()        { return stride();}
+
 
         //inline bool hasStride() const       { return m_stride != IntType(); }
     private:
@@ -193,15 +209,14 @@ namespace policies {
     struct CompileTimeStrideHolder {
         static const IntType DEFAULT_VALUE = INT_VAL;
 
-        CompileTimeStrideHolder() {}
-        CompileTimeStrideHolder(IntType val) {
+        CompileTimeStrideHolder(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == INT_VAL
                               , "MeshAPI::CompileTimeStrideHolder -- tried to initialize a compile time stride with value ("
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
-        inline IntType stride() const { return INT_VAL;}
-        //inline IntType hasStride() const { return INT_VAL != IntType();}
+        inline const IntType stride()      const { return INT_VAL;}
+        inline const IntType operator()()  const { return stride();}
     };
 
     /**
@@ -211,18 +226,17 @@ namespace policies {
     struct StrideOne {
         static const IntType DEFAULT_VALUE = IntType(1);
 
-        StrideOne() {}
         /**
          * This constructor only exists to allow the derived class to not have to specialize for when the stride is known at compile time
          */
-        StrideOne(IntType val) {
+        StrideOne(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == DEFAULT_VALUE
                               , "MeshAPI::StrideOne policy -- tried to initialize a stride-one StridePolicy with value ("
                               << val <<"), but should always be 1.");
         }
 
-        inline IntType stride() const { return DEFAULT_VALUE;}
-        //inline IntType hasStride() const { return DEFAULT_VALUE != IntType();}
+        inline const IntType stride()     const { return DEFAULT_VALUE;}
+        inline const IntType operator()() const { return stride();}
     };
 
 
@@ -243,7 +257,9 @@ namespace policies {
     template<typename PositionType, typename ElementType>
     struct NoIndirection
     {
-        inline ElementType indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
+        inline const ElementType indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
+        inline const ElementType operator()(PositionType pos)  const { return indirection(pos); }
+
         bool hasIndirection() const { return false;}
     };
 
@@ -257,12 +273,15 @@ namespace policies {
 
         ElementType*& data() { return m_arrBuf;}
 
-        inline ElementType indirection(PositionType pos) const
+        inline const ElementType& indirection(PositionType pos) const
         {
             SLIC_ASSERT_MSG( hasIndirection()
                            , "MeshAPI::Set:ArrayIndirection -- Tried to dereference a null array in an array based indirection set.");
             return m_arrBuf[pos];
         }
+
+        inline const ElementType& operator()(PositionType pos)  const { return indirection(pos); }
+
         bool hasIndirection() const { return m_arrBuf == ATK_NULLPTR;}
     private:
         ElementType* m_arrBuf;
@@ -280,7 +299,7 @@ namespace policies {
 
         VectorType& data() { return *m_vecBuf;}
 
-        inline ElementType indirection(PositionType pos) const
+        inline const ElementType& indirection(PositionType pos) const
         {
             SLIC_ASSERT_MSG( hasIndirection(), "MeshAPI::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
             SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "MeshAPI::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
@@ -288,6 +307,8 @@ namespace policies {
 
             return (*m_vecBuf)[pos];
         }
+        inline const ElementType& operator()(PositionType pos)  const { return indirection(pos); }
+
         bool hasIndirection() const { return m_vecBuf == ATK_NULLPTR;}
     private:
         VectorType* m_vecBuf;
@@ -348,40 +369,114 @@ namespace policies {
  * \brief Models a set whose elements can be defined as a strided offsets of the position, possibly with a level of indirection.
  * \details Specifically, the element at position pos can be defined as:  static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
-    template< typename SizePolicy           = policies::RuntimeSizeHolder<Set::PositionType>
-            , typename OffsetPolicy         = policies::ZeroOffset<Set::PositionType>
-            , typename StridePolicy         = policies::StrideOne<Set::PositionType>
-            , typename IndirectionPolicy    = policies::NoIndirection<Set::PositionType, Set::ElementType>
-            , typename SubsettingPolicy     = policies::NoSubset
+    template< typename SizePolicy          = policies::RuntimeSizeHolder<Set::PositionType>
+            , typename OffsetPolicy        = policies::ZeroOffset<Set::PositionType>
+            , typename StridePolicy        = policies::StrideOne<Set::PositionType>
+            , typename IndirectionPolicy   = policies::NoIndirection<Set::PositionType, Set::ElementType>
+            , typename SubsettingPolicy                                 = policies::NoSubset
             >
-    struct OrderedSet: public Set, SizePolicy, OffsetPolicy, StridePolicy, IndirectionPolicy, SubsettingPolicy
+    struct OrderedSet: public Set
+                            , SizePolicy
+                            , OffsetPolicy
+                            , StridePolicy
+                            , IndirectionPolicy
+                            , SubsettingPolicy
   {
   public:
 
-    typedef Set::IndexType                        IndexType;
-    typedef Set::PositionType                     PositionType;
-    typedef IndexType                             ElementType;
+    typedef Set::IndexType                              IndexType;
+    typedef Set::PositionType                           PositionType;
+    typedef IndexType                                   ElementType;
 
-    typedef SizePolicy SizePolicyType;
-    typedef OffsetPolicy OffsetPolicyType;
-    typedef StridePolicy StridePolicyType;
-    typedef IndirectionPolicy IndirectionPolicyType;
+    typedef SizePolicy          SizePolicyType;
+    typedef OffsetPolicy        OffsetPolicyType;
+    typedef StridePolicy        StridePolicyType;
+    typedef IndirectionPolicy   IndirectionPolicyType;
+    typedef SubsettingPolicy    SubsettingPolicyType;
 
+#ifdef MESHAPI_USE_COUNTING_ITERATOR
     typedef boost::counting_iterator<ElementType> iterator;
     typedef std::pair<iterator,iterator>          iterator_pair;
 
+    typedef const iterator const_iterator;
+    typedef std::pair<const_iterator,const_iterator>  const_iterator_pair;
+#else
+    template<typename OrderedSetType> class OrderedSetIterator;
+
+    typedef OrderedSetIterator<const OrderedSet> const_iterator;
+    typedef std::pair<const_iterator,const_iterator>          const_iterator_pair;
+
+    typedef const_iterator iterator;
+    typedef const_iterator_pair iterator_pair;
+#endif
+
   public:
-    OrderedSet(PositionType size    = SizePolicy::DefaultValue()
-             , PositionType offset  = OffsetPolicy::DefaultValue()
-             , PositionType stride  = StridePolicy::DefaultValue()
+    OrderedSet(PositionType size    = SizePolicyType::DefaultValue()
+             , PositionType offset  = OffsetPolicyType::DefaultValue()
+             , PositionType stride  = StridePolicyType::DefaultValue()
              // Note: constructor does not yet take an indirection type pointer...
              //, const Set* parentSet = &s_nullSet
             )
-        : SizePolicy(size)
-        , OffsetPolicy(offset)
-        , StridePolicy(stride)
-        //, SubsettingPolicy(parentSet)
+        : SizePolicyType(size)
+        , OffsetPolicyType(offset)
+        , StridePolicyType(stride)
+        //, SubsettingPolicyType(parentSet)
       {}
+
+
+public:
+    // define an iterator type -- w/ stride and indirection
+    template<typename OrderedSet>
+    class OrderedSetIterator : public boost::iterator_facade< OrderedSetIterator<OrderedSet>
+                                                            , typename OrderedSet::ElementType
+                                                            , std::random_access_iterator_tag
+                                                            , typename OrderedSet::ElementType
+                                                            , typename OrderedSet::PositionType
+                                                            >
+    {
+    public:
+        typedef OrderedSetIterator<OrderedSet> iter;
+        typedef typename OrderedSet::ElementType ElementType;
+        typedef typename OrderedSet::PositionType PositionType;
+
+        typedef typename OrderedSet::IndirectionPolicyType IndirectionType;
+        typedef typename OrderedSet::StridePolicyType StrideType;
+    public:
+        OrderedSetIterator(PositionType pos, const OrderedSet* oSet)
+            : m_pos(pos), m_orderedSet(oSet) {}
+
+
+        const ElementType & dereference()    const {
+            // Note: Since we return a reference to the pointed-to value, we need different functions
+            //       for OrderedSets with indirection buffers than with those that have no indirection
+            typedef policies::NoIndirection<PositionType,ElementType> NoIndirectionType;
+            return indirection( HasIndirection< not boost::is_same<IndirectionType, NoIndirectionType>::value >(), 0);
+        }
+
+
+        bool equal(const iter& other) const { return (m_orderedSet == other.m_orderedSet) && (m_pos == other.m_pos); }
+        void increment() { advance(1); }
+        void decrement() { advance(-1); }
+        void advance(PositionType n) { m_pos += n*stride(); }
+        const PositionType distance_to(const iter& other) const { return (other.m_pos - m_pos)/ stride(); }
+
+    private:
+        inline const PositionType stride() const { return m_orderedSet->StrideType::stride();}
+
+        template<bool> class HasIndirection {};
+
+        template<typename T>
+        inline const ElementType& indirection(HasIndirection<true>, T) const { return m_orderedSet->IndirectionType::indirection(m_pos); }
+
+        template<typename T>
+        inline const ElementType& indirection(HasIndirection<false>, T) const { return m_pos; }
+
+    private:
+        friend class boost::iterator_core_access;
+
+        PositionType m_pos;
+        const OrderedSet* m_orderedSet;
+    };
 
 public:
     /**
@@ -390,19 +485,31 @@ public:
     inline ElementType operator[](PositionType pos) const
     {
             verifyPosition(pos);
-            return IndirectionPolicy::indirection( pos * StridePolicy::stride() + OffsetPolicy::offset() );
+            return IndirectionPolicy::indirection( pos * StridePolicyType::stride() + OffsetPolicyType::offset() );
     }
 
     inline ElementType         at(PositionType pos)         const { return operator[](pos); }
 
 
-    inline PositionType        size()  const { return SizePolicy::size(); }
-    inline bool                empty() const { return SizePolicy::empty(); }
+    inline PositionType        size()  const { return SizePolicyType::size(); }
+    inline bool                empty() const { return SizePolicyType::empty(); }
 
   public:   // Functions related to iteration
-    iterator            begin() const { return iterator( OffsetPolicy::offset() ); }
-    iterator            end()   const { return iterator( size() * StridePolicy::stride() + OffsetPolicy::offset() ); }
-    iterator_pair       range() const { return std::make_pair(begin(), end()); }
+
+#ifdef MESHAPI_USE_COUNTING_ITERATOR
+    const_iterator          begin() const { return iterator( OffsetPolicyType::offset() ); }
+    const_iterator          end()   const { return iterator( size() + OffsetPolicyType::offset() );}
+    const_iterator_pair     range() const { return std::make_pair(begin(), end()); }
+
+    iterator          begin() { return iterator( OffsetPolicyType::offset() ); }
+    iterator          end()   { return iterator( size() + OffsetPolicyType::offset() );}
+    iterator_pair     range() { return std::make_pair(begin(), end()); }
+
+#else
+    const_iterator          begin() const { return const_iterator( OffsetPolicyType::offset(), this); }
+    const_iterator          end()   const { return const_iterator( size() * StridePolicyType::stride() + OffsetPolicyType::offset(), this);}
+    const_iterator_pair     range() const { return std::make_pair(begin(), end()); }
+#endif
 
     /// HACK: This function needs to be implemented
     bool                isValid(bool verboseOutput = false) const
