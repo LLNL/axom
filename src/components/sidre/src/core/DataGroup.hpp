@@ -27,12 +27,29 @@
 #include <string>
 #include <vector>
 
+#ifndef USE_UNORDERED_MAP
+#define USE_UNORDERED_MAP
+#endif
+//#ifndef USE_DENSE_HASH_MAP
+//#define USE_DENSE_HASH_MAP
+//#endif
+
+//#ifndef USE_NEW_MAP_COLLECTION
+//#define USE_NEW_MAP_COLLECTION
+//#endif
+
+#if defined(USE_UNORDERED_MAP)
+//STL or Boost unordered_map, depending on 
 #if defined(USE_CXX11)
 #include <unordered_map>
 #else
 #include "boost/unordered_map.hpp"
 #endif
-// #include <sparsehash/dense_hash_map>
+#endif
+
+#if defined(USE_DENSE_HASH_MAP)
+#include <sparsehash/dense_hash_map>
+#endif
 
 // Other CS Toolkit headers
 #include "slic/slic.hpp"
@@ -888,11 +905,16 @@ private:
   ///
   // typedef std::map<std::string, IndexType> MapType;
   ///
+#if defined(USE_UNORDERED_MAP)
 #if defined(USE_CXX11)
   typedef std::unordered_map<std::string, IndexType> MapType;
 #else
   typedef boost::unordered_map<std::string, IndexType> MapType;
-  // typedef google::dense_hash_map<std::string, IndexType> MapType;
+#endif
+#else
+#if defined(USE_DENSE_HASH_MAP)
+  typedef google::dense_hash_map<std::string, IndexType> MapType;
+#endif
 #endif
   //
   ///////////////////////////////////////////////////////////////////
@@ -901,6 +923,17 @@ private:
   // Collection options (API between DataGroup and assoc. container)
   ///////////////////////////////////////////////////////////////////
   //
+#if defined(USE_NEW_MAP_COLLECTION)
+  ///////////////////////////////////////////////////////////////////
+  // Improved implementation (index-item association constant as long
+  // as item is in collection, but holes in index sequence)
+  ///////////////////////////////////////////////////////////////////
+  //
+  typedef NewMapCollection<DataView, MapType> DataViewCollection;
+  //
+  typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
+  ///////////////////////////////////////////////////////////////////
+#else
   ///////////////////////////////////////////////////////////////////
   // Original implementation (no holes in index sequence)
   ///////////////////////////////////////////////////////////////////
@@ -911,16 +944,7 @@ private:
   //
   ///////////////////////////////////////////////////////////////////
   //
-  ///////////////////////////////////////////////////////////////////
-  // Improved implementation (index-item association constant as long
-  // as item is in collection, but holes in index sequence)
-  ///////////////////////////////////////////////////////////////////
-  //
-  // typedef NewMapCollection<DataView, MapType> DataViewCollection;
-  //
-  // typedef NewMapCollection<DataGroup, MapType> DataGroupCollection;
-  ///////////////////////////////////////////////////////////////////
-
+#endif
 
   /// Collection of DataViews
   DataViewCollection m_view_coll;

@@ -10,6 +10,11 @@ project(sidre)
 include_directories( ${Boost_INCLUDE_DIRS} )
 
 ################################
+# Add the sparsehash headers include
+################################
+include_directories( ${Sparsehash_INCLUDE_DIRS} )
+
+################################
 # Add the sidre sources
 ################################
 add_subdirectory(src)
