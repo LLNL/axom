@@ -6,9 +6,11 @@ print dir(ds)
 
 grp = ds.getRoot()
 print "Group", grp
-print "Dir of Group", dir(grp)
+#print "Dir of Group", dir(grp)
 
 print "Name of Group", grp.getName()
+
+print "Name of non-existent view", grp.getViewName(100)
 
 
 

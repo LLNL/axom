@@ -48,6 +48,7 @@ module sidre_mod
         ! splicer begin class.DataStore.component_part
         ! splicer end class.DataStore.component_part
     contains
+        procedure :: delete => datastore_delete
         procedure :: get_root => datastore_get_root
         procedure :: get_buffer => datastore_get_buffer
         procedure :: create_buffer => datastore_create_buffer
@@ -78,7 +79,8 @@ module sidre_mod
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: destroy_view_and_buffer => datagroup_destroy_view_and_buffer
-        procedure :: get_view => datagroup_get_view
+        procedure :: get_view_from_name => datagroup_get_view_from_name
+        procedure :: get_view_from_index => datagroup_get_view_from_index
         procedure :: get_view_index => datagroup_get_view_index
         procedure :: get_view_name => datagroup_get_view_name
         procedure :: has_group => datagroup_has_group
@@ -95,8 +97,22 @@ module sidre_mod
         procedure :: create_view_and_buffer_long => datagroup_create_view_and_buffer_long
         procedure :: create_external_view_int => datagroup_create_external_view_int
         procedure :: create_external_view_long => datagroup_create_external_view_long
-        generic :: create_external_view => create_external_view_int, create_external_view_long
-        generic :: create_view_and_buffer => create_view_and_buffer_simple, create_view_and_buffer_int, create_view_and_buffer_long
+        generic :: create_external_view => &
+            ! splicer begin class.DataGroup.generic.create_external_view
+            ! splicer end class.DataGroup.generic.create_external_view
+            create_external_view_int,  &
+            create_external_view_long
+        generic :: create_view_and_buffer => &
+            ! splicer begin class.DataGroup.generic.create_view_and_buffer
+            ! splicer end class.DataGroup.generic.create_view_and_buffer
+            create_view_and_buffer_simple,  &
+            create_view_and_buffer_int,  &
+            create_view_and_buffer_long
+        generic :: get_view => &
+            ! splicer begin class.DataGroup.generic.get_view
+            ! splicer end class.DataGroup.generic.get_view
+            get_view_from_name,  &
+            get_view_from_index
         ! splicer begin class.DataGroup.type_bound_procedure_part
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
@@ -123,9 +139,22 @@ module sidre_mod
         procedure :: allocate_long => databuffer_allocate_long
         procedure :: reallocate_int => databuffer_reallocate_int
         procedure :: reallocate_long => databuffer_reallocate_long
-        generic :: allocate => allocate_existing, allocate_int, allocate_long
-        generic :: declare => declare_int, declare_long
-        generic :: reallocate => reallocate_int, reallocate_long
+        generic :: allocate => &
+            ! splicer begin class.DataBuffer.generic.allocate
+            ! splicer end class.DataBuffer.generic.allocate
+            allocate_existing,  &
+            allocate_int,  &
+            allocate_long
+        generic :: declare => &
+            ! splicer begin class.DataBuffer.generic.declare
+            ! splicer end class.DataBuffer.generic.declare
+            declare_int,  &
+            declare_long
+        generic :: reallocate => &
+            ! splicer begin class.DataBuffer.generic.reallocate
+            ! splicer end class.DataBuffer.generic.reallocate
+            reallocate_int,  &
+            reallocate_long
         ! splicer begin class.DataBuffer.type_bound_procedure_part
         ! splicer end class.DataBuffer.type_bound_procedure_part
     end type databuffer
@@ -138,6 +167,7 @@ module sidre_mod
         ! splicer begin class.DataView.component_part
         ! splicer end class.DataView.component_part
     contains
+        procedure :: allocate_simple => dataview_allocate_simple
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
@@ -163,13 +193,64 @@ module sidre_mod
         procedure :: get_value_long => dataview_get_value_long
         procedure :: get_value_float => dataview_get_value_float
         procedure :: get_value_double => dataview_get_value_double
-        generic :: allocate => allocate_int, allocate_long
-        generic :: declare => declare_int, declare_long
-        generic :: reallocate => reallocate_int, reallocate_long
-        generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
+        generic :: allocate => &
+            ! splicer begin class.DataView.generic.allocate
+            ! splicer end class.DataView.generic.allocate
+            allocate_simple,  &
+            allocate_int,  &
+            allocate_long
+        generic :: declare => &
+            ! splicer begin class.DataView.generic.declare
+            ! splicer end class.DataView.generic.declare
+            declare_int,  &
+            declare_long
+        generic :: reallocate => &
+            ! splicer begin class.DataView.generic.reallocate
+            ! splicer end class.DataView.generic.reallocate
+            reallocate_int,  &
+            reallocate_long
+        generic :: set_value => &
+            ! splicer begin class.DataView.generic.set_value
+            ! splicer end class.DataView.generic.set_value
+            set_value_int,  &
+            set_value_long,  &
+            set_value_float,  &
+            set_value_double
         ! splicer begin class.DataView.type_bound_procedure_part
+        procedure :: get_value_int_scalar_ptr => dataview_get_value_int_scalar_ptr
+        procedure :: get_value_int_1d_ptr => dataview_get_value_int_1d_ptr
+        procedure :: get_value_long_scalar_ptr => dataview_get_value_long_scalar_ptr
+        procedure :: get_value_long_1d_ptr => dataview_get_value_long_1d_ptr
+        procedure :: get_value_float_scalar_ptr => dataview_get_value_float_scalar_ptr
+        procedure :: get_value_float_1d_ptr => dataview_get_value_float_1d_ptr
+        procedure :: get_value_double_scalar_ptr => dataview_get_value_double_scalar_ptr
+        procedure :: get_value_double_1d_ptr => dataview_get_value_double_1d_ptr
+        generic :: get_value => &
+            get_value_int_scalar_ptr,  &
+            get_value_int_1d_ptr,  &
+            get_value_long_scalar_ptr,  &
+            get_value_long_1d_ptr,  &
+            get_value_float_scalar_ptr,  &
+            get_value_float_1d_ptr,  &
+            get_value_double_scalar_ptr,  &
+            get_value_double_1d_ptr
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
+    
+    
+    interface operator (.eq.)
+        module procedure datastore_eq
+        module procedure datagroup_eq
+        module procedure databuffer_eq
+        module procedure dataview_eq
+    end interface
+    
+    interface operator (.ne.)
+        module procedure datastore_ne
+        module procedure datagroup_ne
+        module procedure databuffer_ne
+        module procedure dataview_ne
+    end interface
     
     interface
         
@@ -365,14 +446,23 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine atk_datagroup_destroy_view_and_buffer
         
-        function atk_datagroup_get_view(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_get_view")
+        function atk_datagroup_get_view_from_name(self, name) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_from_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_get_view
+        end function atk_datagroup_get_view_from_name
+        
+        function atk_datagroup_get_view_from_index(self, idx) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_from_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_view_from_index
         
         pure function atk_datagroup_get_view_index(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_get_view_index")
@@ -583,14 +673,21 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_declare
         
-        subroutine atk_dataview_allocate(self, type, len) &
-                bind(C, name="ATK_dataview_allocate")
+        subroutine atk_dataview_allocate_simple(self) &
+                bind(C, name="ATK_dataview_allocate_simple")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine atk_dataview_allocate_simple
+        
+        subroutine atk_dataview_allocate_from_type(self, type, len) &
+                bind(C, name="ATK_dataview_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
-        end subroutine atk_dataview_allocate
+        end subroutine atk_dataview_allocate_from_type
         
         subroutine atk_dataview_reallocate(self, type, len) &
                 bind(C, name="ATK_dataview_reallocate")
@@ -778,7 +875,7 @@ contains
     subroutine datastore_delete(obj)
         use iso_c_binding
         implicit none
-        type(datastore) :: obj
+        class(datastore) :: obj
         ! splicer begin class.DataStore.method.delete
         call atk_datastore_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR
@@ -998,18 +1095,31 @@ contains
         ! splicer end class.DataGroup.method.destroy_view_and_buffer
     end subroutine datagroup_destroy_view_and_buffer
     
-    function datagroup_get_view(obj, name) result(rv)
+    function datagroup_get_view_from_name(obj, name) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*) :: name
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.get_view
-        rv%voidptr = atk_datagroup_get_view(  &
+        ! splicer begin class.DataGroup.method.get_view_from_name
+        rv%voidptr = atk_datagroup_get_view_from_name(  &
             obj%voidptr,  &
             trim(name) // C_NULL_CHAR)
-        ! splicer end class.DataGroup.method.get_view
-    end function datagroup_get_view
+        ! splicer end class.DataGroup.method.get_view_from_name
+    end function datagroup_get_view_from_name
+    
+    function datagroup_get_view_from_index(obj, idx) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT) :: idx
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.get_view_from_index
+        rv%voidptr = atk_datagroup_get_view_from_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.DataGroup.method.get_view_from_index
+    end function datagroup_get_view_from_index
     
     function datagroup_get_view_index(obj, name) result(rv)
         use iso_c_binding
@@ -1410,6 +1520,15 @@ contains
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
     
+    subroutine dataview_allocate_simple(obj)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        ! splicer begin class.DataView.method.allocate_simple
+        call atk_dataview_allocate_simple(obj%voidptr)
+        ! splicer end class.DataView.method.allocate_simple
+    end subroutine dataview_allocate_simple
+    
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -1556,7 +1675,7 @@ contains
         integer(C_INT) :: type
         integer(C_INT) :: len
         ! splicer begin class.DataView.method.allocate_int
-        call atk_dataview_allocate(  &
+        call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(len, C_LONG))
@@ -1570,7 +1689,7 @@ contains
         integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataView.method.allocate_long
-        call atk_dataview_allocate(  &
+        call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(len, C_LONG))
@@ -1694,6 +1813,110 @@ contains
     end function dataview_get_value_double
     
     ! splicer begin class.DataView.additional_functions
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_int_scalar_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_INT), pointer, intent(OUT) :: value
+        type(C_PTR) cptr
+    
+        cptr = view%get_data_pointer()
+        call c_f_pointer(cptr, value)
+    end subroutine dataview_get_value_int_scalar_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_int_1d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_INT), pointer, intent(OUT) :: value(:)
+        type(C_PTR) cptr
+        integer(C_SIZE_T) nelems
+    
+        cptr = view%get_data_pointer()
+        nelems = view%get_number_of_elements()
+        call c_f_pointer(cptr, value, [ nelems ])
+    end subroutine dataview_get_value_int_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_long_scalar_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), pointer, intent(OUT) :: value
+        type(C_PTR) cptr
+    
+        cptr = view%get_data_pointer()
+        call c_f_pointer(cptr, value)
+    end subroutine dataview_get_value_long_scalar_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_long_1d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), pointer, intent(OUT) :: value(:)
+        type(C_PTR) cptr
+        integer(C_SIZE_T) nelems
+    
+        cptr = view%get_data_pointer()
+        nelems = view%get_number_of_elements()
+        call c_f_pointer(cptr, value, [ nelems ])
+    end subroutine dataview_get_value_long_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_float_scalar_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), pointer, intent(OUT) :: value
+        type(C_PTR) cptr
+    
+        cptr = view%get_data_pointer()
+        call c_f_pointer(cptr, value)
+    end subroutine dataview_get_value_float_scalar_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_float_1d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), pointer, intent(OUT) :: value(:)
+        type(C_PTR) cptr
+        integer(C_SIZE_T) nelems
+    
+        cptr = view%get_data_pointer()
+        nelems = view%get_number_of_elements()
+        call c_f_pointer(cptr, value, [ nelems ])
+    end subroutine dataview_get_value_float_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_double_scalar_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), pointer, intent(OUT) :: value
+        type(C_PTR) cptr
+    
+        cptr = view%get_data_pointer()
+        call c_f_pointer(cptr, value)
+    end subroutine dataview_get_value_double_scalar_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_double_1d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), pointer, intent(OUT) :: value(:)
+        type(C_PTR) cptr
+        integer(C_SIZE_T) nelems
+    
+        cptr = view%get_data_pointer()
+        nelems = view%get_number_of_elements()
+        call c_f_pointer(cptr, value, [ nelems ])
+    end subroutine dataview_get_value_double_1d_ptr
     ! splicer end class.DataView.additional_functions
     
     function is_name_valid(name) result(rv)
@@ -1705,5 +1928,101 @@ contains
         rv = name .ne. " "
         ! splicer end is_name_valid
     end function is_name_valid
+    
+    function datastore_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datastore), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datastore_eq
+    
+    function datastore_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datastore), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datastore_ne
+    
+    function datagroup_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datagroup), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datagroup_eq
+    
+    function datagroup_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(datagroup), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function datagroup_ne
+    
+    function databuffer_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(databuffer), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function databuffer_eq
+    
+    function databuffer_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(databuffer), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function databuffer_ne
+    
+    function dataview_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(dataview), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function dataview_eq
+    
+    function dataview_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(dataview), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function dataview_ne
 
 end module sidre_mod

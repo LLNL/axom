@@ -142,14 +142,14 @@ FUNCTION(add_code_coverage_target _targetname _testrunner)
 	ADD_CUSTOM_TARGET(${_targetname}
 
 		# Cleanup lcov
-		${LCOV_PATH} --gcov-tool ${GCOV_PATH} --directory . --zerocounters
+		${LCOV_PATH} --no-external --gcov-tool ${GCOV_PATH} --directory ${CMAKE_BINARY_DIR} --directory ${CMAKE_SOURCE_DIR}/components --zerocounters
 
 		# Run tests
 		COMMAND ${_testrunner} ${ARGV2}
 
 		# Capturing lcov counters and generating report
-		COMMAND ${LCOV_PATH} --gcov-tool ${GCOV_PATH} --directory . --capture --output-file ${_targetname}.info
-		COMMAND ${LCOV_PATH} --gcov-tool ${GCOV_PATH} --remove ${_targetname}.info '/usr/include/*' --output-file ${_targetname}.info.cleaned
+		COMMAND ${LCOV_PATH} --no-external --gcov-tool ${GCOV_PATH} --directory ${CMAKE_BINARY_DIR} --directory ${CMAKE_SOURCE_DIR}/components --capture --output-file ${_targetname}.info
+		COMMAND ${LCOV_PATH} --no-external --gcov-tool ${GCOV_PATH} --directory ${CMAKE_BINARY_DIR} --directory ${CMAKE_SOURCE_DIR}/components --remove ${_targetname}.info '/usr/include/*' --output-file ${_targetname}.info.cleaned
 		COMMAND ${GENHTML_PATH} -o ${_targetname} ${_targetname}.info.cleaned
 		COMMAND ${CMAKE_COMMAND} -E remove ${_targetname}.info ${_targetname}.info.cleaned
 

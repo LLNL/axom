@@ -40,7 +40,7 @@ TEST(C_sidre_view,int_buffer_from_view)
 
   ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
 
-  ATK_dataview_allocate(dv, ATK_C_INT_T, 10);
+  ATK_dataview_allocate_from_type(dv, ATK_C_INT_T, 10);
   EXPECT_EQ(ATK_dataview_get_type_id(dv), ATK_INT32_T);  // XXX NATIVE TYPE
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
 
@@ -219,7 +219,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
   // alloc our buffer
   // we will create 4 sub views of this array
-  ATK_dataview_allocate(base_old, ATK_C_INT_T, 40);
+  ATK_dataview_allocate_from_type(base_old, ATK_C_INT_T, 40);
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(base_old);
 
 
@@ -290,7 +290,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
   // alloc our buffer
   // create a buffer to hold larger subarrays
-  base_new->allocate(base_new, DataType::uint32(4 * 12));
+  base_new->allocate_from_type(base_new, DataType::uint32(4 * 12));
   int * base_new_data = (int *) ATK_databuffer_det_data(base_new);
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {

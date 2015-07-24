@@ -9,6 +9,7 @@
 #ifndef SIDREWRAPPERHELPERS_HPP_
 #define SIDREWRAPPERHELPERS_HPP_
 
+#include "conduit/Bitwidth_Style_Types.h"
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"

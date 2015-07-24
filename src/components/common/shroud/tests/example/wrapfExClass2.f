@@ -6,7 +6,7 @@
 module exclass2_mod
     use fstr_mod
     use exclass1_mod, only : exclass1
-    use iso_c_binding, only : C_INT, C_LONG
+    use iso_c_binding, only : C_DOUBLE, C_FLOAT, C_INT, C_LONG
     implicit none
     
     
@@ -19,6 +19,7 @@ module exclass2_mod
         ! splicer begin class.ExClass2.component_part
         ! splicer end class.ExClass2.component_part
     contains
+        procedure :: delete => exclass2_delete
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
@@ -33,11 +34,30 @@ module exclass2_mod
         procedure :: set_value_double => exclass2_set_value_double
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
-        generic :: declare => declare_int, declare_long
-        generic :: set_value => set_value_int, set_value_long, set_value_float, set_value_double
+        generic :: declare => &
+            ! splicer begin class.ExClass2.generic.declare
+            ! splicer end class.ExClass2.generic.declare
+            declare_int,  &
+            declare_long
+        generic :: set_value => &
+            ! splicer begin class.ExClass2.generic.set_value
+            ! splicer end class.ExClass2.generic.set_value
+            set_value_int,  &
+            set_value_long,  &
+            set_value_float,  &
+            set_value_double
         ! splicer begin class.ExClass2.type_bound_procedure_part
         ! splicer end class.ExClass2.type_bound_procedure_part
     end type exclass2
+    
+    
+    interface operator (.eq.)
+        module procedure exclass2_eq
+    end interface
+    
+    interface operator (.ne.)
+        module procedure exclass2_ne
+    end interface
     
     interface
         
@@ -49,12 +69,12 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_ex_class2
         
-        subroutine aa_exclass2_ex_class1(self) &
-                bind(C, name="AA_exclass2_ex_class1")
+        subroutine aa_exclass2_delete(self) &
+                bind(C, name="AA_exclass2_delete")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine aa_exclass2_ex_class1
+        end subroutine aa_exclass2_delete
         
         pure function aa_exclass2_get_name(self) result(rv) &
                 bind(C, name="AA_exclass2_get_name")
@@ -178,15 +198,15 @@ contains
         ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     
-    subroutine exclass2_ex_class1(obj)
+    subroutine exclass2_delete(obj)
         use iso_c_binding
         implicit none
-        type(exclass2) :: obj
-        ! splicer begin class.ExClass2.method.ex_class1
-        call aa_exclass2_ex_class1(obj%voidptr)
+        class(exclass2) :: obj
+        ! splicer begin class.ExClass2.method.delete
+        call aa_exclass2_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR
-        ! splicer end class.ExClass2.method.ex_class1
-    end subroutine exclass2_ex_class1
+        ! splicer end class.ExClass2.method.delete
+    end subroutine exclass2_delete
     
     function exclass2_get_name(obj) result(rv)
         use iso_c_binding
@@ -364,5 +384,29 @@ contains
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions
+    
+    function exclass2_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass2), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass2_eq
+    
+    function exclass2_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass2), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass2_ne
 
 end module exclass2_mod
