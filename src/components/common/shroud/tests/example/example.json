@@ -1701,7 +1701,8 @@
         "lower_library": "userlibrary", 
         "method_suffix": "", 
         "overloaded": false, 
-        "rv": "rv"
+        "rv": "rv", 
+        "upper_library": "USERLIBRARY"
     }, 
     "functions": [
         {

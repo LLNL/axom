@@ -1,0 +1,6 @@
+options:
+  library: Tutorial
+  cpp_header: tutorial.hpp
+
+functions:
+  - decl: void Function1()

@@ -176,8 +176,8 @@ class Wrapc(util.WrapperMixin):
         output.append('#define EXAMPLE_WRAPPER_IMPL')
 
         output.append('#include "%s"' % hname)
-        if node['options'].cpp_header:
-            for include in node['options'].cpp_header.split():
+        if options.cpp_header:
+            for include in options.cpp_header.split():
                 self.header_impl_include[include] = True
         # headers required by implementation
         if self.header_impl_include:

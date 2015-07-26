@@ -97,9 +97,10 @@ class Schema(object):
         fmt_library = node['fmt'] = util.Options(None)
         fmt_library.library       = def_options.get('library', 'default_library')
         fmt_library.lower_library = fmt_library.library.lower()
+        fmt_library.upper_library = fmt_library.library.upper()
         fmt_library.method_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
-        fmt_library.C_prefix      = def_options.get('C_prefix', '')
+        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(def_options, fmt_library,
                            'C_header_filename', 'wrap{library}.h')

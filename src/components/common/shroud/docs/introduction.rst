@@ -22,6 +22,8 @@ In Fortran this becomes::
     inst = instance_new()
     call inst%method(1)
 
+.. note :: Fortran wrappers are generated as free-form source and require Fortran 2003.
+
 .. note :: The ability to generate C++ wrappers for Fortran is not supported.
 
 Issues
@@ -50,9 +52,15 @@ In addition, Fortran 2003 provides some object oriented programming facilities:
 A Fortran pointer is similar to to a C++ class.  It not only has the address of 
 the memory but also contains meta-data such as the type, kind and shape of the array.
 
+   * GNU Fortran http://gcc.gnu.org/wiki/ArrayDescriptorUpdate
+   * Intel 15.0 https://software.intel.com/en-us/node/525356
+
 Fortran provides a **pointer** and **allocatable** attributes which are not
 directly supported by C.  Each vendor has their own pointer struct.
 The Chasm library from LANL can be used to write portable access to Fortran pointers.
+http://chasm-interop.sourceforge.net
+Eventually this will be supported in Fortran via the Further Interoperability of Fortran and C - Technical Specification ISO/IEC TS 29113:2012
+http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45136
 
 
 Requirements

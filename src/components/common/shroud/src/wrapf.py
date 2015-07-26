@@ -67,6 +67,8 @@ class Wrapf(util.WrapperMixin):
 
     def _begin_class(self):
         self.f_type_generic = {} # look for generic methods
+        self.type_bound_part = []
+
 
     def _c_type(self, arg):
         """
@@ -186,6 +188,7 @@ class Wrapf(util.WrapperMixin):
         self._pop_splicer('class')
 
         if self.tree['functions']:
+            self._begin_class()  # clear out old class info
             if options.F_module_per_class:
                 self._begin_output_file()
             self.tree['F_module_dependencies'] = []
@@ -216,8 +219,6 @@ class Wrapf(util.WrapperMixin):
         fmt_class.F_derived_name = typedef.fortran_derived
         if 'F_this' in options:
             fmt_class.F_this = options.F_this
-
-        self.type_bound_part = []
 
         # wrap methods
         self._push_splicer(fmt_class.cpp_class)
