@@ -14,6 +14,7 @@ Contents:
    introduction
    tutorial
    previouswork
+   futurework
 
 
 Indices and tables
