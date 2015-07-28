@@ -19,7 +19,9 @@ cpp_header
 
   C++ header file name.
 
+namespace
 
+  Blank delimited list of namespaces for **cpp_header**.
 
 
 
@@ -37,4 +39,13 @@ decl
 
    Function declaration.
    Parsed to extract function name, type and arguments descriptions.
+
+
+
+Annotations
+===========
+
+constructor
+
+   Mark function as a constructor
 

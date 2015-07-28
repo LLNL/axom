@@ -285,7 +285,7 @@ class Schema(object):
         if name not in self.typedef:
 #            unname = util.un_camel(name)
             unname = name.lower()
-            cname = node['options'].C_prefix + unname
+            cname = node['fmt'].C_prefix + unname
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,

@@ -1,12 +1,9 @@
-! wrapftutorial.f
+! wrapfClass1.f
 ! This is generated code, do not edit
-module tutorial_mod
+module class1_mod
     use fstr_mod
-    use, intrinsic :: iso_c_binding, only : C_PTR
     implicit none
     
-    ! splicer begin module_top
-    ! splicer end module_top
     
     ! splicer begin class.Class1.module_top
     ! splicer end class.Class1.module_top
@@ -48,12 +45,6 @@ module tutorial_mod
         
         ! splicer begin class.Class1.additional_interfaces
         ! splicer end class.Class1.additional_interfaces
-        
-        subroutine tut_function1() &
-                bind(C, name="TUT_function1")
-            use iso_c_binding
-            implicit none
-        end subroutine tut_function1
     end interface
 
 contains
@@ -79,14 +70,6 @@ contains
     ! splicer begin class.Class1.additional_functions
     ! splicer end class.Class1.additional_functions
     
-    subroutine function1()
-        use iso_c_binding
-        implicit none
-        ! splicer begin function1
-        call tut_function1()
-        ! splicer end function1
-    end subroutine function1
-    
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
         implicit none
@@ -111,4 +94,4 @@ contains
         endif
     end function class1_ne
 
-end module tutorial_mod
+end module class1_mod

@@ -1,6 +1,112 @@
 {
     "F_module_dependencies": [], 
-    "classes": [], 
+    "classes": [
+        {
+            "F_module_dependencies": [
+                [
+                    "tutorial_mod", 
+                    [
+                        "class1"
+                    ]
+                ]
+            ], 
+            "fmt": {
+                "C_header_filename": "wrapClass1.h", 
+                "C_impl_filename": "wrapClass1.cpp", 
+                "C_type_name": "TUT_class1", 
+                "F_derived_name": "class1", 
+                "PY_PyObject": "PY_Class1", 
+                "PY_PyTypeObject": "PY_Class1_Type", 
+                "PY_capsule_name": "PY_Class1_capsule_name", 
+                "PY_from_object_func": "PP_Class1_from_Object", 
+                "PY_to_object_func": "PP_Class1_to_Object", 
+                "PY_type_filename": "pyClass1type.cpp", 
+                "cpp_class": "Class1", 
+                "lower_class": "class1", 
+                "upper_class": "CLASS1"
+            }, 
+            "methods": [
+                {
+                    "args": [], 
+                    "decl": "Class1 *new+constructor", 
+                    "fmt": {
+                        "CPP_name": "new", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "", 
+                        "C_call_list": "", 
+                        "C_name": "TUT_class1_new", 
+                        "C_object": "Class1 *selfobj = new Class1();", 
+                        "C_return_type": "TUT_class1 *", 
+                        "F_C_arguments": "", 
+                        "F_C_name": "tut_class1_new", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "", 
+                        "F_arg_c_call_tab": "\t", 
+                        "F_arguments": "", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "new", 
+                        "F_name_impl": "class1_new", 
+                        "F_name_method": "new", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "new", 
+                        "rv_decl": "Class1 * rv", 
+                        "underscore_name": "new"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "Class1"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void Method1()", 
+                    "fmt": {
+                        "CPP_name": "Method1", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "TUT_class1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "TUT_class1_method1", 
+                        "C_object": "Class1 *selfobj = static_cast<Class1 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "tut_class1_method1", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arg_c_call_tab": "\tobj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "method1", 
+                        "F_name_impl": "class1_method1", 
+                        "F_name_method": "method1", 
+                        "F_subprogram": "subroutine", 
+                        "PY_name_impl": "PY_class1_method1", 
+                        "method_name": "Method1", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "method1"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "Method1", 
+                        "type": "void"
+                    }
+                }
+            ], 
+            "name": "Class1", 
+            "options": {}
+        }
+    ], 
     "fmt": {
         "BBB": "BBB", 
         "C_const": "", 
@@ -70,16 +176,37 @@
         }
     ], 
     "options": {
-        "F_module_per_class": true, 
+        "F_module_per_class": false, 
         "cpp_header": "tutorial.hpp", 
         "library": "Tutorial", 
-        "namespace": "", 
+        "namespace": "tutorial", 
         "wrap_c": true, 
         "wrap_fortran": true, 
         "wrap_python": true
     }, 
     "patterns": [], 
     "types": {
+        "Class1": {
+            "PY_PyObject": "PY_Class1", 
+            "PY_PyTypeObject": "PY_Class1_Type", 
+            "PY_from_object": "PP_Class1_from_Object", 
+            "PY_to_object": "PP_Class1_to_Object", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<Class1{ptr}>({var})", 
+            "c_type": "TUT_class1", 
+            "cpp_type": "Class1", 
+            "f_module": {
+                "tutorial_mod": [
+                    "class1"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "type(class1)", 
+            "fortran_derived": "class1", 
+            "fortran_to_c": "{var}%{F_derived_member}", 
+            "forward": "Class1"
+        }, 
         "bool": {
             "PY_ctor": "PyBool_FromLong({rv})", 
             "c_fortran": "logical(C_BOOL)", 

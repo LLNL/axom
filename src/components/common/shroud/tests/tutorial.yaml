@@ -1,6 +1,14 @@
 options:
   library: Tutorial
   cpp_header: tutorial.hpp
+  namespace: tutorial
+  F_module_per_class: False
 
 functions:
   - decl: void Function1()
+
+classes:
+  - name: Class1
+    methods:
+    - decl: Class1 *new+constructor
+    - decl: void Method1()

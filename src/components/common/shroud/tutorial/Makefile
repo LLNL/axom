@@ -8,14 +8,20 @@ CXXFLAGS = -g -I. -I$(WRAPDIR)
 OBJS = \
     tutorial.o \
     wrapTutorial.o \
+    wrapClass1.o \
     wrapftutorial.o \
     fstr_mod.o
 
 
 VPATH = $(WRAPDIR)
 
+all : ctest ftest
+
+ctest : ctest.o libtutorial.a
+	$(CXX) $^ -L. -ltutorial -o $@
+
 ftest : ftest.o libtutorial.a
-	$(FC) $^ -L. -ltutorial -o $@
+	$(FC) $^ -L. -ltutorial -lstdc++ -o $@
 
 ftest.o : wrapftutorial.o
 wrapftutorial.o : fstr_mod.o
@@ -25,4 +31,4 @@ libtutorial.a : $(OBJS)
 
 .PHONY : clean
 clean :
-	rm -rf *~ *.o *.mod *.a ftest
+	rm -rf *~ *.o *.mod *.a ctest ftest

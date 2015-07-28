@@ -1,9 +1,21 @@
 Read yaml tutorial.yaml
+class Class1
+C method Class1 *new+constructor
+C method void Method1()
+Close wrapClass1.h
+Close wrapClass1.cpp
 C function void Function1()
 Close wrapTutorial.h
 Close wrapTutorial.cpp
+class Class1
+C-interface, Fortran method Class1 *new+constructor
+C-interface, Fortran method void Method1()
 C-interface, Fortran function void Function1()
 Close wrapftutorial.f
+class Class1
+Python method Class1 *new+constructor
+Python method void Method1()
+Close pyClass1type.cpp
 Python function void Function1()
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp

@@ -4,6 +4,7 @@
 // splicer begin include
 // splicer end include
 
+namespace tutorial {
 // splicer begin C_definition
 // splicer end C_definition
 PyObject *PY_error_obj;
@@ -105,6 +106,15 @@ MOD_INITBASIS(void)
     struct module_state *st = GETSTATE(m);
 
 
+// Class1
+    PY_Class1_Type.tp_new   = PyType_GenericNew;
+    PY_Class1_Type.tp_alloc = PyType_GenericAlloc;
+    if (PyType_Ready(&PY_Class1_Type) < 0)
+        return RETVAL;
+    Py_INCREF(&PY_Class1_Type);
+    PyModule_AddObject(m, "Class1", (PyObject *)&PY_Class1_Type);
+
+
     PY_error_obj = PyErr_NewException((char *) error_name, NULL, NULL);
     if (PY_error_obj == NULL)
         return RETVAL;
@@ -123,3 +133,4 @@ MOD_INITBASIS(void)
 }
 #endif
 
+}  // namespace tutorial

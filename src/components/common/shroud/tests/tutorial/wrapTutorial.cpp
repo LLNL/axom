@@ -6,6 +6,7 @@
 #include "tutorial.hpp"
 
 extern "C" {
+namespace tutorial {
 
 void TUT_function1()
 {
@@ -18,4 +19,5 @@ return;
 // splicer begin additional_functions
 // splicer end additional_functions
 
+}  // namespace tutorial
 }  // extern "C"

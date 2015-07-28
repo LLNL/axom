@@ -4,7 +4,12 @@
 
 #include "tutorial.hpp"
 
+namespace tutorial
+{
+
 void Function1(void)
 {
     return;
 }
+
+}  // namespace
