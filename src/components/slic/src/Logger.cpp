@@ -32,7 +32,7 @@ namespace asctoolkit {
 namespace slic {
 
 Logger* Logger::s_Logger = ATK_NULLPTR;
-
+std::map< std::string, Logger* > Logger::s_loggers;
 
 //------------------------------------------------------------------------------
 Logger::Logger()
@@ -74,7 +74,8 @@ void Logger::setLoggingLevel( message::Level level )
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToLevel( LogStream* ls, message::Level level )
+void Logger::addStreamToLevel( LogStream* ls, message::Level level,
+                               bool pass_ownership )
 {
   if ( ls == ATK_NULLPTR ) {
 
@@ -84,7 +85,12 @@ void Logger::addStreamToLevel( LogStream* ls, message::Level level )
   }
 
   m_logStreams[ level ].push_back( ls );
-  m_streamObjectsManager[ ls ] = ls;
+
+  if ( pass_ownership ) {
+
+    m_streamObjectsManager[ ls ] = ls;
+
+  }
 
 }
 
@@ -98,13 +104,29 @@ void Logger::addStreamToAllLevels( LogStream* ls )
 
   }
 
-  m_streamObjectsManager[ ls ] = ls;
   for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
 
-    m_logStreams[ level ].push_back( ls );
+    this->addStreamToLevel( ls, static_cast<message::Level>( level ) );
 
   } // END for all levels
 
+}
+
+//------------------------------------------------------------------------------
+int Logger::getNumStreamsAtLevel( message::Level level )
+{
+  return m_logStreams[ level ].size( );
+}
+
+//------------------------------------------------------------------------------
+LogStream* Logger::getStream( message::Level level , int i )
+{
+  if ( i < 0 || i >= static_cast<int>(m_logStreams[ level ].size()) ) {
+    std::cerr << "ERROR: stream index is out-of-bounds!\n";
+    return ATK_NULLPTR;
+  }
+
+  return m_logStreams[ level ][ i ];
 }
 
 //------------------------------------------------------------------------------
@@ -173,26 +195,108 @@ void Logger::flushStreams()
 }
 
 //------------------------------------------------------------------------------
+//                Static Method Implementations
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 void Logger::initialize()
 {
-  if( s_Logger == ATK_NULLPTR ) {
-    s_Logger = new Logger();
+  Logger::createLogger("root");
+  Logger::activateLogger("root");
+}
+
+//------------------------------------------------------------------------------
+bool Logger::createLogger( const std::string& name, char imask )
+{
+
+  if ( s_loggers.find( name ) != s_loggers.end() ) {
+    std::cerr << "ERROR: " << name << " logger is duplicated!\n";
+    return false;
   }
+
+  s_loggers[ name ] = new Logger();
+
+  if ( imask == inherit::nothing ) {
+    /* short-circuit */
+    return true;
+  } // END if inherit nothing
+
+  Logger* rootLogger = Logger::getRootLogger();
+  if ( rootLogger == ATK_NULLPTR ) {
+    std::cerr << "ERROR: no root logger found!\n";
+    return false;
+  }
+
+  for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
+
+    message::Level current_level = static_cast< message::Level >( level );
+
+    int nstreams = rootLogger->getNumStreamsAtLevel( current_level );
+    if ( nstreams == 0 ) {
+      continue;
+    }
+
+    if ( imask & inherit::masks[ level ] ) {
+
+      for ( int istream=0; istream < nstreams; ++istream ) {
+
+        s_loggers[ name ]->addStreamToLevel(
+            rootLogger->getStream(current_level,istream),
+            current_level,
+            /* pass_ownership */ false );
+
+      } // END for all streams at this level
+
+    } // END if inherit streams at the given level
+
+  } // END for all message levels
+
+
+  return true;
+}
+
+//------------------------------------------------------------------------------
+bool Logger::activateLogger( const std::string& name )
+{
+  if ( s_loggers.find( name ) != s_loggers.end() ) {
+    s_Logger = s_loggers[ name ];
+    return true;
+  }
+
+  return false;
 }
 
 //------------------------------------------------------------------------------
 void Logger::finalize()
 {
-  s_Logger->flushStreams();
+  std::map< std::string, Logger* >::iterator it;
+  for ( it=s_loggers.begin(); it != s_loggers.end(); ++it ) {
+    it->second->flushStreams();
+  }
 
-  delete s_Logger;
+  for ( it=s_loggers.begin(); it != s_loggers.end(); ++it ) {
+    delete it->second;
+  }
+
+  s_loggers.clear();
   s_Logger = ATK_NULLPTR;
 }
 
 //------------------------------------------------------------------------------
-Logger* Logger::getInstance()
+Logger* Logger::getActiveLogger()
 {
   return s_Logger;
+}
+
+//------------------------------------------------------------------------------
+Logger* Logger::getRootLogger()
+{
+  if ( s_loggers.find( "root" ) == s_loggers.end() ) {
+    // no root logger
+    return ATK_NULLPTR;
+  }
+
+  return ( s_loggers[ "root" ] );
 }
 
 } /* namespace slic */

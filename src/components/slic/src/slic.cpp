@@ -40,13 +40,25 @@ void initialize()
 //------------------------------------------------------------------------------
 bool isInitialized()
 {
-  return ( Logger::getInstance() != ATK_NULLPTR );
+  return ( Logger::getActiveLogger() != ATK_NULLPTR );
+}
+
+//------------------------------------------------------------------------------
+void createLogger( const std::string& name, char imask )
+{
+  Logger::createLogger( name, imask );
+}
+
+//------------------------------------------------------------------------------
+void activateLogger( const std::string& name )
+{
+  Logger::activateLogger( name );
 }
 
 //------------------------------------------------------------------------------
 void setLoggingLevel( message::Level level )
 {
-  Logger::getInstance()->setLoggingLevel( level );
+  Logger::getActiveLogger()->setLoggingLevel( level );
 }
 
 //------------------------------------------------------------------------------
@@ -77,13 +89,13 @@ bool getAbortOnError()
 //------------------------------------------------------------------------------
 void addStreamToLevel( LogStream* ls, message::Level level )
 {
-  Logger::getInstance()->addStreamToLevel( ls, level );
+  Logger::getActiveLogger()->addStreamToLevel( ls, level );
 }
 
 //------------------------------------------------------------------------------
 void addStreamToAllLevels( LogStream* ls )
 {
-  Logger::getInstance()->addStreamToAllLevels( ls );
+  Logger::getActiveLogger()->addStreamToAllLevels( ls );
 }
 
 //------------------------------------------------------------------------------
@@ -92,7 +104,7 @@ void logMessage( message::Level level, const std::string& message )
   if ( !isInitialized() ) {
     return;
   }
-  Logger::getInstance()->logMessage( level, message );
+  Logger::getActiveLogger()->logMessage( level, message );
 }
 
 //------------------------------------------------------------------------------
@@ -103,7 +115,7 @@ void logMessage( message::Level level,
   if ( !isInitialized() ) {
      return;
   }
-  Logger::getInstance()->logMessage( level, message, tag );
+  Logger::getActiveLogger()->logMessage( level, message, tag );
 }
 
 //------------------------------------------------------------------------------
@@ -115,7 +127,7 @@ void logMessage( message::Level level,
   if ( !isInitialized() ) {
      return;
   }
-  Logger::getInstance()->logMessage( level, message, fileName, line );
+  Logger::getActiveLogger()->logMessage( level, message, fileName, line );
 }
 
 //------------------------------------------------------------------------------
@@ -128,13 +140,13 @@ void logMessage( message::Level level,
   if ( !isInitialized() ) {
      return;
   }
-  Logger::getInstance()->logMessage( level, message, tag, fileName, line );
+  Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line );
 }
 
 //------------------------------------------------------------------------------
 void flushStreams()
 {
-  Logger::getInstance()->flushStreams();
+  Logger::getActiveLogger()->flushStreams();
 }
 
 //------------------------------------------------------------------------------

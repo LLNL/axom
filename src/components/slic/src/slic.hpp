@@ -270,6 +270,7 @@ struct RuntimeAbortBehavior
    static bool willAbortOnError;
 };
 
+
 /*!
  *******************************************************************************
  * \brief Initializes the SLIC logging environment.
@@ -284,6 +285,25 @@ void initialize();
  *******************************************************************************
  */
 bool isInitialized();
+
+/*!
+ *******************************************************************************
+ * \brief Creates a new logger associated with the given name.
+ * \param [in] name the name to associate with the new logger.
+ * \param [in] imask inheritance mask, indicates the log level streams that
+ *  will be inherited from the "root" logger. By default, nothing is inherited.
+ *******************************************************************************
+ */
+void createLogger( const std::string& name,
+                   char imask=inherit::nothing );
+
+/*!
+ *******************************************************************************
+ * \brief Activates the logger associated with the given name.
+ * \param [in] name the name of the logger to activate.
+ *******************************************************************************
+ */
+void activateLogger( const std::string& name );
 
 /*!
  *******************************************************************************
@@ -333,11 +353,12 @@ bool getAbortOnError();
 /*!
  *******************************************************************************
  * \brief Adds the given stream to the the given level.
+ * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != ATK_NULLPTR
  *******************************************************************************
  */
-void addStreamToLevel( LogStream* ls, message::Level level );
+void addStreamToLevel( LogStream* ls, message::Level level);
 
 /*!
  *******************************************************************************
