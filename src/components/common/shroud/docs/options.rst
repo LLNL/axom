@@ -1,0 +1,40 @@
+Options
+=======
+
+
+
+
+library
+
+  The name of the library.
+  Used to name output files and modules.
+  The first three letters are used as the default for **C_prefix**.
+
+C_prefix
+
+  Prefix added to name of generated C routines.
+  The prefix helps to ensure unique global names.
+
+cpp_header
+
+  C++ header file name.
+
+
+
+
+
+
+
+
+
+
+
+Functions
+=========
+
+
+decl
+
+   Function declaration.
+   Parsed to extract function name, type and arguments descriptions.
+

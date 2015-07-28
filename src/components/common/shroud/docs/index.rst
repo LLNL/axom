@@ -13,6 +13,7 @@ Contents:
 
    introduction
    tutorial
+   options
    previouswork
    futurework
 

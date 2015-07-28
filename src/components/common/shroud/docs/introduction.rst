@@ -3,13 +3,18 @@ Introduction
 
 Shroud is a tool for exposing a C++ API to Fortran.
 It does this by using C as the lingua franca.
-C++ can communicate with C via a common heritage and the **extern "C"** keyword.
+C++ can communicate with C via a common heritage and the ``extern "C"`` keyword.
 Fortran uses the interoperability with C features introduced in Fortran 2003
-including the **iso_c_binding** module and the **bind** keyword.
-A C API for C++ API is produced as a by produced of the Fortran wrapping.
+including the ``iso_c_binding`` module and the ``bind`` and ``value`` keywords.
+A C API for C++ API is produced as a by product of the Fortran wrapping.
 
-The Fortran wrappers preserves the object-oriented style using the
-object-oriented features of Fortran 2003.
+Goals
+-----
+
+  * Simplify the creating of wrapper for Fortran.
+  * Preserves the object-oriented style of C++ classes.
+  * Create a Fortran idiomatic API from the C++ API.
+
 
 Using a C++ API to create an object and call a method::
 
@@ -22,8 +27,6 @@ In Fortran this becomes::
     inst = instance_new()
     call inst%method(1)
 
-.. note :: Fortran wrappers are generated as free-form source and require Fortran 2003.
-
 .. note :: The ability to generate C++ wrappers for Fortran is not supported.
 
 Issues
@@ -32,7 +35,7 @@ Issues
 There is a long history of ad-hoc solutions to provide C and Fortran interoperability.
 Any solution must address several problems:
 
-  * Name mangling of externals
+  * Name mangling of externals.  This includes namespaces and operator overloading in C++.
   * Call-by-reference vs call-by-value differences
   * Length of string arguments.
   * Blank filled vs null terminated strings.
@@ -40,8 +43,8 @@ Any solution must address several problems:
 The 2003 Fortran standard added several features for interoperability with C:
 
   * iso_c_binding - intrinsic module which defines fortran kinds for matching with C's types.
-  * BIND keyword to control name mangling of externals.
-  * VALUE attribute to allow pass-by-value.
+  * ``BIND`` keyword to control name mangling of externals.
+  * ``VALUE`` attribute to allow pass-by-value.
 
 In addition, Fortran 2003 provides some object oriented programming facilities:
 
@@ -66,6 +69,8 @@ http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=
 Requirements
 ------------
 
-Shroud is written in Python an requires the modules:
+Fortran wrappers are generated as free-form source and require a Fortran 2003 compiler.
+
+Shroud is written in Python and requires the modules:
   * PyYAML https://pypi.python.org/pypi/PyYAML/3.11
   * Parsley https://pypi.python.org/pypi/Parsley
