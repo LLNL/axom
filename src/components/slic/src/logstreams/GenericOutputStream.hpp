@@ -79,7 +79,8 @@ public:
                        const std::string& message,
                        const std::string& tagName,
                        const std::string& fileName,
-                       int line );
+                       int line,
+                       bool filter_duplicates );
 private:
 
   std::ostream* m_stream;

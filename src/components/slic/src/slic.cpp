@@ -99,35 +99,40 @@ void addStreamToAllLevels( LogStream* ls )
 }
 
 //------------------------------------------------------------------------------
-void logMessage( message::Level level, const std::string& message )
+void logMessage( message::Level level, const std::string& message,
+                 bool filter_duplicates )
 {
   if ( !isInitialized() ) {
     return;
   }
-  Logger::getActiveLogger()->logMessage( level, message );
+  Logger::getActiveLogger()->logMessage( level, message, filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
 void logMessage( message::Level level,
                  const std::string& message,
-                 const std::string& tag )
+                 const std::string& tag,
+                 bool filter_duplicates )
 {
   if ( !isInitialized() ) {
      return;
   }
-  Logger::getActiveLogger()->logMessage( level, message, tag );
+  Logger::getActiveLogger()->logMessage( level, message, tag,
+                                         filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
 void logMessage( message::Level level,
                 const std::string& message,
                 const std::string& fileName,
-                int line )
+                int line,
+                bool filter_duplicates )
 {
   if ( !isInitialized() ) {
      return;
   }
-  Logger::getActiveLogger()->logMessage( level, message, fileName, line );
+  Logger::getActiveLogger()->logMessage( level, message, fileName, line,
+                                         filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
@@ -135,12 +140,14 @@ void logMessage( message::Level level,
                  const std::string& message,
                  const std::string& tag,
                  const std::string& fileName,
-                 int line )
+                 int line,
+                 bool filter_duplicates )
 {
   if ( !isInitialized() ) {
      return;
   }
-  Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line );
+  Logger::getActiveLogger()->logMessage( level, message, tag, fileName, line,
+                                         filter_duplicates );
 }
 
 //------------------------------------------------------------------------------

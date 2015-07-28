@@ -131,27 +131,33 @@ LogStream* Logger::getStream( message::Level level , int i )
 
 //------------------------------------------------------------------------------
 void Logger::logMessage( message::Level level,
-                         const std::string& message )
+                         const std::string& message,
+                         bool filter_duplicates )
 {
   this->logMessage(
-      level,message,MSG_IGNORE_TAG,MSG_IGNORE_FILE,MSG_IGNORE_LINE );
+      level,message,MSG_IGNORE_TAG,MSG_IGNORE_FILE,MSG_IGNORE_LINE,
+      filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
 void Logger::logMessage( message::Level level,
                          const std::string& message,
-                         const std::string& tagName )
+                         const std::string& tagName,
+                         bool filter_duplicates )
 {
-  this->logMessage( level,message,tagName,MSG_IGNORE_FILE,MSG_IGNORE_LINE );
+  this->logMessage( level,message,tagName,MSG_IGNORE_FILE,MSG_IGNORE_LINE,
+                    filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
 void Logger::logMessage( message::Level level,
                          const std::string& message,
                          const std::string& fileName,
-                         int line )
+                         int line,
+                         bool filter_duplicates )
 {
-  this->logMessage( level, message, MSG_IGNORE_TAG, fileName, line );
+  this->logMessage( level, message, MSG_IGNORE_TAG, fileName, line,
+                    filter_duplicates );
 }
 
 //------------------------------------------------------------------------------
@@ -159,7 +165,8 @@ void Logger::logMessage( message::Level level,
                          const std::string& message,
                          const std::string& tagName,
                          const std::string& fileName,
-                         int line )
+                         int line,
+                         bool filter_duplicates )
 {
   if ( m_isEnabled[ level ]==false  ) {
 
@@ -172,7 +179,8 @@ void Logger::logMessage( message::Level level,
   for ( unsigned istream=0; istream < nstreams; ++istream ) {
 
     m_logStreams[ level ][ istream ]->append(
-                              level,message,tagName,fileName,line);
+                              level,message,tagName,fileName,line,
+                              filter_duplicates );
 
   } // END for all streams
 
