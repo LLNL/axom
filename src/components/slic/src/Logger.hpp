@@ -28,6 +28,8 @@
 #include <vector> // for STL vector
 #include <map>    // for STL map
 
+#include "common/ATKMacros.hpp"
+
 namespace asctoolkit {
 
 namespace slic {
@@ -291,13 +293,7 @@ private:
 
   ///@}
 
-  /// \name Disabled Methods
-  ///@{
-
-  Logger( const Logger& ); // Not implemented
-  Logger& operator=( const Logger& ); // Not implemented
-
-  ///@}
+  DISABLE_COPY_AND_ASSIGNMENT(Logger);
 
 };
 

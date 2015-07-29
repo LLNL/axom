@@ -30,6 +30,21 @@
  */
 #define ATK_NOT_USED(x)
 
+/*!
+ *******************************************************************************
+ * \def DISABLE_COPY_AND_ASSIGNMENT(className)
+ * \brief Macro to disable copy and assignment operations for the given class.
+ *******************************************************************************
+ */
+#ifdef USE_CXX11
+#define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
+  className( const className& ) = delete;                                     \
+  className& operator=(const className&) = delete;
+#else
+#define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
+  className( const className& );                                              \
+  className& operator=( const className& );
+#endif
 
 
 #endif /* ATKMACROS_HPP_ */
