@@ -13,6 +13,8 @@ bool Function3(bool arg);
 const std::string& Function4a(const std::string& arg1, const std::string& arg2);
 const std::string& Function4b(const std::string& arg1, const std::string& arg2);
 
+double Function5(double arg1 = 3.13, int arg2 = 5);
+
 class Class1
 {
 public:

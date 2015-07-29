@@ -129,12 +129,41 @@ PY_function4b(
     return PyString_FromString(rv.c_str());
 // splicer end function.function4b
 }
+
+static char PY_function5__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function5(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function5
+    double arg1;
+    int arg2;
+    const char *kwcpp = "arg1\0arg2";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    
+    arg1 = 3.13;
+    arg2 = 5;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|di:Function5", kw_list,
+        &arg1, &arg2))
+    {
+        return NULL;
+    }
+    double rv = Function5(arg1, arg2);
+    return Py_BuildValue("d", rv);
+// splicer end function.function5
+}
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
+{"Function5", (PyCFunction)PY_function5, METH_VARARGS|METH_KEYWORDS, PY_function5__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

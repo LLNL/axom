@@ -89,6 +89,15 @@ module tutorial_mod
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             type(C_PTR) rv
         end function tut_function4b
+        
+        function tut_function5(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function5")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: arg1
+            integer(C_INT), value, intent(IN) :: arg2
+            real(C_DOUBLE) :: rv
+        end function tut_function5
     end interface
 
 contains
@@ -172,6 +181,25 @@ contains
         call FccCopyPtr(rv, len(rv), rv_ptr)
         ! splicer end function4b
     end subroutine function4b
+    
+    function function5(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE), optional :: arg1
+        integer(C_INT), optional :: arg2
+        real(C_DOUBLE) :: rv
+        if (.not. present(arg1)) then
+            arg1 = 3.13
+        endif
+        if (.not. present(arg2)) then
+            arg2 = 5
+        endif
+        ! splicer begin function5
+        rv = tut_function5(  &
+            arg1,  &
+            arg2)
+        ! splicer end function5
+    end function function5
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

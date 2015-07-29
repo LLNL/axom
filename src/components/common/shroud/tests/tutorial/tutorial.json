@@ -405,6 +405,63 @@
                 "name": "Function4b", 
                 "type": "std::string"
             }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "default": 3.13, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "default": 5, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "double Function5(double arg1 = 3.13, int arg2 = 5)", 
+            "fmt": {
+                "CPP_name": "Function5", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "double arg1, int arg2", 
+                "C_call_list": "arg1, arg2", 
+                "C_name": "TUT_function5", 
+                "C_object": "", 
+                "C_return_type": "double", 
+                "F_C_arguments": "arg1, arg2", 
+                "F_C_name": "tut_function5", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "arg1, arg2", 
+                "F_arg_c_call_tab": "\targ1\targ2", 
+                "F_arguments": "arg1, arg2", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5", 
+                "F_name_method": "function5", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "PY_name_impl": "PY_function5", 
+                "method_name": "Function5", 
+                "rv_decl": "double rv", 
+                "underscore_name": "function5"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
         }
     ], 
     "options": {

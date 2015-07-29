@@ -37,5 +37,10 @@ const std::string& Function4b(const std::string& arg1, const std::string& arg2)
     return rv;
 }
 
+double Function5(double arg1, int arg2)
+{
+    return arg1 + arg2;
+}
+
 
 }  // namespace

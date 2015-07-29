@@ -30,6 +30,9 @@ program tester
   call  function4b("bird", "dog", rv4b)
   print *, rv4b
 
-
+!  print *, "function5", function5()
+!  print *, "function5", function5(0.0d0)
+!  print *, "function5", function5(arg2=0)
+  print *, "functino5", function5(2.0d0, 2)
 
 end program tester

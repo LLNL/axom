@@ -28,6 +28,8 @@ const char * TUT_function4a(const char * arg1, const char * arg2);
 
 const char * TUT_function4b(const char * arg1, const char * arg2);
 
+double TUT_function5(double arg1, int arg2);
+
 #ifdef __cplusplus
 }
 #endif

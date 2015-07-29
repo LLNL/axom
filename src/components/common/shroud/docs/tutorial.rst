@@ -83,108 +83,6 @@ And the Fortran version::
     call function1
 
 
-Classes
--------
-
-Each class is wrapped in a Fortran derived type which holds a ``type(C_PTR)`` pointer
-to an C++ instance of the class.
-Class methods are wrapped using Fortran's type-bound procedures.
-This makes Fortran usage very similar to C++.
-
-Now we'll add a simple class to the library::
-
-    class Class1
-    {
-    public:
-        void Method1() {};
-    };
-
-To wrap the class add the lines to the YAML file::
-
-    classes:
-    - name: Class1
-      methods:
-      - decl: Class1 *new+constructor
-        constructor: True   # better syntax?
-      - decl: void Method1()
-
-The method ``new`` has the annotation **+constructor** to mark it as a constructor.
-
-The file ``wrapClass1.h`` will have an opaque struct for the class.  This is to allows some
-measure of type safety over using ``void`` pointers for every instance::
-
-    #ifdef EXAMPLE_WRAPPER_IMPL
-    typedef void TUT_class1;
-    #else
-    struct s_TUT_class1;
-    typedef struct s_TUT_class1 TUT_class1;
-    #endif
-
-.. note :: When the header is used with the implementation then ``EXAMPLE_WRAPPER_IMPL`` will be defined
-           and the typedef will be void.  This is simply to avoid some extra casts in the implementation.
-
-This creates the file ``wrapClass1.cpp``::
-
-    TUT_class1 * TUT_class1_new()
-    {
-        Class1 *selfobj = new Class1();
-        return (TUT_class1 *) selfobj;
-    }
-
-    void TUT_class1_method1(TUT_class1 * self)
-    {
-        Class1 *selfobj = static_cast<Class1 *>(self);
-        selfobj->Method1();
-        return;
-    }
-
-
-    // error: invalid static_cast from type 'TUT_class1* {aka s_TUT_class1*}' to type 'tutorial::Class1*'
-    // extra void * cast
-    void TUT_class1_method1(TUT_class1 * self)
-    {
-        Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
-        selfobj->Method1();
-        return;
-    }
-
-
-For Fortran a derived type is created::
-
-    type class1
-        type(C_PTR) voidptr
-    contains
-        procedure :: method1 => class1_method1
-    end type class1
-
-And the subroutines::
-
-    function class1_new() result(rv)
-        implicit none
-        type(class1) :: rv
-        rv%voidptr = tut_class1_new()
-    end function class1_new
-    
-    subroutine class1_method1(obj)
-        implicit none
-        class(class1) :: obj
-        call tut_class1_method1(obj%voidptr)
-    end subroutine class1_method1
-
-
-The additional C++ code to call the function::
-
-    tutorial::Class1 *cptr = new tutorial::Class1();
-
-    cptr->Method1();
-
-And the Fortran version::
-
-    type(class1) cptr
-
-    cptr = class1_new()
-    call cptr%method1
-
 
 Arguments
 ---------
@@ -383,9 +281,135 @@ The different styles are use as::
 
 
 
-Types
------
+Optional Arguments
+------------------
+
+Functions with default arguments are handled by the Fortran **optional** attribute.::
+
+    functions:
+    - decl: double Function5(double arg1 = 3.13, int arg2 = 5)
+
+The C wrapper accepts all arguments and passes them to C++.
+It is the Fortran wrapper which provides the default values, not C++.
+But the end result is the same.
+
+Fortran usage::
+
+  print *, "function5", function5()
+  print *, "function5", function5(0.0d0)
+  print *, "function5", function5(arg2=0)
+  print *, "functino5", function5(2.0d0, 2)
+
+
 
 Overloaded Functions
 --------------------
+
+Templates
+---------
+
+Types
+-----
+
+Classes
+-------
+
+Each class is wrapped in a Fortran derived type which holds a ``type(C_PTR)`` pointer
+to an C++ instance of the class.
+Class methods are wrapped using Fortran's type-bound procedures.
+This makes Fortran usage very similar to C++.
+
+Now we'll add a simple class to the library::
+
+    class Class1
+    {
+    public:
+        void Method1() {};
+    };
+
+To wrap the class add the lines to the YAML file::
+
+    classes:
+    - name: Class1
+      methods:
+      - decl: Class1 *new+constructor
+        constructor: True   # better syntax?
+      - decl: void Method1()
+
+The method ``new`` has the annotation **+constructor** to mark it as a constructor.
+
+The file ``wrapClass1.h`` will have an opaque struct for the class.  This is to allows some
+measure of type safety over using ``void`` pointers for every instance::
+
+    #ifdef EXAMPLE_WRAPPER_IMPL
+    typedef void TUT_class1;
+    #else
+    struct s_TUT_class1;
+    typedef struct s_TUT_class1 TUT_class1;
+    #endif
+
+.. note :: When the header is used with the implementation then ``EXAMPLE_WRAPPER_IMPL`` will be defined
+           and the typedef will be void.  This is simply to avoid some extra casts in the implementation.
+
+This creates the file ``wrapClass1.cpp``::
+
+    TUT_class1 * TUT_class1_new()
+    {
+        Class1 *selfobj = new Class1();
+        return (TUT_class1 *) selfobj;
+    }
+
+    void TUT_class1_method1(TUT_class1 * self)
+    {
+        Class1 *selfobj = static_cast<Class1 *>(self);
+        selfobj->Method1();
+        return;
+    }
+
+
+    // error: invalid static_cast from type 'TUT_class1* {aka s_TUT_class1*}' to type 'tutorial::Class1*'
+    // extra void * cast
+    void TUT_class1_method1(TUT_class1 * self)
+    {
+        Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
+        selfobj->Method1();
+        return;
+    }
+
+
+For Fortran a derived type is created::
+
+    type class1
+        type(C_PTR) voidptr
+    contains
+        procedure :: method1 => class1_method1
+    end type class1
+
+And the subroutines::
+
+    function class1_new() result(rv)
+        implicit none
+        type(class1) :: rv
+        rv%voidptr = tut_class1_new()
+    end function class1_new
+    
+    subroutine class1_method1(obj)
+        implicit none
+        class(class1) :: obj
+        call tut_class1_method1(obj%voidptr)
+    end subroutine class1_method1
+
+
+The additional C++ code to call the function::
+
+    tutorial::Class1 *cptr = new tutorial::Class1();
+
+    cptr->Method1();
+
+And the Fortran version::
+
+    type(class1) cptr
+
+    cptr = class1_new()
+    call cptr%method1
 

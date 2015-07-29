@@ -48,6 +48,14 @@ return rv.c_str();
 // splicer end function.function4b
 }
 
+double TUT_function5(double arg1, int arg2)
+{
+// splicer begin function.function5
+double rv = Function5(arg1, arg2);
+return rv;
+// splicer end function.function5
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

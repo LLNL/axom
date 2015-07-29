@@ -9,6 +9,7 @@ C function double Function2(double arg1, int arg2)
 C function bool Function3(bool arg)
 C function const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
 C function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C function double Function5(double arg1 = 3.13, int arg2 = 5)
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 class Class1
@@ -19,6 +20,7 @@ C-interface, Fortran function double Function2(double arg1, int arg2)
 C-interface, Fortran function bool Function3(bool arg)
 C-interface, Fortran function const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
 C-interface, Fortran function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C-interface, Fortran function double Function5(double arg1 = 3.13, int arg2 = 5)
 Close wrapftutorial.f
 class Class1
 Python method Class1 *new+constructor
@@ -29,6 +31,7 @@ Python function double Function2(double arg1, int arg2)
 Python function bool Function3(bool arg)
 Python function const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
 Python function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+Python function double Function5(double arg1 = 3.13, int arg2 = 5)
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp
 Close pyTutorialhelper.cpp
