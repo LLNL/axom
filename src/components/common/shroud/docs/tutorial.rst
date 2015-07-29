@@ -284,7 +284,7 @@ The wrapper then deals with the C convenrtion of ``NULL`` termination with Fortr
 
 C++ routine::
 
-    const std::string& Function4(const std::string& arg1, const std::string& arg2)
+    const std::string& Function4a(const std::string& arg1, const std::string& arg2)
     {
         static std::string rv(arg1 + arg2);
         return rv;
@@ -293,7 +293,7 @@ C++ routine::
 YAML changes::
 
     functions
-    - decl: const std::string& Function4+pure(const std::string& arg1, const std::string& arg2)
+    - decl: const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
 
 This is the C++ prototype with the addition of a **+pure**.  This annotation marks the routine
 as Fortran ``pure`` meaning there are no side effects.  This is necessary because the function
@@ -301,7 +301,7 @@ will be called twice.  Once to compute the length of the result and once to use 
 
 annotations also may be added by assign new fields in **attrs**::
 
-    - decl: const std::string& Function4(const std::string& arg1, const std::string& arg2)
+    - decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2)
       result:
         attrs:
           pure: true
@@ -309,39 +309,39 @@ annotations also may be added by assign new fields in **attrs**::
 The C wrapper converts the ``std::string`` into a ``char *`` which Fortran can deal with by assigning
 it to a ``type(C_PTR)``::
 
-    const char * TUT_function4(const char * arg1, const char * arg2)
+    const char * TUT_function4a(const char * arg1, const char * arg2)
     {
-        const std::string & rv = Function4(arg1, arg2);
+        const std::string & rv = Function4a(arg1, arg2);
         return rv.c_str();
     }
 
 With the Fortran interface::
 
-        pure function tut_function4(arg1, arg2) result(rv) &
-                bind(C, name="TUT_function4")
+        pure function tut_function4a(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function4a")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: arg1(*)
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             type(C_PTR) rv
-        end function tut_function4
+        end function tut_function4a
 
 And the Fortran wrapper::
 
-    function function4(arg1, arg2) result(rv)
+    function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: arg1
         character(*) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr(tut_function4(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
-        rv = fstr(tut_function4(  &
+        character(kind=C_CHAR, len=strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
+        rv = fstr(tut_function4a(  &
             trim(arg1) // C_NULL_CHAR,  &
             trim(arg2) // C_NULL_CHAR))
-    end function function4
+    end function function4a
 
 The input arguments are trimmed of trailing blanks then concatenated with a trailing ``NULL``.
 The length of result variable ``rv`` is computed by calling the function.  Once the result is
-allocated, ``tut_function4`` is called which returns a ``type(C_PTR)``.  This result is
+allocated, ``tut_function4a`` is called which returns a ``type(C_PTR)``.  This result is
 dereferenced by ``fstr`` and copied into ``rv``.
 
 
@@ -378,7 +378,7 @@ The different styles are use as::
 
   character(30) rv4, rv4b
 
-  rv4 = function4("bird", "dog")
+  rv4 = function4a("bird", "dog")
   call  function4b("bird", "dog", rv4b)
 
 

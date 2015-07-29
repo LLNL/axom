@@ -25,7 +25,7 @@ bool Function3(bool arg)
 }
 
 // string
-const std::string& Function4(const std::string& arg1, const std::string& arg2)
+const std::string& Function4a(const std::string& arg1, const std::string& arg2)
 {
     static std::string rv(arg1 + arg2);
     return rv;

@@ -5,6 +5,7 @@
 program tester
   use iso_c_binding
   use tutorial_mod
+  implicit none
 
   type(class1) cptr
   real(C_DOUBLE) rv2
@@ -24,7 +25,7 @@ program tester
   rv3 = function3(.false.)
 
   ! character
-  rv4 = function4("bird", "dog")
+  rv4 = function4a("bird", "dog")
   print *, rv4
   call  function4b("bird", "dog", rv4b)
   print *, rv4b

@@ -299,19 +299,19 @@
                     "type": "std::string"
                 }
             ], 
-            "decl": "const std::string& Function4+pure(const std::string& arg1, const std::string& arg2)", 
+            "decl": "const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)", 
             "fmt": {
-                "CPP_name": "Function4", 
+                "CPP_name": "Function4a", 
                 "CPP_this": "selfobj", 
                 "CPP_this_call": "", 
                 "C_arguments": "const char * arg1, const char * arg2", 
                 "C_call_list": "arg1, arg2", 
                 "C_const": "const ", 
-                "C_name": "TUT_function4", 
+                "C_name": "TUT_function4a", 
                 "C_object": "", 
                 "C_return_type": "const char *", 
                 "F_C_arguments": "arg1, arg2", 
-                "F_C_name": "tut_function4", 
+                "F_C_name": "tut_function4a", 
                 "F_C_pure_clause": "pure ", 
                 "F_C_result_clause": " result(rv)", 
                 "F_C_subprogram": "function", 
@@ -319,16 +319,16 @@
                 "F_arg_c_call_tab": "\ttrim(arg1) // C_NULL_CHAR\ttrim(arg2) // C_NULL_CHAR", 
                 "F_arguments": "arg1, arg2", 
                 "F_instance_ptr": "obj%voidptr", 
-                "F_name_generic": "function4", 
-                "F_name_impl": "function4", 
-                "F_name_method": "function4", 
+                "F_name_generic": "function4a", 
+                "F_name_impl": "function4a", 
+                "F_name_method": "function4a", 
                 "F_result_clause": " result(rv)", 
                 "F_subprogram": "function", 
-                "PY_name_impl": "PY_function4", 
-                "method_name": "Function4", 
+                "PY_name_impl": "PY_function4a", 
+                "method_name": "Function4a", 
                 "rv_decl": "const std::string & rv", 
-                "rvlen": "strlen_ptr(tut_function4(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))", 
-                "underscore_name": "function4"
+                "rvlen": "strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))", 
+                "underscore_name": "function4a"
             }, 
             "options": {}, 
             "qualifiers": {}, 
@@ -338,7 +338,7 @@
                     "pure": true, 
                     "reference": true
                 }, 
-                "name": "Function4", 
+                "name": "Function4a", 
                 "type": "std::string"
             }
         }, 

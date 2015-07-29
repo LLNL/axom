@@ -32,12 +32,12 @@ return rv;
 // splicer end function.function3
 }
 
-const char * TUT_function4(const char * arg1, const char * arg2)
+const char * TUT_function4a(const char * arg1, const char * arg2)
 {
-// splicer begin function.function4
-const std::string & rv = Function4(arg1, arg2);
+// splicer begin function.function4a
+const std::string & rv = Function4a(arg1, arg2);
 return rv.c_str();
-// splicer end function.function4
+// splicer end function.function4a
 }
 
 const char * TUT_function4b(const char * arg1, const char * arg2)

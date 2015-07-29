@@ -72,14 +72,14 @@ module tutorial_mod
             logical(C_BOOL) :: rv
         end function tut_function3
         
-        pure function tut_function4(arg1, arg2) result(rv) &
-                bind(C, name="TUT_function4")
+        pure function tut_function4a(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function4a")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: arg1(*)
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             type(C_PTR) rv
-        end function tut_function4
+        end function tut_function4a
         
         function tut_function4b(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function4b")
@@ -145,18 +145,18 @@ contains
         ! splicer end function3
     end function function3
     
-    function function4(arg1, arg2) result(rv)
+    function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: arg1
         character(*) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr(tut_function4(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
-        ! splicer begin function4
-        rv = fstr(tut_function4(  &
+        character(kind=C_CHAR, len=strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
+        ! splicer begin function4a
+        rv = fstr(tut_function4a(  &
             trim(arg1) // C_NULL_CHAR,  &
             trim(arg2) // C_NULL_CHAR))
-        ! splicer end function4
-    end function function4
+        ! splicer end function4a
+    end function function4a
     
     subroutine function4b(arg1, arg2, rv)
         use iso_c_binding

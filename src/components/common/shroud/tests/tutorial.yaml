@@ -8,7 +8,7 @@ functions:
 - decl: void Function1()
 - decl: double Function2(double arg1, int arg2)
 - decl: bool Function3(bool arg)
-- decl: const std::string& Function4+pure(const std::string& arg1, const std::string& arg2)
+- decl: const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
 #  result:
 #    attrs:
 #      pure: true
