@@ -28,6 +28,8 @@
 #include "meshapi/StaticVariableRelation.hpp"
 #include "meshapi/DynamicVariableRelation.hpp"
 #include "meshapi/Map.hpp"
+#include "meshapi/FieldRegistry.hpp"
+
 
 //**************************************************
 // Allow flexibility for arithmetic representations
@@ -145,7 +147,7 @@ public:
   typedef asctoolkit::meshapi::RangeSet               NodeSet;
   typedef asctoolkit::meshapi::RangeSet               CornerSet;
 
-  typedef asctoolkit::meshapi::IndirectionSet         SymmNodeSet;
+  typedef asctoolkit::meshapi::VectorIndirectionSet   SymmNodeSet;
   typedef asctoolkit::meshapi::StaticConstantRelation ElemToNodeRelation;
   typedef asctoolkit::meshapi::StaticConstantRelation ElemFaceAdjacencyRelation;
 
@@ -636,6 +638,8 @@ private:
   Index_t m_colMin, m_colMax;
   Index_t m_planeMin, m_planeMax;
 
+  asctoolkit::meshapi::FieldRegistry<double> m_realsRegistry;
+  asctoolkit::meshapi::FieldRegistry<Set::PositionType> m_intsRegistry;
 };
 
 typedef Real_t & (Domain::* Domain_member )(Index_t);

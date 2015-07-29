@@ -12,7 +12,7 @@
 #include "meshapi/IndirectionSet.hpp"
 
 
-typedef asctoolkit::meshapi::IndirectionSet SetType;
+typedef asctoolkit::meshapi::ArrayIndirectionSet SetType;
 typedef SetType::iterator                   SetIterator;
 typedef SetType::PositionType               SetPosition;
 typedef SetType::ElementType                SetElement;

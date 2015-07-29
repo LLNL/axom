@@ -35,7 +35,7 @@ set(meshapi_headers
 set(meshapi_sources
     # SRM Set sources
     # RangeSet.cpp
-    IndirectionSet.cpp
+    # IndirectionSet.cpp
     OrderedSet.cpp
     
     # SRM Relation sources

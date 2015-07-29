@@ -13,8 +13,8 @@
    //////////////
    DIFFERENCES BETWEEN THIS VERSION (2.x) AND EARLIER VERSIONS:
  * Addition of regions to make work more representative of multi-material codes
- * Default size of each domain is 30^3 (27000 elem) instead of 45^3. This is
-   more representative of our actual working set sizes
+ * Default size of each domain is 5^3 [Formerly 30^3 (27000 elem) for Lulesh 2 and 45^3 for Lulesh].
+   This is more representative of our actual working set sizes
  * Single source distribution supports pure serial, pure OpenMP, MPI-only,
    and MPI+OpenMP
  * Addition of ability to visualize the mesh using VisIt

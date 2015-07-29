@@ -297,19 +297,19 @@ namespace policies {
 
         STLVectorIndirection(VectorType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
 
-        VectorType& data() { return *m_vecBuf;}
+        VectorType*& data() { return m_vecBuf;}
 
         inline const ElementType& indirection(PositionType pos) const
         {
             SLIC_ASSERT_MSG( hasIndirection(), "MeshAPI::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
-            SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "MeshAPI::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
-                    << pos << " in vector with only " << m_vecBuf->size() << " elements.");
+            //SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "MeshAPI::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
+            //        << pos << " in vector with only " << m_vecBuf->size() << " elements.");
 
             return (*m_vecBuf)[pos];
         }
         inline const ElementType& operator()(PositionType pos)  const { return indirection(pos); }
 
-        bool hasIndirection() const { return m_vecBuf == ATK_NULLPTR;}
+        bool hasIndirection() const { return m_vecBuf != ATK_NULLPTR;}
     private:
         VectorType* m_vecBuf;
     };
@@ -373,7 +373,7 @@ namespace policies {
             , typename OffsetPolicy        = policies::ZeroOffset<Set::PositionType>
             , typename StridePolicy        = policies::StrideOne<Set::PositionType>
             , typename IndirectionPolicy   = policies::NoIndirection<Set::PositionType, Set::ElementType>
-            , typename SubsettingPolicy                                 = policies::NoSubset
+            , typename SubsettingPolicy    = policies::NoSubset
             >
     struct OrderedSet: public Set
                             , SizePolicy

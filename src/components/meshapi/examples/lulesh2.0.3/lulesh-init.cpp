@@ -534,9 +534,14 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   Int_t numSymmNodesY = m_rowLoc == 0   ? edgeNodes * edgeNodes : 0;
   Int_t numSymmNodesZ = m_planeLoc == 0 ? edgeNodes * edgeNodes : 0;
 
-  SymmVec loc_symmX(numSymmNodesX);
-  SymmVec loc_symmY(numSymmNodesY);
-  SymmVec loc_symmZ(numSymmNodesZ);
+  // Setup symmetry NodeSets            // TODO: Need to add the mesh's nodes as parent
+  m_symmX = SymmNodeSet(numSymmNodesX); // eparentSet = &m_nodeSet
+  m_symmY = SymmNodeSet(numSymmNodesY);
+  m_symmZ = SymmNodeSet(numSymmNodesZ);
+
+  SymmVec& loc_symmX = m_intsRegistry.addField("symmX", &m_symmX).data();
+  SymmVec& loc_symmY = m_intsRegistry.addField("symmY", &m_symmY).data();
+  SymmVec& loc_symmZ = m_intsRegistry.addField("symmZ", &m_symmZ).data();
 
   // MeshAPI Note: We should be able to compute these directory from a Cartesian product set defining a regular grid.
   Index_t nidx = 0;
@@ -562,20 +567,14 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
     }
   }
 
-  // Setup symmetry NodeSets, w/ the mesh's nodes as parent
-  m_symmX = SymmNodeSet(&m_nodeSet);
-  m_symmY = SymmNodeSet(&m_nodeSet);
-  m_symmZ = SymmNodeSet(&m_nodeSet);
-
-  // Swap data with Symmetry Node sets
-  loc_symmX.swap(m_symmX.data());
-  loc_symmY.swap(m_symmY.data());
-  loc_symmZ.swap(m_symmZ.data());
+  m_symmX.data() = &loc_symmX;
+  m_symmY.data() = &loc_symmY;
+  m_symmZ.data() = &loc_symmZ;
 
   // Verify validity of the sets.
-  SLIC_ASSERT(  m_symmX.isValid() && m_symmX.size() == numSymmNodesX);
-  SLIC_ASSERT(  m_symmY.isValid() && m_symmY.size() == numSymmNodesY);
-  SLIC_ASSERT(  m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ);
+  SLIC_ASSERT(  m_symmX.isValid() && m_symmX.size() == numSymmNodesX && m_symmX.data() == &loc_symmX);
+  SLIC_ASSERT(  m_symmY.isValid() && m_symmY.size() == numSymmNodesY && m_symmY.data() == &loc_symmY);
+  SLIC_ASSERT(  m_symmZ.isValid() && m_symmZ.size() == numSymmNodesZ && m_symmZ.data() == &loc_symmZ);
 }
 
 
