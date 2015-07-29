@@ -311,13 +311,29 @@ class Schema(object):
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
 
-        overloaded_methods = {}
         methods = node.setdefault('methods', [])
         for method in methods:
             if not isinstance(method, dict):
                 raise TypeError("classes[n]['methods'] must be a dictionary")
             self.check_function(method)
-            overloaded_methods.setdefault(method['result']['name'], []).append(method)
+
+        self.define_function_suffix(methods)
+        self.pop_fmt()
+        self.pop_options()
+
+    def define_function_suffix(self, methods):
+        # look for methods with the same name
+        overloaded_functions = {}
+        for method in methods:
+            overloaded_functions.setdefault(method['result']['name'], []).append(method)
+
+        # look for function overload and compute method_suffix
+        for mname, overloads in overloaded_functions.items():
+            if len(overloads) > 1:
+                for i, function in enumerate(overloads):
+#                    method['fmt'].overloaded = True
+                    if 'method_suffix' not in function:
+                        function['fmt'].method_suffix =  '_%d' % i
 
         # Look for templated methods
         additional_methods = []
@@ -327,17 +343,6 @@ class Schema(object):
             if 'fortran_generic' in method:
                 self.generic_function(method, additional_methods)
         methods.extend(additional_methods)
-
-        # look for function overload and compute method_suffix
-        for mname, methods in overloaded_methods.items():
-            if len(methods) > 1:
-                for i, method in enumerate(methods):
-#                    method['fmt'].overloaded = True
-                    if 'method_suffix' not in method:
-                        method['fmt'].method_suffix =  '_%d' % i
-
-        self.pop_fmt()
-        self.pop_options()
 
     def check_function(self, node):
         """ Make sure necessary fields are present for a function.
