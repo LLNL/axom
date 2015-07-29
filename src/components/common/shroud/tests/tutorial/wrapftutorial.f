@@ -71,6 +71,15 @@ module tutorial_mod
             logical(C_BOOL), value, intent(IN) :: arg
             logical(C_BOOL) :: rv
         end function tut_function3
+        
+        pure function tut_function4(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function4")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            character(kind=C_CHAR), intent(IN) :: arg2(*)
+            type(C_PTR) rv
+        end function tut_function4
     end interface
 
 contains
@@ -126,6 +135,19 @@ contains
         rv = booltological(tut_function3(logicaltobool(arg)))
         ! splicer end function3
     end function function3
+    
+    function function4(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        character(*) :: arg1
+        character(*) :: arg2
+        character(kind=C_CHAR, len=strlen_ptr(tut_function4(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
+        ! splicer begin function4
+        rv = fstr(tut_function4(  &
+            trim(arg1) // C_NULL_CHAR,  &
+            trim(arg2) // C_NULL_CHAR))
+        ! splicer end function4
+    end function function4
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

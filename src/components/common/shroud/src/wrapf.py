@@ -376,6 +376,7 @@ class Wrapf(util.WrapperMixin):
         result_typedef = self.typedef[result_type]
         is_ctor  = result['attrs'].get('constructor', False)
         is_const = result['attrs'].get('const', False)
+        is_pure  = result['attrs'].get('pure', False)
 
         if 'F_result' in options:
             fmt_func.F_result = options.F_result
@@ -399,7 +400,7 @@ class Wrapf(util.WrapperMixin):
         else:
             fmt_func.F_C_subprogram = 'function'
             fmt_func.F_C_result_clause = ' result(%s)' % F_result
-            if func_is_const:
+            if is_pure or func_is_const:
                 fmt_func.F_C_pure_clause = 'pure '
 
         if cls:

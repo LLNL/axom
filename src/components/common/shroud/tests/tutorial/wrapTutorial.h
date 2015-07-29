@@ -24,6 +24,8 @@ double TUT_function2(double arg1, int arg2);
 
 bool TUT_function3(bool arg);
 
+const char * TUT_function4(const char * arg1, const char * arg2);
+
 #ifdef __cplusplus
 }
 #endif

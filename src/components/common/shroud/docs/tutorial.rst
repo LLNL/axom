@@ -277,6 +277,68 @@ conversion necessary to make it easier to work within an existing Fortran applic
 Character
 ^^^^^^^^^
 
+Character variables have significant differences between C and Fortran.
+The Fortran interoperabilty with C feature treat a ``character`` variable of default kind
+as an array of ``character(kind=C_CHAR,len=1)``.
+The wrapper then deals with the C convenrtion of ``NULL`` termination with Fortran's blank filled.
+
+C++ routine::
+
+    const std::string& Function4(const std::string& arg1, const std::string& arg2)
+    {
+        static std::string rv(arg1 + arg2);
+        return rv;
+    }
+
+YAML changes::
+
+    functions
+    - decl: const std::string& Function4+pure(const std::string& arg1, const std::string& arg2)
+
+This is the C++ prototype with the addition of a **+pure**.  This annotation marks the routine
+as Fortran ``pure`` meaning there are no side effects.  This is necessary because the function
+will be called twice.  Once to compute the length of the result and once to use the result.
+
+The C wrapper converts the ``std::string`` into a ``char *`` which Fortran can deal with by assigning
+it to a ``type(C_PTR)``::
+
+    const char * TUT_function4(const char * arg1, const char * arg2)
+    {
+        const std::string & rv = Function4(arg1, arg2);
+        return rv.c_str();
+    }
+
+With the Fortran interface::
+
+        pure function tut_function4(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function4")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            character(kind=C_CHAR), intent(IN) :: arg2(*)
+            type(C_PTR) rv
+        end function tut_function4
+
+And the Fortran wrapper::
+
+    function function4(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        character(*) :: arg1
+        character(*) :: arg2
+        character(kind=C_CHAR, len=strlen_ptr(tut_function4(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
+        rv = fstr(tut_function4(  &
+            trim(arg1) // C_NULL_CHAR,  &
+            trim(arg2) // C_NULL_CHAR))
+    end function function4
+
+The input arguments are trimmed of trailing blanks then concatenated with a trailing ``NULL``.
+The length of result variable ``rv`` is computed by calling the function.  Once the result is
+allocated, ``tut_function4`` is called which returns a ``type(C_PTR)``.  This result is
+dereferenced by ``fstr`` and copied into ``rv``.
+
+
+.. note :: create std::string from address and length?
 
 Types
 -----
