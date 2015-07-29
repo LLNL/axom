@@ -299,6 +299,13 @@ This is the C++ prototype with the addition of a **+pure**.  This annotation mar
 as Fortran ``pure`` meaning there are no side effects.  This is necessary because the function
 will be called twice.  Once to compute the length of the result and once to use the result.
 
+annotations also may be added by assign new fields in **attrs**::
+
+    - decl: const std::string& Function4(const std::string& arg1, const std::string& arg2)
+      result:
+        attrs:
+          pure: true
+
 The C wrapper converts the ``std::string`` into a ``char *`` which Fortran can deal with by assigning
 it to a ``type(C_PTR)``::
 
@@ -339,6 +346,42 @@ dereferenced by ``fstr`` and copied into ``rv``.
 
 
 .. note :: create std::string from address and length?
+
+It is possible to avoid calling the C++ function twice by passing in another argument
+to hold the result.  It would be up to the caller to ensure it is long enough.
+This is done by setting the option **F_string_result_as_arg** to true.
+Like all options, it may also be set in the global **options** and it will apply to 
+all functions::
+
+    - decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+      options:
+        F_string_result_as_arg: true
+
+Only the generated wrapper is different::
+
+    subroutine function4b(arg1, arg2, rv)
+        use iso_c_binding
+        implicit none
+        character(*) :: arg1
+        character(*) :: arg2
+        character(*), intent(OUT) :: rv
+        type(C_PTR) :: rv_ptr
+        rv_ptr = tut_function4b(  &
+            trim(arg1) // C_NULL_CHAR,  &
+            trim(arg2) // C_NULL_CHAR)
+        call FccCopyPtr(rv, len(rv), rv_ptr)
+    end subroutine function4b
+
+``FccCopyPtr`` is a library routine to copy the ``type(C_PTR)`` into the character variable.
+
+The different styles are use as::
+
+  character(30) rv4, rv4b
+
+  rv4 = function4("bird", "dog")
+  call  function4b("bird", "dog", rv4b)
+
+
 
 Types
 -----

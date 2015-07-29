@@ -31,5 +31,11 @@ const std::string& Function4(const std::string& arg1, const std::string& arg2)
     return rv;
 }
 
+const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+{
+    static std::string rv(arg1 + arg2);
+    return rv;
+}
+
 
 }  // namespace

@@ -12,6 +12,9 @@ functions:
 #  result:
 #    attrs:
 #      pure: true
+- decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+  options:
+    F_string_result_as_arg: true
 
 classes:
 - name: Class1

@@ -19,6 +19,11 @@ cpp_header
 
   C++ header file name.
 
+F_string_result_as_arg
+
+  Function with return a ``char *`` will instead by converted to subroutine
+  which require an additional argument for the result.
+
 namespace
 
   Blank delimited list of namespaces for **cpp_header**.
@@ -48,4 +53,8 @@ Annotations
 constructor
 
    Mark function as a constructor
+
+pure
+
+   Fortran PURE
 

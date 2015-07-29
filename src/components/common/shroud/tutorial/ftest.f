@@ -9,7 +9,7 @@ program tester
   type(class1) cptr
   real(C_DOUBLE) rv2
   logical rv3
-  character(30) rv4
+  character(30) rv4, rv4b
 
   call function1
 
@@ -26,6 +26,8 @@ program tester
   ! character
   rv4 = function4("bird", "dog")
   print *, rv4
+  call  function4b("bird", "dog", rv4b)
+  print *, rv4b
 
 
 

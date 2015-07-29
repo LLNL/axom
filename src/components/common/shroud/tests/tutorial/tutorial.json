@@ -341,6 +341,70 @@
                 "name": "Function4", 
                 "type": "std::string"
             }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "fmt": {
+                "CPP_name": "Function4b", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * arg1, const char * arg2", 
+                "C_call_list": "arg1, arg2", 
+                "C_const": "const ", 
+                "C_name": "TUT_function4b", 
+                "C_object": "", 
+                "C_return_type": "const char *", 
+                "F_C_arguments": "arg1, arg2", 
+                "F_C_name": "tut_function4b", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR", 
+                "F_arg_c_call_tab": "\ttrim(arg1) // C_NULL_CHAR\ttrim(arg2) // C_NULL_CHAR", 
+                "F_arguments": "arg1, arg2, rv", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function4b", 
+                "F_name_impl": "function4b", 
+                "F_name_method": "function4b", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function4b", 
+                "method_name": "Function4b", 
+                "rv_decl": "const std::string & rv", 
+                "underscore_name": "function4b"
+            }, 
+            "options": {
+                "F_string_result_as_arg": true
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "Function4b", 
+                "type": "std::string"
+            }
         }
     ], 
     "options": {

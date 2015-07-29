@@ -40,6 +40,14 @@ return rv.c_str();
 // splicer end function.function4
 }
 
+const char * TUT_function4b(const char * arg1, const char * arg2)
+{
+// splicer begin function.function4b
+const std::string & rv = Function4b(arg1, arg2);
+return rv.c_str();
+// splicer end function.function4b
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 
