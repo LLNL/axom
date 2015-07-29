@@ -63,6 +63,14 @@ module tutorial_mod
             integer(C_INT), value, intent(IN) :: arg2
             real(C_DOUBLE) :: rv
         end function tut_function2
+        
+        function tut_function3(arg) result(rv) &
+                bind(C, name="TUT_function3")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: arg
+            logical(C_BOOL) :: rv
+        end function tut_function3
     end interface
 
 contains
@@ -108,6 +116,16 @@ contains
             arg2)
         ! splicer end function2
     end function function2
+    
+    function function3(arg) result(rv)
+        use iso_c_binding
+        implicit none
+        logical :: arg
+        logical :: rv
+        ! splicer begin function3
+        rv = booltological(tut_function3(logicaltobool(arg)))
+        ! splicer end function3
+    end function function3
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

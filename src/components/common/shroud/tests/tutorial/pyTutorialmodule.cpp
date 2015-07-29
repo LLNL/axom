@@ -52,9 +52,35 @@ PY_function2(
     return Py_BuildValue("d", rv);
 // splicer end function.function2
 }
+
+static char PY_function3__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function3(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function3
+    bool arg;
+    const char *kwcpp = "arg";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:Function3", kw_list,
+        &arg))
+    {
+        return NULL;
+    }
+    bool rv = Function3(arg);
+    return PyBool_FromLong(rv);
+// splicer end function.function3
+}
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
+{"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

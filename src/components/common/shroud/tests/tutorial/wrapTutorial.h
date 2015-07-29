@@ -22,6 +22,8 @@ void TUT_function1();
 
 double TUT_function2(double arg1, int arg2);
 
+bool TUT_function3(bool arg);
+
 #ifdef __cplusplus
 }
 #endif

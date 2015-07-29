@@ -24,6 +24,14 @@ return rv;
 // splicer end function.function2
 }
 
+bool TUT_function3(bool arg)
+{
+// splicer begin function.function3
+bool rv = Function3(arg);
+return rv;
+// splicer end function.function3
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

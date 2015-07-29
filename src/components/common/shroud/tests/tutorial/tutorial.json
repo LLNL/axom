@@ -228,6 +228,53 @@
                 "name": "Function2", 
                 "type": "double"
             }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "bool"
+                }
+            ], 
+            "decl": "bool Function3(bool arg)", 
+            "fmt": {
+                "CPP_name": "Function3", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "bool arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function3", 
+                "C_object": "", 
+                "C_return_type": "bool", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function3", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "logicaltobool(arg)", 
+                "F_arg_c_call_tab": "\tlogicaltobool(arg)", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function3", 
+                "F_name_impl": "function3", 
+                "F_name_method": "function3", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "PY_name_impl": "PY_function3", 
+                "method_name": "Function3", 
+                "rv_decl": "bool rv", 
+                "underscore_name": "function3"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function3", 
+                "type": "bool"
+            }
         }
     ], 
     "options": {

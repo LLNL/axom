@@ -233,6 +233,47 @@ The Fortran wrapper calls the C interface directly::
 Logical
 ^^^^^^^
 
+Logical variable require a conversion since they are not directly compatible with C.
+In addition, how ``.true.`` and ``.false.`` are represented internally is compiler dependent.
+So compilers use 0 for ``.false.`` while other use -1.
+
+A simple C++ function which accepts and returns a boolean argument::
+
+    bool Function3(bool arg)
+    {
+        return ! arg;
+    }
+
+Added to the YAML file as before::
+
+    functions:
+    - decl: bool Function3(bool arg)
+
+The Fortran interface and wrapper::
+
+        function tut_function3(arg) result(rv) &
+                bind(C, name="TUT_function3")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: arg
+            logical(C_BOOL) :: rv
+        end function tut_function3
+
+    function function3(arg) result(rv)
+        use iso_c_binding
+        implicit none
+        logical :: arg
+        logical :: rv
+        rv = booltological(tut_function3(logicaltobool(arg)))
+    end function function3
+
+The wrapper routine uses the library function ``logicaltobool`` and ``booltological`` to
+use the compiler to convert between the different kinds of logical types.
+This is the first example of the wrapper doing work to create a more idiomatic Fortran API.
+It is possible to call ``TUT_function3`` directly from Fortran, but the wrapper does the type
+conversion necessary to make it easier to work within an existing Fortran application.
+
+
 Character
 ^^^^^^^^^
 
