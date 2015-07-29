@@ -16,6 +16,14 @@ return;
 // splicer end function.function1
 }
 
+double TUT_function2(double arg1, int arg2)
+{
+// splicer begin function.function2
+double rv = Function2(arg1, arg2);
+return rv;
+// splicer end function.function2
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

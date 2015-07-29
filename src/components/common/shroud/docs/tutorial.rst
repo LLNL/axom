@@ -19,7 +19,7 @@ This is wrapped using a YAML file as::
       namespace: tutorial
 
   functions:
-    - decl: void Function1()
+  - decl: void Function1()
 
 .. XXX support (void)?
 
@@ -102,11 +102,11 @@ Now we'll add a simple class to the library::
 To wrap the class add the lines to the YAML file::
 
     classes:
-      - name: Class1
-        methods:
-        - decl: Class1 *new+constructor
-          constructor: True   # better syntax?
-        - decl: void Method1()
+    - name: Class1
+      methods:
+      - decl: Class1 *new+constructor
+        constructor: True   # better syntax?
+      - decl: void Method1()
 
 The method ``new`` has the annotation **+constructor** to mark it as a constructor.
 
@@ -188,6 +188,53 @@ And the Fortran version::
 
 Arguments
 ---------
+
+Integer and Real
+^^^^^^^^^^^^^^^^
+
+Integer and real types are handled using the ``iso_c_binding`` module which match them directly to 
+the corresponding types in C++. To wrap ``Function2``::
+
+    double Function2(double arg1, int arg2)
+    {
+        return arg1 + arg2;
+    }
+
+Add the declaration to the YAML file::
+
+    functions:
+    - decl: double Function2(double arg1, int arg2)
+
+The arguments are added to the interface for the C routine using the ``value`` attribute.
+They use the ``intent(IN)`` attribute since they are pass-by-value and cannot return a value::
+
+        function tut_function2(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function2")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: arg1
+            integer(C_INT), value, intent(IN) :: arg2
+            real(C_DOUBLE) :: rv
+        end function tut_function2
+
+The Fortran wrapper calls the C interface directly::
+
+    function function2(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE) :: arg1
+        integer(C_INT) :: arg2
+        real(C_DOUBLE) :: rv
+        rv = tut_function2(arg1, arg2)
+    end function function2
+
+.. note :: add intent to wrapper
+
+Logical
+^^^^^^^
+
+Character
+^^^^^^^^^
 
 
 Types

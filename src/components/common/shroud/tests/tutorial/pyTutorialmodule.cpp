@@ -26,8 +26,35 @@ PY_function1(
     Py_RETURN_NONE;
 // splicer end function.function1
 }
+
+static char PY_function2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function2(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function2
+    double arg1;
+    int arg2;
+    const char *kwcpp = "arg1\0arg2";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di:Function2", kw_list,
+        &arg1, &arg2))
+    {
+        return NULL;
+    }
+    double rv = Function2(arg1, arg2);
+    return Py_BuildValue("d", rv);
+// splicer end function.function2
+}
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
+{"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

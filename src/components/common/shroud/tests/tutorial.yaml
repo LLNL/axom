@@ -5,10 +5,11 @@ options:
   F_module_per_class: False
 
 functions:
-  - decl: void Function1()
+- decl: void Function1()
+- decl: double Function2(double arg1, int arg2)
 
 classes:
-  - name: Class1
-    methods:
-    - decl: Class1 *new+constructor
-    - decl: void Method1()
+- name: Class1
+  methods:
+  - decl: Class1 *new+constructor
+  - decl: void Method1()

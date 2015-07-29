@@ -13,4 +13,8 @@ int main(int argc, char *argv[])
 
     cptr->Method1();
 
+    // Arguments
+    // Integer and Real
+    double rv2 = tutorial::Function2(1.5, 2);
+
 }

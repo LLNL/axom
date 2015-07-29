@@ -5,18 +5,21 @@ C method void Method1()
 Close wrapClass1.h
 Close wrapClass1.cpp
 C function void Function1()
+C function double Function2(double arg1, int arg2)
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 class Class1
 C-interface, Fortran method Class1 *new+constructor
 C-interface, Fortran method void Method1()
 C-interface, Fortran function void Function1()
+C-interface, Fortran function double Function2(double arg1, int arg2)
 Close wrapftutorial.f
 class Class1
 Python method Class1 *new+constructor
 Python method void Method1()
 Close pyClass1type.cpp
 Python function void Function1()
+Python function double Function2(double arg1, int arg2)
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp
 Close pyTutorialhelper.cpp

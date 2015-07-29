@@ -54,6 +54,15 @@ module tutorial_mod
             use iso_c_binding
             implicit none
         end subroutine tut_function1
+        
+        function tut_function2(arg1, arg2) result(rv) &
+                bind(C, name="TUT_function2")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: arg1
+            integer(C_INT), value, intent(IN) :: arg2
+            real(C_DOUBLE) :: rv
+        end function tut_function2
     end interface
 
 contains
@@ -86,6 +95,19 @@ contains
         call tut_function1()
         ! splicer end function1
     end subroutine function1
+    
+    function function2(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE) :: arg1
+        integer(C_INT) :: arg2
+        real(C_DOUBLE) :: rv
+        ! splicer begin function2
+        rv = tut_function2(  &
+            arg1,  &
+            arg2)
+        ! splicer end function2
+    end function function2
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

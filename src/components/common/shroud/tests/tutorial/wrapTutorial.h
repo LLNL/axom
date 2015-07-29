@@ -20,6 +20,8 @@ extern "C" {
 
 void TUT_function1();
 
+double TUT_function2(double arg1, int arg2);
+
 #ifdef __cplusplus
 }
 #endif
