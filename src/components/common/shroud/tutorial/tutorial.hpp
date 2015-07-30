@@ -30,6 +30,8 @@ RetType Function8()
     return 0;
 }
 
+    void Function9(double arg);
+
 class Class1
 {
 public:

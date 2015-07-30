@@ -52,6 +52,9 @@ void Function6(int indx)
     return;
 }
 
+void Function9(double arg)
+{
+}
 
 
 

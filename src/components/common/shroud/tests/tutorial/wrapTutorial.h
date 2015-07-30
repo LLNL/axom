@@ -34,6 +34,8 @@ void TUT_function6_from_name(const char * name);
 
 void TUT_function6_from_index(int indx);
 
+void TUT_function9(double arg);
+
 void TUT_function7_int(int arg);
 
 void TUT_function7_double(double arg);

@@ -43,4 +43,7 @@ program tester
   call function7(1)
   call function7(1.0d0)
 
+  call function9(1.0)
+  call function9(1.0d0)
+
 end program tester

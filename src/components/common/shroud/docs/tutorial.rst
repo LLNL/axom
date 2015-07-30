@@ -433,6 +433,72 @@ C wrapper::
       return rv;
     }
 
+Generic Functions
+-----------------
+
+C and C++ provide a type promotion feature when calling functions which Fortran does not support::
+
+    void Function9(double arg);
+
+    Function9(1.0f);
+    Function9(2.0);
+
+When Function9 is wrapped in Fortran it may only be used with the correct arguments::
+
+    call function9(1.)
+                   1
+  Error: Type mismatch in argument 'arg' at (1); passed REAL(4) to REAL(8)
+
+It would be possible to create a version of the routine in C++ which
+accepts floats, but that would require changes to the library being
+wrapped.  Instead it is possible to create a generic interface to the
+routine by defining which variables need their types changed.  This is
+similar to templates in C++ but will only impact the Fortran wrapper.
+Instead of specify the Type which changes, you specify the argument which changes::
+
+  - decl: void Function9(double arg)
+    fortran_generic:
+       arg:
+       -  float
+       -  double
+
+This will generate only one C wrapper which accepts a double::
+
+  void TUT_function9(double arg)
+  {
+      Function9(arg);
+      return;
+  }
+
+But it will generate two Fortran wrappers and a generic interface block.
+Each wrapper will coerce the argument to the correct type::
+
+    interface function9
+        module procedure function9_float
+        module procedure function9_double
+    end interface function9
+
+    subroutine function9_float(arg)
+        use iso_c_binding
+        implicit none
+        real(C_FLOAT) :: arg
+        call tut_function9(real(arg, C_DOUBLE))
+    end subroutine function9_float
+    
+    subroutine function9_double(arg)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE) :: arg
+        call tut_function9(real(arg, C_DOUBLE))
+    end subroutine function9_double
+
+It may now be used with single or double precision arguments::
+
+  call function9(1.0)
+  call function9(1.0d0)
+
+
+
 
 Types
 -----

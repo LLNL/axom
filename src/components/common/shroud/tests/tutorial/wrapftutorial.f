@@ -113,6 +113,13 @@ module tutorial_mod
             integer(C_INT), value, intent(IN) :: indx
         end subroutine tut_function6_from_index
         
+        subroutine tut_function9(arg) &
+                bind(C, name="TUT_function9")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: arg
+        end subroutine tut_function9
+        
         subroutine tut_function7_int(arg) &
                 bind(C, name="TUT_function7_int")
             use iso_c_binding
@@ -151,6 +158,11 @@ module tutorial_mod
         module procedure function7_int
         module procedure function7_double
     end interface function7
+    
+    interface function9
+        module procedure function9_float
+        module procedure function9_double
+    end interface function9
 
 contains
     
@@ -306,6 +318,24 @@ contains
         rv = tut_function8_double()
         ! splicer end function8_double
     end function function8_double
+    
+    subroutine function9_float(arg)
+        use iso_c_binding
+        implicit none
+        real(C_FLOAT) :: arg
+        ! splicer begin function9_float
+        call tut_function9(real(arg, C_DOUBLE))
+        ! splicer end function9_float
+    end subroutine function9_float
+    
+    subroutine function9_double(arg)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE) :: arg
+        ! splicer begin function9_double
+        call tut_function9(real(arg, C_DOUBLE))
+        ! splicer end function9_double
+    end subroutine function9_double
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

@@ -35,6 +35,11 @@ functions:
       - int
       - double
 
+- decl: void Function9(double arg)
+  fortran_generic:
+     arg:
+     -  float
+     -  double
 
 
 classes:

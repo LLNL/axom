@@ -72,6 +72,14 @@ return;
 // splicer end function.function6_from_index
 }
 
+void TUT_function9(double arg)
+{
+// splicer begin function.function9
+Function9(arg);
+return;
+// splicer end function.function9
+}
+
 void TUT_function7_int(int arg)
 {
 // splicer begin function.function7_int
