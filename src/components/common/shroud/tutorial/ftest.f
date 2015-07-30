@@ -35,6 +35,8 @@ program tester
 !  print *, "function5", function5(arg2=0)
   print *, "functino5", function5(2.0d0, 2)
 
+  call function6_from_name("name")
+  call function6_from_index(1)
   call function6("name")
   call function6(1)
 

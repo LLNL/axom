@@ -311,6 +311,47 @@ to distinguish the names.
 
 C++::
 
+    void Function6(const std::string &name);
+    void Function6(int indx);
+
+By default the names are mangled by adding an index to the end. This can be controlled by
+setting **function_suffix** in the YAML file::
+
+  functions:
+  - decl: void Function6(const std::string& name)
+    function_suffix: _from_name
+  - decl: void Function6(int indx)
+    function_suffix: _from_index
+
+The generated C wrappers uses the mangled name::
+
+    void TUT_function6_from_name(const char * name)
+    {
+        Function6(name);
+        return;
+    }
+
+    void TUT_function6_from_index(int indx)
+    {
+        Function6(indx);
+        return;
+    }
+
+The generated Fortran creates routines with the same mangled name but also
+creates a generic interface block to allow them to be called by the overloaded name::
+
+    interface function6
+        module procedure function6_from_name
+        module procedure function6_from_index
+    end interface function6
+
+They can be used as::
+
+  call function6_from_name("name")
+  call function6_from_index(1)
+  call function6("name")
+  call function6(1)
+
 
 
 Templates

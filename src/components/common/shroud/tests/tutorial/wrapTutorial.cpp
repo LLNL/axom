@@ -56,20 +56,20 @@ return rv;
 // splicer end function.function5
 }
 
-void TUT_function6_0(const char * name)
+void TUT_function6_from_name(const char * name)
 {
-// splicer begin function.function6_0
+// splicer begin function.function6_from_name
 Function6(name);
 return;
-// splicer end function.function6_0
+// splicer end function.function6_from_name
 }
 
-void TUT_function6_1(int indx)
+void TUT_function6_from_index(int indx)
 {
-// splicer begin function.function6_1
+// splicer begin function.function6_from_index
 Function6(indx);
 return;
-// splicer end function.function6_1
+// splicer end function.function6_from_index
 }
 
 // splicer begin additional_functions

@@ -158,17 +158,17 @@ PY_function5(
 // splicer end function.function5
 }
 
-static char PY_function6_0__doc__[] =
+static char PY_function6_from_name__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_function6_0(
+PY_function6_from_name(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.function6_0
+// splicer begin function.function6_from_name
     const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -180,20 +180,20 @@ PY_function6_0(
     }
     Function6(name);
     Py_RETURN_NONE;
-// splicer end function.function6_0
+// splicer end function.function6_from_name
 }
 
-static char PY_function6_1__doc__[] =
+static char PY_function6_from_index__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_function6_1(
+PY_function6_from_index(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.function6_1
+// splicer begin function.function6_from_index
     int indx;
     const char *kwcpp = "indx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -205,7 +205,7 @@ PY_function6_1(
     }
     Function6(indx);
     Py_RETURN_NONE;
-// splicer end function.function6_1
+// splicer end function.function6_from_index
 }
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
@@ -214,8 +214,8 @@ static PyMethodDef PY_methods[] = {
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
 {"Function5", (PyCFunction)PY_function5, METH_VARARGS|METH_KEYWORDS, PY_function5__doc__},
-{"Function6_0", (PyCFunction)PY_function6_0, METH_VARARGS|METH_KEYWORDS, PY_function6_0__doc__},
-{"Function6_1", (PyCFunction)PY_function6_1, METH_VARARGS|METH_KEYWORDS, PY_function6_1__doc__},
+{"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
+{"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

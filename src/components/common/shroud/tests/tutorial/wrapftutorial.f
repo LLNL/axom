@@ -99,24 +99,24 @@ module tutorial_mod
             real(C_DOUBLE) :: rv
         end function tut_function5
         
-        subroutine tut_function6_0(name) &
-                bind(C, name="TUT_function6_0")
+        subroutine tut_function6_from_name(name) &
+                bind(C, name="TUT_function6_from_name")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine tut_function6_0
+        end subroutine tut_function6_from_name
         
-        subroutine tut_function6_1(indx) &
-                bind(C, name="TUT_function6_1")
+        subroutine tut_function6_from_index(indx) &
+                bind(C, name="TUT_function6_from_index")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: indx
-        end subroutine tut_function6_1
+        end subroutine tut_function6_from_index
     end interface
     
     interface function6
-        module procedure function6_0
-        module procedure function6_1
+        module procedure function6_from_name
+        module procedure function6_from_index
     end interface function6
 
 contains
@@ -220,23 +220,23 @@ contains
         ! splicer end function5
     end function function5
     
-    subroutine function6_0(name)
+    subroutine function6_from_name(name)
         use iso_c_binding
         implicit none
         character(*) :: name
-        ! splicer begin function6_0
-        call tut_function6_0(trim(name) // C_NULL_CHAR)
-        ! splicer end function6_0
-    end subroutine function6_0
+        ! splicer begin function6_from_name
+        call tut_function6_from_name(trim(name) // C_NULL_CHAR)
+        ! splicer end function6_from_name
+    end subroutine function6_from_name
     
-    subroutine function6_1(indx)
+    subroutine function6_from_index(indx)
         use iso_c_binding
         implicit none
         integer(C_INT) :: indx
-        ! splicer begin function6_1
-        call tut_function6_1(indx)
-        ! splicer end function6_1
-    end subroutine function6_1
+        ! splicer begin function6_from_index
+        call tut_function6_from_index(indx)
+        ! splicer end function6_from_index
+    end subroutine function6_from_index
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
