@@ -97,9 +97,10 @@ class Schema(object):
         fmt_library = node['fmt'] = util.Options(None)
         fmt_library.library       = def_options.get('library', 'default_library')
         fmt_library.lower_library = fmt_library.library.lower()
-        fmt_library.method_suffix = ''   # assume no suffix
+        fmt_library.upper_library = fmt_library.library.upper()
+        fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
-        fmt_library.C_prefix      = def_options.get('C_prefix', '')
+        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(def_options, fmt_library,
                            'C_header_filename', 'wrap{library}.h')
@@ -284,7 +285,7 @@ class Schema(object):
         if name not in self.typedef:
 #            unname = util.un_camel(name)
             unname = name.lower()
-            cname = node['options'].C_prefix + unname
+            cname = node['fmt'].C_prefix + unname
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,
@@ -310,13 +311,29 @@ class Schema(object):
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
 
-        overloaded_methods = {}
         methods = node.setdefault('methods', [])
         for method in methods:
             if not isinstance(method, dict):
                 raise TypeError("classes[n]['methods'] must be a dictionary")
             self.check_function(method)
-            overloaded_methods.setdefault(method['result']['name'], []).append(method)
+
+        self.define_function_suffix(methods)
+        self.pop_fmt()
+        self.pop_options()
+
+    def define_function_suffix(self, methods):
+        # look for methods with the same name
+        overloaded_functions = {}
+        for method in methods:
+            overloaded_functions.setdefault(method['result']['name'], []).append(method)
+
+        # look for function overload and compute function_suffix
+        for mname, overloads in overloaded_functions.items():
+            if len(overloads) > 1:
+                for i, function in enumerate(overloads):
+#                    method['fmt'].overloaded = True
+                    if 'function_suffix' not in function:
+                        function['fmt'].function_suffix =  '_%d' % i
 
         # Look for templated methods
         additional_methods = []
@@ -326,17 +343,6 @@ class Schema(object):
             if 'fortran_generic' in method:
                 self.generic_function(method, additional_methods)
         methods.extend(additional_methods)
-
-        # look for function overload and compute method_suffix
-        for mname, methods in overloaded_methods.items():
-            if len(methods) > 1:
-                for i, method in enumerate(methods):
-#                    method['fmt'].overloaded = True
-                    if 'method_suffix' not in method:
-                        method['fmt'].method_suffix =  '_%d' % i
-
-        self.pop_fmt()
-        self.pop_options()
 
     def check_function(self, node):
         """ Make sure necessary fields are present for a function.
@@ -354,9 +360,9 @@ class Schema(object):
             # parse decl and add to dictionary
             values = parse_decl.check_decl(node['decl'])
             util.update(node, values)  # recursive update
-        if 'method_suffix' in node and node['method_suffix'] is None:
+        if 'function_suffix' in node and node['function_suffix'] is None:
             # YAML turns blanks strings to None
-            node['method_suffix'] = ''
+            node['function_suffix'] = ''
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -371,8 +377,8 @@ class Schema(object):
 
         fmt_func.method_name =     result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
-        if 'method_suffix' in node:
-            fmt_func.method_suffix =   node['method_suffix']
+        if 'function_suffix' in node:
+            fmt_func.function_suffix =   node['function_suffix']
 
         # docs
         self.pop_fmt()
@@ -390,7 +396,7 @@ class Schema(object):
                 new = util.copy_function_node(node)
                 new['generated'] = 'cpp_template'
                 fmt = new['fmt']
-                fmt.method_suffix = '_' + type
+                fmt.function_suffix = '_' + type
                 del new['cpp_template']
                 options = new['options']
                 options.wrap_c = True
@@ -398,9 +404,10 @@ class Schema(object):
                 options.wrap_python = False
                 additional_methods.append(new)
                 # Convert typename to type
+                fmt.CPP_template = '<%s>' %  type
                 if new['result']['type'] == typename:
                     new['result']['type'] = type
-                    fmt.CPP_template = '<%s>' %  type
+                    fmt.CPP_return_templated = True
                 for arg in new['args']:
                     if arg['type'] == typename:
                         arg['type'] = type
@@ -424,7 +431,7 @@ class Schema(object):
                 new = util.copy_function_node(node)
                 new['generated'] = 'fortran_generic'
                 fmt = new['fmt']
-                fmt.method_suffix = '_' + type
+                fmt.function_suffix = '_' + type
                 fmt.PTR_F_C_node = node
                 del new['fortran_generic']
                 options = new['options']
@@ -458,6 +465,7 @@ class Schema(object):
             raise TypeError("functions must be a list")
         for func in node:
             self.check_function(func)
+        self.define_function_suffix(node)
 
     def check_class_dependencies(self, node):
         """

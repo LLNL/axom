@@ -96,9 +96,9 @@ classes:
     -  decl: bool hasView( const string& name )
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *createViewAndBuffer( const string& name )
-       method_suffix: _simple
+       function_suffix: _simple
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
-       method_suffix: _from_type
+       function_suffix: _from_type
        fortran_generic:
          len:
          -  int
@@ -119,10 +119,10 @@ classes:
 #    -  decl: void destroyView(const std::string &name)
 #    -  decl: void destroyView(IndexType idx)
     -  decl: DataView *getView( const std::string& name )
-       method_suffix: _from_name
+       function_suffix: _from_name
 #    -  decl: DataView const * getView( const std::string& name ) const
     -  decl: DataView *getView( const IndexType idx )
-       method_suffix: _from_index
+       function_suffix: _from_index
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
@@ -177,10 +177,10 @@ classes:
 #      - decl: DataBuffer* declare(const Schema& schema)
 #      - decl: DataBuffer* declare(const DataType& dtype)
       - decl: DataBuffer* allocate()
-        method_suffix: _existing
+        function_suffix: _existing
         return_this: True
       - decl: DataBuffer* allocate(TypeID type, SidreLength len)
-        method_suffix: _from_type
+        function_suffix: _from_type
         return_this: True
         fortran_generic:
           len:
@@ -226,10 +226,10 @@ classes:
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
     - decl: DataView* allocate()
-      method_suffix: _simple
+      function_suffix: _simple
       return_this: True
     - decl: DataView* allocate(TypeID type, SidreLength len)
-      method_suffix: _from_type
+      function_suffix: _from_type
       return_this: True
       fortran_generic:
         len:

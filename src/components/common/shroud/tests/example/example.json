@@ -441,12 +441,12 @@
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_value_from_int", 
+                        "function_suffix": "_from_int", 
                         "method_name": "getValue", 
-                        "method_suffix": "_from_int", 
                         "rv_decl": "int rv", 
                         "underscore_name": "get_value"
                     }, 
-                    "method_suffix": "_from_int", 
+                    "function_suffix": "_from_int", 
                     "options": {}, 
                     "qualifiers": {}, 
                     "result": {
@@ -490,8 +490,8 @@
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_value_1", 
+                        "function_suffix": "_1", 
                         "method_name": "getValue", 
-                        "method_suffix": "_1", 
                         "rv_decl": "long rv", 
                         "underscore_name": "get_value"
                     }, 
@@ -1242,7 +1242,7 @@
                             }, 
                             "return_this": true
                         }, 
-                        "method_suffix": "_int"
+                        "function_suffix": "_int"
                     }, 
                     "generated": "fortran_generic", 
                     "options": {
@@ -1348,7 +1348,7 @@
                             }, 
                             "return_this": true
                         }, 
-                        "method_suffix": "_long"
+                        "function_suffix": "_long"
                     }, 
                     "generated": "fortran_generic", 
                     "options": {
@@ -1380,6 +1380,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<int>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, int value", 
@@ -1398,7 +1399,7 @@
                         "F_name_impl": "exclass2_set_value_int", 
                         "F_name_method": "set_value_int", 
                         "F_subprogram": "subroutine", 
-                        "method_suffix": "_int", 
+                        "function_suffix": "_int", 
                         "rv_decl": "void rv"
                     }, 
                     "generated": "cpp_template", 
@@ -1428,6 +1429,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<long>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, long value", 
@@ -1446,7 +1448,7 @@
                         "F_name_impl": "exclass2_set_value_long", 
                         "F_name_method": "set_value_long", 
                         "F_subprogram": "subroutine", 
-                        "method_suffix": "_long", 
+                        "function_suffix": "_long", 
                         "rv_decl": "void rv"
                     }, 
                     "generated": "cpp_template", 
@@ -1476,6 +1478,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<float>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, float value", 
@@ -1494,7 +1497,7 @@
                         "F_name_impl": "exclass2_set_value_float", 
                         "F_name_method": "set_value_float", 
                         "F_subprogram": "subroutine", 
-                        "method_suffix": "_float", 
+                        "function_suffix": "_float", 
                         "rv_decl": "void rv"
                     }, 
                     "generated": "cpp_template", 
@@ -1524,6 +1527,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<double>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, double value", 
@@ -1542,7 +1546,7 @@
                         "F_name_impl": "exclass2_set_value_double", 
                         "F_name_method": "set_value_double", 
                         "F_subprogram": "subroutine", 
-                        "method_suffix": "_double", 
+                        "function_suffix": "_double", 
                         "rv_decl": "void rv"
                     }, 
                     "generated": "cpp_template", 
@@ -1563,6 +1567,7 @@
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_name": "getValue", 
+                        "CPP_return_templated": true, 
                         "CPP_template": "<int>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
@@ -1584,7 +1589,7 @@
                         "F_name_method": "get_value_int", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "method_suffix": "_int", 
+                        "function_suffix": "_int", 
                         "rv_decl": "int rv"
                     }, 
                     "generated": "cpp_template", 
@@ -1605,6 +1610,7 @@
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_name": "getValue", 
+                        "CPP_return_templated": true, 
                         "CPP_template": "<double>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
@@ -1626,7 +1632,7 @@
                         "F_name_method": "get_value_double", 
                         "F_result_clause": " result(rv)", 
                         "F_subprogram": "function", 
-                        "method_suffix": "_double", 
+                        "function_suffix": "_double", 
                         "rv_decl": "double rv"
                     }, 
                     "generated": "cpp_template", 
@@ -1697,11 +1703,12 @@
         "PY_module_filename": "pyUserLibrarymodule.cpp", 
         "PY_module_name": "userlibrary", 
         "PY_prefix": "PP_", 
+        "function_suffix": "", 
         "library": "UserLibrary", 
         "lower_library": "userlibrary", 
-        "method_suffix": "", 
         "overloaded": false, 
-        "rv": "rv"
+        "rv": "rv", 
+        "upper_library": "USERLIBRARY"
     }, 
     "functions": [
         {

@@ -158,7 +158,7 @@ void ATK_dataview_set_value_int(ATK_dataview * self, int value)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin class.DataView.method.set_value_int
-selfobj->setValue(value);
+selfobj->setValue<int>(value);
 return;
 // splicer end class.DataView.method.set_value_int
 }
@@ -167,7 +167,7 @@ void ATK_dataview_set_value_long(ATK_dataview * self, long value)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin class.DataView.method.set_value_long
-selfobj->setValue(value);
+selfobj->setValue<long>(value);
 return;
 // splicer end class.DataView.method.set_value_long
 }
@@ -176,7 +176,7 @@ void ATK_dataview_set_value_float(ATK_dataview * self, float value)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin class.DataView.method.set_value_float
-selfobj->setValue(value);
+selfobj->setValue<float>(value);
 return;
 // splicer end class.DataView.method.set_value_float
 }
@@ -185,7 +185,7 @@ void ATK_dataview_set_value_double(ATK_dataview * self, double value)
 {
 DataView *selfobj = static_cast<DataView *>(self);
 // splicer begin class.DataView.method.set_value_double
-selfobj->setValue(value);
+selfobj->setValue<double>(value);
 return;
 // splicer end class.DataView.method.set_value_double
 }

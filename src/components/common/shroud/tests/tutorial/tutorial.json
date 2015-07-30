@@ -1,0 +1,1218 @@
+{
+    "F_module_dependencies": [], 
+    "classes": [
+        {
+            "F_module_dependencies": [
+                [
+                    "tutorial_mod", 
+                    [
+                        "class1"
+                    ]
+                ]
+            ], 
+            "fmt": {
+                "C_header_filename": "wrapClass1.h", 
+                "C_impl_filename": "wrapClass1.cpp", 
+                "C_type_name": "TUT_class1", 
+                "F_derived_name": "class1", 
+                "PY_PyObject": "PY_Class1", 
+                "PY_PyTypeObject": "PY_Class1_Type", 
+                "PY_capsule_name": "PY_Class1_capsule_name", 
+                "PY_from_object_func": "PP_Class1_from_Object", 
+                "PY_to_object_func": "PP_Class1_to_Object", 
+                "PY_type_filename": "pyClass1type.cpp", 
+                "cpp_class": "Class1", 
+                "lower_class": "class1", 
+                "upper_class": "CLASS1"
+            }, 
+            "methods": [
+                {
+                    "args": [], 
+                    "decl": "Class1 *new+constructor", 
+                    "fmt": {
+                        "CPP_name": "new", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "", 
+                        "C_call_list": "", 
+                        "C_name": "TUT_class1_new", 
+                        "C_object": "Class1 *selfobj = new Class1();", 
+                        "C_return_type": "TUT_class1 *", 
+                        "F_C_arguments": "", 
+                        "F_C_name": "tut_class1_new", 
+                        "F_C_result_clause": " result(rv)", 
+                        "F_C_subprogram": "function", 
+                        "F_arg_c_call": "", 
+                        "F_arg_c_call_tab": "\t", 
+                        "F_arguments": "", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "new", 
+                        "F_name_impl": "class1_new", 
+                        "F_name_method": "new", 
+                        "F_result_clause": " result(rv)", 
+                        "F_subprogram": "function", 
+                        "method_name": "new", 
+                        "rv_decl": "Class1 * rv", 
+                        "underscore_name": "new"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "Class1"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "decl": "void Method1()", 
+                    "fmt": {
+                        "CPP_name": "Method1", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "selfobj->", 
+                        "C_arguments": "TUT_class1 * self", 
+                        "C_call_list": "", 
+                        "C_name": "TUT_class1_method1", 
+                        "C_object": "Class1 *selfobj = static_cast<Class1 *>(self);", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "self", 
+                        "F_C_name": "tut_class1_method1", 
+                        "F_C_subprogram": "subroutine", 
+                        "F_arg_c_call": "obj%voidptr", 
+                        "F_arg_c_call_tab": "\tobj%voidptr", 
+                        "F_arguments": "obj", 
+                        "F_instance_ptr": "obj%voidptr", 
+                        "F_name_generic": "method1", 
+                        "F_name_impl": "class1_method1", 
+                        "F_name_method": "method1", 
+                        "F_subprogram": "subroutine", 
+                        "PY_name_impl": "PY_class1_method1", 
+                        "method_name": "Method1", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "method1"
+                    }, 
+                    "options": {}, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "Method1", 
+                        "type": "void"
+                    }
+                }
+            ], 
+            "name": "Class1", 
+            "options": {}
+        }
+    ], 
+    "fmt": {
+        "BBB": "BBB", 
+        "C_const": "", 
+        "C_header_filename": "wrapTutorial.h", 
+        "C_impl_filename": "wrapTutorial.cpp", 
+        "C_prefix": "TUT_", 
+        "C_this": "self", 
+        "F_C_pure_clause": "", 
+        "F_C_result_clause": "", 
+        "F_derived_member": "voidptr", 
+        "F_impl_filename": "wrapftutorial.f", 
+        "F_instance_ptr": "obj%voidptr", 
+        "F_module_name": "tutorial_mod", 
+        "F_pure_clause": "", 
+        "F_result": "rv", 
+        "F_result_clause": "", 
+        "F_this": "obj", 
+        "PY_header_filename": "pyTutorialmodule.hpp", 
+        "PY_helper_filename": "pyTutorialhelper.cpp", 
+        "PY_library_doc": "library documentation", 
+        "PY_module_filename": "pyTutorialmodule.cpp", 
+        "PY_module_name": "tutorial", 
+        "PY_prefix": "PY_", 
+        "function_suffix": "", 
+        "library": "Tutorial", 
+        "lower_library": "tutorial", 
+        "overloaded": false, 
+        "rv": "rv", 
+        "upper_library": "TUTORIAL"
+    }, 
+    "functions": [
+        {
+            "args": [], 
+            "decl": "void Function1()", 
+            "fmt": {
+                "CPP_name": "Function1", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "", 
+                "C_call_list": "", 
+                "C_name": "TUT_function1", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "", 
+                "F_C_name": "tut_function1", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function1", 
+                "F_name_impl": "function1", 
+                "F_name_method": "function1", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function1", 
+                "method_name": "Function1", 
+                "rv_decl": "void rv", 
+                "underscore_name": "function1"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function1", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "double Function2(double arg1, int arg2)", 
+            "fmt": {
+                "CPP_name": "Function2", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "double arg1, int arg2", 
+                "C_call_list": "arg1, arg2", 
+                "C_name": "TUT_function2", 
+                "C_object": "", 
+                "C_return_type": "double", 
+                "F_C_arguments": "arg1, arg2", 
+                "F_C_name": "tut_function2", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "arg1, arg2", 
+                "F_arg_c_call_tab": "\targ1\targ2", 
+                "F_arguments": "arg1, arg2", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function2", 
+                "F_name_impl": "function2", 
+                "F_name_method": "function2", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "PY_name_impl": "PY_function2", 
+                "method_name": "Function2", 
+                "rv_decl": "double rv", 
+                "underscore_name": "function2"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function2", 
+                "type": "double"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "bool"
+                }
+            ], 
+            "decl": "bool Function3(bool arg)", 
+            "fmt": {
+                "CPP_name": "Function3", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "bool arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function3", 
+                "C_object": "", 
+                "C_return_type": "bool", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function3", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "logicaltobool(arg)", 
+                "F_arg_c_call_tab": "\tlogicaltobool(arg)", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function3", 
+                "F_name_impl": "function3", 
+                "F_name_method": "function3", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "PY_name_impl": "PY_function3", 
+                "method_name": "Function3", 
+                "rv_decl": "bool rv", 
+                "underscore_name": "function3"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function3", 
+                "type": "bool"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)", 
+            "fmt": {
+                "CPP_name": "Function4a", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * arg1, const char * arg2", 
+                "C_call_list": "arg1, arg2", 
+                "C_const": "const ", 
+                "C_name": "TUT_function4a", 
+                "C_object": "", 
+                "C_return_type": "const char *", 
+                "F_C_arguments": "arg1, arg2", 
+                "F_C_name": "tut_function4a", 
+                "F_C_pure_clause": "pure ", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR", 
+                "F_arg_c_call_tab": "\ttrim(arg1) // C_NULL_CHAR\ttrim(arg2) // C_NULL_CHAR", 
+                "F_arguments": "arg1, arg2", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function4a", 
+                "F_name_impl": "function4a", 
+                "F_name_method": "function4a", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "PY_name_impl": "PY_function4a", 
+                "method_name": "Function4a", 
+                "rv_decl": "const std::string & rv", 
+                "rvlen": "strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))", 
+                "underscore_name": "function4a"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "pure": true, 
+                    "reference": true
+                }, 
+                "name": "Function4a", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "fmt": {
+                "CPP_name": "Function4b", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * arg1, const char * arg2", 
+                "C_call_list": "arg1, arg2", 
+                "C_const": "const ", 
+                "C_name": "TUT_function4b", 
+                "C_object": "", 
+                "C_return_type": "const char *", 
+                "F_C_arguments": "arg1, arg2", 
+                "F_C_name": "tut_function4b", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR", 
+                "F_arg_c_call_tab": "\ttrim(arg1) // C_NULL_CHAR\ttrim(arg2) // C_NULL_CHAR", 
+                "F_arguments": "arg1, arg2, rv", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function4b", 
+                "F_name_impl": "function4b", 
+                "F_name_method": "function4b", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function4b", 
+                "method_name": "Function4b", 
+                "rv_decl": "const std::string & rv", 
+                "underscore_name": "function4b"
+            }, 
+            "options": {
+                "F_string_result_as_arg": true
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "Function4b", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "default": 3.13, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "default": 5, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "double Function5(double arg1 = 3.13, int arg2 = 5)", 
+            "fmt": {
+                "CPP_name": "Function5", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "double arg1, int arg2", 
+                "C_call_list": "arg1, arg2", 
+                "C_name": "TUT_function5", 
+                "C_object": "", 
+                "C_return_type": "double", 
+                "F_C_arguments": "arg1, arg2", 
+                "F_C_name": "tut_function5", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "arg1, arg2", 
+                "F_arg_c_call_tab": "\targ1\targ2", 
+                "F_arguments": "arg1, arg2", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5", 
+                "F_name_method": "function5", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "PY_name_impl": "PY_function5", 
+                "method_name": "Function5", 
+                "rv_decl": "double rv", 
+                "underscore_name": "function5"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "void Function6(const std::string& name)", 
+            "fmt": {
+                "CPP_name": "Function6", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * name", 
+                "C_call_list": "name", 
+                "C_name": "TUT_function6_from_name", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "name", 
+                "F_C_name": "tut_function6_from_name", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
+                "F_arg_c_call_tab": "\ttrim(name) // C_NULL_CHAR", 
+                "F_arguments": "name", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function6", 
+                "F_name_impl": "function6_from_name", 
+                "F_name_method": "function6_from_name", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function6_from_name", 
+                "function_suffix": "_from_name", 
+                "method_name": "Function6", 
+                "rv_decl": "void rv", 
+                "underscore_name": "function6"
+            }, 
+            "function_suffix": "_from_name", 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "indx", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "void Function6(int indx)", 
+            "fmt": {
+                "CPP_name": "Function6", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "int indx", 
+                "C_call_list": "indx", 
+                "C_name": "TUT_function6_from_index", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "indx", 
+                "F_C_name": "tut_function6_from_index", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "indx", 
+                "F_arg_c_call_tab": "\tindx", 
+                "F_arguments": "indx", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function6", 
+                "F_name_impl": "function6_from_index", 
+                "F_name_method": "function6_from_index", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function6_from_index", 
+                "function_suffix": "_from_index", 
+                "method_name": "Function6", 
+                "rv_decl": "void rv", 
+                "underscore_name": "function6"
+            }, 
+            "function_suffix": "_from_index", 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {}, 
+                    "name": "arg", 
+                    "type": "ArgType"
+                }
+            ], 
+            "cpp_template": {
+                "ArgType": [
+                    "int", 
+                    "double"
+                ]
+            }, 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "method_name": "Function7", 
+                "underscore_name": "function7"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [], 
+            "cpp_template": {
+                "RetType": [
+                    "int", 
+                    "double"
+                ]
+            }, 
+            "decl": "RetType Function8()", 
+            "fmt": {
+                "method_name": "Function8", 
+                "underscore_name": "function8"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "RetType"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "decl": "void Function9(double arg)", 
+            "fmt": {
+                "CPP_name": "Function9", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "double arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function9", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function9", 
+                "F_C_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function9", 
+                "method_name": "Function9", 
+                "rv_decl": "void rv", 
+                "underscore_name": "function9"
+            }, 
+            "fortran_generic": {
+                "arg": [
+                    "float", 
+                    "double"
+                ]
+            }, 
+            "options": {
+                "wrap_fortran": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function9", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "CPP_name": "Function7", 
+                "CPP_template": "<int>", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "int arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function7_int", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function7_int", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "arg", 
+                "F_arg_c_call_tab": "\targ", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function7", 
+                "F_name_impl": "function7_int", 
+                "F_name_method": "function7_int", 
+                "F_subprogram": "subroutine", 
+                "function_suffix": "_int", 
+                "rv_decl": "void rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "CPP_name": "Function7", 
+                "CPP_template": "<double>", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "double arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function7_double", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function7_double", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "arg", 
+                "F_arg_c_call_tab": "\targ", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function7", 
+                "F_name_impl": "function7_double", 
+                "F_name_method": "function7_double", 
+                "F_subprogram": "subroutine", 
+                "function_suffix": "_double", 
+                "rv_decl": "void rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [], 
+            "decl": "RetType Function8()", 
+            "fmt": {
+                "CPP_name": "Function8", 
+                "CPP_return_templated": true, 
+                "CPP_template": "<int>", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "", 
+                "C_call_list": "", 
+                "C_name": "TUT_function8_int", 
+                "C_object": "", 
+                "C_return_type": "int", 
+                "F_C_arguments": "", 
+                "F_C_name": "tut_function8_int", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function8", 
+                "F_name_impl": "function8_int", 
+                "F_name_method": "function8_int", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "function_suffix": "_int", 
+                "rv_decl": "int rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "int"
+            }
+        }, 
+        {
+            "args": [], 
+            "decl": "RetType Function8()", 
+            "fmt": {
+                "CPP_name": "Function8", 
+                "CPP_return_templated": true, 
+                "CPP_template": "<double>", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "", 
+                "C_call_list": "", 
+                "C_name": "TUT_function8_double", 
+                "C_object": "", 
+                "C_return_type": "double", 
+                "F_C_arguments": "", 
+                "F_C_name": "tut_function8_double", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function8", 
+                "F_name_impl": "function8_double", 
+                "F_name_method": "function8_double", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "function_suffix": "_double", 
+                "rv_decl": "double rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "double"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "cast": "real({var}, C_DOUBLE)", 
+                    "name": "arg", 
+                    "type": "float"
+                }
+            ], 
+            "decl": "void Function9(double arg)", 
+            "fmt": {
+                "F_arg_c_call": "real(arg, C_DOUBLE)", 
+                "F_arg_c_call_tab": "\treal(arg, C_DOUBLE)", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function9", 
+                "F_name_impl": "function9_float", 
+                "F_name_method": "function9_float", 
+                "F_subprogram": "subroutine", 
+                "PTR_F_C_node": {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "arg", 
+                            "type": "double"
+                        }
+                    ], 
+                    "decl": "void Function9(double arg)", 
+                    "fmt": {
+                        "CPP_name": "Function9", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "", 
+                        "C_arguments": "double arg", 
+                        "C_call_list": "arg", 
+                        "C_name": "TUT_function9", 
+                        "C_object": "", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "arg", 
+                        "F_C_name": "tut_function9", 
+                        "F_C_subprogram": "subroutine", 
+                        "PY_name_impl": "PY_function9", 
+                        "method_name": "Function9", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "function9"
+                    }, 
+                    "fortran_generic": {
+                        "arg": [
+                            "float", 
+                            "double"
+                        ]
+                    }, 
+                    "options": {
+                        "wrap_fortran": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "Function9", 
+                        "type": "void"
+                    }
+                }, 
+                "function_suffix": "_float"
+            }, 
+            "generated": "fortran_generic", 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function9", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "cast": "real({var}, C_DOUBLE)", 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "decl": "void Function9(double arg)", 
+            "fmt": {
+                "F_arg_c_call": "real(arg, C_DOUBLE)", 
+                "F_arg_c_call_tab": "\treal(arg, C_DOUBLE)", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function9", 
+                "F_name_impl": "function9_double", 
+                "F_name_method": "function9_double", 
+                "F_subprogram": "subroutine", 
+                "PTR_F_C_node": {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "arg", 
+                            "type": "double"
+                        }
+                    ], 
+                    "decl": "void Function9(double arg)", 
+                    "fmt": {
+                        "CPP_name": "Function9", 
+                        "CPP_this": "selfobj", 
+                        "CPP_this_call": "", 
+                        "C_arguments": "double arg", 
+                        "C_call_list": "arg", 
+                        "C_name": "TUT_function9", 
+                        "C_object": "", 
+                        "C_return_type": "void", 
+                        "F_C_arguments": "arg", 
+                        "F_C_name": "tut_function9", 
+                        "F_C_subprogram": "subroutine", 
+                        "PY_name_impl": "PY_function9", 
+                        "method_name": "Function9", 
+                        "rv_decl": "void rv", 
+                        "underscore_name": "function9"
+                    }, 
+                    "fortran_generic": {
+                        "arg": [
+                            "float", 
+                            "double"
+                        ]
+                    }, 
+                    "options": {
+                        "wrap_fortran": false
+                    }, 
+                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "Function9", 
+                        "type": "void"
+                    }
+                }, 
+                "function_suffix": "_double"
+            }, 
+            "generated": "fortran_generic", 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function9", 
+                "type": "void"
+            }
+        }
+    ], 
+    "options": {
+        "F_module_per_class": false, 
+        "cpp_header": "tutorial.hpp", 
+        "library": "Tutorial", 
+        "namespace": "tutorial", 
+        "wrap_c": true, 
+        "wrap_fortran": true, 
+        "wrap_python": true
+    }, 
+    "patterns": [], 
+    "types": {
+        "Class1": {
+            "PY_PyObject": "PY_Class1", 
+            "PY_PyTypeObject": "PY_Class1_Type", 
+            "PY_from_object": "PP_Class1_from_Object", 
+            "PY_to_object": "PP_Class1_to_Object", 
+            "base": "wrapped", 
+            "c_fortran": "type(C_PTR)", 
+            "c_to_cpp": "static_cast<Class1{ptr}>({var})", 
+            "c_type": "TUT_class1", 
+            "cpp_type": "Class1", 
+            "f_module": {
+                "tutorial_mod": [
+                    "class1"
+                ]
+            }, 
+            "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "type(class1)", 
+            "fortran_derived": "class1", 
+            "fortran_to_c": "{var}%{F_derived_member}", 
+            "forward": "Class1"
+        }, 
+        "bool": {
+            "PY_ctor": "PyBool_FromLong({rv})", 
+            "c_fortran": "logical(C_BOOL)", 
+            "c_type": "bool", 
+            "cpp_type": "bool", 
+            "f_kind": "C_BOOL", 
+            "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "logical", 
+            "fortran_to_c": "logicaltobool({var})"
+        }, 
+        "double": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "float": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "int": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_INT)": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_LONG)": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "long": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "real(C_DOUBLE)": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "real(C_FLOAT)": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "size_t": {
+            "PY_ctor": "PyInt_FromLong({rv})", 
+            "c_fortran": "integer(C_SIZE_T)", 
+            "c_header": "stdlib.h", 
+            "c_type": "size_t", 
+            "cpp_type": "size_t", 
+            "f_cast": "int({var}, C_SIZE_T)", 
+            "f_kind": "C_SIZE_T", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_SIZE_T"
+                ]
+            }, 
+            "f_type": "integer(C_SIZE_T)"
+        }, 
+        "std::string": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "string": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "void": {
+            "c_fortran": "type(C_PTR)", 
+            "c_type": "void", 
+            "cpp_type": "void", 
+            "f_type": "type(C_PTR)"
+        }
+    }
+}

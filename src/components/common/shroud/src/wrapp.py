@@ -397,10 +397,10 @@ return 1;""", fmt)
 
         if cls:
             util.eval_template(options, fmt_func,
-                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
+                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{function_suffix}')
         else:
             util.eval_template(options, fmt_func,
-                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
+                               'PY_name_impl', '{PY_prefix}{underscore_name}{function_suffix}')
 
         self.create_method(cls, fmt, PY_impl)
 
@@ -421,15 +421,15 @@ static PyObject *
         body.append('  PyObject *args,')
         body.append('  PyObject *kwds)')
         body.append('{')
-# use method_suffix in splicer name since a single C++ function may
+# use function_suffix in splicer name since a single C++ function may
 # produce several methods.
 # XXX - make splicer name customizable?
 #        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
-        self._create_splicer(fmt.underscore_name + fmt.method_suffix,
+        self._create_splicer(fmt.underscore_name + fmt.function_suffix,
                              self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
-        self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+        self.PyMethodDef.append( wformat('{{"{CPP_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
     def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
@@ -522,7 +522,7 @@ static PyObject *
 
             fmt_func = methods[0]['fmt']
             fmt = util.Options(fmt_func)
-            fmt.method_suffix = ''
+            fmt.function_suffix = ''
             fmt.doc_string = 'documentation'
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
 #            fmt.CPP_name = method

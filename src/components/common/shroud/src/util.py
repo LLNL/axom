@@ -13,13 +13,13 @@ import parse_decl
 fmt = string.Formatter()
 
 default_template = dict(
-#    C_name='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+#    C_name='{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
 
 #    C_header_filename = 'wrap{cpp_class}.h',
 #    C_impl_filename = 'wrap{cpp_class}.cpp',
 
-#    F_name_impl = '{lower_class}_{underscore_name}{method_suffix}',
-#    F_name_method = '{underscore_name}{method_suffix}',
+#    F_name_impl = '{lower_class}_{underscore_name}{function_suffix}',
+#    F_name_method = '{underscore_name}{function_suffix}',
 #    F_name_generic = '{underscore_name}',
 )
 
@@ -404,7 +404,7 @@ class XXXFunctionNode(object):
         self.decl = None
         self.result = {}
         self.args = []
-        self.method_suffix = ''
+        self.function_suffix = ''
         self.arg_map = {}
 
     def set_decl(self, decl):

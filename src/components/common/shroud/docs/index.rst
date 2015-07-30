@@ -11,6 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   introduction
+   tutorial
+   options
+   previouswork
+   futurework
 
 
 Indices and tables

@@ -16,7 +16,7 @@ options:
   library: UserLibrary
   C_prefix: AA_
   namespace: example nested
-#  F_module_per_class: False
+  F_module_per_class: True
   # include files to add to module
 
   PY_prefix: PP_
@@ -96,7 +96,7 @@ classes:
     - decl: ExClass2 *getRoot()
 
     - decl: int  getValue(int value)
-      method_suffix: _from_int
+      function_suffix: _from_int
     - decl: long getValue(long value)
 
     - decl: void *getAddr()

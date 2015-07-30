@@ -54,6 +54,7 @@ class Wrapf(util.WrapperMixin):
         """Start a new class for output"""
         self.f_type_decl = []
         self.c_interface = []
+        self.generic_interface = []
         self.impl = []         # implementation, after contains
         self.operator_impl = []
         self.operator_map = {} # list of function names by operator
@@ -67,6 +68,8 @@ class Wrapf(util.WrapperMixin):
 
     def _begin_class(self):
         self.f_type_generic = {} # look for generic methods
+        self.type_bound_part = []
+
 
     def _c_type(self, arg):
         """
@@ -186,11 +189,31 @@ class Wrapf(util.WrapperMixin):
         self._pop_splicer('class')
 
         if self.tree['functions']:
+            self._begin_class()  # clear out old class info
             if options.F_module_per_class:
                 self._begin_output_file()
             self.tree['F_module_dependencies'] = []
             for node in self.tree['functions']:
                 self.wrap_method(None, node)
+
+            # Look for generics
+            # splicer to extend generic
+            self._push_splicer('generic')
+            iface = self.generic_interface
+            for key in sorted(self.f_type_generic.keys()):
+                generics = self.f_type_generic[key]
+                if len(generics) > 1:
+                    self._push_splicer(key)
+                    iface.append('')
+                    iface.append('interface ' + key)
+                    iface.append(1)
+                    for genname in generics:
+                        iface.append('module procedure ' + genname)
+                    iface.append(-1)
+                    iface.append('end interface ' + key)
+                    self._pop_splicer(key)
+            self._pop_splicer('generic')
+
             if options.F_module_per_class:
                 self._end_output_file()
                 self.write_module(self.tree)
@@ -216,8 +239,6 @@ class Wrapf(util.WrapperMixin):
         fmt_class.F_derived_name = typedef.fortran_derived
         if 'F_this' in options:
             fmt_class.F_this = options.F_this
-
-        self.type_bound_part = []
 
         # wrap methods
         self._push_splicer(fmt_class.cpp_class)
@@ -375,6 +396,7 @@ class Wrapf(util.WrapperMixin):
         result_typedef = self.typedef[result_type]
         is_ctor  = result['attrs'].get('constructor', False)
         is_const = result['attrs'].get('const', False)
+        is_pure  = result['attrs'].get('pure', False)
 
         if 'F_result' in options:
             fmt_func.F_result = options.F_result
@@ -398,7 +420,7 @@ class Wrapf(util.WrapperMixin):
         else:
             fmt_func.F_C_subprogram = 'function'
             fmt_func.F_C_result_clause = ' result(%s)' % F_result
-            if func_is_const:
+            if is_pure or func_is_const:
                 fmt_func.F_C_pure_clause = 'pure '
 
         if cls:
@@ -496,12 +518,12 @@ class Wrapf(util.WrapperMixin):
 
         if cls:
             util.eval_template(options, fmt_func,
-                               'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
+                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
         else:
             util.eval_template(options, fmt_func,
-                               'F_name_impl', '{underscore_name}{method_suffix}')
+                               'F_name_impl', '{underscore_name}{function_suffix}')
         util.eval_template(options, fmt_func,
-                            'F_name_method', '{underscore_name}{method_suffix}')
+                            'F_name_method', '{underscore_name}{function_suffix}')
         util.eval_template(options, fmt_func,
                             'F_name_generic', '{underscore_name}')
 
@@ -592,7 +614,8 @@ class Wrapf(util.WrapperMixin):
         if not is_ctor:
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
-            if not fmt_func.get('CPP_template', None):
+#            if not fmt_func.get('CPP_template', None):
+            if not fmt_func.get('CPP_return_templated', False):
                 # if return type is templated in C++, then do not set up generic
                 # since only the return type may be different (ex. getValue<T>())
                 self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
@@ -704,6 +727,7 @@ class Wrapf(util.WrapperMixin):
             output.append('')
 
         output.extend(self.c_interface)
+        output.extend(self.generic_interface)
 
         output.append(-1)
         output.append('')
