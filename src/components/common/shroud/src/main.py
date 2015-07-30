@@ -464,6 +464,7 @@ class Schema(object):
             raise TypeError("functions must be a list")
         for func in node:
             self.check_function(func)
+        self.define_function_suffix(node)
 
     def check_class_dependencies(self, node):
         """

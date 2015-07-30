@@ -15,12 +15,12 @@ OBJS = \
 
 VPATH = $(WRAPDIR)
 
-all : ctest ftest
+all : testc testf
 
-ctest : ctest.o libtutorial.a
+testc : ctest.o libtutorial.a
 	$(CXX) $^ -L. -ltutorial -o $@
 
-ftest : ftest.o libtutorial.a
+testf : ftest.o libtutorial.a
 	$(FC) $^ -L. -ltutorial -lstdc++ -o $@
 
 ftest.o : wrapftutorial.o
@@ -31,4 +31,4 @@ libtutorial.a : $(OBJS)
 
 .PHONY : clean
 clean :
-	rm -rf *~ *.o *.mod *.a ctest ftest
+	rm -rf *~ *.o *.mod *.a testc testf

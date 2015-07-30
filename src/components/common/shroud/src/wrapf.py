@@ -54,6 +54,7 @@ class Wrapf(util.WrapperMixin):
         """Start a new class for output"""
         self.f_type_decl = []
         self.c_interface = []
+        self.generic_interface = []
         self.impl = []         # implementation, after contains
         self.operator_impl = []
         self.operator_map = {} # list of function names by operator
@@ -194,6 +195,25 @@ class Wrapf(util.WrapperMixin):
             self.tree['F_module_dependencies'] = []
             for node in self.tree['functions']:
                 self.wrap_method(None, node)
+
+            # Look for generics
+            # splicer to extend generic
+            self._push_splicer('generic')
+            iface = self.generic_interface
+            for key in sorted(self.f_type_generic.keys()):
+                generics = self.f_type_generic[key]
+                if len(generics) > 1:
+                    self._push_splicer(key)
+                    iface.append('')
+                    iface.append('interface ' + key)
+                    iface.append(1)
+                    for genname in generics:
+                        iface.append('module procedure ' + genname)
+                    iface.append(-1)
+                    iface.append('end interface ' + key)
+                    self._pop_splicer(key)
+            self._pop_splicer('generic')
+
             if options.F_module_per_class:
                 self._end_output_file()
                 self.write_module(self.tree)
@@ -706,6 +726,7 @@ class Wrapf(util.WrapperMixin):
             output.append('')
 
         output.extend(self.c_interface)
+        output.extend(self.generic_interface)
 
         output.append(-1)
         output.append('')

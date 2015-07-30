@@ -98,7 +98,26 @@ module tutorial_mod
             integer(C_INT), value, intent(IN) :: arg2
             real(C_DOUBLE) :: rv
         end function tut_function5
+        
+        subroutine tut_function6_0(name) &
+                bind(C, name="TUT_function6_0")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+        end subroutine tut_function6_0
+        
+        subroutine tut_function6_1(indx) &
+                bind(C, name="TUT_function6_1")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: indx
+        end subroutine tut_function6_1
     end interface
+    
+    interface function6
+        module procedure function6_0
+        module procedure function6_1
+    end interface function6
 
 contains
     
@@ -200,6 +219,24 @@ contains
             arg2)
         ! splicer end function5
     end function function5
+    
+    subroutine function6_0(name)
+        use iso_c_binding
+        implicit none
+        character(*) :: name
+        ! splicer begin function6_0
+        call tut_function6_0(trim(name) // C_NULL_CHAR)
+        ! splicer end function6_0
+    end subroutine function6_0
+    
+    subroutine function6_1(indx)
+        use iso_c_binding
+        implicit none
+        integer(C_INT) :: indx
+        ! splicer begin function6_1
+        call tut_function6_1(indx)
+        ! splicer end function6_1
+    end subroutine function6_1
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

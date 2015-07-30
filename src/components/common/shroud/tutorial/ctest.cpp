@@ -17,4 +17,7 @@ int main(int argc, char *argv[])
     // Integer and Real
     double rv2 = tutorial::Function2(1.5, 2);
 
+    tutorial::Function6("name");
+    tutorial::Function6(1);
+
 }

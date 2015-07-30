@@ -30,6 +30,10 @@ const char * TUT_function4b(const char * arg1, const char * arg2);
 
 double TUT_function5(double arg1, int arg2);
 
+void TUT_function6_0(const char * name);
+
+void TUT_function6_1(int indx);
+
 #ifdef __cplusplus
 }
 #endif

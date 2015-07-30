@@ -42,5 +42,17 @@ double Function5(double arg1, int arg2)
     return arg1 + arg2;
 }
 
+void Function6(const std::string &name)
+{
+    return;
+}
+
+void Function6(int indx)
+{
+    return;
+}
+
+
+
 
 }  // namespace

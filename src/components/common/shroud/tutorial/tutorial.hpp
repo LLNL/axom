@@ -15,6 +15,9 @@ const std::string& Function4b(const std::string& arg1, const std::string& arg2);
 
 double Function5(double arg1 = 3.13, int arg2 = 5);
 
+void Function6(const std::string &name);
+void Function6(int indx);
+
 class Class1
 {
 public:

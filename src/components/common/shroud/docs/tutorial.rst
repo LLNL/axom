@@ -305,6 +305,10 @@ Fortran usage::
 Overloaded Functions
 --------------------
 
+C++ allows function names to be overloaded.  Fortran supports this using a ``generic`` interface.
+The C and Fortran wrappers will generated a wrapper for each C++ function but must mangle the name
+to distinguish the names.
+
 Templates
 ---------
 

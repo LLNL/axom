@@ -462,6 +462,100 @@
                 "name": "Function5", 
                 "type": "double"
             }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "decl": "void Function6(const std::string& name)", 
+            "fmt": {
+                "CPP_name": "Function6", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "const char * name", 
+                "C_call_list": "name", 
+                "C_name": "TUT_function6_0", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "name", 
+                "F_C_name": "tut_function6_0", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
+                "F_arg_c_call_tab": "\ttrim(name) // C_NULL_CHAR", 
+                "F_arguments": "name", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function6", 
+                "F_name_impl": "function6_0", 
+                "F_name_method": "function6_0", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function6_0", 
+                "method_name": "Function6", 
+                "method_suffix": "_0", 
+                "rv_decl": "void rv", 
+                "underscore_name": "function6"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "indx", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "void Function6(int indx)", 
+            "fmt": {
+                "CPP_name": "Function6", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "int indx", 
+                "C_call_list": "indx", 
+                "C_name": "TUT_function6_1", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "indx", 
+                "F_C_name": "tut_function6_1", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "indx", 
+                "F_arg_c_call_tab": "\tindx", 
+                "F_arguments": "indx", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function6", 
+                "F_name_impl": "function6_1", 
+                "F_name_method": "function6_1", 
+                "F_subprogram": "subroutine", 
+                "PY_name_impl": "PY_function6_1", 
+                "method_name": "Function6", 
+                "method_suffix": "_1", 
+                "rv_decl": "void rv", 
+                "underscore_name": "function6"
+            }, 
+            "options": {}, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
         }
     ], 
     "options": {

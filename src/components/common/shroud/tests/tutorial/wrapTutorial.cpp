@@ -56,6 +56,22 @@ return rv;
 // splicer end function.function5
 }
 
+void TUT_function6_0(const char * name)
+{
+// splicer begin function.function6_0
+Function6(name);
+return;
+// splicer end function.function6_0
+}
+
+void TUT_function6_1(int indx)
+{
+// splicer begin function.function6_1
+Function6(indx);
+return;
+// splicer end function.function6_1
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 
