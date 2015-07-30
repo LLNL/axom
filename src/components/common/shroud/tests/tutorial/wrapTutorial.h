@@ -34,6 +34,10 @@ void TUT_function6_from_name(const char * name);
 
 void TUT_function6_from_index(int indx);
 
+int TUT_function8_int();
+
+double TUT_function8_double();
+
 #ifdef __cplusplus
 }
 #endif

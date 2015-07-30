@@ -18,6 +18,12 @@ double Function5(double arg1 = 3.13, int arg2 = 5);
 void Function6(const std::string &name);
 void Function6(int indx);
 
+template<typename ArgType>
+ArgType Function8()
+{
+    return 0;
+}
+
 class Class1
 {
 public:

@@ -357,6 +357,45 @@ They can be used as::
 Templates
 ---------
 
+C++ template are handled by creating a wrapper for each type that may be used with the template.
+The C and Fortran names are mangled by adding a type suffix to the function name.
+
+C++::
+
+  template<typename ArgType>
+  ArgType Function8()
+  {
+      return 0;
+  }
+
+YAML::
+
+  - decl: ArgType Function8()
+    cpp_template:
+      ArgType:
+        - int
+        - double
+
+C wrapper::
+
+    int TUT_function8_int()
+    {
+      int rv = Function8<int>();
+      return rv;
+    }
+
+    double TUT_function8_double()
+    {
+      double rv = Function8<double>();
+      return rv;
+    }
+
+A Fortran interface block may not be generated since generic function cannot differ only by type.
+
+
+
+
+
 Types
 -----
 

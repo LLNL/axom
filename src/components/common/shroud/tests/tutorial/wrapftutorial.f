@@ -112,6 +112,20 @@ module tutorial_mod
             implicit none
             integer(C_INT), value, intent(IN) :: indx
         end subroutine tut_function6_from_index
+        
+        function tut_function8_int() result(rv) &
+                bind(C, name="TUT_function8_int")
+            use iso_c_binding
+            implicit none
+            integer(C_INT) :: rv
+        end function tut_function8_int
+        
+        function tut_function8_double() result(rv) &
+                bind(C, name="TUT_function8_double")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE) :: rv
+        end function tut_function8_double
     end interface
     
     interface function6
@@ -237,6 +251,24 @@ contains
         call tut_function6_from_index(indx)
         ! splicer end function6_from_index
     end subroutine function6_from_index
+    
+    function function8_int() result(rv)
+        use iso_c_binding
+        implicit none
+        integer(C_INT) :: rv
+        ! splicer begin function8_int
+        rv = tut_function8_int()
+        ! splicer end function8_int
+    end function function8_int
+    
+    function function8_double() result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE) :: rv
+        ! splicer begin function8_double
+        rv = tut_function8_double()
+        ! splicer end function8_double
+    end function function8_double
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

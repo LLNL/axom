@@ -23,6 +23,8 @@ testc : ctest.o libtutorial.a
 testf : ftest.o libtutorial.a
 	$(FC) $^ -L. -ltutorial -lstdc++ -o $@
 
+tutorial.o : tutorial.hpp
+
 ftest.o : wrapftutorial.o
 wrapftutorial.o : fstr_mod.o
 

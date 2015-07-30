@@ -558,6 +558,115 @@
                 "name": "Function6", 
                 "type": "void"
             }
+        }, 
+        {
+            "args": [], 
+            "cpp_template": {
+                "ArgType": [
+                    "int", 
+                    "double"
+                ]
+            }, 
+            "decl": "ArgType Function8()", 
+            "fmt": {
+                "method_name": "Function8", 
+                "underscore_name": "function8"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "ArgType"
+            }
+        }, 
+        {
+            "args": [], 
+            "decl": "ArgType Function8()", 
+            "fmt": {
+                "CPP_name": "Function8", 
+                "CPP_template": "<int>", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "", 
+                "C_call_list": "", 
+                "C_name": "TUT_function8_int", 
+                "C_object": "", 
+                "C_return_type": "int", 
+                "F_C_arguments": "", 
+                "F_C_name": "tut_function8_int", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function8", 
+                "F_name_impl": "function8_int", 
+                "F_name_method": "function8_int", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "function_suffix": "_int", 
+                "rv_decl": "int rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "int"
+            }
+        }, 
+        {
+            "args": [], 
+            "decl": "ArgType Function8()", 
+            "fmt": {
+                "CPP_name": "Function8", 
+                "CPP_template": "<double>", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "", 
+                "C_call_list": "", 
+                "C_name": "TUT_function8_double", 
+                "C_object": "", 
+                "C_return_type": "double", 
+                "F_C_arguments": "", 
+                "F_C_name": "tut_function8_double", 
+                "F_C_result_clause": " result(rv)", 
+                "F_C_subprogram": "function", 
+                "F_arg_c_call": "", 
+                "F_arg_c_call_tab": "\t", 
+                "F_arguments": "", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function8", 
+                "F_name_impl": "function8_double", 
+                "F_name_method": "function8_double", 
+                "F_result_clause": " result(rv)", 
+                "F_subprogram": "function", 
+                "function_suffix": "_double", 
+                "rv_decl": "double rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function8", 
+                "type": "double"
+            }
         }
     ], 
     "options": {

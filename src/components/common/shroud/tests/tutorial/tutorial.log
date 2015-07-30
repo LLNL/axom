@@ -12,6 +12,8 @@ C function const std::string& Function4b(const std::string& arg1, const std::str
 C function double Function5(double arg1 = 3.13, int arg2 = 5)
 C function void Function6(const std::string& name)
 C function void Function6(int indx)
+C function ArgType Function8()
+C function ArgType Function8()
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 class Class1
@@ -25,6 +27,8 @@ C-interface, Fortran function const std::string& Function4b(const std::string& a
 C-interface, Fortran function double Function5(double arg1 = 3.13, int arg2 = 5)
 C-interface, Fortran function void Function6(const std::string& name)
 C-interface, Fortran function void Function6(int indx)
+C-interface, Fortran function ArgType Function8()
+C-interface, Fortran function ArgType Function8()
 Close wrapftutorial.f
 class Class1
 Python method Class1 *new+constructor

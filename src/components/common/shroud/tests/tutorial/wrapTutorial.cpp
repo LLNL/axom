@@ -72,6 +72,22 @@ return;
 // splicer end function.function6_from_index
 }
 
+int TUT_function8_int()
+{
+// splicer begin function.function8_int
+int rv = Function8<int>();
+return rv;
+// splicer end function.function8_int
+}
+
+double TUT_function8_double()
+{
+// splicer begin function.function8_double
+double rv = Function8<double>();
+return rv;
+// splicer end function.function8_double
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

@@ -23,6 +23,13 @@ functions:
 - decl: void Function6(int indx)
   function_suffix: _from_index
 
+- decl: ArgType Function8()
+  cpp_template:
+    ArgType:
+      - int
+      - double
+
+
 
 classes:
 - name: Class1
