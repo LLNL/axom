@@ -83,6 +83,7 @@ And the Fortran version::
 
     call function1
 
+.. note :: rename module to just tutorial.
 
 
 Arguments
@@ -278,7 +279,7 @@ The different styles are use as::
   character(30) rv4, rv4b
 
   rv4 = function4a("bird", "dog")
-  call  function4b("bird", "dog", rv4b)
+  call function4b("bird", "dog", rv4b)
 
 
 
@@ -299,9 +300,10 @@ Fortran usage::
   print *, "function5", function5()
   print *, "function5", function5(0.0d0)
   print *, "function5", function5(arg2=0)
-  print *, "functino5", function5(2.0d0, 2)
+  print *, "function5", function5(2.0d0, 2)
 
 
+.. note :: implemention needs work
 
 Overloaded Functions
 --------------------
@@ -381,13 +383,13 @@ C wrapper::
 
     void TUT_function7_int(int arg)
     {
-        Function7(arg);
+        Function7<int>(arg);
         return;
     }
     
     void TUT_function7_double(double arg)
     {
-        Function7(arg);
+        Function7<double>(arg);
         return;
     }
 

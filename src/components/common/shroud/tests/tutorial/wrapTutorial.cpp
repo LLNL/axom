@@ -83,7 +83,7 @@ return;
 void TUT_function7_int(int arg)
 {
 // splicer begin function.function7_int
-Function7(arg);
+Function7<int>(arg);
 return;
 // splicer end function.function7_int
 }
@@ -91,7 +91,7 @@ return;
 void TUT_function7_double(double arg)
 {
 // splicer begin function.function7_double
-Function7(arg);
+Function7<double>(arg);
 return;
 // splicer end function.function7_double
 }

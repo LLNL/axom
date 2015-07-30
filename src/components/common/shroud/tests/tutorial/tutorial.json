@@ -674,6 +674,7 @@
             "decl": "void Function7(ArgType arg)", 
             "fmt": {
                 "CPP_name": "Function7", 
+                "CPP_template": "<int>", 
                 "CPP_this": "selfobj", 
                 "CPP_this_call": "", 
                 "C_arguments": "int arg", 
@@ -722,6 +723,7 @@
             "decl": "void Function7(ArgType arg)", 
             "fmt": {
                 "CPP_name": "Function7", 
+                "CPP_template": "<double>", 
                 "CPP_this": "selfobj", 
                 "CPP_this_call": "", 
                 "C_arguments": "double arg", 
@@ -761,6 +763,7 @@
             "decl": "RetType Function8()", 
             "fmt": {
                 "CPP_name": "Function8", 
+                "CPP_return_templated": true, 
                 "CPP_template": "<int>", 
                 "CPP_this": "selfobj", 
                 "CPP_this_call": "", 
@@ -803,6 +806,7 @@
             "decl": "RetType Function8()", 
             "fmt": {
                 "CPP_name": "Function8", 
+                "CPP_return_templated": true, 
                 "CPP_template": "<double>", 
                 "CPP_this": "selfobj", 
                 "CPP_this_call": "", 

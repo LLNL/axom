@@ -27,7 +27,7 @@ program tester
   ! character
   rv4 = function4a("bird", "dog")
   print *, rv4
-  call  function4b("bird", "dog", rv4b)
+  call function4b("bird", "dog", rv4b)
   print *, rv4b
 
 !  print *, "function5", function5()

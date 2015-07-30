@@ -614,7 +614,8 @@ class Wrapf(util.WrapperMixin):
         if not is_ctor:
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
-            if not fmt_func.get('CPP_template', None):
+#            if not fmt_func.get('CPP_template', None):
+            if not fmt_func.get('CPP_return_templated', False):
                 # if return type is templated in C++, then do not set up generic
                 # since only the return type may be different (ex. getValue<T>())
                 self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)

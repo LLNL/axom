@@ -1380,6 +1380,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<int>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, int value", 
@@ -1428,6 +1429,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<long>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, long value", 
@@ -1476,6 +1478,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<float>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, float value", 
@@ -1524,6 +1527,7 @@
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
+                        "CPP_template": "<double>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
                         "C_arguments": "AA_exclass2 * self, double value", 
@@ -1563,6 +1567,7 @@
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_name": "getValue", 
+                        "CPP_return_templated": true, 
                         "CPP_template": "<int>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 
@@ -1605,6 +1610,7 @@
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_name": "getValue", 
+                        "CPP_return_templated": true, 
                         "CPP_template": "<double>", 
                         "CPP_this": "selfobj", 
                         "CPP_this_call": "selfobj->", 

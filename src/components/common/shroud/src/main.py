@@ -404,9 +404,10 @@ class Schema(object):
                 options.wrap_python = False
                 additional_methods.append(new)
                 # Convert typename to type
+                fmt.CPP_template = '<%s>' %  type
                 if new['result']['type'] == typename:
                     new['result']['type'] = type
-                    fmt.CPP_template = '<%s>' %  type
+                    fmt.CPP_return_templated = True
                 for arg in new['args']:
                     if arg['type'] == typename:
                         arg['type'] = type
