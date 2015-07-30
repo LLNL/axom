@@ -74,7 +74,8 @@ The C++ code to call the function::
 
     #include "tutorial.hpp"
 
-    tutorial::Function1();
+    using namespace tutorial;
+    Function1();
 
 And the Fortran version::
 

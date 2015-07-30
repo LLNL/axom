@@ -17,15 +17,15 @@ VPATH = $(WRAPDIR)
 
 all : testc testf
 
-testc : ctest.o libtutorial.a
+testc : testc.o libtutorial.a
 	$(CXX) $^ -L. -ltutorial -o $@
 
-testf : ftest.o libtutorial.a
+testf : testf.o libtutorial.a
 	$(FC) $^ -L. -ltutorial -lstdc++ -o $@
 
 tutorial.o : tutorial.hpp
 
-ftest.o : wrapftutorial.o
+testf.o : wrapftutorial.o
 wrapftutorial.o : fstr_mod.o
 
 libtutorial.a : $(OBJS)
