@@ -560,14 +560,45 @@
             }
         }, 
         {
-            "args": [], 
+            "args": [
+                {
+                    "attrs": {}, 
+                    "name": "arg", 
+                    "type": "ArgType"
+                }
+            ], 
             "cpp_template": {
                 "ArgType": [
                     "int", 
                     "double"
                 ]
             }, 
-            "decl": "ArgType Function8()", 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "method_name": "Function7", 
+                "underscore_name": "function7"
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [], 
+            "cpp_template": {
+                "RetType": [
+                    "int", 
+                    "double"
+                ]
+            }, 
+            "decl": "RetType Function8()", 
             "fmt": {
                 "method_name": "Function8", 
                 "underscore_name": "function8"
@@ -581,12 +612,108 @@
             "result": {
                 "attrs": {}, 
                 "name": "Function8", 
-                "type": "ArgType"
+                "type": "RetType"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "int"
+                }
+            ], 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "CPP_name": "Function7", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "int arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function7_int", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function7_int", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "arg", 
+                "F_arg_c_call_tab": "\targ", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function7", 
+                "F_name_impl": "function7_int", 
+                "F_name_method": "function7_int", 
+                "F_subprogram": "subroutine", 
+                "function_suffix": "_int", 
+                "rv_decl": "void rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg", 
+                    "type": "double"
+                }
+            ], 
+            "decl": "void Function7(ArgType arg)", 
+            "fmt": {
+                "CPP_name": "Function7", 
+                "CPP_this": "selfobj", 
+                "CPP_this_call": "", 
+                "C_arguments": "double arg", 
+                "C_call_list": "arg", 
+                "C_name": "TUT_function7_double", 
+                "C_object": "", 
+                "C_return_type": "void", 
+                "F_C_arguments": "arg", 
+                "F_C_name": "tut_function7_double", 
+                "F_C_subprogram": "subroutine", 
+                "F_arg_c_call": "arg", 
+                "F_arg_c_call_tab": "\targ", 
+                "F_arguments": "arg", 
+                "F_instance_ptr": "obj%voidptr", 
+                "F_name_generic": "function7", 
+                "F_name_impl": "function7_double", 
+                "F_name_method": "function7_double", 
+                "F_subprogram": "subroutine", 
+                "function_suffix": "_double", 
+                "rv_decl": "void rv"
+            }, 
+            "generated": "cpp_template", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function7", 
+                "type": "void"
             }
         }, 
         {
             "args": [], 
-            "decl": "ArgType Function8()", 
+            "decl": "RetType Function8()", 
             "fmt": {
                 "CPP_name": "Function8", 
                 "CPP_template": "<int>", 
@@ -628,7 +755,7 @@
         }, 
         {
             "args": [], 
-            "decl": "ArgType Function8()", 
+            "decl": "RetType Function8()", 
             "fmt": {
                 "CPP_name": "Function8", 
                 "CPP_template": "<double>", 

@@ -113,6 +113,20 @@ module tutorial_mod
             integer(C_INT), value, intent(IN) :: indx
         end subroutine tut_function6_from_index
         
+        subroutine tut_function7_int(arg) &
+                bind(C, name="TUT_function7_int")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: arg
+        end subroutine tut_function7_int
+        
+        subroutine tut_function7_double(arg) &
+                bind(C, name="TUT_function7_double")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: arg
+        end subroutine tut_function7_double
+        
         function tut_function8_int() result(rv) &
                 bind(C, name="TUT_function8_int")
             use iso_c_binding
@@ -132,6 +146,11 @@ module tutorial_mod
         module procedure function6_from_name
         module procedure function6_from_index
     end interface function6
+    
+    interface function7
+        module procedure function7_int
+        module procedure function7_double
+    end interface function7
 
 contains
     
@@ -251,6 +270,24 @@ contains
         call tut_function6_from_index(indx)
         ! splicer end function6_from_index
     end subroutine function6_from_index
+    
+    subroutine function7_int(arg)
+        use iso_c_binding
+        implicit none
+        integer(C_INT) :: arg
+        ! splicer begin function7_int
+        call tut_function7_int(arg)
+        ! splicer end function7_int
+    end subroutine function7_int
+    
+    subroutine function7_double(arg)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE) :: arg
+        ! splicer begin function7_double
+        call tut_function7_double(arg)
+        ! splicer end function7_double
+    end subroutine function7_double
     
     function function8_int() result(rv)
         use iso_c_binding

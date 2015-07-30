@@ -19,7 +19,13 @@ void Function6(const std::string &name);
 void Function6(int indx);
 
 template<typename ArgType>
-ArgType Function8()
+void Function7(ArgType arg)
+{
+    return;
+}
+
+template<typename RetType>
+RetType Function8()
 {
     return 0;
 }

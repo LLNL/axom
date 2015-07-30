@@ -40,4 +40,7 @@ program tester
   call function6("name")
   call function6(1)
 
+  call function7(1)
+  call function7(1.0d0)
+
 end program tester

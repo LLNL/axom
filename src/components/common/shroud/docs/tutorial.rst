@@ -363,16 +363,59 @@ The C and Fortran names are mangled by adding a type suffix to the function name
 C++::
 
   template<typename ArgType>
-  ArgType Function8()
+  void Function7(ArgType arg)
+  {
+      return;
+  }
+
+YAML::
+
+  - decl: void Function7(ArgType arg)
+    cpp_template:
+      ArgType:
+        - int
+        - double
+
+C wrapper::
+
+    void TUT_function7_int(int arg)
+    {
+        Function7(arg);
+        return;
+    }
+    
+    void TUT_function7_double(double arg)
+    {
+        Function7(arg);
+        return;
+    }
+
+The Fortran wrapper will also generate an interface block::
+
+    interface function7
+        module procedure function7_int
+        module procedure function7_double
+    end interface function7
+
+
+Likewise, the return type can be templated but in this case 
+no interface block will be generated since generic function cannot vary
+only by return type.
+
+
+C++::
+
+  template<typename RetType>
+  RetType Function8()
   {
       return 0;
   }
 
 YAML::
 
-  - decl: ArgType Function8()
+  - decl: RetType Function8()
     cpp_template:
-      ArgType:
+      RetType:
         - int
         - double
 
@@ -389,11 +432,6 @@ C wrapper::
       double rv = Function8<double>();
       return rv;
     }
-
-A Fortran interface block may not be generated since generic function cannot differ only by type.
-
-
-
 
 
 Types

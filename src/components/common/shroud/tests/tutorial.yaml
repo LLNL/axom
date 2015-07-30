@@ -23,9 +23,15 @@ functions:
 - decl: void Function6(int indx)
   function_suffix: _from_index
 
-- decl: ArgType Function8()
+- decl: void Function7(ArgType arg)
   cpp_template:
     ArgType:
+      - int
+      - double
+
+- decl: RetType Function8()
+  cpp_template:
+    RetType:
       - int
       - double
 

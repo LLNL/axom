@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
     Function6("name");
     Function6(1);
 
+    Function7<int>(1);
+    Function7<double>(2.0);
+
     int rv8a = Function8<int>();
     double rv8b = Function8<double>();
 }
