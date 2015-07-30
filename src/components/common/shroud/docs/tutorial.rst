@@ -295,6 +295,30 @@ The C wrapper accepts all arguments and passes them to C++.
 It is the Fortran wrapper which provides the default values, not C++.
 But the end result is the same.
 
+Fortra wrapper::
+
+    function function5(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE), optional :: arg1
+        real(C_DOUBLE) :: tmp_arg1
+        integer(C_INT), optional :: arg2
+        integer(C_INT) :: tmp_arg2
+        real(C_DOUBLE) :: rv
+        if (present(arg1)) then
+            tmp_arg1 = arg1
+        else
+            tmp_arg1 = 3.13
+        endif
+        if (present(arg2)) then
+            tmp_arg2 = arg2
+        else
+            tmp_arg2 = 5
+        endif
+        rv = tut_function5(tmp_arg1, tmp_arg2)
+    end function function5
+
+
 Fortran usage::
 
   print *, "function5", function5()
@@ -302,8 +326,6 @@ Fortran usage::
   print *, "function5", function5(arg2=0)
   print *, "function5", function5(2.0d0, 2)
 
-
-.. note :: implemention needs work
 
 Overloaded Functions
 --------------------

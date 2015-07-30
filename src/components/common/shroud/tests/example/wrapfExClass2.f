@@ -265,18 +265,24 @@ contains
         implicit none
         class(exclass2) :: obj
         integer(C_INT), optional :: i
+        integer(C_INT) :: tmp_i
         integer(C_LONG), optional :: j
-        if (.not. present(i)) then
-            i = 1
+        integer(C_LONG) :: tmp_j
+        if (present(i)) then
+            tmp_i = i
+        else
+            tmp_i = 1
         endif
-        if (.not. present(j)) then
-            j = 2
+        if (present(j)) then
+            tmp_j = j
+        else
+            tmp_j = 2
         endif
         ! splicer begin class.ExClass2.method.testoptional
         call aa_exclass2_testoptional(  &
             obj%voidptr,  &
-            i,  &
-            j)
+            tmp_i,  &
+            tmp_j)
         ! splicer end class.ExClass2.method.testoptional
     end subroutine exclass2_testoptional
     
@@ -286,14 +292,17 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: type
         integer(C_INT), optional :: len
-        if (.not. present(len)) then
-            len = 1
+        integer(C_INT) :: tmp_len
+        if (present(len)) then
+            tmp_len = len
+        else
+            tmp_len = 1
         endif
         ! splicer begin class.ExClass2.method.declare_int
         call aa_exclass2_declare(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(tmp_len, C_LONG))
         ! splicer end class.ExClass2.method.declare_int
     end subroutine exclass2_declare_int
     
@@ -303,14 +312,17 @@ contains
         class(exclass2) :: obj
         integer(C_INT) :: type
         integer(C_LONG), optional :: len
-        if (.not. present(len)) then
-            len = 1
+        integer(C_LONG) :: tmp_len
+        if (present(len)) then
+            tmp_len = len
+        else
+            tmp_len = 1
         endif
         ! splicer begin class.ExClass2.method.declare_long
         call aa_exclass2_declare(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(tmp_len, C_LONG))
         ! splicer end class.ExClass2.method.declare_long
     end subroutine exclass2_declare_long
     

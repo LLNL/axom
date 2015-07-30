@@ -119,7 +119,7 @@ class Wrapf(util.WrapperMixin):
             rv += '(*)'
         return rv
 
-    def _f_type(self, arg):
+    def _f_type(self, arg, default=None):
         """
         Return the Fortran type, and array attribute
         pass-by-value default
@@ -141,21 +141,23 @@ class Wrapf(util.WrapperMixin):
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
             t.append(typ)
-            if 'default' in arg['attrs']:
+            if default is None:
+                default = arg['attrs'].get('default', '')
+            if default != '':
                 t.append('optional')
 #            if not (arg['attrs'].get('ptr', False) or
 #                    arg['attrs'].get('reference', False)):
 #                t.append(', value')
             return (', '.join(t), arg['attrs'].get('array', False))
 
-    def _f_decl(self, arg, name=None):
+    def _f_decl(self, arg, name=None, default=None):
         """
         Return the Fortran declaration.
 
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
-        typ, arr = self._f_type(arg)
+        typ, arr = self._f_type(arg, default=default)
         rv = typ + ' :: ' + ( name or arg['name'] )
         if arr:
             rv += '(*)'
@@ -569,20 +571,28 @@ class Wrapf(util.WrapperMixin):
             arg_f_names.append(fmt.var)
             arg_f_decl.append(self._f_decl(arg))
 
+            if 'default' in attrs:
+                fmt.tmp_var = 'tmp_' + fmt.var
+                arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default=''))
+                fmt.default_value = attrs['default']
+                optional.extend([
+                        wformat('if (present({var})) then', fmt),
+                        1,
+                        wformat('{tmp_var} = {var}', fmt),
+                        -1,
+                        'else',
+                        1,
+                        wformat('{tmp_var} = {default_value}', fmt),
+                        -1,
+                        'endif'])
+                fmt.var = fmt.tmp_var
+
             if 'cast' in arg:
                 append_format(arg_c_call, arg['cast'], fmt)
             else:
                 rrr = self.typedef[arg['type']].fortran_to_c
                 append_format(arg_c_call, rrr, fmt)
 
-            if 'default' in attrs:
-                fmt.default_value = attrs['default']
-                optional.extend([
-                        wformat('if (.not. present({var})) then', fmt),
-                        1,
-                        wformat('{var} = {default_value}', fmt),
-                        -1,
-                        'endif'])
 
         if result_string:
             arg_f_names.append('rv')

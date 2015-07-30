@@ -250,18 +250,24 @@ contains
         use iso_c_binding
         implicit none
         real(C_DOUBLE), optional :: arg1
+        real(C_DOUBLE) :: tmp_arg1
         integer(C_INT), optional :: arg2
+        integer(C_INT) :: tmp_arg2
         real(C_DOUBLE) :: rv
-        if (.not. present(arg1)) then
-            arg1 = 3.13
+        if (present(arg1)) then
+            tmp_arg1 = arg1
+        else
+            tmp_arg1 = 3.13
         endif
-        if (.not. present(arg2)) then
-            arg2 = 5
+        if (present(arg2)) then
+            tmp_arg2 = arg2
+        else
+            tmp_arg2 = 5
         endif
         ! splicer begin function5
         rv = tut_function5(  &
-            arg1,  &
-            arg2)
+            tmp_arg1,  &
+            tmp_arg2)
         ! splicer end function5
     end function function5
     
