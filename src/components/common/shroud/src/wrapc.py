@@ -319,7 +319,7 @@ class Wrapc(util.WrapperMixin):
 
         if cls:
             util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{lower_class}_{underscore_name}{method_suffix}')
+                               '{C_prefix}{lower_class}_{underscore_name}{function_suffix}')
             if 'C_object' in options:
                 fmt_func.C_object = options.C_object
             else:
@@ -330,7 +330,7 @@ class Wrapc(util.WrapperMixin):
                 fmt_func.C_object = wformat(template, fmt_func)
         else:
             util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{underscore_name}{method_suffix}')
+                               '{C_prefix}{underscore_name}{function_suffix}')
             fmt_func.C_object = ''
 
         # body of function
@@ -376,6 +376,6 @@ class Wrapc(util.WrapperMixin):
         if cls:
             impl.append(fmt_func.C_object )
         self._create_splicer(fmt_func.underscore_name + 
-                             fmt.method_suffix, impl, C_code)
+                             fmt.function_suffix, impl, C_code)
         impl.append('}')
 

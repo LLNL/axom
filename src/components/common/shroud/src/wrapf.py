@@ -518,12 +518,12 @@ class Wrapf(util.WrapperMixin):
 
         if cls:
             util.eval_template(options, fmt_func,
-                               'F_name_impl', '{lower_class}_{underscore_name}{method_suffix}')
+                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
         else:
             util.eval_template(options, fmt_func,
-                               'F_name_impl', '{underscore_name}{method_suffix}')
+                               'F_name_impl', '{underscore_name}{function_suffix}')
         util.eval_template(options, fmt_func,
-                            'F_name_method', '{underscore_name}{method_suffix}')
+                            'F_name_method', '{underscore_name}{function_suffix}')
         util.eval_template(options, fmt_func,
                             'F_name_generic', '{underscore_name}')
 

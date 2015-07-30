@@ -309,6 +309,10 @@ C++ allows function names to be overloaded.  Fortran supports this using a ``gen
 The C and Fortran wrappers will generated a wrapper for each C++ function but must mangle the name
 to distinguish the names.
 
+C++::
+
+
+
 Templates
 ---------
 

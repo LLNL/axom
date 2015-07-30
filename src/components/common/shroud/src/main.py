@@ -98,7 +98,7 @@ class Schema(object):
         fmt_library.library       = def_options.get('library', 'default_library')
         fmt_library.lower_library = fmt_library.library.lower()
         fmt_library.upper_library = fmt_library.library.upper()
-        fmt_library.method_suffix = ''   # assume no suffix
+        fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
@@ -327,13 +327,13 @@ class Schema(object):
         for method in methods:
             overloaded_functions.setdefault(method['result']['name'], []).append(method)
 
-        # look for function overload and compute method_suffix
+        # look for function overload and compute function_suffix
         for mname, overloads in overloaded_functions.items():
             if len(overloads) > 1:
                 for i, function in enumerate(overloads):
 #                    method['fmt'].overloaded = True
-                    if 'method_suffix' not in function:
-                        function['fmt'].method_suffix =  '_%d' % i
+                    if 'function_suffix' not in function:
+                        function['fmt'].function_suffix =  '_%d' % i
 
         # Look for templated methods
         additional_methods = []
@@ -360,9 +360,9 @@ class Schema(object):
             # parse decl and add to dictionary
             values = parse_decl.check_decl(node['decl'])
             util.update(node, values)  # recursive update
-        if 'method_suffix' in node and node['method_suffix'] is None:
+        if 'function_suffix' in node and node['function_suffix'] is None:
             # YAML turns blanks strings to None
-            node['method_suffix'] = ''
+            node['function_suffix'] = ''
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -377,8 +377,8 @@ class Schema(object):
 
         fmt_func.method_name =     result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
-        if 'method_suffix' in node:
-            fmt_func.method_suffix =   node['method_suffix']
+        if 'function_suffix' in node:
+            fmt_func.function_suffix =   node['function_suffix']
 
         # docs
         self.pop_fmt()
@@ -396,7 +396,7 @@ class Schema(object):
                 new = util.copy_function_node(node)
                 new['generated'] = 'cpp_template'
                 fmt = new['fmt']
-                fmt.method_suffix = '_' + type
+                fmt.function_suffix = '_' + type
                 del new['cpp_template']
                 options = new['options']
                 options.wrap_c = True
@@ -430,7 +430,7 @@ class Schema(object):
                 new = util.copy_function_node(node)
                 new['generated'] = 'fortran_generic'
                 fmt = new['fmt']
-                fmt.method_suffix = '_' + type
+                fmt.function_suffix = '_' + type
                 fmt.PTR_F_C_node = node
                 del new['fortran_generic']
                 options = new['options']

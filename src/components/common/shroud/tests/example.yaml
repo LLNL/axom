@@ -96,7 +96,7 @@ classes:
     - decl: ExClass2 *getRoot()
 
     - decl: int  getValue(int value)
-      method_suffix: _from_int
+      function_suffix: _from_int
     - decl: long getValue(long value)
 
     - decl: void *getAddr()
