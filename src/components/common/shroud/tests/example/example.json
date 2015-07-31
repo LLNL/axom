@@ -2077,6 +2077,20 @@
             "f_type": "character(*)", 
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 
+        "string_from_buffer": {
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_to_cpp": "std::string({var}, {len})", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
         "string_result_as_arg": {
             "PY_ctor": "PyString_FromString({var})", 
             "PY_format": "s", 
