@@ -434,14 +434,27 @@ class Wrapf(util.WrapperMixin):
         for arg in node['args']:
             # default argument's intent
             # XXX look at const, ptr
+            arg_typedef = self.typedef[arg['type']]
+            fmt.var = arg['name']
             attrs = arg['attrs']
             if 'intent' not in attrs:
                 attrs['intent'] = 'in'
             if 'value' not in attrs:
                 attrs['value'] = True
 
-            arg_c_names.append(arg['name'])
-            arg_c_decl.append(self._c_decl(arg))
+            # argument names
+            if arg_typedef.f_c_args:
+                for argname in arg_typedef.f_c_args:
+                    arg_c_names.append(argname)
+            else:
+                arg_c_names.append(arg['name'])
+
+            # argument declarations
+            if arg_typedef.f_c_argdecl:
+                for argdecl in arg_typedef.f_c_argdecl:
+                    append_format(arg_c_decl, argdecl, fmt)
+            else:
+                arg_c_decl.append(self._c_decl(arg))
 
         fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 

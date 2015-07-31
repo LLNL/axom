@@ -216,8 +216,11 @@ class Schema(object):
                 cpp_type = 'std::string',
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
+                f_c_args   = [ '{var}', 'len_{var}'],
+                f_c_argdecl = [ 'type(C_PTR), intent(IN), value :: {var}',
+                                'integer(C_INT), intent(IN), value :: len_{var}' ],
                 f_type     = 'character(*)',
-                fortran_to_c = 'trim({var}) // C_NULL_CHAR',
+                fortran_to_c = '{var}, len_trim({var})',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
@@ -517,8 +520,10 @@ class Schema(object):
         fmt.function_suffix = '_bufferify'
         options = new['options']
         options.wrap_c = True
-        options.wrap_fortran = False
+        options.wrap_fortran = True
         options.wrap_python = False
+        options = node['options']
+        options.wrap_fortran = False
         additional_methods.append(new)
 
         newargs = []

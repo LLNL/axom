@@ -232,6 +232,9 @@ class Typedef(object):
         c_argdecl=None,       # list of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer 
 
+        f_c_args=None,        # list of argument names to F_C routine
+        f_c_argdecl=None,     # list of declarations to F_C routine
+
         f_type=None,         # name of type in Fortran
         fortran_derived=None,    # Fortran derived type name
         fortran_to_c='{var}', # expression to convert Fortran to C

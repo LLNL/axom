@@ -1222,12 +1222,20 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_c_argdecl": [
+                "type(C_PTR), intent(IN), value :: {var}", 
+                "integer(C_INT), intent(IN), value :: len_{var}"
+            ], 
+            "f_c_args": [
+                "{var}", 
+                "len_{var}"
+            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "fortran_to_c": "{var}, len_trim({var})"
         }, 
         "string_result_as_arg": {
             "PY_ctor": "PyString_FromString({var})", 
