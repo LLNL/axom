@@ -229,15 +229,15 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    subroutine exclass1_get_name_arg(obj, rv)
+    subroutine exclass1_get_name_arg(obj, name)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(*), intent(OUT) :: rv
-        type(C_PTR) :: rv_ptr
+        character(*), intent(OUT) :: name
+        type(C_PTR) :: rv
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv_ptr = aa_exclass1_get_name_arg(obj%voidptr)
-        call FccCopyPtr(rv, len(rv), rv_ptr)
+        rv = aa_exclass1_get_name_arg(obj%voidptr)
+        call FccCopyPtr(name, len(name), rv)
         ! splicer end class.ExClass1.method.get_name_arg
     end subroutine exclass1_get_name_arg
     

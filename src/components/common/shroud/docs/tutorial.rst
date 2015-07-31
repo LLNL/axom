@@ -255,21 +255,21 @@ all functions::
 
     - decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
       options:
-        F_string_result_as_arg: true
+        F_string_result_as_arg: output
 
 Only the generated wrapper is different::
 
-    subroutine function4b(arg1, arg2, rv)
+    subroutine function4b(arg1, arg2, output)
         use iso_c_binding
         implicit none
         character(*) :: arg1
         character(*) :: arg2
-        character(*), intent(OUT) :: rv
-        type(C_PTR) :: rv_ptr
-        rv_ptr = tut_function4b(  &
+        character(*), intent(OUT) :: output
+        type(C_PTR) :: rv
+        rv = tut_function4b(  &
             trim(arg1) // C_NULL_CHAR,  &
             trim(arg2) // C_NULL_CHAR)
-        call FccCopyPtr(rv, len(rv), rv_ptr)
+        call FccCopyPtr(output, len(output), rv)
     end subroutine function4b
 
 ``FccCopyPtr`` is a library routine to copy the ``type(C_PTR)`` into the character variable.

@@ -507,6 +507,10 @@ class Wrapf(util.WrapperMixin):
                 options.get('F_string_result_as_arg', False):
             # convert function into subroutine with argument for result
             result_string = True
+
+            # Use the result_as_arg typedef
+            result_typedef = self.typedef[result_typedef.name + '_result_as_arg']
+            fmt.result_arg = options.F_string_result_as_arg
         else:
             result_string = False
 
@@ -603,9 +607,11 @@ class Wrapf(util.WrapperMixin):
 
 
         if result_string:
-            arg_f_names.append('rv')
-            arg_f_decl.append('character(*), intent(OUT) :: rv')
-            arg_f_decl.append('type(C_PTR) :: rv_ptr')
+            arg_f_names.append(fmt.result_arg)
+            if result_typedef.f_rv_decl:
+                append_format(arg_f_decl, result_typedef.f_rv_decl, fmt)
+            if result_typedef.f_pre_decl:
+                append_format(arg_f_decl, result_typedef.f_pre_decl, fmt)
 
         fmt_func.F_arg_c_call = ', '.join(arg_c_call)
         fmt_func.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
@@ -652,9 +658,8 @@ class Wrapf(util.WrapperMixin):
                 line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt_func)
                 self.append_method_arguments(F_code, line1)
             elif result_string:
-                line1 = wformat('rv_ptr = {F_C_name}({F_arg_c_call_tab})', fmt_func)
+                line1 = wformat(result_typedef.f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
-                F_code.append('call FccCopyPtr(rv, len(rv), rv_ptr)')
             elif subprogram == 'function':
                 line1 = wformat(result_typedef.f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
@@ -662,6 +667,9 @@ class Wrapf(util.WrapperMixin):
                 line1 = wformat('call {F_C_name}({F_arg_c_call_tab})', fmt_func)
                 self.append_method_arguments(F_code, line1)
 
+            if result_typedef.f_post_call:
+                # adjust return value or cleanup
+                append_format(F_code, result_typedef.f_post_call, fmt)
             if is_dtor:
                 F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt_func))
 

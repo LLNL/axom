@@ -208,11 +208,24 @@ class Schema(object):
                 base = 'string',
                 ),
             )
+
+        # aliases
         def_types['std::string']     = def_types['string']
         def_types['integer(C_INT)']  = def_types['int']
         def_types['integer(C_LONG)'] = def_types['long']
         def_types['real(C_FLOAT)']   = def_types['float']
         def_types['real(C_DOUBLE)']  = def_types['double']
+
+        # result_as_arg
+        tmp = def_types['string'].clone_as('string_result_as_arg')
+        tmp.update(dict(
+                f_rv_decl     = 'character(*), intent(OUT) :: {result_arg}',
+                f_pre_decl    = 'type(C_PTR) :: {F_result}',
+                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
+                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
+                ))
+        def_types[tmp.name] = tmp
+
 
         types_dict = node.get('types', None)
         if types_dict is not None:

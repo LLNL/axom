@@ -241,6 +241,9 @@ class Typedef(object):
         f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
         f_pre_decl = None,    # declarations needed by f_pre_call
         f_pre_call = None,    # statement to execute before call, often to coerce types
+        f_post_call = None,   # statement to execute before call - cleanup, coerce result
+        f_rv_decl = None,     # how to declare return variable - when C and Fortran return different types
+        result_as_arg = None, # override fields when result should be treated as an argument
 
         PY_format='O',        # 'format unit' for PyArg_Parse
         PY_PyTypeObject=None, # variable name of PyTypeObject instance
@@ -267,9 +270,15 @@ class Typedef(object):
             else:
                 raise RuntimeError("Unknown key for Argument %s", key)
 
-    def copy(self):
-        n = Typedef()
+    def XXXcopy(self):
+        n = Typedef(self.name)
         n.update(self._to_dict())
+        return n
+
+    def clone_as(self, name):
+        n = Typedef(name)
+        n.update(self._to_dict())
+        return n
 
     def _to_dict(self):
         """Convert instance to a dictionary for json.

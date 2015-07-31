@@ -385,7 +385,7 @@
                 "F_C_subprogram": "function", 
                 "F_arg_c_call": "trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR", 
                 "F_arg_c_call_tab": "\ttrim(arg1) // C_NULL_CHAR\ttrim(arg2) // C_NULL_CHAR", 
-                "F_arguments": "arg1, arg2, rv", 
+                "F_arguments": "arg1, arg2, output", 
                 "F_instance_ptr": "obj%voidptr", 
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 
@@ -397,7 +397,7 @@
                 "underscore_name": "function4b"
             }, 
             "options": {
-                "F_string_result_as_arg": true
+                "F_string_result_as_arg": "output"
             }, 
             "result": {
                 "attrs": {
@@ -1208,6 +1208,24 @@
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "string_result_as_arg": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
+            "f_pre_decl": "type(C_PTR) :: {F_result}", 
+            "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_rv_decl": "character(*), intent(OUT) :: {result_arg}", 
             "f_type": "character(*)", 
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 

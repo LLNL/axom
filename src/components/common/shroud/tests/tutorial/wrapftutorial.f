@@ -233,18 +233,18 @@ contains
         ! splicer end function4a
     end function function4a
     
-    subroutine function4b(arg1, arg2, rv)
+    subroutine function4b(arg1, arg2, output)
         use iso_c_binding
         implicit none
         character(*) :: arg1
         character(*) :: arg2
-        character(*), intent(OUT) :: rv
-        type(C_PTR) :: rv_ptr
+        character(*), intent(OUT) :: output
+        type(C_PTR) :: rv
         ! splicer begin function4b
-        rv_ptr = tut_function4b(  &
+        rv = tut_function4b(  &
             trim(arg1) // C_NULL_CHAR,  &
             trim(arg2) // C_NULL_CHAR)
-        call FccCopyPtr(rv, len(rv), rv_ptr)
+        call FccCopyPtr(output, len(output), rv)
         ! splicer end function4b
     end subroutine function4b
     
