@@ -389,7 +389,7 @@ def copy_function_node(node):
         new[field] = copy.deepcopy(node[field])
         known[field] = True
 
-    # Add new Options in chain.
+    # Add new Options in chain
     for field in [ 'fmt', 'options' ]:
         new[field] = Options(node[field])
         known[field] = True

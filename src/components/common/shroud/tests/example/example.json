@@ -821,6 +821,7 @@
                     }
                 }, 
                 {
+                    "args": [], 
                     "attrs": {}, 
                     "docs": "helper function for Fortran", 
                     "fmt": {

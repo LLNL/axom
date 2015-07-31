@@ -193,7 +193,8 @@ class Schema(object):
 #                PY_PyTypeObject = 'PyBool_Type',
 #  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
                 ),
-            string = util.Typedef('string',  # implies null terminated string
+            # implies null terminated string
+            string = util.Typedef('string',
                 c_type   = 'char',    # XXX - char *
                 cpp_type = 'std::string',
                 cpp_to_c = '{var}.c_str()',  # . or ->
@@ -205,6 +206,20 @@ class Schema(object):
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({var})',
+                base = 'string',
+                ),
+            # create std::string from buffer and length
+            string_from_buffer = util.Typedef('string_from_buffer',
+                c_type   = 'char',    # XXX - char *
+                c_to_cpp = 'std::string({var}, {len})',
+                cpp_type = 'std::string',
+                cpp_to_c = '{var}.c_str()',  # . or ->
+                c_fortran  = 'character(kind=C_CHAR)',
+                f_type     = 'character(*)',
+                fortran_to_c = 'trim({var}) // C_NULL_CHAR',
+#                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
+                f_module = dict(iso_c_binding=None),
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 base = 'string',
                 ),
             )
@@ -351,13 +366,14 @@ class Schema(object):
                     if 'function_suffix' not in function:
                         function['fmt'].function_suffix =  '_%d' % i
 
-        # Look for templated methods
+        # Create additional functions needed for wrapping
         additional_methods = []
         for method in methods:
             if 'cpp_template' in method:
                 self.template_function(method, additional_methods)
             if 'fortran_generic' in method:
                 self.generic_function(method, additional_methods)
+#            self.string_to_buffer_and_len(method, additional_methods)
         methods.extend(additional_methods)
 
     def check_function(self, node):
@@ -371,6 +387,7 @@ class Schema(object):
 #        func.dump()
 
         node['attrs'] = {}
+        node['args'] = []
 
         if 'decl' in node:
             # parse decl and add to dictionary
@@ -474,6 +491,47 @@ class Schema(object):
         options.wrap_fortran = False
 #        options.wrap_python = False
 
+    def string_to_buffer_and_len(self, node, additional_methods):
+        """ Check if function has any string arguments and will be wrapped by Fortran.
+        If so then create a new C function that will convert string arguments into 
+        a buffer and length.
+        """
+        options = node['options']
+        if options.wrap_fortran is False:
+            return
+
+        has_strings = False
+        for arg in node['args']:
+            argtype = arg['type']
+            if self.typedef[argtype].base == 'string':
+                has_strings = True
+                break
+        if has_strings is False:
+            return
+
+        new = util.copy_function_node(node)
+        new['generated'] = 'string_to_buffer_and_len'
+        fmt = new['fmt']
+        fmt.function_suffix = '_bufferify'
+        options = new['options']
+        options.wrap_c = True
+        options.wrap_fortran = False
+        options.wrap_python = False
+        additional_methods.append(new)
+
+        newargs = []
+        for arg in node['args']:
+            argtype = arg['type']
+            if self.typedef[argtype].base != 'string':
+                newargs.append(arg)
+                continue
+            # Create two args for each string arg: buffer and length
+            buf = dict( name=arg['name'], type='int', attrs={})
+            newargs.append(buf)
+            buf = dict( name=arg['name'] + '_len', type='int', attrs={})
+            newargs.append(buf)
+        new['args'] = newargs
+
     def check_functions(self, node):
         """ check functions which are not in a class.
         """
@@ -521,7 +579,7 @@ class Schema(object):
         result_typedef = self.typedef[rv_type]
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
-        for arg in node.get('args', []):
+        for arg in node['args']:
             argtype = arg['type']
             if argtype in self.typedef:
                 used_types[arg['type']] = self.typedef[argtype]

@@ -262,7 +262,7 @@ return 1;""", fmt)
         # parse arguments
         optional = []
         post_parse = []
-        args = node.get('args', [])
+        args = node['args']
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
         else:
@@ -270,7 +270,7 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets  = []
             offset = 0
-            for arg in node.get('args', []):
+            for arg in node['args']:
                 arg_name = arg['name']
                 fmt.var = arg_name
                 arg_names.append(arg_name)

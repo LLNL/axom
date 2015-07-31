@@ -291,7 +291,7 @@ class Wrapc(util.WrapperMixin):
             fmt_func.CPP_this_call = ''  # call function syntax
 
 
-        for arg in node.get('args', []):
+        for arg in node['args']:
             arguments.append(self._c_decl('c_type', arg))
             arg_typedef = self.typedef[arg['type']]
             # convert C argument to C++

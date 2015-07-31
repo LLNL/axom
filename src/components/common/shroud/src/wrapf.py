@@ -431,7 +431,7 @@ class Wrapf(util.WrapperMixin):
                 arg_c_names.append(C_this)
                 arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
 
-        for arg in node.get('args', []):
+        for arg in node['args']:
             # default argument's intent
             # XXX look at const, ptr
             attrs = arg['attrs']
@@ -562,7 +562,7 @@ class Wrapf(util.WrapperMixin):
                         fmt_func))
 
         optional = []
-        for arg in node.get('args', []):
+        for arg in node['args']:
             # default argument's intent
             # XXX look at const, ptr
             attrs = arg['attrs']
