@@ -75,6 +75,7 @@ class Schema(object):
         """ Routine to check entire schema of input tree"
         """
         node = self.config
+        node['function_index'] = []
 
         # default options
         def_options = util.Options(
@@ -279,6 +280,13 @@ class Schema(object):
         functions = node.setdefault('functions', [])
         self.check_functions(functions)
 
+    def append_function_index(self, node):
+        """append to function_index, set index into node.
+        """
+        ilist = self.config['function_index']
+        node['function_index'] = len(ilist)
+        ilist.append(node)
+
     def check_classes(self, node):
         if not isinstance(node, list):
             raise TypeError("classes must be a list")
@@ -417,6 +425,8 @@ class Schema(object):
         if 'function_suffix' in node:
             fmt_func.function_suffix =   node['function_suffix']
 
+        self.append_function_index(node)
+
         # docs
         self.pop_fmt()
         self.pop_options()
@@ -431,6 +441,9 @@ class Schema(object):
         for typename, types in node['cpp_template'].items():
             for type in types:
                 new = util.copy_function_node(node)
+                additional_methods.append(new)
+                self.append_function_index(new)
+
                 new['generated'] = 'cpp_template'
                 fmt = new['fmt']
                 fmt.function_suffix = '_' + type
@@ -439,7 +452,6 @@ class Schema(object):
                 options.wrap_c = True
                 options.wrap_fortran = True
                 options.wrap_python = False
-                additional_methods.append(new)
                 # Convert typename to type
                 fmt.CPP_template = '<%s>' %  type
                 if new['result']['type'] == typename:
@@ -466,16 +478,18 @@ class Schema(object):
         for argname, types in node['fortran_generic'].items():
             for type in types:
                 new = util.copy_function_node(node)
+                additional_methods.append(new)
+                self.append_function_index(new)
+
                 new['generated'] = 'fortran_generic'
                 fmt = new['fmt']
                 fmt.function_suffix = '_' + type
-                fmt.PTR_F_C_node = node
+                fmt.PTR_F_C_index = node['function_index']
                 del new['fortran_generic']
                 options = new['options']
                 options.wrap_c = False
                 options.wrap_fortran = True
                 options.wrap_python = False
-                additional_methods.append(new)
                 # Convert typename to type
                 for arg in new['args']:
                     if arg['name'] == argname:
@@ -515,16 +529,23 @@ class Schema(object):
             return
 
         new = util.copy_function_node(node)
+        additional_methods.append(new)
+        self.append_function_index(new)
+
         new['generated'] = 'string_to_buffer_and_len'
         fmt = new['fmt']
         fmt.function_suffix = '_bufferify'
+
         options = new['options']
         options.wrap_c = True
         options.wrap_fortran = True
         options.wrap_python = False
+        options.F_name_impl = 'BBBBBBBB'
+
         options = node['options']
         options.wrap_fortran = False
-        additional_methods.append(new)
+#        # Current Fortran function should use this new C function
+#        node['fmt'].PTR_F_C_index = new['function_index']
 
         newargs = []
         for arg in node['args']:
@@ -669,6 +690,9 @@ if __name__ == '__main__':
     wrapf.Wrapf(all, config, splicers['f']).wrap_library()
 
     wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+
+    # when dumping json, remove function_index to avoid duplication
+    del all['function_index']
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')

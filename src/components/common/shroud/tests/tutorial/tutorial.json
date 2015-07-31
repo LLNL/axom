@@ -58,6 +58,7 @@
                         "rv_decl": "Class1 * rv", 
                         "underscore_name": "new"
                     }, 
+                    "function_index": 0, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -96,6 +97,7 @@
                         "rv_decl": "void rv", 
                         "underscore_name": "method1"
                     }, 
+                    "function_index": 1, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -168,6 +170,7 @@
                 "rv_decl": "void rv", 
                 "underscore_name": "function1"
             }, 
+            "function_index": 2, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -223,6 +226,7 @@
                 "rv_decl": "double rv", 
                 "underscore_name": "function2"
             }, 
+            "function_index": 3, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -270,6 +274,7 @@
                 "rv_decl": "bool rv", 
                 "underscore_name": "function3"
             }, 
+            "function_index": 4, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -334,6 +339,7 @@
                 "rvlen": "strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))", 
                 "underscore_name": "function4a"
             }, 
+            "function_index": 5, 
             "options": {}, 
             "result": {
                 "attrs": {
@@ -396,6 +402,7 @@
                 "rv_decl": "const std::string & rv", 
                 "underscore_name": "function4b"
             }, 
+            "function_index": 6, 
             "options": {
                 "F_string_result_as_arg": "output"
             }, 
@@ -458,6 +465,7 @@
                 "rv_decl": "double rv", 
                 "underscore_name": "function5"
             }, 
+            "function_index": 7, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -506,6 +514,7 @@
                 "rv_decl": "void rv", 
                 "underscore_name": "function6"
             }, 
+            "function_index": 8, 
             "function_suffix": "_from_name", 
             "options": {}, 
             "result": {
@@ -553,6 +562,7 @@
                 "rv_decl": "void rv", 
                 "underscore_name": "function6"
             }, 
+            "function_index": 9, 
             "function_suffix": "_from_index", 
             "options": {}, 
             "result": {
@@ -581,6 +591,7 @@
                 "method_name": "Function7", 
                 "underscore_name": "function7"
             }, 
+            "function_index": 10, 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
@@ -606,6 +617,7 @@
                 "method_name": "Function8", 
                 "underscore_name": "function8"
             }, 
+            "function_index": 11, 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
@@ -653,6 +665,7 @@
                     "double"
                 ]
             }, 
+            "function_index": 12, 
             "options": {
                 "wrap_fortran": false
             }, 
@@ -699,6 +712,7 @@
                 "function_suffix": "_int", 
                 "rv_decl": "void rv"
             }, 
+            "function_index": 13, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -748,6 +762,7 @@
                 "function_suffix": "_double", 
                 "rv_decl": "void rv"
             }, 
+            "function_index": 14, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -791,6 +806,7 @@
                 "function_suffix": "_int", 
                 "rv_decl": "int rv"
             }, 
+            "function_index": 15, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -834,6 +850,7 @@
                 "function_suffix": "_double", 
                 "rv_decl": "double rv"
             }, 
+            "function_index": 16, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -869,53 +886,10 @@
                 "F_name_impl": "function9_float", 
                 "F_name_method": "function9_float", 
                 "F_subprogram": "subroutine", 
-                "PTR_F_C_node": {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "arg", 
-                            "type": "double"
-                        }
-                    ], 
-                    "attrs": {}, 
-                    "decl": "void Function9(double arg)", 
-                    "fmt": {
-                        "CPP_name": "Function9", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "", 
-                        "C_arguments": "double arg", 
-                        "C_call_list": "arg", 
-                        "C_name": "TUT_function9", 
-                        "C_object": "", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "arg", 
-                        "F_C_name": "tut_function9", 
-                        "F_C_subprogram": "subroutine", 
-                        "PY_name_impl": "PY_function9", 
-                        "method_name": "Function9", 
-                        "rv_decl": "void rv", 
-                        "underscore_name": "function9"
-                    }, 
-                    "fortran_generic": {
-                        "arg": [
-                            "float", 
-                            "double"
-                        ]
-                    }, 
-                    "options": {
-                        "wrap_fortran": false
-                    }, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "Function9", 
-                        "type": "void"
-                    }
-                }, 
+                "PTR_F_C_index": 12, 
                 "function_suffix": "_float"
             }, 
+            "function_index": 17, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -951,53 +925,10 @@
                 "F_name_impl": "function9_double", 
                 "F_name_method": "function9_double", 
                 "F_subprogram": "subroutine", 
-                "PTR_F_C_node": {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "arg", 
-                            "type": "double"
-                        }
-                    ], 
-                    "attrs": {}, 
-                    "decl": "void Function9(double arg)", 
-                    "fmt": {
-                        "CPP_name": "Function9", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "", 
-                        "C_arguments": "double arg", 
-                        "C_call_list": "arg", 
-                        "C_name": "TUT_function9", 
-                        "C_object": "", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "arg", 
-                        "F_C_name": "tut_function9", 
-                        "F_C_subprogram": "subroutine", 
-                        "PY_name_impl": "PY_function9", 
-                        "method_name": "Function9", 
-                        "rv_decl": "void rv", 
-                        "underscore_name": "function9"
-                    }, 
-                    "fortran_generic": {
-                        "arg": [
-                            "float", 
-                            "double"
-                        ]
-                    }, 
-                    "options": {
-                        "wrap_fortran": false
-                    }, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "Function9", 
-                        "type": "void"
-                    }
-                }, 
+                "PTR_F_C_index": 12, 
                 "function_suffix": "_double"
             }, 
+            "function_index": 18, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 

@@ -23,6 +23,7 @@ end interface
 contains
 
  {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
+     {F_C_name}({F_arg_c_call_tab})
  end {F_subprogram} {F_name_impl}
 
 ----------
@@ -494,8 +495,8 @@ class Wrapf(util.WrapperMixin):
 
         # look for C routine to wrap
         # usually the same node unless it is a generic function
-        if 'PTR_F_C_node' in fmt_func:
-            C_node = fmt_func.PTR_F_C_node
+        if 'PTR_F_C_index' in fmt_func:
+            C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
             fmt.F_C_name = C_node['fmt'].F_C_name
         else:
             C_node = node

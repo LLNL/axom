@@ -86,6 +86,7 @@
                         "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "new"
                     }, 
+                    "function_index": 0, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -126,6 +127,7 @@
                         "rv_decl": "void rv", 
                         "underscore_name": "delete"
                     }, 
+                    "function_index": 1, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -174,6 +176,7 @@
                         "rv_decl": "int rv", 
                         "underscore_name": "increment_count"
                     }, 
+                    "function_index": 2, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -219,6 +222,7 @@
                         "rvlen": "aa_exclass1_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
                     }, 
+                    "function_index": 3, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -265,6 +269,7 @@
                         "rv_decl": "int rv", 
                         "underscore_name": "get_name_length"
                     }, 
+                    "function_index": 4, 
                     "helper": true, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
@@ -311,6 +316,7 @@
                         "rvlen": "strlen_ptr(aa_exclass1_get_name_error_check(obj%voidptr))", 
                         "underscore_name": "get_name_error_check"
                     }, 
+                    "function_index": 5, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -355,6 +361,7 @@
                         "rv_decl": "const std::string & rv", 
                         "underscore_name": "get_name_arg"
                     }, 
+                    "function_index": 6, 
                     "options": {
                         "F_string_result_as_arg": "name"
                     }, 
@@ -398,6 +405,7 @@
                         "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "get_root"
                     }, 
+                    "function_index": 7, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -448,6 +456,7 @@
                         "rv_decl": "int rv", 
                         "underscore_name": "get_value"
                     }, 
+                    "function_index": 8, 
                     "function_suffix": "_from_int", 
                     "options": {}, 
                     "result": {
@@ -497,6 +506,7 @@
                         "rv_decl": "long rv", 
                         "underscore_name": "get_value"
                     }, 
+                    "function_index": 9, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -535,6 +545,7 @@
                         "rv_decl": "void * rv", 
                         "underscore_name": "get_addr"
                     }, 
+                    "function_index": 10, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -584,6 +595,7 @@
                         "rv_decl": "bool rv", 
                         "underscore_name": "has_addr"
                     }, 
+                    "function_index": 11, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -620,6 +632,7 @@
                         "rv_decl": "void rv", 
                         "underscore_name": "splicer_special"
                     }, 
+                    "function_index": 12, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -726,6 +739,7 @@
                         "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "ex_class2"
                     }, 
+                    "function_index": 13, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -766,6 +780,7 @@
                         "rv_decl": "void rv", 
                         "underscore_name": "delete"
                     }, 
+                    "function_index": 14, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -809,6 +824,7 @@
                         "rvlen": "aa_exclass2_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
                     }, 
+                    "function_index": 15, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -851,6 +867,7 @@
                         "rv_decl": "int rv", 
                         "underscore_name": "get_name_length"
                     }, 
+                    "function_index": 16, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
@@ -904,6 +921,7 @@
                         "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "get_class1"
                     }, 
+                    "function_index": 17, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -958,6 +976,7 @@
                             "long"
                         ]
                     }, 
+                    "function_index": 18, 
                     "options": {
                         "wrap_fortran": false
                     }, 
@@ -999,6 +1018,7 @@
                         "rv_decl": "void rv", 
                         "underscore_name": "destroyall"
                     }, 
+                    "function_index": 19, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -1040,6 +1060,7 @@
                         "rv_decl": "TypeID rv", 
                         "underscore_name": "get_type_id"
                     }, 
+                    "function_index": 20, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -1069,6 +1090,7 @@
                         "method_name": "setValue", 
                         "underscore_name": "set_value"
                     }, 
+                    "function_index": 21, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
@@ -1094,6 +1116,7 @@
                         "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
+                    "function_index": 22, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
@@ -1153,6 +1176,7 @@
                         "rv_decl": "void rv", 
                         "underscore_name": "testoptional"
                     }, 
+                    "function_index": 23, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -1192,65 +1216,10 @@
                         "F_name_impl": "exclass2_declare_int", 
                         "F_name_method": "declare_int", 
                         "F_subprogram": "subroutine", 
-                        "PTR_F_C_node": {
-                            "args": [
-                                {
-                                    "attrs": {
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "type", 
-                                    "type": "TypeID"
-                                }, 
-                                {
-                                    "attrs": {
-                                        "default": 1, 
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "len", 
-                                    "type": "SidreLength"
-                                }
-                            ], 
-                            "attrs": {}, 
-                            "decl": "void* declare(TypeID type, SidreLength len = 1)", 
-                            "fmt": {
-                                "CPP_name": "declare", 
-                                "CPP_this": "selfobj", 
-                                "CPP_this_call": "selfobj->", 
-                                "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
-                                "C_call_list": "getTypeID(type), len", 
-                                "C_name": "AA_exclass2_declare", 
-                                "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                                "C_return_type": "void", 
-                                "F_C_arguments": "self, type, len", 
-                                "F_C_name": "aa_exclass2_declare", 
-                                "F_C_subprogram": "subroutine", 
-                                "PY_name_impl": "PP_exclass2_declare", 
-                                "method_name": "declare", 
-                                "rv_decl": "void * rv", 
-                                "underscore_name": "declare"
-                            }, 
-                            "fortran_generic": {
-                                "len": [
-                                    "int", 
-                                    "long"
-                                ]
-                            }, 
-                            "options": {
-                                "wrap_fortran": false
-                            }, 
-                            "result": {
-                                "attrs": {
-                                    "ptr": true
-                                }, 
-                                "name": "declare", 
-                                "type": "void"
-                            }, 
-                            "return_this": true
-                        }, 
+                        "PTR_F_C_index": 18, 
                         "function_suffix": "_int"
                     }, 
+                    "function_index": 24, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -1298,65 +1267,10 @@
                         "F_name_impl": "exclass2_declare_long", 
                         "F_name_method": "declare_long", 
                         "F_subprogram": "subroutine", 
-                        "PTR_F_C_node": {
-                            "args": [
-                                {
-                                    "attrs": {
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "type", 
-                                    "type": "TypeID"
-                                }, 
-                                {
-                                    "attrs": {
-                                        "default": 1, 
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "len", 
-                                    "type": "SidreLength"
-                                }
-                            ], 
-                            "attrs": {}, 
-                            "decl": "void* declare(TypeID type, SidreLength len = 1)", 
-                            "fmt": {
-                                "CPP_name": "declare", 
-                                "CPP_this": "selfobj", 
-                                "CPP_this_call": "selfobj->", 
-                                "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
-                                "C_call_list": "getTypeID(type), len", 
-                                "C_name": "AA_exclass2_declare", 
-                                "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                                "C_return_type": "void", 
-                                "F_C_arguments": "self, type, len", 
-                                "F_C_name": "aa_exclass2_declare", 
-                                "F_C_subprogram": "subroutine", 
-                                "PY_name_impl": "PP_exclass2_declare", 
-                                "method_name": "declare", 
-                                "rv_decl": "void * rv", 
-                                "underscore_name": "declare"
-                            }, 
-                            "fortran_generic": {
-                                "len": [
-                                    "int", 
-                                    "long"
-                                ]
-                            }, 
-                            "options": {
-                                "wrap_fortran": false
-                            }, 
-                            "result": {
-                                "attrs": {
-                                    "ptr": true
-                                }, 
-                                "name": "declare", 
-                                "type": "void"
-                            }, 
-                            "return_this": true
-                        }, 
+                        "PTR_F_C_index": 18, 
                         "function_suffix": "_long"
                     }, 
+                    "function_index": 25, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -1409,6 +1323,7 @@
                         "function_suffix": "_int", 
                         "rv_decl": "void rv"
                     }, 
+                    "function_index": 26, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1458,6 +1373,7 @@
                         "function_suffix": "_long", 
                         "rv_decl": "void rv"
                     }, 
+                    "function_index": 27, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1507,6 +1423,7 @@
                         "function_suffix": "_float", 
                         "rv_decl": "void rv"
                     }, 
+                    "function_index": 28, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1556,6 +1473,7 @@
                         "function_suffix": "_double", 
                         "rv_decl": "void rv"
                     }, 
+                    "function_index": 29, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1599,6 +1517,7 @@
                         "function_suffix": "_int", 
                         "rv_decl": "int rv"
                     }, 
+                    "function_index": 30, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1642,6 +1561,7 @@
                         "function_suffix": "_double", 
                         "rv_decl": "double rv"
                     }, 
+                    "function_index": 31, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1747,6 +1667,7 @@
                 "rv_decl": "void rv", 
                 "underscore_name": "local_function1"
             }, 
+            "function_index": 32, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -1796,6 +1717,7 @@
                 "rv_decl": "bool rv", 
                 "underscore_name": "is_name_valid"
             }, 
+            "function_index": 33, 
             "options": {
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
