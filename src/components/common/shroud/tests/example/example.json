@@ -55,7 +55,10 @@
                             "type": "string"
                         }
                     ], 
-                    "decl": "ExClass1 *new+constructor ( const string *name )", 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass1 *new ( const string *name ) +constructor", 
                     "docs": "constructor", 
                     "fmt": {
                         "CPP_name": "new", 
@@ -84,10 +87,8 @@
                         "underscore_name": "new"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
-                            "constructor": true, 
                             "ptr": true
                         }, 
                         "name": "new", 
@@ -96,7 +97,10 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "void delete+destructor", 
+                    "attrs": {
+                        "destructor": true
+                    }, 
+                    "decl": "void delete() +destructor", 
                     "fmt": {
                         "CPP_name": "delete", 
                         "CPP_this": "selfobj", 
@@ -123,11 +127,8 @@
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
-                        "attrs": {
-                            "destructor": true
-                        }, 
+                        "attrs": {}, 
                         "name": "delete", 
                         "type": "void"
                     }
@@ -143,6 +144,7 @@
                             "type": "int"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "int incrementCount(int incr)", 
                     "docs": "blah blah", 
                     "fmt": {
@@ -173,7 +175,6 @@
                         "underscore_name": "increment_count"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "incrementCount", 
@@ -184,6 +185,9 @@
                     "C_error_pattern": "C_invalid_name", 
                     "PY_error_pattern": "PY_invalid_name", 
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getName() const", 
                     "fmt": {
                         "CPP_name": "getName", 
@@ -216,9 +220,6 @@
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -231,6 +232,9 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "int GetNameLength() const", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
@@ -265,9 +269,6 @@
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "GetNameLength", 
@@ -276,6 +277,9 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getNameErrorCheck() const", 
                     "fmt": {
                         "CPP_name": "getNameErrorCheck", 
@@ -308,9 +312,6 @@
                         "underscore_name": "get_name_error_check"
                     }, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -322,6 +323,9 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getNameArg() const", 
                     "fmt": {
                         "CPP_name": "getNameArg", 
@@ -354,9 +358,6 @@
                     "options": {
                         "F_string_result_as_arg": true
                     }, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -368,6 +369,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
                         "CPP_name": "getRoot", 
@@ -397,7 +399,6 @@
                         "underscore_name": "get_root"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -417,6 +418,7 @@
                             "type": "int"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "int  getValue(int value)", 
                     "fmt": {
                         "CPP_name": "getValue", 
@@ -448,7 +450,6 @@
                     }, 
                     "function_suffix": "_from_int", 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -466,6 +467,7 @@
                             "type": "long"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "long getValue(long value)", 
                     "fmt": {
                         "CPP_name": "getValue", 
@@ -496,7 +498,6 @@
                         "underscore_name": "get_value"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -505,6 +506,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void *getAddr()", 
                     "fmt": {
                         "CPP_name": "getAddr", 
@@ -534,7 +536,6 @@
                         "underscore_name": "get_addr"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -554,6 +555,7 @@
                             "type": "bool"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "bool hasAddr(bool in)", 
                     "fmt": {
                         "CPP_name": "hasAddr", 
@@ -568,8 +570,8 @@
                         "F_C_name": "aa_exclass1_has_addr", 
                         "F_C_result_clause": " result(rv)", 
                         "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr, logicaltobool(in)", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tlogicaltobool(in)", 
+                        "F_arg_c_call": "obj%voidptr, tmp_in", 
+                        "F_arg_c_call_tab": "\tobj%voidptr\ttmp_in", 
                         "F_arguments": "obj, in", 
                         "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "has_addr", 
@@ -583,7 +585,6 @@
                         "underscore_name": "has_addr"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "hasAddr", 
@@ -592,6 +593,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void SplicerSpecial", 
                     "fmt": {
                         "CPP_name": "SplicerSpecial", 
@@ -619,7 +621,6 @@
                         "underscore_name": "splicer_special"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "SplicerSpecial", 
@@ -695,7 +696,10 @@
                             "type": "string"
                         }
                     ], 
-                    "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
                     "fmt": {
                         "CPP_name": "ExClass2", 
                         "CPP_this": "selfobj", 
@@ -723,10 +727,8 @@
                         "underscore_name": "ex_class2"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
-                            "constructor": true, 
                             "ptr": true
                         }, 
                         "name": "ExClass2", 
@@ -735,7 +737,10 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "void delete+destructor", 
+                    "attrs": {
+                        "destructor": true
+                    }, 
+                    "decl": "void delete() +destructor", 
                     "fmt": {
                         "CPP_name": "delete", 
                         "CPP_this": "selfobj", 
@@ -762,17 +767,17 @@
                         "underscore_name": "delete"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
-                        "attrs": {
-                            "destructor": true
-                        }, 
+                        "attrs": {}, 
                         "name": "delete", 
                         "type": "void"
                     }
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getName const", 
                     "fmt": {
                         "CPP_name": "getName", 
@@ -805,9 +810,6 @@
                         "underscore_name": "get_name"
                     }, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -819,6 +821,7 @@
                     }
                 }, 
                 {
+                    "attrs": {}, 
                     "docs": "helper function for Fortran", 
                     "fmt": {
                         "CPP_name": "GetNameLength", 
@@ -850,7 +853,9 @@
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
-                    "qualifiers": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "GetNameLength", 
@@ -869,6 +874,7 @@
                             "type": "ExClass1"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "ExClass1 *get_class1(ExClass1 *in)", 
                     "fmt": {
                         "CPP_name": "get_class1", 
@@ -898,7 +904,6 @@
                         "underscore_name": "get_class1"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -927,6 +932,7 @@
                             "type": "SidreLength"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "CPP_name": "declare", 
@@ -954,7 +960,6 @@
                     "options": {
                         "wrap_fortran": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -966,6 +971,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void destroyall()", 
                     "fmt": {
                         "CPP_name": "destroyall", 
@@ -993,7 +999,6 @@
                         "underscore_name": "destroyall"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "destroyall", 
@@ -1002,6 +1007,9 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "TypeID getTypeID() const", 
                     "fmt": {
                         "CPP_name": "getTypeID", 
@@ -1032,9 +1040,6 @@
                         "underscore_name": "get_type_id"
                     }, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "getTypeID", 
@@ -1049,6 +1054,7 @@
                             "type": "ValueType"
                         }
                     ], 
+                    "attrs": {}, 
                     "cpp_template": {
                         "ValueType": [
                             "int", 
@@ -1067,7 +1073,6 @@
                         "wrap_fortran": false, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "setValue", 
@@ -1076,6 +1081,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "cpp_template": {
                         "ValueType": [
                             "int", 
@@ -1092,7 +1098,6 @@
                         "wrap_fortran": false, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -1120,6 +1125,7 @@
                             "type": "long"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void testoptional(int i = 1, long j=2)", 
                     "fmt": {
                         "CPP_name": "testoptional", 
@@ -1147,7 +1153,6 @@
                         "underscore_name": "testoptional"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "testoptional", 
@@ -1175,6 +1180,7 @@
                             "type": "int"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_arg_c_call": "obj%voidptr, type, int(tmp_len, C_LONG)", 
@@ -1205,6 +1211,7 @@
                                     "type": "SidreLength"
                                 }
                             ], 
+                            "attrs": {}, 
                             "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                             "fmt": {
                                 "CPP_name": "declare", 
@@ -1232,7 +1239,6 @@
                             "options": {
                                 "wrap_fortran": false
                             }, 
-                            "qualifiers": {}, 
                             "result": {
                                 "attrs": {
                                     "ptr": true
@@ -1250,7 +1256,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -1281,6 +1286,7 @@
                             "type": "long"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_arg_c_call": "obj%voidptr, type, int(tmp_len, C_LONG)", 
@@ -1311,6 +1317,7 @@
                                     "type": "SidreLength"
                                 }
                             ], 
+                            "attrs": {}, 
                             "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                             "fmt": {
                                 "CPP_name": "declare", 
@@ -1338,7 +1345,6 @@
                             "options": {
                                 "wrap_fortran": false
                             }, 
-                            "qualifiers": {}, 
                             "result": {
                                 "attrs": {
                                     "ptr": true
@@ -1356,7 +1362,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -1377,6 +1382,7 @@
                             "type": "int"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
@@ -1408,7 +1414,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "setValue", 
@@ -1426,6 +1431,7 @@
                             "type": "long"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
@@ -1457,7 +1463,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "setValue", 
@@ -1475,6 +1480,7 @@
                             "type": "float"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
@@ -1506,7 +1512,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "setValue", 
@@ -1524,6 +1529,7 @@
                             "type": "double"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void setValue(ValueType value)", 
                     "fmt": {
                         "CPP_name": "setValue", 
@@ -1555,7 +1561,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "setValue", 
@@ -1564,6 +1569,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_name": "getValue", 
@@ -1598,7 +1604,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -1607,6 +1612,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_name": "getValue", 
@@ -1641,7 +1647,6 @@
                         "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -1713,6 +1718,7 @@
     "functions": [
         {
             "args": [], 
+            "attrs": {}, 
             "decl": "void local_function1", 
             "docs": "yada yada yada", 
             "fmt": {
@@ -1741,7 +1747,6 @@
                 "underscore_name": "local_function1"
             }, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "local_function1", 
@@ -1761,6 +1766,7 @@
                     "type": "std::string"
                 }
             ], 
+            "attrs": {}, 
             "decl": "bool isNameValid(const std::string& name)", 
             "fmt": {
                 "CPP_name": "isNameValid", 
@@ -1793,7 +1799,6 @@
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "isNameValid", 
@@ -1906,9 +1911,10 @@
             "c_type": "bool", 
             "cpp_type": "bool", 
             "f_kind": "C_BOOL", 
-            "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))", 
+            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
+            "f_pre_decl": "logical(C_BOOL) {tmp_var}", 
             "f_type": "logical", 
-            "fortran_to_c": "logicaltobool({var})"
+            "f_use_tmp": true
         }, 
         "double": {
             "PY_format": "d", 

@@ -183,9 +183,12 @@ class Schema(object):
                 cpp_type  = 'bool',
                 f_kind    = 'C_BOOL',
                 c_fortran = 'logical(C_BOOL)',
-                fortran_to_c  = 'logicaltobool({var})',
+
                 f_type    = 'logical',
-                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))',
+                f_use_tmp  = True,
+                f_pre_decl = 'logical(C_BOOL) {tmp_var}',
+                f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
+
                 PY_ctor   = 'PyBool_FromLong({rv})',
 #                PY_PyTypeObject = 'PyBool_Type',
 #  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
@@ -354,7 +357,7 @@ class Schema(object):
 #        func.update(node)
 #        func.dump()
 
-        node['qualifiers'] = {}
+        node['attrs'] = {}
 
         if 'decl' in node:
             # parse decl and add to dictionary

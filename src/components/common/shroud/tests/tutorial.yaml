@@ -8,7 +8,7 @@ functions:
 - decl: void Function1()
 - decl: double Function2(double arg1, int arg2)
 - decl: bool Function3(bool arg)
-- decl: const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
+- decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
 #  result:
 #    attrs:
 #      pure: true
@@ -45,5 +45,5 @@ functions:
 classes:
 - name: Class1
   methods:
-  - decl: Class1 *new+constructor
+  - decl: Class1 *new()  +constructor
   - decl: void Method1()

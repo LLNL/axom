@@ -237,8 +237,8 @@ return 1;""", fmt)
             result_is_ptr = False
 
         result_typedef = self.typedef[result_type]
-        is_ctor  = result['attrs'].get('constructor', False)
-        is_dtor  = result['attrs'].get('destructor', False)
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
 #        is_const = result['attrs'].get('const', False)
         if is_ctor:   # or is_dtor:
             # XXX - have explicit delete

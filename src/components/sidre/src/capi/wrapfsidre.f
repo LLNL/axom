@@ -1008,9 +1008,9 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_view
-        rv = booltological(atk_datagroup_has_view(  &
+        rv = atk_datagroup_has_view(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR))
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.has_view
     end function datagroup_has_view
     
@@ -1156,9 +1156,9 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_group
-        rv = booltological(atk_datagroup_has_group(  &
+        rv = atk_datagroup_has_group(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR))
+            trim(name) // C_NULL_CHAR)
         ! splicer end class.DataGroup.method.has_group
     end function datagroup_has_group
     
@@ -1400,7 +1400,7 @@ contains
         class(databuffer) :: obj
         logical :: rv
         ! splicer begin class.DataBuffer.method.is_external
-        rv = booltological(atk_databuffer_is_external(obj%voidptr))
+        rv = atk_databuffer_is_external(obj%voidptr)
         ! splicer end class.DataBuffer.method.is_external
     end function databuffer_is_external
     
@@ -1535,7 +1535,7 @@ contains
         class(dataview) :: obj
         logical :: rv
         ! splicer begin class.DataView.method.has_buffer
-        rv = booltological(atk_dataview_has_buffer(obj%voidptr))
+        rv = atk_dataview_has_buffer(obj%voidptr)
         ! splicer end class.DataView.method.has_buffer
     end function dataview_has_buffer
     
@@ -1545,7 +1545,7 @@ contains
         class(dataview) :: obj
         logical :: rv
         ! splicer begin class.DataView.method.is_opaque
-        rv = booltological(atk_dataview_is_opaque(obj%voidptr))
+        rv = atk_dataview_is_opaque(obj%voidptr)
         ! splicer end class.DataView.method.is_opaque
     end function dataview_is_opaque
     

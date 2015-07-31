@@ -238,6 +238,9 @@ class Typedef(object):
         f_kind = None,        # Fortran kind of type
         f_cast = None,        # Expression to convert to type
                               # e.g. intrinsics such as int and real
+        f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
+        f_pre_decl = None,    # declarations needed by f_pre_call
+        f_pre_call = None,    # statement to execute before call, often to coerce types
 
         PY_format='O',        # 'format unit' for PyArg_Parse
         PY_PyTypeObject=None, # variable name of PyTypeObject instance
@@ -373,7 +376,7 @@ def copy_function_node(node):
     new = {}
 
     # Deep copy dictionaries
-    for field in [ 'args', 'qualifiers', 'result' ]:
+    for field in [ 'args', 'attrs', 'result' ]:
         new[field] = copy.deepcopy(node[field])
         known[field] = True
 

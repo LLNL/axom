@@ -28,7 +28,10 @@
             "methods": [
                 {
                     "args": [], 
-                    "decl": "Class1 *new+constructor", 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "Class1 *new()  +constructor", 
                     "fmt": {
                         "CPP_name": "new", 
                         "CPP_this": "selfobj", 
@@ -56,10 +59,8 @@
                         "underscore_name": "new"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
-                            "constructor": true, 
                             "ptr": true
                         }, 
                         "name": "new", 
@@ -68,6 +69,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void Method1()", 
                     "fmt": {
                         "CPP_name": "Method1", 
@@ -95,7 +97,6 @@
                         "underscore_name": "method1"
                     }, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "Method1", 
@@ -140,6 +141,7 @@
     "functions": [
         {
             "args": [], 
+            "attrs": {}, 
             "decl": "void Function1()", 
             "fmt": {
                 "CPP_name": "Function1", 
@@ -167,7 +169,6 @@
                 "underscore_name": "function1"
             }, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function1", 
@@ -193,6 +194,7 @@
                     "type": "int"
                 }
             ], 
+            "attrs": {}, 
             "decl": "double Function2(double arg1, int arg2)", 
             "fmt": {
                 "CPP_name": "Function2", 
@@ -222,7 +224,6 @@
                 "underscore_name": "function2"
             }, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function2", 
@@ -240,6 +241,7 @@
                     "type": "bool"
                 }
             ], 
+            "attrs": {}, 
             "decl": "bool Function3(bool arg)", 
             "fmt": {
                 "CPP_name": "Function3", 
@@ -254,8 +256,8 @@
                 "F_C_name": "tut_function3", 
                 "F_C_result_clause": " result(rv)", 
                 "F_C_subprogram": "function", 
-                "F_arg_c_call": "logicaltobool(arg)", 
-                "F_arg_c_call_tab": "\tlogicaltobool(arg)", 
+                "F_arg_c_call": "tmp_arg", 
+                "F_arg_c_call_tab": "\ttmp_arg", 
                 "F_arguments": "arg", 
                 "F_instance_ptr": "obj%voidptr", 
                 "F_name_generic": "function3", 
@@ -269,7 +271,6 @@
                 "underscore_name": "function3"
             }, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function3", 
@@ -299,7 +300,10 @@
                     "type": "std::string"
                 }
             ], 
-            "decl": "const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)", 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure", 
             "fmt": {
                 "CPP_name": "Function4a", 
                 "CPP_this": "selfobj", 
@@ -331,11 +335,9 @@
                 "underscore_name": "function4a"
             }, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {
                     "const": true, 
-                    "pure": true, 
                     "reference": true
                 }, 
                 "name": "Function4a", 
@@ -365,6 +367,7 @@
                     "type": "std::string"
                 }
             ], 
+            "attrs": {}, 
             "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
             "fmt": {
                 "CPP_name": "Function4b", 
@@ -396,7 +399,6 @@
             "options": {
                 "F_string_result_as_arg": true
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {
                     "const": true, 
@@ -427,6 +429,7 @@
                     "type": "int"
                 }
             ], 
+            "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.13, int arg2 = 5)", 
             "fmt": {
                 "CPP_name": "Function5", 
@@ -456,7 +459,6 @@
                 "underscore_name": "function5"
             }, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function5", 
@@ -476,6 +478,7 @@
                     "type": "std::string"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function6(const std::string& name)", 
             "fmt": {
                 "CPP_name": "Function6", 
@@ -505,7 +508,6 @@
             }, 
             "function_suffix": "_from_name", 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function6", 
@@ -523,6 +525,7 @@
                     "type": "int"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function6(int indx)", 
             "fmt": {
                 "CPP_name": "Function6", 
@@ -552,7 +555,6 @@
             }, 
             "function_suffix": "_from_index", 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function6", 
@@ -567,6 +569,7 @@
                     "type": "ArgType"
                 }
             ], 
+            "attrs": {}, 
             "cpp_template": {
                 "ArgType": [
                     "int", 
@@ -583,7 +586,6 @@
                 "wrap_fortran": false, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function7", 
@@ -592,6 +594,7 @@
         }, 
         {
             "args": [], 
+            "attrs": {}, 
             "cpp_template": {
                 "RetType": [
                     "int", 
@@ -608,7 +611,6 @@
                 "wrap_fortran": false, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function8", 
@@ -626,6 +628,7 @@
                     "type": "double"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
                 "CPP_name": "Function9", 
@@ -653,7 +656,6 @@
             "options": {
                 "wrap_fortran": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function9", 
@@ -671,6 +673,7 @@
                     "type": "int"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function7(ArgType arg)", 
             "fmt": {
                 "CPP_name": "Function7", 
@@ -702,7 +705,6 @@
                 "wrap_fortran": true, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function7", 
@@ -720,6 +722,7 @@
                     "type": "double"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function7(ArgType arg)", 
             "fmt": {
                 "CPP_name": "Function7", 
@@ -751,7 +754,6 @@
                 "wrap_fortran": true, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function7", 
@@ -760,6 +762,7 @@
         }, 
         {
             "args": [], 
+            "attrs": {}, 
             "decl": "RetType Function8()", 
             "fmt": {
                 "CPP_name": "Function8", 
@@ -794,7 +797,6 @@
                 "wrap_fortran": true, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function8", 
@@ -803,6 +805,7 @@
         }, 
         {
             "args": [], 
+            "attrs": {}, 
             "decl": "RetType Function8()", 
             "fmt": {
                 "CPP_name": "Function8", 
@@ -837,7 +840,6 @@
                 "wrap_fortran": true, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function8", 
@@ -856,6 +858,7 @@
                     "type": "float"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
                 "F_arg_c_call": "real(arg, C_DOUBLE)", 
@@ -877,6 +880,7 @@
                             "type": "double"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void Function9(double arg)", 
                     "fmt": {
                         "CPP_name": "Function9", 
@@ -904,7 +908,6 @@
                     "options": {
                         "wrap_fortran": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "Function9", 
@@ -919,7 +922,6 @@
                 "wrap_fortran": true, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function9", 
@@ -938,6 +940,7 @@
                     "type": "double"
                 }
             ], 
+            "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
                 "F_arg_c_call": "real(arg, C_DOUBLE)", 
@@ -959,6 +962,7 @@
                             "type": "double"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void Function9(double arg)", 
                     "fmt": {
                         "CPP_name": "Function9", 
@@ -986,7 +990,6 @@
                     "options": {
                         "wrap_fortran": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "Function9", 
@@ -1001,7 +1004,6 @@
                 "wrap_fortran": true, 
                 "wrap_python": false
             }, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "Function9", 
@@ -1047,9 +1049,10 @@
             "c_type": "bool", 
             "cpp_type": "bool", 
             "f_kind": "C_BOOL", 
-            "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))", 
+            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
+            "f_pre_decl": "logical(C_BOOL) {tmp_var}", 
             "f_type": "logical", 
-            "fortran_to_c": "logicaltobool({var})"
+            "f_use_tmp": true
         }, 
         "double": {
             "PY_format": "d", 

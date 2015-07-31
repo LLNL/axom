@@ -213,8 +213,10 @@ contains
         implicit none
         logical :: arg
         logical :: rv
+        logical(C_BOOL) tmp_arg
+        tmp_arg = arg  ! coerce to C_BOOL
         ! splicer begin function3
-        rv = booltological(tut_function3(logicaltobool(arg)))
+        rv = tut_function3(tmp_arg)
         ! splicer end function3
     end function function3
     

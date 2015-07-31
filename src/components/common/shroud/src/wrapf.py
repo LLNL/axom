@@ -385,7 +385,7 @@ class Wrapf(util.WrapperMixin):
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
 
-        func_is_const = node['qualifiers'].get('const', False)
+        func_is_const = node['attrs'].get('const', False)
 
         result = node['result']
         result_type = result['type']
@@ -396,9 +396,9 @@ class Wrapf(util.WrapperMixin):
             result_is_ptr = False
 
         result_typedef = self.typedef[result_type]
-        is_ctor  = result['attrs'].get('constructor', False)
-        is_const = result['attrs'].get('const', False)
-        is_pure  = result['attrs'].get('pure', False)
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_const = node['attrs'].get('const', False)
+        is_pure  = node['attrs'].get('pure', False)
 
         if 'F_result' in options:
             fmt_func.F_result = options.F_result
@@ -487,7 +487,7 @@ class Wrapf(util.WrapperMixin):
         else:
             C_node = node
 
-        func_is_const = node['qualifiers'].get('const', False)
+        func_is_const = node['attrs'].get('const', False)
 
         result = node['result']
         result_type = result['type']
@@ -498,8 +498,8 @@ class Wrapf(util.WrapperMixin):
             result_is_ptr = False
 
         result_typedef = self.typedef[result_type]
-        is_ctor  = result['attrs'].get('constructor', False)
-        is_dtor  = result['attrs'].get('destructor', False)
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
         # Special case some string handling
@@ -568,11 +568,11 @@ class Wrapf(util.WrapperMixin):
                 attrs['value'] = True
 
             fmt.var = arg['name']
+            fmt.tmp_var = 'tmp_' + fmt.var
             arg_f_names.append(fmt.var)
             arg_f_decl.append(self._f_decl(arg))
 
             if 'default' in attrs:
-                fmt.tmp_var = 'tmp_' + fmt.var
                 arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default=''))
                 fmt.default_value = attrs['default']
                 optional.extend([
@@ -587,11 +587,19 @@ class Wrapf(util.WrapperMixin):
                         'endif'])
                 fmt.var = fmt.tmp_var
 
-            if 'cast' in arg:
+            arg_typedef = self.typedef[arg['type']]
+
+            if arg_typedef.f_pre_decl:
+                append_format(optional, arg_typedef.f_pre_decl, fmt)
+            if arg_typedef.f_pre_call:
+                append_format(optional, arg_typedef.f_pre_call, fmt)
+            if arg_typedef.f_use_tmp:
+                fmt.var = fmt.tmp_var
+
+            if 'cast' in arg:  # used with generic
                 append_format(arg_c_call, arg['cast'], fmt)
             else:
-                rrr = self.typedef[arg['type']].fortran_to_c
-                append_format(arg_c_call, rrr, fmt)
+                append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
 
 
         if result_string:

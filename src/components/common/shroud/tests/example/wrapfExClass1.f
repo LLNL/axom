@@ -293,10 +293,12 @@ contains
         class(exclass1) :: obj
         logical :: in
         logical :: rv
+        logical(C_BOOL) tmp_in
+        tmp_in = in  ! coerce to C_BOOL
         ! splicer begin class.ExClass1.method.has_addr
-        rv = booltological(aa_exclass1_has_addr(  &
+        rv = aa_exclass1_has_addr(  &
             obj%voidptr,  &
-            logicaltobool(in)))
+            tmp_in)
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     

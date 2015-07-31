@@ -250,8 +250,8 @@ class Wrapc(util.WrapperMixin):
 
         result_typedef = self.typedef[result_type]
         is_const = result['attrs'].get('const', False)
-        is_ctor  = result['attrs'].get('constructor', False)
-        is_dtor  = result['attrs'].get('destructor', False)
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
 
         if 'C_this' in options:
             fmt_func.C_this = options.C_this

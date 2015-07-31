@@ -62,8 +62,8 @@ classes:
     options:
       cpp_header: sidre/DataStore.hpp
     methods:
-    -  decl: DataStore * new+constructor
-    -  decl: void delete+destructor
+    -  decl: DataStore * new() +constructor
+    -  decl: void delete() +destructor
     -  decl: DataGroup * getRoot()
 #    -  decl: bool hasBuffer( IndexType idx ) const
     - decl:  DataBuffer * getBuffer( IndexType idx )

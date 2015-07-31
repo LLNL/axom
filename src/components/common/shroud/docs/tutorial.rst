@@ -193,13 +193,13 @@ C++ routine::
 YAML changes::
 
     functions
-    - decl: const std::string& Function4a+pure(const std::string& arg1, const std::string& arg2)
+    - decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
 
-This is the C++ prototype with the addition of a **+pure**.  This annotation marks the routine
+This is the C++ prototype with the addition of a **+pure**.  This attribute marks the routine
 as Fortran ``pure`` meaning there are no side effects.  This is necessary because the function
-will be called twice.  Once to compute the length of the result and once to use the result.
+will be called twice.  Once to compute the length of the result and once to return the result.
 
-annotations also may be added by assign new fields in **attrs**::
+Attributes also may be added by assign new fields in **attrs**::
 
     - decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2)
       result:
@@ -549,11 +549,12 @@ To wrap the class add the lines to the YAML file::
     classes:
     - name: Class1
       methods:
-      - decl: Class1 *new+constructor
-        constructor: True   # better syntax?
+      - decl: Class1 *new() +constructor
       - decl: void Method1()
 
-The method ``new`` has the annotation **+constructor** to mark it as a constructor.
+The method ``new`` has the attribute **+constructor** to mark it as a constructor.
+It must be after the argument list to make the attribute apply to the function as a whole
+instead of just the result.
 
 The file ``wrapClass1.h`` will have an opaque struct for the class.  This is to allows some
 measure of type safety over using ``void`` pointers for every instance::

@@ -65,10 +65,10 @@ classes:
       type: [ init, repr, richcompare ]
 
     methods:
-    - decl: ExClass1 *new+constructor ( const string *name )
+    - decl: ExClass1 *new ( const string *name ) +constructor
       docs: constructor
 
-    - decl: void delete+destructor
+    - decl: void delete() +destructor
 
     - decl: int incrementCount(int incr)
       docs: blah blah
@@ -115,7 +115,7 @@ classes:
              init, alloc, new, free, del]
 
     methods:
-    - decl: ExClass2 *ExClass2+constructor (const string *name)
+    - decl: ExClass2 *ExClass2 (const string *name) +constructor
 
       # test annotating arguments
       args:
@@ -125,7 +125,7 @@ classes:
            random: 2
       -  name: extra
 
-    - decl: void delete+destructor
+    - decl: void delete() +destructor
 
     - decl: const string& getName const
       # test annotating result
