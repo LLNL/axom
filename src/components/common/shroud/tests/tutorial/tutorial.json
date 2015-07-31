@@ -1213,8 +1213,12 @@
         }, 
         "string_from_buffer": {
             "base": "string", 
+            "c_argdecl": [
+                "const char *{var}", 
+                "int len_{var}"
+            ], 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_to_cpp": "std::string({var}, {len})", 
+            "c_to_cpp": "std::string({var}, len_{var})", 
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 

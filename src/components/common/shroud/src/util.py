@@ -229,6 +229,8 @@ class Typedef(object):
         c_header=None,        # Name of C header file required for type
         c_to_cpp='{var}',     # expression to convert from C to C++
         c_fortran=None,       # expression to convert from C to Fortran
+        c_argdecl=None,       # list of argument declarations for C wrapper, None=match declaration
+                              # used with string_from_buffer 
 
         f_type=None,         # name of type in Fortran
         fortran_derived=None,    # Fortran derived type name

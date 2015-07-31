@@ -211,7 +211,8 @@ class Schema(object):
             # create std::string from buffer and length
             string_from_buffer = util.Typedef('string_from_buffer',
                 c_type   = 'char',    # XXX - char *
-                c_to_cpp = 'std::string({var}, {len})',
+                c_argdecl = ['const char *{var}', 'int len_{var}'],
+                c_to_cpp = 'std::string({var}, len_{var})',
                 cpp_type = 'std::string',
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
@@ -373,7 +374,7 @@ class Schema(object):
                 self.template_function(method, additional_methods)
             if 'fortran_generic' in method:
                 self.generic_function(method, additional_methods)
-#            self.string_to_buffer_and_len(method, additional_methods)
+            self.string_to_buffer_and_len(method, additional_methods)
         methods.extend(additional_methods)
 
     def check_function(self, node):
@@ -496,6 +497,7 @@ class Schema(object):
         If so then create a new C function that will convert string arguments into 
         a buffer and length.
         """
+        return
         options = node['options']
         if options.wrap_fortran is False:
             return
@@ -522,14 +524,12 @@ class Schema(object):
         newargs = []
         for arg in node['args']:
             argtype = arg['type']
-            if self.typedef[argtype].base != 'string':
+            if self.typedef[argtype].base == 'string':
+                # replace string argument
+                buf = dict( name=arg['name'], type='string_from_buffer', attrs={})
+                newargs.append(buf)
+            else:
                 newargs.append(arg)
-                continue
-            # Create two args for each string arg: buffer and length
-            buf = dict( name=arg['name'], type='int', attrs={})
-            newargs.append(buf)
-            buf = dict( name=arg['name'] + '_len', type='int', attrs={})
-            newargs.append(buf)
         new['args'] = newargs
 
     def check_functions(self, node):

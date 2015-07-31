@@ -244,6 +244,8 @@ class Wrapc(util.WrapperMixin):
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
 
+        # C++ functions which return 'this', are easier to call from Fortran if they are subroutines.
+        # There is no way to chain in Fortran:  obj->doA()->doB();
         if node.get('return_this', False):
             result_type = 'void'
             result_is_ptr = False
@@ -292,12 +294,16 @@ class Wrapc(util.WrapperMixin):
 
 
         for arg in node['args']:
-            arguments.append(self._c_decl('c_type', arg))
             arg_typedef = self.typedef[arg['type']]
+            fmt.var = arg['name']
+            fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
+            if arg_typedef.c_argdecl:
+                for argdecl in arg_typedef.c_argdecl:
+                    append_format(arguments, argdecl, fmt)
+            else:
+                arguments.append(self._c_decl('c_type', arg))
             # convert C argument to C++
-            anames.append(arg_typedef.c_to_cpp.format(
-                    var=arg['name'],
-                    ptr=' *' if arg['attrs'].get('ptr', False) else ''))
+            append_format(anames, arg_typedef.c_to_cpp, fmt)
             if arg_typedef.c_header:
                 # include any dependent header in generated header
                 self.header_typedef_include[arg_typedef.c_header] = True
