@@ -1200,7 +1200,6 @@
                                 "intent": "in", 
                                 "value": true
                             }, 
-                            "cast": "int({var}, C_LONG)", 
                             "name": "len", 
                             "type": "int"
                         }
@@ -1251,7 +1250,6 @@
                                 "intent": "in", 
                                 "value": true
                             }, 
-                            "cast": "int({var}, C_LONG)", 
                             "name": "len", 
                             "type": "long"
                         }

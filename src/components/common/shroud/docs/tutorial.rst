@@ -514,7 +514,7 @@ Each wrapper will coerce the argument to the correct type::
         use iso_c_binding
         implicit none
         real(C_DOUBLE) :: arg
-        call tut_function9(real(arg, C_DOUBLE))
+        call tut_function9(arg)
     end subroutine function9_double
 
 It may now be used with single or double precision arguments::

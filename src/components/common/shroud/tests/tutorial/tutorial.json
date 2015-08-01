@@ -870,7 +870,6 @@
                         "intent": "in", 
                         "value": true
                     }, 
-                    "cast": "real({var}, C_DOUBLE)", 
                     "name": "arg", 
                     "type": "float"
                 }
@@ -909,7 +908,6 @@
                         "intent": "in", 
                         "value": true
                     }, 
-                    "cast": "real({var}, C_DOUBLE)", 
                     "name": "arg", 
                     "type": "double"
                 }
@@ -917,8 +915,8 @@
             "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
-                "F_arg_c_call": "real(arg, C_DOUBLE)", 
-                "F_arg_c_call_tab": "\treal(arg, C_DOUBLE)", 
+                "F_arg_c_call": "arg", 
+                "F_arg_c_call_tab": "\targ", 
                 "F_arguments": "arg", 
                 "F_instance_ptr": "obj%voidptr", 
                 "F_name_generic": "function9", 

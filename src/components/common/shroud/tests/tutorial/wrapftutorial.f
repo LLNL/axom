@@ -341,7 +341,7 @@ contains
         implicit none
         real(C_DOUBLE) :: arg
         ! splicer begin function9_double
-        call tut_function9(real(arg, C_DOUBLE))
+        call tut_function9(arg)
         ! splicer end function9_double
     end subroutine function9_double
     

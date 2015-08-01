@@ -498,8 +498,7 @@ class Schema(object):
                         typedef = self.typedef[argtype]
                         typedef = self.typedef[typedef.f_type]
                         if not typedef.f_cast:
-                            raise RuntimeError("unable to case type %s in fortran_generic" % arg['type'])
-                        arg['cast'] = typedef.f_cast
+                            raise RuntimeError("unable to cast type %s in fortran_generic" % arg['type'])
                         arg['type'] = type
 
         # Do not process templated node, instead process

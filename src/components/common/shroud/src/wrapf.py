@@ -498,6 +498,8 @@ class Wrapf(util.WrapperMixin):
         if 'PTR_F_C_index' in fmt_func:
             C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
             fmt.F_C_name = C_node['fmt'].F_C_name
+            if len(node['args']) != len(C_node['args']):
+                raise RuntimeError("Argument mismatch between Fortran and C functions")
         else:
             C_node = node
 
@@ -576,7 +578,9 @@ class Wrapf(util.WrapperMixin):
                         fmt_func))
 
         optional = []
-        for arg in node['args']:
+        c_args = C_node['args']
+        for i, arg in enumerate(node['args']):
+            # process Fortran function arguments first
             # default argument's intent
             # XXX look at const, ptr
             attrs = arg['attrs']
@@ -603,7 +607,7 @@ class Wrapf(util.WrapperMixin):
                         wformat('{tmp_var} = {default_value}', fmt),
                         -1,
                         'endif'])
-                fmt.var = fmt.tmp_var
+                fmt.var = fmt.tmp_var  # pass tmp to C function
 
             arg_typedef = self.typedef[arg['type']]
 
@@ -614,8 +618,15 @@ class Wrapf(util.WrapperMixin):
             if arg_typedef.f_use_tmp:
                 fmt.var = fmt.tmp_var
 
-            if 'cast' in arg:  # used with generic
-                append_format(arg_c_call, arg['cast'], fmt)
+            # Then C function arguments
+            # match to corresponding C argument -- must have same number of args.
+            # may have different types, like generic
+            # or different attributes, like adding +len to string args
+            c_arg = c_args[i]
+            arg_typedef = self.typedef[c_arg['type']]
+# XXX need both, cast then fortran_to_c
+            if c_arg['type'] != arg['type']:
+                append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
                 append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
 
