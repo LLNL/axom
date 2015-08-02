@@ -285,6 +285,7 @@ class Schema(object):
         """
         ilist = self.config['function_index']
         node['function_index'] = len(ilist)
+#        node['fmt'].function_index = str(len(ilist)) # debugging
         ilist.append(node)
 
     def check_classes(self, node):
@@ -539,7 +540,6 @@ class Schema(object):
         options.wrap_c = True
         options.wrap_fortran = False
         options.wrap_python = False
-#        options.F_name_impl = 'BBBBBBBB'
 
         options = node['options']
         #        options.wrap_fortran = False
@@ -638,6 +638,12 @@ class Namify(object):
             for func in cls['methods']:
                 handler(cls, func)
 
+            options = cls['options']
+            fmt_class = cls['fmt']
+            if 'F_this' in options:
+                fmt_class.F_this = options.F_this
+
+
         for func in tree['functions']:
             handler(None, func)
 
@@ -680,8 +686,18 @@ class Namify(object):
                            'F_name_generic', '{underscore_name}')
 
         if 'PTR_F_C_index' in fmt_func:
+#            print("XXXXXXXXX", fmt_func.C_name, fmt_func.F_C_name)
             C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
-            fmt_func.F_C_name = C_node['fmt'].F_C_name
+        else:
+            C_node = node
+        fmt_func.F_C_name = C_node['fmt'].F_C_name
+#        print("YYYYYYYYY", fmt_func.C_name, fmt_func.F_C_name)
+
+        if 'F_this' in options:
+            fmt_func.F_this = options.F_this
+        if 'F_result' in options:
+            fmt_func.F_result = options.F_result
+
 
 
 if __name__ == '__main__':

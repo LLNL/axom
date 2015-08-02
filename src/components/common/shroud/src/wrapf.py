@@ -240,8 +240,6 @@ class Wrapf(util.WrapperMixin):
         fmt_class = node['fmt']
 
         fmt_class.F_derived_name = typedef.fortran_derived
-        if 'F_this' in options:
-            fmt_class.F_this = options.F_this
 
         # wrap methods
         self._push_splicer(fmt_class.cpp_class)
@@ -401,11 +399,6 @@ class Wrapf(util.WrapperMixin):
         is_const = node['attrs'].get('const', False)
         is_pure  = node['attrs'].get('pure', False)
 
-        if 'F_result' in options:
-            fmt_func.F_result = options.F_result
-        F_result = fmt_func.F_result
-        C_this = fmt_func.C_this
-
         arg_c_names = [ ]
         arg_c_decl = [ ]
 
@@ -417,15 +410,15 @@ class Wrapf(util.WrapperMixin):
             fmt_func.F_C_subprogram = 'subroutine'
         else:
             fmt_func.F_C_subprogram = 'function'
-            fmt_func.F_C_result_clause = ' result(%s)' % F_result
+            fmt_func.F_C_result_clause = ' result(%s)' % fmt.F_result
             if is_pure or func_is_const:
                 fmt_func.F_C_pure_clause = 'pure '
 
         if cls:
             # Add 'this' argument
             if not is_ctor:
-                arg_c_names.append(C_this)
-                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + C_this)
+                arg_c_names.append(fmt.C_this)
+                arg_c_decl.append('type(C_PTR), value, intent(IN) :: ' + fmt.C_this)
 
         for arg in node['args']:
             # default argument's intent
@@ -456,10 +449,10 @@ class Wrapf(util.WrapperMixin):
 
         if fmt_func.F_C_subprogram == 'function':
             if result_typedef.base == 'string':
-                arg_c_decl.append('type(C_PTR) %s' % F_result)
+                arg_c_decl.append('type(C_PTR) %s' % fmt.F_result)
             else:
                 # XXX - make sure ptr is set to avoid VALUE
-                arg_dict = dict(name=F_result,
+                arg_dict = dict(name=fmt.F_result,
                                 type=result_type,
                                 attrs=dict(ptr=True))
                 arg_c_decl.append(self._c_decl(arg_dict))
@@ -525,12 +518,6 @@ class Wrapf(util.WrapperMixin):
             result_string = False
 
         fmt_func.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt_func)
-        if 'F_this' in options:
-            fmt_func.F_this = options.F_this
-        if 'F_result' in options:
-            fmt_func.F_result = options.F_result
-        F_result = fmt_func.F_result
-        C_this = fmt_func.C_this
 
         arg_c_call = []      # arguments to C function
 
@@ -548,7 +535,7 @@ class Wrapf(util.WrapperMixin):
             subprogram = 'subroutine'
         else:
             subprogram = 'function'
-            fmt_func.F_result_clause = ' result(%s)' % F_result
+            fmt_func.F_result_clause = ' result(%s)' % fmt.F_result
         fmt_func.F_subprogram    = subprogram
 
         if cls:
@@ -644,7 +631,7 @@ class Wrapf(util.WrapperMixin):
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
                             fmt_func))
             else:
-                arg_f_decl.append(self._f_decl(result, name=F_result))
+                arg_f_decl.append(self._f_decl(result, name=fmt.F_result))
 
         if not is_ctor:
             # Add method to derived type
