@@ -349,10 +349,10 @@ return 1;""", fmt)
             append_format(PY_code, 'delete self->{BBB};', fmt)
             append_format(PY_code, 'self->{BBB} = NULL;', fmt)
         elif result_type == 'void' and not result_is_ptr:
-            line = wformat('{PY_this_call}{CPP_name}({call_list});', fmt)
+            line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
             PY_code.append(line)
         else:
-            line = wformat('{rv_decl} = {PY_this_call}{CPP_name}({call_list});', fmt)
+            line = wformat('{rv_decl} = {PY_this_call}{method_name}({call_list});', fmt)
             PY_code.append(line)
 
         if 'PY_error_pattern' in node:
@@ -424,12 +424,12 @@ static PyObject *
 # use function_suffix in splicer name since a single C++ function may
 # produce several methods.
 # XXX - make splicer name customizable?
-#        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
+#        self._create_splicer(fmt.method_name, self.PyMethodBody, default=PY_impl)
         self._create_splicer(fmt.underscore_name + fmt.function_suffix,
                              self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
-        self.PyMethodDef.append( wformat('{{"{CPP_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+        self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
     def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
@@ -525,8 +525,6 @@ static PyObject *
             fmt.function_suffix = ''
             fmt.doc_string = 'documentation'
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
-#            fmt.CPP_name = method
-            #fmt.CPP_name = methods[0]['result']['name']
 
             body = []
             body.append(1)

@@ -265,16 +265,15 @@ class Wrapc(util.WrapperMixin):
             self.header_forward[result_typedef.c_type] = True
 
         if is_const:
-            fmt_func.C_const = 'const '
-        fmt_func.CPP_this = fmt_func.C_this + 'obj'
-        fmt_func.CPP_name = result['name']
-        fmt_func.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
+            fmt.C_const = 'const '
+        fmt.CPP_this = fmt_func.C_this + 'obj'
+        fmt.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
 
         arguments = []
         anames = []
         if cls:
             # object pointer
-            fmt_func.CPP_this_call = fmt_func.CPP_this + '->'  # call method syntax
+            fmt.CPP_this_call = fmt.CPP_this + '->'  # call method syntax
             arg_dict = dict(name=fmt_func.C_this,
                             type=cls['name'], 
                             attrs=dict(ptr=True,
@@ -284,7 +283,7 @@ class Wrapc(util.WrapperMixin):
                 arg = self._c_decl('c_type', arg_dict)
                 arguments.append(arg)
         else:
-            fmt_func.CPP_this_call = ''  # call function syntax
+            fmt.CPP_this_call = ''  # call function syntax
 
 
         for arg in node['args']:
@@ -308,26 +307,26 @@ class Wrapc(util.WrapperMixin):
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
                 self.header_forward[arg_typedef.c_type] = True
-        fmt_func.C_call_list = ', '.join(anames)
+        fmt.C_call_list = ', '.join(anames)
 
-        fmt_func.C_arguments = options.get('C_arguments', ', '.join(arguments))
+        fmt.C_arguments = options.get('C_arguments', ', '.join(arguments))
 
         if node.get('return_this', False):
-            fmt_func.C_return_type = 'void'
+            fmt.C_return_type = 'void'
         else:
-            fmt_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
+            fmt.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
         if cls:
             if 'C_object' in options:
-                fmt_func.C_object = options.C_object
+                fmt.C_object = options.C_object
             else:
                 if is_ctor:
                     template = '{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
                 else:
                     template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
-                fmt_func.C_object = wformat(template, fmt_func)
+                fmt.C_object = wformat(template, fmt)
         else:
-            fmt_func.C_object = ''
+            fmt.C_object = ''
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.method_name, None)
@@ -343,12 +342,12 @@ class Wrapc(util.WrapperMixin):
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
             elif result_type == 'void' and not result_is_ptr:
-                line = wformat('{CPP_this_call}{CPP_name}{CPP_template}({C_call_list});',
+                line = wformat('{CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
                 C_code.append('return;')
             else:
-                line = wformat('{rv_decl} = {CPP_this_call}{CPP_name}{CPP_template}({C_call_list});',
+                line = wformat('{rv_decl} = {CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
 
@@ -363,15 +362,15 @@ class Wrapc(util.WrapperMixin):
 
         self.header_proto_c.append('')
         self.header_proto_c.append(wformat('{C_return_type} {C_name}({C_arguments});',
-                                           fmt_func))
+                                           fmt))
 
         impl = self.impl
         impl.append('')
-        impl.append(wformat('{C_return_type} {C_name}({C_arguments})', fmt_func))
+        impl.append(wformat('{C_return_type} {C_name}({C_arguments})', fmt))
         impl.append('{')
         if cls:
-            impl.append(fmt_func.C_object )
+            impl.append(fmt.C_object )
         self._create_splicer(fmt_func.underscore_name + 
-                             fmt.function_suffix, impl, C_code)
+                             fmt_func.function_suffix, impl, C_code)
         impl.append('}')
 
