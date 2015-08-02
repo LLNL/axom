@@ -630,6 +630,9 @@ class Wrapf(util.WrapperMixin):
             else:
                 append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
 
+            size = c_arg['attrs'].get('size', False)
+            if size:
+                arg_c_call.append('size')
 
         if result_string:
             arg_f_names.append(fmt.result_arg)

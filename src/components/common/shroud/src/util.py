@@ -241,7 +241,7 @@ class Typedef(object):
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})',
         f_kind = None,        # Fortran kind of type
-        f_cast = None,        # Expression to convert to type
+        f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
         f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
         f_pre_decl = None,    # declarations needed by f_pre_call

@@ -537,21 +537,24 @@ class Schema(object):
 
         options = new['options']
         options.wrap_c = True
-        options.wrap_fortran = True
+        options.wrap_fortran = False
         options.wrap_python = False
-        options.F_name_impl = 'BBBBBBBB'
+#        options.F_name_impl = 'BBBBBBBB'
 
         options = node['options']
-        options.wrap_fortran = False
+        #        options.wrap_fortran = False
 #        # Current Fortran function should use this new C function
-#        node['fmt'].PTR_F_C_index = new['function_index']
+        node['fmt'].PTR_F_C_index = new['function_index']
 
         newargs = []
         for arg in node['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
                 # replace string argument
-                buf = dict( name=arg['name'], type='string_from_buffer', attrs={})
+ #               arg['type'] = 'string_from_buffer'
+ #               arg['attrs']['size'] = True
+ #               newargs.append(arg)
+                buf = dict( name=arg['name'], type='string_from_buffer', attrs=dict(size=True))
                 newargs.append(buf)
             else:
                 newargs.append(arg)
