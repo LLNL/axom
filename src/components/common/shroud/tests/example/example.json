@@ -1207,6 +1207,7 @@
                     "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
+                        "F_C_name": "aa_exclass2_declare", 
                         "F_arg_c_call": "obj%voidptr, type, int(tmp_len, C_LONG)", 
                         "F_arg_c_call_tab": "\tobj%voidptr\ttype\tint(tmp_len, C_LONG)", 
                         "F_arguments": "obj, type, len", 
@@ -1257,6 +1258,7 @@
                     "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
+                        "F_C_name": "aa_exclass2_declare", 
                         "F_arg_c_call": "obj%voidptr, type, int(tmp_len, C_LONG)", 
                         "F_arg_c_call_tab": "\tobj%voidptr\ttype\tint(tmp_len, C_LONG)", 
                         "F_arguments": "obj, type, len", 

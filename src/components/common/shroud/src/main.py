@@ -614,6 +614,75 @@ class Schema(object):
             else:
                 raise RuntimeError("%s not defined" % argtype)
 
+class Namify(object):
+    """Compute names of functions in library.
+    Need to compute F_name and C_F_name since they interact.
+    Compute all C names first, then Fortran.
+    A Fortran function may call a generated C function via PTR_F_C_index
+
+    C_name - Name of C function
+    F_C_name - Fortran function for C interface
+    F_name - Name of Fortran function
+    """
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+
+    def name_library(self):
+        self.name_language(self.name_function_c)
+        self.name_language(self.name_function_fortran)
+
+    def name_language(self, handler):
+        tree = self.tree
+        for cls in tree['classes']:
+            for func in cls['methods']:
+                handler(cls, func)
+
+        for func in tree['functions']:
+            handler(None, func)
+
+    def name_function_c(self, cls, node):
+        options = node['options']
+        if not options.wrap_c:
+            return
+        fmt_func = node['fmt']
+        
+        if cls:
+            util.eval_template(options, fmt_func, 'C_name',
+                               '{C_prefix}{lower_class}_{underscore_name}{function_suffix}')
+        else:
+            util.eval_template(options, fmt_func, 'C_name',
+                               '{C_prefix}{underscore_name}{function_suffix}')
+
+        if 'F_C_name' in options:
+            fmt_func.F_C_name = options.F_C_name
+        else:
+            fmt_func.F_C_name = fmt_func.C_name.lower()
+
+    def name_function_fortran(self, cls, node):
+        """ Must process C functions for to generate their names.
+        """
+        options = node['options']
+        if not options.wrap_fortran:
+            return
+        fmt_func = node['fmt']
+
+        if cls:
+            util.eval_template(options, fmt_func,
+                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
+        else:
+            util.eval_template(options, fmt_func,
+                               'F_name_impl', '{underscore_name}{function_suffix}')
+
+        util.eval_template(options, fmt_func,
+                           'F_name_method', '{underscore_name}{function_suffix}')
+        util.eval_template(options, fmt_func,
+                           'F_name_generic', '{underscore_name}')
+
+        if 'PTR_F_C_index' in fmt_func:
+            C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
+            fmt_func.F_C_name = C_node['fmt'].F_C_name
+
 
 if __name__ == '__main__':
 
@@ -676,6 +745,7 @@ if __name__ == '__main__':
 
 
     Schema(all).check_schema()
+    Namify(all, config).name_library()
 
     if 'splicer' in all:
         # read splicer files defined in input yaml file

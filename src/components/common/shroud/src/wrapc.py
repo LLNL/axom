@@ -324,8 +324,6 @@ class Wrapc(util.WrapperMixin):
             fmt_func.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
         if cls:
-            util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{lower_class}_{underscore_name}{function_suffix}')
             if 'C_object' in options:
                 fmt_func.C_object = options.C_object
             else:
@@ -335,8 +333,6 @@ class Wrapc(util.WrapperMixin):
                     template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
                 fmt_func.C_object = wformat(template, fmt_func)
         else:
-            util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{underscore_name}{function_suffix}')
             fmt_func.C_object = ''
 
         # body of function

@@ -406,11 +406,6 @@ class Wrapf(util.WrapperMixin):
         F_result = fmt_func.F_result
         C_this = fmt_func.C_this
 
-        if 'F_C_name' in options:
-            fmt_func.F_C_name = options.F_C_name
-        else:
-            fmt_func.F_C_name = fmt_func.C_name.lower()
-
         arg_c_names = [ ]
         arg_c_decl = [ ]
 
@@ -497,7 +492,6 @@ class Wrapf(util.WrapperMixin):
         # usually the same node unless it is a generic function
         if 'PTR_F_C_index' in fmt_func:
             C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
-            fmt.F_C_name = C_node['fmt'].F_C_name
             if len(node['args']) != len(C_node['args']):
                 raise RuntimeError("Argument mismatch between Fortran and C functions")
         else:
@@ -537,17 +531,6 @@ class Wrapf(util.WrapperMixin):
             fmt_func.F_result = options.F_result
         F_result = fmt_func.F_result
         C_this = fmt_func.C_this
-
-        if cls:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
-        else:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', '{underscore_name}{function_suffix}')
-        util.eval_template(options, fmt_func,
-                            'F_name_method', '{underscore_name}{function_suffix}')
-        util.eval_template(options, fmt_func,
-                            'F_name_generic', '{underscore_name}')
 
         arg_c_call = []      # arguments to C function
 

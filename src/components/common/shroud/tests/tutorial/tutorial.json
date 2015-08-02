@@ -877,6 +877,7 @@
             "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
+                "F_C_name": "tut_function9", 
                 "F_arg_c_call": "real(arg, C_DOUBLE)", 
                 "F_arg_c_call_tab": "\treal(arg, C_DOUBLE)", 
                 "F_arguments": "arg", 
@@ -915,6 +916,7 @@
             "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
+                "F_C_name": "tut_function9", 
                 "F_arg_c_call": "arg", 
                 "F_arg_c_call_tab": "\targ", 
                 "F_arguments": "arg", 
