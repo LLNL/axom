@@ -619,6 +619,7 @@ class Namify(object):
     Need to compute F_name and C_F_name since they interact.
     Compute all C names first, then Fortran.
     A Fortran function may call a generated C function via PTR_F_C_index
+    Also compute number which may be controlled by options.    
 
     C_name - Name of C function
     F_C_name - Fortran function for C interface
@@ -629,6 +630,14 @@ class Namify(object):
         self.config = config
 
     def name_library(self):
+        options = self.tree['options']
+        fmt_library = self.tree['fmt']
+        fmt_library.C_this = options.get('C_this', 'self')
+
+        fmt_library.F_this = options.get('F_this', 'obj')
+        fmt_library.F_result = options.get('F_result', 'rv')
+        fmt_library.F_derived_member = options.get('F_derived_member', 'voidptr')
+
         self.name_language(self.name_function_c)
         self.name_language(self.name_function_fortran)
 
@@ -642,7 +651,6 @@ class Namify(object):
             fmt_class = cls['fmt']
             if 'F_this' in options:
                 fmt_class.F_this = options.F_this
-
 
         for func in tree['functions']:
             handler(None, func)
@@ -664,6 +672,9 @@ class Namify(object):
             fmt_func.F_C_name = options.F_C_name
         else:
             fmt_func.F_C_name = fmt_func.C_name.lower()
+
+        if 'C_this' in options:
+            fmt_func.C_this = options.C_this
 
     def name_function_fortran(self, cls, node):
         """ Must process C functions for to generate their names.

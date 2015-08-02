@@ -80,9 +80,7 @@ class Wrapc(util.WrapperMixin):
         return typ + ' ' + ( name or arg['name'] )
 
     def wrap_library(self):
-        options = self.tree['options']
         fmt_library = self.tree['fmt']
-        fmt_library.C_this = options.get('C_this', 'self')
         fmt_library.C_const = ''
 
         self._push_splicer('class')
@@ -255,10 +253,6 @@ class Wrapc(util.WrapperMixin):
         is_ctor  = node['attrs'].get('constructor', False)
         is_dtor  = node['attrs'].get('destructor', False)
 
-        if 'C_this' in options:
-            fmt_func.C_this = options.C_this
-        C_this = fmt_func.C_this
-
         if result_typedef.c_header:
             # include any dependent header in generated header
             self.header_typedef_include[result_typedef.c_header] = True
@@ -272,7 +266,7 @@ class Wrapc(util.WrapperMixin):
 
         if is_const:
             fmt_func.C_const = 'const '
-        fmt_func.CPP_this = C_this + 'obj'
+        fmt_func.CPP_this = fmt_func.C_this + 'obj'
         fmt_func.CPP_name = result['name']
         fmt_func.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
 
@@ -281,7 +275,7 @@ class Wrapc(util.WrapperMixin):
         if cls:
             # object pointer
             fmt_func.CPP_this_call = fmt_func.CPP_this + '->'  # call method syntax
-            arg_dict = dict(name=C_this,
+            arg_dict = dict(name=fmt_func.C_this,
                             type=cls['name'], 
                             attrs=dict(ptr=True,
                                        const=is_const))
@@ -345,9 +339,9 @@ class Wrapc(util.WrapperMixin):
             # generate the C body
             C_code = []
             if is_ctor:
-                C_code.append('return (%s) %sobj;' % (C_this_type, C_this))
+                C_code.append('return (%s) %sobj;' % (C_this_type, fmt_func.C_this))
             elif is_dtor:
-                C_code.append('delete %sobj;' % C_this)
+                C_code.append('delete %sobj;' % fmt_func.C_this)
             elif result_type == 'void' and not result_is_ptr:
                 line = wformat('{CPP_this_call}{CPP_name}{CPP_template}({C_call_list});',
                                fmt)

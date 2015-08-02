@@ -167,10 +167,6 @@ class Wrapf(util.WrapperMixin):
     def wrap_library(self):
         options = self.tree['options']
         fmt_library = self.tree['fmt']
-        fmt_library.F_this = options.get('F_this', 'obj')
-        fmt_library.F_result = options.get('F_result', 'rv')
-        fmt_library.F_derived_member = options.get('F_derived_member', 'voidptr')
-        fmt_library.F_instance_ptr   = wformat('{F_this}%{F_derived_member}', fmt_library)
         fmt_library.F_result_clause = ''
         fmt_library.F_pure_clause = ''
         fmt_library.F_C_result_clause = ''
@@ -236,7 +232,6 @@ class Wrapf(util.WrapperMixin):
         unname = util.un_camel(name)
         typedef = self.typedef[name]
 
-        options = node['options']
         fmt_class = node['fmt']
 
         fmt_class.F_derived_name = typedef.fortran_derived
@@ -407,12 +402,12 @@ class Wrapf(util.WrapperMixin):
         # Add 
         if result_type == 'void' and not result_is_ptr:
             #  void=subroutine   void *=function
-            fmt_func.F_C_subprogram = 'subroutine'
+            fmt.F_C_subprogram = 'subroutine'
         else:
-            fmt_func.F_C_subprogram = 'function'
-            fmt_func.F_C_result_clause = ' result(%s)' % fmt.F_result
+            fmt.F_C_subprogram = 'function'
+            fmt.F_C_result_clause = ' result(%s)' % fmt.F_result
             if is_pure or func_is_const:
-                fmt_func.F_C_pure_clause = 'pure '
+                fmt.F_C_pure_clause = 'pure '
 
         if cls:
             # Add 'this' argument
@@ -445,9 +440,9 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_c_decl.append(self._c_decl(arg))
 
-        fmt_func.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
+        fmt.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 
-        if fmt_func.F_C_subprogram == 'function':
+        if fmt.F_C_subprogram == 'function':
             if result_typedef.base == 'string':
                 arg_c_decl.append('type(C_PTR) %s' % fmt.F_result)
             else:
@@ -461,17 +456,17 @@ class Wrapf(util.WrapperMixin):
         c_interface.append('')
         c_interface.append(wformat(
                 '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
-                fmt_func))
+                fmt))
         c_interface.append(2)  # extra indent for continued line
         c_interface.append(wformat(
                 'bind(C, name="{C_name}")',
-                fmt_func))
+                fmt))
         c_interface.append(-1)
         c_interface.append('use iso_c_binding')
         c_interface.append('implicit none')
         c_interface.extend(arg_c_decl)
         c_interface.append(-1)
-        c_interface.append(wformat('end {F_C_subprogram} {F_C_name}', fmt_func))
+        c_interface.append(wformat('end {F_C_subprogram} {F_C_name}', fmt))
 
     def wrap_method_impl(self, cls, node):
         """
@@ -517,7 +512,7 @@ class Wrapf(util.WrapperMixin):
         else:
             result_string = False
 
-        fmt_func.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt_func)
+        fmt.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt)
 
         arg_c_call = []      # arguments to C function
 
@@ -535,17 +530,17 @@ class Wrapf(util.WrapperMixin):
             subprogram = 'subroutine'
         else:
             subprogram = 'function'
-            fmt_func.F_result_clause = ' result(%s)' % fmt.F_result
-        fmt_func.F_subprogram    = subprogram
+            fmt.F_result_clause = ' result(%s)' % fmt.F_result
+        fmt.F_subprogram    = subprogram
 
         if cls:
             # Add 'this' argument
             if not is_ctor:
-                arg_c_call.append(fmt_func.F_instance_ptr)
-                arg_f_names.append(fmt_func.F_this)
+                arg_c_call.append(fmt.F_instance_ptr)
+                arg_f_names.append(fmt.F_this)
                 arg_f_decl.append(wformat(
                         'class({F_derived_name}) :: {F_this}',
-                        fmt_func))
+                        fmt))
 
         optional = []
         c_args = C_node['args']
@@ -611,38 +606,38 @@ class Wrapf(util.WrapperMixin):
             if result_typedef.f_pre_decl:
                 append_format(arg_f_decl, result_typedef.f_pre_decl, fmt)
 
-        fmt_func.F_arg_c_call = ', '.join(arg_c_call)
-        fmt_func.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
-        fmt_func.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
+        fmt.F_arg_c_call = ', '.join(arg_c_call)
+        fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
+        fmt.F_arguments = options.get('F_arguments', ', '.join(arg_f_names))
 
         # declare function return value after arguments
         # since arguments may be used to compute return value
         # (for example, string lengths)
         if subprogram == 'function':
 #            if func_is_const:
-#                fmt_func.F_pure_clause = 'pure '
+#                fmt.F_pure_clause = 'pure '
             if result_typedef.base == 'string':
                 # special case returning a string
                 rvlen = result['attrs'].get('len', None)
                 if rvlen is None:
-                    rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call}))', fmt_func)
-                fmt_func.rvlen = wformat(rvlen, fmt)
+                    rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call}))', fmt)
+                fmt.rvlen = wformat(rvlen, fmt)
                 arg_f_decl.append(
                     wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
-                            fmt_func))
+                            fmt))
             else:
                 arg_f_decl.append(self._f_decl(result, name=fmt.F_result))
 
         if not is_ctor:
             # Add method to derived type
-            F_name_method = fmt_func.F_name_method
-#            if not fmt_func.get('CPP_template', None):
-            if not fmt_func.get('CPP_return_templated', False):
+            F_name_method = fmt.F_name_method
+#            if not fmt.get('CPP_template', None):
+            if not fmt.get('CPP_return_templated', False):
                 # if return type is templated in C++, then do not set up generic
                 # since only the return type may be different (ex. getValue<T>())
-                self.f_type_generic.setdefault(fmt_func.F_name_generic,[]).append(F_name_method)
+                self.f_type_generic.setdefault(fmt.F_name_generic,[]).append(F_name_method)
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    F_name_method, fmt_func.F_name_impl))
+                    F_name_method, fmt.F_name_impl))
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)
@@ -653,7 +648,7 @@ class Wrapf(util.WrapperMixin):
         else:
             F_code = []
             if is_ctor:
-                line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt_func)
+                line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
             elif result_string:
                 line1 = wformat(result_typedef.f_return_code, fmt)
@@ -662,26 +657,26 @@ class Wrapf(util.WrapperMixin):
                 line1 = wformat(result_typedef.f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
             else:
-                line1 = wformat('call {F_C_name}({F_arg_c_call_tab})', fmt_func)
+                line1 = wformat('call {F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
 
             if result_typedef.f_post_call:
                 # adjust return value or cleanup
                 append_format(F_code, result_typedef.f_post_call, fmt)
             if is_dtor:
-                F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt_func))
+                F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt))
 
         impl = self.impl
         impl.append('')
-        impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt_func))
+        impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
         impl.append(1)
         impl.extend(arg_f_use)
         impl.append('implicit none')
         impl.extend(arg_f_decl)
         impl.extend(optional)
-        self._create_splicer(fmt_func.F_name_method, impl, F_code)
+        self._create_splicer(fmt.F_name_method, impl, F_code)
         impl.append(-1)
-        impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt_func))
+        impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt))
 
     def append_method_arguments(self, F_code, line1):
         """Append each argment in arg_c_call as a line in the function.
