@@ -696,14 +696,6 @@ class Namify(object):
         util.eval_template(options, fmt_func,
                            'F_name_generic', '{underscore_name}')
 
-        if 'PTR_F_C_index' in fmt_func:
-#            print("XXXXXXXXX", fmt_func.C_name, fmt_func.F_C_name)
-            C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
-        else:
-            C_node = node
-        fmt_func.F_C_name = C_node['fmt'].F_C_name
-#        print("YYYYYYYYY", fmt_func.C_name, fmt_func.F_C_name)
-
         if 'F_this' in options:
             fmt_func.F_this = options.F_this
         if 'F_result' in options:

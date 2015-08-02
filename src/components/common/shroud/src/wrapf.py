@@ -484,6 +484,7 @@ class Wrapf(util.WrapperMixin):
                 raise RuntimeError("Argument mismatch between Fortran and C functions")
         else:
             C_node = node
+        fmt_func.F_C_name = C_node['fmt'].F_C_name
 
         func_is_const = node['attrs'].get('const', False)
 
