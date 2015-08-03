@@ -193,7 +193,7 @@ class Wrapf(util.WrapperMixin):
                 self._begin_output_file()
             self.tree['F_module_dependencies'] = []
             for node in self.tree['functions']:
-                self.wrap_method(None, node)
+                self.wrap_function(None, node)
 
             # Look for generics
             # splicer to extend generic
@@ -240,7 +240,7 @@ class Wrapf(util.WrapperMixin):
         self._push_splicer(fmt_class.cpp_class)
         self._push_splicer('method')
         for method in node['methods']:
-            self.wrap_method(node, method)
+            self.wrap_function(node, method)
         self._pop_splicer('method')
         self.impl.append('')
         self._create_splicer('additional_functions', self.impl)
@@ -331,7 +331,7 @@ class Wrapf(util.WrapperMixin):
         operator.append(-1)
         append_format(operator, 'end function {procedure}', fmt)
 
-    def wrap_method(self, cls, node):
+    def wrap_function(self, cls, node):
         """
         cls  - class node or None for functions
         node - function/method node
@@ -362,11 +362,11 @@ class Wrapf(util.WrapperMixin):
             self.log.write(" {0} {1[result][name]}\n".format(cls_function, node))
 
         if options.wrap_c:
-            self.wrap_method_interface(cls, node)
+            self.wrap_function_interface(cls, node)
         if options.wrap_fortran:
-            self.wrap_method_impl(cls, node)
+            self.wrap_function_impl(cls, node)
 
-    def wrap_method_interface(self, cls, node):
+    def wrap_function_interface(self, cls, node):
         """
         cls  - class node or None for functions
         node - function/method node
@@ -468,7 +468,7 @@ class Wrapf(util.WrapperMixin):
         c_interface.append(-1)
         c_interface.append(wformat('end {F_C_subprogram} {F_C_name}', fmt))
 
-    def wrap_method_impl(self, cls, node):
+    def wrap_function_impl(self, cls, node):
         """
         Wrap implementation of Fortran function
         """

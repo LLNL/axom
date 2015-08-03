@@ -109,7 +109,7 @@ class Wrapc(util.WrapperMixin):
         # worker function for write_file
         self._push_splicer('function')
         for node in tree['functions']:
-            self.wrap_method(None, node)
+            self.wrap_function(None, node)
         self._pop_splicer('function')
 
     def write_header(self, node, fname, cls=False):
@@ -211,10 +211,10 @@ class Wrapc(util.WrapperMixin):
 
         self._push_splicer('method')
         for method in node['methods']:
-            self.wrap_method(node, method)
+            self.wrap_function(node, method)
         self._pop_splicer('method')
 
-    def wrap_method(self, cls, node):
+    def wrap_function(self, cls, node):
         """
         cls  - class node or None for functions
         node - function/method node

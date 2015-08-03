@@ -95,7 +95,7 @@ class Wrapp(util.WrapperMixin):
             self._push_splicer('function')
             self._begin_class()
             for node in self.tree['functions']:
-                self.wrap_method(None, node)
+                self.wrap_function(None, node)
             self._pop_splicer('function')
 
         self.write_header(self.tree)
@@ -141,7 +141,7 @@ class Wrapp(util.WrapperMixin):
         # wrap methods
         self._push_splicer('method')
         for method in node['methods']:
-            self.wrap_method(node, method)
+            self.wrap_function(node, method)
         self._pop_splicer('method')
 
     def create_class_helper_functions(self, node):
@@ -205,7 +205,7 @@ return 1;""", fmt)
 
         self._pop_splicer('helper')
 
-    def wrap_method(self, cls, node):
+    def wrap_function(self, cls, node):
         """
         cls  - class node or None for functions
         node - function/method node
