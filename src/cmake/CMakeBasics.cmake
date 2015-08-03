@@ -255,7 +255,7 @@ endmacro(add_target_definitions)
 ## library is generated.
 ##
 ## In addition, this macro will add the associated dependencies to the given
-## library target. Specifically, it will add a dependecy to the library's
+## library target. Specifically, it will add a dependency to the library's
 ## "copy_headers_target" if it exists and has been defined before the call to
 ## "make_library", as well as, the corresponding "copy_headers_target" of each
 ## of the supplied dependencies.
