@@ -277,8 +277,7 @@ class Schema(object):
         classes = node.setdefault('classes', [])
         self.check_classes(classes)
 
-        functions = node.setdefault('functions', [])
-        self.check_functions(functions)
+        node['functions'] = self.check_functions(node.get('functions', []))
 
     def append_function_index(self, node):
         """append to function_index, set index into node.
@@ -355,20 +354,23 @@ class Schema(object):
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
 
-        methods = node.setdefault('methods', [])
+        methods = node.get('methods', [])
         for method in methods:
             if not isinstance(method, dict):
                 raise TypeError("classes[n]['methods'] must be a dictionary")
             self.check_function(method)
 
-        self.define_function_suffix(methods)
+        node['methods'] = self.define_function_suffix(methods)
         self.pop_fmt()
         self.pop_options()
 
-    def define_function_suffix(self, methods):
-        # look for methods with the same name
+    def define_function_suffix(self, functions):
+        """ look for functions with the same name
+        Return a new list if overloaded function inserted.
+        """
+
         overloaded_functions = {}
-        for method in methods:
+        for method in functions:
             overloaded_functions.setdefault(method['result']['name'], []).append(method)
 
         # look for function overload and compute function_suffix
@@ -380,14 +382,15 @@ class Schema(object):
                         function['fmt'].function_suffix =  '_%d' % i
 
         # Create additional functions needed for wrapping
-        additional_methods = []
-        for method in methods:
+        additional_functions = []
+        for method in functions:
+            additional_functions.append(method)
             if 'cpp_template' in method:
-                self.template_function(method, additional_methods)
+                self.template_function(method, additional_functions)
             if 'fortran_generic' in method:
-                self.generic_function(method, additional_methods)
-            self.string_to_buffer_and_len(method, additional_methods)
-        methods.extend(additional_methods)
+                self.generic_function(method, additional_functions)
+            self.string_to_buffer_and_len(method, additional_functions)
+        return additional_functions
 
     def check_function(self, node):
         """ Make sure necessary fields are present for a function.
@@ -432,7 +435,7 @@ class Schema(object):
         self.pop_fmt()
         self.pop_options()
 
-    def template_function(self, node, additional_methods):
+    def template_function(self, node, additional_functions):
         """ Create overloaded functions for each templated method.
         """
         if len(node['cpp_template']) != 1:
@@ -442,7 +445,7 @@ class Schema(object):
         for typename, types in node['cpp_template'].items():
             for type in types:
                 new = util.copy_function_node(node)
-                additional_methods.append(new)
+                additional_functions.append(new)
                 self.append_function_index(new)
 
                 new['generated'] = 'cpp_template'
@@ -469,7 +472,7 @@ class Schema(object):
         options.wrap_fortran = False
         options.wrap_python = False
 
-    def generic_function(self, node, additional_methods):
+    def generic_function(self, node, additional_functions):
         """ Create overloaded functions for each generic method.
         """
         if len(node['fortran_generic']) != 1:
@@ -479,7 +482,7 @@ class Schema(object):
         for argname, types in node['fortran_generic'].items():
             for type in types:
                 new = util.copy_function_node(node)
-                additional_methods.append(new)
+                additional_functions.append(new)
                 self.append_function_index(new)
 
                 new['generated'] = 'fortran_generic'
@@ -509,7 +512,7 @@ class Schema(object):
         options.wrap_fortran = False
 #        options.wrap_python = False
 
-    def string_to_buffer_and_len(self, node, additional_methods):
+    def string_to_buffer_and_len(self, node, additional_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.
         If so then create a new C function that will convert string arguments into 
         a buffer and length.
@@ -529,7 +532,7 @@ class Schema(object):
             return
 
         new = util.copy_function_node(node)
-        additional_methods.append(new)
+        additional_functions.append(new)
         self.append_function_index(new)
 
         new['generated'] = 'string_to_buffer_and_len'
@@ -553,14 +556,14 @@ class Schema(object):
                 # Add len_trim attribute
                 arg['attrs']['len_trim'] = True
 
-    def check_functions(self, node):
+    def check_functions(self, func_list):
         """ check functions which are not in a class.
         """
-        if not isinstance(node, list):
+        if not isinstance(func_list, list):
             raise TypeError("functions must be a list")
-        for func in node:
+        for func in func_list:
             self.check_function(func)
-        self.define_function_suffix(node)
+        return self.define_function_suffix(func_list)
 
     def check_class_dependencies(self, node):
         """

@@ -669,153 +669,6 @@
                     "return_this": true
                 }, 
                 {
-                    "args": [], 
-                    "attrs": {}, 
-                    "decl": "void destroyall()", 
-                    "fmt": {
-                        "C_name": "AA_exclass2_destroyall", 
-                        "F_C_name": "aa_exclass2_destroyall", 
-                        "F_name_generic": "destroyall", 
-                        "F_name_impl": "exclass2_destroyall", 
-                        "F_name_method": "destroyall", 
-                        "PY_name_impl": "PP_exclass2_destroyall", 
-                        "method_name": "destroyall", 
-                        "underscore_name": "destroyall"
-                    }, 
-                    "function_index": 19, 
-                    "options": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "destroyall", 
-                        "type": "void"
-                    }
-                }, 
-                {
-                    "args": [], 
-                    "attrs": {
-                        "const": true
-                    }, 
-                    "decl": "TypeID getTypeID() const", 
-                    "fmt": {
-                        "C_name": "AA_exclass2_get_type_id", 
-                        "F_C_name": "aa_exclass2_get_type_id", 
-                        "F_name_generic": "get_type_id", 
-                        "F_name_impl": "exclass2_get_type_id", 
-                        "F_name_method": "get_type_id", 
-                        "PY_name_impl": "PP_exclass2_get_type_id", 
-                        "method_name": "getTypeID", 
-                        "underscore_name": "get_type_id"
-                    }, 
-                    "function_index": 20, 
-                    "options": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "getTypeID", 
-                        "type": "TypeID"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {}, 
-                            "name": "value", 
-                            "type": "ValueType"
-                        }
-                    ], 
-                    "attrs": {}, 
-                    "cpp_template": {
-                        "ValueType": [
-                            "int", 
-                            "long", 
-                            "float", 
-                            "double"
-                        ]
-                    }, 
-                    "decl": "void setValue(ValueType value)", 
-                    "fmt": {
-                        "method_name": "setValue", 
-                        "underscore_name": "set_value"
-                    }, 
-                    "function_index": 21, 
-                    "options": {
-                        "wrap_c": false, 
-                        "wrap_fortran": false, 
-                        "wrap_python": false
-                    }, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "setValue", 
-                        "type": "void"
-                    }
-                }, 
-                {
-                    "args": [], 
-                    "attrs": {}, 
-                    "cpp_template": {
-                        "ValueType": [
-                            "int", 
-                            "double"
-                        ]
-                    }, 
-                    "decl": "ValueType getValue()", 
-                    "fmt": {
-                        "method_name": "getValue", 
-                        "underscore_name": "get_value"
-                    }, 
-                    "function_index": 22, 
-                    "options": {
-                        "wrap_c": false, 
-                        "wrap_fortran": false, 
-                        "wrap_python": false
-                    }, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "getValue", 
-                        "type": "ValueType"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "default": 1, 
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "i", 
-                            "type": "int"
-                        }, 
-                        {
-                            "attrs": {
-                                "default": 2, 
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "j", 
-                            "type": "long"
-                        }
-                    ], 
-                    "attrs": {}, 
-                    "decl": "void testoptional(int i = 1, long j=2)", 
-                    "fmt": {
-                        "C_name": "AA_exclass2_testoptional", 
-                        "F_C_name": "aa_exclass2_testoptional", 
-                        "F_name_generic": "testoptional", 
-                        "F_name_impl": "exclass2_testoptional", 
-                        "F_name_method": "testoptional", 
-                        "PY_name_impl": "PP_exclass2_testoptional", 
-                        "method_name": "testoptional", 
-                        "underscore_name": "testoptional"
-                    }, 
-                    "function_index": 23, 
-                    "options": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "testoptional", 
-                        "type": "void"
-                    }
-                }, 
-                {
                     "args": [
                         {
                             "attrs": {
@@ -904,6 +757,86 @@
                         "type": "void"
                     }, 
                     "return_this": true
+                }, 
+                {
+                    "args": [], 
+                    "attrs": {}, 
+                    "decl": "void destroyall()", 
+                    "fmt": {
+                        "C_name": "AA_exclass2_destroyall", 
+                        "F_C_name": "aa_exclass2_destroyall", 
+                        "F_name_generic": "destroyall", 
+                        "F_name_impl": "exclass2_destroyall", 
+                        "F_name_method": "destroyall", 
+                        "PY_name_impl": "PP_exclass2_destroyall", 
+                        "method_name": "destroyall", 
+                        "underscore_name": "destroyall"
+                    }, 
+                    "function_index": 19, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "destroyall", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
+                    "decl": "TypeID getTypeID() const", 
+                    "fmt": {
+                        "C_name": "AA_exclass2_get_type_id", 
+                        "F_C_name": "aa_exclass2_get_type_id", 
+                        "F_name_generic": "get_type_id", 
+                        "F_name_impl": "exclass2_get_type_id", 
+                        "F_name_method": "get_type_id", 
+                        "PY_name_impl": "PP_exclass2_get_type_id", 
+                        "method_name": "getTypeID", 
+                        "underscore_name": "get_type_id"
+                    }, 
+                    "function_index": 20, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getTypeID", 
+                        "type": "TypeID"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {}, 
+                            "name": "value", 
+                            "type": "ValueType"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "cpp_template": {
+                        "ValueType": [
+                            "int", 
+                            "long", 
+                            "float", 
+                            "double"
+                        ]
+                    }, 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "method_name": "setValue", 
+                        "underscore_name": "set_value"
+                    }, 
+                    "function_index": 21, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
                 }, 
                 {
                     "args": [
@@ -1048,6 +981,32 @@
                 {
                     "args": [], 
                     "attrs": {}, 
+                    "cpp_template": {
+                        "ValueType": [
+                            "int", 
+                            "double"
+                        ]
+                    }, 
+                    "decl": "ValueType getValue()", 
+                    "fmt": {
+                        "method_name": "getValue", 
+                        "underscore_name": "get_value"
+                    }, 
+                    "function_index": 22, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "ValueType"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "attrs": {}, 
                     "decl": "ValueType getValue()", 
                     "fmt": {
                         "CPP_return_templated": true, 
@@ -1097,6 +1056,47 @@
                         "attrs": {}, 
                         "name": "getValue", 
                         "type": "double"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "default": 1, 
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "i", 
+                            "type": "int"
+                        }, 
+                        {
+                            "attrs": {
+                                "default": 2, 
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "j", 
+                            "type": "long"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void testoptional(int i = 1, long j=2)", 
+                    "fmt": {
+                        "C_name": "AA_exclass2_testoptional", 
+                        "F_C_name": "aa_exclass2_testoptional", 
+                        "F_name_generic": "testoptional", 
+                        "F_name_impl": "exclass2_testoptional", 
+                        "F_name_method": "testoptional", 
+                        "PY_name_impl": "PP_exclass2_testoptional", 
+                        "method_name": "testoptional", 
+                        "underscore_name": "testoptional"
+                    }, 
+                    "function_index": 23, 
+                    "options": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "testoptional", 
+                        "type": "void"
                     }
                 }
             ], 

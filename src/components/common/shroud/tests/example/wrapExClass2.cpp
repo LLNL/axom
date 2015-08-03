@@ -82,15 +82,6 @@ return rv;
 // splicer end class.ExClass2.method.get_type_id
 }
 
-void AA_exclass2_testoptional(AA_exclass2 * self, int i, long j)
-{
-ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.testoptional
-selfobj->testoptional(i, j);
-return;
-// splicer end class.ExClass2.method.testoptional
-}
-
 void AA_exclass2_set_value_int(AA_exclass2 * self, int value)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
@@ -143,6 +134,15 @@ ExClass2 *selfobj = static_cast<ExClass2 *>(self);
 double rv = selfobj->getValue<double>();
 return rv;
 // splicer end class.ExClass2.method.get_value_double
+}
+
+void AA_exclass2_testoptional(AA_exclass2 * self, int i, long j)
+{
+ExClass2 *selfobj = static_cast<ExClass2 *>(self);
+// splicer begin class.ExClass2.method.testoptional
+selfobj->testoptional(i, j);
+return;
+// splicer end class.ExClass2.method.testoptional
 }
 
 // splicer begin class.ExClass2.additional_functions

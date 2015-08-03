@@ -23,17 +23,17 @@ module exclass2_mod
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
-        procedure :: destroyall => exclass2_destroyall
-        procedure :: get_type_id => exclass2_get_type_id
-        procedure :: testoptional => exclass2_testoptional
         procedure :: declare_int => exclass2_declare_int
         procedure :: declare_long => exclass2_declare_long
+        procedure :: destroyall => exclass2_destroyall
+        procedure :: get_type_id => exclass2_get_type_id
         procedure :: set_value_int => exclass2_set_value_int
         procedure :: set_value_long => exclass2_set_value_long
         procedure :: set_value_float => exclass2_set_value_float
         procedure :: set_value_double => exclass2_set_value_double
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
+        procedure :: testoptional => exclass2_testoptional
         generic :: declare => &
             ! splicer begin class.ExClass2.generic.declare
             ! splicer end class.ExClass2.generic.declare
@@ -125,15 +125,6 @@ module exclass2_mod
             integer(C_INT) :: rv
         end function aa_exclass2_get_type_id
         
-        subroutine aa_exclass2_testoptional(self, i, j) &
-                bind(C, name="AA_exclass2_testoptional")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: i
-            integer(C_LONG), value, intent(IN) :: j
-        end subroutine aa_exclass2_testoptional
-        
         subroutine aa_exclass2_set_value_int(self, value) &
                 bind(C, name="AA_exclass2_set_value_int")
             use iso_c_binding
@@ -181,6 +172,15 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE) :: rv
         end function aa_exclass2_get_value_double
+        
+        subroutine aa_exclass2_testoptional(self, i, j) &
+                bind(C, name="AA_exclass2_testoptional")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: i
+            integer(C_LONG), value, intent(IN) :: j
+        end subroutine aa_exclass2_testoptional
         
         ! splicer begin class.ExClass2.additional_interfaces
         ! splicer end class.ExClass2.additional_interfaces
@@ -241,51 +241,6 @@ contains
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
-    subroutine exclass2_destroyall(obj)
-        use iso_c_binding
-        implicit none
-        class(exclass2) :: obj
-        ! splicer begin class.ExClass2.method.destroyall
-        call aa_exclass2_destroyall(obj%voidptr)
-        ! splicer end class.ExClass2.method.destroyall
-    end subroutine exclass2_destroyall
-    
-    function exclass2_get_type_id(obj) result(rv)
-        use iso_c_binding
-        implicit none
-        class(exclass2) :: obj
-        integer(C_INT) :: rv
-        ! splicer begin class.ExClass2.method.get_type_id
-        rv = aa_exclass2_get_type_id(obj%voidptr)
-        ! splicer end class.ExClass2.method.get_type_id
-    end function exclass2_get_type_id
-    
-    subroutine exclass2_testoptional(obj, i, j)
-        use iso_c_binding
-        implicit none
-        class(exclass2) :: obj
-        integer(C_INT), optional :: i
-        integer(C_INT) :: tmp_i
-        integer(C_LONG), optional :: j
-        integer(C_LONG) :: tmp_j
-        if (present(i)) then
-            tmp_i = i
-        else
-            tmp_i = 1
-        endif
-        if (present(j)) then
-            tmp_j = j
-        else
-            tmp_j = 2
-        endif
-        ! splicer begin class.ExClass2.method.testoptional
-        call aa_exclass2_testoptional(  &
-            obj%voidptr,  &
-            tmp_i,  &
-            tmp_j)
-        ! splicer end class.ExClass2.method.testoptional
-    end subroutine exclass2_testoptional
-    
     subroutine exclass2_declare_int(obj, type, len)
         use iso_c_binding
         implicit none
@@ -325,6 +280,25 @@ contains
             int(tmp_len, C_LONG))
         ! splicer end class.ExClass2.method.declare_long
     end subroutine exclass2_declare_long
+    
+    subroutine exclass2_destroyall(obj)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        ! splicer begin class.ExClass2.method.destroyall
+        call aa_exclass2_destroyall(obj%voidptr)
+        ! splicer end class.ExClass2.method.destroyall
+    end subroutine exclass2_destroyall
+    
+    function exclass2_get_type_id(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.ExClass2.method.get_type_id
+        rv = aa_exclass2_get_type_id(obj%voidptr)
+        ! splicer end class.ExClass2.method.get_type_id
+    end function exclass2_get_type_id
     
     subroutine exclass2_set_value_int(obj, value)
         use iso_c_binding
@@ -393,6 +367,32 @@ contains
         rv = aa_exclass2_get_value_double(obj%voidptr)
         ! splicer end class.ExClass2.method.get_value_double
     end function exclass2_get_value_double
+    
+    subroutine exclass2_testoptional(obj, i, j)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT), optional :: i
+        integer(C_INT) :: tmp_i
+        integer(C_LONG), optional :: j
+        integer(C_LONG) :: tmp_j
+        if (present(i)) then
+            tmp_i = i
+        else
+            tmp_i = 1
+        endif
+        if (present(j)) then
+            tmp_j = j
+        else
+            tmp_j = 2
+        endif
+        ! splicer begin class.ExClass2.method.testoptional
+        call aa_exclass2_testoptional(  &
+            obj%voidptr,  &
+            tmp_i,  &
+            tmp_j)
+        ! splicer end class.ExClass2.method.testoptional
+    end subroutine exclass2_testoptional
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

@@ -113,13 +113,6 @@ module tutorial_mod
             integer(C_INT), value, intent(IN) :: indx
         end subroutine tut_function6_from_index
         
-        subroutine tut_function9(arg) &
-                bind(C, name="TUT_function9")
-            use iso_c_binding
-            implicit none
-            real(C_DOUBLE), value, intent(IN) :: arg
-        end subroutine tut_function9
-        
         subroutine tut_function7_int(arg) &
                 bind(C, name="TUT_function7_int")
             use iso_c_binding
@@ -147,6 +140,13 @@ module tutorial_mod
             implicit none
             real(C_DOUBLE) :: rv
         end function tut_function8_double
+        
+        subroutine tut_function9(arg) &
+                bind(C, name="TUT_function9")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: arg
+        end subroutine tut_function9
     end interface
     
     interface function6

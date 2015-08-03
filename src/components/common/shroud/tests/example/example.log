@@ -27,13 +27,13 @@ C method ExClass1 *get_class1(ExClass1 *in)
 C method void* declare(TypeID type, SidreLength len = 1)
 C method void destroyall()
 C method TypeID getTypeID() const
+C method void setValue(ValueType value)
+C method void setValue(ValueType value)
+C method void setValue(ValueType value)
+C method void setValue(ValueType value)
+C method ValueType getValue()
+C method ValueType getValue()
 C method void testoptional(int i = 1, long j=2)
-C method void setValue(ValueType value)
-C method void setValue(ValueType value)
-C method void setValue(ValueType value)
-C method void setValue(ValueType value)
-C method ValueType getValue()
-C method ValueType getValue()
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 C function void local_function1
@@ -62,17 +62,17 @@ C-interface, Fortran method const string& getName const
 C-interface, Fortran method GetNameLength
 C-interface, Fortran method ExClass1 *get_class1(ExClass1 *in)
 C-interface method void* declare(TypeID type, SidreLength len = 1)
+Fortran method void* declare(TypeID type, SidreLength len = 1)
+Fortran method void* declare(TypeID type, SidreLength len = 1)
 C-interface, Fortran method void destroyall()
 C-interface, Fortran method TypeID getTypeID() const
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method void setValue(ValueType value)
+C-interface, Fortran method ValueType getValue()
+C-interface, Fortran method ValueType getValue()
 C-interface, Fortran method void testoptional(int i = 1, long j=2)
-Fortran method void* declare(TypeID type, SidreLength len = 1)
-Fortran method void* declare(TypeID type, SidreLength len = 1)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method ValueType getValue()
-C-interface, Fortran method ValueType getValue()
 Close wrapfExClass2.f
 C-interface, Fortran function void local_function1
 C-interface, Fortran function bool isNameValid(const std::string& name)

@@ -109,51 +109,6 @@ return rv;
 // splicer end class.DataView.method.get_data_pointer
 }
 
-ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin class.DataView.method.get_owning_group
-DataGroup * rv = selfobj->getOwningGroup();
-return rv;
-// splicer end class.DataView.method.get_owning_group
-}
-
-int ATK_dataview_get_type_id(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin class.DataView.method.get_type_id
-TypeID rv = selfobj->getTypeID();
-return rv;
-// splicer end class.DataView.method.get_type_id
-}
-
-size_t ATK_dataview_get_total_bytes(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin class.DataView.method.get_total_bytes
-size_t rv = selfobj->getTotalBytes();
-return rv;
-// splicer end class.DataView.method.get_total_bytes
-}
-
-size_t ATK_dataview_get_number_of_elements(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin class.DataView.method.get_number_of_elements
-size_t rv = selfobj->getNumberOfElements();
-return rv;
-// splicer end class.DataView.method.get_number_of_elements
-}
-
-void ATK_dataview_print(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(self);
-// splicer begin class.DataView.method.print
-selfobj->print();
-return;
-// splicer end class.DataView.method.print
-}
-
 void ATK_dataview_set_value_int(ATK_dataview * self, int value)
 {
 DataView *selfobj = static_cast<DataView *>(self);
@@ -224,6 +179,51 @@ DataView *selfobj = static_cast<DataView *>(self);
 double rv = selfobj->getValue<double>();
 return rv;
 // splicer end class.DataView.method.get_value_double
+}
+
+ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_owning_group
+DataGroup * rv = selfobj->getOwningGroup();
+return rv;
+// splicer end class.DataView.method.get_owning_group
+}
+
+int ATK_dataview_get_type_id(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_type_id
+TypeID rv = selfobj->getTypeID();
+return rv;
+// splicer end class.DataView.method.get_type_id
+}
+
+size_t ATK_dataview_get_total_bytes(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_total_bytes
+size_t rv = selfobj->getTotalBytes();
+return rv;
+// splicer end class.DataView.method.get_total_bytes
+}
+
+size_t ATK_dataview_get_number_of_elements(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.get_number_of_elements
+size_t rv = selfobj->getNumberOfElements();
+return rv;
+// splicer end class.DataView.method.get_number_of_elements
+}
+
+void ATK_dataview_print(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(self);
+// splicer begin class.DataView.method.print
+selfobj->print();
+return;
+// splicer end class.DataView.method.print
 }
 
 // splicer begin class.DataView.additional_functions
