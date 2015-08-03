@@ -15,7 +15,7 @@ end type
 interface
   {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
       bind(C, name="{C_name}")
-
+    {arg_c_decl}
   end {F_C_subprogram} {F_C_name}
 
 end interface
@@ -394,8 +394,8 @@ class Wrapf(util.WrapperMixin):
         is_const = node['attrs'].get('const', False)
         is_pure  = node['attrs'].get('pure', False)
 
-        arg_c_names = [ ]
-        arg_c_decl = [ ]
+        arg_c_names = [ ]  # argument names for functions
+        arg_c_decl = [ ]   # declaraion of argument names
 
         # find subprogram type
         # compute first to get order of arguments correct.
@@ -439,6 +439,13 @@ class Wrapf(util.WrapperMixin):
                     append_format(arg_c_decl, argdecl, fmt)
             else:
                 arg_c_decl.append(self._c_decl(arg))
+
+            len_trim = arg['attrs'].get('len_trim', None)
+            if len_trim:
+                if len_trim is True:
+                    len_trim = 'L' + arg['name']
+                arg_c_names.append(len_trim)
+                arg_c_decl.append('integer(C_INT), intent(IN) :: %s' % len_trim)
 
         fmt.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 
@@ -484,7 +491,7 @@ class Wrapf(util.WrapperMixin):
                 raise RuntimeError("Argument mismatch between Fortran and C functions")
         else:
             C_node = node
-        fmt_func.F_C_name = C_node['fmt'].F_C_name
+        fmt.F_C_name = C_node['fmt'].F_C_name
 
         func_is_const = node['attrs'].get('const', False)
 
@@ -596,9 +603,13 @@ class Wrapf(util.WrapperMixin):
             else:
                 append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
 
-            size = c_arg['attrs'].get('size', False)
-            if size:
-                arg_c_call.append('size')
+            # Attributes   None=skip, True=use default, else use value
+            len_trim = c_arg['attrs'].get('len_trim', None)
+            if len_trim:
+#                fmt.len_trim_var = 'L' + arg['name']
+                if len_trim is True:
+                    len_trim = 'len_trim({var})'
+                append_format(arg_c_call, len_trim, fmt)
 
         if result_string:
             arg_f_names.append(fmt.result_arg)

@@ -248,6 +248,12 @@ class Typedef(object):
         f_pre_call = None,    # statement to execute before call, often to coerce types
         f_post_call = None,   # statement to execute before call - cleanup, coerce result
         f_rv_decl = None,     # how to declare return variable - when C and Fortran return different types
+
+# XXX - maybe later.  For not in wrapping routines
+#        f_attr_len_trim = None,
+#        f_attr_len = None,
+#        f_attr_size = None,
+
         result_as_arg = None, # override fields when result should be treated as an argument
 
         PY_format='O',        # 'format unit' for PyArg_Parse

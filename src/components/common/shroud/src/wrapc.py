@@ -269,8 +269,8 @@ class Wrapc(util.WrapperMixin):
         fmt.CPP_this = fmt_func.C_this + 'obj'
         fmt.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
 
-        arguments = []
-        anames = []
+        proto_list = []
+        call_list = []
         if cls:
             # object pointer
             fmt.CPP_this_call = fmt.CPP_this + '->'  # call method syntax
@@ -281,7 +281,7 @@ class Wrapc(util.WrapperMixin):
             C_this_type = self._c_type('c_type', arg_dict)
             if not is_ctor:
                 arg = self._c_decl('c_type', arg_dict)
-                arguments.append(arg)
+                proto_list.append(arg)
         else:
             fmt.CPP_this_call = ''  # call function syntax
 
@@ -292,11 +292,21 @@ class Wrapc(util.WrapperMixin):
             fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
             if arg_typedef.c_argdecl:
                 for argdecl in arg_typedef.c_argdecl:
-                    append_format(arguments, argdecl, fmt)
+                    append_format(proto_list, argdecl, fmt)
             else:
-                arguments.append(self._c_decl('c_type', arg))
+                proto_list.append(self._c_decl('c_type', arg))
+
             # convert C argument to C++
-            append_format(anames, arg_typedef.c_to_cpp, fmt)
+            len_trim = arg['attrs'].get('len_trim', None)
+            if len_trim:
+                if len_trim is True:
+                    len_trim = 'L' + arg['name']
+                fmt.len_trim = len_trim
+                append_format(proto_list, 'int {len_trim}', fmt)
+                append_format(call_list, 'std::string({var}, {len_trim})', fmt)
+            else:
+                append_format(call_list, arg_typedef.c_to_cpp, fmt)
+
             if arg_typedef.c_header:
                 # include any dependent header in generated header
                 self.header_typedef_include[arg_typedef.c_header] = True
@@ -307,9 +317,9 @@ class Wrapc(util.WrapperMixin):
                 # create forward references for other types being wrapped
                 # i.e. This argument is another wrapped type
                 self.header_forward[arg_typedef.c_type] = True
-        fmt.C_call_list = ', '.join(anames)
+        fmt.C_call_list = ', '.join(call_list)
 
-        fmt.C_arguments = options.get('C_arguments', ', '.join(arguments))
+        fmt.C_prototype = options.get('C_prototype', ', '.join(proto_list))
 
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
@@ -361,12 +371,12 @@ class Wrapc(util.WrapperMixin):
                 C_code.append(line)
 
         self.header_proto_c.append('')
-        self.header_proto_c.append(wformat('{C_return_type} {C_name}({C_arguments});',
+        self.header_proto_c.append(wformat('{C_return_type} {C_name}({C_prototype});',
                                            fmt))
 
         impl = self.impl
         impl.append('')
-        impl.append(wformat('{C_return_type} {C_name}({C_arguments})', fmt))
+        impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls:
             impl.append(fmt.C_object )

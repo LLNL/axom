@@ -637,7 +637,6 @@
             "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
-                "F_C_name": "tut_function9", 
                 "F_name_generic": "function9", 
                 "F_name_impl": "function9_float", 
                 "F_name_method": "function9_float", 
@@ -671,7 +670,6 @@
             "attrs": {}, 
             "decl": "void Function9(double arg)", 
             "fmt": {
-                "F_C_name": "tut_function9", 
                 "F_name_generic": "function9", 
                 "F_name_impl": "function9_double", 
                 "F_name_method": "function9_double", 

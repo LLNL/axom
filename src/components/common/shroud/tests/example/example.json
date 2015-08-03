@@ -838,7 +838,6 @@
                     "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
-                        "F_C_name": "aa_exclass2_declare", 
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare_int", 
                         "F_name_method": "declare_int", 
@@ -884,7 +883,6 @@
                     "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
-                        "F_C_name": "aa_exclass2_declare", 
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare_long", 
                         "F_name_method": "declare_long", 

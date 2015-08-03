@@ -554,7 +554,8 @@ class Schema(object):
  #               arg['type'] = 'string_from_buffer'
  #               arg['attrs']['size'] = True
  #               newargs.append(arg)
-                buf = dict( name=arg['name'], type='string_from_buffer', attrs=dict(size=True))
+                # Add len_trim attribute
+                buf = dict( name=arg['name'], type=argtype, attrs=dict(len_trim=True))
                 newargs.append(buf)
             else:
                 newargs.append(arg)
