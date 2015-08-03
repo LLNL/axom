@@ -547,19 +547,11 @@ class Schema(object):
         node['fmt'].PTR_F_C_index = new['function_index']
 
         newargs = []
-        for arg in node['args']:
+        for arg in new['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
-                # replace string argument
- #               arg['type'] = 'string_from_buffer'
- #               arg['attrs']['size'] = True
- #               newargs.append(arg)
                 # Add len_trim attribute
-                buf = dict( name=arg['name'], type=argtype, attrs=dict(len_trim=True))
-                newargs.append(buf)
-            else:
-                newargs.append(arg)
-        new['args'] = newargs
+                arg['attrs']['len_trim'] = True
 
     def check_functions(self, node):
         """ check functions which are not in a class.

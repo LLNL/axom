@@ -445,7 +445,7 @@ class Wrapf(util.WrapperMixin):
                 if len_trim is True:
                     len_trim = 'L' + arg['name']
                 arg_c_names.append(len_trim)
-                arg_c_decl.append('integer(C_INT), intent(IN) :: %s' % len_trim)
+                arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_trim)
 
         fmt.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 
@@ -597,11 +597,6 @@ class Wrapf(util.WrapperMixin):
             # or different attributes, like adding +len to string args
             c_arg = c_args[i]
             arg_typedef = self.typedef[c_arg['type']]
-# XXX need both, cast then fortran_to_c
-            if c_arg['type'] != arg['type']:
-                append_format(arg_c_call, arg_typedef.f_cast, fmt)
-            else:
-                append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
 
             # Attributes   None=skip, True=use default, else use value
             len_trim = c_arg['attrs'].get('len_trim', None)
@@ -609,7 +604,13 @@ class Wrapf(util.WrapperMixin):
 #                fmt.len_trim_var = 'L' + arg['name']
                 if len_trim is True:
                     len_trim = 'len_trim({var})'
+                append_format(arg_c_call, '{var}', fmt)
                 append_format(arg_c_call, len_trim, fmt)
+# XXX need both, cast then fortran_to_c
+            elif c_arg['type'] != arg['type']:
+                append_format(arg_c_call, arg_typedef.f_cast, fmt)
+            else:
+                append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
 
         if result_string:
             arg_f_names.append(fmt.result_arg)
