@@ -1,5 +1,5 @@
 /**
- * \file UnstructMeshField.cpp
+ * \file
  *
  * \brief Simple user of the mesh api class.
  *
@@ -82,7 +82,6 @@ namespace unstructured {
     typedef NodeSet::PositionType                         PositionType;
 
     // types for maps
-    // TODO: Convert to meshapi::Map
     typedef asctoolkit::meshapi::Map< Point >             PositionsVec;
     typedef asctoolkit::meshapi::Map< DataType >          NodeField;
     typedef asctoolkit::meshapi::Map< DataType >          ZoneField;
@@ -160,7 +159,6 @@ namespace unstructured {
       mesh->nodes = HexMesh::NodeSet(numNodes);
 
       // Create the nodal position field, and read positions from file
-      // TODO: Convert this to a SRM Map<Positions>
       mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );
       for(IndexType i = 0; i < numNodes; ++i)
       {

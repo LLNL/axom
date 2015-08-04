@@ -261,3 +261,41 @@ TEST(gtest_meshapi_static_variable_relation,double_subscript_test)
 
   std::cout << "\n****** done." << std::endl;
 }
+
+
+TEST(gtest_meshapi_static_variable_relation,delayed_double_subscript_test)
+{
+  std::cout << "\n****** Testing access via delayed double subscript." << std::endl;
+
+  RangeSet fromSet(FROMSET_SIZE);
+  RangeSet toSet(TOSET_SIZE);
+
+  StaticVariableRelation incrementingRel(&fromSet, &toSet);
+
+  typedef StaticVariableRelation::RelationVec IndexVec;
+  IndexVec begins(FROMSET_SIZE + 1);
+  IndexVec offsets;
+  generateIncrementingRelations(&begins, &offsets);
+  incrementingRel.bindRelationData(begins, offsets);
+
+  EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
+
+  typedef StaticVariableRelation::RelationSet RelSet;
+
+  std::cout << "\n\tLooking at relation's stored values...";
+  for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
+  {
+      std::cout << "\n\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos <<").";
+
+      RelSet rSet = incrementingRel[fromPos];
+      for(PositionType toPos = 0; toPos < rSet.size(); ++toPos)
+      {
+          PositionType expectedVal =  toPos;
+          PositionType actualVal = rSet[toPos];
+          EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
+      }
+  }
+
+  std::cout << "\n****** done." << std::endl;
+}
+

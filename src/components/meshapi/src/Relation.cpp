@@ -1,7 +1,3 @@
-/**
- * \file Relation.cpp
- */
-
 #include "Relation.hpp"
 
 

@@ -1,10 +1,3 @@
-/**
- * \file DynamicVariableRelation.cpp
- *
- *  Created on: May 11, 2015
- *  Author: weiss27
- */
-
 #include "DynamicVariableRelation.hpp"
 
 #include <sstream>

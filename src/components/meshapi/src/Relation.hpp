@@ -35,15 +35,15 @@ namespace meshapi    {
   public:
     virtual ~Relation(){}
 
-    virtual RelationVecConstIterator      begin(SetPosition fromSetIndex)       const  = 0;
+    virtual RelationVecConstIterator      begin(SetPosition fromSetIndex)     const  = 0;
 
-    virtual RelationVecConstIterator      end(SetPosition fromSetIndex)         const  = 0;
+    virtual RelationVecConstIterator      end(SetPosition fromSetIndex)       const  = 0;
 
-    virtual RelationVecConstIteratorPair  range(SetPosition fromSetIndex)   const  = 0;
+    virtual RelationVecConstIteratorPair  range(SetPosition fromSetIndex)     const  = 0;
 
-    virtual SetPosition                   size(SetPosition fromSetIndex)                       const  = 0;
+    virtual SetPosition                   size(SetPosition fromSetIndex)      const  = 0;
 
-    virtual bool                          isValid(bool verboseOutput = false)                const = 0;
+    virtual bool                          isValid(bool verboseOutput = false) const = 0;
 
 #if 0
     // Go through the relation's data and ensure that no entity from the ToSet is mapped to more than once by an element of the FromSet.

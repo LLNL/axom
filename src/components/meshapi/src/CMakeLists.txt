@@ -11,6 +11,13 @@ set(meshapi_headers
     FileUtilities.hpp
     FieldRegistry.hpp
     
+    #SRM policies
+    policies/SizePolicies.hpp    
+    policies/OffsetPolicies.hpp
+    policies/StridePolicies.hpp
+    policies/IndirectionPolicies.hpp    
+    policies/SubsettingPolicies.hpp
+    
     # SRM Set headers
     IndirectionSet.hpp
     NullSet.hpp

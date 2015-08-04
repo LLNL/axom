@@ -1,5 +1,5 @@
 /**
- * \file meshapiShockTube.cpp
+ * \file
  *
  * \brief 1D shock tube, split flux Euler equations
  *

@@ -1,10 +1,3 @@
-/**
- * \file StaticVariableRelation.cpp
- *
- *  Created on: Apr 29, 2015
- *      Author: weiss27
- */
-
 #include "StaticVariableRelation.hpp"
 
 #include <sstream>

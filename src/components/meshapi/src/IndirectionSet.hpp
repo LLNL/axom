@@ -1,7 +1,7 @@
 /**
  * \file IndirectionSet.hpp
  *
- * \brief Basic API for a set of entities in a simulation
+ * \brief A few indirection set classes
  */
 
 #ifndef MESHAPI_INDIRECTION_SET_H_
@@ -17,13 +17,9 @@ namespace meshapi {
 
 
 /**
- * \class IndirectionSet
+ * \class
  *
- * \brief An indexed set (a tuple) of entities in a simulation
- *
- * A container class for a set of entities in a simulation. Each entity has an index.
- *
- * Below is an initial implementation for a set with explicit indexes (encoded here using a vector).
+ * \brief Concrete class (all template parameters fixed) for an array-based indirection set
  */
   class ArrayIndirectionSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
                                                , policies::ZeroOffset<Set::PositionType>
@@ -54,6 +50,11 @@ namespace meshapi {
     ~ArrayIndirectionSet () {}
   };
 
+  /**
+   * \class
+   *
+   * \brief Concrete class (all template parameters fixed) for an STL vector-based indirection set
+   */
   class VectorIndirectionSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
                                                , policies::ZeroOffset<Set::PositionType>
                                                , policies::StrideOne<Set::PositionType>
