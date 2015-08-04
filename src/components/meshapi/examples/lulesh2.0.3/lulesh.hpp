@@ -324,7 +324,7 @@ public:
   Index_t&        regNumList(Index_t idx) { return m_elemRegNum[idx]; }
   Index_t*        regNumList()            { return &m_elemRegNum[0]; }
   const Index_t*  regElemlist(Int_t r)    { return &(*m_regionElementsRel.begin(r)); }
-  const Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regionElementsRel[r][idx]; }
+  Index_t         regElemlist(Int_t r, Index_t idx) { return m_regionElementsRel[r][idx]; }
 
   const Index_t*  nodelist(Index_t idx)    { return &(*m_nodelist.begin(idx)); }
 

@@ -257,8 +257,10 @@ namespace policies {
     template<typename PositionType, typename ElementType>
     struct NoIndirection
     {
-        inline const ElementType indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
-        inline const ElementType operator()(PositionType pos)  const { return indirection(pos); }
+        typedef const ElementType IndirectionResult;
+
+        inline IndirectionResult indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
+        inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
 
         bool hasIndirection() const { return false;}
     };
@@ -269,18 +271,20 @@ namespace policies {
     template<typename PositionType, typename ElementType>
     struct ArrayIndirection
     {
+        typedef const ElementType& IndirectionResult;
+
         ArrayIndirection(ElementType* buf = ATK_NULLPTR) : m_arrBuf(buf) {}
 
         ElementType*& data() { return m_arrBuf;}
 
-        inline const ElementType& indirection(PositionType pos) const
+        inline IndirectionResult indirection(PositionType pos) const
         {
             SLIC_ASSERT_MSG( hasIndirection()
                            , "MeshAPI::Set:ArrayIndirection -- Tried to dereference a null array in an array based indirection set.");
             return m_arrBuf[pos];
         }
 
-        inline const ElementType& operator()(PositionType pos)  const { return indirection(pos); }
+        inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
 
         bool hasIndirection() const { return m_arrBuf == ATK_NULLPTR;}
     private:
@@ -294,12 +298,13 @@ namespace policies {
     struct STLVectorIndirection
     {
         typedef std::vector<ElementType> VectorType;
+        typedef const ElementType& IndirectionResult;
 
-        STLVectorIndirection(VectorType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
+        STLVectorIndirection(const VectorType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
 
-        VectorType*& data() { return m_vecBuf;}
+        const VectorType*& data() { return m_vecBuf;}
 
-        inline const ElementType& indirection(PositionType pos) const
+        inline IndirectionResult indirection(PositionType pos) const
         {
             SLIC_ASSERT_MSG( hasIndirection(), "MeshAPI::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
             //SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "MeshAPI::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
@@ -307,11 +312,11 @@ namespace policies {
 
             return (*m_vecBuf)[pos];
         }
-        inline const ElementType& operator()(PositionType pos)  const { return indirection(pos); }
+        inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
 
         bool hasIndirection() const { return m_vecBuf != ATK_NULLPTR;}
     private:
-        VectorType* m_vecBuf;
+        const VectorType* m_vecBuf;
     };
 
     /// \}
@@ -411,9 +416,9 @@ namespace policies {
 #endif
 
   public:
-    OrderedSet(PositionType size    = SizePolicyType::DefaultValue()
-             , PositionType offset  = OffsetPolicyType::DefaultValue()
-             , PositionType stride  = StridePolicyType::DefaultValue()
+    OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE
+             , PositionType offset  = OffsetPolicyType::DEFAULT_VALUE
+             , PositionType stride  = StridePolicyType::DEFAULT_VALUE
              // Note: constructor does not yet take an indirection type pointer...
              //, const Set* parentSet = &s_nullSet
             )
@@ -482,7 +487,7 @@ public:
     /**
      * \brief Given a position in the Set, return a position in the larger index space
      */
-    inline ElementType operator[](PositionType pos) const
+    inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos) const
     {
             verifyPosition(pos);
             return IndirectionPolicy::indirection( pos * StridePolicyType::stride() + OffsetPolicyType::offset() );

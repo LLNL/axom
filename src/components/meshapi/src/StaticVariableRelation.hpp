@@ -9,12 +9,17 @@
 #ifndef MESHAPI_STATIC_VARIABLE_RELATION_HPP_
 #define MESHAPI_STATIC_VARIABLE_RELATION_HPP_
 
+#ifndef MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+//  #define MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+#endif
+
+
 #include <vector>
 
 //#include <iostream>
 
 #include "slic/slic.hpp"
-#include "meshapi/Set.hpp"
+#include "meshapi/OrderedSet.hpp"
 #include "meshapi/NullSet.hpp"
 #include "meshapi/Relation.hpp"
 
@@ -24,6 +29,8 @@ namespace meshapi    {
 
   class StaticVariableRelation : public Relation
   {
+
+#ifdef MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
   private:
     /**
      * A small helper class to allow double subscripting on the relation
@@ -42,6 +49,8 @@ namespace meshapi    {
       RelationVecConstIterator m_iter;
       SetPosition m_size;
     };
+#endif
+
   public:
     typedef Relation::SetPosition                                         SetPosition;
 
@@ -52,6 +61,10 @@ namespace meshapi    {
     typedef RelationVec::const_iterator                                   RelationVecConstIterator;
     typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
 
+    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>      // TODO: change this to a compile time size if/when parent is compile time
+                      , policies::RuntimeOffsetHolder<Set::PositionType>
+                      , policies::StrideOne<Set::PositionType>
+                      , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
 
   public:
@@ -79,10 +92,24 @@ namespace meshapi    {
       return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
     }
 
-    SubscriptProxy const operator[](SetPosition fromSetElt) const
+#ifdef MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+    const SubscriptProxy operator[](SetPosition fromSetElt) const
     {
       return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
     }
+#else
+    /**
+     * This function returns the OrderedSet of all elements in the toSet related to 'fromSetElt' in the fromSet.
+     */
+    const RelationSet operator[](SetPosition fromSetElt) const
+    {
+        // Note -- we need a better way to initialize an indirection set
+        RelationSet rel(size(fromSetElt),toSetBeginIndex(fromSetElt) );
+        rel.data() = &m_toSetIndicesVec;
+
+        return rel;
+    }
+#endif
 
     SetPosition size(SetPosition fromSetIndex)                  const
     {
