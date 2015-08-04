@@ -338,7 +338,7 @@ return 1;""", fmt)
         fmt.call_list = ', '.join(cpp_call_list)
 
         if cls:
-#                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
+#                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
 #                fmt_func.C_object = wformat(template, fmt_func)
             fmt.PY_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
         else:

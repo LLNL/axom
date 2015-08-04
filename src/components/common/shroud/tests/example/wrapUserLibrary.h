@@ -14,9 +14,6 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-#ifdef EXAMPLE_WRAPPER_IMPL
-#else
-#endif
 
 // splicer begin C_definition
 // splicer end C_definition

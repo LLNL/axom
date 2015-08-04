@@ -1,7 +1,6 @@
 // wrapTutorial.cpp
 // This is generated code, do not edit
 // wrapTutorial.cpp
-#define EXAMPLE_WRAPPER_IMPL
 #include "wrapTutorial.h"
 #include "tutorial.hpp"
 

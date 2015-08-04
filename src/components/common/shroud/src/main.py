@@ -410,9 +410,10 @@ class GenFunctions(object):
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,
-#                cpp_to_c = 'static_cast<void *>({var})',
+                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
                 c_type = cname,
-                c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
+                # opaque pointer -> void pointer -> class instance pointer
+                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 fortran_derived = unname,

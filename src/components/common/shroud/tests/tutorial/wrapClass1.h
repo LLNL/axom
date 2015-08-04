@@ -11,12 +11,8 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-#ifdef EXAMPLE_WRAPPER_IMPL
-typedef void TUT_class1;
-#else
 struct s_TUT_class1;
 typedef struct s_TUT_class1 TUT_class1;
-#endif
 
 // splicer begin class.Class1.C_definition
 // splicer end class.Class1.C_definition

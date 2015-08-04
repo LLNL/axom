@@ -4,7 +4,6 @@
 // yada yada
 //
 // wrapUserLibrary.cpp
-#define EXAMPLE_WRAPPER_IMPL
 #include "wrapUserLibrary.h"
 
 extern "C" {

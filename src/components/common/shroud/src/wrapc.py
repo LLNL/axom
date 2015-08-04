@@ -139,17 +139,12 @@ class Wrapc(util.WrapperMixin):
                 '#endif',
                 '',
                 '// declaration of wrapped types',
-                '#ifdef EXAMPLE_WRAPPER_IMPL',
                 ])
         names = self.header_forward.keys()
         names.sort()
         for name in names:
-            output.append('typedef void {C_type_name};'.format(C_type_name=name))
-        output.append('#else')
-        for name in names:
             output.append('struct s_{C_type_name};\ntypedef struct s_{C_type_name} {C_type_name};'.
                      format(C_type_name=name))
-        output.append('#endif')
         output.append('')
         self._create_splicer('C_definition', output)
         output.extend(self.header_proto_c);
@@ -171,7 +166,6 @@ class Wrapc(util.WrapperMixin):
 
         output = []
         output.append('// ' + fname)
-        output.append('#define EXAMPLE_WRAPPER_IMPL')
 
         output.append('#include "%s"' % hname)
         if options.cpp_header:
@@ -321,6 +315,7 @@ class Wrapc(util.WrapperMixin):
 
         fmt.C_prototype = options.get('C_prototype', ', '.join(proto_list))
 
+        fmt.var = 'rv'
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
         else:
@@ -333,7 +328,7 @@ class Wrapc(util.WrapperMixin):
                 if is_ctor:
                     template = '{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
                 else:
-                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
+                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
                 fmt.C_object = wformat(template, fmt)
         else:
             fmt.C_object = ''
@@ -348,7 +343,9 @@ class Wrapc(util.WrapperMixin):
             # generate the C body
             C_code = []
             if is_ctor:
-                C_code.append('return (%s) %sobj;' % (C_this_type, fmt_func.C_this))
+                fmt.var = '%sobj' % fmt_func.C_this
+                C_code.append('return ' + 
+                    wformat(result_typedef.cpp_to_c, fmt) + ';')
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
             elif result_type == 'void' and not result_is_ptr:
@@ -366,8 +363,8 @@ class Wrapc(util.WrapperMixin):
                     lfmt.var = fmt.rv
                     append_format(C_code, self.patterns[node['C_error_pattern']], lfmt)
 
-                ret = result_typedef.cpp_to_c
-                line = 'return ' + ret.format(var='rv') + ';'
+                line = 'return ' + \
+                    wformat(result_typedef.cpp_to_c, fmt) + ';'
                 C_code.append(line)
 
         self.header_proto_c.append('')

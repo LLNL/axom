@@ -559,41 +559,22 @@ instead of just the result.
 The file ``wrapClass1.h`` will have an opaque struct for the class.  This is to allows some
 measure of type safety over using ``void`` pointers for every instance::
 
-    #ifdef EXAMPLE_WRAPPER_IMPL
-    typedef void TUT_class1;
-    #else
     struct s_TUT_class1;
     typedef struct s_TUT_class1 TUT_class1;
-    #endif
 
-.. note :: When the header is used with the implementation then ``EXAMPLE_WRAPPER_IMPL`` will be defined
-           and the typedef will be void.  This is simply to avoid some extra casts in the implementation.
-
-This creates the file ``wrapClass1.cpp``::
 
     TUT_class1 * TUT_class1_new()
     {
         Class1 *selfobj = new Class1();
-        return (TUT_class1 *) selfobj;
+        return static_cast<TUT_class1 *>(static_cast<void *>(selfobj));
     }
 
-    void TUT_class1_method1(TUT_class1 * self)
-    {
-        Class1 *selfobj = static_cast<Class1 *>(self);
-        selfobj->Method1();
-        return;
-    }
-
-
-    // error: invalid static_cast from type 'TUT_class1* {aka s_TUT_class1*}' to type 'tutorial::Class1*'
-    // extra void * cast
     void TUT_class1_method1(TUT_class1 * self)
     {
         Class1 *selfobj = static_cast<Class1 *>(static_cast<void *>(self));
         selfobj->Method1();
         return;
     }
-
 
 For Fortran a derived type is created::
 

@@ -10,7 +10,6 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 // wrapDataView.cpp
-#define EXAMPLE_WRAPPER_IMPL
 #include "wrapDataView.h"
 #include "sidre/DataView.hpp"
 #include "sidre/SidreWrapperHelpers.hpp"
@@ -21,7 +20,7 @@ namespace sidre {
 
 void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.declare
 selfobj->declare(getTypeID(type), len);
 return;
@@ -30,7 +29,7 @@ return;
 
 void ATK_dataview_allocate_simple(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.allocate_simple
 selfobj->allocate();
 return;
@@ -39,7 +38,7 @@ return;
 
 void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.allocate_from_type
 selfobj->allocate(getTypeID(type), len);
 return;
@@ -48,7 +47,7 @@ return;
 
 void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.reallocate
 selfobj->reallocate(getTypeID(type), len);
 return;
@@ -57,7 +56,7 @@ return;
 
 bool ATK_dataview_has_buffer(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.has_buffer
 bool rv = selfobj->hasBuffer();
 return rv;
@@ -66,7 +65,7 @@ return rv;
 
 bool ATK_dataview_is_opaque(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.is_opaque
 bool rv = selfobj->isOpaque();
 return rv;
@@ -75,7 +74,7 @@ return rv;
 
 const char * ATK_dataview_get_name(const ATK_dataview * self)
 {
-const DataView *selfobj = static_cast<const DataView *>(self);
+const DataView *selfobj = static_cast<const DataView *>(static_cast<const void *>(self));
 // splicer begin class.DataView.method.get_name
 const std::string & rv = selfobj->getName();
 return rv.c_str();
@@ -84,7 +83,7 @@ return rv.c_str();
 
 void * ATK_dataview_get_opaque(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_opaque
 void * rv = selfobj->getOpaque();
 return rv;
@@ -93,16 +92,16 @@ return rv;
 
 ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_buffer
 DataBuffer * rv = selfobj->getBuffer();
-return rv;
+return static_cast<ATK_databuffer *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.get_buffer
 }
 
 void * ATK_dataview_get_data_pointer(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_data_pointer
 void * rv = selfobj->getDataPointer();
 return rv;
@@ -111,7 +110,7 @@ return rv;
 
 void ATK_dataview_set_value_int(ATK_dataview * self, int value)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_value_int
 selfobj->setValue<int>(value);
 return;
@@ -120,7 +119,7 @@ return;
 
 void ATK_dataview_set_value_long(ATK_dataview * self, long value)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_value_long
 selfobj->setValue<long>(value);
 return;
@@ -129,7 +128,7 @@ return;
 
 void ATK_dataview_set_value_float(ATK_dataview * self, float value)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_value_float
 selfobj->setValue<float>(value);
 return;
@@ -138,7 +137,7 @@ return;
 
 void ATK_dataview_set_value_double(ATK_dataview * self, double value)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_value_double
 selfobj->setValue<double>(value);
 return;
@@ -147,7 +146,7 @@ return;
 
 int ATK_dataview_get_value_int(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_value_int
 int rv = selfobj->getValue<int>();
 return rv;
@@ -156,7 +155,7 @@ return rv;
 
 long ATK_dataview_get_value_long(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_value_long
 long rv = selfobj->getValue<long>();
 return rv;
@@ -165,7 +164,7 @@ return rv;
 
 float ATK_dataview_get_value_float(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_value_float
 float rv = selfobj->getValue<float>();
 return rv;
@@ -174,7 +173,7 @@ return rv;
 
 double ATK_dataview_get_value_double(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_value_double
 double rv = selfobj->getValue<double>();
 return rv;
@@ -183,16 +182,16 @@ return rv;
 
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_owning_group
 DataGroup * rv = selfobj->getOwningGroup();
-return rv;
+return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.get_owning_group
 }
 
 int ATK_dataview_get_type_id(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_type_id
 TypeID rv = selfobj->getTypeID();
 return rv;
@@ -201,7 +200,7 @@ return rv;
 
 size_t ATK_dataview_get_total_bytes(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_total_bytes
 size_t rv = selfobj->getTotalBytes();
 return rv;
@@ -210,7 +209,7 @@ return rv;
 
 size_t ATK_dataview_get_number_of_elements(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_number_of_elements
 size_t rv = selfobj->getNumberOfElements();
 return rv;
@@ -219,7 +218,7 @@ return rv;
 
 void ATK_dataview_print(ATK_dataview * self)
 {
-DataView *selfobj = static_cast<DataView *>(self);
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.print
 selfobj->print();
 return;

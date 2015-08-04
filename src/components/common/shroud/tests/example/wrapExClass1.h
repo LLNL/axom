@@ -14,15 +14,10 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-#ifdef EXAMPLE_WRAPPER_IMPL
-typedef void AA_exclass1;
-typedef void AA_exclass2;
-#else
 struct s_AA_exclass1;
 typedef struct s_AA_exclass1 AA_exclass1;
 struct s_AA_exclass2;
 typedef struct s_AA_exclass2 AA_exclass2;
-#endif
 
 // splicer begin class.ExClass1.C_definition
 // splicer end class.ExClass1.C_definition

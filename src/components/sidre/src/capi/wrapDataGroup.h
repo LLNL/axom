@@ -23,12 +23,6 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-#ifdef EXAMPLE_WRAPPER_IMPL
-typedef void ATK_databuffer;
-typedef void ATK_datagroup;
-typedef void ATK_datastore;
-typedef void ATK_dataview;
-#else
 struct s_ATK_databuffer;
 typedef struct s_ATK_databuffer ATK_databuffer;
 struct s_ATK_datagroup;
@@ -37,7 +31,6 @@ struct s_ATK_datastore;
 typedef struct s_ATK_datastore ATK_datastore;
 struct s_ATK_dataview;
 typedef struct s_ATK_dataview ATK_dataview;
-#endif
 
 // splicer begin class.DataGroup.C_definition
 // splicer end class.DataGroup.C_definition

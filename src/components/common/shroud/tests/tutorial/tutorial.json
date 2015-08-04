@@ -845,8 +845,9 @@
             "PY_to_object": "PP_Class1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<Class1{ptr}>({var})", 
+            "c_to_cpp": "static_cast<{C_const}Class1{ptr}>(static_cast<{C_const}void *>({var}))", 
             "c_type": "TUT_class1", 
+            "cpp_to_c": "static_cast<{C_const}TUT_class1 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "Class1", 
             "f_module": {
                 "tutorial_mod": [
