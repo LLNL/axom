@@ -4,6 +4,7 @@ Read splicer pysplicer.c
 Read splicer fsplicer.f
 class ExClass1
 C method ExClass1 *new ( const string *name ) +constructor
+C method ExClass1 *new ( const string *name ) +constructor
 C method void delete() +destructor
 C method int incrementCount(int incr)
 C method const string& getName() const
@@ -19,6 +20,7 @@ C method void SplicerSpecial
 Close wrapExClass1.h
 Close wrapExClass1.cpp
 class ExClass2
+C method ExClass2 *ExClass2 (const string *name) +constructor
 C method ExClass2 *ExClass2 (const string *name) +constructor
 C method void delete() +destructor
 C method const string& getName const
@@ -38,10 +40,12 @@ Close wrapExClass2.h
 Close wrapExClass2.cpp
 C function void local_function1
 C function bool isNameValid(const std::string& name)
+C function bool isNameValid(const std::string& name)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
 C-interface, Fortran method ExClass1 *new ( const string *name ) +constructor
+C-interface method ExClass1 *new ( const string *name ) +constructor
 C-interface, Fortran method void delete() +destructor
 C-interface, Fortran method int incrementCount(int incr)
 C-interface, Fortran method const string& getName() const
@@ -57,6 +61,7 @@ C-interface, Fortran method void SplicerSpecial
 Close wrapfExClass1.f
 class ExClass2
 C-interface, Fortran method ExClass2 *ExClass2 (const string *name) +constructor
+C-interface method ExClass2 *ExClass2 (const string *name) +constructor
 C-interface, Fortran method void delete() +destructor
 C-interface, Fortran method const string& getName const
 C-interface, Fortran method GetNameLength
@@ -76,6 +81,7 @@ C-interface, Fortran method void testoptional(int i = 1, long j=2)
 Close wrapfExClass2.f
 C-interface, Fortran function void local_function1
 C-interface, Fortran function bool isNameValid(const std::string& name)
+C-interface function bool isNameValid(const std::string& name)
 Close wrapfuserlibrary.f
 class ExClass1
 Python method ExClass1 *new ( const string *name ) +constructor

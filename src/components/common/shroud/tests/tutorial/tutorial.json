@@ -233,12 +233,63 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
+                "PTR_F_C_index": 13, 
                 "PY_name_impl": "PY_function4a", 
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
             }, 
             "function_index": 5, 
             "options": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "Function4a", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure", 
+            "fmt": {
+                "C_name": "TUT_function4a_bufferify", 
+                "F_C_name": "tut_function4a_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "function_index": 13, 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
             "result": {
                 "attrs": {
                     "const": true, 
@@ -279,6 +330,7 @@
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 
                 "F_name_method": "function4b", 
+                "PTR_F_C_index": 14, 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
@@ -286,6 +338,54 @@
             "function_index": 6, 
             "options": {
                 "F_string_result_as_arg": "output"
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "Function4b", 
+                "type": "std::string"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "fmt": {
+                "C_name": "TUT_function4b_bufferify", 
+                "F_C_name": "tut_function4b_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "function_index": 14, 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
             }, 
             "result": {
                 "attrs": {
@@ -358,6 +458,7 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
+                "PTR_F_C_index": 15, 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_suffix": "_from_name", 
                 "method_name": "Function6", 
@@ -366,6 +467,41 @@
             "function_index": 8, 
             "function_suffix": "_from_name", 
             "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function6", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function6(const std::string& name)", 
+            "fmt": {
+                "C_name": "TUT_function6_bufferify", 
+                "F_C_name": "tut_function6_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "function_index": 15, 
+            "function_suffix": "_from_name", 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "Function6", 
@@ -459,7 +595,7 @@
                 "F_name_method": "function7_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 13, 
+            "function_index": 16, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -494,7 +630,7 @@
                 "F_name_method": "function7_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 14, 
+            "function_index": 17, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -547,7 +683,7 @@
                 "F_name_method": "function8_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 15, 
+            "function_index": 18, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -574,7 +710,7 @@
                 "F_name_method": "function8_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 16, 
+            "function_index": 19, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -643,7 +779,7 @@
                 "PTR_F_C_index": 12, 
                 "function_suffix": "_float"
             }, 
-            "function_index": 17, 
+            "function_index": 20, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -676,7 +812,7 @@
                 "PTR_F_C_index": 12, 
                 "function_suffix": "_double"
             }, 
-            "function_index": 18, 
+            "function_index": 21, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -692,7 +828,7 @@
     ], 
     "options": {
         "F_module_per_class": false, 
-        "F_string_len_trim": false, 
+        "F_string_len_trim": true, 
         "cpp_header": "tutorial.hpp", 
         "library": "Tutorial", 
         "namespace": "tutorial", 

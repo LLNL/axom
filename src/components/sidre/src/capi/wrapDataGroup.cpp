@@ -73,6 +73,15 @@ return rv;
 // splicer end class.DataGroup.method.has_view
 }
 
+bool ATK_datagroup_has_view_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.has_view_bufferify
+bool rv = selfobj->hasView(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.has_view_bufferify
+}
+
 ATK_dataview * ATK_datagroup_create_view_and_buffer_simple(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -80,6 +89,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 DataView * rv = selfobj->createViewAndBuffer(name);
 return rv;
 // splicer end class.DataGroup.method.create_view_and_buffer_simple
+}
+
+ATK_dataview * ATK_datagroup_create_view_and_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_view_and_buffer_bufferify
+DataView * rv = selfobj->createViewAndBuffer(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.create_view_and_buffer_bufferify
 }
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength len)
@@ -100,6 +118,15 @@ return rv;
 // splicer end class.DataGroup.method.create_opaque_view
 }
 
+ATK_dataview * ATK_datagroup_create_opaque_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * opaque_ptr)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_opaque_view_bufferify
+DataView * rv = selfobj->createOpaqueView(std::string(name, Lname), opaque_ptr);
+return rv;
+// splicer end class.DataGroup.method.create_opaque_view_bufferify
+}
+
 ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name, ATK_databuffer * buff)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -107,6 +134,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 DataView * rv = selfobj->createView(name, static_cast<DataBuffer *>(buff));
 return rv;
 // splicer end class.DataGroup.method.create_view
+}
+
+ATK_dataview * ATK_datagroup_create_view_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_view_bufferify
+DataView * rv = selfobj->createView(std::string(name, Lname), static_cast<DataBuffer *>(buff));
+return rv;
+// splicer end class.DataGroup.method.create_view_bufferify
 }
 
 ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength len)
@@ -145,6 +181,15 @@ return;
 // splicer end class.DataGroup.method.destroy_view_and_buffer
 }
 
+void ATK_datagroup_destroy_view_and_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.destroy_view_and_buffer_bufferify
+selfobj->destroyViewAndBuffer(std::string(name, Lname));
+return;
+// splicer end class.DataGroup.method.destroy_view_and_buffer_bufferify
+}
+
 ATK_dataview * ATK_datagroup_get_view_from_name(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -152,6 +197,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 DataView * rv = selfobj->getView(name);
 return rv;
 // splicer end class.DataGroup.method.get_view_from_name
+}
+
+ATK_dataview * ATK_datagroup_get_view_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_view_bufferify
+DataView * rv = selfobj->getView(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.get_view_bufferify
 }
 
 ATK_dataview * ATK_datagroup_get_view_from_index(ATK_datagroup * self, const ATK_IndexType idx)
@@ -170,6 +224,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 IndexType rv = selfobj->getViewIndex(name);
 return rv;
 // splicer end class.DataGroup.method.get_view_index
+}
+
+ATK_IndexType ATK_datagroup_get_view_index_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_view_index_bufferify
+IndexType rv = selfobj->getViewIndex(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.get_view_index_bufferify
 }
 
 const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx)
@@ -194,6 +257,15 @@ return rv;
 // splicer end class.DataGroup.method.has_group
 }
 
+bool ATK_datagroup_has_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.has_group_bufferify
+bool rv = selfobj->hasGroup(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.has_group_bufferify
+}
+
 ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -201,6 +273,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 DataGroup * rv = selfobj->createGroup(name);
 return rv;
 // splicer end class.DataGroup.method.create_group
+}
+
+ATK_datagroup * ATK_datagroup_create_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.create_group_bufferify
+DataGroup * rv = selfobj->createGroup(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.create_group_bufferify
 }
 
 ATK_datagroup * ATK_datagroup_move_group(ATK_datagroup * self, ATK_datagroup * grp)
@@ -221,6 +302,15 @@ return;
 // splicer end class.DataGroup.method.destroy_group
 }
 
+void ATK_datagroup_destroy_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.destroy_group_bufferify
+selfobj->destroyGroup(std::string(name, Lname));
+return;
+// splicer end class.DataGroup.method.destroy_group_bufferify
+}
+
 ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -230,6 +320,15 @@ return rv;
 // splicer end class.DataGroup.method.get_group
 }
 
+ATK_datagroup * ATK_datagroup_get_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_group_bufferify
+DataGroup * rv = selfobj->getGroup(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.get_group_bufferify
+}
+
 ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -237,6 +336,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 IndexType rv = selfobj->getGroupIndex(name);
 return rv;
 // splicer end class.DataGroup.method.get_group_index
+}
+
+ATK_IndexType ATK_datagroup_get_group_index_bufferify(ATK_datagroup * self, const char * name, int Lname)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.get_group_index_bufferify
+IndexType rv = selfobj->getGroupIndex(std::string(name, Lname));
+return rv;
+// splicer end class.DataGroup.method.get_group_index_bufferify
 }
 
 const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx)
@@ -270,6 +378,15 @@ return;
 // splicer end class.DataGroup.method.save
 }
 
+void ATK_datagroup_save_bufferify(ATK_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.save_bufferify
+selfobj->save(std::string(obase, Lobase), std::string(protocol, Lprotocol));
+return;
+// splicer end class.DataGroup.method.save_bufferify
+}
+
 void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(self);
@@ -277,6 +394,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(self);
 selfobj->load(obase, protocol);
 return;
 // splicer end class.DataGroup.method.load
+}
+
+void ATK_datagroup_load_bufferify(ATK_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(self);
+// splicer begin class.DataGroup.method.load_bufferify
+selfobj->load(std::string(obase, Lobase), std::string(protocol, Lprotocol));
+return;
+// splicer end class.DataGroup.method.load_bufferify
 }
 
 // splicer begin class.DataGroup.additional_functions

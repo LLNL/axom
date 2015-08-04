@@ -85,7 +85,7 @@ class Schema(object):
             cpp_header='',
 
             F_module_per_class=True,
-            F_string_len_trim=False,
+            F_string_len_trim=True,
 
             wrap_c       = True,
             wrap_fortran = True,

@@ -26,11 +26,17 @@ bool TUT_function3(bool arg);
 
 const char * TUT_function4a(const char * arg1, const char * arg2);
 
+const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2);
+
 const char * TUT_function4b(const char * arg1, const char * arg2);
+
+const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2);
 
 double TUT_function5(double arg1, int arg2);
 
 void TUT_function6_from_name(const char * name);
+
+void TUT_function6_bufferify(const char * name, int Lname);
 
 void TUT_function6_from_index(int indx);
 

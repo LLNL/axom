@@ -66,11 +66,51 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
+                        "PTR_F_C_index": 13, 
                         "method_name": "new", 
                         "underscore_name": "new"
                     }, 
                     "function_index": 0, 
                     "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "ExClass1"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "len_trim": true, 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass1 *new ( const string *name ) +constructor", 
+                    "docs": "constructor", 
+                    "fmt": {
+                        "C_name": "AA_exclass1_new_bufferify", 
+                        "F_C_name": "aa_exclass1_new_bufferify", 
+                        "function_suffix": "_bufferify"
+                    }, 
+                    "function_index": 13, 
+                    "generated": "string_to_buffer_and_len", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -494,11 +534,50 @@
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
+                        "PTR_F_C_index": 25, 
                         "method_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
-                    "function_index": 13, 
+                    "function_index": 14, 
                     "options": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "ExClass2", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "len_trim": true, 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
+                    "fmt": {
+                        "C_name": "AA_exclass2_ex_class2_bufferify", 
+                        "F_C_name": "aa_exclass2_ex_class2_bufferify", 
+                        "function_suffix": "_bufferify"
+                    }, 
+                    "function_index": 25, 
+                    "generated": "string_to_buffer_and_len", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -523,7 +602,7 @@
                         "method_name": "delete", 
                         "underscore_name": "delete"
                     }, 
-                    "function_index": 14, 
+                    "function_index": 15, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -547,7 +626,7 @@
                         "method_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
-                    "function_index": 15, 
+                    "function_index": 16, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -573,7 +652,7 @@
                         "method_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "function_index": 16, 
+                    "function_index": 17, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
@@ -610,7 +689,7 @@
                         "method_name": "get_class1", 
                         "underscore_name": "get_class1"
                     }, 
-                    "function_index": 17, 
+                    "function_index": 18, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -655,7 +734,7 @@
                             "long"
                         ]
                     }, 
-                    "function_index": 18, 
+                    "function_index": 19, 
                     "options": {
                         "wrap_fortran": false
                     }, 
@@ -694,10 +773,10 @@
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare_int", 
                         "F_name_method": "declare_int", 
-                        "PTR_F_C_index": 18, 
+                        "PTR_F_C_index": 19, 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 24, 
+                    "function_index": 26, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -739,10 +818,10 @@
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare_long", 
                         "F_name_method": "declare_long", 
-                        "PTR_F_C_index": 18, 
+                        "PTR_F_C_index": 19, 
                         "function_suffix": "_long"
                     }, 
-                    "function_index": 25, 
+                    "function_index": 27, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -772,7 +851,7 @@
                         "method_name": "destroyall", 
                         "underscore_name": "destroyall"
                     }, 
-                    "function_index": 19, 
+                    "function_index": 20, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -796,7 +875,7 @@
                         "method_name": "getTypeID", 
                         "underscore_name": "get_type_id"
                     }, 
-                    "function_index": 20, 
+                    "function_index": 21, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -826,7 +905,7 @@
                         "method_name": "setValue", 
                         "underscore_name": "set_value"
                     }, 
-                    "function_index": 21, 
+                    "function_index": 22, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
@@ -860,7 +939,7 @@
                         "F_name_method": "set_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 26, 
+                    "function_index": 28, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -895,7 +974,7 @@
                         "F_name_method": "set_value_long", 
                         "function_suffix": "_long"
                     }, 
-                    "function_index": 27, 
+                    "function_index": 29, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -930,7 +1009,7 @@
                         "F_name_method": "set_value_float", 
                         "function_suffix": "_float"
                     }, 
-                    "function_index": 28, 
+                    "function_index": 30, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -965,7 +1044,7 @@
                         "F_name_method": "set_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "function_index": 29, 
+                    "function_index": 31, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -992,7 +1071,7 @@
                         "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
-                    "function_index": 22, 
+                    "function_index": 23, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
@@ -1018,7 +1097,7 @@
                         "F_name_method": "get_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 30, 
+                    "function_index": 32, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1045,7 +1124,7 @@
                         "F_name_method": "get_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "function_index": 31, 
+                    "function_index": 33, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1091,7 +1170,7 @@
                         "method_name": "testoptional", 
                         "underscore_name": "testoptional"
                     }, 
-                    "function_index": 23, 
+                    "function_index": 24, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -1176,7 +1255,7 @@
                 "method_name": "local_function1", 
                 "underscore_name": "local_function1"
             }, 
-            "function_index": 32, 
+            "function_index": 34, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -1205,14 +1284,49 @@
                 "F_name_generic": "is_name_valid", 
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
+                "PTR_F_C_index": 36, 
                 "PY_name_impl": "PP_is_name_valid", 
                 "method_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
-            "function_index": 33, 
+            "function_index": 35, 
             "options": {
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "isNameValid", 
+                "type": "bool"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "bool isNameValid(const std::string& name)", 
+            "fmt": {
+                "C_name": "AA_is_name_valid_bufferify", 
+                "F_C_name": "aa_is_name_valid_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "function_index": 36, 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
             }, 
             "result": {
                 "attrs": {}, 
@@ -1224,7 +1338,7 @@
     "options": {
         "C_prefix": "AA_", 
         "F_module_per_class": true, 
-        "F_string_len_trim": false, 
+        "F_string_len_trim": true, 
         "PY_prefix": "PP_", 
         "cpp_header": "", 
         "library": "UserLibrary", 

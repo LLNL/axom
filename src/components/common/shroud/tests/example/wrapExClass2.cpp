@@ -21,6 +21,14 @@ return (AA_exclass2 *) selfobj;
 // splicer end class.ExClass2.method.ex_class2
 }
 
+AA_exclass2 * AA_exclass2_ex_class2_bufferify(const char * name, int Lname)
+{
+ExClass2 *selfobj = new ExClass2(std::string(name, Lname));
+// splicer begin class.ExClass2.method.ex_class2_bufferify
+return (AA_exclass2 *) selfobj;
+// splicer end class.ExClass2.method.ex_class2_bufferify
+}
+
 void AA_exclass2_delete(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);

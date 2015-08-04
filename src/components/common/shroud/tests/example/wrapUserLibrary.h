@@ -25,6 +25,8 @@ void AA_local_function1();
 
 bool AA_is_name_valid(const char * name);
 
+bool AA_is_name_valid_bufferify(const char * name, int Lname);
+
 #ifdef __cplusplus
 }
 #endif

@@ -81,6 +81,17 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4a
         
+        pure function tut_function4a_bufferify(arg1, Larg1, arg2, Larg2) result(rv) &
+                bind(C, name="TUT_function4a_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            integer(C_INT), value, intent(IN) :: Larg1
+            character(kind=C_CHAR), intent(IN) :: arg2(*)
+            integer(C_INT), value, intent(IN) :: Larg2
+            type(C_PTR) rv
+        end function tut_function4a_bufferify
+        
         function tut_function4b(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function4b")
             use iso_c_binding
@@ -89,6 +100,17 @@ module tutorial_mod
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             type(C_PTR) rv
         end function tut_function4b
+        
+        function tut_function4b_bufferify(arg1, Larg1, arg2, Larg2) result(rv) &
+                bind(C, name="TUT_function4b_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            integer(C_INT), value, intent(IN) :: Larg1
+            character(kind=C_CHAR), intent(IN) :: arg2(*)
+            integer(C_INT), value, intent(IN) :: Larg2
+            type(C_PTR) rv
+        end function tut_function4b_bufferify
         
         function tut_function5(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function5")
@@ -105,6 +127,14 @@ module tutorial_mod
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine tut_function6_from_name
+        
+        subroutine tut_function6_bufferify(name, Lname) &
+                bind(C, name="TUT_function6_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine tut_function6_bufferify
         
         subroutine tut_function6_from_index(indx) &
                 bind(C, name="TUT_function6_from_index")
@@ -225,11 +255,13 @@ contains
         implicit none
         character(*) :: arg1
         character(*) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(tut_function4a_bufferify(arg1, len_trim(arg1), arg2, len_trim(arg2)))) :: rv
         ! splicer begin function4a
-        rv = fstr(tut_function4a(  &
-            trim(arg1) // C_NULL_CHAR,  &
-            trim(arg2) // C_NULL_CHAR))
+        rv = fstr(tut_function4a_bufferify(  &
+            arg1,  &
+            len_trim(arg1),  &
+            arg2,  &
+            len_trim(arg2)))
         ! splicer end function4a
     end function function4a
     
@@ -241,9 +273,11 @@ contains
         character(*), intent(OUT) :: output
         type(C_PTR) :: rv
         ! splicer begin function4b
-        rv = tut_function4b(  &
-            trim(arg1) // C_NULL_CHAR,  &
-            trim(arg2) // C_NULL_CHAR)
+        rv = tut_function4b_bufferify(  &
+            arg1,  &
+            len_trim(arg1),  &
+            arg2,  &
+            len_trim(arg2))
         call FccCopyPtr(output, len(output), rv)
         ! splicer end function4b
     end subroutine function4b
@@ -278,7 +312,9 @@ contains
         implicit none
         character(*) :: name
         ! splicer begin function6_from_name
-        call tut_function6_from_name(trim(name) // C_NULL_CHAR)
+        call tut_function6_bufferify(  &
+            name,  &
+            len_trim(name))
         ! splicer end function6_from_name
     end subroutine function6_from_name
     

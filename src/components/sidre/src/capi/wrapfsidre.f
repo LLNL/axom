@@ -368,6 +368,16 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function atk_datagroup_has_view
         
+        function atk_datagroup_has_view_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_has_view_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            logical(C_BOOL) :: rv
+        end function atk_datagroup_has_view_bufferify
+        
         function atk_datagroup_create_view_and_buffer_simple(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_and_buffer_simple")
             use iso_c_binding
@@ -376,6 +386,16 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_simple
+        
+        function atk_datagroup_create_view_and_buffer_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_and_buffer_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_and_buffer_bufferify
         
         function atk_datagroup_create_view_and_buffer_from_type(self, name, type, len) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_and_buffer_from_type")
@@ -398,6 +418,17 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_create_opaque_view
         
+        function atk_datagroup_create_opaque_view_bufferify(self, name, Lname, opaque_ptr) result(rv) &
+                bind(C, name="ATK_datagroup_create_opaque_view_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR), value, intent(IN) :: opaque_ptr
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_opaque_view_bufferify
+        
         function atk_datagroup_create_view(self, name, buff) result(rv) &
                 bind(C, name="ATK_datagroup_create_view")
             use iso_c_binding
@@ -407,6 +438,17 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: buff
             type(C_PTR) :: rv
         end function atk_datagroup_create_view
+        
+        function atk_datagroup_create_view_bufferify(self, name, Lname, buff) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR), value, intent(IN) :: buff
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_bufferify
         
         function atk_datagroup_create_external_view(self, name, external_data, type, len) result(rv) &
                 bind(C, name="ATK_datagroup_create_external_view")
@@ -446,6 +488,15 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine atk_datagroup_destroy_view_and_buffer
         
+        subroutine atk_datagroup_destroy_view_and_buffer_bufferify(self, name, Lname) &
+                bind(C, name="ATK_datagroup_destroy_view_and_buffer_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine atk_datagroup_destroy_view_and_buffer_bufferify
+        
         function atk_datagroup_get_view_from_name(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_get_view_from_name")
             use iso_c_binding
@@ -454,6 +505,16 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_get_view_from_name
+        
+        function atk_datagroup_get_view_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_view_bufferify
         
         function atk_datagroup_get_view_from_index(self, idx) result(rv) &
                 bind(C, name="ATK_datagroup_get_view_from_index")
@@ -473,6 +534,16 @@ module sidre_mod
             integer(C_INT) :: rv
         end function atk_datagroup_get_view_index
         
+        pure function atk_datagroup_get_view_index_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_index_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT) :: rv
+        end function atk_datagroup_get_view_index_bufferify
+        
         pure function atk_datagroup_get_view_name(self, idx) result(rv) &
                 bind(C, name="ATK_datagroup_get_view_name")
             use iso_c_binding
@@ -491,6 +562,16 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function atk_datagroup_has_group
         
+        function atk_datagroup_has_group_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_has_group_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            logical(C_BOOL) :: rv
+        end function atk_datagroup_has_group_bufferify
+        
         function atk_datagroup_create_group(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_create_group")
             use iso_c_binding
@@ -499,6 +580,16 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
         end function atk_datagroup_create_group
+        
+        function atk_datagroup_create_group_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_create_group_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_group_bufferify
         
         function atk_datagroup_move_group(self, grp) result(rv) &
                 bind(C, name="ATK_datagroup_move_group")
@@ -517,6 +608,15 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine atk_datagroup_destroy_group
         
+        subroutine atk_datagroup_destroy_group_bufferify(self, name, Lname) &
+                bind(C, name="ATK_datagroup_destroy_group_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine atk_datagroup_destroy_group_bufferify
+        
         function atk_datagroup_get_group(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_get_group")
             use iso_c_binding
@@ -526,6 +626,16 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_get_group
         
+        function atk_datagroup_get_group_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_get_group_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR) :: rv
+        end function atk_datagroup_get_group_bufferify
+        
         pure function atk_datagroup_get_group_index(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_get_group_index")
             use iso_c_binding
@@ -534,6 +644,16 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT) :: rv
         end function atk_datagroup_get_group_index
+        
+        pure function atk_datagroup_get_group_index_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_get_group_index_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT) :: rv
+        end function atk_datagroup_get_group_index_bufferify
         
         pure function atk_datagroup_get_group_name(self, idx) result(rv) &
                 bind(C, name="ATK_datagroup_get_group_name")
@@ -560,6 +680,17 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine atk_datagroup_save
         
+        subroutine atk_datagroup_save_bufferify(self, obase, Lobase, protocol, Lprotocol) &
+                bind(C, name="ATK_datagroup_save_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: obase(*)
+            integer(C_INT), value, intent(IN) :: Lobase
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine atk_datagroup_save_bufferify
+        
         subroutine atk_datagroup_load(self, obase, protocol) &
                 bind(C, name="ATK_datagroup_load")
             use iso_c_binding
@@ -568,6 +699,17 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: obase(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine atk_datagroup_load
+        
+        subroutine atk_datagroup_load_bufferify(self, obase, Lobase, protocol, Lprotocol) &
+                bind(C, name="ATK_datagroup_load_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: obase(*)
+            integer(C_INT), value, intent(IN) :: Lobase
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine atk_datagroup_load_bufferify
         
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
@@ -1008,9 +1150,10 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_view
-        rv = atk_datagroup_has_view(  &
+        rv = atk_datagroup_has_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.has_view
     end function datagroup_has_view
     
@@ -1021,9 +1164,10 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_buffer_simple
-        rv%voidptr = atk_datagroup_create_view_and_buffer_simple(  &
+        rv%voidptr = atk_datagroup_create_view_and_buffer_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.create_view_and_buffer_simple
     end function datagroup_create_view_and_buffer_simple
     
@@ -1069,9 +1213,10 @@ contains
         type(C_PTR) :: opaque_ptr
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_opaque_view
-        rv%voidptr = atk_datagroup_create_opaque_view(  &
+        rv%voidptr = atk_datagroup_create_opaque_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             opaque_ptr)
         ! splicer end class.DataGroup.method.create_opaque_view
     end function datagroup_create_opaque_view
@@ -1084,9 +1229,10 @@ contains
         type(databuffer) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view
-        rv%voidptr = atk_datagroup_create_view(  &
+        rv%voidptr = atk_datagroup_create_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             buff%voidptr)
         ! splicer end class.DataGroup.method.create_view
     end function datagroup_create_view
@@ -1161,9 +1307,10 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         ! splicer begin class.DataGroup.method.destroy_view_and_buffer
-        call atk_datagroup_destroy_view_and_buffer(  &
+        call atk_datagroup_destroy_view_and_buffer_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.destroy_view_and_buffer
     end subroutine datagroup_destroy_view_and_buffer
     
@@ -1174,9 +1321,10 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view_from_name
-        rv%voidptr = atk_datagroup_get_view_from_name(  &
+        rv%voidptr = atk_datagroup_get_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.get_view_from_name
     end function datagroup_get_view_from_name
     
@@ -1200,9 +1348,10 @@ contains
         character(*) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_view_index
-        rv = atk_datagroup_get_view_index(  &
+        rv = atk_datagroup_get_view_index_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.get_view_index
     end function datagroup_get_view_index
     
@@ -1228,9 +1377,10 @@ contains
         character(*) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_group
-        rv = atk_datagroup_has_group(  &
+        rv = atk_datagroup_has_group_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.has_group
     end function datagroup_has_group
     
@@ -1241,9 +1391,10 @@ contains
         character(*) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.create_group
-        rv%voidptr = atk_datagroup_create_group(  &
+        rv%voidptr = atk_datagroup_create_group_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.create_group
     end function datagroup_create_group
     
@@ -1266,9 +1417,10 @@ contains
         class(datagroup) :: obj
         character(*) :: name
         ! splicer begin class.DataGroup.method.destroy_group
-        call atk_datagroup_destroy_group(  &
+        call atk_datagroup_destroy_group_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.destroy_group
     end subroutine datagroup_destroy_group
     
@@ -1279,9 +1431,10 @@ contains
         character(*) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.get_group
-        rv%voidptr = atk_datagroup_get_group(  &
+        rv%voidptr = atk_datagroup_get_group_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.get_group
     end function datagroup_get_group
     
@@ -1292,9 +1445,10 @@ contains
         character(*) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_group_index
-        rv = atk_datagroup_get_group_index(  &
+        rv = atk_datagroup_get_group_index_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR)
+            name,  &
+            len_trim(name))
         ! splicer end class.DataGroup.method.get_group_index
     end function datagroup_get_group_index
     
@@ -1329,10 +1483,12 @@ contains
         character(*) :: obase
         character(*) :: protocol
         ! splicer begin class.DataGroup.method.save
-        call atk_datagroup_save(  &
+        call atk_datagroup_save_bufferify(  &
             obj%voidptr,  &
-            trim(obase) // C_NULL_CHAR,  &
-            trim(protocol) // C_NULL_CHAR)
+            obase,  &
+            len_trim(obase),  &
+            protocol,  &
+            len_trim(protocol))
         ! splicer end class.DataGroup.method.save
     end subroutine datagroup_save
     
@@ -1343,10 +1499,12 @@ contains
         character(*) :: obase
         character(*) :: protocol
         ! splicer begin class.DataGroup.method.load
-        call atk_datagroup_load(  &
+        call atk_datagroup_load_bufferify(  &
             obj%voidptr,  &
-            trim(obase) // C_NULL_CHAR,  &
-            trim(protocol) // C_NULL_CHAR)
+            obase,  &
+            len_trim(obase),  &
+            protocol,  &
+            len_trim(protocol))
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
     

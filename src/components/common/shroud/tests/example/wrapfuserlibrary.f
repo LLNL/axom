@@ -23,6 +23,15 @@ module userlibrary_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
         end function aa_is_name_valid
+        
+        function aa_is_name_valid_bufferify(name, Lname) result(rv) &
+                bind(C, name="AA_is_name_valid_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            logical(C_BOOL) :: rv
+        end function aa_is_name_valid_bufferify
     end interface
 
 contains

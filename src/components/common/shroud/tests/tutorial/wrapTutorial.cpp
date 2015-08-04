@@ -40,12 +40,28 @@ return rv.c_str();
 // splicer end function.function4a
 }
 
+const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
+{
+// splicer begin function.function4a_bufferify
+const std::string & rv = Function4a(std::string(arg1, Larg1), std::string(arg2, Larg2));
+return rv.c_str();
+// splicer end function.function4a_bufferify
+}
+
 const char * TUT_function4b(const char * arg1, const char * arg2)
 {
 // splicer begin function.function4b
 const std::string & rv = Function4b(arg1, arg2);
 return rv.c_str();
 // splicer end function.function4b
+}
+
+const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
+{
+// splicer begin function.function4b_bufferify
+const std::string & rv = Function4b(std::string(arg1, Larg1), std::string(arg2, Larg2));
+return rv.c_str();
+// splicer end function.function4b_bufferify
 }
 
 double TUT_function5(double arg1, int arg2)
@@ -62,6 +78,14 @@ void TUT_function6_from_name(const char * name)
 Function6(name);
 return;
 // splicer end function.function6_from_name
+}
+
+void TUT_function6_bufferify(const char * name, int Lname)
+{
+// splicer begin function.function6_bufferify
+Function6(std::string(name, Lname));
+return;
+// splicer end function.function6_bufferify
 }
 
 void TUT_function6_from_index(int indx)

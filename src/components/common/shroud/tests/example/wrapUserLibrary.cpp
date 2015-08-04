@@ -26,6 +26,13 @@ return name != NULL;
 // splicer end function.is_name_valid
 }
 
+bool AA_is_name_valid_bufferify(const char * name, int Lname)
+{
+// splicer begin function.is_name_valid_bufferify
+return name != NULL;
+// splicer end function.is_name_valid_bufferify
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

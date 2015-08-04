@@ -62,6 +62,15 @@ module exclass1_mod
             type(C_PTR) :: rv
         end function aa_exclass1_new
         
+        function aa_exclass1_new_bufferify(name, Lname) result(rv) &
+                bind(C, name="AA_exclass1_new_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR) :: rv
+        end function aa_exclass1_new_bufferify
+        
         subroutine aa_exclass1_delete(self) &
                 bind(C, name="AA_exclass1_delete")
             use iso_c_binding
@@ -172,7 +181,9 @@ contains
         character(*) :: name
         type(exclass1) :: rv
         ! splicer begin class.ExClass1.method.new
-        rv%voidptr = aa_exclass1_new(trim(name) // C_NULL_CHAR)
+        rv%voidptr = aa_exclass1_new_bufferify(  &
+            name,  &
+            len_trim(name))
         ! splicer end class.ExClass1.method.new
     end function exclass1_new
     
