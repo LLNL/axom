@@ -3,10 +3,11 @@
 #
 
 set(gtest_lumberjack_tests
-   lumberjack_MessageInfo.cpp
-   lumberjack_MessageEqualityCombiner.cpp
-   lumberjack_RootCommunicator.cpp
-   )
+    lumberjack_Logger.cpp
+    lumberjack_MessageInfo.cpp
+    lumberjack_MessageEqualityCombiner.cpp
+    lumberjack_RootCommunicator.cpp
+    )
 
 #
 # Add gtest based tests

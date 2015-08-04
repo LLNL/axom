@@ -8,6 +8,7 @@ namespace lumberjack {
 
 class Combiner {
     public:
+        virtual const std::string id() = 0;
         virtual bool shouldMessageInfosBeCombined(const MessageInfo& leftMessage,
                                                   const MessageInfo& rightMessage) = 0;
         virtual void combine(MessageInfo& combined,

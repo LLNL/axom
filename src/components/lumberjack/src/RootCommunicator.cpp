@@ -5,11 +5,12 @@
 namespace asctoolkit {
 namespace lumberjack {
 
-void RootCommunicator::initialize(MPI_Comm comm)
+void RootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
 {
     m_mpiComm = comm;
     MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
     MPI_Comm_size(m_mpiComm, &m_mpiCommSize);
+    m_ranksLimit = ranksLimit;
 }
 
 void RootCommunicator::finalize()
@@ -17,8 +18,22 @@ void RootCommunicator::finalize()
 
 }
 
-void RootCommunicator::pushMessagesOnce()
+bool RootCommunicator::shouldMessagesBeOutputted()
 {
+    if (m_mpiCommRank == 0){
+        return true;
+    }
+    return false;
+}
+
+int RootCommunicator::rank()
+{
+    return m_mpiCommRank;
+}
+
+void RootCommunicator::pushMessagesOnce(std::vector<MessageInfo*>& messages)
+{
+    MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank == 0){
         char* charArray = ATK_NULLPTR;
         int messageSize;
@@ -32,40 +47,24 @@ void RootCommunicator::pushMessagesOnce()
             charArray[messageSize] = '\0';
             std::string messageString(charArray);
             free(charArray);
-            MessageInfo mi;
-            mi.unpack(messageString, 5);
-            m_messages.push_back(mi);
+            MessageInfo* mi = new MessageInfo();
+            mi->unpack(messageString, m_ranksLimit);
+            messages.push_back(mi);
         }
     }
     else {
-        for(int i=0; i<(int)m_messages.size(); ++i){
-            std::string message = m_messages[i].pack();
+        for(int i=0; i<(int)messages.size(); ++i){
+            std::string message = messages[i]->pack();
             MPI_Send(const_cast<char*>(message.c_str()),
                      message.size(), MPI_CHAR, 0, 0, m_mpiComm);
         }
-        m_messages.clear();
+        messages.clear();
     }
 }
 
-void RootCommunicator::pushMessagesFully()
+void RootCommunicator::pushMessagesFully(std::vector<MessageInfo*>& messages)
 {
-    pushMessagesOnce();
-}
-
-std::vector<MessageInfo>* RootCommunicator::getMessages()
-{
-    if (m_mpiCommRank == 0){
-        std::vector<MessageInfo>* returnedVector = new std::vector<MessageInfo>;
-        returnedVector->swap(m_messages);
-        return returnedVector;
-    }
-    return ATK_NULLPTR;
-}
-
-void RootCommunicator::queueMessage(const std::string& message, const std::string& fileName, const int lineNumber)
-{
-    MessageInfo messageInfo(message, m_mpiCommRank, fileName, lineNumber);
-    m_messages.push_back(messageInfo);
+    pushMessagesOnce(messages);
 }
 
 }

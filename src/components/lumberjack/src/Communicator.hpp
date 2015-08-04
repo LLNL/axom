@@ -10,12 +10,12 @@ namespace lumberjack {
 
 class Communicator {
     public:
-        virtual void initialize(MPI_Comm comm) = 0;
+        virtual void initialize(MPI_Comm comm, int ranksLimit) = 0;
         virtual void finalize() = 0;
-        virtual void pushMessagesOnce() = 0;
-        virtual void pushMessagesFully() = 0;
-        virtual std::vector<MessageInfo>* getMessages() = 0;
-        virtual void queueMessage(const std::string& message, const std::string& fileName, const int lineNumber) = 0;
+        virtual void pushMessagesOnce(std::vector<MessageInfo*>& messages) = 0;
+        virtual void pushMessagesFully(std::vector<MessageInfo*>& messages) = 0;
+        virtual bool shouldMessagesBeOutputted() = 0;
+        virtual int rank() = 0;
 };
 
 }

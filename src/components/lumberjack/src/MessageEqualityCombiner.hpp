@@ -4,11 +4,20 @@
 #include "lumberjack/Combiner.hpp"
 #include "lumberjack/MessageInfo.hpp"
 
+#include <string>
+
 namespace asctoolkit {
 namespace lumberjack {
 
 class MessageEqualityCombiner: public Combiner {
     public:
+        MessageEqualityCombiner(): m_id("MessageEqualityCombiner") {}
+
+        const std::string id()
+        {
+            return m_id;
+        }
+
         bool shouldMessageInfosBeCombined(const MessageInfo& leftMessage,
                                           const MessageInfo& rightMessage)
         {
@@ -22,6 +31,8 @@ class MessageEqualityCombiner: public Combiner {
         {
             combined.addRanks(combinee.ranks(), ranksLimit);
         }
+    private:
+        std::string m_id;
 };
 
 }
