@@ -1224,6 +1224,7 @@
     "options": {
         "C_prefix": "AA_", 
         "F_module_per_class": true, 
+        "F_string_len_trim": false, 
         "PY_prefix": "PP_", 
         "cpp_header": "", 
         "library": "UserLibrary", 

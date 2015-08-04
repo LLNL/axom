@@ -85,6 +85,7 @@ class Schema(object):
             cpp_header='',
 
             F_module_per_class=True,
+            F_string_len_trim=False,
 
             wrap_c       = True,
             wrap_fortran = True,
@@ -549,9 +550,10 @@ class GenFunctions(object):
         If so then create a new C function that will convert string arguments into 
         a buffer and length.
         """
-        return
         options = node['options']
         if options.wrap_fortran is False:
+            return
+        if options.F_string_len_trim is False:
             return
 
         has_strings = False

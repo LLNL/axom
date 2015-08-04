@@ -298,6 +298,7 @@ functions:
      options:
        C_code:  return name != NULL;
        F_code:  rv = name .ne. " "
+       F_string_len_trim: false
 
 
 ######################################################################

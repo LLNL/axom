@@ -692,6 +692,7 @@
     ], 
     "options": {
         "F_module_per_class": false, 
+        "F_string_len_trim": false, 
         "cpp_header": "tutorial.hpp", 
         "library": "Tutorial", 
         "namespace": "tutorial", 

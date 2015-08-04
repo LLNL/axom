@@ -21,8 +21,16 @@ cpp_header
 
 F_string_result_as_arg
 
-  Function with return a ``char *`` will instead by converted to subroutine
-  which require an additional argument for the result.
+  Function with return a ``char *`` will instead by converted to
+  subroutine which require an additional argument for the result.
+
+F_string_len_trim
+
+  For each function with a ``std::string`` argument, create another C
+  function which accepts a buffer and length.  The C wrapper will call
+  the ``std::string`` constructor, instead of the Fortran wrapper
+  creating a ``NULL`` terminated string using ``trim``.  This avoids
+  copying the string in the Fortran wrapper.
 
 namespace
 
