@@ -75,7 +75,6 @@ class Schema(object):
         """ Routine to check entire schema of input tree"
         """
         node = self.config
-        node['function_index'] = []
 
         # default options
         def_options = util.Options(
@@ -277,15 +276,8 @@ class Schema(object):
         classes = node.setdefault('classes', [])
         self.check_classes(classes)
 
-        node['functions'] = self.check_functions(node.get('functions', []))
-
-    def append_function_index(self, node):
-        """append to function_index, set index into node.
-        """
-        ilist = self.config['function_index']
-        node['function_index'] = len(ilist)
-#        node['fmt'].function_index = str(len(ilist)) # debugging
-        ilist.append(node)
+        functions = node.setdefault('functions', [])
+        self.check_functions(functions)
 
     def check_classes(self, node):
         if not isinstance(node, list):
@@ -295,9 +287,6 @@ class Schema(object):
                 raise TypeError("classes[n] must be a dictionary")
             self.check_class(cls)
 
-        for cls in node:
-            self.check_class_dependencies(cls)
-        
     def check_class(self, node):
         if 'name' not in node:
             raise RuntimeError('Expeced name for class')
@@ -354,43 +343,14 @@ class Schema(object):
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
 
-        methods = node.get('methods', [])
+        methods = node.setdefault('methods', [])
         for method in methods:
             if not isinstance(method, dict):
                 raise TypeError("classes[n]['methods'] must be a dictionary")
             self.check_function(method)
 
-        node['methods'] = self.define_function_suffix(methods)
         self.pop_fmt()
         self.pop_options()
-
-    def define_function_suffix(self, functions):
-        """ look for functions with the same name
-        Return a new list if overloaded function inserted.
-        """
-
-        overloaded_functions = {}
-        for method in functions:
-            overloaded_functions.setdefault(method['result']['name'], []).append(method)
-
-        # look for function overload and compute function_suffix
-        for mname, overloads in overloaded_functions.items():
-            if len(overloads) > 1:
-                for i, function in enumerate(overloads):
-#                    method['fmt'].overloaded = True
-                    if 'function_suffix' not in function:
-                        function['fmt'].function_suffix =  '_%d' % i
-
-        # Create additional functions needed for wrapping
-        additional_functions = []
-        for method in functions:
-            additional_functions.append(method)
-            if 'cpp_template' in method:
-                self.template_function(method, additional_functions)
-            if 'fortran_generic' in method:
-                self.generic_function(method, additional_functions)
-            self.string_to_buffer_and_len(method, additional_functions)
-        return additional_functions
 
     def check_function(self, node):
         """ Make sure necessary fields are present for a function.
@@ -427,15 +387,76 @@ class Schema(object):
         fmt_func.method_name =     result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
         if 'function_suffix' in node:
-            fmt_func.function_suffix =   node['function_suffix']
-
-        self.append_function_index(node)
+            fmt_func.function_suffix = node['function_suffix']
 
         # docs
         self.pop_fmt()
         self.pop_options()
 
-    def template_function(self, node, additional_functions):
+    def check_functions(self, func_list):
+        """ check functions which are not in a class.
+        """
+        if not isinstance(func_list, list):
+            raise TypeError("functions must be a list")
+        for func in func_list:
+            self.check_function(func)
+
+
+class GenFunctions(object):
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+        self.typedef = tree['types']
+
+    def gen_library(self):
+        tree = self.tree
+        tree['function_index'] = self.function_index = []
+
+        for cls in tree['classes']:
+            cls['methods'] = self.define_function_suffix(cls['methods'])
+        tree['functions'] = self.define_function_suffix(tree['functions'])
+
+        for cls in tree['classes']:
+            self.check_class_dependencies(cls)
+
+    def append_function_index(self, node):
+        """append to function_index, set index into node.
+        """
+        ilist = self.function_index
+        node['function_index'] = len(ilist)
+#        node['fmt'].function_index = str(len(ilist)) # debugging
+        ilist.append(node)
+
+    def define_function_suffix(self, functions):
+        """ look for functions with the same name
+        Return a new list if overloaded function inserted.
+        """
+
+        overloaded_functions = {}
+        for function in functions:
+            self.append_function_index(function)
+            overloaded_functions.setdefault(function['result']['name'], []).append(function)
+
+        # look for function overload and compute function_suffix
+        for mname, overloads in overloaded_functions.items():
+            if len(overloads) > 1:
+                for i, function in enumerate(overloads):
+#                    method['fmt'].overloaded = True
+                    if 'function_suffix' not in function:
+                        function['fmt'].function_suffix =  '_%d' % i
+
+        # Create additional functions needed for wrapping
+        ordered_functions = []
+        for method in functions:
+            ordered_functions.append(method)
+            if 'cpp_template' in method:
+                self.template_function(method, ordered_functions)
+            if 'fortran_generic' in method:
+                self.generic_function(method, ordered_functions)
+            self.string_to_buffer_and_len(method, ordered_functions)
+        return ordered_functions
+
+    def template_function(self, node, ordered_functions):
         """ Create overloaded functions for each templated method.
         """
         if len(node['cpp_template']) != 1:
@@ -445,7 +466,7 @@ class Schema(object):
         for typename, types in node['cpp_template'].items():
             for type in types:
                 new = util.copy_function_node(node)
-                additional_functions.append(new)
+                ordered_functions.append(new)
                 self.append_function_index(new)
 
                 new['generated'] = 'cpp_template'
@@ -472,7 +493,7 @@ class Schema(object):
         options.wrap_fortran = False
         options.wrap_python = False
 
-    def generic_function(self, node, additional_functions):
+    def generic_function(self, node, ordered_functions):
         """ Create overloaded functions for each generic method.
         """
         if len(node['fortran_generic']) != 1:
@@ -482,7 +503,7 @@ class Schema(object):
         for argname, types in node['fortran_generic'].items():
             for type in types:
                 new = util.copy_function_node(node)
-                additional_functions.append(new)
+                ordered_functions.append(new)
                 self.append_function_index(new)
 
                 new['generated'] = 'fortran_generic'
@@ -512,7 +533,7 @@ class Schema(object):
         options.wrap_fortran = False
 #        options.wrap_python = False
 
-    def string_to_buffer_and_len(self, node, additional_functions):
+    def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.
         If so then create a new C function that will convert string arguments into 
         a buffer and length.
@@ -532,7 +553,7 @@ class Schema(object):
             return
 
         new = util.copy_function_node(node)
-        additional_functions.append(new)
+        ordered_functions.append(new)
         self.append_function_index(new)
 
         new['generated'] = 'string_to_buffer_and_len'
@@ -555,15 +576,6 @@ class Schema(object):
             if self.typedef[argtype].base == 'string':
                 # Add len_trim attribute
                 arg['attrs']['len_trim'] = True
-
-    def check_functions(self, func_list):
-        """ check functions which are not in a class.
-        """
-        if not isinstance(func_list, list):
-            raise TypeError("functions must be a list")
-        for func in func_list:
-            self.check_function(func)
-        return self.define_function_suffix(func_list)
 
     def check_class_dependencies(self, node):
         """
@@ -609,6 +621,7 @@ class Schema(object):
                 used_types[arg['type']] = self.typedef[argtype]
             else:
                 raise RuntimeError("%s not defined" % argtype)
+
 
 class Namify(object):
     """Compute names of functions in library.
@@ -698,7 +711,6 @@ class Namify(object):
             fmt_func.F_result = options.F_result
 
 
-
 if __name__ == '__main__':
 
     appname = 'modulator3'
@@ -760,6 +772,7 @@ if __name__ == '__main__':
 
 
     Schema(all).check_schema()
+    GenFunctions(all, config).gen_library()
     Namify(all, config).name_library()
 
     if 'splicer' in all:
