@@ -23,7 +23,7 @@ atk_copyright_str = """/*
 
 atk_copyright_begin_str = "Copyright (c) 2015, Lawrence Livermore National Security, LLC."
 
-def checkAndAddCopyrightHeader(filename):
+def checkAndAddCopyrightHeader(filename, testOnly=False):
 
   with open(filename, "r+") as f:
     first_line = f.readline()   # First line is only a c-style comment opener
@@ -32,44 +32,59 @@ def checkAndAddCopyrightHeader(filename):
     print "  Processing file:", filename,
     
     if not atk_copyright_begin_str in second_line:
-        lines = f.readlines()
-        f.seek(0)
-        f.write(atk_copyright_str)
-        f.write(first_line)
-        f.write(second_line)
-        f.writelines(lines)
-        print "\tadded copyright."
+        if testOnly:
+            print "\t missing copyright statement."
+        else:
+            lines = f.readlines()
+            f.seek(0)
+            f.write(atk_copyright_str)
+            f.write(first_line)
+            f.write(second_line)
+            f.writelines(lines)
+            print "\t prepended copyright statement."
     else:
-        print "\t<n/a>."
+        print "\t already has copyright statement."
 
+
+def fileNameGenerator(rootDir, validExtensions, isRecursive=False):
+    """Generator function for file names whose extensions are in the validExtensions tuple.
+       Files are rooted in rootDir, and process is recursive if isRecursive==True.
+    """
+
+    if isRecursive:
+        for path,dirlist,filelist in os.walk(rootDir):
+            for f in (f for f in filelist if f.lower().endswith(validExtensions) ):
+                yield os.path.join(path, f)
+    else:
+        for f in os.listdir(rootDir):
+            if f.lower().endswith( validExtensions):
+                yield os.path.join(rootDir, f)
 
 if __name__ == "__main__":
 
-    # Setup the argument parser
+    ## Setup the argument parser, dir is required first argument
     parser = argparse.ArgumentParser(description="Append LLNL copyright message to files.")
     parser.add_argument("dir", type=str, help="specify directory containing files on which we want to operate.") # TODO -- should we accept multiple directories?
 
+    # Option to recursively search for files
+    parser.add_argument("-r", "--recursive", dest='isRecursive', action='store_true', help="add flag to recursively descend to subdirectories.")
+    parser.add_argument("--no-recursive", dest='isRecursive', action='store_false')
+    parser.set_defaults(isRecursive=False)
+
+    # Test run to see which files might require a copyright notice.
+    parser.add_argument("-t", "--test", action='store_true', help="add flag if we only want to see which files are missing copyright statements, but not to modify any files.") 
+
     # Additional possible featues to be implemented
     #
-    # Recursively search for files
-    #parser.add_argument("-r", "--recursive", dest='isRecursive', action='store_true', help="add flag to recursively descend to subdirectories.")
-    #parser.add_argument("--no-recursive", dest='isRecursive', action='store_false')
-    #parser.set_defaults(isRecursive=False)
-    #
-    # Specify a collection of file types.  For now, we hardcode to hpp and cpp files.
+    # Specify a collection of file types.  
     #parser.add_argument("-f", "--filetypes", type=str, nargs="*", help="add file types on which to operate ")    # default should be *.hpp and *.cpp
-    #
-    # Test run to see which files might require a copyright notice.
-    #parser.add_argument("-t", "--testRun", action='store_true', help="add flag if we only want to see which files are missing copyright statements, but not to modify any files.") 
+    # For now, we hardcode to c/c++ header and source files
+    valid_extensions = (".hpp", ".cpp", ".h", ".c", ".cxx", ".cc")
     
     args = parser.parse_args()
 
-    valid_extensions = (".hpp", ".cpp", ".h", ".c", ".cxx")
+    ## Iterate through files, check for and add copyright notice
+    print "Looking at directory {}".format( args.dir )   
+    for fullFileName in fileNameGenerator(args.dir, valid_extensions, args.isRecursive):
+        checkAndAddCopyrightHeader(fullFileName, args.test)
 
-    dir_of_interest = args.dir
-    print "Looking at directory {}".format( dir_of_interest)   
-    
-    cpp_src_files = (f for f in os.listdir(dir_of_interest) if f.lower().endswith( valid_extensions) )
-    for f in cpp_src_files:
-        checkAndAddCopyrightHeader(os.path.join(dir_of_interest,f))
-        
