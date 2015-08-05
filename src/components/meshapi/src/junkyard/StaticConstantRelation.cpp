@@ -19,12 +19,12 @@ namespace asctoolkit {
 namespace meshapi {
 
   StaticConstantRelation::StaticConstantRelation (Set* fromSet, Set* toSet)
-      : m_stride(SetPosition()), m_fromSet(fromSet), m_toSet(toSet)
+      : StridePolicy(StridePolicyType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet)
   {}
 
   void StaticConstantRelation::bindRelationData(const RelationVec & toOffsets, const SetPosition stride)
   {
-    m_stride = stride;
+    StridePolicyType::stride() = stride;
 
     m_toSetIndicesVec.clear();
     m_toSetIndicesVec.reserve(toOffsets.size());
@@ -57,14 +57,14 @@ namespace meshapi {
         errSstr << "\n\t* Neither set was null";
 
       // Check that the toSetIndices vector has the right size
-      if( static_cast<SetPosition>(m_toSetIndicesVec.size()) != (m_stride * m_fromSet->size()) )
+      if( static_cast<SetPosition>(m_toSetIndicesVec.size()) != (stride() * m_fromSet->size()) )
       {
         if(verboseOutput)
         {
           errSstr << "\n\t* toSetIndices has the wrong size."
                   << "\n\t-- from set size is: " << m_fromSet->size()
-                  << "\n\t-- constant stride is: " << m_stride
-                  << "\n\t-- expected relation size: " << (m_stride * m_fromSet->size())
+                  << "\n\t-- constant stride is: " << stride()
+                  << "\n\t-- expected relation size: " << (stride() * m_fromSet->size())
                   << "\n\t-- actual size: " << m_toSetIndicesVec.size()
           ;
         }
@@ -96,7 +96,7 @@ namespace meshapi {
 
       if(bValid)
       {
-        sstr << "(static,constant) Relation with stride " << m_stride << " was valid." << std::endl;
+        sstr << "(static,constant) Relation with stride " << stride() << " was valid." << std::endl;
       }
       else
       {

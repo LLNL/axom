@@ -80,7 +80,7 @@ namespace meshapi    {
 
   public:
     StaticVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
-    virtual ~StaticVariableRelation(){}
+    ~StaticVariableRelation(){}
     /**
      * \note TODO: swap this out for data in the datastore
      */

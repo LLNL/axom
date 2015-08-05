@@ -17,6 +17,7 @@ set(meshapi_headers
     policies/StridePolicies.hpp
     policies/IndirectionPolicies.hpp    
     policies/SubsettingPolicies.hpp
+    policies/PolicyTraits.hpp
     
     # SRM Set headers
     IndirectionSet.hpp
@@ -48,7 +49,7 @@ set(meshapi_sources
     # SRM Relation sources
     Relation.cpp
     StaticVariableRelation.cpp
-    StaticConstantRelation.cpp
+    #StaticConstantRelation.cpp
     DynamicVariableRelation.cpp
     
     # SRM Map sources

@@ -47,6 +47,10 @@
   #define USE_CONSTANT_RELATION
 #endif
 
+#ifndef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
+  #define MESHAPI_USE_DOUBLE_ARRAY_ACCESS
+#endif
+
 
 namespace asctoolkit {
 namespace meshapi {
@@ -83,7 +87,8 @@ namespace unstructured {
     typedef NodeToZoneRelation::RelationVecConstIterator  NodeZoneIterator;
 
 #ifdef USE_CONSTANT_RELATION
-    typedef asctoolkit::meshapi::StaticConstantRelation   ZoneToNodeRelation;
+    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
+    typedef asctoolkit::meshapi::StaticConstantRelation<ZNStride>   ZoneToNodeRelation;
 #else
     typedef asctoolkit::meshapi::StaticVariableRelation   ZoneToNodeRelation;
 #endif
@@ -286,9 +291,10 @@ namespace unstructured {
         ++numZonesOfNode;
       }
 #else
+      HexMesh::ZoneToNodeRelation::RelationSet zNodeSet = mesh->relationZoneNode[zoneIdx];
       for(IndexType idx = 0; idx < mesh->relationZoneNode.size(*zIt); ++idx)
       {
-        IndexType const& nodeIdx = mesh->relationZoneNode[zoneIdx][idx];
+        IndexType nodeIdx = zNodeSet[idx];
         tmpZonesOfNode.insert( nodeIdx, zoneIdx );
         ++numZonesOfNode;
       }

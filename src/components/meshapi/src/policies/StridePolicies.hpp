@@ -37,7 +37,6 @@ namespace policies {
 
     /// \{
 
-
     /**
      * \brief A policy class for the stride in a set.  When using this class, the stride can be set at runtime.
      */
@@ -50,6 +49,8 @@ namespace policies {
 
         inline const IntType  stride()      const { return m_stride;}
         inline       IntType& stride()            { return m_stride;}
+
+        void setStride(IntType str) { m_stride = str;}
 
         inline const IntType  operator()()  const { return stride();}
         inline       IntType& operator()()        { return stride();}
@@ -68,14 +69,20 @@ namespace policies {
     struct CompileTimeStrideHolder {
         static const IntType DEFAULT_VALUE = INT_VAL;
 
-        CompileTimeStrideHolder(IntType val = DEFAULT_VALUE) {
-               SLIC_ASSERT_MSG( val == INT_VAL
-                              , "MeshAPI::CompileTimeStrideHolder -- tried to initialize a compile time stride with value ("
-                              << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
+        CompileTimeStrideHolder(IntType val = DEFAULT_VALUE)
+        {
+            setStride(val);
         }
 
         inline const IntType stride()      const { return INT_VAL;}
         inline const IntType operator()()  const { return stride();}
+
+        void setStride(IntType val)
+        {
+            SLIC_ASSERT_MSG( val == INT_VAL
+                           , "MeshAPI::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
+                           << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
+        }
     };
 
     /**
@@ -88,14 +95,20 @@ namespace policies {
         /**
          * This constructor only exists to allow the derived class to not have to specialize for when the stride is known at compile time
          */
-        StrideOne(IntType val = DEFAULT_VALUE) {
-               SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-                              , "MeshAPI::StrideOne policy -- tried to initialize a stride-one StridePolicy with value ("
-                              << val <<"), but should always be 1.");
+        StrideOne(IntType val = DEFAULT_VALUE)
+        {
+            setStride(val);
         }
 
         inline const IntType stride()     const { return DEFAULT_VALUE;}
         inline const IntType operator()() const { return stride();}
+
+        void setStride(IntType val)
+        {
+            SLIC_ASSERT_MSG( val == DEFAULT_VALUE
+                           , "MeshAPI::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
+                           << val <<"), but should always be 1.");
+        }
     };
 
 

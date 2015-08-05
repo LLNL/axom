@@ -32,12 +32,16 @@
 #include "slic/slic.hpp"
 #include "meshapi/OrderedSet.hpp"
 #include "meshapi/Relation.hpp"
+#include "meshapi/PolicyTraits.hpp"
 
 
 namespace asctoolkit {
 namespace meshapi    {
 
+  template< typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>
+          >
   class StaticConstantRelation : public Relation
+                               , StridePolicy
   {
 #ifdef MESHAPI_STATIC_CONSTANT_RELATION_ITERATOR_USE_PROXY
   private:
@@ -62,6 +66,10 @@ namespace meshapi    {
 
   public:
 
+    typedef StridePolicy        StridePolicyType;
+
+    //-----
+
     typedef Relation::SetPosition                                         SetPosition;
 
     typedef std::vector<SetPosition>                                      RelationVec;
@@ -71,19 +79,28 @@ namespace meshapi    {
     typedef RelationVec::const_iterator                                   RelationVecConstIterator;
     typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
 
-
-    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>      // TODO: change this to a compile time size if/when parent is compile time
+    typedef typename policies::StrideToSize<StridePolicyType, SetPosition, StridePolicyType::DEFAULT_VALUE>::SizeType CorrespondingSizeType;
+    typedef OrderedSet< CorrespondingSizeType      // The cardinality of each relational operator is determined by the StridePolicy of the relation
                       , policies::RuntimeOffsetHolder<Set::PositionType>
                       , policies::StrideOne<Set::PositionType>
                       , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
   public:
-    StaticConstantRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
-    virtual ~StaticConstantRelation(){}
+    StaticConstantRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet)
+          : StridePolicy(CorrespondingSizeType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet) {}
+
+    ~StaticConstantRelation(){}
     /**
      * \note TODO: swap this out for data in the datastore
      */
-    void                      bindRelationData(const RelationVec & toOffsets, const SetPosition stride = 0);
+    void bindRelationData(const RelationVec & toOffsets, const SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+    {
+      StridePolicyType::setStride(stride);
+
+      m_toSetIndicesVec.clear();
+      m_toSetIndicesVec.reserve(toOffsets.size());
+      std::copy(toOffsets.begin(), toOffsets.end(), std::back_inserter(m_toSetIndicesVec));
+    }
 
     RelationVecConstIterator  begin(SetPosition fromSetIndex)       const
     {
@@ -119,14 +136,12 @@ namespace meshapi    {
 
         return rel;
     }
-
-
 #endif
 
     SetPosition size(SetPosition fromSetIndex = 0)                  const
     {
       verifyPosition(fromSetIndex);
-      return m_stride;
+      return stride();
     }
 
     bool isValid(bool verboseOutput = false) const;
@@ -157,20 +172,111 @@ namespace meshapi    {
     /// \}
   private:
     inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex < m_fromSet->size() ); }
-    inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return m_stride * (fromSetIndex); }
-    inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return m_stride * (fromSetIndex + 1); }
+    inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }
+    inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return stride() * (fromSetIndex + 1); }
 
-
+    inline SetPosition  stride() const { return StridePolicyType::stride(); }
 
   private:
-
-    SetPosition m_stride;
 
     Set* m_fromSet;
     Set* m_toSet;
 
     RelationVec m_toSetIndicesVec;            // vector of toSet entries
   };
+
+
+  template<typename StridePolicy>
+  bool StaticConstantRelation<StridePolicy>::isValid(bool verboseOutput) const
+  {
+    bool bValid = true;
+
+    std::stringstream errSstr;
+
+    if( *m_fromSet == s_nullSet || *m_toSet == s_nullSet)
+    {
+      if(!m_toSetIndicesVec.empty())
+      {
+        if(verboseOutput)
+        {
+          errSstr << "\n\t* toSetIndicesVec was not empty "
+                  << " -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
+                  << " , toSet was " << (*m_toSet == s_nullSet ? "" : " not ") << "null";
+        }
+
+        bValid = false;
+      }
+    }
+    else
+    {
+      if(verboseOutput)
+        errSstr << "\n\t* Neither set was null";
+
+      // Check that the toSetIndices vector has the right size
+      if( static_cast<SetPosition>(m_toSetIndicesVec.size()) != (stride() * m_fromSet->size()) )
+      {
+        if(verboseOutput)
+        {
+          errSstr << "\n\t* toSetIndices has the wrong size."
+                  << "\n\t-- from set size is: " << m_fromSet->size()
+                  << "\n\t-- constant stride is: " << stride()
+                  << "\n\t-- expected relation size: " << (stride() * m_fromSet->size())
+                  << "\n\t-- actual size: " << m_toSetIndicesVec.size()
+          ;
+        }
+        bValid = false;
+      }
+
+
+      // Check that all elements of the toSetIndices vector point to valid set elements
+      for(RelationVecConstIterator it = m_toSetIndicesVec.begin(), itEnd = m_toSetIndicesVec.end(); it != itEnd; ++it)
+      {
+        if( *it >= m_toSet->size() )
+        {
+          if(verboseOutput)
+          {
+            errSstr << "\n\t* toSetIndices had an out-of-range element."
+                    << " -- value of element " << std::distance(m_toSetIndicesVec.begin(), it) << " was " << *it
+                    << ". Max possible value should be " << m_toSet->size() << ".";
+          }
+
+          bValid = false;
+        }
+      }
+    }
+
+
+    if(verboseOutput)
+    {
+      std::stringstream sstr;
+
+      if(bValid)
+      {
+        sstr << "(static,constant) Relation with stride " << stride() << " was valid." << std::endl;
+      }
+      else
+      {
+        sstr  << "Relation was NOT valid.\n"
+              << errSstr.str()
+              << std::endl;
+      }
+
+      sstr << "\n*** Detailed results of isValid on the relation.\n";
+      if(m_fromSet)
+        sstr << "\n** fromSet has size " << m_fromSet->size() << ": ";
+      if(m_toSet)
+        sstr << "\n** toSet has size " << m_toSet->size() << ": ";
+
+      sstr << "\n** toSetIndices vec w/ size " << m_toSetIndicesVec.size() << ": ";
+      std::copy(m_toSetIndicesVec.begin(), m_toSetIndicesVec.end(), std::ostream_iterator<SetPosition>(sstr, " "));
+
+      std::cout << sstr.str() << std::endl;
+
+    }
+
+    return bValid;
+  }
+
 
 
 } // end namespace meshapi

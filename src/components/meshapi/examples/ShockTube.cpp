@@ -113,8 +113,11 @@ namespace shocktube {
     typedef asctoolkit::meshapi::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
 
     // types for relations
-    typedef asctoolkit::meshapi::StaticConstantRelation ElemToFaceRelation;
-    typedef asctoolkit::meshapi::StaticConstantRelation FaceToElemRelation;
+    enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
+    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM> EFStride;
+    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE> FEStride;
+    typedef asctoolkit::meshapi::StaticConstantRelation<EFStride> ElemToFaceRelation;
+    typedef asctoolkit::meshapi::StaticConstantRelation<FEStride> FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
