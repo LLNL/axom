@@ -74,14 +74,11 @@ void Logger::clearMessageCombiners()
     m_combiners.clear();
 }
 
-std::vector<MessageInfo*>* Logger::getMessages()
+void Logger::getMessageInfos(std::vector<MessageInfo*>& filledVector)
 {
     if (m_communicator->shouldMessagesBeOutputted()){
-        std::vector<MessageInfo*>* returnedVector = new std::vector<MessageInfo*>;
-        returnedVector->swap(m_messages);
-        return returnedVector;
+        filledVector.swap(m_messages);
     }
-    return ATK_NULLPTR;
 }
 
 void Logger::ranksLimit(int ranksLimit)

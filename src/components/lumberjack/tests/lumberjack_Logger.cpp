@@ -66,11 +66,12 @@ TEST(lumberjack_Logger, combineMessages01)
 
 	logger.pushMessagesFully();
 
-	std::vector<asctoolkit::lumberjack::MessageInfo*>* messages = logger.getMessages();
-	asctoolkit::lumberjack::MessageInfo* mi = messages->at(0);
-	EXPECT_EQ((int)messages->size(), 1);
-	EXPECT_EQ(mi->message(), "Should be combined.");
-	EXPECT_EQ(mi->rankCount(), 6);
+	std::vector<asctoolkit::lumberjack::MessageInfo*> messageInfos;
+	logger.getMessageInfos(messageInfos);
+
+	EXPECT_EQ((int)messageInfos.size(), 1);
+	EXPECT_EQ(messageInfos[0]->message(), "Should be combined.");
+	EXPECT_EQ(messageInfos[0]->rankCount(), 6);
 
 	logger.finalize();
 	communicator.finalize();

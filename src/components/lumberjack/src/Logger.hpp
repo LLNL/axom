@@ -27,7 +27,7 @@ class Logger {
         void removeMessageCombiner(const std::string& combinerIdentifier);
         void clearMessageCombiners();
 
-        std::vector<MessageInfo*>* getMessages();
+        void getMessageInfos(std::vector<MessageInfo*>& filledVector);
 
         void ranksLimit(int ranksLimit);
         int ranksLimit();

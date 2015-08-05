@@ -2,8 +2,6 @@
 #include "lumberjack/RootCommunicator.hpp"
 #include "lumberjack/MessageInfo.hpp"
 
-#include "common/CommonTypes.hpp"
-
 #include <mpi.h>
 #include <iostream>
 
@@ -25,33 +23,22 @@ int main(int argc, char** argv)
     logger.initialize(&communicator, ranksLimit);
 
     if (commRank == 0){
-        logger.queueMessage("This message is not important and will not combined");
+        logger.queueMessage("This message will not combined");
     }
     else {
-        logger.queueMessage("This message is not important and will be combined");
+        logger.queueMessage("This message will be combined");
     }
     logger.pushMessagesOnce();
-    std::vector<asctoolkit::lumberjack::MessageInfo*>* messageInfos = logger.getMessages();
+    
+    std::vector<asctoolkit::lumberjack::MessageInfo*> messageInfos;
+    logger.getMessageInfos(messageInfos);
 
-    if (commRank == 0){
-        std::cout << "Rank 0: Printing Messages Recieved!!" << std::endl;
-        for(int i=0; i<(int)(messageInfos->size()); ++i){
-            asctoolkit::lumberjack::MessageInfo* currMessageInfo = messageInfos->at(i);
-            std::cout << "(" << currMessageInfo->stringOfRanks() << ") " << currMessageInfo->rankCount() <<
-                         " '" << currMessageInfo->message() << "'" << std::endl;
-            delete currMessageInfo;
-        }
-    }
-    else {
-        if (messageInfos == ATK_NULLPTR){
-            std::cout << "Rank " << commRank << ": Success! No messages left in queue!" << std::endl;
-        }
-        else {
-            std::cout << "Rank " << commRank << ": Failure! Messages left in queue!" << std::endl;
-        }
+    for(int i=0; i<(int)(messageInfos.size()); ++i){
+        std::cout << "(" << messageInfos[i]->stringOfRanks() << ") " << messageInfos[i]->rankCount() <<
+                     " '" << messageInfos[i]->message() << "'" << std::endl;
+        delete messageInfos[i];
     }
 
-    delete messageInfos;
     MPI_Barrier(MPI_COMM_WORLD);
     logger.finalize();
     communicator.finalize();
