@@ -45,7 +45,7 @@ TEST(gtest_meshapi_windowed_range_set,construct_windowed_range_set)
 
   SetType s(lowerIndex, upperIndex);
 
-  EXPECT_TRUE(s.isValid());
+  EXPECT_TRUE(s.isValid(true));
 
   if(lowerIndex != upperIndex)
     EXPECT_FALSE(s.empty());
@@ -112,9 +112,9 @@ TEST(gtest_meshapi_windowed_range_set,test_windowed_range_set_parents)
 
   SetType nonChildSet(lowerIndex, upperIndex);
 
-  EXPECT_TRUE(parentSet.isValid());
-  EXPECT_TRUE(childSet.isValid());
-  EXPECT_TRUE(nonChildSet.isValid());
+  EXPECT_TRUE(parentSet.isValid(true));
+  EXPECT_TRUE(childSet.isValid(true));
+  EXPECT_TRUE(nonChildSet.isValid(true));
 
   std::cout << "\n-- Checking that the child is a subset, but not the parent or the non-child windowed set." << std::endl;
   EXPECT_FALSE(parentSet.isSubset());
@@ -123,4 +123,23 @@ TEST(gtest_meshapi_windowed_range_set,test_windowed_range_set_parents)
 
   std::cout << "\n-- Checking that the child set's parent is equal to the parent set (according to the equality operator==)." << std::endl;
   EXPECT_EQ(parentSet, *childSet.parentSet());
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+ int result = 0;
+
+ ::testing::InitGoogleTest(&argc, argv);
+
+ UnitTestLogger logger;   // create & initialize test logger,
+ // finalized when exiting main scope
+
+ result = RUN_ALL_TESTS();
+
+ return result;
 }

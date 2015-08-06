@@ -201,12 +201,7 @@ public:
 #endif
 
     /// HACK: This function needs to be implemented
-    bool                isValid(bool verboseOutput = false) const
-    {
-        if(verboseOutput)
-            return true;
-        return true;
-    }
+    bool                isValid(bool verboseOutput = false) const;
 
     bool isSubset() const { return SubsettingPolicy::isSubset(); }
 
@@ -222,6 +217,25 @@ public:
   private:
     /// NOTE: All data for OrderedSet is associated with parent policy classes
   };
+
+
+    template< typename SizePolicy
+            , typename OffsetPolicy
+            , typename StridePolicy
+            , typename IndirectionPolicy
+            , typename SubsettingPolicy
+            >
+    bool OrderedSet<SizePolicy,OffsetPolicy, StridePolicy, IndirectionPolicy, SubsettingPolicy>::isValid(bool verboseOutput) const
+    {
+        bool bValid =  SizePolicyType::isValid(verboseOutput)
+                    && OffsetPolicyType::isValid(verboseOutput)
+                    && StridePolicyType::isValid(verboseOutput)
+                    && IndirectionPolicyType::isValid(size(), OffsetPolicy::offset(), StridePolicy::stride(), verboseOutput)
+                    && SubsettingPolicyType::isValid(begin(), end(), verboseOutput)
+                    ;
+
+        return bValid;
+    }
 
 
 } // end namespace meshapi

@@ -47,14 +47,15 @@ namespace policies {
 
         RuntimeStrideHolder(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
 
-        inline const IntType  stride()      const { return m_stride;}
-        inline       IntType& stride()            { return m_stride;}
+        inline IntType  stride()      const { return m_stride;}
+        inline IntType& stride()            { return m_stride;}
 
-        void setStride(IntType str) { m_stride = str;}
+        void setStride(IntType str)         { m_stride = str;}
 
-        inline const IntType  operator()()  const { return stride();}
-        inline       IntType& operator()()        { return stride();}
+        inline IntType  operator()()  const { return stride();}
+        inline IntType& operator()()        { return stride();}
 
+        inline bool isValid(bool)         const { return true; }
 
         //inline bool hasStride() const       { return m_stride != IntType(); }
     private:
@@ -74,8 +75,8 @@ namespace policies {
             setStride(val);
         }
 
-        inline const IntType stride()      const { return INT_VAL;}
-        inline const IntType operator()()  const { return stride();}
+        inline IntType stride()      const { return INT_VAL;}
+        inline IntType operator()()  const { return stride();}
 
         void setStride(IntType val)
         {
@@ -83,6 +84,7 @@ namespace policies {
                            , "MeshAPI::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
                            << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
+        inline bool isValid(bool)         const { return true; }
     };
 
     /**
@@ -109,6 +111,7 @@ namespace policies {
                            , "MeshAPI::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
                            << val <<"), but should always be 1.");
         }
+        inline bool isValid(bool )         const { return true; }
     };
 
 

@@ -26,6 +26,10 @@
 #ifndef MESHAPI_POLICIES_INDIRECTION_H_
 #define MESHAPI_POLICIES_INDIRECTION_H_
 
+#include "slic/slic.hpp"
+
+
+
 
 namespace asctoolkit {
 namespace meshapi {
@@ -50,6 +54,7 @@ namespace policies {
         inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
 
         bool hasIndirection() const { return false;}
+        inline bool isValid(PositionType, PositionType, PositionType, bool ) const     { return true; }
     };
 
     /**
@@ -73,7 +78,24 @@ namespace policies {
 
         inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
 
-        bool hasIndirection() const { return m_arrBuf == ATK_NULLPTR;}
+        bool hasIndirection() const { return m_arrBuf != ATK_NULLPTR;}
+
+        inline bool isValid(PositionType size, PositionType, PositionType, bool verboseOutput = false) const
+        {
+            // set of zero size is always valid
+            if(size == 0)
+                return true;
+
+            bool bValid = hasIndirection();
+            SLIC_CHECK_MSG(verboseOutput && !bValid
+                         , "Array-based indirection set with non-zero size (size=" << size
+                           << ") requires valid data buffer, but buffer pointer was null.");
+
+            // Since array-based indirection sets don't encode a buffer size, that is all we can check
+
+            return bValid;
+        }
+
     private:
         ElementType* m_arrBuf;
     };
@@ -102,6 +124,36 @@ namespace policies {
         inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
 
         bool hasIndirection() const { return m_vecBuf != ATK_NULLPTR;}
+
+        inline bool isValid(PositionType size, PositionType offset, PositionType stride, bool verboseOutput = false) const
+        {
+            // If set has zero size, we are always valid (even if indirection buffer is null)
+            if(size == 0)
+                return true;
+
+            // Otherwise, check whether the set has elements, but the array ptr is null
+            bool bValid = hasIndirection();
+            SLIC_CHECK_MSG(verboseOutput && !bValid
+                          , "Vector-based indirection set with non-zero size (size=" << size
+                              << ") requires valid data buffer, but buffer pointer was null.");
+            if(!bValid)
+                return false;
+
+            // Finally, check that the underlying vector has sufficient storage for all set elements
+            // Note that it is valid for the data buffer to have more space than the set's positions
+            PositionType firstElt = offset;
+            PositionType lastElt = (size-1)*stride + offset;
+            PositionType vecSize = m_vecBuf->size();
+
+            bValid = (firstElt < vecSize) && (lastElt < vecSize);
+            SLIC_CHECK_MSG(verboseOutput && !bValid
+                          , "Data buffer in vector-based IndirectionSet must be large enough to hold all elements of the set. "
+                          << "Underlying buffer size is " << vecSize << ", and set's range is from "
+                          <<"positions " << firstElt << " to " << lastElt <<".");
+
+            return bValid;
+        }
+
     private:
         const VectorType* m_vecBuf;
     };

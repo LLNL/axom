@@ -47,14 +47,13 @@ namespace policies {
 
         RuntimeOffsetHolder(IntType off = DEFAULT_VALUE) : m_off(off) {}
 
-        inline const IntType offset() const { return m_off;}
-        inline       IntType& offset()            { return m_off;}
+        inline IntType offset() const { return m_off;}
+        inline IntType& offset()            { return m_off;}
 
-        inline const IntType  operator()() const { return offset();}
-        inline       IntType& operator()()       { return offset();}
+        inline IntType  operator()() const { return offset();}
+        inline IntType& operator()()       { return offset();}
 
-
-        // inline bool hasOffset() const       { return m_off == IntType(); }
+        inline bool isValid(bool) const     { return true; }
     private:
         IntType m_off;
     };
@@ -73,8 +72,9 @@ namespace policies {
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
-        inline const IntType  offset()      const { return INT_VAL;}
-        inline const IntType operator()()  const { return offset();}
+        inline IntType  offset()      const { return INT_VAL;}
+        inline IntType operator()()  const { return offset();}
+        inline bool isValid(bool) const     { return true; }
     };
 
     /**
@@ -90,8 +90,9 @@ namespace policies {
                               << val <<", but should always be 0");
         }
 
-        inline const IntType offset()     const { return DEFAULT_VALUE;}
-        inline const IntType operator()() const { return offset();}
+        inline IntType offset()     const { return DEFAULT_VALUE;}
+        inline IntType operator()() const { return offset();}
+        inline bool isValid(bool) const     { return true; }
     };
 
     /// \}

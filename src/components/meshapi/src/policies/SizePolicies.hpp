@@ -48,13 +48,14 @@ namespace policies {
 
         RuntimeSizeHolder(IntType sz = DEFAULT_VALUE) : m_sz(sz) {}
 
-        inline const IntType  size()       const { return m_sz;}
-        inline       IntType& size()             { return m_sz;}
+        inline IntType  size()       const { return m_sz;}
+        inline IntType& size()             { return m_sz;}
 
-        inline const IntType  operator()() const { return size();}
-        inline       IntType& operator()()       { return size();}
+        inline IntType  operator()() const { return size();}
+        inline IntType& operator()()       { return size();}
 
         inline bool empty() const       { return m_sz == IntType(); }
+        inline bool isValid(bool) const     { return m_sz >= IntType(); }   // We do not (currently) allow negatively sized sets
     private:
         IntType m_sz;
     };
@@ -72,10 +73,11 @@ namespace policies {
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
-        inline const IntType size()       const { return INT_VAL;}
-        inline const IntType operator()() const { return size();}
+        inline IntType size()       const { return INT_VAL;}
+        inline IntType operator()() const { return size();}
 
         inline IntType empty() const { return INT_VAL == IntType();}
+        inline bool isValid(bool) const     { return INT_VAL >= IntType(); }   // We do not (currently) allow negatively sized sets
     };
 
     /**
@@ -91,9 +93,10 @@ namespace policies {
                               << val <<" ) but should always be zero.");
          }
 
-         inline const IntType size()        const { return DEFAULT_VALUE;}
-         inline const IntType operator()()  const { return size();}
+         inline IntType size()        const { return DEFAULT_VALUE;}
+         inline IntType operator()()  const { return size();}
          inline IntType empty() const { return true;}
+         inline bool isValid(bool) const     { return true; }
      };
 
     /// \}
