@@ -9,11 +9,8 @@
  */
 
 
-/*
- * \file testRangeSet.cpp
- *
- *  Created on: Apr 23, 2015
- *      Author: weiss27
+/**
+ * \file
  */
 
 #include <iterator>
@@ -21,7 +18,6 @@
 
 #include "meshapi/Utilities.hpp"
 #include "meshapi/IndirectionSet.hpp"
-
 
 typedef asctoolkit::meshapi::ArrayIndirectionSet SetType;
 typedef SetType::iterator                   SetIterator;
@@ -34,24 +30,29 @@ static const SetPosition MAX_SET_SIZE = 10;
 TEST(gtest_meshapi_indirection_set,construct_indirection_set)
 {
 
-  SetType s;
+  SetType s(MAX_SET_SIZE);
+  SetPosition arr[MAX_SET_SIZE];
+  s.data() = arr;
+  for(int i=0;i<MAX_SET_SIZE; ++i)
+      arr[i] = i;
+
 
   EXPECT_TRUE(s.isValid());
-/*
-    if(MAX_SET_SIZE > SetPosition())
-        EXPECT_FALSE(s.isEmpty());
 
+    if(MAX_SET_SIZE > SetPosition())
+        EXPECT_FALSE(s.empty());
+/*
     std::cout<<"Iterating through set of size " << s.size() << std::endl;
     EXPECT_EQ(s.size(), MAX_SET_SIZE);
 
 
     std::cout<<"\n --Using begin/end" << std::endl;
-    for(SetIterator it=s.begin(), itEnd=s.end(); it != itEnd; ++it)
-    {
-        EXPECT_EQ( std::distance(s.begin(), it), *it )
-                << "Iterator dereference should be equal to its position in the set";
-        std::cout << "\t" << *it <<"\n";
-    }
+//    for(SetIterator it=s.begin(), itEnd=s.end(); it != itEnd; ++it)
+//    {
+//        EXPECT_EQ( std::distance(s.begin(), it), *it )
+//                << "Iterator dereference should be equal to its position in the set";
+//        std::cout << "\t" << *it <<"\n";
+//    }
 
     std::cout<<"\n --Using random access -- operator[]" << std::endl;
     for(SetPosition pos = SetPosition(); pos < s.size(); ++pos)
@@ -84,14 +85,15 @@ TEST(gtest_meshapi_indirection_set,construct_indirection_set)
     std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
    #endif
 
- */
-  std::cout << "--\ndone." << std::endl;
 
+  std::cout << "--\ndone." << std::endl;
+*/
 }
 
-/*
+
    TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
    {
+/*
     std::cout<<"\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;
 
 
@@ -104,5 +106,6 @@ TEST(gtest_meshapi_indirection_set,construct_indirection_set)
    #else
     std::cout <<"Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
    #endif
-   }
  */
+   }
+

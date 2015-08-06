@@ -109,9 +109,9 @@ namespace meshapi {
                           , policies::RuntimeOffsetHolder<Set::PositionType>  >  OrderedSetType;
 
     public:
-        typedef typename OrderedSetType::PositionType PositionType;
-        typedef typename OrderedSetType::IndexType IndexType;
-        typedef typename OrderedSetType::ElementType ElementType;
+        typedef OrderedSetType::PositionType PositionType;
+        typedef OrderedSetType::IndexType IndexType;
+        typedef OrderedSetType::ElementType ElementType;
     private:
         static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
         static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;

@@ -639,7 +639,6 @@ private:
   NodeSet m_nodeSet;
   ElemSet m_elemSet;
   CornerSet m_cornerSet;
-  Set*      m_pNodeCorners;
   ExtendedElemSet m_extendedElemSet;        // Has space for a elements as well as each face on the boundary
 
   Index_t m_maxPlaneSize;
