@@ -9,36 +9,13 @@ void Logger::initialize(Communicator* communicator, int ranksLimit)
 {
     m_communicator = communicator;
     m_ranksLimit = ranksLimit;
-    m_messageEqualityCombiner = new MessageEqualityCombiner;
-    m_combiners.push_back(m_messageEqualityCombiner);
+    m_combiners.push_back(new MessageEqualityCombiner);
 }
 
 void Logger::finalize()
 {
     m_communicator = ATK_NULLPTR;
-    delete m_messageEqualityCombiner;
-    m_messageEqualityCombiner = ATK_NULLPTR;
     clearMessageCombiners();
-}
-
-void Logger::setOutputStream()
-{
-
-}
-
-void Logger::setErrorStream()
-{
-
-}
-
-void Logger::flushOutputStream()
-{
-
-}
-
-void Logger::flushErrorStream()
-{
-
 }
 
 void Logger::addMessageCombiner(Combiner* combiner)
@@ -60,6 +37,7 @@ void Logger::removeMessageCombiner(const std::string& combinerIdentifier)
     int combinerToBeRemoved = -1;
     for (int i=0; i<(int)m_combiners.size(); ++i){
         if (m_combiners[i]->id() == combinerIdentifier){
+            delete m_combiners[i];
             combinerToBeRemoved = i;
             break;
         }
@@ -71,6 +49,9 @@ void Logger::removeMessageCombiner(const std::string& combinerIdentifier)
 
 void Logger::clearMessageCombiners()
 {
+    for (int i=0; i<(int)m_combiners.size(); ++i){
+        delete m_combiners[i];
+    }
     m_combiners.clear();
 }
 

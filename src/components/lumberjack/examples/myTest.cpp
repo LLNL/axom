@@ -29,17 +29,15 @@ int main(int argc, char** argv)
         logger.queueMessage("This message will be combined");
     }
     logger.pushMessagesOnce();
-    
+
     std::vector<asctoolkit::lumberjack::MessageInfo*> messageInfos;
     logger.getMessageInfos(messageInfos);
-
     for(int i=0; i<(int)(messageInfos.size()); ++i){
         std::cout << "(" << messageInfos[i]->stringOfRanks() << ") " << messageInfos[i]->rankCount() <<
                      " '" << messageInfos[i]->message() << "'" << std::endl;
         delete messageInfos[i];
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
     logger.finalize();
     communicator.finalize();
     MPI_Finalize();

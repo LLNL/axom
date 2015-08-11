@@ -2,6 +2,9 @@
 
 #include <cstdlib>
 
+#include <iostream>
+#include "lumberjack/Utility.hpp"
+
 namespace asctoolkit {
 namespace lumberjack {
 
@@ -33,6 +36,9 @@ int RootCommunicator::rank()
 
 void RootCommunicator::pushMessagesOnce(std::vector<MessageInfo*>& messages)
 {
+    MPI_Request mpiRequests[m_mpiCommSize];
+    MPI_Status mpiStatuses[m_mpiCommSize];
+
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank == 0){
         char* charArray = ATK_NULLPTR;
@@ -43,7 +49,7 @@ void RootCommunicator::pushMessagesOnce(std::vector<MessageInfo*>& messages)
             MPI_Probe(i, 0, m_mpiComm, &mpiStatus);
             MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
             charArray = (char*)malloc((messageSize+1)*sizeof(char));
-            MPI_Recv(charArray, messageSize, MPI_CHAR, i, 0, m_mpiComm, &mpiStatus);
+            MPI_Irecv(charArray, messageSize, MPI_CHAR, i, 0, m_mpiComm, &mpiRequests[i]);
             charArray[messageSize] = '\0';
             std::string messageString(charArray);
             free(charArray);
@@ -55,11 +61,13 @@ void RootCommunicator::pushMessagesOnce(std::vector<MessageInfo*>& messages)
     else {
         for(int i=0; i<(int)messages.size(); ++i){
             std::string message = messages[i]->pack();
-            MPI_Send(const_cast<char*>(message.c_str()),
-                     message.size(), MPI_CHAR, 0, 0, m_mpiComm);
+            MPI_Isend(const_cast<char*>(message.c_str()),
+                     message.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequests[i]);
+            delete messages[i];
         }
         messages.clear();
     }
+    MPI_Waitall(m_mpiCommSize, mpiRequests, mpiStatuses);
 }
 
 void RootCommunicator::pushMessagesFully(std::vector<MessageInfo*>& messages)

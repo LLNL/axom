@@ -1,5 +1,6 @@
-#include "MessageInfo.hpp"
-#include "Utility.hpp"
+#include "lumberjack/MessageInfo.hpp"
+
+#include "lumberjack/Utility.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {

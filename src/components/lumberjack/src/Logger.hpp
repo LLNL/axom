@@ -17,12 +17,6 @@ class Logger {
         void initialize(Communicator* communicator, int ranksLimit);
         void finalize();
 
-        void setOutputStream();
-        void setErrorStream();
-
-        void flushOutputStream();
-        void flushErrorStream();
-
         void addMessageCombiner(Combiner* combiner);
         void removeMessageCombiner(const std::string& combinerIdentifier);
         void clearMessageCombiners();
