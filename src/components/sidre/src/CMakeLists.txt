@@ -53,8 +53,6 @@ make_library( LIBRARY_NAME
                 slic
              )
 
-set_target_properties(sidre  PROPERTIES Fortran_FORMAT "FREE")
-
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
 # Only needed if building the Fortran interface

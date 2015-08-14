@@ -116,7 +116,10 @@ if(ENABLE_FORTRAN)
         MESSAGE(STATUS  "Fortran support enabled.")
     else()
         MESSAGE(FATAL_ERROR "Fortran support selected, but no Fortran compiler was found.")
-    endif()    
+    endif()
+
+    # default property to free form
+    set(CMAKE_Fortran_FORMAT FREE)
 else()
     MESSAGE(STATUS  "Fortran support disabled.")
 endif()

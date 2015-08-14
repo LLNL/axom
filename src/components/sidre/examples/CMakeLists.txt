@@ -16,6 +16,5 @@ foreach(example_source ${example_sources})
     make_executable( EXECUTABLE_SOURCE ${example_source} DEPENDS_ON sidre
 conduit slic rt )
 endforeach()
-set_target_properties(F_sidre_shocktube  PROPERTIES Fortran_FORMAT "FREE")
 
 add_subdirectory(lulesh2)
