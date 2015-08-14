@@ -13,8 +13,9 @@ set(example_sources
 # Build the example sources
 #
 foreach(example_source ${example_sources})
-    make_executable( EXECUTABLE_SOURCE ${example_source} DEPENDS_ON sidre
-conduit slic rt )
+    make_executable( EXECUTABLE_SOURCE ${example_source}
+        DEPENDS_ON sidre conduit slic rt )
 endforeach()
+set_target_properties(F_sidre_shocktube PROPERTIES LINKER_LANGUAGE Fortran)
 
 add_subdirectory(lulesh2)
