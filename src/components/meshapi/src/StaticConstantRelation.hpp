@@ -35,6 +35,24 @@
 #include "meshapi/PolicyTraits.hpp"
 
 
+// TODO: We need to add policies to this relation class
+//  We already have:
+//  * StridePolicy -- this dictates whether the constant for the striding of each relation will be provided at runtime or compile time
+//  We are missing:
+//  * The type of FromSet   -- either Set(Base) or a concrete set type
+//  * The type of ToSet     -- "
+//
+//  * The set type of the begins set -- this is determined by the stride policy
+//                                   -- more generally, we can combine this set type with the variable static relation by allowing this to be an indirection set (of size fromSet.size()+1
+//                                      or a strided set (of size fromSet.size()) without indirection
+//
+//  * The set type of the offsets set -- this can be an indirection set into ToSet
+//                                    -- or we can allow it to be an offset-based position set
+//                                      (e.g. for relations of type: Zone-to-Side / Zone-to-Corner -- where rel[i][j] = SZ*i+j -- offset is SZ*i, size of set is SZ, stride is 1, no indirection)
+//                                      The storage cost here is practically 0 for the entire relation
+
+
+
 namespace asctoolkit {
 namespace meshapi    {
 
@@ -131,19 +149,30 @@ namespace meshapi    {
     const RelationSet operator[](SetPosition fromSetElt) const
     {
         // Note -- we need a better way to initialize an indirection set
-        RelationSet rel(size(fromSetElt),toSetBeginIndex(fromSetElt) );
-        rel.data() = &m_toSetIndicesVec;
-
-        return rel;
+//        RelationSet rel(size(fromSetElt),toSetBeginIndex(fromSetElt) );
+//        rel.data() = &m_toSetIndicesVec;
+//        return rel;
+        typedef typename RelationSet::SetIniter SetIniter;
+        return SetIniter()
+                    .size(  size(fromSetElt))
+                    .offset( toSetBeginIndex(fromSetElt) )
+                    .data( &m_toSetIndicesVec)
+                    ;
     }
 #endif
 
+    /**
+     * Returns the number of elements in toSet related to item at position fromSetIndex of fromSet
+     */
     SetPosition size(SetPosition fromSetIndex = 0)                  const
     {
       verifyPosition(fromSetIndex);
       return stride();
     }
 
+    /**
+     * Checks the validity of the relation
+     */
     bool isValid(bool verboseOutput = false) const;
 
   public:

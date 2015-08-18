@@ -172,7 +172,7 @@ namespace unstructured {
       std::cout << "\tNumber of nodes = " << numNodes << "\n";
 
       // Create the set of Nodes
-      mesh->nodes = HexMesh::NodeSet(numNodes);
+      mesh->nodes = HexMesh::NodeSet::SetIniter().size(numNodes);
 
       // Create the nodal position field, and read positions from file
       mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );

@@ -46,6 +46,8 @@ namespace meshapi {
       public:
           PositionSet(PositionType size = DEFAULT_SIZE)
             : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+
+          PositionSet(const typename PositionSet::SetIniter & initer) : OrderedSetType(initer) {}
       };
 
 
