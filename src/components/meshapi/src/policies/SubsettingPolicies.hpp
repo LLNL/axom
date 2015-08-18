@@ -41,6 +41,10 @@ namespace policies {
     struct NoSubset
     {
         static const NullSet s_nullSet;
+        typedef struct{} ParentSetType;
+
+        NoSubset(){}
+        NoSubset(ParentSetType*) {} // This empty .ctor is here to satisfy SubsettingPolicy API
 
         /**
          * \brief Checks whether the set containing this policy class is a subset
@@ -56,7 +60,9 @@ namespace policies {
     {
         static NullSet s_nullSet;
 
-        VirtualParentSubset() : m_parentSet(&s_nullSet) {}
+        typedef Set ParentSetType;
+
+        VirtualParentSubset(ParentSetType* parSet = &s_nullSet) : m_parentSet(parSet) {}
 
         /**
          * \brief Checks whether the set containing this policy class is a subset
@@ -104,9 +110,13 @@ namespace policies {
         Set* m_parentSet;
     };
 
-    template<typename ParentSetType>
+    template<typename TheParentSetType>
     struct ConcreteParentSubset
     {
+        typedef TheParentSetType ParentSetType;
+
+        ConcreteParentSubset(ParentSetType* parSet = ATK_NULLPTR) : m_parentSet(parSet) {}
+
         /**
          * \brief Checks whether the set containing this policy class is a subset
          */

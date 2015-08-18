@@ -49,6 +49,10 @@ namespace policies {
     struct NoIndirection
     {
         typedef const ElementType IndirectionResult;
+        typedef struct{} IndirectionBufferType;
+
+        NoIndirection() {}
+        NoIndirection(IndirectionBufferType*) {}     // This empty .ctor exists to satisfy IndirectionPolicy interface
 
         inline IndirectionResult indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
         inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
@@ -64,10 +68,11 @@ namespace policies {
     struct ArrayIndirection
     {
         typedef const ElementType& IndirectionResult;
+        typedef ElementType IndirectionBufferType;
 
-        ArrayIndirection(ElementType* buf = ATK_NULLPTR) : m_arrBuf(buf) {}
+        ArrayIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_arrBuf(buf) {}
 
-        ElementType*& data() { return m_arrBuf;}
+        IndirectionBufferType*& data() { return m_arrBuf;}
 
         inline IndirectionResult indirection(PositionType pos) const
         {
@@ -97,7 +102,7 @@ namespace policies {
         }
 
     private:
-        ElementType* m_arrBuf;
+        IndirectionBufferType* m_arrBuf;
     };
 
     /**
@@ -108,10 +113,12 @@ namespace policies {
     {
         typedef std::vector<ElementType> VectorType;
         typedef const ElementType& IndirectionResult;
+        typedef const VectorType IndirectionBufferType;
 
-        STLVectorIndirection(const VectorType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
 
-        const VectorType*& data() { return m_vecBuf;}
+        STLVectorIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
+
+        IndirectionBufferType*& data() { return m_vecBuf;}
 
         inline IndirectionResult indirection(PositionType pos) const
         {
@@ -155,7 +162,7 @@ namespace policies {
         }
 
     private:
-        const VectorType* m_vecBuf;
+        IndirectionBufferType* m_vecBuf;
     };
 
     /// \}
