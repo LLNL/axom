@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file Utility.cpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the implementation of utility functions.
+ *******************************************************************************
+ */
+
 #include "lumberjack/Utility.hpp"
 
 #ifndef ENABLE_CXX11
@@ -41,5 +50,5 @@ int stringToInt(const std::string& stringValue)
     return intValue;
 }
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit

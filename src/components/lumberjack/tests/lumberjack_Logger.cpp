@@ -33,14 +33,14 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
 
         }
 
-        void pushMessagesOnce(std::vector<asctoolkit::lumberjack::MessageInfo*>& messages)
+        void pushMessageInfosOnce(std::vector<asctoolkit::lumberjack::MessageInfo*>& messageInfos)
         {
-        	messages = messages;
+        	messageInfos = messageInfos;
         }
 
-        void pushMessagesFully(std::vector<asctoolkit::lumberjack::MessageInfo*>& messages)
+        void pushMessageInfosFully(std::vector<asctoolkit::lumberjack::MessageInfo*>& messageInfos)
         {
-        	messages = messages;
+        	messageInfos = messageInfos;
         }
 
         bool shouldMessagesBeOutputted()
@@ -74,7 +74,7 @@ TEST(lumberjack_Logger, combineMessages01)
 	logger.queueMessage("Should be combined.");
 	logger.queueMessage("Should be combined.");
 
-	logger.pushMessagesFully();
+	logger.pushMessageInfosFully();
 
 	std::vector<asctoolkit::lumberjack::MessageInfo*> messageInfos;
 	logger.getMessageInfos(messageInfos);

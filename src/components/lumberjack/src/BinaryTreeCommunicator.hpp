@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file BinaryTreeCommunicator.hpp
+ * \author Chris White (white238@llnl.gov)
+  *
+ * \brief This file contains the class definition of the BinaryTreeCommunicator.
+*******************************************************************************
+ */
+
 #ifndef BINARYTREECOMMUNICATOR_HPP
 #define BINARYTREECOMMUNICATOR_HPP
 
@@ -33,7 +42,7 @@ class BinaryTreeCommunicator: public Communicator {
         std::vector<int> m_ranks;
 };
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit
 
 #endif

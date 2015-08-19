@@ -9,5 +9,5 @@
 #-------------------------------------------------------------------------------
 
 make_executable(WITH_MPI
-                EXECUTABLE_SOURCE myTest.cpp
+                EXECUTABLE_SOURCE basicExample.cpp
                 DEPENDS_ON lumberjack )

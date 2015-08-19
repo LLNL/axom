@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file RootCommunicator.hpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the class definition of the RootCommunicator.
+ *******************************************************************************
+ */
+
 #ifndef ROOTCOMMUNICATOR_HPP
 #define ROOTCOMMUNICATOR_HPP
 
@@ -23,15 +32,80 @@
 namespace asctoolkit {
 namespace lumberjack {
 
+/*!
+ *******************************************************************************
+ * \class RootCommunicator
+ *
+ * \brief Abstract base class defining the interface of all Communicators.
+ *
+ *  Concrete instances need to inherit from this class and implement these functions.
+ *  You will need to add your Communicator using Logger::Initialize
+ *
+ * \see BinaryTreeCommunicator Communicator Logger
+ *******************************************************************************
+ */
 class RootCommunicator: public Communicator {
     public:
+        /*!
+         *****************************************************************************
+         * \brief Called to initialize the Communicator.
+         *
+         * This performs any setup work the Communicator needs before doing any work.
+         * It is required that this is called before using the Communicator.
+         *
+         * \param [in] comm The MPI Communicator
+         * \param [in] ranksLimit Limit on how many ranks are individually tracked per MessageInfo.
+         *****************************************************************************
+         */
         void initialize(MPI_Comm comm, int ranksLimit);
+
+        /*!
+         *****************************************************************************
+         * \brief Called to finalize the Communicator.
+         *
+         * This performs any cleanup work the Communicator needs to do before going away.
+         * It is required that this is the last function called by the Communicator.
+         *****************************************************************************
+         */
         void finalize();
 
-        void pushMessagesOnce(std::vector<MessageInfo*>& messages);
-        void pushMessagesFully(std::vector<MessageInfo*>& messages);
+        /*!
+         *****************************************************************************
+         * \brief This pushes all messages to the root node.
+         *
+         * All messages are pushed to the root node. This is the same as 
+         * (<RootCommunicator>"::")<pushMessagesFully>"()" for this Communicator.
+         *
+         * \param [in,out] messageInfos All of this rank's messages.
+         *****************************************************************************
+         */
+        void pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos);
 
+        /*!
+         *****************************************************************************
+         * \brief This pushes all messages to the root node.
+         *
+         * All messages are pushed to the root node. This is the same as 
+         * (<RootCommunicator>"::")<pushMessagesOnce>"()" for this Communicator.
+         *
+         * \param [in,out] messageInfos All of this rank's messages.
+         *****************************************************************************
+         */
+        void pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos);
+
+        /*!
+         *****************************************************************************
+         * \brief Function used by the logger to indicate whether this node should be
+         * outputting messages. Only the root node outputs messages.
+         *****************************************************************************
+         */
         bool shouldMessagesBeOutputted();
+
+        /*!
+         *****************************************************************************
+         * \brief Returns the MPI rank of this node
+         *****************************************************************************
+         */
         int rank();
     private:
         MPI_Comm m_mpiComm;
@@ -40,7 +114,7 @@ class RootCommunicator: public Communicator {
         int m_ranksLimit;
 };
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit
 
 #endif

@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file BinaryTreeCommunicator.cpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the class implementation of the BinaryTreeCommunicator.
+ *******************************************************************************
+ */
+
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 
 namespace asctoolkit {
@@ -46,5 +55,5 @@ void BinaryTreeCommunicator::queueMessage(const std::string& message)
     queueMessage(message, "", -1);
 }
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit

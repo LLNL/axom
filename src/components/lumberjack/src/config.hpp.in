@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file Config.hpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the build configuration details.
+ *******************************************************************************
+ */
+
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
@@ -18,7 +27,7 @@ namespace lumberjack {
 #define LUMBERJACK_VERSION_MINOR @Lumberjack_VERSION_MINOR@
 #define LUMBERJACK_VERSION_PATCH @Lumberjack_VERSION_PATCH@
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit
 
 #endif

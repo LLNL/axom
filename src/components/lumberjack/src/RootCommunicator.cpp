@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file RootCommunicator.cpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the class implementation of the RootCommunicator.
+ *******************************************************************************
+ */
+
 #include "lumberjack/RootCommunicator.hpp"
 
 #include <cstdlib>
@@ -42,7 +51,7 @@ int RootCommunicator::rank()
     return m_mpiCommRank;
 }
 
-void RootCommunicator::pushMessagesOnce(std::vector<MessageInfo*>& messages)
+void RootCommunicator::pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos)
 {
     MPI_Request mpiRequests[m_mpiCommSize];
     MPI_Status mpiStatuses[m_mpiCommSize];
@@ -63,25 +72,25 @@ void RootCommunicator::pushMessagesOnce(std::vector<MessageInfo*>& messages)
             free(charArray);
             MessageInfo* mi = new MessageInfo();
             mi->unpack(messageString, m_ranksLimit);
-            messages.push_back(mi);
+            messageInfos.push_back(mi);
         }
     }
     else {
-        for(int i=0; i<(int)messages.size(); ++i){
-            std::string message = messages[i]->pack();
-            MPI_Isend(const_cast<char*>(message.c_str()),
-                     message.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequests[i]);
-            delete messages[i];
+        for(int i=0; i<(int)messageInfos.size(); ++i){
+            std::string packedMessageInfo = messageInfos[i]->pack();
+            MPI_Isend(const_cast<char*>(packedMessageInfo.c_str()),
+                     packedMessageInfo.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequests[i]);
+            delete messageInfos[i];
         }
-        messages.clear();
+        messageInfos.clear();
     }
     MPI_Waitall(m_mpiCommSize, mpiRequests, mpiStatuses);
 }
 
-void RootCommunicator::pushMessagesFully(std::vector<MessageInfo*>& messages)
+void RootCommunicator::pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos)
 {
-    pushMessagesOnce(messages);
+    pushMessageInfosOnce(messageInfos);
 }
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit

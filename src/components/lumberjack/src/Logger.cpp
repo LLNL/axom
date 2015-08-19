@@ -8,6 +8,16 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file Logger.cpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the class implementation of the Logger. This class
+ * is the main class users will interact with.
+ *******************************************************************************
+ */
+
 #include "lumberjack/Logger.hpp"
 
 #include "common/CommonTypes.hpp"
@@ -25,10 +35,10 @@ void Logger::initialize(Communicator* communicator, int ranksLimit)
 void Logger::finalize()
 {
     m_communicator = ATK_NULLPTR;
-    clearMessageCombiners();
+    clearCombiners();
 }
 
-void Logger::addMessageCombiner(Combiner* combiner)
+void Logger::addCombiner(Combiner* combiner)
 {
     bool identifierFound = false;
     for (int i=0; i<(int)m_combiners.size(); ++i){
@@ -42,7 +52,7 @@ void Logger::addMessageCombiner(Combiner* combiner)
     }
 }
 
-void Logger::removeMessageCombiner(const std::string& combinerIdentifier)
+void Logger::removeCombiner(const std::string& combinerIdentifier)
 {
     int combinerToBeRemoved = -1;
     for (int i=0; i<(int)m_combiners.size(); ++i){
@@ -57,7 +67,7 @@ void Logger::removeMessageCombiner(const std::string& combinerIdentifier)
     }
 }
 
-void Logger::clearMessageCombiners()
+void Logger::clearCombiners()
 {
     for (int i=0; i<(int)m_combiners.size(); ++i){
         delete m_combiners[i];
@@ -82,18 +92,6 @@ int Logger::ranksLimit()
     return m_ranksLimit;
 }
 
-void Logger::pushMessagesOnce()
-{
-    m_communicator->pushMessagesOnce(m_messages);
-    combineMessages();
-}
-
-void Logger::pushMessagesFully()
-{
-    m_communicator->pushMessagesFully(m_messages);
-    combineMessages();
-}
-
 void Logger::queueMessage(const std::string& message)
 {
     queueMessage(message, "", -1);
@@ -105,7 +103,19 @@ void Logger::queueMessage(const std::string& message, const std::string& fileNam
     m_messages.push_back(mi);
 }
 
-void Logger::combineMessages()
+void Logger::pushMessageInfosOnce()
+{
+    m_communicator->pushMessageInfosOnce(m_messages);
+    combineMessageInfos();
+}
+
+void Logger::pushMessageInfosFully()
+{
+    m_communicator->pushMessageInfosFully(m_messages);
+    combineMessageInfos();
+}
+
+void Logger::combineMessageInfos()
 {
     int messagesSize = (int)m_messages.size();
     if (messagesSize < 2){
@@ -145,5 +155,5 @@ void Logger::combineMessages()
     m_messages.swap(finalMessageInfos);
 }
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit

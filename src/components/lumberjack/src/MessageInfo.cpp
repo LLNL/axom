@@ -8,6 +8,15 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ *******************************************************************************
+ * \file MessageInfo.cpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the class implementation of the MessageInfo.
+ *******************************************************************************
+ */
+
 #include "lumberjack/MessageInfo.hpp"
 
 #include "lumberjack/Utility.hpp"
@@ -179,5 +188,5 @@ void MessageInfo::unpack(const std::string& packedMessage, int ranksLimit)
     m_message = currString;
 }
 
-}
-}
+} // end namespace lumberjack
+} // end namespace asctoolkit
