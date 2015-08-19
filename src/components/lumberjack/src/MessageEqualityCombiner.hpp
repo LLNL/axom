@@ -77,7 +77,10 @@ class MessageEqualityCombiner: public Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Replaces the given key in the message string with the given value.
+         * \brief Combines the combinee into the combined MessageInfo.
+         *
+         * The only thing truly combined in this Combiner is the ranks from combinee to
+         * combined, since message is already equal.
          *
          * \param [in,out] combined the MessageInfo that will be modified.
          * \param [in] combinee the MessageInfo that is combined into the other.
