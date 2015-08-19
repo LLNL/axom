@@ -157,16 +157,16 @@ public:
   typedef asctoolkit::meshapi::RangeSet               ElemSet;
   typedef asctoolkit::meshapi::RangeSet               NodeSet;
   typedef asctoolkit::meshapi::RangeSet               CornerSet;
+  typedef asctoolkit::meshapi::RangeSet               ExtendedElemSet;
 
   typedef asctoolkit::meshapi::VectorIndirectionSet   SymmNodeSet;
 
   enum { NODES_PER_ZONE = 8, FACES_PER_ZONE = 1};
   typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE> ZNStride;
   typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE> ZFStride;
-  typedef asctoolkit::meshapi::StaticConstantRelation<ZNStride> ElemToNodeRelation;
-  typedef asctoolkit::meshapi::StaticConstantRelation<ZFStride> ElemFaceAdjacencyRelation;
+  typedef asctoolkit::meshapi::StaticConstantRelation<ZNStride, ElemSet,NodeSet> ElemToNodeRelation;
+  typedef asctoolkit::meshapi::StaticConstantRelation<ZFStride, ElemSet,ExtendedElemSet> ElemFaceAdjacencyRelation;
 
-  typedef asctoolkit::meshapi::RangeSet               ExtendedElemSet;
 
   typedef asctoolkit::meshapi::RangeSet               RegionSet;
   typedef asctoolkit::meshapi::StaticVariableRelation RegionToElemRelation;

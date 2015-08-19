@@ -102,14 +102,14 @@ namespace shocktube {
     typedef asctoolkit::meshapi::Set::PositionType      PositionType;
     typedef asctoolkit::meshapi::Set::ElementType      ElementType;
 
-    // types for sets
+    // types for Element and Face sets
     typedef asctoolkit::meshapi::PositionSet               ElemSet;
     typedef asctoolkit::meshapi::PositionSet               FaceSet;
 
+    // types for Tube and {In,Out}Flow subsets
     typedef asctoolkit::meshapi::policies::StrideOne<PositionType> StrideOnePolicy;
     typedef asctoolkit::meshapi::policies::NoIndirection<PositionType,ElementType> NoIndirectionPolicy;
     typedef asctoolkit::meshapi::policies::ConcreteParentSubset<ElemSet> TubeSubsetPolicy;
-
     typedef asctoolkit::meshapi::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
 
     // types for relations
@@ -246,16 +246,15 @@ namespace shocktube {
 
     // define the subsets
     ShockTubeMesh::PositionType numElems = mesh->elems.size();
-    mesh->inFlowElems    = ShockTubeMesh::ElemSubset( 0,1 );
-    mesh->tubeElems      = ShockTubeMesh::ElemSubset( 1,numElems - 1);
-    mesh->outFlowElems   = ShockTubeMesh::ElemSubset( numElems - 1,numElems);
 
-    mesh->inFlowElems.parentSet() = &(mesh->elems);
-    mesh->tubeElems.parentSet() = &(mesh->elems);
-    mesh->outFlowElems.parentSet() = &(mesh->elems);
-
-
-
+    // constuct the element subsets using the named-parameter idiom
+    typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
+    mesh->inFlowElems    = ElemSubsetBuilder().range(0,1)
+                                              .parent(&mesh->elems);
+    mesh->tubeElems      = ElemSubsetBuilder().range(1,numElems - 1)
+                                              .parent(&mesh->elems);
+    mesh->outFlowElems   = ElemSubsetBuilder().range(numElems - 1,numElems)
+                                              .parent(&mesh->elems);
 
 
     // ------------ Set up relations

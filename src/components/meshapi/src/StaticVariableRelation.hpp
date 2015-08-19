@@ -114,11 +114,12 @@ namespace meshapi    {
      */
     const RelationSet operator[](SetPosition fromSetElt) const
     {
-        // Note -- we need a better way to initialize an indirection set
-        RelationSet rel(size(fromSetElt),toSetBeginIndex(fromSetElt) );
-        rel.data() = &m_toSetIndicesVec;
-
-        return rel;
+        typedef typename RelationSet::SetBuilder SetBuilder;
+        return SetBuilder()
+                    .size(  size(fromSetElt))
+                    .offset( toSetBeginIndex(fromSetElt) )
+                    .data( &m_toSetIndicesVec)
+                    ;
     }
 #endif
 

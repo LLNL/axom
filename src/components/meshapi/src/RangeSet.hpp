@@ -47,7 +47,7 @@ namespace meshapi {
           PositionSet(PositionType size = DEFAULT_SIZE)
             : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-          PositionSet(const typename PositionSet::SetIniter & initer) : OrderedSetType(initer) {}
+          PositionSet(const typename PositionSet::SetBuilder & builder) : OrderedSetType(builder) {}
       };
 
 
@@ -90,6 +90,8 @@ namespace meshapi {
       GenericRangeSet(PositionType size = DEFAULT_SIZE)
         : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
+      GenericRangeSet(const typename GenericRangeSet::SetBuilder & builder) : OrderedSetType(builder) {}
+
       GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
         : OrderedSetType(upperIndex-lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
   };
@@ -126,6 +128,9 @@ namespace meshapi {
 
       RangeSet(PositionType lowerIndex, PositionType upperIndex)
           : OrderedSetType(upperIndex-lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
+
+      RangeSet(const typename RangeSet::SetBuilder & builder) : OrderedSetType(builder) {}
+
     };
 
 

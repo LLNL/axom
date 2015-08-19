@@ -39,9 +39,6 @@
 //  We already have:
 //  * StridePolicy -- this dictates whether the constant for the striding of each relation will be provided at runtime or compile time
 //  We are missing:
-//  * The type of FromSet   -- either Set(Base) or a concrete set type
-//  * The type of ToSet     -- "
-//
 //  * The set type of the begins set -- this is determined by the stride policy
 //                                   -- more generally, we can combine this set type with the variable static relation by allowing this to be an indirection set (of size fromSet.size()+1
 //                                      or a strided set (of size fromSet.size()) without indirection
@@ -57,6 +54,8 @@ namespace asctoolkit {
 namespace meshapi    {
 
   template< typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>
+          , typename FromSetType = Set
+          , typename ToSetType = Set
           >
   class StaticConstantRelation : public Relation
                                , StridePolicy
@@ -103,11 +102,49 @@ namespace meshapi    {
                       , policies::StrideOne<Set::PositionType>
                       , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
+    struct RelationBuilder;
+
   public:
-    StaticConstantRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet)
+    StaticConstantRelation ( FromSetType* fromSet = EmptySetTraits<FromSetType>::emptySet()
+                           , ToSetType* toSet = EmptySetTraits<ToSetType>::emptySet() )
           : StridePolicy(CorrespondingSizeType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet) {}
 
+    StaticConstantRelation( const RelationBuilder & builder)
+           : StridePolicy(builder.m_stride)
+           , m_fromSet(builder.m_fromSet)
+           , m_toSet(builder.m_toSet)
+        {}
+
     ~StaticConstantRelation(){}
+
+
+  public:
+    struct RelationBuilder
+    {
+        friend class StaticConstantRelation;
+
+        RelationBuilder()
+                : m_fromSet( EmptySetTraits<FromSetType>::emptySet() )
+                , m_toSet( EmptySetTraits<ToSetType>::emptySet() )
+                {}
+
+        RelationBuilder& fromSet(FromSetType* pFromSet)  { m_fromSet = pFromSet; return *this;}
+        RelationBuilder& toSet(ToSetType* pToSet)        { m_toSet  = pToSet; return *this;}
+        RelationBuilder& stride(SetPosition str)         { m_stride = StridePolicyType(str); return *this;}
+
+        // This needs to wait until relation data is set by a policy....
+        //RelationBuilder& offsets()   {  return *this;}
+
+    private:
+        FromSetType* m_fromSet;
+        ToSetType* m_toSet;
+        StridePolicyType m_stride;
+    };
+
+
+  public:
+
+
     /**
      * \note TODO: swap this out for data in the datastore
      */
@@ -148,12 +185,8 @@ namespace meshapi    {
      */
     const RelationSet operator[](SetPosition fromSetElt) const
     {
-        // Note -- we need a better way to initialize an indirection set
-//        RelationSet rel(size(fromSetElt),toSetBeginIndex(fromSetElt) );
-//        rel.data() = &m_toSetIndicesVec;
-//        return rel;
-        typedef typename RelationSet::SetIniter SetIniter;
-        return SetIniter()
+        typedef typename RelationSet::SetBuilder SetBuilder;
+        return SetBuilder()
                     .size(  size(fromSetElt))
                     .offset( toSetBeginIndex(fromSetElt) )
                     .data( &m_toSetIndicesVec)
@@ -215,8 +248,8 @@ namespace meshapi    {
   };
 
 
-  template<typename StridePolicy>
-  bool StaticConstantRelation<StridePolicy>::isValid(bool verboseOutput) const
+  template<typename FromSetType, typename ToSetType, typename StridePolicy>
+  bool StaticConstantRelation<FromSetType, ToSetType, StridePolicy>::isValid(bool verboseOutput) const
   {
     bool bValid = true;
 

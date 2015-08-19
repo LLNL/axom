@@ -86,7 +86,7 @@ namespace meshapi {
     typedef SubsettingPolicy    SubsettingPolicyType;
 
 
-    struct SetIniter;
+    struct SetBuilder;
 
 #ifdef MESHAPI_USE_COUNTING_ITERATOR
     typedef boost::counting_iterator<ElementType> iterator;
@@ -117,30 +117,39 @@ namespace meshapi {
         //, SubsettingPolicyType(parentSet)
       {}
 
-    OrderedSet(const SetIniter & initer)
-        : SizePolicyType(initer.m_size)
-        , OffsetPolicyType(initer.m_offset)
-        , StridePolicyType(initer.m_stride)
-        , IndirectionPolicyType(initer.m_data)
-        , SubsettingPolicyType(initer.m_parent)
+    OrderedSet(const SetBuilder & builder)
+        : SizePolicyType(builder.m_size)
+        , OffsetPolicyType(builder.m_offset)
+        , StridePolicyType(builder.m_stride)
+        , IndirectionPolicyType(builder.m_data)
+        , SubsettingPolicyType(builder.m_parent)
     {}
 
 public:
 
-    // Named parameter idiom for constructing sets
-    // uses method chaining
-    struct SetIniter
+    // Named parameter idiom for constructing sets -- uses method chaining
+    struct SetBuilder
     {
         friend class OrderedSet;
 
         typedef typename IndirectionPolicyType::IndirectionBufferType DataType;
         typedef typename SubsettingPolicyType::ParentSetType  ParentSetType;
 
-        SetIniter& size(PositionType sz)          { m_size    = SizePolicyType(sz); return *this;}
-        SetIniter& offset(PositionType off)       { m_offset  = OffsetPolicyType(off); return *this;}
-        SetIniter& stride(PositionType str)       { m_stride  = StridePolicyType(str); return *this;}
-        SetIniter& data(DataType* bufPtr)          { m_data   = IndirectionPolicyType(bufPtr); return *this;}
-        SetIniter& parent(ParentSetType* parSet)   { m_parent = SubsettingPolicyType(parSet); return *this;}
+        SetBuilder& size(PositionType sz)          { m_size    = SizePolicyType(sz); return *this;}
+        SetBuilder& offset(PositionType off)       { m_offset  = OffsetPolicyType(off); return *this;}
+        SetBuilder& stride(PositionType str)       { m_stride  = StridePolicyType(str); return *this;}
+        SetBuilder& data(DataType* bufPtr)          { m_data   = IndirectionPolicyType(bufPtr); return *this;}
+        SetBuilder& parent(ParentSetType* parSet)   { m_parent = SubsettingPolicyType(parSet); return *this;}
+        SetBuilder& range(PositionType lower, PositionType upper)
+        {
+            m_offset = OffsetPolicyType(lower);
+            m_size = SizePolicyType(upper-lower);
+            return *this;
+        }
+
+
+        ///  TODO: Add ability to set by range (low to high) rather than by size and offset.
+
     private:
         SizePolicyType m_size;
         OffsetPolicyType m_offset;

@@ -29,6 +29,25 @@ namespace meshapi    {
 
   class NullSet;
 
+  template<typename SetType>
+  struct EmptySetTraits
+  {
+      typedef SetType* EmptySetType;
+      static EmptySetType emptySet() { return ATK_NULLPTR;}
+  };
+
+  template<>
+  struct EmptySetTraits<Set>
+  {
+      typedef Set* EmptySetType;
+      static EmptySetType emptySet() {
+          static NullSet s_nullSet;
+          return &s_nullSet;
+      }
+  };
+
+
+
   class Relation
   {
   public:

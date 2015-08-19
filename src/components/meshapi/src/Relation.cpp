@@ -21,6 +21,5 @@ namespace meshapi {
  */
   NullSet Relation::s_nullSet;
 
-
 } // namespace meshapi
 } // namespace asctoolkit
