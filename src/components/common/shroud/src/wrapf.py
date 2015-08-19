@@ -34,10 +34,8 @@ TODO:
 from __future__ import print_function
 
 import util
+from util import wformat, append_format
 import fwrap_util
-
-wformat = util.wformat
-append_format = util.append_format
 
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
@@ -45,9 +43,10 @@ class Wrapf(util.WrapperMixin):
 
     def __init__(self, tree, config, splicers):
         self.tree = tree    # json tree
+        self.patterns = tree['patterns']
         self.config = config
         self.log = config.log
-        self.typedef = tree['typedef']
+        self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '!'
 
@@ -56,6 +55,9 @@ class Wrapf(util.WrapperMixin):
         self.f_type_decl = []
         self.c_interface = []
         self.impl = []         # implementation, after contains
+        self.operator_impl = []
+        self.operator_map = {} # list of function names by operator
+                               # {'.eq.': [ 'abc', 'def'] }
         self.c_interface.append('interface')
         self.c_interface.append(1)
 
@@ -245,11 +247,19 @@ class Wrapf(util.WrapperMixin):
         self.f_type_decl.extend(self.type_bound_part)
 
         # Look for generics
+        # splicer to extend generic
+        self._push_splicer('generic')
         for key in sorted(self.f_type_generic.keys()):
             methods = self.f_type_generic[key]
             if len(methods) > 1:
-                self.f_type_decl.append('generic :: %s => %s' % (
-                        key, ', '.join(methods)))
+                self.f_type_decl.append('generic :: %s => &' % key)
+                self.f_type_decl.append(1)
+                self._create_splicer(key, self.f_type_decl)
+                for genname in methods[:-1]:
+                    self.f_type_decl.append(genname + ',  &')
+                self.f_type_decl.append(methods[-1])
+                self.f_type_decl.append(-1)
+        self._pop_splicer('generic')
 
         self._create_splicer('type_bound_procedure_part', self.f_type_decl)
         self.f_type_decl.extend([
@@ -261,6 +271,48 @@ class Wrapf(util.WrapperMixin):
         self._create_splicer('additional_interfaces', self.c_interface)
 
         self._pop_splicer(fmt_class.cpp_class)
+
+        # overload operators
+        self.overload_compare(fmt_class, '.eq.', fmt_class.lower_class + '_eq',
+                              wformat('c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
+#        self.overload_compare(fmt_class, '==', fmt_class.lower_class + '_eq', None)
+        self.overload_compare(fmt_class, '.ne.', fmt_class.lower_class + '_ne',
+                              wformat('.not. c_associated(a%{F_derived_member}, b%{F_derived_member})', fmt_class))
+#        self.overload_compare(fmt_class, '/=', fmt_class.lower_class + '_ne', None)
+        
+    def overload_compare(self, fmt_class, operator, procedure, predicate):
+        """ Overload .eq. and .eq.
+        """
+        fmt = util.Options(fmt_class)
+        fmt.procedure = procedure
+        fmt.predicate = predicate
+
+        ops = self.operator_map.setdefault(operator, [])
+        ops.append(procedure)
+
+        if predicate is None:
+            # .eq. and == use same function
+            return
+
+        operator = self.operator_impl
+        operator.append('')
+        append_format(operator, 'function {procedure}(a,b) result (rv)', fmt)
+        operator.append(1)
+        operator.append('use iso_c_binding, only: c_associated')
+        operator.append('implicit none')
+        append_format(operator, 'type({F_derived_name}), intent(IN) ::a,b', fmt)
+        operator.append('logical :: rv')
+        append_format(operator, 'if ({predicate}) then', fmt)
+        operator.append(1)
+        operator.append('rv = .true.')
+        operator.append(-1)
+        operator.append('else')
+        operator.append(1)
+        operator.append('rv = .false.')
+        operator.append(-1)
+        operator.append('endif')
+        operator.append(-1)
+        append_format(operator, 'end function {procedure}', fmt)
 
     def wrap_method(self, cls, node):
         """
@@ -477,14 +529,9 @@ class Wrapf(util.WrapperMixin):
             if not is_ctor:
                 arg_c_call.append(fmt_func.F_instance_ptr)
                 arg_f_names.append(fmt_func.F_this)
-                if is_dtor:
-                    arg_f_decl.append(wformat(
-                            'type({F_derived_name}) :: {F_this}',
-                            fmt_func))
-                else:
-                    arg_f_decl.append(wformat(
-                            'class({F_derived_name}) :: {F_this}',
-                            fmt_func))
+                arg_f_decl.append(wformat(
+                        'class({F_derived_name}) :: {F_this}',
+                        fmt_func))
 
         optional = []
         for arg in node.get('args', []):
@@ -542,7 +589,7 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_f_decl.append(self._f_decl(result, name=F_result))
 
-        if not is_ctor and not is_dtor:
+        if not is_ctor:
             # Add method to derived type
             F_name_method = fmt_func.F_name_method
             if not fmt_func.get('CPP_template', None):
@@ -642,6 +689,20 @@ class Wrapf(util.WrapperMixin):
 #X        output.append('! splicer pop class')
         output.append('')
 
+        # Interfaces for operator overloads
+        if self.operator_map:
+            ops = self.operator_map.keys()
+            ops.sort()
+            for op in ops:
+                output.append('')
+                output.append('interface operator (%s)' % op)
+                output.append(1)
+                for opfcn in self.operator_map[op]:
+                    output.append('module procedure %s' % opfcn)
+                output.append(-1)
+                output.append('end interface')
+            output.append('')
+
         output.extend(self.c_interface)
 
         output.append(-1)
@@ -650,6 +711,8 @@ class Wrapf(util.WrapperMixin):
         output.append(1)
 
         output.extend(self.impl)
+
+        output.extend(self.operator_impl)
 
         output.append(-1)
         output.append('')

@@ -21,12 +21,12 @@ return (AA_exclass2 *) selfobj;
 // splicer end class.ExClass2.method.ex_class2
 }
 
-void AA_exclass2_ex_class1(AA_exclass2 * self)
+void AA_exclass2_delete(AA_exclass2 * self)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(self);
-// splicer begin class.ExClass2.method.ex_class1
+// splicer begin class.ExClass2.method.delete
 delete selfobj;
-// splicer end class.ExClass2.method.ex_class1
+// splicer end class.ExClass2.method.delete
 }
 
 const char * AA_exclass2_get_name(const AA_exclass2 * self)
@@ -34,7 +34,7 @@ const char * AA_exclass2_get_name(const AA_exclass2 * self)
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);
 // splicer begin class.ExClass2.method.get_name
 const std::string & rv = selfobj->getName();
-return isNameValid(rv) ? rv.c_str() : NULL;
+return rv.c_str();
 // splicer end class.ExClass2.method.get_name
 }
 

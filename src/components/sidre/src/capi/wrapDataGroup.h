@@ -70,7 +70,9 @@ ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view
 
 void ATK_datagroup_destroy_view_and_buffer(ATK_datagroup * self, const char * name);
 
-ATK_dataview * ATK_datagroup_get_view(ATK_datagroup * self, const char * name);
+ATK_dataview * ATK_datagroup_get_view_from_name(ATK_datagroup * self, const char * name);
+
+ATK_dataview * ATK_datagroup_get_view_from_index(ATK_datagroup * self, const ATK_IndexType idx);
 
 ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name);
 

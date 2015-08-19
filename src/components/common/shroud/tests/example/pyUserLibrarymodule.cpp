@@ -41,10 +41,10 @@ PP_is_name_valid(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.isNameValid
+// splicer begin function.is_name_valid
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
         &name))
@@ -52,8 +52,8 @@ PP_is_name_valid(
         return NULL;
     }
     bool rv = isNameValid(name);
-    return Py_BuildValue("O", &rv);
-// splicer end function.isNameValid
+    return PyBool_FromLong(rv);
+// splicer end function.is_name_valid
 }
 static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},

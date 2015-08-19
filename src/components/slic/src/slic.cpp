@@ -24,6 +24,14 @@ namespace asctoolkit {
 
 namespace slic {
 
+
+//------------------------------------------------------------------------------
+// Initialize static variables for controlling runtime behavior of asserts and
+// error macros.
+//------------------------------------------------------------------------------
+bool RuntimeAbortBehavior::willAbortOnAssert = true;
+bool RuntimeAbortBehavior::willAbortOnError = true;
+
 void initialize()
 {
   Logger::initialize();
@@ -39,6 +47,31 @@ bool isInitialized()
 void setLoggingLevel( message::Level level )
 {
   Logger::getInstance()->setLoggingLevel( level );
+}
+
+//------------------------------------------------------------------------------
+void setAbortOnAssert( bool willAbort )
+{
+  RuntimeAbortBehavior::willAbortOnAssert = willAbort;
+}
+
+//------------------------------------------------------------------------------
+bool getAbortOnAssert()
+{
+  return RuntimeAbortBehavior::willAbortOnAssert;
+}
+
+
+//------------------------------------------------------------------------------
+void setAbortOnError( bool willAbort )
+{
+  RuntimeAbortBehavior::willAbortOnError = willAbort;
+}
+
+//------------------------------------------------------------------------------
+bool getAbortOnError()
+{
+  return RuntimeAbortBehavior::willAbortOnError;
 }
 
 //------------------------------------------------------------------------------

@@ -34,7 +34,7 @@ contains
     call assert_equals(dbuff_3%get_index(), 0)
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine create_buffers
 
 !------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ contains
 !         dbuff%getSchema().total_bytes())
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine alloc_buffer_for_int_array
 
 !------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ contains
 !            dbuff%getSchema().total_bytes())
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine init_buffer_for_int_array
 
 !------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ contains
     call dbuff%print()
 
     call ds%print()
-    call datastore_delete(ds)
+    call ds%delete()
   end subroutine realloc_buffer
 
 !----------------------------------------------------------------------

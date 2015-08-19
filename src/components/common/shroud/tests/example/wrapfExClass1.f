@@ -6,7 +6,7 @@
 module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2
-    use iso_c_binding
+    use iso_c_binding, only : C_INT, C_LONG
     implicit none
     
     
@@ -21,6 +21,7 @@ module exclass1_mod
           component part 1b
         ! splicer end class.ExClass1.component_part
     contains
+        procedure :: delete => exclass1_delete
         procedure :: increment_count => exclass1_increment_count
         procedure :: get_name => exclass1_get_name
         procedure :: get_name_length => exclass1_get_name_length
@@ -32,11 +33,24 @@ module exclass1_mod
         procedure :: get_addr => exclass1_get_addr
         procedure :: has_addr => exclass1_has_addr
         procedure :: splicer_special => exclass1_splicer_special
-        generic :: get_value => get_value_from_int, get_value_1
+        generic :: get_value => &
+            ! splicer begin class.ExClass1.generic.get_value
+            ! splicer end class.ExClass1.generic.get_value
+            get_value_from_int,  &
+            get_value_1
         ! splicer begin class.ExClass1.type_bound_procedure_part
           type bound procedure part 1
         ! splicer end class.ExClass1.type_bound_procedure_part
     end type exclass1
+    
+    
+    interface operator (.eq.)
+        module procedure exclass1_eq
+    end interface
+    
+    interface operator (.ne.)
+        module procedure exclass1_ne
+    end interface
     
     interface
         
@@ -165,7 +179,7 @@ contains
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none
-        type(exclass1) :: obj
+        class(exclass1) :: obj
         ! splicer begin class.ExClass1.method.delete
         call aa_exclass1_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR
@@ -297,5 +311,29 @@ contains
     
     ! splicer begin class.ExClass1.additional_functions
     ! splicer end class.ExClass1.additional_functions
+    
+    function exclass1_eq(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass1), intent(IN) ::a,b
+        logical :: rv
+        if (c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass1_eq
+    
+    function exclass1_ne(a,b) result (rv)
+        use iso_c_binding, only: c_associated
+        implicit none
+        type(exclass1), intent(IN) ::a,b
+        logical :: rv
+        if (.not. c_associated(a%voidptr, b%voidptr)) then
+            rv = .true.
+        else
+            rv = .false.
+        endif
+    end function exclass1_ne
 
 end module exclass1_mod

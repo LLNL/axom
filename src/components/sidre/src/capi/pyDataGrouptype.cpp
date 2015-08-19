@@ -10,14 +10,14 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 #include "pySidremodule.hpp"
-// splicer begin class.DataGroup.include
-// splicer end class.DataGroup.include
+// splicer begin class.DataGroup.impl.include
+// splicer end class.DataGroup.impl.include
 namespace asctoolkit {
 namespace sidre {
-// splicer begin class.DataGroup.C_definition
-// splicer end class.DataGroup.C_definition
-// splicer begin class.DataGroup.additional_methods
-// splicer end class.DataGroup.additional_methods
+// splicer begin class.DataGroup.impl.C_definition
+// splicer end class.DataGroup.impl.C_definition
+// splicer begin class.DataGroup.impl.additional_methods
+// splicer end class.DataGroup.impl.additional_methods
 static int
 PY_DataGroup_tp_init (PY_DataGroup *self, PyObject *args, PyObject *kwds)
 {
@@ -40,6 +40,39 @@ PY_DataGroup_tp_init (PY_DataGroup *self, PyObject *args, PyObject *kwds)
     return 0;
 // splicer end class.DataGroup.type.init
 }
+static PyObject *
+PY_DataGroup_tp_richcompare (PY_DataGroup *self, PyObject *other, int opid)
+{
+// splicer begin class.DataGroup.type.richcompare
+PyObject *rv = Py_NotImplemented;
+if (PyObject_IsInstance(other, (PyObject*) &PY_DataGroup_Type)) {
+    PY_DataGroup *pyother = (PY_DataGroup *) other;
+    switch (opid) {
+    case Py_EQ:
+	if (self->BBB == pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_NE:
+	if (self->BBB != pyother->BBB) {
+	    rv = Py_True;
+	} else {
+	    rv = Py_False;
+	}
+	break;
+    case Py_LT:
+    case Py_LE:
+    case Py_GE:
+    case Py_GT:
+	break;
+    }
+ }
+Py_INCREF(rv);
+return rv;
+// splicer end class.DataGroup.type.richcompare
+}
 
 static char PY_datagroup_get_name__doc__[] =
 "documentation"
@@ -51,10 +84,10 @@ PY_datagroup_get_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getName
+// splicer begin class.DataGroup.method.get_name
     const std::string & rv = self->BBB->getName();
-    return Py_BuildValue("s", &rv);
-// splicer end class.DataGroup.method.getName
+    return PyString_FromString(rv.c_str());
+// splicer end class.DataGroup.method.get_name
 }
 
 static char PY_datagroup_get_parent__doc__[] =
@@ -67,10 +100,12 @@ PY_datagroup_get_parent(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getParent
-    const DataGroup * rv = self->BBB->getParent();
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
-// splicer end class.DataGroup.method.getParent
+// splicer begin class.DataGroup.method.get_parent
+    DataGroup * rv = self->BBB->getParent();
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.get_parent
 }
 
 static char PY_datagroup_get_data_store__doc__[] =
@@ -83,10 +118,12 @@ PY_datagroup_get_data_store(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getDataStore
-    const DataStore * rv = self->BBB->getDataStore();
-    return Py_BuildValue("O&", PP_DataStore_to_Object, rv);
-// splicer end class.DataGroup.method.getDataStore
+// splicer begin class.DataGroup.method.get_data_store
+    DataStore * rv = self->BBB->getDataStore();
+    PY_DataStore * rv_obj = PyObject_New(PY_DataStore, &PY_DataStore_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.get_data_store
 }
 
 static char PY_datagroup_get_num_views__doc__[] =
@@ -99,10 +136,10 @@ PY_datagroup_get_num_views(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getNumViews
+// splicer begin class.DataGroup.method.get_num_views
     size_t rv = self->BBB->getNumViews();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataGroup.method.getNumViews
+    return PyInt_FromLong(rv);
+// splicer end class.DataGroup.method.get_num_views
 }
 
 static char PY_datagroup_get_num_groups__doc__[] =
@@ -115,10 +152,10 @@ PY_datagroup_get_num_groups(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getNumGroups
+// splicer begin class.DataGroup.method.get_num_groups
     size_t rv = self->BBB->getNumGroups();
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataGroup.method.getNumGroups
+    return PyInt_FromLong(rv);
+// splicer end class.DataGroup.method.get_num_groups
 }
 
 static char PY_datagroup_has_view__doc__[] =
@@ -131,10 +168,10 @@ PY_datagroup_has_view(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.hasView
+// splicer begin class.DataGroup.method.has_view
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasView", kw_list,
         &name))
@@ -142,8 +179,8 @@ PY_datagroup_has_view(
         return NULL;
     }
     bool rv = self->BBB->hasView(name);
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataGroup.method.hasView
+    return PyBool_FromLong(rv);
+// splicer end class.DataGroup.method.has_view
 }
 
 static char PY_datagroup_create_view_and_buffer_simple__doc__[] =
@@ -156,10 +193,10 @@ PY_datagroup_create_view_and_buffer_simple(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.createViewAndBuffer
+// splicer begin class.DataGroup.method.create_view_and_buffer_simple
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:createViewAndBuffer", kw_list,
         &name))
@@ -167,8 +204,10 @@ PY_datagroup_create_view_and_buffer_simple(
         return NULL;
     }
     DataView * rv = self->BBB->createViewAndBuffer(name);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.createViewAndBuffer
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_view_and_buffer_simple
 }
 
 static char PY_datagroup_create_view_and_buffer_from_type__doc__[] =
@@ -181,21 +220,23 @@ PY_datagroup_create_view_and_buffer_from_type(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.createViewAndBuffer
+// splicer begin class.DataGroup.method.create_view_and_buffer_from_type
     const char * name;
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "name\0type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO:createViewAndBuffer", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sil:createViewAndBuffer", kw_list,
         &name, &type, &len))
     {
         return NULL;
     }
     DataView * rv = self->BBB->createViewAndBuffer(name, getTypeID(type), len);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.createViewAndBuffer
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_view_and_buffer_from_type
 }
 
 static char PY_datagroup_create_opaque_view__doc__[] =
@@ -208,11 +249,11 @@ PY_datagroup_create_opaque_view(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.createOpaqueView
+// splicer begin class.DataGroup.method.create_opaque_view
     const char * name;
     void * opaque_ptr;
     const char *kwcpp = "name\0opaque_ptr";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:createOpaqueView", kw_list,
         &name, &opaque_ptr))
@@ -220,8 +261,10 @@ PY_datagroup_create_opaque_view(
         return NULL;
     }
     DataView * rv = self->BBB->createOpaqueView(name, opaque_ptr);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.createOpaqueView
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_opaque_view
 }
 
 static char PY_datagroup_create_view__doc__[] =
@@ -234,20 +277,24 @@ PY_datagroup_create_view(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.createView
+// splicer begin class.DataGroup.method.create_view
     const char * name;
-    DataBuffer * buff;
+    PY_DataBuffer * buff;
+    DataBuffer * buff_ptr;
     const char *kwcpp = "name\0buff";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:createView", kw_list,
-        &name, PP_DataBuffer_from_Object, &buff))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO!:createView", kw_list,
+        &name, &PY_DataBuffer_Type, &buff))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->createView(name, buff);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.createView
+    buff_ptr = (buff ? buff->BBB : NULL);
+    DataView * rv = self->BBB->createView(name, buff_ptr);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_view
 }
 
 static char PY_datagroup_create_external_view__doc__[] =
@@ -260,22 +307,24 @@ PY_datagroup_create_external_view(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.createExternalView
+// splicer begin class.DataGroup.method.create_external_view
     const char * name;
     void * external_data;
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "name\0external_data\0type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOOO:createExternalView", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOil:createExternalView", kw_list,
         &name, &external_data, &type, &len))
     {
         return NULL;
     }
     DataView * rv = self->BBB->createExternalView(name, external_data, getTypeID(type), len);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.createExternalView
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_external_view
 }
 
 static char PY_datagroup_move_view__doc__[] =
@@ -288,19 +337,23 @@ PY_datagroup_move_view(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.moveView
-    DataView * view;
+// splicer begin class.DataGroup.method.move_view
+    PY_DataView * view;
+    DataView * view_ptr;
     const char *kwcpp = "view";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:moveView", kw_list,
-        PP_DataView_from_Object, &view))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:moveView", kw_list,
+        &PY_DataView_Type, &view))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->moveView(view);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.moveView
+    view_ptr = (view ? view->BBB : NULL);
+    DataView * rv = self->BBB->moveView(view_ptr);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.move_view
 }
 
 static char PY_datagroup_copy_view__doc__[] =
@@ -313,19 +366,23 @@ PY_datagroup_copy_view(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.copyView
-    DataView * view;
+// splicer begin class.DataGroup.method.copy_view
+    PY_DataView * view;
+    DataView * view_ptr;
     const char *kwcpp = "view";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:copyView", kw_list,
-        PP_DataView_from_Object, &view))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:copyView", kw_list,
+        &PY_DataView_Type, &view))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->copyView(view);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.copyView
+    view_ptr = (view ? view->BBB : NULL);
+    DataView * rv = self->BBB->copyView(view_ptr);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.copy_view
 }
 
 static char PY_datagroup_destroy_view_and_buffer__doc__[] =
@@ -338,10 +395,10 @@ PY_datagroup_destroy_view_and_buffer(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.destroyViewAndBuffer
+// splicer begin class.DataGroup.method.destroy_view_and_buffer
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:destroyViewAndBuffer", kw_list,
         &name))
@@ -350,23 +407,23 @@ PY_datagroup_destroy_view_and_buffer(
     }
     self->BBB->destroyViewAndBuffer(name);
     Py_RETURN_NONE;
-// splicer end class.DataGroup.method.destroyViewAndBuffer
+// splicer end class.DataGroup.method.destroy_view_and_buffer
 }
 
-static char PY_datagroup_get_view__doc__[] =
+static char PY_datagroup_get_view_from_name__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_datagroup_get_view(
+PY_datagroup_get_view_from_name(
   PY_DataGroup *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getView
+// splicer begin class.DataGroup.method.get_view_from_name
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getView", kw_list,
         &name))
@@ -374,8 +431,37 @@ PY_datagroup_get_view(
         return NULL;
     }
     DataView * rv = self->BBB->getView(name);
-    return Py_BuildValue("O&", PP_DataView_to_Object, rv);
-// splicer end class.DataGroup.method.getView
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.get_view_from_name
+}
+
+static char PY_datagroup_get_view_from_index__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_get_view_from_index(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataGroup.method.get_view_from_index
+    const ATK_IndexType idx;
+    const char *kwcpp = "idx";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getView", kw_list,
+        &idx))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->getView(idx);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.get_view_from_index
 }
 
 static char PY_datagroup_get_view_index__doc__[] =
@@ -388,10 +474,10 @@ PY_datagroup_get_view_index(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getViewIndex
+// splicer begin class.DataGroup.method.get_view_index
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getViewIndex", kw_list,
         &name))
@@ -399,8 +485,8 @@ PY_datagroup_get_view_index(
         return NULL;
     }
     IndexType rv = self->BBB->getViewIndex(name);
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataGroup.method.getViewIndex
+    return Py_BuildValue("i", rv);
+// splicer end class.DataGroup.method.get_view_index
 }
 
 static char PY_datagroup_get_view_name__doc__[] =
@@ -413,19 +499,23 @@ PY_datagroup_get_view_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getViewName
+// splicer begin class.DataGroup.method.get_view_name
     ATK_IndexType idx;
     const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getViewName", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getViewName", kw_list,
         &idx))
     {
         return NULL;
     }
     const std::string & rv = self->BBB->getViewName(idx);
-    return Py_BuildValue("s", &rv);
-// splicer end class.DataGroup.method.getViewName
+    if (! isNameValid(rv)) {
+        Py_RETURN_NONE;
+    }
+    
+    return PyString_FromString(rv.c_str());
+// splicer end class.DataGroup.method.get_view_name
 }
 
 static char PY_datagroup_has_group__doc__[] =
@@ -438,10 +528,10 @@ PY_datagroup_has_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.hasGroup
+// splicer begin class.DataGroup.method.has_group
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:hasGroup", kw_list,
         &name))
@@ -449,8 +539,8 @@ PY_datagroup_has_group(
         return NULL;
     }
     bool rv = self->BBB->hasGroup(name);
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataGroup.method.hasGroup
+    return PyBool_FromLong(rv);
+// splicer end class.DataGroup.method.has_group
 }
 
 static char PY_datagroup_create_group__doc__[] =
@@ -463,10 +553,10 @@ PY_datagroup_create_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.createGroup
+// splicer begin class.DataGroup.method.create_group
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:createGroup", kw_list,
         &name))
@@ -474,8 +564,10 @@ PY_datagroup_create_group(
         return NULL;
     }
     DataGroup * rv = self->BBB->createGroup(name);
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
-// splicer end class.DataGroup.method.createGroup
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_group
 }
 
 static char PY_datagroup_move_group__doc__[] =
@@ -488,19 +580,23 @@ PY_datagroup_move_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.moveGroup
-    DataGroup * grp;
+// splicer begin class.DataGroup.method.move_group
+    PY_DataGroup * grp;
+    DataGroup * grp_ptr;
     const char *kwcpp = "grp";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:moveGroup", kw_list,
-        PP_DataGroup_from_Object, &grp))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:moveGroup", kw_list,
+        &PY_DataGroup_Type, &grp))
     {
         return NULL;
     }
-    DataGroup * rv = self->BBB->moveGroup(grp);
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
-// splicer end class.DataGroup.method.moveGroup
+    grp_ptr = (grp ? grp->BBB : NULL);
+    DataGroup * rv = self->BBB->moveGroup(grp_ptr);
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.move_group
 }
 
 static char PY_datagroup_destroy_group__doc__[] =
@@ -513,10 +609,10 @@ PY_datagroup_destroy_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.destroyGroup
+// splicer begin class.DataGroup.method.destroy_group
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:destroyGroup", kw_list,
         &name))
@@ -525,7 +621,7 @@ PY_datagroup_destroy_group(
     }
     self->BBB->destroyGroup(name);
     Py_RETURN_NONE;
-// splicer end class.DataGroup.method.destroyGroup
+// splicer end class.DataGroup.method.destroy_group
 }
 
 static char PY_datagroup_get_group__doc__[] =
@@ -538,10 +634,10 @@ PY_datagroup_get_group(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getGroup
+// splicer begin class.DataGroup.method.get_group
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getGroup", kw_list,
         &name))
@@ -549,8 +645,14 @@ PY_datagroup_get_group(
         return NULL;
     }
     DataGroup * rv = self->BBB->getGroup(name);
-    return Py_BuildValue("O&", PP_DataGroup_to_Object, rv);
-// splicer end class.DataGroup.method.getGroup
+    if (rv == ATK_NULLPTR) {
+        Py_RETURN_NONE;
+    }
+    
+    PY_DataGroup * rv_obj = PyObject_New(PY_DataGroup, &PY_DataGroup_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.get_group
 }
 
 static char PY_datagroup_get_group_index__doc__[] =
@@ -563,10 +665,10 @@ PY_datagroup_get_group_index(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getGroupIndex
+// splicer begin class.DataGroup.method.get_group_index
     const char * name;
     const char *kwcpp = "name";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:getGroupIndex", kw_list,
         &name))
@@ -574,8 +676,8 @@ PY_datagroup_get_group_index(
         return NULL;
     }
     IndexType rv = self->BBB->getGroupIndex(name);
-    return Py_BuildValue("O", &rv);
-// splicer end class.DataGroup.method.getGroupIndex
+    return Py_BuildValue("i", rv);
+// splicer end class.DataGroup.method.get_group_index
 }
 
 static char PY_datagroup_get_group_name__doc__[] =
@@ -588,19 +690,23 @@ PY_datagroup_get_group_name(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataGroup.method.getGroupName
+// splicer begin class.DataGroup.method.get_group_name
     ATK_IndexType idx;
     const char *kwcpp = "idx";
-    char *kw_list[] = { (char *) kwcpp+0 };
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:getGroupName", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:getGroupName", kw_list,
         &idx))
     {
         return NULL;
     }
     const std::string & rv = self->BBB->getGroupName(idx);
-    return Py_BuildValue("s", &rv);
-// splicer end class.DataGroup.method.getGroupName
+    if (! isNameValid(rv)) {
+        Py_RETURN_NONE;
+    }
+    
+    return PyString_FromString(rv.c_str());
+// splicer end class.DataGroup.method.get_group_name
 }
 
 static char PY_datagroup_print__doc__[] =
@@ -633,7 +739,7 @@ PY_datagroup_save(
     const char * obase;
     const char * protocol;
     const char *kwcpp = "obase\0protocol";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:save", kw_list,
         &obase, &protocol))
@@ -659,7 +765,7 @@ PY_datagroup_load(
     const char * obase;
     const char * protocol;
     const char *kwcpp = "obase\0protocol";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6 };
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:load", kw_list,
         &obase, &protocol))
@@ -670,6 +776,84 @@ PY_datagroup_load(
     Py_RETURN_NONE;
 // splicer end class.DataGroup.method.load
 }
+
+static char PY_datagroup_get_view__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_get_view(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataGroup.get_view
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_datagroup_get_view_from_name(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_datagroup_get_view_from_index(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataGroup.get_view
+}
+
+static char PY_datagroup_create_view_and_buffer__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_create_view_and_buffer(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataGroup.create_view_and_buffer
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_datagroup_create_view_and_buffer_simple(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_datagroup_create_view_and_buffer_from_type(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataGroup.create_view_and_buffer
+}
+// splicer begin class.DataGroup.impl.after_methods
+// splicer end class.DataGroup.impl.after_methods
 static PyMethodDef PY_DataGroup_methods[] = {
 {"getName", (PyCFunction)PY_datagroup_get_name, METH_NOARGS, PY_datagroup_get_name__doc__},
 {"getParent", (PyCFunction)PY_datagroup_get_parent, METH_NOARGS, PY_datagroup_get_parent__doc__},
@@ -685,7 +869,8 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"moveView", (PyCFunction)PY_datagroup_move_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_move_view__doc__},
 {"copyView", (PyCFunction)PY_datagroup_copy_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_copy_view__doc__},
 {"destroyViewAndBuffer", (PyCFunction)PY_datagroup_destroy_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_destroy_view_and_buffer__doc__},
-{"getView", (PyCFunction)PY_datagroup_get_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view__doc__},
+{"getView_from_name", (PyCFunction)PY_datagroup_get_view_from_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_from_name__doc__},
+{"getView_from_index", (PyCFunction)PY_datagroup_get_view_from_index, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_from_index__doc__},
 {"getViewIndex", (PyCFunction)PY_datagroup_get_view_index, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_index__doc__},
 {"getViewName", (PyCFunction)PY_datagroup_get_view_name, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view_name__doc__},
 {"hasGroup", (PyCFunction)PY_datagroup_has_group, METH_VARARGS|METH_KEYWORDS, PY_datagroup_has_group__doc__},
@@ -698,6 +883,10 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"print", (PyCFunction)PY_datagroup_print, METH_NOARGS, PY_datagroup_print__doc__},
 {"save", (PyCFunction)PY_datagroup_save, METH_VARARGS|METH_KEYWORDS, PY_datagroup_save__doc__},
 {"load", (PyCFunction)PY_datagroup_load, METH_VARARGS|METH_KEYWORDS, PY_datagroup_load__doc__},
+{"getView", (PyCFunction)PY_datagroup_get_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_get_view__doc__},
+{"createViewAndBuffer", (PyCFunction)PY_datagroup_create_view_and_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_buffer__doc__},
+// splicer begin class.DataGroup.PyMethodDef
+// splicer end class.DataGroup.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
@@ -744,7 +933,7 @@ PyTypeObject PY_DataGroup_Type = {
         (inquiry)0,                     /* tp_clear */
         /* Assigned meaning in release 2.1 */
         /* rich comparisons */
-        (richcmpfunc)0,                 /* tp_richcompare */
+        (richcmpfunc)PY_DataGroup_tp_richcompare,                 /* tp_richcompare */
         /* weak reference enabler */
         0,                              /* tp_weaklistoffset */
         /* Added in release 2.2 */

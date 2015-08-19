@@ -27,46 +27,30 @@ options:
   F_string_result_as_arg: True
 
 
-typedef:
+types:
   IndexType:
 # defined in SidreTypes.hpp
+    typedef  : int
     c_header : sidre/SidreTypes.h
     c_type   : ATK_IndexType
     cpp_type : IndexType
-    c_fortran: integer(C_INT)
-    f_type   : integer(C_INT)
-    f_module : 
-      iso_c_binding:
-      - C_INT
 
   SidreLength:
 # defined in SidreTypes.hpp
+    typedef  : long
     c_header : sidre/SidreTypes.h
     c_type   : ATK_SidreLength
     cpp_type : SidreLength
-    c_fortran: integer(C_LONG)
-    f_type   : integer(C_LONG)
-    f_module : 
-      iso_c_binding:
-      - C_LONG
 
   TypeID:
+    typedef  : int
     # enum for types
     c_header : sidre/SidreTypes.h
     cpp_header : sidre/SidreWrapperHelpers.hpp
-    c_type   : int
     cpp_type : TypeID
     c_to_cpp : getTypeID({var})
 #    c_to_cpp : static_cast<TypeID>({var})
-    c_fortran: integer(C_INT)
-    f_type   : integer(C_INT)
-    f_module : 
-      iso_c_binding:
-      - C_INT
 
-  string:
-    # test for valid string and return NULL if invalid instead of string object InvalidName
-    cpp_to_c : "isNameValid({var}) ? {var}.c_str() : ATK_InvalidName"
 
 # XXX
 # parameters:
@@ -96,7 +80,7 @@ classes:
 #    -  decl: void print(std::ostream& os) const
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
   ####################################################################
   - name: DataGroup
@@ -115,7 +99,7 @@ classes:
        method_suffix: _simple
     -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
        method_suffix: _from_type
-       generic:
+       fortran_generic:
          len:
          -  int
          -  long
@@ -124,7 +108,7 @@ classes:
 #    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, TypeID type, SidreLength len )
 #    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength len )
-       generic:
+       fortran_generic:
          len:
          -  int
          -  long
@@ -135,11 +119,16 @@ classes:
 #    -  decl: void destroyView(const std::string &name)
 #    -  decl: void destroyView(IndexType idx)
     -  decl: DataView *getView( const std::string& name )
+       method_suffix: _from_name
 #    -  decl: DataView const * getView( const std::string& name ) const
-#    -  decl: DataView *getView( const IndexType idx )
+    -  decl: DataView *getView( const IndexType idx )
+       method_suffix: _from_index
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
+       C_error_pattern: C_invalid_name
+       PY_error_pattern: PY_invalid_name_idx
+
 #    -  decl: IndexType getFirstValidViewIndex() const
 #    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
 #    -  decl: void destroyViews()
@@ -153,10 +142,15 @@ classes:
 #    -  decl: void destroyGroup(IndexType idx)
 #    -  decl: DataGroup const * getGroup( const std::string& name ) const
     -  decl: DataGroup * getGroup( const std::string& name )
+       PY_error_pattern: PY_null_to_none
 #    -  decl: DataGroup const * getGroup(IndexType idx) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
     -  decl: IndexType getGroupIndex(const std::string &name) const
+
     -  decl: const std::string& getGroupName(IndexType idx) const
+       C_error_pattern: C_invalid_name
+       PY_error_pattern: PY_invalid_name_idx
+
 #    -  decl: void destroyGroups()
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
@@ -165,7 +159,7 @@ classes:
     -  decl: void load(const std::string& obase,  const std::string& protocol)
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
   ####################################################################
   - name: DataBuffer
@@ -176,7 +170,7 @@ classes:
       - decl: size_t getNumViews() const
       - decl: DataBuffer* declare(TypeID type, SidreLength len)
         return_this: True
-        generic:
+        fortran_generic:
           len:
           -  int
           -  long
@@ -188,7 +182,7 @@ classes:
       - decl: DataBuffer* allocate(TypeID type, SidreLength len)
         method_suffix: _from_type
         return_this: True
-        generic:
+        fortran_generic:
           len:
           -  int
           -  long
@@ -196,7 +190,7 @@ classes:
 #      - decl: DataBuffer* allocate(const DataType& dtype)
       - decl: DataBuffer * reallocate(TypeID type, SidreLength len)
         return_this: True
-        generic:
+        fortran_generic:
           len:
           -  int
           -  long
@@ -215,7 +209,7 @@ classes:
       - decl: void print() const
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
   ####################################################################
   - name: DataView
@@ -225,16 +219,19 @@ classes:
     methods:
     - decl: DataView* declare(TypeID type, SidreLength len)
       return_this: True
-      generic:
+      fortran_generic:
         len:
         -  int
         -  long
 #    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
-#    - decl: DataView* allocate()
-    - decl: DataView* allocate(TypeID type, SidreLength len)
+    - decl: DataView* allocate()
+      method_suffix: _simple
       return_this: True
-      generic:
+    - decl: DataView* allocate(TypeID type, SidreLength len)
+      method_suffix: _from_type
+      return_this: True
+      fortran_generic:
         len:
         -  int
         -  long
@@ -242,7 +239,7 @@ classes:
 #    - decl: DataView* allocate(const DataType& dtype)
     - decl: DataView * reallocate(TypeID type, SidreLength len)
       return_this: True
-      generic:
+      fortran_generic:
         len:
         -  int
         -  long
@@ -262,14 +259,10 @@ classes:
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
 #    - decl: Node::Value getValue()
-#  template<typename ValueType>
-#  ValueType getValue()
-#  template<typename ValueType>
-#  void setValue(ValueType value)
 
 #           template<typename ValueType>
     - decl: void setValue(ValueType value)
-      template:
+      cpp_template:
         ValueType:
         - int
         - long
@@ -278,7 +271,7 @@ classes:
 
 #           template<typename ValueType>
     - decl: ValueType getValue()
-      template:
+      cpp_template:
         ValueType:
         - int
         - long
@@ -295,7 +288,7 @@ classes:
     - decl: void print() const
 
     python:
-      type: [ init ]
+      type: [ init, richcompare ]
 
 ######################################################################
 
@@ -306,11 +299,39 @@ functions:
        C_code:  return name != NULL;
        F_code:  rv = name .ne. " "
 
+
+######################################################################
+patterns:
+    C_invalid_name: >
+        if (! isNameValid({var})) {{
+            return ATK_InvalidName;
+        }}
+    PY_invalid_name: >
+        if (! isNameValid({var})) {{
+            PyErr_SetString(PyExc_KeyError, "{var}");
+            return NULL;
+        }}
+    # report the invalid index, assume local variable idx
+    PY_invalid_name_idx: >
+        if (! isNameValid({var})) {{
+            Py_RETURN_NONE;
+        }}
+#            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));
+#            return NULL;
+    # Convert NULL to None
+    PY_null_to_none: >
+        if ({var} == ATK_NULLPTR) {{
+            Py_RETURN_NONE;
+        }}
+
+
+
 # Files which contain code to be inserted into generated code
 splicer:
   c:
   -  csidresplicer.c
   f:
   -  fsidresplicer.f
+  -  genfsidresplicer.f
   py:
   -  pysidresplicer.c

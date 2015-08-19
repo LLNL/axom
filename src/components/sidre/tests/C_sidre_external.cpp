@@ -144,8 +144,8 @@ TEST(C_sidre_external, save_load_external_view)
 
   ATK_datastore_print(ds2);
 
-  ATK_dataview * iview2 = ATK_datagroup_get_view(root2, "idata");
-  ATK_dataview * dview2 = ATK_datagroup_get_view(root2, "ddata");
+  ATK_dataview * iview2 = ATK_datagroup_get_view_from_name(root2, "idata");
+  ATK_dataview * dview2 = ATK_datagroup_get_view_from_name(root2, "ddata");
 
   EXPECT_EQ(ATK_datagroup_get_num_views(root2), 2u);
   tmpbuf = ATK_dataview_get_buffer(iview2);

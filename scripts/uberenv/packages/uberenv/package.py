@@ -24,6 +24,7 @@ class Uberenv(Package):
 
     # boost, header only
     depends_on("boost-headers")
+    depends_on("sparsehash-headers")
 
     # this was pushed to develop, but not yet in the diy branch
     depends_on("uncrustify")
@@ -51,6 +52,8 @@ class Uberenv(Package):
         cfg.write("# boost headers from uberenv\n")
         cfg.write('set(ENABLE_BOOST ON CACHE PATH "")\n')
         cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
+        cfg.write("# sparsehash headers from uberenv\n")
+        cfg.write('set(SPARSEHAST_ROOT "%s" CACHE PATH "")\n\n' % spec['sparsehash-headers'].prefix)
         cfg.write("\n")
         cfg.close()        
         
