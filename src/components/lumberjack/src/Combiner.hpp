@@ -29,10 +29,10 @@ namespace lumberjack {
  *******************************************************************************
  * \class Combiner
  *
- * \brief Abstract base class defining the interface of all Combiners.
+ * \brief Abstract base class defining the interface of all Combiner classes.
  *
  *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Combiner using Logger::addMessageCombiner
+ *  You will need to add your Combiner using Logger::addCombiner
  *
  * \see MessageEqualityCombiner Logger
  *******************************************************************************
@@ -49,11 +49,11 @@ class Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Function used by Logger to indicate whether two messages should be
+         * \brief Function used by Logger to indicate whether two MessageInfo classes should be
          * combined.  They are not actually combined by this function.
          *
-         * \param [in] leftMessageInfo One of the MessageInfos to be compared.
-         * \param [in] rightMessageInfo One of the MessageInfos to be compared.
+         * \param [in] leftMessageInfo The left MessageInfo to be compared.
+         * \param [in] rightMessageInfo The right MessageInfo to be compared.
          *****************************************************************************
          */
         virtual bool shouldMessageInfosBeCombined(const MessageInfo& leftMessageInfo,

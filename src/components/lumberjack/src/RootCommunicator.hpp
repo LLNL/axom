@@ -36,10 +36,9 @@ namespace lumberjack {
  *******************************************************************************
  * \class RootCommunicator
  *
- * \brief Abstract base class defining the interface of all Communicators.
+ * \brief A Communicator that all MPI nodes communicate with the root node.
  *
- *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Communicator using Logger::Initialize
+ *  You will need to add your Communicator using Logger::initialize.
  *
  * \see BinaryTreeCommunicator Communicator Logger
  *******************************************************************************
@@ -74,9 +73,9 @@ class RootCommunicator: public Communicator {
          * \brief This pushes all messages to the root node.
          *
          * All messages are pushed to the root node. This is the same as 
-         * (<RootCommunicator>"::")<pushMessagesFully>"()" for this Communicator.
+         * RootCommunicator::pushMessageInfosFully for this Communicator.
          *
-         * \param [in,out] messageInfos All of this rank's messages.
+         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
          *****************************************************************************
          */
         void pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos);
@@ -86,16 +85,16 @@ class RootCommunicator: public Communicator {
          * \brief This pushes all messages to the root node.
          *
          * All messages are pushed to the root node. This is the same as 
-         * (<RootCommunicator>"::")<pushMessagesOnce>"()" for this Communicator.
+         * RootCommunicator::pushMessageInfosOnce for this Communicator.
          *
-         * \param [in,out] messageInfos All of this rank's messages.
+         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
          *****************************************************************************
          */
         void pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos);
 
         /*!
          *****************************************************************************
-         * \brief Function used by the logger to indicate whether this node should be
+         * \brief Function used by the Logger to indicate whether this node should be
          * outputting messages. Only the root node outputs messages.
          *****************************************************************************
          */

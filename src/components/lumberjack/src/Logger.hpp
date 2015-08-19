@@ -36,10 +36,11 @@ namespace lumberjack {
  *******************************************************************************
  * \class Logger
  *
- * \brief Class that all user interactions with lumberjack are through.
+ * \brief Class that all user interactions with Lumberjack are through.
  *
- *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Communicator using Logger::Initialize
+ *  This class performs all the high level functionality of Lumberjack, such as,
+ *  holding and combining MessageInfo classes and telling the given Communicator
+ *  to push MessageInfo classes.
  *
  * \see BinaryTreeCommunicator RootCommunicator MessageInfo Combiner
  *******************************************************************************
@@ -53,7 +54,7 @@ class Logger {
          * This performs any setup work the Logger needs before doing any work.
          * It is required that this is called before using the Logger.
          *
-         * \param [in] communicator The lumberjack communicator that will send/recieve messages
+         * \param [in] communicator The Lumberjack Communicator that will send/recieve messages
          * \param [in] ranksLimit Limit on how many ranks are individually tracker per MessageInfo.
          *****************************************************************************
          */
@@ -73,10 +74,10 @@ class Logger {
          *****************************************************************************
          * \brief Adds a Combiner to the Logger.
          *
-         * The Logger can have multiple Combiner's.  This is helpful when you have different
-         * combining criteria for different messages. If you try to add the same combiner
-         * more than once, the second combiner will not be added.  This is determined solely
-         * on Combiner::id. Combiner's that are added first have precedence.  The Logger
+         * The Logger can have multiple Combiner classes.  This is helpful when you have different
+         * combining criteria for different MessageInfo classes. If you try to add the same Combiner
+         * more than once, the second Combiner will not be added.  This is determined solely
+         * on Combiner::id. Combiner classes that are added first have precedence.  The Logger
          * will call delete on the Combiner when finalize is called.
          *
          * \param [in] combiner The Combiner that will be added.
@@ -98,22 +99,22 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Clears all Combiners from the Logger.
+         * \brief Clears all Combiner classes from the Logger.
          *
-         * This removes and calls delete on all Combiners held by the Logger. 
+         * This removes and calls delete on all Combiner classes held by the Logger. 
          *****************************************************************************
          */
         void clearCombiners();
 
         /*!
          *****************************************************************************
-         * \brief Fills the given vector with all currently held MessageInfos.
+         * \brief Fills the given vector with all currently held MessageInfo classes.
          *
-         * This swaps the given vector with this ranks's internal vector that holds it's MessageInfos.
-         * The given vector should be empty.  If the rank is not supposed to output Messages,
+         * This swaps the given vector with this ranks's internal vector that holds it's MessageInfo classes.
+         * The given vector should be empty.  If the rank is not supposed to output messages,
          * then the vector is not swapped with the internal vector.
          *
-         * \param [in,out] filledVector An empty vector that will be filled with MessageInfos.
+         * \param [in,out] filledVector An empty vector that will be filled with MessageInfo classes.
          *****************************************************************************
          */
         void getMessageInfos(std::vector<MessageInfo*>& filledVector);
@@ -144,11 +145,11 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Queues a message to be sent and combined by lumberjack
+         * \brief Queues a message to be sent and combined
          *
          * This creates a MessageInfo and queues it to be sent through the Communicator
          * to the root node.  This message may be combined with others depending on the
-         * given criteria by the already defined Combiners. Depending on the behavior
+         * given criteria by the already defined Combiner classes. Depending on the behavior
          * of the Communicator, the message will not be outputted immediately.
          *
          * \param [in] message Message to be queued.
@@ -158,11 +159,11 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Queues a message to be sent and combined by lumberjack
+         * \brief Queues a message to be sent and combined
          *
          * This creates a MessageInfo and queues it to be sent through the Communicator
          * to the root node.  This message may be combined with others depending on the
-         * given criteria by the already defined Combiners. Depending on the behavior
+         * given criteria by the already defined Combiner classes. Depending on the behavior
          * of the Communicator, the message will not be outputted immediately.
          *
          * \param [in] message Message string
@@ -174,30 +175,30 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages once up the Communicator's tree structure.
+         * \brief This pushes all messages once up the Communicator class's tree structure.
          *
-         * All of the children push their MessageInfo's to their parent node. This is
-         * is helpful if you want to spread the work load of lumberjack over a large
-         * set of work. After MessageInfos are pushed they are combined.
+         * All of the children push their MessageInfo classes to their parent node. This is
+         * is helpful if you want to spread the work load of Lumberjack over a large
+         * set of work. After MessageInfo classes are pushed they are combined.
          *****************************************************************************
          */
         void pushMessageInfosOnce();
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages fully up the Communicator's tree structure.
+         * \brief This pushes all messages fully up the Communicator class's tree structure.
          *
          * All messages are continually pushed until all messages are pushed to the root node.
-         * After MessageInfos are pushed once they are combined before being pushed again.
+         * After MessageInfo classes are pushed once they are combined before being pushed again.
          *****************************************************************************
          */
         void pushMessageInfosFully();
     private:
         /*!
          *****************************************************************************
-         * \brief This combines all currently held MessageInfos.
+         * \brief This combines all currently held MessageInfo classes.
          *
-         * All MessageInfos are combined by the currently held Combiners.
+         * All MessageInfo classes are combined by the currently held Combiner classes.
          *****************************************************************************
          */
         void combineMessageInfos();

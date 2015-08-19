@@ -32,10 +32,10 @@ namespace lumberjack {
  *******************************************************************************
  * \class MessageEqualityCombiner
  *
- * \brief Combines MessageInfo classes if their (<MessageInfo>"::")<message>"()" are equal.
+ * \brief Combines MessageInfo classes if their MessageInfo::message are equal.
  *
- *  This class instance is automatically added to lumberjack's Logger for you. If you want it
- *  removed call (<Logger>"::")<removeMessageCombiner>"()" with "MessageEqualityCombiner" as it's
+ *  This class instance is automatically added to Lumberjack's Logger for you. If you want it
+ *  removed call Logger::removeCombiner with the string "MessageEqualityCombiner" as it's
  *  parameter.
  *
  * \see Combiner Logger
@@ -59,8 +59,10 @@ class MessageEqualityCombiner: public Combiner {
         /*!
          *****************************************************************************
          * \brief Function used by Logger to indicate whether two messages should be
-         * combined.  They are not actually combined by this function. MessageInfos are 
-         * triggered for combination if both (<MessageInfo>"::")<message>"()" are equal.
+         * combined.
+         *
+         * They are not actually combined by this function. MessageInfo classes are 
+         * triggered for combination if both MessageInfo::message are equal.
          *
          * \param [in] leftMessageInfo One of the MessageInfos to be compared.
          * \param [in] rightMessageInfo One of the MessageInfos to be compared.

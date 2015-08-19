@@ -32,10 +32,10 @@ namespace lumberjack {
  *******************************************************************************
  * \class Communicator
  *
- * \brief Abstract base class defining the interface of all Communicators.
+ * \brief Abstract base class defining the interface of all Communicator classes.
  *
  *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Communicator using Logger::Initialize
+ *  You will need to add your Communicator using Logger::initialize
  *
  * \see BinaryTreeCommunicator RootCommunicator Logger
  *******************************************************************************
@@ -49,7 +49,7 @@ class Communicator {
          * This performs any setup work the Communicator needs before doing any work.
          * It is required that this is called before using the Communicator.
          *
-         * \param [in] comm The MPI Communicator
+         * \param [in] comm The MPI communicator
          * \param [in] ranksLimit Limit on how many ranks are individually tracked per MessageInfo.
          *****************************************************************************
          */
@@ -67,32 +67,33 @@ class Communicator {
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages once up the Communicator's tree structure.
+         * \brief This pushes all messages once up the Communicator class's tree structure.
          *
-         * All of the children push their MessageInfo's to their parent node. This is
-         * is helpful if you want to spread the work load of lumberjack over a large
+         * All of the children push their MessageInfo classes to their parent node. This is
+         * is helpful if you want to spread the work load of Lumberjack over a large
          * set of work.
          *
-         * \param [in,out] messageInfos All of this rank's messages.
+         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
          *****************************************************************************
          */
         virtual void pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos) = 0;
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages fully up the Communicator's tree structure.
+         * \brief This pushes all messages fully up the Communicator class's tree structure.
          *
-         * All messages are continually pushed until all messages are pushed to the root node.
+         * All MessageInfo classes are continually pushed until all MessageInfo classes
+         * are pushed to the root node.
          *
-         * \param [in,out] messageInfos All of this rank's messages.
+         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
          *****************************************************************************
          */
         virtual void pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos) = 0;
 
         /*!
          *****************************************************************************
-         * \brief Function used by the logger to indicate whether this node should be
-         * outputting messages. The communicator's tree structure dictates this.
+         * \brief Function used by the Logger to indicate whether this node should be
+         * outputting messages. The Communicator class's tree structure dictates this.
          *****************************************************************************
          */
         virtual bool shouldMessagesBeOutputted() = 0;

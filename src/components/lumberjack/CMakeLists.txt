@@ -34,7 +34,7 @@ endif()
 ################################
 # Add docs
 ################################
-#add_subdirectory(docs)
+add_subdirectory(docs)
 
 ################################
 # Create CMake importable
