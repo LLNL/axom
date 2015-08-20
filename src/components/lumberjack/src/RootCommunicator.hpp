@@ -27,7 +27,7 @@
 #include "common/CommonTypes.hpp"
 
 #include "lumberjack/Communicator.hpp"
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -53,7 +53,7 @@ class RootCommunicator: public Communicator {
          * It is required that this is called before using the Communicator.
          *
          * \param [in] comm The MPI Communicator
-         * \param [in] ranksLimit Limit on how many ranks are individually tracked per MessageInfo.
+         * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          *****************************************************************************
          */
         void initialize(MPI_Comm comm, int ranksLimit);
@@ -73,24 +73,24 @@ class RootCommunicator: public Communicator {
          * \brief This pushes all messages to the root node.
          *
          * All messages are pushed to the root node. This is the same as 
-         * RootCommunicator::pushMessageInfosFully for this Communicator.
+         * RootCommunicator::pushMessagesFully for this Communicator.
          *
-         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
+         * \param [in,out] messages All of this rank's Message classes.
          *****************************************************************************
          */
-        void pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos);
+        void pushMessagesOnce(std::vector<Message*>& messages);
 
         /*!
          *****************************************************************************
          * \brief This pushes all messages to the root node.
          *
          * All messages are pushed to the root node. This is the same as 
-         * RootCommunicator::pushMessageInfosOnce for this Communicator.
+         * RootCommunicator::pushMessagesOnce for this Communicator.
          *
-         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
+         * \param [in,out] messages All of this rank's Message classes.
          *****************************************************************************
          */
-        void pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos);
+        void pushMessagesFully(std::vector<Message*>& messages);
 
         /*!
          *****************************************************************************

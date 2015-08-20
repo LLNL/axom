@@ -10,46 +10,46 @@
 
 /*!
  *******************************************************************************
- * \file MessageInfo.cpp
+ * \file Message.cpp
  * \author Chris White (white238@llnl.gov)
  *
- * \brief This file contains the class implementation of the MessageInfo.
+ * \brief This file contains the class implementation of the Message.
  *******************************************************************************
  */
 
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 #include "lumberjack/Utility.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
 
-std::string MessageInfo::message() const
+std::string Message::text() const
 {
-    return m_message;
+    return m_text;
 }
 
-void MessageInfo::message(const std::string& newMessage)
+void Message::text(const std::string& newText)
 {
-    m_message = newMessage;
+    m_text = newText;
 }
 
-std::vector<int> MessageInfo::ranks() const
+std::vector<int> Message::ranks() const
 {
     return m_ranks;
 }
 
-int MessageInfo::rankCount() const
+int Message::rankCount() const
 {
     return m_rankCount;
 }
 
-std::string MessageInfo::fileName() const
+std::string Message::fileName() const
 {
     return m_fileName;
 }
 
-std::string MessageInfo::stringOfRanks(std::string delimiter) const
+std::string Message::stringOfRanks(std::string delimiter) const
 {
     std::string returnString = "";
     int ranksSize = m_ranks.size();
@@ -62,22 +62,22 @@ std::string MessageInfo::stringOfRanks(std::string delimiter) const
     return returnString;
 }
 
-void MessageInfo::fileName(const std::string& newFileName)
+void Message::fileName(const std::string& newFileName)
 {
     m_fileName = newFileName;
 }
 
-int MessageInfo::lineNumber() const
+int Message::lineNumber() const
 {
     return m_lineNumber;
 }
 
-void MessageInfo::lineNumber(int newLineNumber)
+void Message::lineNumber(int newLineNumber)
 {
     m_lineNumber = newLineNumber;
 }
 
-void MessageInfo::addRank(int newRank, int ranksLimit)
+void Message::addRank(int newRank, int ranksLimit)
 {
     if (m_ranks.size() < (std::vector<int>::size_type)ranksLimit){
         m_ranks.push_back(newRank);
@@ -85,7 +85,7 @@ void MessageInfo::addRank(int newRank, int ranksLimit)
     m_rankCount++;
 }
 
-void MessageInfo::addRanks(const std::vector<int>& newRanks, int ranksLimit)
+void Message::addRanks(const std::vector<int>& newRanks, int ranksLimit)
 {
     int newRanksSize = newRanks.size();
     for(int i=0; i<newRanksSize; ++i){
@@ -100,28 +100,28 @@ void MessageInfo::addRanks(const std::vector<int>& newRanks, int ranksLimit)
 const char memberDelimiter = '*';
 const char rankDelimiter = ',';
 
-std::string MessageInfo::pack()
+std::string Message::pack()
 {
-    std::string packedMessageInfo;
+    std::string packedMessage;
     int ranksSize = (int)m_ranks.size();
     for (int i=0; i<ranksSize; ++i){
-        packedMessageInfo += intToString(m_ranks[i]);
+        packedMessage += intToString(m_ranks[i]);
         if (i < (ranksSize-1)) {
-            packedMessageInfo += rankDelimiter;
+            packedMessage += rankDelimiter;
         }
     }
-    packedMessageInfo += memberDelimiter + intToString(m_rankCount);
-    packedMessageInfo += memberDelimiter + m_fileName + memberDelimiter;
+    packedMessage += memberDelimiter + intToString(m_rankCount);
+    packedMessage += memberDelimiter + m_fileName + memberDelimiter;
 
     if (m_lineNumber != -1){
-        packedMessageInfo += intToString(m_lineNumber);
+        packedMessage += intToString(m_lineNumber);
     }
-    packedMessageInfo += memberDelimiter + m_message;
+    packedMessage += memberDelimiter + m_text;
 
-    return packedMessageInfo;
+    return packedMessage;
 }
 
-void MessageInfo::unpack(const std::string& packedMessage, int ranksLimit)
+void Message::unpack(const std::string& packedMessage, int ranksLimit)
 {
     int messageLength = (int)packedMessage.length();
     std::string currString;
@@ -185,7 +185,7 @@ void MessageInfo::unpack(const std::string& packedMessage, int ranksLimit)
     for (; i<messageLength; ++i) {
         currString += packedMessage[i];
     }
-    m_message = currString;
+    m_text = currString;
 }
 
 } // end namespace lumberjack

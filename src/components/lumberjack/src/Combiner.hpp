@@ -20,7 +20,7 @@
 #ifndef COMBINER_HPP
 #define COMBINER_HPP
 
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -49,28 +49,28 @@ class Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Function used by Logger to indicate whether two MessageInfo classes should be
+         * \brief Function used by Logger to indicate whether two Message classes should be
          * combined.  They are not actually combined by this function.
          *
-         * \param [in] leftMessageInfo The left MessageInfo to be compared.
-         * \param [in] rightMessageInfo The right MessageInfo to be compared.
+         * \param [in] leftMessage The left Message to be compared.
+         * \param [in] rightMessage The right Message to be compared.
          *****************************************************************************
          */
-        virtual bool shouldMessageInfosBeCombined(const MessageInfo& leftMessageInfo,
-                                                  const MessageInfo& rightMessageInfo) = 0;
+        virtual bool shouldMessagesBeCombined(const Message& leftMessage,
+                                                  const Message& rightMessage) = 0;
 
         /*!
          *****************************************************************************
-         * \brief Combines the combinee into the combined MessageInfo.
+         * \brief Combines the combinee into the combined Message.
          *
-         * \param [in,out] combined the MessageInfo that will be modified.
-         * \param [in] combinee the MessageInfo that is combined into the other.
+         * \param [in,out] combined the Message that will be modified.
+         * \param [in] combinee the Message that is combined into the other.
          * \param [in] ranksLimit The limit on how many individual ranks are tracked in
-         * the combined MessageInfo. MessageInfo::rankCount is always incremented.
+         * the combined Message. Message::rankCount is always incremented.
          *****************************************************************************
          */
-        virtual void combine(MessageInfo& combined,
-                             const MessageInfo& combinee, const int ranksLimit) = 0;
+        virtual void combine(Message& combined,
+                             const Message& combinee, const int ranksLimit) = 0;
 };
 
 } // end namespace lumberjack

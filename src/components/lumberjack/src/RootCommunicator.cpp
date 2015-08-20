@@ -51,7 +51,7 @@ int RootCommunicator::rank()
     return m_mpiCommRank;
 }
 
-void RootCommunicator::pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos)
+void RootCommunicator::pushMessagesOnce(std::vector<Message*>& messages)
 {
     MPI_Request mpiRequests[m_mpiCommSize];
     MPI_Status mpiStatuses[m_mpiCommSize];
@@ -68,28 +68,28 @@ void RootCommunicator::pushMessageInfosOnce(std::vector<MessageInfo*>& messageIn
             charArray = (char*)malloc((messageSize+1)*sizeof(char));
             MPI_Irecv(charArray, messageSize, MPI_CHAR, i, 0, m_mpiComm, &mpiRequests[i]);
             charArray[messageSize] = '\0';
-            std::string messageString(charArray);
+            std::string packedMessage(charArray);
             free(charArray);
-            MessageInfo* mi = new MessageInfo();
-            mi->unpack(messageString, m_ranksLimit);
-            messageInfos.push_back(mi);
+            Message* mi = new Message();
+            mi->unpack(packedMessage, m_ranksLimit);
+            messages.push_back(mi);
         }
     }
     else {
-        for(int i=0; i<(int)messageInfos.size(); ++i){
-            std::string packedMessageInfo = messageInfos[i]->pack();
-            MPI_Isend(const_cast<char*>(packedMessageInfo.c_str()),
-                     packedMessageInfo.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequests[i]);
-            delete messageInfos[i];
+        for(int i=0; i<(int)messages.size(); ++i){
+            std::string packedMessage = messages[i]->pack();
+            MPI_Isend(const_cast<char*>(packedMessage.c_str()),
+                     packedMessage.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequests[i]);
+            delete messages[i];
         }
-        messageInfos.clear();
+        messages.clear();
     }
     MPI_Waitall(m_mpiCommSize, mpiRequests, mpiStatuses);
 }
 
-void RootCommunicator::pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos)
+void RootCommunicator::pushMessagesFully(std::vector<Message*>& messages)
 {
-    pushMessageInfosOnce(messageInfos);
+    pushMessagesOnce(messages);
 }
 
 } // end namespace lumberjack

@@ -10,18 +10,18 @@
 
 /*!
  *******************************************************************************
- * \file MessageEqualityCombiner.hpp
+ * \file TextEqualityCombiner.hpp
  * \author Chris White (white238@llnl.gov)
  *
- * \brief This file contains the class implementation of the MessageEqualityCombiner.
+ * \brief This file contains the class implementation of the TextEqualityCombiner.
  *******************************************************************************
  */
 
-#ifndef MESSAGEEQUALITYCOMBINER_HPP
-#define MESSAGEEQUALITYCOMBINER_HPP
+#ifndef TEXTEQUALITYCOMBINER_HPP
+#define TEXTEQUALITYCOMBINER_HPP
 
 #include "lumberjack/Combiner.hpp"
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 #include <string>
 
@@ -30,20 +30,20 @@ namespace lumberjack {
 
 /*!
  *******************************************************************************
- * \class MessageEqualityCombiner
+ * \class TextEqualityCombiner
  *
- * \brief Combines MessageInfo classes if their MessageInfo::message are equal.
+ * \brief Combines Message classes if their Message::text are equal.
  *
  *  This class instance is automatically added to Lumberjack's Logger for you. If you want it
- *  removed call Logger::removeCombiner with the string "MessageEqualityCombiner" as it's
+ *  removed call Logger::removeCombiner with the string "TextEqualityCombiner" as it's
  *  parameter.
  *
  * \see Combiner Logger
  *******************************************************************************
  */
-class MessageEqualityCombiner: public Combiner {
+class TextEqualityCombiner: public Combiner {
     public:
-        MessageEqualityCombiner(): m_id("MessageEqualityCombiner") {}
+        TextEqualityCombiner(): m_id("TextEqualityCombiner") {}
 
         /*!
          *****************************************************************************
@@ -61,17 +61,17 @@ class MessageEqualityCombiner: public Combiner {
          * \brief Function used by Logger to indicate whether two messages should be
          * combined.
          *
-         * They are not actually combined by this function. MessageInfo classes are 
-         * triggered for combination if both MessageInfo::message are equal.
+         * They are not actually combined by this function. Message classes are 
+         * triggered for combination if both Message::text are equal.
          *
-         * \param [in] leftMessageInfo One of the MessageInfos to be compared.
-         * \param [in] rightMessageInfo One of the MessageInfos to be compared.
+         * \param [in] leftMessage One of the Messages to be compared.
+         * \param [in] rightMessage One of the Messages to be compared.
          *****************************************************************************
          */
-        bool shouldMessageInfosBeCombined(const MessageInfo& leftMessageInfo,
-                                          const MessageInfo& rightMessageInfo)
+        bool shouldMessagesBeCombined(const Message& leftMessage,
+                                          const Message& rightMessage)
         {
-            if (leftMessageInfo.message().compare(rightMessageInfo.message()) == 0){
+            if (leftMessage.text().compare(rightMessage.text()) == 0){
                 return true;
             }
             return false;
@@ -79,18 +79,18 @@ class MessageEqualityCombiner: public Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Combines the combinee into the combined MessageInfo.
+         * \brief Combines the combinee into the combined Message.
          *
          * The only thing truly combined in this Combiner is the ranks from combinee to
-         * combined, since message is already equal.
+         * combined, since text is already equal.
          *
-         * \param [in,out] combined the MessageInfo that will be modified.
-         * \param [in] combinee the MessageInfo that is combined into the other.
+         * \param [in,out] combined the Message that will be modified.
+         * \param [in] combinee the Message that is combined into the other.
          * \param [in] ranksLimit The limit on how many individual ranks are tracked in
-         * the combined MessageInfo. MessageInfo::rankCount is always incremented.
+         * the combined Message. Message::rankCount is always incremented.
          *****************************************************************************
          */
-        void combine(MessageInfo& combined, const MessageInfo& combinee, const int ranksLimit)
+        void combine(Message& combined, const Message& combinee, const int ranksLimit)
         {
             combined.addRanks(combinee.ranks(), ranksLimit);
         }

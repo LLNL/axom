@@ -23,7 +23,7 @@
 
 #include <vector>
 
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -50,7 +50,7 @@ class Communicator {
          * It is required that this is called before using the Communicator.
          *
          * \param [in] comm The MPI communicator
-         * \param [in] ranksLimit Limit on how many ranks are individually tracked per MessageInfo.
+         * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          *****************************************************************************
          */
         virtual void initialize(MPI_Comm comm, int ranksLimit) = 0;
@@ -69,26 +69,26 @@ class Communicator {
          *****************************************************************************
          * \brief This pushes all messages once up the Communicator class's tree structure.
          *
-         * All of the children push their MessageInfo classes to their parent node. This is
+         * All of the children push their Message classes to their parent node. This is
          * is helpful if you want to spread the work load of Lumberjack over a large
          * set of work.
          *
-         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
+         * \param [in,out] messages All of this rank's Message classes.
          *****************************************************************************
          */
-        virtual void pushMessageInfosOnce(std::vector<MessageInfo*>& messageInfos) = 0;
+        virtual void pushMessagesOnce(std::vector<Message*>& messages) = 0;
 
         /*!
          *****************************************************************************
          * \brief This pushes all messages fully up the Communicator class's tree structure.
          *
-         * All MessageInfo classes are continually pushed until all MessageInfo classes
+         * All Message classes are continually pushed until all Message classes
          * are pushed to the root node.
          *
-         * \param [in,out] messageInfos All of this rank's MessageInfo classes.
+         * \param [in,out] messages All of this rank's Message classes.
          *****************************************************************************
          */
-        virtual void pushMessageInfosFully(std::vector<MessageInfo*>& messageInfos) = 0;
+        virtual void pushMessagesFully(std::vector<Message*>& messages) = 0;
 
         /*!
          *****************************************************************************

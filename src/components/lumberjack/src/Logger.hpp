@@ -24,10 +24,11 @@
 #include <string>
 
 #include "mpi.h"
+
 #include "lumberjack/Combiner.hpp"
 #include "lumberjack/Communicator.hpp"
-#include "lumberjack/MessageEqualityCombiner.hpp"
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
+#include "lumberjack/TextEqualityCombiner.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -39,10 +40,10 @@ namespace lumberjack {
  * \brief Class that all user interactions with Lumberjack are through.
  *
  *  This class performs all the high level functionality of Lumberjack, such as,
- *  holding and combining MessageInfo classes and telling the given Communicator
- *  to push MessageInfo classes.
+ *  holding and combining Message classes and telling the given Communicator
+ *  to push Message classes.
  *
- * \see BinaryTreeCommunicator RootCommunicator MessageInfo Combiner
+ * \see BinaryTreeCommunicator RootCommunicator Message Combiner
  *******************************************************************************
  */
 class Logger {
@@ -55,7 +56,7 @@ class Logger {
          * It is required that this is called before using the Logger.
          *
          * \param [in] communicator The Lumberjack Communicator that will send/recieve messages
-         * \param [in] ranksLimit Limit on how many ranks are individually tracker per MessageInfo.
+         * \param [in] ranksLimit Limit on how many ranks are individually tracker per Message.
          *****************************************************************************
          */
         void initialize(Communicator* communicator, int ranksLimit);
@@ -75,7 +76,7 @@ class Logger {
          * \brief Adds a Combiner to the Logger.
          *
          * The Logger can have multiple Combiner classes.  This is helpful when you have different
-         * combining criteria for different MessageInfo classes. If you try to add the same Combiner
+         * combining criteria for different Message classes. If you try to add the same Combiner
          * more than once, the second Combiner will not be added.  This is determined solely
          * on Combiner::id. Combiner classes that are added first have precedence.  The Logger
          * will call delete on the Combiner when finalize is called.
@@ -108,26 +109,26 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Fills the given vector with all currently held MessageInfo classes.
+         * \brief Fills the given vector with all currently held Message classes.
          *
-         * This swaps the given vector with this ranks's internal vector that holds it's MessageInfo classes.
+         * This swaps the given vector with this ranks's internal vector that holds it's Message classes.
          * The given vector should be empty.  If the rank is not supposed to output messages,
          * then the vector is not swapped with the internal vector.
          *
-         * \param [in,out] filledVector An empty vector that will be filled with MessageInfo classes.
+         * \param [in,out] filledVector An empty vector that will be filled with Message classes.
          *****************************************************************************
          */
-        void getMessageInfos(std::vector<MessageInfo*>& filledVector);
+        void getMessages(std::vector<Message*>& filledVector);
 
         /*!
          *****************************************************************************
          * \brief Sets the rank limit.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
-         * per MessageInfo.  After the limit has been reached, only the MessageInfo::rankCount is 
+         * per Message.  After the limit has been reached, only the Message::rankCount is 
          * incremented.
          *
-         * \param [in] ranksLimit Limit on how many ranks are individually tracked per MessageInfo.
+         * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          *****************************************************************************
          */
         void ranksLimit(int ranksLimit);
@@ -137,7 +138,7 @@ class Logger {
          * \brief Returns the rank limit.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
-         * per MessageInfo.  After the limit has been reached, only the MessageInfo::rankCount is 
+         * per Message.  After the limit has been reached, only the Message::rankCount is 
          * incremented.
          *****************************************************************************
          */
@@ -147,67 +148,66 @@ class Logger {
          *****************************************************************************
          * \brief Queues a message to be sent and combined
          *
-         * This creates a MessageInfo and queues it to be sent through the Communicator
+         * This creates a Message and queues it to be sent through the Communicator
          * to the root node.  This message may be combined with others depending on the
          * given criteria by the already defined Combiner classes. Depending on the behavior
          * of the Communicator, the message will not be outputted immediately.
          *
-         * \param [in] message Message to be queued.
+         * \param [in] text Text of the Message.
          *****************************************************************************
          */
-        void queueMessage(const std::string& message);
+        void queueMessage(const std::string& text);
 
         /*!
          *****************************************************************************
          * \brief Queues a message to be sent and combined
          *
-         * This creates a MessageInfo and queues it to be sent through the Communicator
+         * This creates a Message and queues it to be sent through the Communicator
          * to the root node.  This message may be combined with others depending on the
          * given criteria by the already defined Combiner classes. Depending on the behavior
          * of the Communicator, the message will not be outputted immediately.
          *
-         * \param [in] message Message string
-         * \param [in] fileName File name of message
-         * \param [in] lineNumber Line number of message
+         * \param [in] text Text of the Message
+         * \param [in] fileName File name of Message
+         * \param [in] lineNumber Line number of Message
          *****************************************************************************
          */
-        void queueMessage(const std::string& message, const std::string& fileName, const int lineNumber);
+        void queueMessage(const std::string& text, const std::string& fileName, const int lineNumber);
 
         /*!
          *****************************************************************************
          * \brief This pushes all messages once up the Communicator class's tree structure.
          *
-         * All of the children push their MessageInfo classes to their parent node. This is
+         * All of the children push their Message classes to their parent node. This is
          * is helpful if you want to spread the work load of Lumberjack over a large
-         * set of work. After MessageInfo classes are pushed they are combined.
+         * set of work. After Message classes are pushed they are combined.
          *****************************************************************************
          */
-        void pushMessageInfosOnce();
+        void pushMessagesOnce();
 
         /*!
          *****************************************************************************
          * \brief This pushes all messages fully up the Communicator class's tree structure.
          *
          * All messages are continually pushed until all messages are pushed to the root node.
-         * After MessageInfo classes are pushed once they are combined before being pushed again.
+         * After Message classes are pushed once they are combined before being pushed again.
          *****************************************************************************
          */
-        void pushMessageInfosFully();
+        void pushMessagesFully();
     private:
         /*!
          *****************************************************************************
-         * \brief This combines all currently held MessageInfo classes.
+         * \brief This combines all currently held Message classes.
          *
-         * All MessageInfo classes are combined by the currently held Combiner classes.
+         * All Message classes are combined by the currently held Combiner classes.
          *****************************************************************************
          */
-        void combineMessageInfos();
+        void combineMessages();
 
         Communicator* m_communicator;
         int m_ranksLimit;
-        MessageEqualityCombiner* m_messageEqualityCombiner;
         std::vector<Combiner*> m_combiners;
-        std::vector<MessageInfo*> m_messages;
+        std::vector<Message*> m_messages;
 };
 
 } // end namespace lumberjack

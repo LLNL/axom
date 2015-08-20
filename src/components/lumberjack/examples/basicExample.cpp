@@ -17,7 +17,7 @@
 
 #include "lumberjack/Logger.hpp"
 #include "lumberjack/RootCommunicator.hpp"
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 #include <mpi.h>
 #include <iostream>
@@ -53,15 +53,15 @@ int main(int argc, char** argv)
     }
     // Push messages once through lumberjack's communicator (since we are using
     //    the root communicator. This filters messages fully.)
-    logger.pushMessageInfosOnce();
+    logger.pushMessagesOnce();
 
     // Get messages back out of lumberjack since they have been pushed.
-    std::vector<asctoolkit::lumberjack::MessageInfo*> messageInfos;
-    logger.getMessageInfos(messageInfos);
-    for(int i=0; i<(int)(messageInfos.size()); ++i){
-        std::cout << "(" << messageInfos[i]->stringOfRanks() << ") " << messageInfos[i]->rankCount() <<
-                     " '" << messageInfos[i]->message() << "'" << std::endl;
-        delete messageInfos[i];
+    std::vector<asctoolkit::lumberjack::Message*> messages;
+    logger.getMessages(messages);
+    for(int i=0; i<(int)(messages.size()); ++i){
+        std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->rankCount() <<
+                     " '" << messages[i]->text() << "'" << std::endl;
+        delete messages[i];
     }
 
     // Finalize the lumberjack logger

@@ -14,7 +14,7 @@
 
 #include "common/CommonTypes.hpp"
 #include "lumberjack/Communicator.hpp"
-#include "lumberjack/MessageInfo.hpp"
+#include "lumberjack/Message.hpp"
 
 #include <stdlib.h>
 #include <time.h>
@@ -33,14 +33,16 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
 
         }
 
-        void pushMessageInfosOnce(std::vector<asctoolkit::lumberjack::MessageInfo*>& messageInfos)
+        void pushMessagesOnce(std::vector<asctoolkit::lumberjack::Message*>& messages)
         {
-        	messageInfos = messageInfos;
+        	//Quiets a warning
+        	messages = messages;
         }
 
-        void pushMessageInfosFully(std::vector<asctoolkit::lumberjack::MessageInfo*>& messageInfos)
+        void pushMessagesFully(std::vector<asctoolkit::lumberjack::Message*>& messages)
         {
-        	messageInfos = messageInfos;
+        	//Quiets a warning
+        	messages = messages;
         }
 
         bool shouldMessagesBeOutputted()
@@ -74,14 +76,14 @@ TEST(lumberjack_Logger, combineMessages01)
 	logger.queueMessage("Should be combined.");
 	logger.queueMessage("Should be combined.");
 
-	logger.pushMessageInfosFully();
+	logger.pushMessagesFully();
 
-	std::vector<asctoolkit::lumberjack::MessageInfo*> messageInfos;
-	logger.getMessageInfos(messageInfos);
+	std::vector<asctoolkit::lumberjack::Message*> messages;
+	logger.getMessages(messages);
 
-	EXPECT_EQ((int)messageInfos.size(), 1);
-	EXPECT_EQ(messageInfos[0]->message(), "Should be combined.");
-	EXPECT_EQ(messageInfos[0]->rankCount(), 6);
+	EXPECT_EQ((int)messages.size(), 1);
+	EXPECT_EQ(messages[0]->text(), "Should be combined.");
+	EXPECT_EQ(messages[0]->rankCount(), 6);
 
 	logger.finalize();
 	communicator.finalize();
