@@ -67,6 +67,30 @@ class Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Sets the rank limit.
+         *
+         * This is the limit on how many ranks generated a given message are individually tracked
+         * per Message.  After the limit has been reached, only the Message::rankCount is 
+         * incremented.
+         *
+         * \param [in] value Limit on how many ranks are individually tracked per Message.
+         *****************************************************************************
+         */
+        virtual void ranksLimit(int value) = 0;
+
+        /*!
+         *****************************************************************************
+         * \brief Returns the rank limit.
+         *
+         * This is the limit on how many ranks generated a given message are individually tracked
+         * per Message.  After the limit has been reached, only the Message::rankCount is 
+         * incremented.
+         *****************************************************************************
+         */
+        virtual int ranksLimit() = 0;
+
+        /*!
+         *****************************************************************************
          * \brief This pushes all messages once up the Communicator class's tree structure.
          *
          * All of the children push their Message classes to their parent node. This is

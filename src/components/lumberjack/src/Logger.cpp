@@ -82,9 +82,10 @@ void Logger::getMessages(std::vector<Message*>& filledVector)
     }
 }
 
-void Logger::ranksLimit(int ranksLimit)
+void Logger::ranksLimit(int value)
 {
-    m_ranksLimit = ranksLimit;
+    m_ranksLimit = value;
+    m_communicator->ranksLimit(value);
 }
 
 int Logger::ranksLimit()

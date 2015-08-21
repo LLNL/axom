@@ -33,6 +33,16 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
 
         }
 
+		void ranksLimit(int value)
+		{
+		    m_ranksLimit = value;
+		}
+
+		int ranksLimit()
+		{
+		    return m_ranksLimit;
+		}
+
         void pushMessagesOnce(std::vector<asctoolkit::lumberjack::Message*>& messages)
         {
         	//Quiets a warning

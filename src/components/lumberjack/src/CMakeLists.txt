@@ -18,6 +18,7 @@ set(lumberjack_headers
     Communicator.hpp
     Logger.hpp
     Message.hpp
+    MPIUtility.hpp
     RootCommunicator.hpp
     TextEqualityCombiner.hpp
     Utility.hpp
@@ -29,6 +30,7 @@ set(lumberjack_headers
 set(lumberjack_sources
     Logger.cpp
     Message.cpp
+    MPIUtility.cpp
     RootCommunicator.cpp
     Utility.cpp
     )

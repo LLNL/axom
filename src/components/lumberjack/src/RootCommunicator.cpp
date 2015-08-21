@@ -19,8 +19,11 @@
 
 #include "lumberjack/RootCommunicator.hpp"
 
+#include "common/CommonTypes.hpp"
+
 #include <cstdlib>
-#include "lumberjack/Utility.hpp"
+
+#include "lumberjack/MPIUtility.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -51,40 +54,46 @@ int RootCommunicator::rank()
     return m_mpiCommRank;
 }
 
+void RootCommunicator::ranksLimit(int value)
+{
+    m_ranksLimit = value;
+}
+
+int RootCommunicator::ranksLimit()
+{
+    return m_ranksLimit;
+}
+
 void RootCommunicator::pushMessagesOnce(std::vector<Message*>& messages)
 {
-    MPI_Request mpiRequests[m_mpiCommSize];
-    MPI_Status mpiStatuses[m_mpiCommSize];
-
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank == 0){
-        char* charArray = ATK_NULLPTR;
-        int messageSize;
-        MPI_Status mpiStatus;
-        for(int i=1; i<m_mpiCommSize; ++i){
-            messageSize = -1;
-            MPI_Probe(i, 0, m_mpiComm, &mpiStatus);
-            MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
-            charArray = (char*)malloc((messageSize+1)*sizeof(char));
-            MPI_Irecv(charArray, messageSize, MPI_CHAR, i, 0, m_mpiComm, &mpiRequests[i]);
-            charArray[messageSize] = '\0';
-            std::string packedMessage(charArray);
-            free(charArray);
-            Message* mi = new Message();
-            mi->unpack(packedMessage, m_ranksLimit);
-            messages.push_back(mi);
+        Message* message;
+        int ranksDoneCount = 0;
+        while(ranksDoneCount < (m_mpiCommSize-1)){
+            message = mpiBlockingRecieveAnyMessage(m_mpiComm, m_ranksLimit);
+            if (message == ATK_NULLPTR) {
+                ++ranksDoneCount;
+            }
+            else {
+                messages.push_back(message);
+            }
         }
     }
     else {
+        char outOfMessagesChar = '0';
+        MPI_Request mpiRequest;
         for(int i=0; i<(int)messages.size(); ++i){
             std::string packedMessage = messages[i]->pack();
             MPI_Isend(const_cast<char*>(packedMessage.c_str()),
-                     packedMessage.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequests[i]);
+                     packedMessage.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequest);
             delete messages[i];
         }
+        // Send that we are done sending messages from this rank
+        MPI_Isend(&outOfMessagesChar, 1, MPI_CHAR, 0, 0, m_mpiComm, &mpiRequest);
         messages.clear();
     }
-    MPI_Waitall(m_mpiCommSize, mpiRequests, mpiStatuses);
+    MPI_Barrier(m_mpiComm);
 }
 
 void RootCommunicator::pushMessagesFully(std::vector<Message*>& messages)

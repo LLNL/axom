@@ -128,10 +128,10 @@ class Logger {
          * per Message.  After the limit has been reached, only the Message::rankCount is 
          * incremented.
          *
-         * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
+         * \param [in] value Limit on how many ranks are individually tracked per Message.
          *****************************************************************************
          */
-        void ranksLimit(int ranksLimit);
+        void ranksLimit(int value);
 
         /*!
          *****************************************************************************

@@ -24,8 +24,6 @@
 
 #include "mpi.h"
 
-#include "common/CommonTypes.hpp"
-
 #include "lumberjack/Communicator.hpp"
 #include "lumberjack/Message.hpp"
 
@@ -68,6 +66,30 @@ class RootCommunicator: public Communicator {
          *****************************************************************************
          */
         void finalize();
+
+        /*!
+         *****************************************************************************
+         * \brief Sets the rank limit.
+         *
+         * This is the limit on how many ranks generated a given message are individually tracked
+         * per Message.  After the limit has been reached, only the Message::rankCount is 
+         * incremented.
+         *
+         * \param [in] value Limit on how many ranks are individually tracked per Message.
+         *****************************************************************************
+         */
+        void ranksLimit(int value);
+
+        /*!
+         *****************************************************************************
+         * \brief Returns the rank limit.
+         *
+         * This is the limit on how many ranks generated a given message are individually tracked
+         * per Message.  After the limit has been reached, only the Message::rankCount is 
+         * incremented.
+         *****************************************************************************
+         */
+        int ranksLimit();
 
         /*!
          *****************************************************************************

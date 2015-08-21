@@ -50,6 +50,8 @@ int main(int argc, char** argv)
     }
     else {
         logger.queueMessage("This message will be combined");
+        logger.queueMessage("This message will be combined");
+        logger.queueMessage("This message will be combined");
     }
     // Push messages once through lumberjack's communicator (since we are using
     //    the root communicator. This filters messages fully.)
