@@ -31,6 +31,9 @@ namespace lumberjack {
 *****************************************************************************
 * \brief Recieves any Message sent to this rank. Returns null if terminating
 * message is sent.
+*
+* \param [in] comm The MPI Communicator.
+* \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
 *****************************************************************************
 */
 Message* mpiBlockingRecieveAnyMessage(MPI_Comm comm, int ranksLimit);
