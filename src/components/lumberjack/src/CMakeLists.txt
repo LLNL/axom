@@ -14,6 +14,7 @@ configure_file(config.hpp.in "${HEADER_INCLUDES_DIRECTORY}/lumberjack/config.hpp
 # Specify all headers
 #
 set(lumberjack_headers
+    BinaryTreeCommunicator.hpp
     Combiner.hpp
     Communicator.hpp
     Logger.hpp
@@ -28,6 +29,7 @@ set(lumberjack_headers
 # Specify all sources
 #
 set(lumberjack_sources
+    BinaryTreeCommunicator.cpp
     Logger.cpp
     Message.cpp
     MPIUtility.cpp

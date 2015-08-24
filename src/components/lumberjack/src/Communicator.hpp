@@ -23,6 +23,7 @@
 
 #include <vector>
 
+#include "lumberjack/Combiner.hpp"
 #include "lumberjack/Message.hpp"
 
 namespace asctoolkit {
@@ -98,9 +99,10 @@ class Communicator {
          * set of work.
          *
          * \param [in,out] messages All of this rank's Message classes.
+         * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        virtual void pushMessagesOnce(std::vector<Message*>& messages) = 0;
+        virtual void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners) = 0;
 
         /*!
          *****************************************************************************
@@ -110,9 +112,10 @@ class Communicator {
          * are pushed to the root node.
          *
          * \param [in,out] messages All of this rank's Message classes.
+         * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        virtual void pushMessagesFully(std::vector<Message*>& messages) = 0;
+        virtual void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners) = 0;
 
         /*!
          *****************************************************************************

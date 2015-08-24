@@ -15,6 +15,7 @@
 #include "common/CommonTypes.hpp"
 #include "lumberjack/Communicator.hpp"
 #include "lumberjack/Message.hpp"
+#include "lumberjack/Utility.hpp"
 
 #include <stdlib.h>
 #include <time.h>
@@ -43,16 +44,16 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
 		    return m_ranksLimit;
 		}
 
-        void pushMessagesOnce(std::vector<asctoolkit::lumberjack::Message*>& messages)
+        void pushMessagesOnce(std::vector<asctoolkit::lumberjack::Message*>& messages,
+        	                  std::vector<asctoolkit::lumberjack::Combiner*>& combiners)
         {
-        	//Quiets a warning
-        	messages = messages;
+        	asctoolkit::lumberjack::combineMessages(messages, combiners, m_ranksLimit);
         }
 
-        void pushMessagesFully(std::vector<asctoolkit::lumberjack::Message*>& messages)
+        void pushMessagesFully(std::vector<asctoolkit::lumberjack::Message*>& messages,
+        	                   std::vector<asctoolkit::lumberjack::Combiner*>& combiners)
         {
-        	//Quiets a warning
-        	messages = messages;
+        	pushMessagesOnce(messages, combiners);
         }
 
         bool shouldMessagesBeOutputted()
@@ -93,7 +94,7 @@ TEST(lumberjack_Logger, combineMessages01)
 
 	EXPECT_EQ((int)messages.size(), 1);
 	EXPECT_EQ(messages[0]->text(), "Should be combined.");
-	EXPECT_EQ(messages[0]->rankCount(), 6);
+	EXPECT_EQ(messages[0]->ranksCount(), 6);
 
 	logger.finalize();
 	communicator.finalize();

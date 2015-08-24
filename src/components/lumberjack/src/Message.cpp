@@ -21,6 +21,8 @@
 
 #include "lumberjack/Utility.hpp"
 
+#include <algorithm>
+
 namespace asctoolkit {
 namespace lumberjack {
 
@@ -39,9 +41,9 @@ std::vector<int> Message::ranks() const
     return m_ranks;
 }
 
-int Message::rankCount() const
+int Message::ranksCount() const
 {
-    return m_rankCount;
+    return m_ranksCount;
 }
 
 std::string Message::fileName() const
@@ -79,22 +81,34 @@ void Message::lineNumber(int newLineNumber)
 
 void Message::addRank(int newRank, int ranksLimit)
 {
+    // If ranksLimit has already been reached don't add newRank to m_ranks
     if (m_ranks.size() < (std::vector<int>::size_type)ranksLimit){
-        m_ranks.push_back(newRank);
+        // If newRank is already in m_ranks then don't add it
+        std::vector<int>::iterator iter = std::find(m_ranks.begin(), m_ranks.end(), newRank);
+        if ((m_ranks.size() == 0) || (iter == m_ranks.end())){
+            m_ranks.push_back(newRank);
+        }
     }
-    m_rankCount++;
+    // Always increment rank count
+    m_ranksCount++;
 }
 
-void Message::addRanks(const std::vector<int>& newRanks, int ranksLimit)
+void Message::addRanks(const std::vector<int>& newRanks, int ranksCount, int ranksLimit)
 {
     int newRanksSize = newRanks.size();
     for(int i=0; i<newRanksSize; ++i){
+        // If ranksLimit has already been reached don't add newRank to m_ranks
         if (m_ranks.size() >= (std::vector<int>::size_type)ranksLimit){
             break;
         }
-        m_ranks.push_back(newRanks[i]);
+        // If newRank is already in m_ranks then don't add it
+        std::vector<int>::iterator iter = std::find(m_ranks.begin(), m_ranks.end(), newRanks[i]);
+        if ((m_ranks.size() == 0) || (iter == m_ranks.end())){
+            m_ranks.push_back(newRanks[i]);
+        }
     }
-    m_rankCount += newRanksSize;
+    // Always increment ranks count
+    m_ranksCount += ranksCount;
 }
 
 const char memberDelimiter = '*';
@@ -110,7 +124,7 @@ std::string Message::pack()
             packedMessage += rankDelimiter;
         }
     }
-    packedMessage += memberDelimiter + intToString(m_rankCount);
+    packedMessage += memberDelimiter + intToString(m_ranksCount);
     packedMessage += memberDelimiter + m_fileName + memberDelimiter;
 
     if (m_lineNumber != -1){
@@ -151,7 +165,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
     currString = "";
     for (; i<messageLength; ++i) {
         if (packedMessage[i] == memberDelimiter) {
-            m_rankCount = stringToInt(currString);
+            m_ranksCount = stringToInt(currString);
             ++i;
             break;
         }

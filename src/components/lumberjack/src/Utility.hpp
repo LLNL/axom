@@ -22,8 +22,21 @@
 
 #include <string>
 
+#include "lumberjack/Combiner.hpp"
+
 namespace asctoolkit {
 namespace lumberjack {
+
+/*!
+ *****************************************************************************
+ * \brief All Message classes are combined by the given Combiner classes.
+ *
+ * \param [in,out] messages All of this rank's Message classes.
+ * \param [in,out] combiners All of currently active Combiner classes.
+ * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
+ *****************************************************************************
+ */
+void combineMessages(std::vector<Message*>& messages, std::vector<Combiner*>& combiners, int ranksLimit);
 
 /*!
 *****************************************************************************

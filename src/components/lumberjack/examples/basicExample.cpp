@@ -16,7 +16,7 @@
  */
 
 #include "lumberjack/Logger.hpp"
-#include "lumberjack/RootCommunicator.hpp"
+#include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Message.hpp"
 
 #include <mpi.h>
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     int ranksLimit = commSize/2;
 
     // Initialize which lumberjack communicator we want
-    asctoolkit::lumberjack::RootCommunicator communicator;
+    asctoolkit::lumberjack::BinaryTreeCommunicator communicator;
     communicator.initialize(MPI_COMM_WORLD, ranksLimit);
 
     // Initialize lumberjack logger
@@ -53,15 +53,14 @@ int main(int argc, char** argv)
         logger.queueMessage("This message will be combined");
         logger.queueMessage("This message will be combined");
     }
-    // Push messages once through lumberjack's communicator (since we are using
-    //    the root communicator. This filters messages fully.)
-    logger.pushMessagesOnce();
+    // Push messages fully through lumberjack's communicator
+    logger.pushMessagesFully();
 
     // Get messages back out of lumberjack since they have been pushed.
     std::vector<asctoolkit::lumberjack::Message*> messages;
     logger.getMessages(messages);
     for(int i=0; i<(int)(messages.size()); ++i){
-        std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->rankCount() <<
+        std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
                      " '" << messages[i]->text() << "'" << std::endl;
         delete messages[i];
     }

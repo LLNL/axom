@@ -106,54 +106,12 @@ void Logger::queueMessage(const std::string& text, const std::string& fileName, 
 
 void Logger::pushMessagesOnce()
 {
-    m_communicator->pushMessagesOnce(m_messages);
-    combineMessages();
+    m_communicator->pushMessagesOnce(m_messages, m_combiners);
 }
 
 void Logger::pushMessagesFully()
 {
-    m_communicator->pushMessagesFully(m_messages);
-    combineMessages();
-}
-
-void Logger::combineMessages()
-{
-    int messagesSize = (int)m_messages.size();
-    if (messagesSize < 2){
-        return;
-    }
-
-    std::vector<Message*> finalMessages;
-    std::vector<int> indexesToBeDeleted;
-    int combinersSize = (int)m_combiners.size();
-    bool combinedMessage = false;
-    finalMessages.push_back(m_messages[0]);
-    for (int allIndex=1; allIndex<messagesSize; ++allIndex){
-        combinedMessage = false;
-        for (int finalIndex=0; finalIndex<(int)finalMessages.size(); ++finalIndex){
-            for (int combinerIndex=0; combinerIndex<combinersSize; ++combinerIndex){
-                if (m_combiners[combinerIndex]->shouldMessagesBeCombined(*finalMessages[finalIndex],
-                                                                             *m_messages[allIndex])){
-                    m_combiners[combinerIndex]->combine(*finalMessages[finalIndex],
-                                                        *m_messages[allIndex], m_ranksLimit);
-                    indexesToBeDeleted.push_back(allIndex);
-                    combinedMessage = true;
-                    break;
-                }
-            }
-            if (combinedMessage){
-                break;
-            }
-        }
-        if (!combinedMessage){
-            finalMessages.push_back(m_messages[allIndex]);
-        }
-    }
-
-    for (int i=0; i<(int)indexesToBeDeleted.size(); ++i){
-        delete m_messages[indexesToBeDeleted[i]];
-    }
-    m_messages.swap(finalMessages);
+    m_communicator->pushMessagesFully(m_messages, m_combiners);
 }
 
 } // end namespace lumberjack

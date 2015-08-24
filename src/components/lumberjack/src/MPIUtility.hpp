@@ -38,6 +38,19 @@ namespace lumberjack {
 */
 Message* mpiBlockingRecieveAnyMessage(MPI_Comm comm, int ranksLimit);
 
+/*!
+*****************************************************************************
+* \brief Sends all Message sent to the given rank.
+*
+* Clears and deletes all Message classes when done.
+*
+* \param [in] comm The MPI Communicator.
+* \param [in] destinationRank Where the Message classes is being sent.
+* \param [in,out] messages All of the Message classes to be sent.
+*****************************************************************************
+*/
+void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, std::vector<Message*>& messages);
+
 } // end namespace lumberjack
 } // end namespace asctoolkit
 

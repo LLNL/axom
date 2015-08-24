@@ -19,40 +19,103 @@
 
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 
+#include "common/CommonTypes.hpp"
+
+#include <cstdlib>
+#include <cmath>
+
+#include "lumberjack/MPIUtility.hpp"
+#include "lumberjack/Utility.hpp"
+
 namespace asctoolkit {
 namespace lumberjack {
 
-void BinaryTreeCommunicator::setCommunicator(MPI_Comm comm)
+void BinaryTreeCommunicator::initialize(MPI_Comm comm, int ranksLimit)
+{
+    m_mpiComm = comm;
+    MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
+    MPI_Comm_size(m_mpiComm, &m_mpiCommSize);
+    m_ranksLimit = ranksLimit;
+
+    // Calculate tree information about this rank
+    m_treeHeight = log2(m_mpiCommSize);
+    m_parentRank = floor((m_mpiCommRank-1)/2.0);
+    m_leftChildRank = (m_mpiCommRank*2)+1;
+    m_rightChildRank = (m_mpiCommRank*2)+2;
+    m_childCount = 0;
+    if (m_leftChildRank < m_mpiCommSize){
+        ++m_childCount;
+    }
+    else {
+        m_leftChildRank = -1;
+    }
+    if (m_rightChildRank < m_mpiCommSize){
+        ++m_childCount;
+    }
+    else {
+        m_rightChildRank = -1;
+    }
+
+}
+
+void BinaryTreeCommunicator::finalize()
 {
 
 }
 
-void BinaryTreeCommunicator::pushMessagesOnce()
+bool BinaryTreeCommunicator::shouldMessagesBeOutputted()
 {
-
+    if (m_mpiCommRank == 0){
+        return true;
+    }
+    return false;
 }
 
-void BinaryTreeCommunicator::pushMessagesFully()
+int BinaryTreeCommunicator::rank()
 {
-
+    return m_mpiCommRank;
 }
 
-std::vector<MessageInfos> BinaryTreeCommunicator::getMessages()
+void BinaryTreeCommunicator::ranksLimit(int value)
 {
-
+    m_ranksLimit = value;
 }
 
-void BinaryTreeCommunicator::queueMessage(const std::string& message,
-                                    const std::string& fileName,
-                                    const int lineNumber)
+int BinaryTreeCommunicator::ranksLimit()
 {
-    MessageInfo mi(message, m_commRank, fileName, lineNumber);
-    m_messages.append(mi);
+    return m_ranksLimit;
 }
 
-void BinaryTreeCommunicator::queueMessage(const std::string& message)
+void BinaryTreeCommunicator::pushMessagesOnce(std::vector<Message*>& messages,
+                                              std::vector<Combiner*>& combiners)
 {
-    queueMessage(message, "", -1);
+    MPI_Barrier(m_mpiComm);
+    if (m_mpiCommRank != 0){
+        mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, messages);
+    }
+
+    Message* message;
+    int childrenDoneCount = 0;
+    while(childrenDoneCount < m_childCount){
+        message = mpiBlockingRecieveAnyMessage(m_mpiComm, m_ranksLimit);
+        if (message == ATK_NULLPTR) {
+            ++childrenDoneCount;
+        }
+        else {
+            messages.push_back(message);
+        }
+    }
+
+    combineMessages(messages, combiners, m_ranksLimit);
+    MPI_Barrier(m_mpiComm);
+}
+
+void BinaryTreeCommunicator::pushMessagesFully(std::vector<Message*>& messages,
+                                               std::vector<Combiner*>& combiners)
+{
+    for (int i=0; i<m_treeHeight; ++i){
+        pushMessagesOnce(messages, combiners);
+    }
 }
 
 } // end namespace lumberjack

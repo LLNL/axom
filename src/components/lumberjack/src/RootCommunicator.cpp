@@ -24,6 +24,7 @@
 #include <cstdlib>
 
 #include "lumberjack/MPIUtility.hpp"
+#include "lumberjack/Utility.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -64,7 +65,8 @@ int RootCommunicator::ranksLimit()
     return m_ranksLimit;
 }
 
-void RootCommunicator::pushMessagesOnce(std::vector<Message*>& messages)
+void RootCommunicator::pushMessagesOnce(std::vector<Message*>& messages,
+                                        std::vector<Combiner*>& combiners)
 {
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank == 0){
@@ -79,26 +81,18 @@ void RootCommunicator::pushMessagesOnce(std::vector<Message*>& messages)
                 messages.push_back(message);
             }
         }
+        combineMessages(messages, combiners, m_ranksLimit);
     }
     else {
-        char outOfMessagesChar = '0';
-        MPI_Request mpiRequest;
-        for(int i=0; i<(int)messages.size(); ++i){
-            std::string packedMessage = messages[i]->pack();
-            MPI_Isend(const_cast<char*>(packedMessage.c_str()),
-                     packedMessage.size(), MPI_CHAR, 0, 0, m_mpiComm, &mpiRequest);
-            delete messages[i];
-        }
-        // Send that we are done sending messages from this rank
-        MPI_Isend(&outOfMessagesChar, 1, MPI_CHAR, 0, 0, m_mpiComm, &mpiRequest);
-        messages.clear();
+        mpiNonBlockingSendMessages(m_mpiComm, 0, messages);
     }
     MPI_Barrier(m_mpiComm);
 }
 
-void RootCommunicator::pushMessagesFully(std::vector<Message*>& messages)
+void RootCommunicator::pushMessagesFully(std::vector<Message*>& messages,
+                                         std::vector<Combiner*>& combiners)
 {
-    pushMessagesOnce(messages);
+    pushMessagesOnce(messages, combiners);
 }
 
 } // end namespace lumberjack

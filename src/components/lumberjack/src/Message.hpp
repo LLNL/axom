@@ -48,7 +48,7 @@ class Message {
          */
         Message()
         : m_text("")
-        , m_rankCount(0)
+        , m_ranksCount(0)
         , m_fileName("")
         , m_lineNumber(0) {}
 
@@ -66,7 +66,7 @@ class Message {
         Message(const std::string& text, int rank,
                     const std::string& fileName, int lineNumber)
         : m_text(text)
-        , m_rankCount(1)
+        , m_ranksCount(1)
         , m_fileName(fileName)
         , m_lineNumber(lineNumber)
         {
@@ -80,21 +80,21 @@ class Message {
          *
          * \param [in] text Actual text of the Message.
          * \param [in] ranks The rank where the Message originated.
-         * \param [in] rankCount Total amount of ranks where this Message has originated from.
+         * \param [in] ranksCount Total amount of ranks where this Message has originated from.
          * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          * \param [in] fileName The file name where the Message originated.
          * \param [in] lineNumber The line number where the Message originated.
          *****************************************************************************
          */
         Message(const std::string& text, const std::vector<int>& ranks,
-                    int rankCount, int ranksLimit,
+                    int ranksCount, int ranksLimit,
                     const std::string& fileName, int lineNumber)
         : m_text(text)
+        , m_ranksCount(0)
         , m_fileName(fileName)
         , m_lineNumber(lineNumber)
         {
-            addRanks(ranks, ranksLimit);
-            m_rankCount = rankCount;
+            addRanks(ranks, ranksCount, ranksLimit);
         }
 
         // Getters
@@ -114,10 +114,10 @@ class Message {
 
         /*!
          *****************************************************************************
-         * \brief Returns total rank count of where this Message originated.
+         * \brief Returns total count of ranks where this Message originated.
          *****************************************************************************
          */
-        int rankCount() const;
+        int ranksCount() const;
 
         /*!
          *****************************************************************************
@@ -183,13 +183,15 @@ class Message {
 
         /*!
          *****************************************************************************
-         * \brief Adds multiple ranks to this Message.
+         * \brief Adds multiple ranks to this Message.  ranksCount is used to increment since
+         *  duplicates are removed from Message::ranks.
          *
          * \param [in] newRanks The new ranks to be added.
+         * \param [in] ranksCount Count to add to Message::ranksCount
          * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
          *****************************************************************************
          */
-        void addRanks(const std::vector<int>& newRanks, int ranksLimit);
+        void addRanks(const std::vector<int>& newRanks, int ranksCount, int ranksLimit);
 
         // utilities
 
@@ -219,7 +221,7 @@ class Message {
     private:
         std::string m_text;
         std::vector<int> m_ranks;
-        int m_rankCount;
+        int m_ranksCount;
         std::string m_fileName;
         int m_lineNumber;
 };

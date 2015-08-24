@@ -99,9 +99,10 @@ class RootCommunicator: public Communicator {
          * RootCommunicator::pushMessagesFully for this Communicator.
          *
          * \param [in,out] messages All of this rank's Message classes.
+         * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        void pushMessagesOnce(std::vector<Message*>& messages);
+        void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
 
         /*!
          *****************************************************************************
@@ -111,9 +112,10 @@ class RootCommunicator: public Communicator {
          * RootCommunicator::pushMessagesOnce for this Communicator.
          *
          * \param [in,out] messages All of this rank's Message classes.
+         * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        void pushMessagesFully(std::vector<Message*>& messages);
+        void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
 
         /*!
          *****************************************************************************

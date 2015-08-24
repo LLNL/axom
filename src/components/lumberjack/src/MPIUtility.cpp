@@ -55,5 +55,21 @@ Message* mpiBlockingRecieveAnyMessage(MPI_Comm comm, int ranksLimit)
     return message;
 }
 
+void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, std::vector<Message*>& messages)
+{
+    char outOfMessagesChar = '0';
+    MPI_Request mpiRequest;
+    int messagesSize = (int)messages.size();
+    for(int i=0; i<messagesSize; ++i){
+        std::string packedMessage = messages[i]->pack();
+        MPI_Isend(const_cast<char*>(packedMessage.c_str()),
+                 packedMessage.size(), MPI_CHAR, destinationRank, 0, comm, &mpiRequest);
+        delete messages[i];
+    }
+    // Send that we are done sending messages from this rank
+    MPI_Isend(&outOfMessagesChar, 1, MPI_CHAR, destinationRank, 0, comm, &mpiRequest);
+    messages.clear();
+}
+
 } // end namespace lumberjack
 } // end namespace asctoolkit

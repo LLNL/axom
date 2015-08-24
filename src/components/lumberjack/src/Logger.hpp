@@ -195,15 +195,6 @@ class Logger {
          */
         void pushMessagesFully();
     private:
-        /*!
-         *****************************************************************************
-         * \brief This combines all currently held Message classes.
-         *
-         * All Message classes are combined by the currently held Combiner classes.
-         *****************************************************************************
-         */
-        void combineMessages();
-
         Communicator* m_communicator;
         int m_ranksLimit;
         std::vector<Combiner*> m_combiners;

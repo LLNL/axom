@@ -92,7 +92,7 @@ class TextEqualityCombiner: public Combiner {
          */
         void combine(Message& combined, const Message& combinee, const int ranksLimit)
         {
-            combined.addRanks(combinee.ranks(), ranksLimit);
+            combined.addRanks(combinee.ranks(), combinee.ranksCount(), ranksLimit);
         }
     private:
         std::string m_id;
