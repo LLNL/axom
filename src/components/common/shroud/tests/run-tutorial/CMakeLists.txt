@@ -4,5 +4,6 @@
 
 add_executable( shroud-run-tutorial
     main.f
+    tutorial.cpp
 )
 target_link_libraries(shroud-run-tutorial shroudrt)
