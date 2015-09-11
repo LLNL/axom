@@ -43,15 +43,17 @@ copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
 # make the library
 #
 make_library( LIBRARY_NAME
-                   sidre
+                  sidre
               LIBRARY_SOURCES
-                "${sidre_sources}"
-                "${sidre_headers}"
+                  "${sidre_sources}"
+                  "${sidre_headers}"
               DEPENDS_ON
-                common
-                conduit
-                slic
+                  ${capi_depends_on}
+                  common
+                  conduit
+                  slic
              )
+#target_link_libraries(sidre ${capi_depends_on})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 

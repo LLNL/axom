@@ -36,7 +36,6 @@ from __future__ import print_function
 
 import util
 from util import wformat, append_format
-import fwrap_util
 
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
@@ -224,7 +223,6 @@ class Wrapf(util.WrapperMixin):
             self.write_module(self.tree)
 
         self.write_c_helper()
-        fwrap_util.write_runtime(self.tree, self.config)
 
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
