@@ -18,10 +18,19 @@ double Function5(double arg1 = 3.13, int arg2 = 5);
 void Function6(const std::string& name);
 void Function6(int indx);
 
+// specialize for int and double in tutorial.cpp
 template<typename ArgType>
 void Function7(ArgType arg);
 
+// specialize for int and double in tutorial.cpp
 template<typename RetType>
 RetType Function8();
 
 void Function9(double arg);
+
+class Class1
+{
+public:
+    void Method1();
+};
+

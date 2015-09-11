@@ -52,20 +52,37 @@ void Function6(int indx)
     return;
 }
 
-template<typename ArgType>
-void Function7(ArgType arg)
+template<>
+void Function7<int>(int arg)
 {
-    return;
+    rv_int = arg;
 }
 
-template<typename RetType>
-RetType Function8()
+template<>
+void Function7<double>(double arg)
 {
-    return;
+    rv_double = arg;
+}
+
+template<>
+int Function8<int>()
+{
+    return rv_int;
+}
+
+template<>
+double Function8<double>()
+{
+    return rv_double;
 }
 
 void Function9(double arg)
 {
     rv_double = arg;
+    return;
+}
+
+void Class1::Method1()
+{
     return;
 }

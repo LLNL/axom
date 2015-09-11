@@ -53,6 +53,7 @@ make_library( LIBRARY_NAME
                   conduit
                   slic
              )
+# XXX - would like to have shroudrt loaded automatically with sidre
 #target_link_libraries(sidre ${capi_depends_on})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
