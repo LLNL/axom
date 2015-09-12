@@ -20,7 +20,7 @@ C function void Function7(ArgType arg)
 C function RetType Function8()
 C function RetType Function8()
 C function void Function9(double arg)
-C function const std::string& LastFunctionCalled()
+C function const std::string& LastFunctionCalled() +pure
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 class Class1
@@ -44,7 +44,7 @@ C-interface, Fortran function RetType Function8()
 C-interface function void Function9(double arg)
 Fortran function void Function9(double arg)
 Fortran function void Function9(double arg)
-C-interface, Fortran function const std::string& LastFunctionCalled()
+C-interface, Fortran function const std::string& LastFunctionCalled() +pure
 Close wrapftutorial.f
 class Class1
 Python method Class1 *new()  +constructor
@@ -59,7 +59,7 @@ Python function double Function5(double arg1 = 3.13, int arg2 = 5)
 Python function void Function6(const std::string& name)
 Python function void Function6(int indx)
 Python function void Function9(double arg)
-Python function const std::string& LastFunctionCalled()
+Python function const std::string& LastFunctionCalled() +pure
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp
 Close pyTutorialhelper.cpp

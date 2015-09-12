@@ -54,9 +54,7 @@ contains
   end subroutine assert_true
 
   subroutine summary
-    character(30) last_called
-    call last_function_called(last_called)
-    print *, trim(last_called), " -- ", status
+    print *, last_function_called(), " -- ", status
   end subroutine summary
 
 end program

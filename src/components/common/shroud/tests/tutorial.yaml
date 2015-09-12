@@ -44,9 +44,7 @@ functions:
 ##################################################
 
 # Used with testing
-- decl: const std::string& LastFunctionCalled()
-  options:
-    F_string_result_as_arg: output
+- decl: const std::string& LastFunctionCalled() +pure
 
 ##################################################
 

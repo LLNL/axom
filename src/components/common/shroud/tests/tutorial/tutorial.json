@@ -827,8 +827,10 @@
         }, 
         {
             "args": [], 
-            "attrs": {}, 
-            "decl": "const std::string& LastFunctionCalled()", 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const std::string& LastFunctionCalled() +pure", 
             "fmt": {
                 "C_name": "TUT_last_function_called", 
                 "F_C_name": "tut_last_function_called", 
@@ -840,9 +842,7 @@
                 "underscore_name": "last_function_called"
             }, 
             "function_index": 13, 
-            "options": {
-                "F_string_result_as_arg": "output"
-            }, 
+            "options": {}, 
             "result": {
                 "attrs": {
                     "const": true, 
