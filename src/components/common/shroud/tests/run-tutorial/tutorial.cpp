@@ -103,7 +103,7 @@ void Function9(double arg)
 
 void Class1::Method1()
 {
-    last_function_called = __func__;
+    last_function_called = "Class1::Method1";
     return;
 }
 
