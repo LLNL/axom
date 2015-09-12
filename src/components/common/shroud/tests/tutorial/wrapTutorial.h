@@ -47,6 +47,8 @@ double TUT_function8_double();
 
 void TUT_function9(double arg);
 
+const char * TUT_last_function_called();
+
 #ifdef __cplusplus
 }
 #endif

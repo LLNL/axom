@@ -232,6 +232,22 @@ PY_function9(
     Py_RETURN_NONE;
 // splicer end function.function9
 }
+
+static char PY_last_function_called__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_last_function_called(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.last_function_called
+    const std::string & rv = LastFunctionCalled();
+    return PyString_FromString(rv.c_str());
+// splicer end function.last_function_called
+}
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
@@ -242,6 +258,7 @@ static PyMethodDef PY_methods[] = {
 {"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
 {"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
+{"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

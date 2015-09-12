@@ -177,6 +177,13 @@ module tutorial_mod
             implicit none
             real(C_DOUBLE), value, intent(IN) :: arg
         end subroutine tut_function9
+        
+        function tut_last_function_called() result(rv) &
+                bind(C, name="TUT_last_function_called")
+            use iso_c_binding
+            implicit none
+            type(C_PTR) rv
+        end function tut_last_function_called
     end interface
     
     interface function6
@@ -380,6 +387,17 @@ contains
         call tut_function9(arg)
         ! splicer end function9_double
     end subroutine function9_double
+    
+    subroutine last_function_called(output)
+        use iso_c_binding
+        implicit none
+        character(*), intent(OUT) :: output
+        type(C_PTR) :: rv
+        ! splicer begin last_function_called
+        rv = tut_last_function_called()
+        call FccCopyPtr(output, len(output), rv)
+        ! splicer end last_function_called
+    end subroutine last_function_called
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

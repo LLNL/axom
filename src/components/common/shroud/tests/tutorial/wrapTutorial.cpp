@@ -135,6 +135,14 @@ return;
 // splicer end function.function9
 }
 
+const char * TUT_last_function_called()
+{
+// splicer begin function.last_function_called
+const std::string & rv = LastFunctionCalled();
+return rv.c_str();
+// splicer end function.last_function_called
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

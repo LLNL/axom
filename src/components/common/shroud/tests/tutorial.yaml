@@ -41,9 +41,18 @@ functions:
      -  float
      -  double
 
+##################################################
+
+# Used with testing
+- decl: const std::string& LastFunctionCalled()
+  options:
+    F_string_result_as_arg: output
+
+##################################################
 
 classes:
 - name: Class1
   methods:
   - decl: Class1 *new()  +constructor
   - decl: void Method1()
+

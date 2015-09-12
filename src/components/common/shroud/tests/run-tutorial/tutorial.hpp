@@ -28,6 +28,8 @@ RetType Function8();
 
 void Function9(double arg);
 
+const std::string& LastFunctionCalled();
+
 class Class1
 {
 public:

@@ -233,7 +233,7 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
-                "PTR_F_C_index": 13, 
+                "PTR_F_C_index": 14, 
                 "PY_name_impl": "PY_function4a", 
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
@@ -283,7 +283,7 @@
                 "F_C_name": "tut_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 13, 
+            "function_index": 14, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -330,7 +330,7 @@
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 
                 "F_name_method": "function4b", 
-                "PTR_F_C_index": 14, 
+                "PTR_F_C_index": 15, 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
@@ -380,7 +380,7 @@
                 "F_C_name": "tut_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 14, 
+            "function_index": 15, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -458,7 +458,7 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
-                "PTR_F_C_index": 15, 
+                "PTR_F_C_index": 16, 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_suffix": "_from_name", 
                 "method_name": "Function6", 
@@ -494,7 +494,7 @@
                 "F_C_name": "tut_function6_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 15, 
+            "function_index": 16, 
             "function_suffix": "_from_name", 
             "generated": "string_to_buffer_and_len", 
             "options": {
@@ -595,7 +595,7 @@
                 "F_name_method": "function7_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 16, 
+            "function_index": 17, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -630,7 +630,7 @@
                 "F_name_method": "function7_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 17, 
+            "function_index": 18, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -683,7 +683,7 @@
                 "F_name_method": "function8_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 18, 
+            "function_index": 19, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -710,7 +710,7 @@
                 "F_name_method": "function8_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 19, 
+            "function_index": 20, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -779,7 +779,7 @@
                 "PTR_F_C_index": 12, 
                 "function_suffix": "_float"
             }, 
-            "function_index": 20, 
+            "function_index": 21, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -812,7 +812,7 @@
                 "PTR_F_C_index": 12, 
                 "function_suffix": "_double"
             }, 
-            "function_index": 21, 
+            "function_index": 22, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -823,6 +823,33 @@
                 "attrs": {}, 
                 "name": "Function9", 
                 "type": "void"
+            }
+        }, 
+        {
+            "args": [], 
+            "attrs": {}, 
+            "decl": "const std::string& LastFunctionCalled()", 
+            "fmt": {
+                "C_name": "TUT_last_function_called", 
+                "F_C_name": "tut_last_function_called", 
+                "F_name_generic": "last_function_called", 
+                "F_name_impl": "last_function_called", 
+                "F_name_method": "last_function_called", 
+                "PY_name_impl": "PY_last_function_called", 
+                "method_name": "LastFunctionCalled", 
+                "underscore_name": "last_function_called"
+            }, 
+            "function_index": 13, 
+            "options": {
+                "F_string_result_as_arg": "output"
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "LastFunctionCalled", 
+                "type": "std::string"
             }
         }
     ], 
