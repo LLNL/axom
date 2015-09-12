@@ -6,8 +6,9 @@ program tester
   use tutorial_mod
   implicit none
 
-  real(C_DOUBLE) rv_double
   logical rv_logical
+  integer rv_integer
+  real(C_DOUBLE) rv_double
   character(30) rv_char
 
   character(4)  status
@@ -31,9 +32,24 @@ program tester
   call assert_real(function5(arg2=6), 9.13d0)
 
   call function6("name")
-  call assert_true(.true.)
-
+  call assert_true(last_function_called() == "Function6(string)")
   call function6(1)
+  call assert_true(last_function_called() == "Function6(int)")
+
+  call function7(1)
+  call assert_true(last_function_called() == "Function7<int>")
+  call function7(10.d0)
+  call assert_true(last_function_called() == "Function7<double>")
+
+  ! return values set by calls to function7
+  rv_integer = function8_int()
+  call assert_true(rv_integer == 1)
+  rv_double = function8_double()
+  call assert_true(rv_double == 10.d0)
+
+  call function9(1.0)
+  call assert_true(.true.)
+  call function9(1.d0)
   call assert_true(.true.)
 
 contains

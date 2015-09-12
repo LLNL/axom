@@ -54,7 +54,7 @@ double Function5(double arg1, int arg2)
 void Function6(const std::string& name)
 {
     last_function_called = "Function6(string)";
-    rv_str = name;  // avoid unused-parameter
+    rv_str = name;
     return;
 }
 void Function6(int indx)
