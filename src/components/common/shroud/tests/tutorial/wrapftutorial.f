@@ -16,6 +16,7 @@ module tutorial_mod
         ! splicer begin class.Class1.component_part
         ! splicer end class.Class1.component_part
     contains
+        procedure :: delete => class1_delete
         procedure :: method1 => class1_method1
         ! splicer begin class.Class1.type_bound_procedure_part
         ! splicer end class.Class1.type_bound_procedure_part
@@ -38,6 +39,13 @@ module tutorial_mod
             implicit none
             type(C_PTR) :: rv
         end function tut_class1_new
+        
+        subroutine tut_class1_delete(self) &
+                bind(C, name="TUT_class1_delete")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine tut_class1_delete
         
         subroutine tut_class1_method1(self) &
                 bind(C, name="TUT_class1_method1")
@@ -211,6 +219,16 @@ contains
         rv%voidptr = tut_class1_new()
         ! splicer end class.Class1.method.new
     end function class1_new
+    
+    subroutine class1_delete(obj)
+        use iso_c_binding
+        implicit none
+        class(class1) :: obj
+        ! splicer begin class.Class1.method.delete
+        call tut_class1_delete(obj%voidptr)
+        obj%voidptr = C_NULL_PTR
+        ! splicer end class.Class1.method.delete
+    end subroutine class1_delete
     
     subroutine class1_method1(obj)
         use iso_c_binding

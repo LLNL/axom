@@ -549,12 +549,13 @@ To wrap the class add the lines to the YAML file::
     classes:
     - name: Class1
       methods:
-      - decl: Class1 *new() +constructor
+      - decl: Class1 *new()  +constructor
+      - decl: void delete()  +destructor
       - decl: void Method1()
 
 The method ``new`` has the attribute **+constructor** to mark it as a constructor.
 It must be after the argument list to make the attribute apply to the function as a whole
-instead of just the result.
+instead of just the result.  Likewise, ``delete`` is marked as a destructor.
 
 The file ``wrapClass1.h`` will have an opaque struct for the class.  This is to allows some
 measure of type safety over using ``void`` pointers for every instance::

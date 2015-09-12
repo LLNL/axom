@@ -9,6 +9,23 @@ namespace tutorial {
 // splicer begin class.Class1.impl.additional_methods
 // splicer end class.Class1.impl.additional_methods
 
+static char PY_class1_delete__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_class1_delete(
+  PY_Class1 *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.Class1.method.delete
+    delete self->BBB;
+    self->BBB = NULL;
+    Py_RETURN_NONE;
+// splicer end class.Class1.method.delete
+}
+
 static char PY_class1_method1__doc__[] =
 "documentation"
 ;
@@ -27,6 +44,7 @@ PY_class1_method1(
 // splicer begin class.Class1.impl.after_methods
 // splicer end class.Class1.impl.after_methods
 static PyMethodDef PY_Class1_methods[] = {
+{"delete", (PyCFunction)PY_class1_delete, METH_NOARGS, PY_class1_delete__doc__},
 {"Method1", (PyCFunction)PY_class1_method1, METH_NOARGS, PY_class1_method1__doc__},
 // splicer begin class.Class1.PyMethodDef
 // splicer end class.Class1.PyMethodDef

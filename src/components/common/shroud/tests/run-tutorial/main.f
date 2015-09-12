@@ -64,9 +64,13 @@ contains
     type(class1) obj
 
     obj = class1_new()
+    call assert_true(c_associated(obj%voidptr), "class1_new")
 
     call obj%method1()
     call assert_true(.true.)
+
+    call obj%delete()
+    call assert_true(.not. c_associated(obj%voidptr), "class1_delete")
   end subroutine test_class1
 
   subroutine assert_real(a, b)
@@ -74,18 +78,20 @@ contains
     call assert_true((abs(a - b) < .00001))
   end subroutine assert_real
 
-  subroutine assert_true(expr)
+  subroutine assert_true(expr, msg)
     logical expr
+    character(*), optional :: msg
     if (expr) then
        status = "pass"
     else
        status = "fail"
     endif
-    call summary
-  end subroutine assert_true
 
-  subroutine summary
-    print *, last_function_called(), " -- ", status
-  end subroutine summary
+    if (present(msg)) then
+       print *, msg, " -- ", status
+    else
+       print *, last_function_called(), " -- ", status
+    endif
+  end subroutine assert_true
 
 end program

@@ -19,6 +19,8 @@ typedef struct s_TUT_class1 TUT_class1;
 
 TUT_class1 * TUT_class1_new();
 
+void TUT_class1_delete(TUT_class1 * self);
+
 void TUT_class1_method1(TUT_class1 * self);
 
 #ifdef __cplusplus
