@@ -193,6 +193,10 @@ class Wrapf(util.WrapperMixin):
             self.tree['F_module_dependencies'] = []
             for node in self.tree['functions']:
                 self.wrap_function(None, node)
+            self.c_interface.append('')
+            self._create_splicer('additional_interfaces', self.c_interface)
+            self.impl.append('')
+            self._create_splicer('additional_functions', self.impl)
 
             # Look for generics
             # splicer to extend generic

@@ -192,6 +192,9 @@ module tutorial_mod
             implicit none
             type(C_PTR) rv
         end function tut_last_function_called
+        
+        ! splicer begin additional_interfaces
+        ! splicer end additional_interfaces
     end interface
     
     interface function6
@@ -414,6 +417,9 @@ contains
         rv = fstr(tut_last_function_called())
         ! splicer end last_function_called
     end function last_function_called
+    
+    ! splicer begin additional_functions
+    ! splicer end additional_functions
     
     function class1_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated

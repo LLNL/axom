@@ -1001,6 +1001,9 @@ module sidre_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
         end function atk_is_name_valid
+        
+        ! splicer begin additional_interfaces
+        ! splicer end additional_interfaces
     end interface
 
 contains
@@ -2086,6 +2089,9 @@ contains
         rv = name .ne. " "
         ! splicer end is_name_valid
     end function is_name_valid
+    
+    ! splicer begin additional_functions
+    ! splicer end additional_functions
     
     function datastore_eq(a,b) result (rv)
         use iso_c_binding, only: c_associated
