@@ -888,6 +888,11 @@
         "wrap_python": true
     }, 
     "patterns": [], 
+    "splicer": {
+        "f": [
+            "ftutorialsplicer.f"
+        ]
+    }, 
     "types": {
         "Class1": {
             "PY_PyObject": "PY_Class1", 

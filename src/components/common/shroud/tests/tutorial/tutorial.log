@@ -1,4 +1,5 @@
 Read yaml tutorial.yaml
+Read splicer ftutorialsplicer.f
 class Class1
 C method Class1 *new()  +constructor
 C method void delete()  +destructor
