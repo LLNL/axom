@@ -16,5 +16,5 @@ add_executable( shroud-run-tutorial
     ../tutorial/wrapTutorial.cpp
     ../tutorial/wrapClass1.cpp
 )
-target_link_libraries(shroud-run-tutorial shroudrt)
+target_link_libraries(shroud-run-tutorial shroudrt chasm)
 set_target_properties(shroud-run-tutorial PROPERTIES LINKER_LANGUAGE Fortran)
