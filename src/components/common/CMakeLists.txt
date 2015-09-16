@@ -8,6 +8,7 @@ project(common)
 # Add the common sources
 ################################
 add_subdirectory(src)
+add_subdirectory(chasm)
 add_subdirectory(shroud)
 
 ################################
