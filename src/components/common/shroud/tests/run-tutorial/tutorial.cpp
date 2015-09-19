@@ -7,9 +7,9 @@
 static std::string last_function_called;
 
 // These variables exist to avoid warning errors
-static std::string rv_str;
-static int rv_int;
-static double rv_double;
+static std::string global_str;
+static int global_int;
+static double global_double;
 
 
 
@@ -35,14 +35,14 @@ bool Function3(bool arg)
 const std::string& Function4a(const std::string& arg1, const std::string& arg2)
 {
     last_function_called = "Function4a";
-    rv_str = arg1 + arg2;
-    return rv_str;
+    global_str = arg1 + arg2;
+    return global_str;
 }
 const std::string& Function4b(const std::string& arg1, const std::string& arg2)
 {
     last_function_called = "Function4b";
-    rv_str = arg1 + arg2;
-    return rv_str;
+    global_str = arg1 + arg2;
+    return global_str;
 }
 
 double Function5(double arg1, int arg2)
@@ -54,13 +54,13 @@ double Function5(double arg1, int arg2)
 void Function6(const std::string& name)
 {
     last_function_called = "Function6(string)";
-    rv_str = name;
+    global_str = name;
     return;
 }
 void Function6(int indx)
 {
     last_function_called = "Function6(int)";
-    rv_int = indx;
+    global_int = indx;
     return;
 }
 
@@ -68,34 +68,34 @@ template<>
 void Function7<int>(int arg)
 {
     last_function_called = "Function7<int>";
-    rv_int = arg;
+    global_int = arg;
 }
 
 template<>
 void Function7<double>(double arg)
 {
     last_function_called = "Function7<double>";
-    rv_double = arg;
+    global_double = arg;
 }
 
 template<>
 int Function8<int>()
 {
     last_function_called = "Function8<int>";
-    return rv_int;
+    return global_int;
 }
 
 template<>
 double Function8<double>()
 {
     last_function_called = "Function8<double>";
-    return rv_double;
+    return global_double;
 }
 
 void Function9(double arg)
 {
     last_function_called = "Function9";
-    rv_double = arg;
+    global_double = arg;
     return;
 }
 

@@ -17,7 +17,7 @@ program tester
 
   call test_class1
 
-  call test_allocable
+!  call test_allocable
 
 contains
 
@@ -96,13 +96,13 @@ contains
     endif
   end subroutine assert_true
 
-  subroutine test_allocable
-    integer, allocatable :: iarray(:)
-
-    allocate(iarray(10))
-    call all_test1(iarray)
-
-  end subroutine test_allocable
+!  subroutine test_allocable
+!    integer, allocatable :: iarray(:)
+!
+!   allocate(iarray(10))
+!    call all_test1(iarray)
+!
+!  end subroutine test_allocable
 
 
 end program
