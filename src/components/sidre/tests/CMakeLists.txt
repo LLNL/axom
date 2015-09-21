@@ -30,6 +30,7 @@ set(fruit_sidre_tests
    F_sidre_view.f
    F_sidre_external.f
    F_sidre_opaque.f
+   F_sidre_allocatable.f
 )
 
 #
