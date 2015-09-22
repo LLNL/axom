@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
 /**
  *  \file SidreWrapperHelpers.hpp
  *
@@ -12,6 +22,7 @@
 #include "conduit/Bitwidth_Style_Types.h"
 
 // SiDRe project headers
+#include "sidre/DataGroup.hpp"
 #include "sidre/SidreTypes.hpp"
 #include "sidre/SidreTypes.h"
 
@@ -21,7 +32,8 @@ namespace sidre
 {
 
 // SidreWrapperHelpers.cpp
-void *register_allocatable(char *name, int lname,
+void *register_allocatable(DataGroup *group,
+			   char *name, int lname,
 			   void *array, int atk_type, int rank);
 
 

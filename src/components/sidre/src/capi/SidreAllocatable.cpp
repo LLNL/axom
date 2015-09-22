@@ -12,75 +12,91 @@ namespace asctoolkit {
 namespace sidre {
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_int_scalar_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_int_1d_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_long_scalar_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_long_1d_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_float_scalar_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_float_1d_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_double_scalar_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 
-// Fortran callable routine.  Needed for each type-kind-rank
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_double_1d_ptr_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }
 
 

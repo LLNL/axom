@@ -42,9 +42,10 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     implicit none
 
     interface
-       function ATK_register_allocatable_{typename}_{nd}(name, lname, array, atk_type, rank) result(rv)
+       function ATK_register_allocatable_{typename}_{nd}(group, name, lname, array, atk_type, rank) result(rv)
        use iso_c_binding
-       character(*), intent(IN) :: name
+       type(C_PTR), value, intent(IN)    :: group
+       character(*), intent(IN)          :: name
        integer(C_INT), value, intent(IN) :: lname
        {f_type}, allocatable, intent(IN) :: array{shape}
        integer(C_INT), value, intent(IN) :: atk_type
@@ -62,7 +63,7 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     type(dataview) :: rv
 
     lname = len_trim(name)
-    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(name, lname, value, atk_type, ndim)
+    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(group%voidptr, name, lname, value, atk_type, ndim)
 end function datagroup_register_allocatable_{typename}_{nd}""".format(**d)
 
     elif d['rank'] == 1:
@@ -73,9 +74,10 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     implicit none
 
     interface
-       function ATK_register_allocatable_{typename}_{nd}(name, lname, array, atk_type, rank) result(rv)
+       function ATK_register_allocatable_{typename}_{nd}(group, name, lname, array, atk_type, rank) result(rv)
        use iso_c_binding
-       character(*), intent(IN) :: name
+       type(C_PTR), value, intent(IN)    :: group
+       character(*), intent(IN)          :: name
        integer(C_INT), value, intent(IN) :: lname
        {f_type}, allocatable, intent(IN) :: array{shape}
        integer(C_INT), value, intent(IN) :: atk_type
@@ -93,7 +95,7 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     type(dataview) :: rv
 
     lname = len_trim(name)
-    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(name, lname, value, atk_type, ndim)
+    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(group%voidptr, name, lname, value, atk_type, ndim)
 end function datagroup_register_allocatable_{typename}_{nd}""".format(**d)
     else:
         raise RuntimeError("rank too large in print_register_allocatable")
@@ -266,10 +268,11 @@ def print_atk_register_allocatable(d):
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_{typename}_{nd}_(
+    DataGroup *group,
     char *name, int lname,
     void *array, int atk_type, int rank)
 {{
-    return register_allocatable(name, lname, array, atk_type, rank); 
+    return register_allocatable(group, name, lname, array, atk_type, rank); 
 }}
 """.format(**d)
 
