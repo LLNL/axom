@@ -10,7 +10,26 @@ module sidre_allocatable
 contains
 
   subroutine local_allocatable
+    integer, allocatable :: iarray(:)
+
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview)  view_iarray1
+!    integer num_elements
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    allocate(iarray(10))
+
+    view_iarray1 = root%register_allocatable("iarray", iarray)
+
+!    num_elements = view_iarray1%get_number_of_elements()
+!    call assert_equals(num_elements, 10)
     call assert_true(.true.)
+
+    call ds%delete()
+
   end subroutine local_allocatable
 
 end module sidre_allocatable
