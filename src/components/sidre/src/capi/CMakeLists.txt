@@ -60,6 +60,14 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.f
 )
 
+add_custom_command(
+    OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/SidreAllocatable.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
+    COMMAND ${PYTHON_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py allocatable > 
+            ${CMAKE_CURRENT_SOURCE_DIR}/SidreAllocatable.cpp
+)
+
 #
 # Tell parent about our files.
 #
@@ -106,6 +114,7 @@ foreach(file ${sidre_source} ${sidre_generated_source})
 #  )
 
 endforeach(file)
+list(APPEND parent_list ${API_OUTPUT_DIR}/SidreAllocatable.cpp)
 set (capi_source ${parent_list} PARENT_SCOPE)
 list(APPEND generated_list ${parent_list})
 
