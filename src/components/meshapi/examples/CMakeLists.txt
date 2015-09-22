@@ -1,7 +1,7 @@
 
-#
-# List of example sources
-#
+###########################
+# Build the example sources
+###########################
 set(example_sources
 	ShockTube.cpp
     UnstructMeshField.cpp
@@ -10,20 +10,18 @@ set(example_sources
 
 
 #set_source_files_properties(TemplateEx.cpp PROPERTIES COMPILE_FLAGS "-S -fverbose-asm " )
+#get_source_file_property(_origflags UnstructMeshField.cpp COMPILE_FLAGS)
+#set_source_files_properties(UnstructMeshField.cpp "${_origflags} -fwhole-program -funroll-loops ")
 
-#
-# Build the example sources
-#
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
     make_executable(EXECUTABLE_NAME "meshapi${example_name}" EXECUTABLE_SOURCE ${example_source} DEPENDS_ON meshapi slic)
 endforeach()
 
 
-# 
-# Build lulesh example
-# NOTE: This should use a standard macro so we can enable features like C++11, MPI, OpenMP etc...
-#
+####################################
+# Build meshapi version of lulesh 2.0
+####################################
 
 set(lulesh_dir lulesh2.0.3  )
 
@@ -42,49 +40,40 @@ set(lulesh_exe_source
     ${lulesh_dir}/lulesh.cpp
     )
 
-## Ignore omp pragmas when openMP is not defined
-set_source_files_properties(${lulesh_lib_sources} PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas " )
-set_source_files_properties(${lulesh_exe_source}  PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas " )
 
-if ( ENABLE_MPI )
-    make_library( LIBRARY_NAME      meshapiLuleshLib
-                  LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
-                  WITH_MPI
-                  ) 
-    
-    add_dependencies(meshapiLuleshLib meshapi)
-    target_link_libraries( meshapiLuleshLib  meshapi )
-                      
-    make_executable( EXECUTABLE_NAME    meshapiLulesh 
-                     EXECUTABLE_SOURCE  ${lulesh_exe_source}
-                     DEPENDS_ON 
-                        "slic"
-                        "meshapi" 
-                        "meshapiLuleshLib"
-                     WITH_MPI
-                   )
-                       
-else()
-    make_library( LIBRARY_NAME      meshapiLuleshLib
-                  LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
-                  ) 
-    
-    add_dependencies(meshapiLuleshLib meshapi)
-    target_link_libraries( meshapiLuleshLib  meshapi )
-                      
-    make_executable( EXECUTABLE_NAME    meshapiLulesh 
-                     EXECUTABLE_SOURCE  ${lulesh_exe_source}
-                     DEPENDS_ON 
-                        "slic"
-                        "meshapi" 
-                        "meshapiLuleshLib"
-                   )
+## Ignore omp pragmas when openMP is not defined
+if ( NOT ENABLE_OMP )
+    set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} PROPERTIES COMPILE_FLAGS "${DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
 
+make_library( LIBRARY_NAME      meshapiLuleshLib
+              LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
+              USE_OPENMP ${ENABLE_OMP} 
+              USE_MPI ${ENABLE_MPI}              
+              ) 
 
-# ---- Placed here temporarily --  determines whether to build the original lulesh 2.0 code
+add_dependencies(meshapiLuleshLib meshapi)
+target_link_libraries( meshapiLuleshLib  meshapi )
+                  
+make_executable( EXECUTABLE_NAME    meshapiLulesh 
+                 EXECUTABLE_SOURCE  ${lulesh_exe_source}
+                 DEPENDS_ON 
+                    slic
+                    meshapi 
+                    meshapiLuleshLib
+                  USE_OPENMP ${ENABLE_OMP} 
+                  USE_MPI ${ENABLE_MPI}              
+                  ) 
+
+
+####################################
+# Build original lulesh example
+####################################
+
+# ---- Option to control if original Lulesh builds
 set(buildOrigLulesh TRUE)
+
 if ( ${buildOrigLulesh} )
     set(lulesh_dir lulesh2.0.3_orig  )
 
@@ -103,18 +92,35 @@ if ( ${buildOrigLulesh} )
         ${lulesh_dir}/lulesh.cc
         )
     
+    # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
+    set(luleshExtraCompileFlags ${DISABLE_UNUSED_PARAMETER_WARNINGS})
+    if ( NOT ENABLE_OMP )
+        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${DISABLE_OMP_PRAGMA_WARNINGS}")
+    endif()
 
-  if(ENABLE_MPI)
+    if ( ENABLE_MPI )
+        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=1 ")
+    else()
+        set(luleshExtraCompileFlags "${luleshExtraCompileFlags} -DUSE_MPI=0 ")    
+    endif()
+    #message(STATUS " luleshExtraCompileFlags is '${luleshExtraCompileFlags}'")
+
     set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}  
-                                PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas -Wno-unused-parameter -DUSE_MPI=1" )
-    make_library( LIBRARY_NAME meshapiLuleshOrigLib LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}" WITH_MPI )
-    make_executable( EXECUTABLE_NAME meshapiOrigLulesh EXECUTABLE_SOURCE ${lulesh_exe_source} DEPENDS_ON "meshapiLuleshOrigLib" WITH_MPI )
-  else()
-    set_source_files_properties(${lulesh_lib_sources} ${lulesh_lib_headers} ${lulesh_exe_source}  
-                                PROPERTIES COMPILE_FLAGS " -Wno-unknown-pragmas -Wno-unused-parameter -DUSE_MPI=0" )    
-    make_library( LIBRARY_NAME meshapiLuleshOrigLib LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  )
-    make_executable( EXECUTABLE_NAME meshapiOrigLulesh EXECUTABLE_SOURCE ${lulesh_exe_source} DEPENDS_ON "meshapiLuleshOrigLib" ) 
-  endif()
-  
+                                PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
+
+    make_library( 
+        LIBRARY_NAME meshapiLuleshOrigLib 
+        LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
+        USE_OPENMP ${ENABLE_OMP} 
+        USE_MPI ${ENABLE_MPI}              
+       ) 
+    make_executable( 
+        EXECUTABLE_NAME meshapiOrigLulesh 
+        EXECUTABLE_SOURCE ${lulesh_exe_source} 
+        DEPENDS_ON "meshapiLuleshOrigLib" 
+        USE_OPENMP ${ENABLE_OMP} 
+        USE_MPI ${ENABLE_MPI}              
+       ) 
+          
 endif()
                    

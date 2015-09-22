@@ -50,6 +50,8 @@ namespace meshapi {
       typedef OrderedSetType::IndexType IndexType;
       typedef OrderedSetType::ElementType ElementType;
 
+      typedef OrderedSetType::SetBuilder ArraySetBuilder;
+
   private:
       static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
       static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
@@ -58,6 +60,7 @@ namespace meshapi {
   public:
       ArrayIndirectionSet (PositionType size = DEFAULT_SIZE)
           : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+      ArrayIndirectionSet( const ArraySetBuilder& builder): OrderedSetType(builder){}
     ~ArrayIndirectionSet () {}
   };
 
@@ -88,6 +91,8 @@ namespace meshapi {
       typedef OrderedSetType::ElementType ElementType;
 
       typedef IndirectionPolicyType::VectorType ArrType;
+      typedef OrderedSetType::SetBuilder VectorSetBuilder;
+
   private:
       static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
       static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
@@ -96,6 +101,7 @@ namespace meshapi {
   public:
       VectorIndirectionSet (PositionType size = DEFAULT_SIZE)
           : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+      VectorIndirectionSet( const VectorSetBuilder& builder): OrderedSetType(builder){}
 
     ~VectorIndirectionSet () {}
   };

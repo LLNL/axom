@@ -38,26 +38,27 @@
 
 /*!
  ******************************************************************************
- * \def SLIC_ERROR( EXP, msg )
+ * \def SLIC_ERROR( EXP )
  * \brief Logs an error iff EXP is true and aborts the application.
  * \param [in] EXP user-supplied boolean expression.
- * \param [in] msg user-supplied message
  * \note The SLIC_ERROR macro is always active.
  * \warning This macro calls processAbort() if EXP is false.
  *
  * Usage:
  * \code
- *   SLIC_ERROR( my_val < 0, "my_val should always be positive" );
+ *   SLIC_ERROR( my_val < 0);   // my_val should always be positive
  * \endcode
  *
  ******************************************************************************
  */
-#define SLIC_ERROR( EXP, msg )                                                \
+#define SLIC_ERROR( EXP )                                                     \
 do {                                                                          \
   if ( EXP ) {                                                                \
+    std::ostringstream oss;                                                   \
+    oss << "Failed Error: " << # EXP << std::ends;                            \
     asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,msg,__FILE__, __LINE__ );            \
-    if ( asctoolkit::slic::getAbortOnError() ) {                             \
+        asctoolkit::slic::message::Fatal,oss.str(),__FILE__, __LINE__ );      \
+    if ( asctoolkit::slic::getAbortOnError() ) {                              \
        asctoolkit::utilities::processAbort();                                 \
     }                                                                         \
   }                                                                           \
@@ -77,14 +78,14 @@ do {                                                                          \
  *
  * Usage:
  * \code
- *   SLIC_ERROR_MSG( my_val >= 0, "my_val must always be positive" );
+ *   SLIC_ERROR_MSG( my_val < 0, "my_val must always be positive" );
  * \endcode
  *
  ******************************************************************************
  */
 #define SLIC_ERROR_MSG( EXP, msg )                                            \
 do {                                                                          \
-  if ( !(EXP) ) {                                                             \
+  if ( EXP ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Error: " << # EXP << std::endl << msg << std::ends;        \
     asctoolkit::slic::logMessage(                                             \

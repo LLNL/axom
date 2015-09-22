@@ -275,12 +275,23 @@ endmacro(add_target_definitions)
 macro(make_library)
 
    set(options WITH_MPI WITH_OPENMP)
-   set(singleValueArgs LIBRARY_NAME)
+   set(singleValueArgs LIBRARY_NAME USE_MPI USE_OPENMP)
    set(multiValueArgs LIBRARY_SOURCES DEPENDS_ON)
 
    ## parse the arguments
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+
+   # Check for the variable-based options for MPI and OpenMP
+   if( ${arg_USE_MPI})
+      set(arg_WITH_MPI TRUE)
+   endif()
+   
+   if( ${arg_USE_OPENMP})
+      set(arg_WITH_OPENMP TRUE)
+   endif()
+
 
    ## sanity check MPI
    if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
@@ -288,7 +299,7 @@ macro(make_library)
    endif()
 
    ## sanity check OpenMP
-   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
+   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OMP} )
       message( FATAL_ERROR "Building an OpenMP library, but OpenMP is disabled!" )
    endif()
 
@@ -297,6 +308,7 @@ macro(make_library)
    else()
       add_library(${arg_LIBRARY_NAME} STATIC ${arg_LIBRARY_SOURCES})
    endif()
+
 
    if ( ${arg_WITH_MPI} )
 
@@ -385,23 +397,34 @@ endmacro(make_library)
 macro(make_executable)
 
    set(options WITH_MPI WITH_OPENMP)
-   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE)
+   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_MPI USE_OPENMP)
    set(multiValueArgs DEPENDS_ON)
 
    ## parse the arguments to the macro
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
+   # Check for the variable-based options for MPI and OpenMP
+   if( ${arg_USE_MPI} )
+      set(arg_WITH_MPI TRUE)
+   endif()
+   
+   if( ${arg_USE_OPENMP})
+      set(arg_WITH_OPENMP TRUE)
+   endif()
+
+
    ## sanity check MPI
-   if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
+   if (${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
       message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
    endif()
 
    ## sanity check OpenMP
-   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
+   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OMP} )
       message( FATAL_ERROR
                "Building an OpenMP executable, but OpenMP is disabled!" )
    endif()
+
 
    # Use the supplied name for the executable (if given), otherwise use the
    # source file's name

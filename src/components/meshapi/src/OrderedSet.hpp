@@ -53,11 +53,9 @@ namespace asctoolkit {
 namespace meshapi {
 
 
-    // TODO: Named parameter idiom  OrderedSetBuilder().size(X).offset(Y)...
-
 /**
  * \class
- * \brief Models a set whose elements can be defined as a strided offsets of the position, possibly with a level of indirection.
+ * \brief Models a set whose elements can be defined as strided offsets of the position, possibly with a level of indirection.
  * \details Specifically, the element at position pos can be defined as:  static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
     template< typename SizePolicy          = policies::RuntimeSizeHolder<Set::PositionType>
@@ -125,9 +123,23 @@ namespace meshapi {
         , SubsettingPolicyType(builder.m_parent)
     {}
 
+    OrderedSet(const OrderedSet& oset)
+        : SizePolicyType(oset)
+        , OffsetPolicyType(oset)
+        , StridePolicyType(oset)
+        , IndirectionPolicyType(oset)
+        , SubsettingPolicyType(oset)
+    {}
+
+
+
 public:
 
-    // Named parameter idiom for constructing sets -- uses method chaining
+    /**
+     * \class
+     * \brief Helper class for constructing an ordered set.
+     *  Uses named parameter idiom to enable function chaining and to better code self-documentation
+     * */
     struct SetBuilder
     {
         friend class OrderedSet;
@@ -142,13 +154,13 @@ public:
         SetBuilder& parent(ParentSetType* parSet)   { m_parent = SubsettingPolicyType(parSet); return *this;}
         SetBuilder& range(PositionType lower, PositionType upper)
         {
+            // Set by range rather than size and offset.
+            // Question: Should we ensure that only one of these options is called
+            //   (e.g. size [+offset] or range, but not both)?
             m_offset = OffsetPolicyType(lower);
             m_size = SizePolicyType(upper-lower);
             return *this;
         }
-
-
-        ///  TODO: Add ability to set by range (low to high) rather than by size and offset.
 
     private:
         SizePolicyType m_size;
@@ -158,7 +170,12 @@ public:
         SubsettingPolicyType m_parent;
     };
 
-    // define an iterator type -- w/ stride and indirection
+    /**
+     * \class
+     * \brief An iterator type for an ordered set
+     * \brief Enables iterating through the elements of an ordered set
+     * Uses the set's policies for efficient iteration
+     */
     template<typename OrderedSet>
     class OrderedSetIterator : public boost::iterator_facade< OrderedSetIterator<OrderedSet>
                                                             , typename OrderedSet::ElementType
@@ -217,7 +234,7 @@ public:
      */
     inline typename IndirectionPolicy::IndirectionResult operator[](PositionType pos) const
     {
-            verifyPosition(pos);
+            verifyPositionImpl(pos);
             return IndirectionPolicy::indirection( pos * StridePolicyType::stride() + OffsetPolicyType::offset() );
     }
 
@@ -240,11 +257,10 @@ public:
 
 #else
     const_iterator          begin() const { return const_iterator( OffsetPolicyType::offset(), this); }
-    const_iterator          end()   const { return const_iterator( size() * StridePolicyType::stride() + OffsetPolicyType::offset(), this);}
+    const_iterator          end()   const { return const_iterator( SizePolicyType::size() * StridePolicyType::stride() + OffsetPolicyType::offset(), this);}
     const_iterator_pair     range() const { return std::make_pair(begin(), end()); }
 #endif
 
-    /// HACK: This function needs to be implemented
     bool                isValid(bool verboseOutput = false) const;
 
     bool isSubset() const { return SubsettingPolicy::isSubset(); }
@@ -253,7 +269,11 @@ public:
 
     inline void         verifyPosition(PositionType pos)       const
     {
-      SLIC_ASSERT_MSG( pos >= 0 && pos < size()
+        verifyPositionImpl(pos);
+    }
+    inline void         verifyPositionImpl(PositionType pos)       const
+    {
+       SLIC_ASSERT_MSG( pos >= 0 && pos < size()
           , "MeshAPI::OrderedSet -- requested out-of-range element at position "
           << pos << ", but set only has " << size() << " elements." );
     }

@@ -4,7 +4,6 @@
 project(meshapi)
 
 
-
 #SET(CXX_11 "")     
 #SET(CXX_11 "-std=c++0x -Wno-deprecated-declarations")     
 
@@ -12,14 +11,13 @@ project(meshapi)
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_11} -Wall -Wno-missing-braces -fno-strict-aliasing " CACHE INTERNAL "meshapi") # -Wextra
 
 ### Need to add some extra flags to allow parameters and variables that are only used in ATK_WARNINGs
+### TODO: Fix these when the macro becomes available
 SET(EXTRA_FLAGS_WHEN_NO_DEBUG "-Wno-unused-parameter -Wno-unused-variable")
 SET(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "meshapi") # -Wextra
 SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "meshapi") # -Wextra
 SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${EXTRA_FLAGS_WHEN_NO_DEBUG}" CACHE INTERNAL "meshapi") # -Wextra
 
-
 #SET(CMAKE_CXX_VECTORIZER_FLAGS "-ftree-vectorize -fdump-tree-vect -ftree-vectorizer-verbose=7 -fdump-tree-optimized-details ") #-march=native "
-
 #SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 ")
 #SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -g ${CMAKE_CXX_VECTORIZER_FLAGS}")  #"-g0 -O3 -v"
 

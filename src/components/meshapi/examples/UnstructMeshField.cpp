@@ -63,14 +63,24 @@ namespace unstructured {
 
   struct Point
   {
-    Point() : x(DataType()), y(DataType()), z(DataType()){}
+    Point(const DataType& x, const DataType& y, const DataType& z) : m_x(x), m_y(y), m_z(z){}
+    Point() : m_x(DataType()), m_y(DataType()), m_z(DataType()){}
 
-    DataType radius() const { return std::sqrt( x * x + y * y + z * z); }
+    DataType radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
+    Point& operator+=(const Point& pt){ m_x+= pt.m_x; m_y+=pt.m_y; m_z += pt.m_z; return *this;}
+    Point& operator*=(const DataType& sc){ m_x *= sc; m_y*=sc; m_z *= sc; return *this;}
+    template<typename T>    Point& operator/=(const T& sc){ return operator*=( 1./sc);}
 
-    DataType x;
-    DataType y;
-    DataType z;
+    DataType m_x, m_y, m_z;
   };
+  Point operator+(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
+
+  Point operator*(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
+  Point operator*(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
+
+  template<typename T>
+  Point operator/(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1./sc);  return pt; }
+
 
   struct HexMesh
   {
@@ -145,7 +155,7 @@ namespace unstructured {
             vtkMesh.open( pFileName.c_str() );
         }
 
-        SLIC_ERROR_MSG( vtkMesh
+        SLIC_ERROR_MSG( !vtkMesh
           , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName <<"')"
                                                         << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() << "'");
     }
@@ -176,11 +186,11 @@ namespace unstructured {
 
       // Create the nodal position field, and read positions from file
       mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );
+      Point pos;
       for(IndexType i = 0; i < numNodes; ++i)
       {
-        vtkMesh >> mesh->nodePosition[i].x;
-        vtkMesh >> mesh->nodePosition[i].y;
-        vtkMesh >> mesh->nodePosition[i].z;
+        vtkMesh >> pos.m_x >> pos.m_y >> pos.m_z;
+        mesh->nodePosition[i] = pos;
       }
     }
 
@@ -230,7 +240,7 @@ namespace unstructured {
       RelationVecIterator oIt = offsetsVec.begin();
       IndexType nodeCount;
       typedef HexMesh::ZoneSet::iterator SetIterator;
-      for(SetIterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
+      for(SetIterator zIt = mesh->zones.begin(), zItEnd = mesh->zones.end(); zIt < zItEnd; ++zIt)
       {
         vtkMesh >> nodeCount;
 
@@ -292,7 +302,8 @@ namespace unstructured {
       }
 #else
       HexMesh::ZoneToNodeRelation::RelationSet zNodeSet = mesh->relationZoneNode[zoneIdx];
-      for(IndexType idx = 0; idx < mesh->relationZoneNode.size(*zIt); ++idx)
+      const IndexType numZN = mesh->relationZoneNode.size(*zIt);
+      for(IndexType idx = 0; idx < numZN; ++idx)
       {
         IndexType nodeIdx = zNodeSet[idx];
         tmpZonesOfNode.insert( nodeIdx, zoneIdx );
@@ -343,24 +354,21 @@ namespace unstructured {
     mesh->zonePosition = HexMesh::PositionsVec( &mesh->zones );
 
     // Outer loop over each zone in the set
-    for(ZoneIter zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt )
+    const IndexType numZones = mesh->numZones();
+    for(IndexType zIdx = 0; zIdx < numZones; ++zIdx )
     {
-      Point& zonePos = mesh->zonePosition[ *zIt ];
+      Point zonePos;
 
       // Inner loop over each node of the zone
-      ZNIterator nIt  = mesh->relationZoneNode.begin(*zIt);
-      ZNIterator nEnd = mesh->relationZoneNode.end(*zIt);
-      DataType numNodes = static_cast<DataType>(mesh->relationZoneNode.size(*zIt));
+      ZNIterator nIt  = mesh->relationZoneNode.begin(zIdx);
+      ZNIterator nEnd = mesh->relationZoneNode.end(zIdx);
       for(; nIt < nEnd; ++nIt)
       {
-        Point& nodePos = mesh->nodePosition[*nIt];
-        zonePos.x += nodePos.x;
-        zonePos.y += nodePos.y;
-        zonePos.z += nodePos.z;
+        zonePos += mesh->nodePosition[*nIt];
       }
-      zonePos.x /= numNodes;
-      zonePos.y /= numNodes;
-      zonePos.z /= numNodes;
+      zonePos /= mesh->relationZoneNode.size(zIdx);
+
+      mesh->zonePosition[ zIdx ] = zonePos;
     }
   }
 
@@ -369,12 +377,10 @@ namespace unstructured {
     // Compute a zone field based on the L2 norm of their position vectors
     mesh->zoneField = HexMesh::ZoneField ( &mesh->zones );
 
-    typedef HexMesh::ZoneSet::iterator ZoneIter;
-    for (ZoneIter zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
+    const IndexType numZones = mesh->numZones();
+    for (IndexType zIdx=0; zIdx < numZones; ++zIdx )
     {
-      const Point& zp = mesh->zonePosition[*zIt];
-      // What's the radius?
-      mesh->zoneField[*zIt] = zp.radius();
+      mesh->zoneField[zIdx] = mesh->zonePosition[zIdx].radius();
     }
   }
 
@@ -382,33 +388,34 @@ namespace unstructured {
   {
     // Compute the node average version, and the maximum relative error
     typedef HexMesh::NodeSet::iterator  NodeIter;
-    typedef HexMesh::NodeZoneIterator   NZIterator;
+    typedef HexMesh::NodeToZoneRelation::RelationSet  NZRelSet;
+    typedef NZRelSet::const_iterator NZIter;
 
-    // Relying on zeroing out the average field by the vector constructor.
-    mesh->nodeFieldAvg = HexMesh::NodeField( &mesh->nodes, 0.0 );
-    mesh->nodeFieldExact = HexMesh::NodeField( &mesh->nodes );
+    mesh->nodeFieldAvg   = HexMesh::NodeField(&mesh->nodes);
+    mesh->nodeFieldExact = HexMesh::NodeField(&mesh->nodes);
     double errSqSum = 0.0;
 
     // Outer loop over each node
-    for (NodeIter nIt = mesh->nodes.begin(); nIt < mesh->nodes.end(); ++nIt)
+    const IndexType numNodes = mesh->numNodes();
+    for (IndexType nIdx = 0; nIdx < numNodes; ++nIdx)
     {
-      const Point& np = mesh->nodePosition[*nIt];
-
       // What's the radius?
-      mesh->nodeFieldExact[*nIt] = np.radius();
+      const DataType nodalValExact = mesh->nodePosition[nIdx].radius();
 
-      // Inner loop over each zone of the node
-      NZIterator zIt  = mesh->relationNodeZone.begin(*nIt);
-      NZIterator zEnd = mesh->relationNodeZone.end(*nIt);
-      DataType numZones = static_cast<DataType>(mesh->relationNodeZone.size(*nIt));
-      for(; zIt != zEnd; ++zIt)
+      // Inner loop over each zone of the node to find average value
+      const NZRelSet & zoneSet = mesh->relationNodeZone[nIdx];
+      DataType nodalAvg = DataType();
+      for(NZIter zIt=zoneSet.begin(), zItEnd=zoneSet.end(); zIt < zItEnd; ++zIt)
       {
-        mesh->nodeFieldAvg[*nIt] += mesh->zoneField[*zIt];
+        nodalAvg += mesh->zoneField[ *zIt ];
       }
+      nodalAvg /= zoneSet.size();
 
-      mesh->nodeFieldAvg[*nIt] /= numZones;
+      // Update fields and compute error
+      mesh->nodeFieldAvg[nIdx] = nodalAvg;
+      mesh->nodeFieldExact[nIdx] = nodalValExact;
 
-      double const err = mesh->nodeFieldAvg[*nIt] - mesh->nodeFieldExact[*nIt];
+      double const err = nodalAvg - nodalValExact;
       errSqSum += err * err;
     }
 
@@ -459,7 +466,7 @@ int main()
 
     //--------------------------------------------------------------
     // Now that we have the mesh in memory, we can start to do things with it.
-
+//for(int i=0; i<1000; ++i) {
     std::cout << "\n** Computing zone barycenters using zone->node relation...";
     computeZoneBarycenters(&hexMesh);
 
@@ -474,7 +481,7 @@ int main()
         << "\n\texpected: " << expectedResults[res]
         << "\n\tactual: "   << errVal
         << "\n\tdiff: "     << (errVal - expectedResults[res]));
-
+//}
     std::cout << "\ndone." << std::endl;
   }
 

@@ -116,7 +116,7 @@ namespace meshapi    {
     {
         typedef typename RelationSet::SetBuilder SetBuilder;
         return SetBuilder()
-                    .size(  size(fromSetElt))
+                    .size(  elemSize(fromSetElt))
                     .offset( toSetBeginIndex(fromSetElt) )
                     .data( &m_toSetIndicesVec)
                     ;
@@ -125,8 +125,7 @@ namespace meshapi    {
 
     SetPosition size(SetPosition fromSetIndex)                  const
     {
-      verifyPosition(fromSetIndex);
-      return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
+        return elemSize(fromSetIndex);
     }
 
     bool isValid(bool verboseOutput = false) const;
@@ -172,6 +171,12 @@ namespace meshapi    {
     /// \}
 
   private:
+    inline SetPosition elemSize(SetPosition fromSetIndex) const
+    {
+        verifyPosition(fromSetIndex);
+        return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
+    }
+
     inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex <  m_fromSet->size()  ); }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return m_fromSetBeginsVec[fromSetIndex]; }
     inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return m_fromSetBeginsVec[fromSetIndex + 1]; }

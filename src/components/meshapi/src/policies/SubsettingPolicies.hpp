@@ -41,16 +41,16 @@ namespace policies {
     struct NoSubset
     {
         static const NullSet s_nullSet;
-        typedef struct{} ParentSetType;
+        typedef const Set ParentSetType;
 
-        NoSubset(){}
+        NoSubset() {}
         NoSubset(ParentSetType*) {} // This empty .ctor is here to satisfy SubsettingPolicy API
 
         /**
          * \brief Checks whether the set containing this policy class is a subset
          */
         bool isSubset() const { return false; }
-        const Set* parentSet() const { return &s_nullSet; }
+        const ParentSetType* parentSet() const { return ATK_NULLPTR; }
 
         template<typename OrderedSetIt>
         bool isValid(OrderedSetIt, OrderedSetIt, bool) const { return true;}

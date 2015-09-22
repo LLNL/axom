@@ -2,9 +2,9 @@ INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIRS}
 )
 
-#
-# Specify all headers
-#
+######################################
+# Specify all headers and source files
+######################################
 set(meshapi_headers
     # Utility files
     Utilities.hpp
@@ -37,9 +37,6 @@ set(meshapi_headers
     Map.hpp
     )
 
-#
-# Specify all sources
-#
 set(meshapi_sources
     # SRM Set sources
     # RangeSet.cpp
@@ -56,15 +53,24 @@ set(meshapi_sources
     )
 
 
-#
+#get_source_file_property(_origflags StaticVariableRelation.hpp COMPILE_FLAGS)
+#set_source_files_properties(${meshapi_headers} "${_origflags} -fwhole-program -funroll-loops ")
+#set_source_files_properties(${meshapi_sources} "${_origflags} -fwhole-program -funroll-loops ")
+
+
+#########################################################################
 # custom target to copy header files in the "include" folder of the build tree.
-#
+#########################################################################
+
 copy_headers_target(  ${PROJECT_NAME}  "${meshapi_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
-#
+
+
+####################################=
 # make the library
-#
+####################################
+
 make_library( LIBRARY_NAME
                 meshapi
               LIBRARY_SOURCES
@@ -75,5 +81,8 @@ make_library( LIBRARY_NAME
                 sidre
             )
 
+####################################=
+# install target for meshapi
+####################################
 
 install(TARGETS meshapi DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

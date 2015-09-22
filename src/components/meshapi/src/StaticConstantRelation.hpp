@@ -10,7 +10,7 @@
 
 
 /**
- * \file StaticConstantRelation.hpp
+ * \file
  *
  * \brief API for a topological relation between two sets in which entities from the first set
  *        can be related to a constant number of entities from the second set
@@ -187,7 +187,7 @@ namespace meshapi    {
     {
         typedef typename RelationSet::SetBuilder SetBuilder;
         return SetBuilder()
-                    .size(  size(fromSetElt))
+                    .size(  elemSize(fromSetElt))
                     .offset( toSetBeginIndex(fromSetElt) )
                     .data( &m_toSetIndicesVec)
                     ;
@@ -199,8 +199,7 @@ namespace meshapi    {
      */
     SetPosition size(SetPosition fromSetIndex = 0)                  const
     {
-      verifyPosition(fromSetIndex);
-      return stride();
+        return elemSize(fromSetIndex);
     }
 
     /**
@@ -233,6 +232,11 @@ namespace meshapi    {
 
     /// \}
   private:
+    inline SetPosition elemSize(SetPosition fromSetIndex) const
+    {
+        verifyPosition(fromSetIndex);
+        return stride();
+    }
     inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex < m_fromSet->size() ); }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }
     inline SetPosition  toSetEndIndex(SetPosition fromSetIndex)     const { return stride() * (fromSetIndex + 1); }
