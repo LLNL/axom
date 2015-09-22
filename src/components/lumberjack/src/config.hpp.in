@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
+/*!
+ *******************************************************************************
+ * \file Config.hpp
+ * \author Chris White (white238@llnl.gov)
+ *
+ * \brief This file contains the build configuration details.
+ *******************************************************************************
+ */
+
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
+
+namespace asctoolkit {
+namespace lumberjack {
+
+#define LUMBERJACK_VERSION_MAJOR @Lumberjack_VERSION_MAJOR@
+#define LUMBERJACK_VERSION_MINOR @Lumberjack_VERSION_MINOR@
+#define LUMBERJACK_VERSION_PATCH @Lumberjack_VERSION_PATCH@
+
+} // end namespace lumberjack
+} // end namespace asctoolkit
+
+#endif

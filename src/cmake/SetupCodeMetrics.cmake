@@ -19,3 +19,10 @@ if ( (CMAKE_BUILD_TYPE STREQUAL "Debug") AND (ENABLE_CODECOV) )
    endif()
 
 endif()
+
+find_package(Valgrind)
+if (VALGRIND_FOUND)
+	set(MEMORYCHECK_COMMAND ${VALGRIND_EXECUTABLE} CACHE PATH "")
+	set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full" CACHE PATH "")
+endif()
+

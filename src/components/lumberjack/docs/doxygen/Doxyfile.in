@@ -1,0 +1,4 @@
+PROJECT_NAME  = Lumberjack
+PROJECT_BRIEF = "Scalable and filtering logging library"
+INPUT = @PROJECT_SOURCE_DIR@/src
+GENERATE_XML = YES
