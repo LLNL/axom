@@ -20,6 +20,12 @@ namespace asctoolkit
 namespace sidre
 {
 
+// SidreWrapperHelpers.cpp
+void *register_allocatable(char *name, int lname,
+			   void *array, int atk_type, int rank);
+
+
+
 template< int TYPEID >
 inline TypeID getTypeID()
 {

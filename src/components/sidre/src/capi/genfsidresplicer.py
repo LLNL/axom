@@ -263,16 +263,13 @@ def print_atk_register_allocatable(d):
     """
 # XXX - need cmake macro to mangle name portably
     return """
+// Fortran callable routine.
+// Needed for each type-kind-rank to get address of allocatable array.
 void *atk_register_allocatable_{typename}_{nd}_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {{
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }}
 """.format(**d)
 
@@ -284,10 +281,7 @@ def gen_allocatable():
 //
 #include <cstddef>
 #include "common/CommonTypes.hpp"
-
-static char *global_char;
-static int global_int;
-static void *global_void;
+#include "SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {

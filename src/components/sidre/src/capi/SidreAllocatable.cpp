@@ -5,117 +5,82 @@
 //
 #include <cstddef>
 #include "common/CommonTypes.hpp"
-
-static char *global_char;
-static int global_int;
-static void *global_void;
+#include "SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_int_scalar_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_int_1d_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_long_scalar_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_long_1d_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_float_scalar_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_float_1d_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_double_scalar_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 
+// Fortran callable routine.  Needed for each type-kind-rank
 void *atk_register_allocatable_double_1d_ptr_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {
-    global_char = name;
-    global_int = lname;
-    global_int = atk_type;
-    global_int = rank;
-    global_void = array;
-    return ATK_NULLPTR;
+    return register_allocatable(name, lname, array, atk_type, rank); 
 }
 
 

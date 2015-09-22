@@ -114,9 +114,10 @@ foreach(file ${sidre_source} ${sidre_generated_source})
 #  )
 
 endforeach(file)
-list(APPEND parent_list ${API_OUTPUT_DIR}/SidreAllocatable.cpp)
-set (capi_source ${parent_list} PARENT_SCOPE)
+list(APPEND parent_list ${API_OUTPUT_DIR}/SidreAllocatable.cpp) # generated
 list(APPEND generated_list ${parent_list})
+list(APPEND parent_list ${API_OUTPUT_DIR}/SidreWrapperHelpers.cpp)
+set (capi_source ${parent_list} PARENT_SCOPE)
 
 
 ADD_CUSTOM_TARGET(sidre_generate
