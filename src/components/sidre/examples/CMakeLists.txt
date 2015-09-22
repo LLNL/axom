@@ -5,7 +5,7 @@
 set(example_sources
     StressGroups.cpp
     sidre_shocktube_example.cpp
-#    F_sidre_shocktube.f
+    F_sidre_shocktube.f
     )
 
 
