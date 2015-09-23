@@ -31,10 +31,8 @@ namespace asctoolkit
 namespace sidre
 {
 
-static char *global_char;
 static int global_int;
 static void *global_void;
-static DataGroup *global_group;
 
 /*!
  * \brief Return DataView for a Fortran allocatable.
@@ -42,29 +40,25 @@ static DataGroup *global_group;
  * The Fortran allocatable array is the buffer for the DataView.
  */
 void *register_allocatable(DataGroup *group,
-			   char *name, int lname,
+			   const std::string &name,
 			   void *array, int atk_type, int rank)
 {
-//  SLIC_ASSERT( name != ATK_NULLPTR && lname > 0);
-//  std::string namestr = std::string(name, lname)
-//  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( group->hasView(name) == false, "name == " << name );
 
 #if 0
-  if ( name.empty() || hasView(name) ) 
+  if ( name.empty() || group->hasView(name) ) 
   {
     return ATK_NULLPTR;
   }
   else 
   {
-    DataBuffer * buff = this->getDataStore()->createBuffer();
+    DataBuffer * buff = group->getDataStore()->createBuffer();
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
     return attachView(view);
   }
 #endif
-    global_group = group;
-    global_char = name;
-    global_int = lname;
     global_void = array;
     global_int = atk_type;
     global_int = rank;

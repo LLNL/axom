@@ -272,7 +272,7 @@ void *atk_register_allocatable_{typename}_{nd}_(
     char *name, int lname,
     void *array, int atk_type, int rank)
 {{
-    return register_allocatable(group, name, lname, array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
 }}
 """.format(**d)
 
