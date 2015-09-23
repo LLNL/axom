@@ -78,9 +78,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT  ${API_OUTPUT_DIR}/SidreAllocatablef.f
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
-    COMMAND ${PYTHON_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py fortran-allocatable > 
-            ${API_OUTPUT_DIR}/SidreAllocatablef.f
+    COMMAND ${COG_EXECUTABLE} -r ${API_OUTPUT_DIR}/SidreAllocatablef.f
 )
 
 #
