@@ -15,7 +15,7 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview)  view_iarray1
-!    integer num_elements
+    integer num_elements
 
     ds = datastore_new()
     root = ds%get_root()
@@ -24,9 +24,8 @@ contains
 
     view_iarray1 = root%register_allocatable("iarray", iarray)
 
-!    num_elements = view_iarray1%get_number_of_elements()
-!    call assert_equals(num_elements, 10)
-    call assert_true(.true.)
+    num_elements = view_iarray1%get_number_of_elements()
+    call assert_equals(num_elements, 10)
 
     call ds%delete()
 

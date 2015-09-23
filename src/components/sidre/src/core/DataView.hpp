@@ -32,6 +32,7 @@
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
+#include "sidre/SidreAllocatable.hpp"  // XXX - temporary - use pointers later
 
 
 
@@ -449,7 +450,12 @@ public:
    */
   size_t getNumberOfElements() const
   {
-    return m_node.dtype().number_of_elements();
+      if (m_buffer_context == ATK_NULLPTR) {
+        return m_node.dtype().number_of_elements();
+      } else {
+        // XXX - call via a pointer later.
+        return atk_size_allocatable_int_1d_ptr_(m_buffer_context);
+      }
   }
 
 //@}
