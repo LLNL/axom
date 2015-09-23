@@ -490,6 +490,14 @@ private:
             void * opaque_ptr);
 
   /*!
+   *  \brief Private ctor that creates associates meta-buffer with given name
+   *         in given parent group.
+   */
+  DataView( const std::string& name,
+	    DataGroup * const owning_group,
+	    void * buffer_context, void * metabuffer);
+
+  /*!
    * \brief Private copy ctor.
    */
   DataView(const DataView& source);
@@ -520,6 +528,9 @@ private:
 
   /// Has Schema been applied data?
   bool m_is_applied;
+
+  /// Meta-buffer support
+  void *m_buffer_context;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

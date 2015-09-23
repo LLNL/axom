@@ -424,7 +424,8 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(false),
-  m_is_applied(false)
+  m_is_applied(false),
+  m_buffer_context(ATK_NULLPTR)
 {}
 
 /*
@@ -443,11 +444,35 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(true),
-  m_is_applied(false)
+  m_is_applied(false),
+  m_buffer_context(ATK_NULLPTR)
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
   m_node.set((conduit::uint64)opaque_ptr);
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE ctor for DataView associated with meta-buffer.
+ *
+ *************************************************************************
+ */
+static void * metabuffer_XXX;
+DataView::DataView( const std::string& name,
+                    DataGroup * const owning_group,
+                    void * buffer_context, void * metabuffer)
+  : m_name(name),
+  m_owning_group(owning_group),
+  m_data_buffer(ATK_NULLPTR),
+  m_schema(),
+  m_node(),
+  m_is_opaque(false),
+  m_is_applied(false),
+  m_buffer_context(buffer_context)
+{
+    metabuffer_XXX = metabuffer; // xxx unused-parameter
 }
 
 /*

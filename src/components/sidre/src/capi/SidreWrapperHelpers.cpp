@@ -32,7 +32,6 @@ namespace sidre
 {
 
 static int global_int;
-static void *global_void;
 
 /*!
  * \brief Return DataView for a Fortran allocatable.
@@ -43,26 +42,9 @@ void *register_allocatable(DataGroup *group,
 			   const std::string &name,
 			   void *array, int atk_type, int rank)
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( group->hasView(name) == false, "name == " << name );
-
-#if 0
-  if ( name.empty() || group->hasView(name) ) 
-  {
-    return ATK_NULLPTR;
-  }
-  else 
-  {
-    DataBuffer * buff = group->getDataStore()->createBuffer();
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-    return attachView(view);
-  }
-#endif
-    global_void = array;
-    global_int = atk_type;
-    global_int = rank;
-    return NULL;
+  global_int = atk_type;
+  global_int = rank;
+  return group->createViewWithMetaBuffer(name, array);
 }
 
 } /* end namespace sidre */
