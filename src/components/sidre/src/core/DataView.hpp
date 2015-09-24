@@ -450,11 +450,11 @@ public:
    */
   size_t getNumberOfElements() const
   {
-      if (m_buffer_context == ATK_NULLPTR) {
-        return m_node.dtype().number_of_elements();
-      } else {
+      if (m_buffer_context != ATK_NULLPTR) {
         // XXX - call via a pointer later.
         return atk_size_allocatable_int_1d_ptr_(m_buffer_context);
+      } else {
+        return m_node.dtype().number_of_elements();
       }
   }
 

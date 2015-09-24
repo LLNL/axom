@@ -333,9 +333,12 @@ DataView * DataView::apply(const DataType &dtype)
  *
  *************************************************************************
  */
+extern "C" void *atk_address_allocatable_int_1d_ptr_(void *);
 void * DataView::getDataPointer() const
 {
-  if ( isOpaque() ) {
+  if (m_buffer_context != ATK_NULLPTR) {
+     return atk_address_allocatable_int_1d_ptr_(m_buffer_context);
+  } else if ( isOpaque() ) {
       return (void *)(getNode().as_uint64());
   } else {
       return m_data_buffer->getData();

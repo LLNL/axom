@@ -311,6 +311,22 @@ end function atk_size_allocatable_{typename}_{nd}""".format(**d)
 
 ######################################################################
 
+def print_atk_address_allocatable(d):
+    """Write Fortran routine to return address of allocatable.
+    Use C_LOC and add TARGET attribute
+    """
+# XXX - need cmake macro to mangle name portably
+    return """
+function atk_address_allocatable_{typename}_{nd}(array) result(rv)
+    use iso_c_binding
+    implicit none
+    {f_type}, allocatable, intent(IN), target :: array{shape}
+    type(C_PTR) :: rv
+    rv = c_loc(array)
+end function atk_address_allocatable_{typename}_{nd}""".format(**d)
+
+######################################################################
+
 def print_atk_size_allocatable_header(d):
     """Write C++ declarations for Fortran routines.
     """
