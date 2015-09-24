@@ -31,13 +31,6 @@ namespace asctoolkit
 namespace sidre
 {
 
-// SidreWrapperHelpers.cpp
-void *register_allocatable(DataGroup *group,
-			   const std::string &name,
-			   void *array, int atk_type, int rank);
-
-
-
 template< int TYPEID >
 inline TypeID getTypeID()
 {

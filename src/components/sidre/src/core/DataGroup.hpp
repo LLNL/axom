@@ -37,6 +37,7 @@
 #include "slic/slic.hpp"
 
 // SiDRe project headers
+#include "MetaBuffer.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
 #include "SidreTypes.hpp"
@@ -354,7 +355,8 @@ public:
    */
     // XXX
   DataView * createViewWithMetaBuffer( const std::string& name,
-                                       void *buffer);
+                                       void *context,
+                                       MetaBuffer *metabuffer);
 
 
 

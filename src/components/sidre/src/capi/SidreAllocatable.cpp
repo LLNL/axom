@@ -6,6 +6,7 @@
 #include "common/CommonTypes.hpp"
 #include "SidreWrapperHelpers.hpp"
 
+#include "sidre/DataGroup.hpp"
 #include "sidre/MetaBuffer.hpp"
 
 extern "C" {
@@ -43,6 +44,37 @@ namespace sidre {
 
 static int global_int;
 
+// Holds pointers to Fortran functions since they cannot be in the
+// Class AllocatableMetaBuffer directly.
+struct Fptrs {
+    size_t (*getNumberOfElements)(void *context);
+    void *(*getDataPointer)(void *context);
+};
+
+class AllocatableMetaBuffer : public MetaBuffer
+{
+public:
+  Fptrs *getFptrs() { return &m_callbacks; };
+
+  virtual void *getDataPointer(void *context) const
+    {
+	return m_callbacks.getDataPointer(context);
+    }
+
+  virtual size_t getNumberOfElements(void *context) const
+    {
+	return m_callbacks.getNumberOfElements(context);
+    }
+
+private:
+  Fptrs m_callbacks;
+
+};
+
+// XXX - temp code
+AllocatableMetaBuffer *JUNK_DUMMY = NULL;
+void RegisterFortranAllocatableMetaBuffers(void);
+
 /*!
  * \brief Return DataView for a Fortran allocatable.
  *
@@ -52,9 +84,12 @@ void *register_allocatable(DataGroup *group,
 			   const std::string &name,
 			   void *array, int atk_type, int rank)
 {
+  if (JUNK_DUMMY == NULL) {
+      RegisterFortranAllocatableMetaBuffers();
+  }
   global_int = atk_type;
   global_int = rank;
-  return group->createViewWithMetaBuffer(name, array);
+  return group->createViewWithMetaBuffer(name, array, JUNK_DUMMY);
 }
 
 extern "C" {
@@ -148,39 +183,11 @@ void *atk_register_allocatable_double_1d_ptr_(
 
 }  // extern "C"
 
-// Holds pointers to Fortran functions since they cannot be in the
-// Class AllocatableMetaBuffer directly.
-struct Fptrs {
-    size_t (*getNumberOfElements)(void *array);
-    void *(*getDataPointer)(void *);
-};
-
-class AllocatableMetaBuffer : MetaBuffer
-{
-public:
-  Fptrs *getFptrs() { return &m_callbacks; };
-
-  virtual void *getDataPointer(void *context) const
-    {
-	return m_callbacks.getDataPointer(context);
-    }
-
-  virtual size_t getNumberOfElements(void *context) const
-    {
-	return m_callbacks.getNumberOfElements(context);
-    }
-
-private:
-  Fptrs m_callbacks;
-
-};
-
 
 // Create MetaBuffer classes to describe how to access Fortran allocatables.
 // An instance is needed for each type-kind-rank since this depends on using
 // the Fortran compiler to unpack the allocatable dope-vector.
 
-AllocatableMetaBuffer *JUNK_DUMMY;
 void RegisterFortranAllocatableMetaBuffers(void)
 {
     JUNK_DUMMY = new AllocatableMetaBuffer;

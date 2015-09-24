@@ -147,18 +147,20 @@ DataView * DataGroup::createViewAndBuffer( const std::string& name,
 }
 
 DataView * DataGroup::createViewWithMetaBuffer( const std::string& name,
-						void *buffer)
+                                                void *context,
+                                                MetaBuffer *metabuffer)
 {
+  SLIC_ASSERT( metabuffer != ATK_NULLPTR );
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
 
-  if ( name.empty() || hasView(name) ) 
+  if ( metabuffer == ATK_NULLPTR || name.empty() || hasView(name) ) 
   {
     return ATK_NULLPTR;
   }
   else 
   {
-    DataView * const view = new DataView( name, this, buffer, NULL);
+    DataView * const view = new DataView( name, this, context, metabuffer);
     return attachView(view);
   }
 }

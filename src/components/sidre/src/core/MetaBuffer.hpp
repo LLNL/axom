@@ -21,40 +21,10 @@
 #ifndef METABUFFER_HPP_
 #define METABUFFER_HPP_
 
-// Standard C++ headers
-#include <memory>
-#include <map>
-#include <string>
-#include <vector>
-
-#if defined(USE_CXX11)
-#include <unordered_map>
-#else
-#include "boost/unordered_map.hpp"
-#endif
-
-// Other CS Toolkit headers
-#include "slic/slic.hpp"
-
-// SiDRe project headers
-#include "Collections.hpp"
-#include "DataView.hpp"
-#include "SidreTypes.hpp"
-
-
-
 namespace asctoolkit
 {
 namespace sidre
 {
-
-// using directives to make Conduit usage easier and less visible
-using conduit::Node;
-using conduit::Schema;
-
-class DataBuffer;
-class DataGroup;
-class DataStore;
 
 /*!
  * \class MetaBuffer

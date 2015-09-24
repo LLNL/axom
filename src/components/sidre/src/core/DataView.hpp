@@ -32,7 +32,7 @@
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
-#include "sidre/SidreAllocatable.hpp"  // XXX - temporary - use pointers later
+#include "sidre/MetaBuffer.hpp"
 
 
 
@@ -450,9 +450,8 @@ public:
    */
   size_t getNumberOfElements() const
   {
-      if (m_buffer_context != ATK_NULLPTR) {
-        // XXX - call via a pointer later.
-        return atk_size_allocatable_int_1d_ptr_(m_buffer_context);
+      if (m_metabuffer != ATK_NULLPTR) {
+        return m_metabuffer->getNumberOfElements(m_buffer_context);
       } else {
         return m_node.dtype().number_of_elements();
       }
@@ -501,7 +500,7 @@ private:
    */
   DataView( const std::string& name,
 	    DataGroup * const owning_group,
-	    void * buffer_context, void * metabuffer);
+	    void * context, MetaBuffer * metabuffer);
 
   /*!
    * \brief Private copy ctor.
@@ -535,8 +534,11 @@ private:
   /// Has Schema been applied data?
   bool m_is_applied;
 
-  /// Meta-buffer support
-  void *m_buffer_context;
+  /// MetaBuffer context
+  void * m_buffer_context;
+
+  // MetaBuffer methods
+  MetaBuffer * m_metabuffer;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

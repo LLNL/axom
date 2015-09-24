@@ -333,11 +333,10 @@ DataView * DataView::apply(const DataType &dtype)
  *
  *************************************************************************
  */
-extern "C" void *atk_address_allocatable_int_1d_ptr_(void *);
 void * DataView::getDataPointer() const
 {
-  if (m_buffer_context != ATK_NULLPTR) {
-     return atk_address_allocatable_int_1d_ptr_(m_buffer_context);
+  if (m_metabuffer != ATK_NULLPTR) {
+      return m_metabuffer->getDataPointer(m_buffer_context);
   } else if ( isOpaque() ) {
       return (void *)(getNode().as_uint64());
   } else {
@@ -428,7 +427,8 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_is_opaque(false),
   m_is_applied(false),
-  m_buffer_context(ATK_NULLPTR)
+  m_buffer_context(ATK_NULLPTR),
+  m_metabuffer(ATK_NULLPTR)
 {}
 
 /*
@@ -448,7 +448,8 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_is_opaque(true),
   m_is_applied(false),
-  m_buffer_context(ATK_NULLPTR)
+  m_buffer_context(ATK_NULLPTR),
+  m_metabuffer(ATK_NULLPTR)
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
@@ -462,10 +463,9 @@ DataView::DataView( const std::string& name,
  *
  *************************************************************************
  */
-static void * metabuffer_XXX;
 DataView::DataView( const std::string& name,
                     DataGroup * const owning_group,
-                    void * buffer_context, void * metabuffer)
+                    void * context, MetaBuffer * metabuffer)
   : m_name(name),
   m_owning_group(owning_group),
   m_data_buffer(ATK_NULLPTR),
@@ -473,10 +473,9 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_is_opaque(false),
   m_is_applied(false),
-  m_buffer_context(buffer_context)
-{
-    metabuffer_XXX = metabuffer; // xxx unused-parameter
-}
+  m_buffer_context(context),
+  m_metabuffer(metabuffer)
+{}
 
 /*
  *************************************************************************
