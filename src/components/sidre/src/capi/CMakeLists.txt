@@ -81,6 +81,13 @@ add_custom_command(
     COMMAND ${COG_EXECUTABLE} -r ${API_OUTPUT_DIR}/SidreAllocatablef.f
 )
 
+add_custom_target(sidre-cog
+                  DEPENDS
+                      ${API_OUTPUT_DIR}/SidreAllocatable.cpp
+                      ${API_OUTPUT_DIR}/SidreAllocatable.hpp
+                      ${API_OUTPUT_DIR}/SidreAllocatablef.f
+)
+
 #
 # Tell parent about our files.
 #

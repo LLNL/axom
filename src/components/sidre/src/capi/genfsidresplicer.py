@@ -309,6 +309,12 @@ function atk_size_allocatable_{typename}_{nd}(array) result(rv)
     rv = size(array)
 end function atk_size_allocatable_{typename}_{nd}""".format(**d)
 
+def print_atk_size_allocatable_header(d):
+    """Write C++ declarations for Fortran routines.
+    """
+# XXX - need cmake macro to mangle name portably
+    return "size_t atk_size_allocatable_{typename}_{nd}_(void *array);".format(**d)
+
 ######################################################################
 
 def print_atk_address_allocatable(d):
@@ -325,13 +331,8 @@ function atk_address_allocatable_{typename}_{nd}(array) result(rv)
     rv = c_loc(array)
 end function atk_address_allocatable_{typename}_{nd}""".format(**d)
 
-######################################################################
-
-def print_atk_size_allocatable_header(d):
-    """Write C++ declarations for Fortran routines.
-    """
-# XXX - need cmake macro to mangle name portably
-    return "size_t atk_size_allocatable_{typename}_{nd}_(void *array);".format(**d)
+def print_atk_address_allocatable_header(d):
+    return "void *atk_address_allocatable_{typename}_{nd}_(void *array);".format(**d)
 
 ######################################################################
 
