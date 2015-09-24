@@ -12,26 +12,47 @@
 
 #include "sidre/sidre.hpp"
 
-using asctoolkit::sidre::SidreLength;
-using asctoolkit::sidre::TypeID;
-using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataGroup;
+#include "conduit/conduit.hpp"
+
+#include <iostream>
+
+//using asctoolkit::sidre::SidreLength;
+//using asctoolkit::sidre::TypeID;
+//using asctoolkit::sidre::DataBuffer;
+//using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::IndexType;
-using asctoolkit::sidre::InvalidIndex;
-using asctoolkit::sidre::isNameValid;
-using asctoolkit::sidre::indexIsValid;
-using asctoolkit::sidre::DataType;
-using asctoolkit::slic::setAbortOnError;
-using asctoolkit::slic::setAbortOnAssert;
+//using asctoolkit::sidre::DataView;
+//using asctoolkit::sidre::IndexType;
+//using asctoolkit::sidre::InvalidIndex;
+//using asctoolkit::sidre::isNameValid;
+//using asctoolkit::sidre::indexIsValid;
+//using asctoolkit::sidre::DataType;
+//using asctoolkit::slic::setAbortOnError;
+//using asctoolkit::slic::setAbortOnAssert;
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-TEST(sidre_group,get_name)
+TEST(sidre_conduit,int_array)
 {
+  // Create Conduit Node
+  int    int_av[6]   = {-2,-4,-8,-16,-32,-64};
+  conduit::int_array   int_av_a(int_av,conduit::DataType::c_int(6));
+
+  conduit::Node n;
+  n.set(int_av_a);
+  n.schema().print();
+  int *int_ptr = n.as_int_ptr();
+  for(int i=0;i<6;i++)
+  {
+      EXPECT_EQ(int_ptr[i],int_av[i]);
+      std::cout << int_ptr[i] << " ";
+  }
+  std::cout << std::endl;
+
+
   DataStore * ds = new DataStore();
+
 #if 0
   DataGroup * root = ds->getRoot();
   DataGroup * group = root->createGroup("test");
