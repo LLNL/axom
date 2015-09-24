@@ -11,6 +11,7 @@ set(gtest_sidre_tests
    sidre_group.cpp
    sidre_opaque.cpp
    sidre_view.cpp
+   sidre_conduit.cpp
    )
 
 set(gtest_sidre_C_tests

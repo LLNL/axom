@@ -9,7 +9,7 @@ module sidre_allocatable
 
 contains
 
-  subroutine local_allocatable
+  subroutine local_allocatable_int
     integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
@@ -38,7 +38,40 @@ contains
 
     call ds%delete()
 
-  end subroutine local_allocatable
+  end subroutine local_allocatable_int
+
+
+  subroutine local_allocatable_double
+    use iso_c_binding
+    real(C_DOUBLE), allocatable :: iarray(:)
+    real(C_DOUBLE), pointer :: ipointer(:)
+
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview)  view_iarray1
+    integer num_elements
+    integer i
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    allocate(iarray(10))
+    do i=1,10
+       iarray(i) = i + 0.5d0
+    enddo
+
+    view_iarray1 = root%register_allocatable("iarray", iarray)
+
+    num_elements = view_iarray1%get_number_of_elements()
+    call assert_equals(num_elements, 10)
+
+    ! get array via a pointer
+    call view_iarray1%get_value(ipointer)
+    call assert_true(all(abs(iarray-ipointer).lt..0005))
+
+    call ds%delete()
+
+  end subroutine local_allocatable_double
 
 end module sidre_allocatable
 
@@ -53,7 +86,8 @@ function fortran_test() bind(C,name="fortran_test")
 
   call init_fruit
 
-  call local_allocatable
+  call local_allocatable_int
+  call local_allocatable_double
 
   call fruit_summary
   call fruit_finalize
