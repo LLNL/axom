@@ -9,10 +9,12 @@
 #include "sidre/DataGroup.hpp"
 #include "sidre/MetaBuffer.hpp"
 
+// import cog once
+//[[[cog import cog;import genfsidresplicer as gen ]]]
+//[[[end]]]
+
 extern "C" {
 //[[[cog
-//import cog
-//import genfsidresplicer as gen
 //gen.print_lines(cog.outl, gen.print_atk_size_allocatable_header)
 //]]]
 size_t atk_size_allocatable_int_scalar_ptr_(void *array);
@@ -42,11 +44,11 @@ void *atk_address_allocatable_double_1d_ptr_(void *array);
 namespace asctoolkit {
 namespace sidre {
 
-static int global_int;
-
 // Holds pointers to Fortran functions since they cannot be in the
 // Class AllocatableMetaBuffer directly.
 struct Fptrs {
+    int rank;
+    int type;
     size_t (*getNumberOfElements)(void *context);
     void *(*getDataPointer)(void *context);
 };
@@ -72,31 +74,33 @@ private:
 };
 
 // XXX - temp code
-AllocatableMetaBuffer *JUNK_DUMMY = NULL;
+bool JUNK_DUMMY = false;
 void RegisterFortranAllocatableMetaBuffers(void);
+
+//[[[cog cog.outl('static AllocatableMetaBuffer *metabuffer_cache[%s];' % gen.num_metabuffers()) ]]]
+static AllocatableMetaBuffer *metabuffer_cache[8];
+//[[[end]]]
 
 /*!
  * \brief Return DataView for a Fortran allocatable.
  *
  * The Fortran allocatable array is the buffer for the DataView.
  */
-void *register_allocatable(DataGroup *group,
-			   const std::string &name,
-			   void *array, int atk_type, int rank)
+static void *register_allocatable(DataGroup *group,
+				  const std::string &name,
+				  void *context, int imetabuffer)
 {
-  if (JUNK_DUMMY == NULL) {
+  if (! JUNK_DUMMY) {
       RegisterFortranAllocatableMetaBuffers();
+      JUNK_DUMMY = true;
   }
-  global_int = atk_type;
-  global_int = rank;
-  return group->createViewWithMetaBuffer(name, array, JUNK_DUMMY);
+  return group->createViewWithMetaBuffer(name, context,
+					 metabuffer_cache[imetabuffer]);
 }
 
 extern "C" {
 
 //[[[cog
-//import cog
-//import genfsidresplicer as gen
 //gen.print_lines(cog.outl, gen.print_atk_register_allocatable)
 //]]]
 
@@ -105,9 +109,9 @@ extern "C" {
 void *atk_register_allocatable_int_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -115,9 +119,9 @@ void *atk_register_allocatable_int_scalar_ptr_(
 void *atk_register_allocatable_int_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -125,9 +129,9 @@ void *atk_register_allocatable_int_1d_ptr_(
 void *atk_register_allocatable_long_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -135,9 +139,9 @@ void *atk_register_allocatable_long_scalar_ptr_(
 void *atk_register_allocatable_long_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -145,9 +149,9 @@ void *atk_register_allocatable_long_1d_ptr_(
 void *atk_register_allocatable_float_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -155,9 +159,9 @@ void *atk_register_allocatable_float_scalar_ptr_(
 void *atk_register_allocatable_float_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -165,9 +169,9 @@ void *atk_register_allocatable_float_1d_ptr_(
 void *atk_register_allocatable_double_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 
 // Fortran callable routine.
@@ -175,9 +179,9 @@ void *atk_register_allocatable_double_scalar_ptr_(
 void *atk_register_allocatable_double_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }
 //[[[end]]]
 
@@ -190,13 +194,70 @@ void *atk_register_allocatable_double_1d_ptr_(
 
 void RegisterFortranAllocatableMetaBuffers(void)
 {
-    JUNK_DUMMY = new AllocatableMetaBuffer;
-    Fptrs *callbacks = JUNK_DUMMY->getFptrs();
+  Fptrs *callbacks;
 
-    callbacks->getNumberOfElements = atk_size_allocatable_int_1d_ptr_;
-    callbacks->getDataPointer = atk_address_allocatable_int_1d_ptr_;
+
+//[[[cog
+//gen.print_lines(cog.out, gen.print_metabuffer)
+//]]]
+
+metabuffer_cache[0] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[0]->getFptrs();
+callbacks->rank = 0;
+callbacks->type = ATK_C_INT_T;
+callbacks->getNumberOfElements = atk_size_allocatable_int_scalar_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_int_scalar_ptr_;
+
+metabuffer_cache[1] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[1]->getFptrs();
+callbacks->rank = 1;
+callbacks->type = ATK_C_INT_T;
+callbacks->getNumberOfElements = atk_size_allocatable_int_1d_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_int_1d_ptr_;
+
+metabuffer_cache[2] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[2]->getFptrs();
+callbacks->rank = 0;
+callbacks->type = ATK_C_LONG_T;
+callbacks->getNumberOfElements = atk_size_allocatable_long_scalar_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_long_scalar_ptr_;
+
+metabuffer_cache[3] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[3]->getFptrs();
+callbacks->rank = 1;
+callbacks->type = ATK_C_LONG_T;
+callbacks->getNumberOfElements = atk_size_allocatable_long_1d_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_long_1d_ptr_;
+
+metabuffer_cache[4] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[4]->getFptrs();
+callbacks->rank = 0;
+callbacks->type = ATK_C_FLOAT_T;
+callbacks->getNumberOfElements = atk_size_allocatable_float_scalar_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_float_scalar_ptr_;
+
+metabuffer_cache[5] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[5]->getFptrs();
+callbacks->rank = 1;
+callbacks->type = ATK_C_FLOAT_T;
+callbacks->getNumberOfElements = atk_size_allocatable_float_1d_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_float_1d_ptr_;
+
+metabuffer_cache[6] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[6]->getFptrs();
+callbacks->rank = 0;
+callbacks->type = ATK_C_DOUBLE_T;
+callbacks->getNumberOfElements = atk_size_allocatable_double_scalar_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_double_scalar_ptr_;
+
+metabuffer_cache[7] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[7]->getFptrs();
+callbacks->rank = 1;
+callbacks->type = ATK_C_DOUBLE_T;
+callbacks->getNumberOfElements = atk_size_allocatable_double_1d_ptr_;
+callbacks->getDataPointer = atk_address_allocatable_double_1d_ptr_;
+//[[[end]]]
 }
-
 
 }  // namespace asctoolkit
 }  // namespace sidre

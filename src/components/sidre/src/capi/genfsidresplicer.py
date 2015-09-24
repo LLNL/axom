@@ -13,6 +13,11 @@ types = (
     ( 'double', 'real(C_DOUBLE)',  'ATK_C_DOUBLE_T'),
 )
 
+# XXX - only doing 0-d and 1-d for now
+maxdims = 1
+
+def num_metabuffers():
+    return len(types) * (maxdims + 1) # include scalars
 ######################################################################
 
 def print_register_allocatable(d):
@@ -42,14 +47,13 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     implicit none
 
     interface
-       function ATK_register_allocatable_{typename}_{nd}(group, name, lname, array, atk_type, rank) result(rv)
+       function ATK_register_allocatable_{typename}_{nd}(group, name, lname, array, indx) result(rv)
        use iso_c_binding
        type(C_PTR), value, intent(IN)    :: group
        character(*), intent(IN)          :: name
        integer(C_INT), value, intent(IN) :: lname
        {f_type}, allocatable, intent(IN) :: array{shape}
-       integer(C_INT), value, intent(IN) :: atk_type
-       integer(C_INT), value, intent(IN) :: rank
+       integer(C_INT), value, intent(IN) :: indx
        type(C_PTR) rv
        end function ATK_register_allocatable_{typename}_{nd}
     end interface
@@ -57,13 +61,12 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
     {f_type}, allocatable, intent(IN) :: value{shape}
-    integer(C_INT) :: atk_type = {atk_type}
-    integer(C_INT) :: ndim = {rank}
     integer(C_INT) :: lname
     type(dataview) :: rv
+    integer(C_INT) :: indx = {index}
 
     lname = len_trim(name)
-    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(group%voidptr, name, lname, value, atk_type, ndim)
+    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(group%voidptr, name, lname, value, indx)
 end function datagroup_register_allocatable_{typename}_{nd}""".format(**d)
 
     elif d['rank'] == 1:
@@ -74,28 +77,26 @@ function datagroup_register_allocatable_{typename}_{nd}(group, name, value) resu
     implicit none
 
     interface
-       function ATK_register_allocatable_{typename}_{nd}(group, name, lname, array, atk_type, rank) result(rv)
+       function ATK_register_allocatable_{typename}_{nd}(group, name, lname, array, indx) result(rv)
        use iso_c_binding
        type(C_PTR), value, intent(IN)    :: group
        character(*), intent(IN)          :: name
        integer(C_INT), value, intent(IN) :: lname
        {f_type}, allocatable, intent(IN) :: array{shape}
-       integer(C_INT), value, intent(IN) :: atk_type
-       integer(C_INT), value, intent(IN) :: rank
+       integer(C_INT), value, intent(IN) :: indx
        type(C_PTR) rv
        end function ATK_register_allocatable_{typename}_{nd}
     end interface
 
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
-    integer(C_INT) :: atk_type = {atk_type}
-    integer(C_INT) :: ndim = {rank}
     {f_type}, allocatable, intent(IN) :: value{shape}
     integer(C_INT) :: lname
     type(dataview) :: rv
+    integer(C_INT) :: indx = {index}
 
     lname = len_trim(name)
-    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(group%voidptr, name, lname, value, atk_type, ndim)
+    rv%voidptr = ATK_register_allocatable_{typename}_{nd}(group%voidptr, name, lname, value, indx)
 end function datagroup_register_allocatable_{typename}_{nd}""".format(**d)
     else:
         raise RuntimeError("rank too large in print_register_allocatable")
@@ -177,6 +178,7 @@ def foreach_value(lines, fcn, **kwargs):
         shape.append(':')
     d = {}
     d.update(kwargs)
+    indx = 0
     for typetuple in types:
         d['typename'], d['f_type'], d['atk_type'] = typetuple
 
@@ -188,12 +190,16 @@ def foreach_value(lines, fcn, **kwargs):
 #        lines.append(fcn(d))
 
         # scalar pointers
+        d['index'] = indx
+        indx += 1
         d['rank'] = 0
         d['nd'] = 'scalar_ptr'
         d['shape'] = ''
         lines.append(fcn(d))
 
-        for nd in range(1,2):   # XXX - only doing 0-d and 1-d for now
+        for nd in range(1,maxdims+1):
+            d['index'] = indx
+            indx += 1
             d['rank'] = nd
             d['nd'] = '%dd_ptr' % nd
             d['shape'] = '(' + ','.join(shape[:nd]) + ')'
@@ -279,9 +285,9 @@ def print_atk_register_allocatable(d):
 void *atk_register_allocatable_{typename}_{nd}_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int atk_type, int rank)
+    void *array, int indx)
 {{
-    return register_allocatable(group, std::string(name, lname), array, atk_type, rank); 
+    return register_allocatable(group, std::string(name, lname), array, indx); 
 }}""".format(**d)
 
 ######################################################################
@@ -333,6 +339,19 @@ end function atk_address_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_address_allocatable_header(d):
     return "void *atk_address_allocatable_{typename}_{nd}_(void *array);".format(**d)
+
+######################################################################
+
+def print_metabuffer(d):
+    return """
+metabuffer_cache[{index}] = new AllocatableMetaBuffer;
+callbacks = metabuffer_cache[{index}]->getFptrs();
+callbacks->rank = {rank};
+callbacks->type = {atk_type};
+callbacks->getNumberOfElements = atk_size_allocatable_{typename}_{nd}_;
+callbacks->getDataPointer = atk_address_allocatable_{typename}_{nd}_;
+""".format(**d)
+
 
 ######################################################################
 
