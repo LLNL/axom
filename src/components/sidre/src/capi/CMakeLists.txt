@@ -70,12 +70,6 @@ add_custom_command(
 )
 
 add_custom_command(
-    OUTPUT  ${API_OUTPUT_DIR}/SidreAllocatable.hpp
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
-    COMMAND ${COG_EXECUTABLE} -r ${API_OUTPUT_DIR}/SidreAllocatable.hpp
-)
-
-add_custom_command(
     OUTPUT  ${API_OUTPUT_DIR}/SidreAllocatablef.f
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
     COMMAND ${COG_EXECUTABLE} -r ${API_OUTPUT_DIR}/SidreAllocatablef.f
@@ -84,7 +78,6 @@ add_custom_command(
 add_custom_target(sidre-cog
                   DEPENDS
                       ${API_OUTPUT_DIR}/SidreAllocatable.cpp
-                      ${API_OUTPUT_DIR}/SidreAllocatable.hpp
                       ${API_OUTPUT_DIR}/SidreAllocatablef.f
 )
 
