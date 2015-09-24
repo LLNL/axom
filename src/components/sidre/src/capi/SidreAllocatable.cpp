@@ -41,6 +41,22 @@ void *atk_address_allocatable_double_1d_ptr_(void *array);
 namespace asctoolkit {
 namespace sidre {
 
+static int global_int;
+
+/*!
+ * \brief Return DataView for a Fortran allocatable.
+ *
+ * The Fortran allocatable array is the buffer for the DataView.
+ */
+void *register_allocatable(DataGroup *group,
+			   const std::string &name,
+			   void *array, int atk_type, int rank)
+{
+  global_int = atk_type;
+  global_int = rank;
+  return group->createViewWithMetaBuffer(name, array);
+}
+
 extern "C" {
 
 //[[[cog
