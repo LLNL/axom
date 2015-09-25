@@ -56,16 +56,16 @@ TEST(sidre_conduit,int_array)
   DataGroup * root = ds->getRoot();
 
   DataView * view = registerConduitNode(root, "cnode", &n);
-  EXPECT_FALSE(view);
-#if 0
-  DataGroup * group = root->createGroup("test");
+  EXPECT_TRUE(view != ATK_NULLPTR);
 
-  EXPECT_TRUE(group->getName() == std::string("test") );
+  int num_elements = view->getNumberOfElements();
+  EXPECT_EQ(num_elements, 6);
 
-  DataGroup * group2 = root->getGroup("foo");
-  EXPECT_TRUE(group2 == ATK_NULLPTR);
-#endif
-  EXPECT_TRUE(true);
+  int * iptr = (int *) view->getDataPointer();
+  for (int i=0; i < 6; i++)
+  {
+      EXPECT_EQ(int_av[i], iptr[i]);
+  }
 
   delete ds;
 }
