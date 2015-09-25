@@ -534,6 +534,7 @@ private:
   /// Has Schema been applied data?
   bool m_is_applied;
 
+public: // XXX for development
   // requested type
   TypeID m_type;
 
@@ -542,6 +543,7 @@ private:
 
   /// MetaBuffer context
   void * m_buffer_context;
+private:
 
   // MetaBuffer methods
   MetaBuffer * m_metabuffer;

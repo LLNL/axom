@@ -319,7 +319,7 @@ def print_atk_size_allocatable_header(d):
     """Write C++ declarations for Fortran routines.
     """
 # XXX - need cmake macro to mangle name portably
-    return "size_t atk_size_allocatable_{typename}_{nd}_(void *array);".format(**d)
+    return "size_t atk_size_allocatable_{typename}_{nd}_(void * array);".format(**d)
 
 ######################################################################
 
@@ -338,7 +338,33 @@ function atk_address_allocatable_{typename}_{nd}(array) result(rv)
 end function atk_address_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_address_allocatable_header(d):
-    return "void *atk_address_allocatable_{typename}_{nd}_(void *array);".format(**d)
+    return "void *atk_address_allocatable_{typename}_{nd}_(void * array);".format(**d)
+
+######################################################################
+
+def print_atk_allocate_allocatable(d):
+    """Write Fortran routine to allocate an allocatable.
+    """
+# XXX - need cmake macro to mangle name portably
+    if d['rank'] == 0:
+        size = '';
+    elif d['rank'] == 1:
+        size = '(nitems)'
+    else:
+        raise NotImplementedError
+    
+
+    return """
+subroutine atk_allocate_allocatable_{typename}_{nd}(array, nitems)
+    use iso_c_binding
+    implicit none
+    {f_type}, allocatable, intent(OUT), target :: array{shape}
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array{size})
+end subroutine atk_allocate_allocatable_{typename}_{nd}""".format(size=size, **d)
+
+def print_atk_allocate_allocatable_header(d):
+    return "void atk_allocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
 
 ######################################################################
 
@@ -350,6 +376,7 @@ callbacks->rank = {rank};
 callbacks->type = {atk_type};
 callbacks->getNumberOfElements = atk_size_allocatable_{typename}_{nd}_;
 callbacks->getDataPointer = atk_address_allocatable_{typename}_{nd}_;
+callbacks->allocate = atk_allocate_allocatable_{typename}_{nd}_;
 """.format(**d)
 
 

@@ -144,3 +144,73 @@ function atk_address_allocatable_double_1d_ptr(array) result(rv)
 end function atk_address_allocatable_double_1d_ptr
 ![[[end]]]
 
+
+
+![[[cog
+!gen.print_lines(cog.outl, gen.print_atk_allocate_allocatable)
+!]]]
+
+subroutine atk_allocate_allocatable_int_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_INT), allocatable, intent(OUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+end subroutine atk_allocate_allocatable_int_scalar_ptr
+
+subroutine atk_allocate_allocatable_int_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_INT), allocatable, intent(OUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+end subroutine atk_allocate_allocatable_int_1d_ptr
+
+subroutine atk_allocate_allocatable_long_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_LONG), allocatable, intent(OUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+end subroutine atk_allocate_allocatable_long_scalar_ptr
+
+subroutine atk_allocate_allocatable_long_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_LONG), allocatable, intent(OUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+end subroutine atk_allocate_allocatable_long_1d_ptr
+
+subroutine atk_allocate_allocatable_float_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_FLOAT), allocatable, intent(OUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+end subroutine atk_allocate_allocatable_float_scalar_ptr
+
+subroutine atk_allocate_allocatable_float_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_FLOAT), allocatable, intent(OUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+end subroutine atk_allocate_allocatable_float_1d_ptr
+
+subroutine atk_allocate_allocatable_double_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_DOUBLE), allocatable, intent(OUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+end subroutine atk_allocate_allocatable_double_scalar_ptr
+
+subroutine atk_allocate_allocatable_double_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_DOUBLE), allocatable, intent(OUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+end subroutine atk_allocate_allocatable_double_1d_ptr
+![[[end]]]
