@@ -68,6 +68,12 @@ public:
 	return m_callbacks.getNumberOfElements(context);
     }
 
+  virtual void allocate(DataView * view) const
+    {
+	return;
+    }
+
+
 private:
   Fptrs m_callbacks;
 

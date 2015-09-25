@@ -9,6 +9,9 @@ module sidre_allocatable
 
 contains
 
+! Use Fortran to allocate, register with datastore then 
+! query metadata using datastore API.
+
   subroutine local_allocatable_int
     integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
@@ -73,6 +76,35 @@ contains
 
   end subroutine local_allocatable_double
 
+! Allocate array via the datastore
+  subroutine ds_allocatable_int
+    integer, allocatable :: iarray(:)
+
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview)  view_iarray1
+    integer num_elements
+    integer i
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    view_iarray1 = root%register_allocatable("iarray", iarray)
+
+    call view_iarray1%declare(ATK_C_INT_T, 10)
+    call view_iarray1%allocate()
+    
+    call assert_true(allocated(iarray))
+
+    ! Check size intrinsic
+    call assert_equals(size(iarray), 10)
+
+    call ds%delete()
+
+  end subroutine ds_allocatable_int
+
+
+
 end module sidre_allocatable
 
 
@@ -88,6 +120,7 @@ function fortran_test() bind(C,name="fortran_test")
 
   call local_allocatable_int
   call local_allocatable_double
+  call ds_allocatable_int
 
   call fruit_summary
   call fruit_finalize

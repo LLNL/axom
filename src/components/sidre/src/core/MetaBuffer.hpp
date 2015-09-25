@@ -26,6 +26,8 @@ namespace asctoolkit
 namespace sidre
 {
 
+    class DataView;
+
 /*!
  * \class MetaBuffer
  *
@@ -45,6 +47,11 @@ public:
    * \brief Return total number of elements allocated by this MetaBuffer object.
    */
   virtual size_t getNumberOfElements(void *context) const = 0;
+
+  /*!
+   * \brief Allocate buffer to requested size.
+   */
+  virtual void allocate(DataView * view) const = 0;
 
 };
 

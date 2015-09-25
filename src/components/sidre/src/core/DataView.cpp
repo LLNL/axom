@@ -58,6 +58,9 @@ DataView * DataView::declare(TypeID type, SidreLength len)
 
     m_schema.set(dtype);
     m_is_applied = false;
+
+    m_type = type;
+    m_nitems = len;
   }
   return this;
 }
@@ -111,6 +114,13 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::allocate()
 {
+  if (m_metabuffer != ATK_NULLPTR)
+  {
+      // XXX  check m_type and m_nitems
+      m_metabuffer->allocate(this);
+      return this;
+  }
+
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
@@ -427,6 +437,8 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_is_opaque(false),
   m_is_applied(false),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(-1),
   m_buffer_context(ATK_NULLPTR),
   m_metabuffer(ATK_NULLPTR)
 {}
@@ -448,6 +460,8 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_is_opaque(true),
   m_is_applied(false),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(-1),
   m_buffer_context(ATK_NULLPTR),
   m_metabuffer(ATK_NULLPTR)
 {
@@ -473,6 +487,8 @@ DataView::DataView( const std::string& name,
   m_node(),
   m_is_opaque(false),
   m_is_applied(false),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(-1),
   m_buffer_context(context),
   m_metabuffer(metabuffer)
 {}

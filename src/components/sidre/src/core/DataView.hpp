@@ -534,6 +534,12 @@ private:
   /// Has Schema been applied data?
   bool m_is_applied;
 
+  // requested type
+  TypeID m_type;
+
+  // requested number of items
+  SidreLength m_nitems;
+
   /// MetaBuffer context
   void * m_buffer_context;
 
