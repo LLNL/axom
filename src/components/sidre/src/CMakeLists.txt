@@ -17,6 +17,7 @@ set(sidre_headers
     core/MetaBuffer.hpp
     core/SidreTypes.hpp
     core/sidre.hpp
+    conduit/SidreConduit.hpp
     ${capi_headers}
 )
 
@@ -28,6 +29,7 @@ set(sidre_sources
     core/DataGroup.cpp
     core/DataStore.cpp
     core/DataView.cpp
+    conduit/SidreConduit.cpp
     ${capi_source}
 )
 
@@ -54,6 +56,7 @@ make_library( LIBRARY_NAME
                 slic
              )
 
+set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 set_target_properties(sidre  PROPERTIES Fortran_FORMAT "FREE")
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.hpp"
+#include "sidre/SidreConduit.hpp"
 
 #include "conduit/conduit.hpp"
 
@@ -19,9 +20,9 @@
 //using asctoolkit::sidre::SidreLength;
 //using asctoolkit::sidre::TypeID;
 //using asctoolkit::sidre::DataBuffer;
-//using asctoolkit::sidre::DataGroup;
+using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
-//using asctoolkit::sidre::DataView;
+using asctoolkit::sidre::DataView;
 //using asctoolkit::sidre::IndexType;
 //using asctoolkit::sidre::InvalidIndex;
 //using asctoolkit::sidre::isNameValid;
@@ -38,7 +39,6 @@ TEST(sidre_conduit,int_array)
   // Create Conduit Node
   int    int_av[6]   = {-2,-4,-8,-16,-32,-64};
   conduit::int_array   int_av_a(int_av,conduit::DataType::c_int(6));
-
   conduit::Node n;
   n.set(int_av_a);
   n.schema().print();
@@ -50,11 +50,14 @@ TEST(sidre_conduit,int_array)
   }
   std::cout << std::endl;
 
-
+  // Add Node to DataStore
   DataStore * ds = new DataStore();
 
-#if 0
   DataGroup * root = ds->getRoot();
+
+  DataView * view = registerConduitNode(root, "cnode", &n);
+  EXPECT_FALSE(view);
+#if 0
   DataGroup * group = root->createGroup("test");
 
   EXPECT_TRUE(group->getName() == std::string("test") );
