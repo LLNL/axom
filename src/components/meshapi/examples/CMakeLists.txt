@@ -123,4 +123,61 @@ if ( ${buildOrigLulesh} )
        ) 
           
 endif()
-                   
+
+
+
+####################################
+# Build meshapi version of tinyHydro
+####################################
+      
+set(tinyHydro_dir tinyHydro  )
+
+set(tinyHydro_lib_headers
+    ${tinyHydro_dir}/HydroC.hpp
+    ${tinyHydro_dir}/Part.hpp
+    ${tinyHydro_dir}/State.hpp
+    ${tinyHydro_dir}/VectorXY.hpp
+    ${tinyHydro_dir}/PolygonMeshXY.hpp
+    ${tinyHydro_dir}/myTimer.hpp        
+    )
+
+set(tinyHydro_lib_sources
+    ${tinyHydro_dir}/HydroC.cpp
+    ${tinyHydro_dir}/Part.cpp
+    ${tinyHydro_dir}/State.cpp
+    ${tinyHydro_dir}/PolygonMeshXY.cpp
+    )
+set(tinyHydro_exe_source
+    ${tinyHydro_dir}/main.cpp
+    )
+
+
+SET(EXTRA_WARNING_DISABLE_FLAGS " -Wno-unused-parameter -Wno-unused-variable ")
+#get_source_file_property(_origflags PolygonMeshXY.hpp COMPILE_FLAGS)
+#set_source_files_properties(
+#         ${tinyHydro_dir}/VectorXY.hpp
+#         PROPERTIES COMPILE_FLAGS "${_origflags} ${EXTRA_WARNING_DISABLE_FLAGS}"     
+#         )
+
+#set_source_files_properties(${tinyHydro_dir}/VectorXY.hpp PROPERTIES COMPILE_FLAGS "${EXTRA_WARNING_DISABLE_FLAGS}" )
+
+
+make_library( 
+    LIBRARY_NAME meshapiTinyHydroLib 
+    LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"  
+   ) 
+   
+make_executable( 
+    EXECUTABLE_NAME meshapiTinyHydro 
+    EXECUTABLE_SOURCE ${tinyHydro_exe_source} 
+    DEPENDS_ON "meshapiTinyHydroLib" 
+   ) 
+
+
+
+set(new_link_flags "-lrt")
+get_target_property(existing_link_flags meshapiTinyHydro LINK_FLAGS)
+if(existing_link_flags)
+    set(new_link_flags "${existing_link_flags} ${new_link_flags}")
+endif()
+set_target_properties(meshapiTinyHydro PROPERTIES LINK_FLAGS ${new_link_flags})
