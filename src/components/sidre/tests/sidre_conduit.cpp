@@ -27,13 +27,16 @@ using asctoolkit::sidre::DataView;
 //using asctoolkit::sidre::InvalidIndex;
 //using asctoolkit::sidre::isNameValid;
 //using asctoolkit::sidre::indexIsValid;
-//using asctoolkit::sidre::DataType;
+using asctoolkit::sidre::DataType;
 //using asctoolkit::slic::setAbortOnError;
 //using asctoolkit::slic::setAbortOnAssert;
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
+// Create a Condit node
+// Register with Datastore
+// Extract address from Datastore
 TEST(sidre_conduit,int_array)
 {
   // Create Conduit Node
@@ -67,6 +70,35 @@ TEST(sidre_conduit,int_array)
       EXPECT_EQ(int_av[i], iptr[i]);
   }
 
+  delete ds;
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+
+// Create array in Datastore
+// Extract as a Condit node
+TEST(sidre_conduit,extract_conduit)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(10));
+  int * data_ptr = dv->getValue();
+
+  for(int i=0 ; i<10 ; i++)
+  {
+    data_ptr[i] = i*i;
+  }
+
+  //  dv->print();
+
+
+  conduit::Node *node = createConduitNode(dv);
+  EXPECT_TRUE(node == ATK_NULLPTR);
+
+
+  //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
 }
 
