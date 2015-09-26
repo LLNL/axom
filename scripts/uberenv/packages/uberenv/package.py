@@ -53,7 +53,7 @@ class Uberenv(Package):
         cfg.write('set(ENABLE_BOOST ON CACHE PATH "")\n')
         cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
         cfg.write("# sparsehash headers from uberenv\n")
-        cfg.write('set(SPARSEHAST_ROOT "%s" CACHE PATH "")\n\n' % spec['sparsehash-headers'].prefix)
+        cfg.write('set(SPARSEHASH_ROOT "%s" CACHE PATH "")\n\n' % spec['sparsehash-headers'].prefix)
         cfg.write("\n")
         cfg.close()        
         

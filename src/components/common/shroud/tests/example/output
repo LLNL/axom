@@ -7,7 +7,6 @@ Wrote wrapUserLibrary.cpp
 Wrote wrapfExClass1.f
 Wrote wrapfExClass2.f
 Wrote wrapfuserlibrary.f
-Wrote fstr_mod.f
 Wrote pyExClass1type.cpp
 Wrote pyExClass2type.cpp
 Wrote pyUserLibrarymodule.hpp

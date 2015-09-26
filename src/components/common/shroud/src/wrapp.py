@@ -95,7 +95,7 @@ class Wrapp(util.WrapperMixin):
             self._push_splicer('function')
             self._begin_class()
             for node in self.tree['functions']:
-                self.wrap_method(None, node)
+                self.wrap_function(None, node)
             self._pop_splicer('function')
 
         self.write_header(self.tree)
@@ -141,7 +141,7 @@ class Wrapp(util.WrapperMixin):
         # wrap methods
         self._push_splicer('method')
         for method in node['methods']:
-            self.wrap_method(node, method)
+            self.wrap_function(node, method)
         self._pop_splicer('method')
 
     def create_class_helper_functions(self, node):
@@ -205,7 +205,7 @@ return 1;""", fmt)
 
         self._pop_splicer('helper')
 
-    def wrap_method(self, cls, node):
+    def wrap_function(self, cls, node):
         """
         cls  - class node or None for functions
         node - function/method node
@@ -237,8 +237,8 @@ return 1;""", fmt)
             result_is_ptr = False
 
         result_typedef = self.typedef[result_type]
-        is_ctor  = result['attrs'].get('constructor', False)
-        is_dtor  = result['attrs'].get('destructor', False)
+        is_ctor  = node['attrs'].get('constructor', False)
+        is_dtor  = node['attrs'].get('destructor', False)
 #        is_const = result['attrs'].get('const', False)
         if is_ctor:   # or is_dtor:
             # XXX - have explicit delete
@@ -262,7 +262,7 @@ return 1;""", fmt)
         # parse arguments
         optional = []
         post_parse = []
-        args = node.get('args', [])
+        args = node['args']
         if not args:
             fmt.ml_flags = 'METH_NOARGS'
         else:
@@ -270,7 +270,7 @@ return 1;""", fmt)
             arg_names = []
             arg_offsets  = []
             offset = 0
-            for arg in node.get('args', []):
+            for arg in node['args']:
                 arg_name = arg['name']
                 fmt.var = arg_name
                 arg_names.append(arg_name)
@@ -338,7 +338,7 @@ return 1;""", fmt)
         fmt.call_list = ', '.join(cpp_call_list)
 
         if cls:
-#                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>({C_this});'
+#                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
 #                fmt_func.C_object = wformat(template, fmt_func)
             fmt.PY_this_call = wformat('self->{BBB}->', fmt)  # call method syntax
         else:
@@ -349,10 +349,10 @@ return 1;""", fmt)
             append_format(PY_code, 'delete self->{BBB};', fmt)
             append_format(PY_code, 'self->{BBB} = NULL;', fmt)
         elif result_type == 'void' and not result_is_ptr:
-            line = wformat('{PY_this_call}{CPP_name}({call_list});', fmt)
+            line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
             PY_code.append(line)
         else:
-            line = wformat('{rv_decl} = {PY_this_call}{CPP_name}({call_list});', fmt)
+            line = wformat('{rv_decl} = {PY_this_call}{method_name}({call_list});', fmt)
             PY_code.append(line)
 
         if 'PY_error_pattern' in node:
@@ -397,10 +397,10 @@ return 1;""", fmt)
 
         if cls:
             util.eval_template(options, fmt_func,
-                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{method_suffix}')
+                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{function_suffix}')
         else:
             util.eval_template(options, fmt_func,
-                               'PY_name_impl', '{PY_prefix}{underscore_name}{method_suffix}')
+                               'PY_name_impl', '{PY_prefix}{underscore_name}{function_suffix}')
 
         self.create_method(cls, fmt, PY_impl)
 
@@ -421,15 +421,15 @@ static PyObject *
         body.append('  PyObject *args,')
         body.append('  PyObject *kwds)')
         body.append('{')
-# use method_suffix in splicer name since a single C++ function may
+# use function_suffix in splicer name since a single C++ function may
 # produce several methods.
 # XXX - make splicer name customizable?
-#        self._create_splicer(fmt.CPP_name, self.PyMethodBody, default=PY_impl)
-        self._create_splicer(fmt.underscore_name + fmt.method_suffix,
+#        self._create_splicer(fmt.method_name, self.PyMethodBody, default=PY_impl)
+        self._create_splicer(fmt.underscore_name + fmt.function_suffix,
                              self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
-        self.PyMethodDef.append( wformat('{{"{CPP_name}{method_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+        self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
     def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
@@ -522,11 +522,9 @@ static PyObject *
 
             fmt_func = methods[0]['fmt']
             fmt = util.Options(fmt_func)
-            fmt.method_suffix = ''
+            fmt.function_suffix = ''
             fmt.doc_string = 'documentation'
             fmt.ml_flags = 'METH_VARARGS|METH_KEYWORDS'
-#            fmt.CPP_name = method
-            #fmt.CPP_name = methods[0]['result']['name']
 
             body = []
             body.append(1)

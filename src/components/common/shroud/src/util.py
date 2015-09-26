@@ -13,13 +13,13 @@ import parse_decl
 fmt = string.Formatter()
 
 default_template = dict(
-#    C_name='{C_prefix}{lower_class}_{underscore_name}{method_suffix}',
+#    C_name='{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
 
 #    C_header_filename = 'wrap{cpp_class}.h',
 #    C_impl_filename = 'wrap{cpp_class}.cpp',
 
-#    F_name_impl = '{lower_class}_{underscore_name}{method_suffix}',
-#    F_name_method = '{underscore_name}{method_suffix}',
+#    F_name_impl = '{lower_class}_{underscore_name}{function_suffix}',
+#    F_name_method = '{underscore_name}{function_suffix}',
 #    F_name_generic = '{underscore_name}',
 )
 
@@ -229,6 +229,11 @@ class Typedef(object):
         c_header=None,        # Name of C header file required for type
         c_to_cpp='{var}',     # expression to convert from C to C++
         c_fortran=None,       # expression to convert from C to Fortran
+        c_argdecl=None,       # list of argument declarations for C wrapper, None=match declaration
+                              # used with string_from_buffer 
+
+        f_c_args=None,        # list of argument names to F_C routine
+        f_c_argdecl=None,     # list of declarations to F_C routine
 
         f_type=None,         # name of type in Fortran
         fortran_derived=None,    # Fortran derived type name
@@ -236,8 +241,20 @@ class Typedef(object):
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})',
         f_kind = None,        # Fortran kind of type
-        f_cast = None,        # Expression to convert to type
+        f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
+        f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
+        f_pre_decl = None,    # declarations needed by f_pre_call
+        f_pre_call = None,    # statement to execute before call, often to coerce types
+        f_post_call = None,   # statement to execute before call - cleanup, coerce result
+        f_rv_decl = None,     # how to declare return variable - when C and Fortran return different types
+
+# XXX - maybe later.  For not in wrapping routines
+#        f_attr_len_trim = None,
+#        f_attr_len = None,
+#        f_attr_size = None,
+
+        result_as_arg = None, # override fields when result should be treated as an argument
 
         PY_format='O',        # 'format unit' for PyArg_Parse
         PY_PyTypeObject=None, # variable name of PyTypeObject instance
@@ -264,9 +281,15 @@ class Typedef(object):
             else:
                 raise RuntimeError("Unknown key for Argument %s", key)
 
-    def copy(self):
-        n = Typedef()
+    def XXXcopy(self):
+        n = Typedef(self.name)
         n.update(self._to_dict())
+        return n
+
+    def clone_as(self, name):
+        n = Typedef(name)
+        n.update(self._to_dict())
+        return n
 
     def _to_dict(self):
         """Convert instance to a dictionary for json.
@@ -373,11 +396,11 @@ def copy_function_node(node):
     new = {}
 
     # Deep copy dictionaries
-    for field in [ 'args', 'qualifiers', 'result' ]:
+    for field in [ 'args', 'attrs', 'result' ]:
         new[field] = copy.deepcopy(node[field])
         known[field] = True
 
-    # Add new Options in chain.
+    # Add new Options in chain
     for field in [ 'fmt', 'options' ]:
         new[field] = Options(node[field])
         known[field] = True
@@ -404,7 +427,7 @@ class XXXFunctionNode(object):
         self.decl = None
         self.result = {}
         self.args = []
-        self.method_suffix = ''
+        self.function_suffix = ''
         self.arg_map = {}
 
     def set_decl(self, decl):

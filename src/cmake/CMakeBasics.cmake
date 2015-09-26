@@ -132,9 +132,6 @@ mark_as_advanced(
 include(ExternalProject)
 if (BUILD_TESTING)
 
-  ## add catch
-  include_directories(${PROJECT_SOURCE_DIR}/TPL/catch/single_include)
-
   ## add google test
   add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/gtest-1.7.0)
   set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR}

@@ -267,12 +267,24 @@ public:
 private:
   std::vector<TYPE *>  m_items;
   MAP_TYPE m_name2idx_map;
+#if defined(USE_DENSE_HASH_MAP)
+  std::string m_empty_key;
+#endif
 };
 
 template <typename TYPE, typename MAP_TYPE>
 bool MapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
                                                const std::string& name)
 {
+
+#if defined(USE_DENSE_HASH_MAP)
+  if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY") {
+     m_empty_key = "DENSE_MAP_EMPTY_KEY";
+     m_name2idx_map.set_empty_key(m_empty_key);
+     m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
+  }
+#endif
+
   if ( m_name2idx_map.insert( std::make_pair(name, m_items.size()) ).second )
   {
     // name was inserted into map
@@ -491,6 +503,13 @@ bool NewMapCollection<TYPE, MAP_TYPE>::insertItem(TYPE * item,
     m_free_ids.pop();
     use_recycled_index = true;
   }
+
+#if defined(USE_DENSE_HASH_MAP)
+  if (m_name2idx_map.empty() && !use_recycled_index) {
+     m_name2idx_map.set_empty_key("DENSE_MAP_EMPTY_KEY");
+     m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
+  }
+#endif
 
   if ( m_name2idx_map.insert( std::make_pair(name, idx) ).second )
   {

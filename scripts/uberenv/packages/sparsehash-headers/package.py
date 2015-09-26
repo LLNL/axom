@@ -24,5 +24,7 @@ class SparsehashHeaders(Package):
 
     def install(self, spec, prefix):
         # simply install the headers
+        configure("--prefix=%s" % prefix)
+        make("src/sparsehash/internal/sparseconfig.h")
         mkdirp(prefix.include)
         shutil.copytree('src/sparsehash', pjoin(prefix.include,"sparsehash"))

@@ -1,0 +1,67 @@
+options:
+  library: Tutorial
+  cpp_header: tutorial.hpp
+  namespace: tutorial
+  F_module_per_class: False
+
+functions:
+- decl: void Function1()
+- decl: double Function2(double arg1, int arg2)
+- decl: bool Function3(bool arg)
+- decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+#  result:
+#    attrs:
+#      pure: true
+- decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+  options:
+    F_string_result_as_arg: output
+
+- decl: double Function5(double arg1 = 3.13, int arg2 = 5)
+
+- decl: void Function6(const std::string& name)
+  function_suffix: _from_name
+- decl: void Function6(int indx)
+  function_suffix: _from_index
+
+- decl: void Function7(ArgType arg)
+  cpp_template:
+    ArgType:
+      - int
+      - double
+
+- decl: RetType Function8()
+  cpp_template:
+    RetType:
+      - int
+      - double
+
+- decl: void Function9(double arg)
+  fortran_generic:
+     arg:
+     -  float
+     -  double
+
+##################################################
+
+# Used with testing
+- decl: const std::string& LastFunctionCalled() +pure
+
+##################################################
+
+classes:
+- name: Class1
+  methods:
+  - decl: Class1 *new()  +constructor
+  - decl: void delete()  +destructor
+  - decl: void Method1()
+
+
+
+
+##################################################
+# Files which contain code to be inserted into generated code
+splicer:
+#  c:
+#  -  ctutorialsplicer.c
+  f:
+  -  ftutorialsplicer.f
