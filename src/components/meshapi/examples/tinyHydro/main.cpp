@@ -8,16 +8,20 @@
 
 int main()  // sets up Sedov and runs it
 {
-   int n = 2;
+   int n = 100;
    int kz = n;
    int lz = n;
    PolygonMeshXY mesh(kz+1,lz+1);
 
    // Create a part
-   double rho0 = 1.0;
-   //double userGamma = 7.0/5.0;
    std::vector<int> zones( mesh.nzones );
+   for(int i=0; i< mesh.nzones; ++i )
+       zones[i] = i;
+
    Part p(zones);
+   State s(mesh);
+
+   double rho0 = 1.0;
    for (int i = 0; i < mesh.nzones; i++)
    {
       p.setRho(i,rho0);
@@ -29,15 +33,15 @@ int main()  // sets up Sedov and runs it
    //double E = 4.48333289847;
    //p.setE(0, E/(4.0*zonemass)); // puts shock at r=0.8 at t=0.3, in XY coords
 
-   // Create the state
-   State s(mesh);
 
-   //printf( "setting initial density, energy, velocity for Sedov problem\n");
-   //for (int i = 0; i < mesh.nnodes; i++)
-   //{
-   //   VectorXY pos = mesh.getPos(i);
-   //   s.setU(i,VectorXY(0.15 - pos.x, 0.15 - pos.y));
-   //}
+   printf( "setting initial density, energy, velocity for Sedov problem\n");
+   for (int i = 0; i < mesh.nnodes; i++)
+   {
+      VectorXY pos = mesh.getPos(i);
+      double ux = pos.x - 0.5;
+      double uy = pos.y - 0.5;
+      s.setU(i, VectorXY(-ux,-uy));
+   }
    s.addPart(&p);
    Part* pp = s.getPart(0);
 
@@ -47,6 +51,8 @@ int main()  // sets up Sedov and runs it
 
    double dt = 0.1;
    h.initialize();
+
+
    h.step(dt);
 
    while( h.time < 0.499999 )

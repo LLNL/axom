@@ -1,10 +1,8 @@
 import sys
-from os.path import expanduser
-sys.path.append(expanduser('~')+'/python/PyBindGen-0.17.0')
 from pybindgen import *
 
 mod = Module('Hydro')
-mod.add_include('"HydroC.h"')
+mod.add_include('"HydroC.hpp"')
 
 mod.add_class('PolygonMeshXY', import_from_module='PolygonMeshXY')
 mod.add_class('State', import_from_module='State')

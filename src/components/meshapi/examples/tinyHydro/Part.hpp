@@ -44,6 +44,9 @@ class Part
    double * energyPerMass;
    double * volumeFraction;
    double gamma;
+
+
+   void dumpPart();
 };
 
 #endif

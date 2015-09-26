@@ -163,3 +163,30 @@ State & State::operator*=(const double s)
 //----------------------------------------------
 //----------------------------------------------
 
+void State::dumpState()
+{
+    printf("\nState has %i parts", nParts);
+
+    printf("\n\nParts");
+    for(int i=0; i< nParts; ++i)
+    {
+        parts[i].dumpPart();
+    }
+
+    printf("\n\nVelocities");
+    for(int i=0; i< mesh->nnodes; ++i)
+    {
+        VectorXY v = velocity[i];
+        VectorXY p = position[i];
+        printf("\n\t Node %i -- pos (%g,%g) -- vel (%g,%g) "
+                , i
+                , p.x, p.y
+                , v.x, v.y
+                );
+    }
+
+    printf("\n\n--\n\n");
+
+}
+
+

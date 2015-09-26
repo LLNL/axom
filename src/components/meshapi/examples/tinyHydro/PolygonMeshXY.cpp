@@ -60,7 +60,11 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
    }
 
    computeNewGeometry();
+
+   //dumpMesh();
 }
+
+
 
 //----------------------------------------------
 PolygonMeshXY::~PolygonMeshXY(void)
@@ -108,13 +112,6 @@ void PolygonMeshXY::computeNewGeometry(void)
       zonePos[iz] *= 1.0/zNumNodes[iz];
    }
 
-
-   for (int z = 0; z < nzones; z++)
-   {
-       printf("Element %i -- vol %g -- pos (%g,%g) \n", z, zoneVolume[z], zonePos[z].x, zonePos[z].y);
-   }
-
-
    // check our final volumes are positive
    for (int z = 0; z < nzones; z++) assert(zoneVolume[z] > 0.0);
 }
@@ -155,3 +152,43 @@ VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
    return ret;
 }
 //----------------------------------------------
+
+
+
+void PolygonMeshXY::dumpMesh()
+{
+    printf("Mesh has %i nodes and %i zones", nnodes, nzones);
+
+    printf("\n\nNodes");
+    for(int i=0; i< nnodes; ++i)
+    {
+        VectorXY p = getPos(i);
+        printf("\n\t Node %i -- pos (%g,%g) ", i, p.x, p.y);
+    }
+
+    printf("\n\nZones");
+    for(int i=0; i< nzones; ++i)
+    {
+        VectorXY p = getZonePos(i);
+        int firstNodeIdx = z2firstNode[i];
+        int firstFaceIdx = z2firstFace[i];
+        printf("\n\t Zone %i -- pos (%g,%g) -- vol %g -- zNumNodes %i -- zoneNodes %i %i %i %i -- zoneFaces %i %i %i %i"
+                , i
+                , p.x, p.y
+                , zoneVol(i)
+                , zNumNodes[i]
+                , zNodes[firstNodeIdx ]
+                , zNodes[firstNodeIdx +1]
+                , zNodes[firstNodeIdx +2]
+                , zNodes[firstNodeIdx +3]
+                , zFaces[firstFaceIdx ]
+                , zFaces[firstFaceIdx +1]
+                , zFaces[firstFaceIdx +2]
+                , zFaces[firstFaceIdx +3]
+                );
+    }
+
+    printf("\n\n--\n\n");
+
+}
+

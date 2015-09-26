@@ -59,6 +59,13 @@ class PolygonMeshXY
 
    VectorXY meshAverageKLZMemOrderA();
    double timeElapsed;
+
+
+   void dumpMesh();
 } ;
+
+
+
+
 
 #endif      // __PolygonMeshXY_hh__

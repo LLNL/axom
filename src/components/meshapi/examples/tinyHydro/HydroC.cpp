@@ -342,6 +342,9 @@ void Hydro::step(double dt)
    printf("cycle %d  time = %f  dt = %f\n", cycle, time, dt);
    // printf("Hydro::step blago 1\n");
 
+//printf("\n -- Dumping state: --\n");
+//state.dumpState();
+
    // ----------------------------------
    // update physics variables using RK2
    // ----------------------------------
@@ -350,9 +353,10 @@ void Hydro::step(double dt)
    calcDerivs(state, dState, 0.5*dt); // dState = time derivatives
    // halfstep = state + dt/2 * dState
    halfStep = state;
+
    dState *= 0.5*dt;
    halfStep += dState;
-   
+
    // update all the algebraically determinable stuff
    updateConstitutives(halfStep);
 

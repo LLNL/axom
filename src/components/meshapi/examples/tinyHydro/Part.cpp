@@ -136,3 +136,18 @@ Part & Part::operator*=(const double s)
 //----------------------------------------------
 //----------------------------------------------
 
+
+void Part::dumpPart()
+{
+    printf("\nPart has %i zones", nzones);
+
+    printf("\n\nzones");
+    for(int i=0; i< nzones; ++i)
+    {
+        printf("\n\t Zone %i -- idx %i"
+                ,i, zones[i]
+                        );
+    }
+    printf("\n\n--\n\n");
+
+}

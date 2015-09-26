@@ -38,4 +38,7 @@ class State
    const int maxNParts;
    VectorXY * velocity;
    VectorXY * position;
+
+
+   void dumpState();
 };

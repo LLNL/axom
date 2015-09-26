@@ -1,10 +1,8 @@
 import sys
-from os.path import expanduser
-sys.path.append(expanduser('~')+'/python/PyBindGen-0.17.0')
 from pybindgen import *
 
 mod = Module('Part')
-mod.add_include('"Part.h"')
+mod.add_include('"Part.hpp"')
 
 klass = mod.add_class('Part')
 

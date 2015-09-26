@@ -1,10 +1,8 @@
 import sys
-from os.path import expanduser
-sys.path.append(expanduser('~')+'/python/PyBindGen-0.17.0')
 import pybindgen
 
 mod = pybindgen.Module('vectorXY')
-mod.add_include('"VectorXY.h"')
+mod.add_include('"VectorXY.hpp"')
 klass = mod.add_class('VectorXY')
 klass.add_instance_attribute('x', 'double')
 klass.add_instance_attribute('y', 'double')

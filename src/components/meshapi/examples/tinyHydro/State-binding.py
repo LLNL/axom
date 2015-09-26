@@ -1,10 +1,8 @@
 import sys
-from os.path import expanduser
-sys.path.append(expanduser('~')+'/python/PyBindGen-0.17.0')
 from pybindgen import *
 
 mod = Module('State')
-mod.add_include('"State.h"')
+mod.add_include('"State.hpp"')
 
 mod.add_struct('VectorXY', import_from_module='vectorXY')
 mod.add_struct('PolygonMeshXY', import_from_module='PolygonMeshXY')
