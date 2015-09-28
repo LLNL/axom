@@ -17,7 +17,7 @@
 
 #include <iostream>
 
-//using asctoolkit::sidre::SidreLength;
+using asctoolkit::sidre::SidreLength;
 //using asctoolkit::sidre::TypeID;
 //using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
@@ -81,9 +81,9 @@ TEST(sidre_conduit,extract_conduit)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  int nitems = 10;
+  SidreLength nitems = 10;
 
-  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(nitems));
+  DataView * dv = root->createViewAndBuffer("u0", CONDUIT_NATIVE_INT_DATATYPE_ID, nitems);
   int * data_ptr = dv->getValue();
   for(int i=0 ; i<nitems ; i++)
   {
@@ -93,7 +93,7 @@ TEST(sidre_conduit,extract_conduit)
   conduit::Node *node = createConduitNode(dv);
   EXPECT_FALSE(node == ATK_NULLPTR);
 
-  EXPECT_EQ(nitems, (int) node->dtype().number_of_elements());
+  EXPECT_EQ(nitems, static_cast<SidreLength>(node->dtype().number_of_elements()));
   EXPECT_EQ(data_ptr, node->as_int32_ptr());
 
 //  node->print_detailed();
