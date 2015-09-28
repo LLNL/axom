@@ -10,7 +10,6 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 // wrapSidre.cpp
-#define EXAMPLE_WRAPPER_IMPL
 #include "wrapSidre.h"
 #include "sidre/SidreTypes.hpp"
 

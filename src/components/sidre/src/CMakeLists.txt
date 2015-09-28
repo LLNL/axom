@@ -46,18 +46,20 @@ copy_headers_target( ${PROJECT_NAME} "${sidre_headers}"
 # make the library
 #
 make_library( LIBRARY_NAME
-                   sidre
+                  sidre
               LIBRARY_SOURCES
-                "${sidre_sources}"
-                "${sidre_headers}"
+                  "${sidre_sources}"
+                  "${sidre_headers}"
               DEPENDS_ON
-                common
-                conduit
-                slic
+                  ${capi_depends_on}
+                  common
+                  conduit
+                  slic
              )
-
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
-set_target_properties(sidre  PROPERTIES Fortran_FORMAT "FREE")
+
+# XXX - would like to have shroudrt loaded automatically with sidre
+#target_link_libraries(sidre ${capi_depends_on})
 
 install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 

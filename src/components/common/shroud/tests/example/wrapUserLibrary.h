@@ -14,9 +14,6 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-#ifdef EXAMPLE_WRAPPER_IMPL
-#else
-#endif
 
 // splicer begin C_definition
 // splicer end C_definition
@@ -24,6 +21,8 @@ extern "C" {
 void AA_local_function1();
 
 bool AA_is_name_valid(const char * name);
+
+bool AA_is_name_valid_bufferify(const char * name, int Lname);
 
 #ifdef __cplusplus
 }

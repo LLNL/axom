@@ -116,6 +116,10 @@ def do_test(name, replace_ref):
         return True
 
     cmp = filecmp.dircmp(ref_dir, result_dir)
+    if not os.path.exists(ref_dir):
+        logging.info('Reference directory does not exist: ' + ref_dir)
+        return False
+
     match, mismatch, errors = filecmp.cmpfiles(ref_dir, result_dir, cmp.common)
     for file in cmp.common:
         logging.info('Compare: ' + file)
@@ -203,7 +207,7 @@ if __name__ == '__main__':
     if args.testname:
         test_names = args.testname
     else:
-        test_names = [ 'example' ]
+        test_names = [ 'tutorial', 'example' ]
 
     logging.info('Tests to run: {}'.format( ' '.join(test_names)))
 

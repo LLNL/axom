@@ -23,6 +23,18 @@ module userlibrary_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
         end function aa_is_name_valid
+        
+        function aa_is_name_valid_bufferify(name, Lname) result(rv) &
+                bind(C, name="AA_is_name_valid_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            logical(C_BOOL) :: rv
+        end function aa_is_name_valid_bufferify
+        
+        ! splicer begin additional_interfaces
+        ! splicer end additional_interfaces
     end interface
 
 contains
@@ -44,5 +56,8 @@ contains
         rv = name .ne. " "
         ! splicer end is_name_valid
     end function is_name_valid
+    
+    ! splicer begin additional_functions
+    ! splicer end additional_functions
 
 end module userlibrary_mod

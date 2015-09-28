@@ -57,7 +57,7 @@ if (ENABLE_FORTRAN)
   foreach(test ${fruit_sidre_tests})
       add_fortran_test(
           TEST_SOURCE ${test}
-          DEPENDS_ON fruit sidre slic conduit
+          DEPENDS_ON fruit sidre slic conduit shroudrt
       )
   endforeach()
 endif()

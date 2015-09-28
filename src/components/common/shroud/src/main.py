@@ -85,6 +85,7 @@ class Schema(object):
             cpp_header='',
 
             F_module_per_class=True,
+            F_string_len_trim=True,
 
             wrap_c       = True,
             wrap_fortran = True,
@@ -97,9 +98,10 @@ class Schema(object):
         fmt_library = node['fmt'] = util.Options(None)
         fmt_library.library       = def_options.get('library', 'default_library')
         fmt_library.lower_library = fmt_library.library.lower()
-        fmt_library.method_suffix = ''   # assume no suffix
+        fmt_library.upper_library = fmt_library.library.upper()
+        fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
-        fmt_library.C_prefix      = def_options.get('C_prefix', '')
+        fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(def_options, fmt_library,
                            'C_header_filename', 'wrap{library}.h')
@@ -182,14 +184,18 @@ class Schema(object):
                 cpp_type  = 'bool',
                 f_kind    = 'C_BOOL',
                 c_fortran = 'logical(C_BOOL)',
-                fortran_to_c  = 'logicaltobool({var})',
+
                 f_type    = 'logical',
-                f_return_code = '{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))',
+                f_use_tmp  = True,
+                f_pre_decl = 'logical(C_BOOL) {tmp_var}',
+                f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
+
                 PY_ctor   = 'PyBool_FromLong({rv})',
 #                PY_PyTypeObject = 'PyBool_Type',
 #  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
                 ),
-            string = util.Typedef('string',  # implies null terminated string
+            # implies null terminated string
+            string = util.Typedef('string',
                 c_type   = 'char',    # XXX - char *
                 cpp_type = 'std::string',
                 cpp_to_c = '{var}.c_str()',  # . or ->
@@ -203,12 +209,43 @@ class Schema(object):
                 PY_ctor = 'PyString_FromString({var})',
                 base = 'string',
                 ),
+            # create std::string from buffer and length
+            string_from_buffer = util.Typedef('string_from_buffer',
+                c_type   = 'char',    # XXX - char *
+                c_argdecl = ['const char *{var}', 'int len_{var}'],
+                c_to_cpp = 'std::string({var}, len_{var})',
+                cpp_type = 'std::string',
+                cpp_to_c = '{var}.c_str()',  # . or ->
+                c_fortran  = 'character(kind=C_CHAR)',
+                f_c_args   = [ '{var}', 'len_{var}'],
+                f_c_argdecl = [ 'type(C_PTR), intent(IN), value :: {var}',
+                                'integer(C_INT), intent(IN), value :: len_{var}' ],
+                f_type     = 'character(*)',
+                fortran_to_c = '{var}, len_trim({var})',
+#                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
+                f_module = dict(iso_c_binding=None),
+                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                base = 'string',
+                ),
             )
+
+        # aliases
         def_types['std::string']     = def_types['string']
         def_types['integer(C_INT)']  = def_types['int']
         def_types['integer(C_LONG)'] = def_types['long']
         def_types['real(C_FLOAT)']   = def_types['float']
         def_types['real(C_DOUBLE)']  = def_types['double']
+
+        # result_as_arg
+        tmp = def_types['string'].clone_as('string_result_as_arg')
+        tmp.update(dict(
+                f_rv_decl     = 'character(*), intent(OUT) :: {result_arg}',
+                f_pre_decl    = 'type(C_PTR) :: {F_result}',
+                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
+                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
+                ))
+        def_types[tmp.name] = tmp
+
 
         types_dict = node.get('types', None)
         if types_dict is not None:
@@ -251,9 +288,6 @@ class Schema(object):
                 raise TypeError("classes[n] must be a dictionary")
             self.check_class(cls)
 
-        for cls in node:
-            self.check_class_dependencies(cls)
-        
     def check_class(self, node):
         if 'name' not in node:
             raise RuntimeError('Expeced name for class')
@@ -279,18 +313,107 @@ class Schema(object):
         util.eval_template(options, fmt_class,
                            'C_impl_filename', 'wrap{cpp_class}.cpp')
 
+        methods = node.setdefault('methods', [])
+        for method in methods:
+            if not isinstance(method, dict):
+                raise TypeError("classes[n]['methods'] must be a dictionary")
+            self.check_function(method)
+
+        self.pop_fmt()
+        self.pop_options()
+
+    def check_function(self, node):
+        """ Make sure necessary fields are present for a function.
+        """
+        self.push_options(node)
+        fmt_func = self.push_fmt(node)
+
+#        func = util.FunctionNode()
+#        func.update(node)
+#        func.dump()
+
+        node['attrs'] = {}
+        node['args'] = []
+
+        if 'decl' in node:
+            # parse decl and add to dictionary
+            values = parse_decl.check_decl(node['decl'])
+            util.update(node, values)  # recursive update
+        if 'function_suffix' in node and node['function_suffix'] is None:
+            # YAML turns blanks strings to None
+            node['function_suffix'] = ''
+        if 'result' not in node:
+            raise RuntimeError("Missing result")
+        result = node['result']
+        if 'name' not in result:
+            raise RuntimeError("Missing result.name")
+        if 'type' not in result:
+            raise RuntimeError("Missing result.type")
+        if 'attrs' not in result:
+            result['attrs'] = {}
+
+        result = node['result']
+
+        fmt_func.method_name =     result['name']
+        fmt_func.underscore_name = util.un_camel(result['name'])
+        if 'function_suffix' in node:
+            fmt_func.function_suffix = node['function_suffix']
+
+        # docs
+        self.pop_fmt()
+        self.pop_options()
+
+    def check_functions(self, func_list):
+        """ check functions which are not in a class.
+        """
+        if not isinstance(func_list, list):
+            raise TypeError("functions must be a list")
+        for func in func_list:
+            self.check_function(func)
+
+
+class GenFunctions(object):
+    """
+    Generate types from class.
+    Generate functions based on overload/template/generic/attributes
+    """
+
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+        self.typedef = tree['types']
+
+    def gen_library(self):
+        tree = self.tree
+        tree['function_index'] = self.function_index = []
+
+        for cls in tree['classes']:
+            self.create_class_typedef(cls)
+
+        for cls in tree['classes']:
+            cls['methods'] = self.define_function_suffix(cls['methods'])
+        tree['functions'] = self.define_function_suffix(tree['functions'])
+
+        for cls in tree['classes']:
+            self.check_class_dependencies(cls)
+
+    def create_class_typedef(self, cls):
         # create typedef for each class before generating code
         # this allows classes to reference each other
+        name = cls['name']
+        fmt_class = cls['fmt']
+
         if name not in self.typedef:
 #            unname = util.un_camel(name)
             unname = name.lower()
-            cname = node['options'].C_prefix + unname
+            cname = fmt_class.C_prefix + unname
             self.typedef[name] = util.Typedef(
                 name,
                 cpp_type = name,
-#                cpp_to_c = 'static_cast<void *>({var})',
+                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
                 c_type = cname,
-                c_to_cpp = 'static_cast<%s{ptr}>({var})' % name,
+                # opaque pointer -> void pointer -> class instance pointer
+                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 fortran_derived = unname,
@@ -310,75 +433,43 @@ class Schema(object):
         typedef = self.typedef[name]
         fmt_class.C_type_name = typedef.c_type
 
-        overloaded_methods = {}
-        methods = node.setdefault('methods', [])
-        for method in methods:
-            if not isinstance(method, dict):
-                raise TypeError("classes[n]['methods'] must be a dictionary")
-            self.check_function(method)
-            overloaded_methods.setdefault(method['result']['name'], []).append(method)
-
-        # Look for templated methods
-        additional_methods = []
-        for method in methods:
-            if 'cpp_template' in method:
-                self.template_function(method, additional_methods)
-            if 'fortran_generic' in method:
-                self.generic_function(method, additional_methods)
-        methods.extend(additional_methods)
-
-        # look for function overload and compute method_suffix
-        for mname, methods in overloaded_methods.items():
-            if len(methods) > 1:
-                for i, method in enumerate(methods):
-#                    method['fmt'].overloaded = True
-                    if 'method_suffix' not in method:
-                        method['fmt'].method_suffix =  '_%d' % i
-
-        self.pop_fmt()
-        self.pop_options()
-
-    def check_function(self, node):
-        """ Make sure necessary fields are present for a function.
+    def append_function_index(self, node):
+        """append to function_index, set index into node.
         """
-        self.push_options(node)
-        fmt_func = self.push_fmt(node)
+        ilist = self.function_index
+        node['function_index'] = len(ilist)
+#        node['fmt'].function_index = str(len(ilist)) # debugging
+        ilist.append(node)
 
-#        func = util.FunctionNode()
-#        func.update(node)
-#        func.dump()
+    def define_function_suffix(self, functions):
+        """ look for functions with the same name
+        Return a new list if overloaded function inserted.
+        """
+        overloaded_functions = {}
+        for function in functions:
+            self.append_function_index(function)
+            overloaded_functions.setdefault(function['result']['name'], []).append(function)
 
-        node['qualifiers'] = {}
+        # look for function overload and compute function_suffix
+        for mname, overloads in overloaded_functions.items():
+            if len(overloads) > 1:
+                for i, function in enumerate(overloads):
+#                    method['fmt'].overloaded = True
+                    if 'function_suffix' not in function:
+                        function['fmt'].function_suffix =  '_%d' % i
 
-        if 'decl' in node:
-            # parse decl and add to dictionary
-            values = parse_decl.check_decl(node['decl'])
-            util.update(node, values)  # recursive update
-        if 'method_suffix' in node and node['method_suffix'] is None:
-            # YAML turns blanks strings to None
-            node['method_suffix'] = ''
-        if 'result' not in node:
-            raise RuntimeError("Missing result")
-        result = node['result']
-        if 'name' not in result:
-            raise RuntimeError("Missing result.name")
-        if 'type' not in result:
-            raise RuntimeError("Missing result.type")
-        if 'attrs' not in result:
-            result['attrs'] = {}
+        # Create additional functions needed for wrapping
+        ordered_functions = []
+        for method in functions:
+            ordered_functions.append(method)
+            if 'cpp_template' in method:
+                self.template_function(method, ordered_functions)
+            if 'fortran_generic' in method:
+                self.generic_function(method, ordered_functions)
+            self.string_to_buffer_and_len(method, ordered_functions)
+        return ordered_functions
 
-        result = node['result']
-
-        fmt_func.method_name =     result['name']
-        fmt_func.underscore_name = util.un_camel(result['name'])
-        if 'method_suffix' in node:
-            fmt_func.method_suffix =   node['method_suffix']
-
-        # docs
-        self.pop_fmt()
-        self.pop_options()
-
-    def template_function(self, node, additional_methods):
+    def template_function(self, node, ordered_functions):
         """ Create overloaded functions for each templated method.
         """
         if len(node['cpp_template']) != 1:
@@ -388,19 +479,22 @@ class Schema(object):
         for typename, types in node['cpp_template'].items():
             for type in types:
                 new = util.copy_function_node(node)
+                ordered_functions.append(new)
+                self.append_function_index(new)
+
                 new['generated'] = 'cpp_template'
                 fmt = new['fmt']
-                fmt.method_suffix = '_' + type
+                fmt.function_suffix = '_' + type
                 del new['cpp_template']
                 options = new['options']
                 options.wrap_c = True
                 options.wrap_fortran = True
                 options.wrap_python = False
-                additional_methods.append(new)
                 # Convert typename to type
+                fmt.CPP_template = '<%s>' %  type
                 if new['result']['type'] == typename:
                     new['result']['type'] = type
-                    fmt.CPP_template = '<%s>' %  type
+                    fmt.CPP_return_templated = True
                 for arg in new['args']:
                     if arg['type'] == typename:
                         arg['type'] = type
@@ -412,7 +506,7 @@ class Schema(object):
         options.wrap_fortran = False
         options.wrap_python = False
 
-    def generic_function(self, node, additional_methods):
+    def generic_function(self, node, ordered_functions):
         """ Create overloaded functions for each generic method.
         """
         if len(node['fortran_generic']) != 1:
@@ -422,16 +516,18 @@ class Schema(object):
         for argname, types in node['fortran_generic'].items():
             for type in types:
                 new = util.copy_function_node(node)
+                ordered_functions.append(new)
+                self.append_function_index(new)
+
                 new['generated'] = 'fortran_generic'
                 fmt = new['fmt']
-                fmt.method_suffix = '_' + type
-                fmt.PTR_F_C_node = node
+                fmt.function_suffix = '_' + type
+                fmt.PTR_F_C_index = node['function_index']
                 del new['fortran_generic']
                 options = new['options']
                 options.wrap_c = False
                 options.wrap_fortran = True
                 options.wrap_python = False
-                additional_methods.append(new)
                 # Convert typename to type
                 for arg in new['args']:
                     if arg['name'] == argname:
@@ -440,8 +536,7 @@ class Schema(object):
                         typedef = self.typedef[argtype]
                         typedef = self.typedef[typedef.f_type]
                         if not typedef.f_cast:
-                            raise RuntimeError("unable to case type %s in fortran_generic" % arg['type'])
-                        arg['cast'] = typedef.f_cast
+                            raise RuntimeError("unable to cast type %s in fortran_generic" % arg['type'])
                         arg['type'] = type
 
         # Do not process templated node, instead process
@@ -451,13 +546,50 @@ class Schema(object):
         options.wrap_fortran = False
 #        options.wrap_python = False
 
-    def check_functions(self, node):
-        """ check functions which are not in a class.
+    def string_to_buffer_and_len(self, node, ordered_functions):
+        """ Check if function has any string arguments and will be wrapped by Fortran.
+        If so then create a new C function that will convert string arguments into 
+        a buffer and length.
         """
-        if not isinstance(node, list):
-            raise TypeError("functions must be a list")
-        for func in node:
-            self.check_function(func)
+        options = node['options']
+        if options.wrap_fortran is False:
+            return
+        if options.F_string_len_trim is False:
+            return
+
+        has_strings = False
+        for arg in node['args']:
+            argtype = arg['type']
+            if self.typedef[argtype].base == 'string':
+                has_strings = True
+                break
+        if has_strings is False:
+            return
+
+        new = util.copy_function_node(node)
+        ordered_functions.append(new)
+        self.append_function_index(new)
+
+        new['generated'] = 'string_to_buffer_and_len'
+        fmt = new['fmt']
+        fmt.function_suffix = '_bufferify'
+
+        options = new['options']
+        options.wrap_c = True
+        options.wrap_fortran = False
+        options.wrap_python = False
+
+        options = node['options']
+        #        options.wrap_fortran = False
+#        # Current Fortran function should use this new C function
+        node['fmt'].PTR_F_C_index = new['function_index']
+
+        newargs = []
+        for arg in new['args']:
+            argtype = arg['type']
+            if self.typedef[argtype].base == 'string':
+                # Add len_trim attribute
+                arg['attrs']['len_trim'] = True
 
     def check_class_dependencies(self, node):
         """
@@ -497,12 +629,100 @@ class Schema(object):
         result_typedef = self.typedef[rv_type]
         # XXX - make sure it exists
         used_types[result['type']] = result_typedef
-        for arg in node.get('args', []):
+        for arg in node['args']:
             argtype = arg['type']
             if argtype in self.typedef:
                 used_types[arg['type']] = self.typedef[argtype]
             else:
                 raise RuntimeError("%s not defined" % argtype)
+
+
+class Namify(object):
+    """Compute names of functions in library.
+    Need to compute F_name and C_F_name since they interact.
+    Compute all C names first, then Fortran.
+    A Fortran function may call a generated C function via PTR_F_C_index
+    Also compute number which may be controlled by options.    
+
+    C_name - Name of C function
+    F_C_name - Fortran function for C interface
+    F_name - Name of Fortran function
+    """
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+
+    def name_library(self):
+        options = self.tree['options']
+        fmt_library = self.tree['fmt']
+        fmt_library.C_this = options.get('C_this', 'self')
+
+        fmt_library.F_this = options.get('F_this', 'obj')
+        fmt_library.F_result = options.get('F_result', 'rv')
+        fmt_library.F_derived_member = options.get('F_derived_member', 'voidptr')
+
+        self.name_language(self.name_function_c)
+        self.name_language(self.name_function_fortran)
+
+    def name_language(self, handler):
+        tree = self.tree
+        for cls in tree['classes']:
+            for func in cls['methods']:
+                handler(cls, func)
+
+            options = cls['options']
+            fmt_class = cls['fmt']
+            if 'F_this' in options:
+                fmt_class.F_this = options.F_this
+
+        for func in tree['functions']:
+            handler(None, func)
+
+    def name_function_c(self, cls, node):
+        options = node['options']
+        if not options.wrap_c:
+            return
+        fmt_func = node['fmt']
+        
+        if cls:
+            util.eval_template(options, fmt_func, 'C_name',
+                               '{C_prefix}{lower_class}_{underscore_name}{function_suffix}')
+        else:
+            util.eval_template(options, fmt_func, 'C_name',
+                               '{C_prefix}{underscore_name}{function_suffix}')
+
+        if 'F_C_name' in options:
+            fmt_func.F_C_name = options.F_C_name
+        else:
+            fmt_func.F_C_name = fmt_func.C_name.lower()
+
+        if 'C_this' in options:
+            fmt_func.C_this = options.C_this
+
+    def name_function_fortran(self, cls, node):
+        """ Must process C functions for to generate their names.
+        """
+        options = node['options']
+        if not options.wrap_fortran:
+            return
+        fmt_func = node['fmt']
+
+        if cls:
+            util.eval_template(options, fmt_func,
+                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
+        else:
+            util.eval_template(options, fmt_func,
+                               'F_name_impl', '{underscore_name}{function_suffix}')
+
+        util.eval_template(options, fmt_func,
+                           'F_name_method', '{underscore_name}{function_suffix}')
+        util.eval_template(options, fmt_func,
+                           'F_name_generic', '{underscore_name}')
+
+        if 'F_this' in options:
+            fmt_func.F_this = options.F_this
+        if 'F_result' in options:
+            fmt_func.F_result = options.F_result
 
 
 if __name__ == '__main__':
@@ -566,6 +786,8 @@ if __name__ == '__main__':
 
 
     Schema(all).check_schema()
+    GenFunctions(all, config).gen_library()
+    Namify(all, config).name_library()
 
     if 'splicer' in all:
         # read splicer files defined in input yaml file
@@ -582,6 +804,9 @@ if __name__ == '__main__':
     wrapf.Wrapf(all, config, splicers['f']).wrap_library()
 
     wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+
+    # when dumping json, remove function_index to avoid duplication
+    del all['function_index']
 
     jsonpath = os.path.join(args.logdir, basename + '.json')
     fp = open(jsonpath, 'w')

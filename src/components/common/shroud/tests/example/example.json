@@ -55,39 +55,64 @@
                             "type": "string"
                         }
                     ], 
-                    "decl": "ExClass1 *new+constructor ( const string *name )", 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass1 *new ( const string *name ) +constructor", 
                     "docs": "constructor", 
                     "fmt": {
-                        "CPP_name": "new", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const char * name", 
-                        "C_call_list": "name", 
                         "C_name": "AA_exclass1_new", 
-                        "C_object": "ExClass1 *selfobj = new ExClass1(name);", 
-                        "C_return_type": "AA_exclass1 *", 
-                        "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass1_new", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
-                        "F_arg_c_call_tab": "\ttrim(name) // C_NULL_CHAR", 
-                        "F_arguments": "name", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
+                        "PTR_F_C_index": 13, 
                         "method_name": "new", 
-                        "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "new"
                     }, 
+                    "function_index": 0, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
-                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "ExClass1"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "len_trim": true, 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass1 *new ( const string *name ) +constructor", 
+                    "docs": "constructor", 
+                    "fmt": {
+                        "C_name": "AA_exclass1_new_bufferify", 
+                        "F_C_name": "aa_exclass1_new_bufferify", 
+                        "function_suffix": "_bufferify"
+                    }, 
+                    "function_index": 13, 
+                    "generated": "string_to_buffer_and_len", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
                             "ptr": true
                         }, 
                         "name": "new", 
@@ -96,38 +121,24 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "void delete+destructor", 
+                    "attrs": {
+                        "destructor": true
+                    }, 
+                    "decl": "void delete() +destructor", 
                     "fmt": {
-                        "CPP_name": "delete", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass1_delete", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_delete", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass1_delete", 
                         "F_name_method": "delete", 
-                        "F_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass1_delete", 
                         "method_name": "delete", 
-                        "rv_decl": "void rv", 
                         "underscore_name": "delete"
                     }, 
+                    "function_index": 1, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
-                        "attrs": {
-                            "destructor": true
-                        }, 
+                        "attrs": {}, 
                         "name": "delete", 
                         "type": "void"
                     }
@@ -143,37 +154,21 @@
                             "type": "int"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "int incrementCount(int incr)", 
                     "docs": "blah blah", 
                     "fmt": {
-                        "CPP_name": "incrementCount", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self, int incr", 
-                        "C_call_list": "incr", 
                         "C_name": "AA_exclass1_increment_count", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "int", 
-                        "F_C_arguments": "self, incr", 
                         "F_C_name": "aa_exclass1_increment_count", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr, incr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tincr", 
-                        "F_arguments": "obj, incr", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "increment_count", 
                         "F_name_impl": "exclass1_increment_count", 
                         "F_name_method": "increment_count", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_increment_count", 
                         "method_name": "incrementCount", 
-                        "rv_decl": "int rv", 
                         "underscore_name": "increment_count"
                     }, 
+                    "function_index": 2, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "incrementCount", 
@@ -184,41 +179,22 @@
                     "C_error_pattern": "C_invalid_name", 
                     "PY_error_pattern": "PY_invalid_name", 
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getName() const", 
                     "fmt": {
-                        "CPP_name": "getName", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const AA_exclass1 * self", 
-                        "C_call_list": "", 
-                        "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name", 
-                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
-                        "C_return_type": "const char *", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name", 
-                        "F_C_pure_clause": "pure ", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass1_get_name", 
                         "F_name_method": "get_name", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_name", 
                         "method_name": "getName", 
-                        "rv_decl": "const std::string & rv", 
-                        "rvlen": "aa_exclass1_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
                     }, 
+                    "function_index": 3, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -231,42 +207,25 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "int GetNameLength() const", 
                     "docs": "helper function for Fortran", 
                     "fmt": {
-                        "CPP_name": "GetNameLength", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_name_length", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "int", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_length", 
-                        "F_C_pure_clause": "pure ", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass1_get_name_length", 
                         "F_name_method": "get_name_length", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_name_length", 
                         "method_name": "GetNameLength", 
-                        "rv_decl": "int rv", 
                         "underscore_name": "get_name_length"
                     }, 
+                    "function_index": 4, 
                     "helper": true, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
-                    }, 
-                    "qualifiers": {
-                        "const": true
                     }, 
                     "result": {
                         "attrs": {}, 
@@ -276,41 +235,22 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getNameErrorCheck() const", 
                     "fmt": {
-                        "CPP_name": "getNameErrorCheck", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const AA_exclass1 * self", 
-                        "C_call_list": "", 
-                        "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name_error_check", 
-                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
-                        "C_return_type": "const char *", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_error_check", 
-                        "F_C_pure_clause": "pure ", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name_error_check", 
                         "F_name_impl": "exclass1_get_name_error_check", 
                         "F_name_method": "get_name_error_check", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_name_error_check", 
                         "method_name": "getNameErrorCheck", 
-                        "rv_decl": "const std::string & rv", 
-                        "rvlen": "strlen_ptr(aa_exclass1_get_name_error_check(obj%voidptr))", 
                         "underscore_name": "get_name_error_check"
                     }, 
+                    "function_index": 5, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -322,40 +262,23 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getNameArg() const", 
                     "fmt": {
-                        "CPP_name": "getNameArg", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const AA_exclass1 * self", 
-                        "C_call_list": "", 
-                        "C_const": "const ", 
                         "C_name": "AA_exclass1_get_name_arg", 
-                        "C_object": "const ExClass1 *selfobj = static_cast<const ExClass1 *>(self);", 
-                        "C_return_type": "const char *", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_name_arg", 
-                        "F_C_pure_clause": "pure ", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj, rv", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name_arg", 
                         "F_name_impl": "exclass1_get_name_arg", 
                         "F_name_method": "get_name_arg", 
-                        "F_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
                         "method_name": "getNameArg", 
-                        "rv_decl": "const std::string & rv", 
                         "underscore_name": "get_name_arg"
                     }, 
+                    "function_index": 6, 
                     "options": {
-                        "F_string_result_as_arg": true
-                    }, 
-                    "qualifiers": {
-                        "const": true
+                        "F_string_result_as_arg": "name"
                     }, 
                     "result": {
                         "attrs": {
@@ -368,36 +291,20 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "ExClass2 *getRoot()", 
                     "fmt": {
-                        "CPP_name": "getRoot", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_root", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "AA_exclass2 *", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_root", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_root", 
                         "F_name_impl": "exclass1_get_root", 
                         "F_name_method": "get_root", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_root", 
                         "method_name": "getRoot", 
-                        "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "get_root"
                     }, 
+                    "function_index": 7, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -417,38 +324,22 @@
                             "type": "int"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "int  getValue(int value)", 
                     "fmt": {
-                        "CPP_name": "getValue", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self, int value", 
-                        "C_call_list": "value", 
                         "C_name": "AA_exclass1_get_value_from_int", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "int", 
-                        "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_from_int", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr, value", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tvalue", 
-                        "F_arguments": "obj, value", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_from_int", 
                         "F_name_method": "get_value_from_int", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_value_from_int", 
+                        "function_suffix": "_from_int", 
                         "method_name": "getValue", 
-                        "method_suffix": "_from_int", 
-                        "rv_decl": "int rv", 
                         "underscore_name": "get_value"
                     }, 
-                    "method_suffix": "_from_int", 
+                    "function_index": 8, 
+                    "function_suffix": "_from_int", 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -466,37 +357,21 @@
                             "type": "long"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "long getValue(long value)", 
                     "fmt": {
-                        "CPP_name": "getValue", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self, long value", 
-                        "C_call_list": "value", 
                         "C_name": "AA_exclass1_get_value_1", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "long", 
-                        "F_C_arguments": "self, value", 
                         "F_C_name": "aa_exclass1_get_value_1", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr, value", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tvalue", 
-                        "F_arguments": "obj, value", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_value", 
                         "F_name_impl": "exclass1_get_value_1", 
                         "F_name_method": "get_value_1", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_value_1", 
+                        "function_suffix": "_1", 
                         "method_name": "getValue", 
-                        "method_suffix": "_1", 
-                        "rv_decl": "long rv", 
                         "underscore_name": "get_value"
                     }, 
+                    "function_index": 9, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
@@ -505,36 +380,20 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void *getAddr()", 
                     "fmt": {
-                        "CPP_name": "getAddr", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass1_get_addr", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "void *", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_get_addr", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_addr", 
                         "F_name_impl": "exclass1_get_addr", 
                         "F_name_method": "get_addr", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_get_addr", 
                         "method_name": "getAddr", 
-                        "rv_decl": "void * rv", 
                         "underscore_name": "get_addr"
                     }, 
+                    "function_index": 10, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -554,36 +413,20 @@
                             "type": "bool"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "bool hasAddr(bool in)", 
                     "fmt": {
-                        "CPP_name": "hasAddr", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self, bool in", 
-                        "C_call_list": "in", 
                         "C_name": "AA_exclass1_has_addr", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "bool", 
-                        "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass1_has_addr", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr, logicaltobool(in)", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tlogicaltobool(in)", 
-                        "F_arguments": "obj, in", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "has_addr", 
                         "F_name_impl": "exclass1_has_addr", 
                         "F_name_method": "has_addr", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass1_has_addr", 
                         "method_name": "hasAddr", 
-                        "rv_decl": "bool rv", 
                         "underscore_name": "has_addr"
                     }, 
+                    "function_index": 11, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "hasAddr", 
@@ -592,34 +435,20 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void SplicerSpecial", 
                     "fmt": {
-                        "CPP_name": "SplicerSpecial", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass1 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass1_splicer_special", 
-                        "C_object": "ExClass1 *selfobj = static_cast<ExClass1 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass1_splicer_special", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "splicer_special", 
                         "F_name_impl": "exclass1_splicer_special", 
                         "F_name_method": "splicer_special", 
-                        "F_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass1_splicer_special", 
                         "method_name": "SplicerSpecial", 
-                        "rv_decl": "void rv", 
                         "underscore_name": "splicer_special"
                     }, 
+                    "function_index": 12, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "SplicerSpecial", 
@@ -695,38 +524,62 @@
                             "type": "string"
                         }
                     ], 
-                    "decl": "ExClass2 *ExClass2+constructor (const string *name)", 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
                     "fmt": {
-                        "CPP_name": "ExClass2", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const char * name", 
-                        "C_call_list": "name", 
                         "C_name": "AA_exclass2_ex_class2", 
-                        "C_object": "ExClass2 *selfobj = new ExClass2(name);", 
-                        "C_return_type": "AA_exclass2 *", 
-                        "F_C_arguments": "name", 
                         "F_C_name": "aa_exclass2_ex_class2", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
-                        "F_arg_c_call_tab": "\ttrim(name) // C_NULL_CHAR", 
-                        "F_arguments": "name", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
+                        "PTR_F_C_index": 25, 
                         "method_name": "ExClass2", 
-                        "rv_decl": "ExClass2 * rv", 
                         "underscore_name": "ex_class2"
                     }, 
+                    "function_index": 14, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
-                            "constructor": true, 
+                            "ptr": true
+                        }, 
+                        "name": "ExClass2", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "len_trim": true, 
+                                "ptr": true, 
+                                "value": true
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
+                    "fmt": {
+                        "C_name": "AA_exclass2_ex_class2_bufferify", 
+                        "F_C_name": "aa_exclass2_ex_class2_bufferify", 
+                        "function_suffix": "_bufferify"
+                    }, 
+                    "function_index": 25, 
+                    "generated": "string_to_buffer_and_len", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
                             "ptr": true
                         }, 
                         "name": "ExClass2", 
@@ -735,79 +588,46 @@
                 }, 
                 {
                     "args": [], 
-                    "decl": "void delete+destructor", 
+                    "attrs": {
+                        "destructor": true
+                    }, 
+                    "decl": "void delete() +destructor", 
                     "fmt": {
-                        "CPP_name": "delete", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass2_delete", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_delete", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "delete", 
                         "F_name_impl": "exclass2_delete", 
                         "F_name_method": "delete", 
-                        "F_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass2_delete", 
                         "method_name": "delete", 
-                        "rv_decl": "void rv", 
                         "underscore_name": "delete"
                     }, 
+                    "function_index": 15, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
-                        "attrs": {
-                            "destructor": true
-                        }, 
+                        "attrs": {}, 
                         "name": "delete", 
                         "type": "void"
                     }
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "const string& getName const", 
                     "fmt": {
-                        "CPP_name": "getName", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "const AA_exclass2 * self", 
-                        "C_call_list": "", 
-                        "C_const": "const ", 
                         "C_name": "AA_exclass2_get_name", 
-                        "C_object": "const ExClass2 *selfobj = static_cast<const ExClass2 *>(self);", 
-                        "C_return_type": "const char *", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name", 
-                        "F_C_pure_clause": "pure ", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name", 
                         "F_name_impl": "exclass2_get_name", 
                         "F_name_method": "get_name", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass2_get_name", 
                         "method_name": "getName", 
-                        "rv_decl": "const std::string & rv", 
-                        "rvlen": "aa_exclass2_get_name_length(obj%voidptr)", 
                         "underscore_name": "get_name"
                     }, 
+                    "function_index": 16, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {
                             "const": true, 
@@ -819,38 +639,26 @@
                     }
                 }, 
                 {
+                    "args": [], 
+                    "attrs": {}, 
                     "docs": "helper function for Fortran", 
                     "fmt": {
-                        "CPP_name": "GetNameLength", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass2_get_name_length", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "int", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_name_length", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_name_length", 
                         "F_name_impl": "exclass2_get_name_length", 
                         "F_name_method": "get_name_length", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass2_get_name_length", 
                         "method_name": "GetNameLength", 
-                        "rv_decl": "int rv", 
                         "underscore_name": "get_name_length"
                     }, 
+                    "function_index": 17, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
-                    "qualifiers": {}, 
+                    "qualifiers": {
+                        "const": true
+                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "GetNameLength", 
@@ -869,36 +677,20 @@
                             "type": "ExClass1"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "ExClass1 *get_class1(ExClass1 *in)", 
                     "fmt": {
-                        "CPP_name": "get_class1", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, AA_exclass1 * in", 
-                        "C_call_list": "static_cast<ExClass1 *>(in)", 
                         "C_name": "AA_exclass2_get_class1", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "AA_exclass1 *", 
-                        "F_C_arguments": "self, in", 
                         "F_C_name": "aa_exclass2_get_class1", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr, in%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tin%voidptr", 
-                        "F_arguments": "obj, in", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_class1", 
                         "F_name_impl": "exclass2_get_class1", 
                         "F_name_method": "get_class1", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass2_get_class1", 
                         "method_name": "get_class1", 
-                        "rv_decl": "ExClass1 * rv", 
                         "underscore_name": "get_class1"
                     }, 
+                    "function_index": 18, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -927,22 +719,13 @@
                             "type": "SidreLength"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
-                        "CPP_name": "declare", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
-                        "C_call_list": "getTypeID(type), len", 
                         "C_name": "AA_exclass2_declare", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self, type, len", 
                         "F_C_name": "aa_exclass2_declare", 
-                        "F_C_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass2_declare", 
                         "method_name": "declare", 
-                        "rv_decl": "void * rv", 
                         "underscore_name": "declare"
                     }, 
                     "fortran_generic": {
@@ -951,10 +734,100 @@
                             "long"
                         ]
                     }, 
+                    "function_index": 19, 
                     "options": {
                         "wrap_fortran": false
                     }, 
-                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }, 
+                    "return_this": true
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }, 
+                        {
+                            "attrs": {
+                                "default": 1, 
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "len", 
+                            "type": "int"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
+                    "fmt": {
+                        "F_name_generic": "declare", 
+                        "F_name_impl": "exclass2_declare_int", 
+                        "F_name_method": "declare_int", 
+                        "PTR_F_C_index": 19, 
+                        "function_suffix": "_int"
+                    }, 
+                    "function_index": 26, 
+                    "generated": "fortran_generic", 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }, 
+                    "return_this": true
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }, 
+                        {
+                            "attrs": {
+                                "default": 1, 
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "len", 
+                            "type": "long"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
+                    "fmt": {
+                        "F_name_generic": "declare", 
+                        "F_name_impl": "exclass2_declare_long", 
+                        "F_name_method": "declare_long", 
+                        "PTR_F_C_index": 19, 
+                        "function_suffix": "_long"
+                    }, 
+                    "function_index": 27, 
+                    "generated": "fortran_generic", 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -966,34 +839,20 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "decl": "void destroyall()", 
                     "fmt": {
-                        "CPP_name": "destroyall", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass2_destroyall", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_destroyall", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "destroyall", 
                         "F_name_impl": "exclass2_destroyall", 
                         "F_name_method": "destroyall", 
-                        "F_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass2_destroyall", 
                         "method_name": "destroyall", 
-                        "rv_decl": "void rv", 
                         "underscore_name": "destroyall"
                     }, 
+                    "function_index": 20, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "destroyall", 
@@ -1002,39 +861,22 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {
+                        "const": true
+                    }, 
                     "decl": "TypeID getTypeID() const", 
                     "fmt": {
-                        "CPP_name": "getTypeID", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self", 
-                        "C_call_list": "", 
                         "C_name": "AA_exclass2_get_type_id", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "int", 
-                        "F_C_arguments": "self", 
                         "F_C_name": "aa_exclass2_get_type_id", 
-                        "F_C_pure_clause": "pure ", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "get_type_id", 
                         "F_name_impl": "exclass2_get_type_id", 
                         "F_name_method": "get_type_id", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
                         "PY_name_impl": "PP_exclass2_get_type_id", 
                         "method_name": "getTypeID", 
-                        "rv_decl": "TypeID rv", 
                         "underscore_name": "get_type_id"
                     }, 
+                    "function_index": 21, 
                     "options": {}, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "getTypeID", 
@@ -1049,6 +891,7 @@
                             "type": "ValueType"
                         }
                     ], 
+                    "attrs": {}, 
                     "cpp_template": {
                         "ValueType": [
                             "int", 
@@ -1062,12 +905,152 @@
                         "method_name": "setValue", 
                         "underscore_name": "set_value"
                     }, 
+                    "function_index": 22, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "int"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_template": "<int>", 
+                        "C_name": "AA_exclass2_set_value_int", 
+                        "F_C_name": "aa_exclass2_set_value_int", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_int", 
+                        "F_name_method": "set_value_int", 
+                        "function_suffix": "_int"
+                    }, 
+                    "function_index": 28, 
+                    "generated": "cpp_template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "long"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_template": "<long>", 
+                        "C_name": "AA_exclass2_set_value_long", 
+                        "F_C_name": "aa_exclass2_set_value_long", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_long", 
+                        "F_name_method": "set_value_long", 
+                        "function_suffix": "_long"
+                    }, 
+                    "function_index": 29, 
+                    "generated": "cpp_template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "float"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_template": "<float>", 
+                        "C_name": "AA_exclass2_set_value_float", 
+                        "F_C_name": "aa_exclass2_set_value_float", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_float", 
+                        "F_name_method": "set_value_float", 
+                        "function_suffix": "_float"
+                    }, 
+                    "function_index": 30, 
+                    "generated": "cpp_template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "setValue", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "value", 
+                            "type": "double"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void setValue(ValueType value)", 
+                    "fmt": {
+                        "CPP_template": "<double>", 
+                        "C_name": "AA_exclass2_set_value_double", 
+                        "F_C_name": "aa_exclass2_set_value_double", 
+                        "F_name_generic": "set_value", 
+                        "F_name_impl": "exclass2_set_value_double", 
+                        "F_name_method": "set_value_double", 
+                        "function_suffix": "_double"
+                    }, 
+                    "function_index": 31, 
+                    "generated": "cpp_template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
                     "result": {
                         "attrs": {}, 
                         "name": "setValue", 
@@ -1076,6 +1059,7 @@
                 }, 
                 {
                     "args": [], 
+                    "attrs": {}, 
                     "cpp_template": {
                         "ValueType": [
                             "int", 
@@ -1087,16 +1071,70 @@
                         "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
+                    "function_index": 23, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
                         "wrap_python": false
                     }, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "getValue", 
                         "type": "ValueType"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "attrs": {}, 
+                    "decl": "ValueType getValue()", 
+                    "fmt": {
+                        "CPP_return_templated": true, 
+                        "CPP_template": "<int>", 
+                        "C_name": "AA_exclass2_get_value_int", 
+                        "F_C_name": "aa_exclass2_get_value_int", 
+                        "F_name_generic": "get_value", 
+                        "F_name_impl": "exclass2_get_value_int", 
+                        "F_name_method": "get_value_int", 
+                        "function_suffix": "_int"
+                    }, 
+                    "function_index": 32, 
+                    "generated": "cpp_template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "int"
+                    }
+                }, 
+                {
+                    "args": [], 
+                    "attrs": {}, 
+                    "decl": "ValueType getValue()", 
+                    "fmt": {
+                        "CPP_return_templated": true, 
+                        "CPP_template": "<double>", 
+                        "C_name": "AA_exclass2_get_value_double", 
+                        "F_C_name": "aa_exclass2_get_value_double", 
+                        "F_name_generic": "get_value", 
+                        "F_name_impl": "exclass2_get_value_double", 
+                        "F_name_method": "get_value_double", 
+                        "function_suffix": "_double"
+                    }, 
+                    "function_index": 33, 
+                    "generated": "cpp_template", 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {}, 
+                        "name": "getValue", 
+                        "type": "double"
                     }
                 }, 
                 {
@@ -1120,526 +1158,24 @@
                             "type": "long"
                         }
                     ], 
+                    "attrs": {}, 
                     "decl": "void testoptional(int i = 1, long j=2)", 
                     "fmt": {
-                        "CPP_name": "testoptional", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, int i, long j", 
-                        "C_call_list": "i, j", 
                         "C_name": "AA_exclass2_testoptional", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self, i, j", 
                         "F_C_name": "aa_exclass2_testoptional", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr, i, j", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\ti\tj", 
-                        "F_arguments": "obj, i, j", 
-                        "F_instance_ptr": "obj%voidptr", 
                         "F_name_generic": "testoptional", 
                         "F_name_impl": "exclass2_testoptional", 
                         "F_name_method": "testoptional", 
-                        "F_subprogram": "subroutine", 
                         "PY_name_impl": "PP_exclass2_testoptional", 
                         "method_name": "testoptional", 
-                        "rv_decl": "void rv", 
                         "underscore_name": "testoptional"
                     }, 
+                    "function_index": 24, 
                     "options": {}, 
-                    "qualifiers": {}, 
                     "result": {
                         "attrs": {}, 
                         "name": "testoptional", 
                         "type": "void"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "type", 
-                            "type": "TypeID"
-                        }, 
-                        {
-                            "attrs": {
-                                "default": 1, 
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "cast": "int({var}, C_LONG)", 
-                            "name": "len", 
-                            "type": "int"
-                        }
-                    ], 
-                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
-                    "fmt": {
-                        "F_arg_c_call": "obj%voidptr, type, int(len, C_LONG)", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\ttype\tint(len, C_LONG)", 
-                        "F_arguments": "obj, type, len", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "declare", 
-                        "F_name_impl": "exclass2_declare_int", 
-                        "F_name_method": "declare_int", 
-                        "F_subprogram": "subroutine", 
-                        "PTR_F_C_node": {
-                            "args": [
-                                {
-                                    "attrs": {
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "type", 
-                                    "type": "TypeID"
-                                }, 
-                                {
-                                    "attrs": {
-                                        "default": 1, 
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "len", 
-                                    "type": "SidreLength"
-                                }
-                            ], 
-                            "decl": "void* declare(TypeID type, SidreLength len = 1)", 
-                            "fmt": {
-                                "CPP_name": "declare", 
-                                "CPP_this": "selfobj", 
-                                "CPP_this_call": "selfobj->", 
-                                "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
-                                "C_call_list": "getTypeID(type), len", 
-                                "C_name": "AA_exclass2_declare", 
-                                "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                                "C_return_type": "void", 
-                                "F_C_arguments": "self, type, len", 
-                                "F_C_name": "aa_exclass2_declare", 
-                                "F_C_subprogram": "subroutine", 
-                                "PY_name_impl": "PP_exclass2_declare", 
-                                "method_name": "declare", 
-                                "rv_decl": "void * rv", 
-                                "underscore_name": "declare"
-                            }, 
-                            "fortran_generic": {
-                                "len": [
-                                    "int", 
-                                    "long"
-                                ]
-                            }, 
-                            "options": {
-                                "wrap_fortran": false
-                            }, 
-                            "qualifiers": {}, 
-                            "result": {
-                                "attrs": {
-                                    "ptr": true
-                                }, 
-                                "name": "declare", 
-                                "type": "void"
-                            }, 
-                            "return_this": true
-                        }, 
-                        "method_suffix": "_int"
-                    }, 
-                    "generated": "fortran_generic", 
-                    "options": {
-                        "wrap_c": false, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {
-                            "ptr": true
-                        }, 
-                        "name": "declare", 
-                        "type": "void"
-                    }, 
-                    "return_this": true
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "type", 
-                            "type": "TypeID"
-                        }, 
-                        {
-                            "attrs": {
-                                "default": 1, 
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "cast": "int({var}, C_LONG)", 
-                            "name": "len", 
-                            "type": "long"
-                        }
-                    ], 
-                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
-                    "fmt": {
-                        "F_arg_c_call": "obj%voidptr, type, int(len, C_LONG)", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\ttype\tint(len, C_LONG)", 
-                        "F_arguments": "obj, type, len", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "declare", 
-                        "F_name_impl": "exclass2_declare_long", 
-                        "F_name_method": "declare_long", 
-                        "F_subprogram": "subroutine", 
-                        "PTR_F_C_node": {
-                            "args": [
-                                {
-                                    "attrs": {
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "type", 
-                                    "type": "TypeID"
-                                }, 
-                                {
-                                    "attrs": {
-                                        "default": 1, 
-                                        "intent": "in", 
-                                        "value": true
-                                    }, 
-                                    "name": "len", 
-                                    "type": "SidreLength"
-                                }
-                            ], 
-                            "decl": "void* declare(TypeID type, SidreLength len = 1)", 
-                            "fmt": {
-                                "CPP_name": "declare", 
-                                "CPP_this": "selfobj", 
-                                "CPP_this_call": "selfobj->", 
-                                "C_arguments": "AA_exclass2 * self, int type, ATK_SidreLength len", 
-                                "C_call_list": "getTypeID(type), len", 
-                                "C_name": "AA_exclass2_declare", 
-                                "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                                "C_return_type": "void", 
-                                "F_C_arguments": "self, type, len", 
-                                "F_C_name": "aa_exclass2_declare", 
-                                "F_C_subprogram": "subroutine", 
-                                "PY_name_impl": "PP_exclass2_declare", 
-                                "method_name": "declare", 
-                                "rv_decl": "void * rv", 
-                                "underscore_name": "declare"
-                            }, 
-                            "fortran_generic": {
-                                "len": [
-                                    "int", 
-                                    "long"
-                                ]
-                            }, 
-                            "options": {
-                                "wrap_fortran": false
-                            }, 
-                            "qualifiers": {}, 
-                            "result": {
-                                "attrs": {
-                                    "ptr": true
-                                }, 
-                                "name": "declare", 
-                                "type": "void"
-                            }, 
-                            "return_this": true
-                        }, 
-                        "method_suffix": "_long"
-                    }, 
-                    "generated": "fortran_generic", 
-                    "options": {
-                        "wrap_c": false, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {
-                            "ptr": true
-                        }, 
-                        "name": "declare", 
-                        "type": "void"
-                    }, 
-                    "return_this": true
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "value", 
-                            "type": "int"
-                        }
-                    ], 
-                    "decl": "void setValue(ValueType value)", 
-                    "fmt": {
-                        "CPP_name": "setValue", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, int value", 
-                        "C_call_list": "value", 
-                        "C_name": "AA_exclass2_set_value_int", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self, value", 
-                        "F_C_name": "aa_exclass2_set_value_int", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr, value", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tvalue", 
-                        "F_arguments": "obj, value", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "set_value", 
-                        "F_name_impl": "exclass2_set_value_int", 
-                        "F_name_method": "set_value_int", 
-                        "F_subprogram": "subroutine", 
-                        "method_suffix": "_int", 
-                        "rv_decl": "void rv"
-                    }, 
-                    "generated": "cpp_template", 
-                    "options": {
-                        "wrap_c": true, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "setValue", 
-                        "type": "void"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "value", 
-                            "type": "long"
-                        }
-                    ], 
-                    "decl": "void setValue(ValueType value)", 
-                    "fmt": {
-                        "CPP_name": "setValue", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, long value", 
-                        "C_call_list": "value", 
-                        "C_name": "AA_exclass2_set_value_long", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self, value", 
-                        "F_C_name": "aa_exclass2_set_value_long", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr, value", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tvalue", 
-                        "F_arguments": "obj, value", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "set_value", 
-                        "F_name_impl": "exclass2_set_value_long", 
-                        "F_name_method": "set_value_long", 
-                        "F_subprogram": "subroutine", 
-                        "method_suffix": "_long", 
-                        "rv_decl": "void rv"
-                    }, 
-                    "generated": "cpp_template", 
-                    "options": {
-                        "wrap_c": true, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "setValue", 
-                        "type": "void"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "value", 
-                            "type": "float"
-                        }
-                    ], 
-                    "decl": "void setValue(ValueType value)", 
-                    "fmt": {
-                        "CPP_name": "setValue", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, float value", 
-                        "C_call_list": "value", 
-                        "C_name": "AA_exclass2_set_value_float", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self, value", 
-                        "F_C_name": "aa_exclass2_set_value_float", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr, value", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tvalue", 
-                        "F_arguments": "obj, value", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "set_value", 
-                        "F_name_impl": "exclass2_set_value_float", 
-                        "F_name_method": "set_value_float", 
-                        "F_subprogram": "subroutine", 
-                        "method_suffix": "_float", 
-                        "rv_decl": "void rv"
-                    }, 
-                    "generated": "cpp_template", 
-                    "options": {
-                        "wrap_c": true, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "setValue", 
-                        "type": "void"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "value", 
-                            "type": "double"
-                        }
-                    ], 
-                    "decl": "void setValue(ValueType value)", 
-                    "fmt": {
-                        "CPP_name": "setValue", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self, double value", 
-                        "C_call_list": "value", 
-                        "C_name": "AA_exclass2_set_value_double", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "void", 
-                        "F_C_arguments": "self, value", 
-                        "F_C_name": "aa_exclass2_set_value_double", 
-                        "F_C_subprogram": "subroutine", 
-                        "F_arg_c_call": "obj%voidptr, value", 
-                        "F_arg_c_call_tab": "\tobj%voidptr\tvalue", 
-                        "F_arguments": "obj, value", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "set_value", 
-                        "F_name_impl": "exclass2_set_value_double", 
-                        "F_name_method": "set_value_double", 
-                        "F_subprogram": "subroutine", 
-                        "method_suffix": "_double", 
-                        "rv_decl": "void rv"
-                    }, 
-                    "generated": "cpp_template", 
-                    "options": {
-                        "wrap_c": true, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "setValue", 
-                        "type": "void"
-                    }
-                }, 
-                {
-                    "args": [], 
-                    "decl": "ValueType getValue()", 
-                    "fmt": {
-                        "CPP_name": "getValue", 
-                        "CPP_template": "<int>", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self", 
-                        "C_call_list": "", 
-                        "C_name": "AA_exclass2_get_value_int", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "int", 
-                        "F_C_arguments": "self", 
-                        "F_C_name": "aa_exclass2_get_value_int", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "get_value", 
-                        "F_name_impl": "exclass2_get_value_int", 
-                        "F_name_method": "get_value_int", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
-                        "method_suffix": "_int", 
-                        "rv_decl": "int rv"
-                    }, 
-                    "generated": "cpp_template", 
-                    "options": {
-                        "wrap_c": true, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "getValue", 
-                        "type": "int"
-                    }
-                }, 
-                {
-                    "args": [], 
-                    "decl": "ValueType getValue()", 
-                    "fmt": {
-                        "CPP_name": "getValue", 
-                        "CPP_template": "<double>", 
-                        "CPP_this": "selfobj", 
-                        "CPP_this_call": "selfobj->", 
-                        "C_arguments": "AA_exclass2 * self", 
-                        "C_call_list": "", 
-                        "C_name": "AA_exclass2_get_value_double", 
-                        "C_object": "ExClass2 *selfobj = static_cast<ExClass2 *>(self);", 
-                        "C_return_type": "double", 
-                        "F_C_arguments": "self", 
-                        "F_C_name": "aa_exclass2_get_value_double", 
-                        "F_C_result_clause": " result(rv)", 
-                        "F_C_subprogram": "function", 
-                        "F_arg_c_call": "obj%voidptr", 
-                        "F_arg_c_call_tab": "\tobj%voidptr", 
-                        "F_arguments": "obj", 
-                        "F_instance_ptr": "obj%voidptr", 
-                        "F_name_generic": "get_value", 
-                        "F_name_impl": "exclass2_get_value_double", 
-                        "F_name_method": "get_value_double", 
-                        "F_result_clause": " result(rv)", 
-                        "F_subprogram": "function", 
-                        "method_suffix": "_double", 
-                        "rv_decl": "double rv"
-                    }, 
-                    "generated": "cpp_template", 
-                    "options": {
-                        "wrap_c": true, 
-                        "wrap_fortran": true, 
-                        "wrap_python": false
-                    }, 
-                    "qualifiers": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "getValue", 
-                        "type": "double"
                     }
                 }
             ], 
@@ -1685,7 +1221,6 @@
         "F_C_result_clause": "", 
         "F_derived_member": "voidptr", 
         "F_impl_filename": "wrapfuserlibrary.f", 
-        "F_instance_ptr": "obj%voidptr", 
         "F_module_name": "userlibrary_mod", 
         "F_pure_clause": "", 
         "F_result": "rv", 
@@ -1697,44 +1232,31 @@
         "PY_module_filename": "pyUserLibrarymodule.cpp", 
         "PY_module_name": "userlibrary", 
         "PY_prefix": "PP_", 
+        "function_suffix": "", 
         "library": "UserLibrary", 
         "lower_library": "userlibrary", 
-        "method_suffix": "", 
         "overloaded": false, 
-        "rv": "rv"
+        "rv": "rv", 
+        "upper_library": "USERLIBRARY"
     }, 
     "functions": [
         {
             "args": [], 
+            "attrs": {}, 
             "decl": "void local_function1", 
             "docs": "yada yada yada", 
             "fmt": {
-                "CPP_name": "local_function1", 
-                "CPP_this": "selfobj", 
-                "CPP_this_call": "", 
-                "C_arguments": "", 
-                "C_call_list": "", 
                 "C_name": "AA_local_function1", 
-                "C_object": "", 
-                "C_return_type": "void", 
-                "F_C_arguments": "", 
                 "F_C_name": "aa_local_function1", 
-                "F_C_subprogram": "subroutine", 
-                "F_arg_c_call": "", 
-                "F_arg_c_call_tab": "\t", 
-                "F_arguments": "", 
-                "F_instance_ptr": "obj%voidptr", 
                 "F_name_generic": "local_function1", 
                 "F_name_impl": "local_function1", 
                 "F_name_method": "local_function1", 
-                "F_subprogram": "subroutine", 
                 "PY_name_impl": "PP_local_function1", 
                 "method_name": "local_function1", 
-                "rv_decl": "void rv", 
                 "underscore_name": "local_function1"
             }, 
+            "function_index": 34, 
             "options": {}, 
-            "qualifiers": {}, 
             "result": {
                 "attrs": {}, 
                 "name": "local_function1", 
@@ -1754,39 +1276,58 @@
                     "type": "std::string"
                 }
             ], 
+            "attrs": {}, 
             "decl": "bool isNameValid(const std::string& name)", 
             "fmt": {
-                "CPP_name": "isNameValid", 
-                "CPP_this": "selfobj", 
-                "CPP_this_call": "", 
-                "C_arguments": "const char * name", 
-                "C_call_list": "name", 
                 "C_name": "AA_is_name_valid", 
-                "C_object": "", 
-                "C_return_type": "bool", 
-                "F_C_arguments": "name", 
                 "F_C_name": "aa_is_name_valid", 
-                "F_C_result_clause": " result(rv)", 
-                "F_C_subprogram": "function", 
-                "F_arg_c_call": "trim(name) // C_NULL_CHAR", 
-                "F_arg_c_call_tab": "\ttrim(name) // C_NULL_CHAR", 
-                "F_arguments": "name", 
-                "F_instance_ptr": "obj%voidptr", 
                 "F_name_generic": "is_name_valid", 
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
-                "F_result_clause": " result(rv)", 
-                "F_subprogram": "function", 
+                "PTR_F_C_index": 36, 
                 "PY_name_impl": "PP_is_name_valid", 
                 "method_name": "isNameValid", 
-                "rv_decl": "bool rv", 
                 "underscore_name": "is_name_valid"
             }, 
+            "function_index": 35, 
             "options": {
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
             }, 
-            "qualifiers": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "isNameValid", 
+                "type": "bool"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "bool isNameValid(const std::string& name)", 
+            "fmt": {
+                "C_name": "AA_is_name_valid_bufferify", 
+                "F_C_name": "aa_is_name_valid_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "function_index": 36, 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "isNameValid", 
@@ -1797,6 +1338,7 @@
     "options": {
         "C_prefix": "AA_", 
         "F_module_per_class": true, 
+        "F_string_len_trim": true, 
         "PY_prefix": "PP_", 
         "cpp_header": "", 
         "library": "UserLibrary", 
@@ -1828,8 +1370,9 @@
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<ExClass1{ptr}>({var})", 
+            "c_to_cpp": "static_cast<{C_const}ExClass1{ptr}>(static_cast<{C_const}void *>({var}))", 
             "c_type": "AA_exclass1", 
+            "cpp_to_c": "static_cast<{C_const}AA_exclass1 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "ExClass1", 
             "f_module": {
                 "exclass1_mod": [
@@ -1849,8 +1392,9 @@
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
-            "c_to_cpp": "static_cast<ExClass2{ptr}>({var})", 
+            "c_to_cpp": "static_cast<{C_const}ExClass2{ptr}>(static_cast<{C_const}void *>({var}))", 
             "c_type": "AA_exclass2", 
+            "cpp_to_c": "static_cast<{C_const}AA_exclass2 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "ExClass2", 
             "f_module": {
                 "exclass2_mod": [
@@ -1899,9 +1443,10 @@
             "c_type": "bool", 
             "cpp_type": "bool", 
             "f_kind": "C_BOOL", 
-            "f_return_code": "{F_result} = booltological({F_C_name}({F_arg_c_call_tab}))", 
+            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
+            "f_pre_decl": "logical(C_BOOL) {tmp_var}", 
             "f_type": "logical", 
-            "fortran_to_c": "logicaltobool({var})"
+            "f_use_tmp": true
         }, 
         "double": {
             "PY_format": "d", 
@@ -2060,6 +1605,50 @@
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+        }, 
+        "string_from_buffer": {
+            "base": "string", 
+            "c_argdecl": [
+                "const char *{var}", 
+                "int len_{var}"
+            ], 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_to_cpp": "std::string({var}, len_{var})", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_c_argdecl": [
+                "type(C_PTR), intent(IN), value :: {var}", 
+                "integer(C_INT), intent(IN), value :: len_{var}"
+            ], 
+            "f_c_args": [
+                "{var}", 
+                "len_{var}"
+            ], 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)", 
+            "fortran_to_c": "{var}, len_trim({var})"
+        }, 
+        "string_result_as_arg": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
+            "f_pre_decl": "type(C_PTR) :: {F_result}", 
+            "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_rv_decl": "character(*), intent(OUT) :: {result_arg}", 
             "f_type": "character(*)", 
             "fortran_to_c": "trim({var}) // C_NULL_CHAR"
         }, 

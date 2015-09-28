@@ -1,0 +1,69 @@
+Read yaml tutorial.yaml
+Read splicer ftutorialsplicer.f
+class Class1
+C method Class1 *new()  +constructor
+C method void delete()  +destructor
+C method void Method1()
+Close wrapClass1.h
+Close wrapClass1.cpp
+C function void Function1()
+C function double Function2(double arg1, int arg2)
+C function bool Function3(bool arg)
+C function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+C function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+C function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C function double Function5(double arg1 = 3.13, int arg2 = 5)
+C function void Function6(const std::string& name)
+C function void Function6(const std::string& name)
+C function void Function6(int indx)
+C function void Function7(ArgType arg)
+C function void Function7(ArgType arg)
+C function RetType Function8()
+C function RetType Function8()
+C function void Function9(double arg)
+C function const std::string& LastFunctionCalled() +pure
+Close wrapTutorial.h
+Close wrapTutorial.cpp
+class Class1
+C-interface, Fortran method Class1 *new()  +constructor
+C-interface, Fortran method void delete()  +destructor
+C-interface, Fortran method void Method1()
+C-interface, Fortran function void Function1()
+C-interface, Fortran function double Function2(double arg1, int arg2)
+C-interface, Fortran function bool Function3(bool arg)
+C-interface, Fortran function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+C-interface function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+C-interface, Fortran function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C-interface function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C-interface, Fortran function double Function5(double arg1 = 3.13, int arg2 = 5)
+C-interface, Fortran function void Function6(const std::string& name)
+C-interface function void Function6(const std::string& name)
+C-interface, Fortran function void Function6(int indx)
+C-interface, Fortran function void Function7(ArgType arg)
+C-interface, Fortran function void Function7(ArgType arg)
+C-interface, Fortran function RetType Function8()
+C-interface, Fortran function RetType Function8()
+C-interface function void Function9(double arg)
+Fortran function void Function9(double arg)
+Fortran function void Function9(double arg)
+C-interface, Fortran function const std::string& LastFunctionCalled() +pure
+Close wrapftutorial.f
+class Class1
+Python method Class1 *new()  +constructor
+Python method void delete()  +destructor
+Python method void Method1()
+Close pyClass1type.cpp
+Python function void Function1()
+Python function double Function2(double arg1, int arg2)
+Python function bool Function3(bool arg)
+Python function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+Python function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+Python function double Function5(double arg1 = 3.13, int arg2 = 5)
+Python function void Function6(const std::string& name)
+Python function void Function6(int indx)
+Python function void Function9(double arg)
+Python function const std::string& LastFunctionCalled() +pure
+Close pyTutorialmodule.hpp
+Close pyTutorialmodule.cpp
+Close pyTutorialhelper.cpp
