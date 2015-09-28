@@ -42,23 +42,22 @@ TEST(sidre_conduit,int_array)
   // Create Conduit Node
   int    int_av[6]   = {-2,-4,-8,-16,-32,-64};
   conduit::int_array   int_av_a(int_av,conduit::DataType::c_int(6));
-  conduit::Node n;
-  n.set(int_av_a);
-  n.schema().print();
-  int *int_ptr = n.as_int_ptr();
+  conduit::Node node;
+  node.set(int_av_a);
+//  node.schema().print();
+  int *int_ptr = node.as_int_ptr();
   for(int i=0;i<6;i++)
   {
       EXPECT_EQ(int_ptr[i],int_av[i]);
-      std::cout << int_ptr[i] << " ";
   }
-  std::cout << std::endl;
+//  node.print_detailed();
 
   // Add Node to DataStore
   DataStore * ds = new DataStore();
 
   DataGroup * root = ds->getRoot();
 
-  DataView * view = registerConduitNode(root, "cnode", &n);
+  DataView * view = registerConduitNode(root, "cnode", &node);
   EXPECT_TRUE(view != ATK_NULLPTR);
 
   int num_elements = view->getNumberOfElements();
@@ -82,23 +81,23 @@ TEST(sidre_conduit,extract_conduit)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
+  int nitems = 10;
 
-  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(10));
+  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(nitems));
   int * data_ptr = dv->getValue();
-
-  for(int i=0 ; i<10 ; i++)
+  for(int i=0 ; i<nitems ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  //  dv->print();
-
-
   conduit::Node *node = createConduitNode(dv);
-  EXPECT_TRUE(node == ATK_NULLPTR);
+  EXPECT_FALSE(node == ATK_NULLPTR);
 
+  EXPECT_EQ(nitems, (int) node->dtype().number_of_elements());
+  EXPECT_EQ(data_ptr, node->as_int32_ptr());
 
-  //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
+//  node->print_detailed();
+
   delete ds;
 }
 
