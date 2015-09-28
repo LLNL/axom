@@ -26,6 +26,15 @@
  * \def ATK_NOT_USED(x)
  * \brief Macro used to silence compiler warnings in methods with unused
  *  arguments.
+ * \note The intent is to use this macro in the function signature. For example:
+ * \code
+ *
+ *  void my_function(int x, int ATK_NOT_USED(y))
+ *  {
+ *    // my implementation
+ *  }
+ *
+ * \endcode 
  *******************************************************************************
  */
 #define ATK_NOT_USED(x)
