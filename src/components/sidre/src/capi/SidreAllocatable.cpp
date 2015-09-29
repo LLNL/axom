@@ -84,9 +84,12 @@ public:
 	return m_callbacks.getNumberOfElements(context);
     }
 
-  virtual void allocate(DataView * view) const
+    virtual void allocate(void *context,
+			  TypeID type, SidreLength nitems)
     {
-	m_callbacks.allocate(view->m_buffer_context, view->m_nitems);
+    // XXX - type is fixed in the context, unused
+    // XXX - check requested type vs context type
+	m_callbacks.allocate(context, nitems);
 	return;
     }
 

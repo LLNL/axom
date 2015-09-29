@@ -21,12 +21,13 @@
 #ifndef METABUFFER_HPP_
 #define METABUFFER_HPP_
 
+// SiDRe project headers
+#include <sidre/SidreTypes.h>
+
 namespace asctoolkit
 {
 namespace sidre
 {
-
-    class DataView;
 
 /*!
  * \class MetaBuffer
@@ -51,7 +52,7 @@ public:
   /*!
    * \brief Allocate buffer to requested size.
    */
-  virtual void allocate(DataView * view) const = 0;
+  virtual void allocate(void *context, TypeID type, SidreLength nitems) = 0;
 
 };
 

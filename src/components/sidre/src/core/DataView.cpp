@@ -117,7 +117,7 @@ DataView * DataView::allocate()
   if (m_metabuffer != ATK_NULLPTR)
   {
       // XXX  check m_type and m_nitems
-      m_metabuffer->allocate(this);
+      m_metabuffer->allocate(m_buffer_context, m_type, m_nitems);
       return this;
   }
 
@@ -143,6 +143,13 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
+  if (m_metabuffer != ATK_NULLPTR)
+  {
+      // XXX  check m_type and m_nitems
+      m_metabuffer->allocate(m_buffer_context, type, len);
+      return this;
+  }
+
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to allocate an external or opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");

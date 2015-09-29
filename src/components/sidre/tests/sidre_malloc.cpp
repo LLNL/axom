@@ -11,9 +11,7 @@
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.hpp"
-#include "sidre/SidreConduit.hpp"
-
-#include "conduit/conduit.hpp"
+#include "sidre/SidreMalloc.hpp"
 
 using asctoolkit::sidre::SidreLength;
 //using asctoolkit::sidre::TypeID;
@@ -30,72 +28,48 @@ using asctoolkit::sidre::DataType;
 //using asctoolkit::slic::setAbortOnAssert;
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
-// Create a Condit node
-// Register with Datastore
-// Extract address from Datastore
-TEST(sidre_conduit,int_array)
-{
-  // Create Conduit Node
-  int    int_av[6]   = {-2,-4,-8,-16,-32,-64};
-  conduit::int_array   int_av_a(int_av,conduit::DataType::c_int(6));
-  conduit::Node node;
-  node.set(int_av_a);
-//  node.schema().print();
-  int *int_ptr = node.as_int_ptr();
-  for(int i=0;i<6;i++)
-  {
-      EXPECT_EQ(int_ptr[i],int_av[i]);
-  }
-//  node.print_detailed();
-
-  // Add Node to DataStore
-  DataStore * ds = new DataStore();
-
-  DataGroup * root = ds->getRoot();
-
-  DataView * view = registerConduitNode(root, "cnode", &node);
-  EXPECT_TRUE(view != ATK_NULLPTR);
-
-  int num_elements = view->getNumberOfElements();
-  EXPECT_EQ(num_elements, 6);
-
-  int * iptr = (int *) view->getDataPointer();
-  for (int i=0; i < 6; i++)
-  {
-      EXPECT_EQ(int_av[i], iptr[i]);
-  }
-
-  delete ds;
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-
-// Create array in Datastore
-// Create a Condit node from the DataView
-TEST(sidre_conduit,create_conduit_from_dataview)
+TEST(sidre_malloc,int_buffer_from_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  SidreLength nitems = 10;
 
-  DataView * dv = root->createViewAndBuffer("u0", CONDUIT_NATIVE_INT_DATATYPE_ID, nitems);
-  int * data_ptr = dv->getValue();
-  for(int i=0 ; i<nitems ; i++)
+  DataView * dv = registerMallocNode(root, "snode");
+
+  dv->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  //  int * data_ptr = dv->getValue();
+  int * data_ptr = (int *) dv->getDataPointer();
+
+  for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  conduit::Node *node = createConduitNode(dv);
-  EXPECT_FALSE(node == ATK_NULLPTR);
+  dv->print();
 
-  EXPECT_EQ(nitems, static_cast<SidreLength>(node->dtype().number_of_elements()));
-  EXPECT_EQ(data_ptr, node->as_int32_ptr());
+  //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
+  delete ds;
 
-//  node->print_detailed();
+}
 
+//----------------------------------------------------------------------
+
+// Create a Malloc MetaBuffer node
+// Register with Datastore
+// Extract address from Datastore
+TEST(sidre_simple,int_array)
+{
+  SidreLength nitems = 10;
+
+  DataStore * ds = new DataStore();
+
+  DataGroup * root = ds->getRoot();
+
+  DataView * view = registerMallocNode(root, "snode", CONDUIT_NATIVE_INT_DATATYPE_ID, nitems);
+  EXPECT_TRUE(view != ATK_NULLPTR);
+  
   delete ds;
 }
 

@@ -55,10 +55,10 @@
 #include "slic/slic.hpp"
 
 // SiDRe project headers
+#include "SidreTypes.hpp"
 #include "MetaBuffer.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
-#include "SidreTypes.hpp"
 
 
 
