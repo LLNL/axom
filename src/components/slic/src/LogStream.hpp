@@ -97,6 +97,8 @@ public:
    * \param [in] tagName user-supplied tag to associate with the given message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
+   * \param [in] filter_dulicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
    *
    * \note The following wildcards may be used to ignore a particular field:
    * <ul>
@@ -110,7 +112,8 @@ public:
                        const std::string& message,
                        const std::string& tagName,
                        const std::string& fileName,
-                       int line
+                       int line,
+                       bool filter_duplicates
                        ) = 0;
 
   /*!
