@@ -43,6 +43,24 @@
  *******************************************************************************
  * \def DISABLE_COPY_AND_ASSIGNMENT(className)
  * \brief Macro to disable copy and assignment operations for the given class.
+ * \note This macro should only be used within the private section of a class,
+ *  as indicated in the example below.
+ *
+ * \code
+ *
+ *   class Foo
+ *   {
+ *   public:
+ *      Foo();
+ *      ~Foo();
+ *
+ *       // Other methods here
+ *
+ *   private:
+ *      DISABLE_COPY_AND_ASSIGNMENT(Foo);
+ *   };
+ *
+ * \endcode
  *******************************************************************************
  */
 #ifdef USE_CXX11
