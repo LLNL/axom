@@ -12,29 +12,31 @@
 # Specify all headers
 #
 set(slic_headers
-    Logger.hpp
-    LogStream.hpp
-    MessageLevel.h
-    UnitTestLogger.hpp
-    slic.hpp
+    core/Logger.hpp
+    core/LogStream.hpp
+    core/MessageLevel.h
+    core/UnitTestLogger.hpp
 
-    logstreams/GenericOutputStream.hpp
+    interface/slic.hpp
+
+    streams/GenericOutputStream.hpp
     )
 
 #
 # Specify all sources
 #
 set(slic_sources
-    Logger.cpp
-    LogStream.cpp
-    slic.cpp
+    core/Logger.cpp
+    core/LogStream.cpp
 
-    logstreams/GenericOutputStream.cpp
+    interface/slic.cpp
+
+    streams/GenericOutputStream.cpp
     )
 
 if (ENABLE_MPI)
-   list(APPEND slic_headers logstreams/SynchronizedStream.hpp)
-   list(APPEND slic_sources logstreams/SynchronizedStream.cpp)
+   list(APPEND slic_headers streams/SynchronizedStream.hpp)
+   list(APPEND slic_sources streams/SynchronizedStream.cpp)
 endif()
 
 #
