@@ -23,6 +23,7 @@
 
 #include "slic/LogStream.hpp"
 
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 
 // C/C++ includes
@@ -117,13 +118,7 @@ private:
   { };
 
 
-  /// \name Disabled Methods
-  /// @{
-
-  SynchronizedStream( const SynchronizedStream& ); // Not implemented
-  SynchronizedStream& operator=( const SynchronizedStream& ); // Not implemented
-
-  /// @}
+  DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
 };
 
 } /* namespace slic */

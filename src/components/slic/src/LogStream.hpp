@@ -22,6 +22,7 @@
 #define LOGSTREAM_HPP_
 
 #include "slic/MessageLevel.h"
+#include "common/ATKMacros.hpp"
 
 /// \name Wildcards
 /// @{
@@ -174,13 +175,7 @@ private:
                    const std::string& value,
                    std::size_t pos=std::string::npos );
 
-  /// \name Disabled Methods
-  ///@{
-
-  LogStream( const LogStream& ); // Not implemented
-  LogStream& operator=( const LogStream& ); // Not implemented
-
-  ///@}
+  DISABLE_COPY_AND_ASSIGNMENT(LogStream);
 };
 
 } /* namespace slic */

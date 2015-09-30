@@ -23,6 +23,7 @@
 
 #include "slic/LogStream.hpp"
 
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp" // for ATK_NULLPTR
 
 // C/C++ includes
@@ -93,13 +94,8 @@ private:
    */
   GenericOutputStream(): m_stream( static_cast< std::ostream* >( ATK_NULLPTR ) ){};
 
-  /// \name Disabled Methods
-  /// @{
+  DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
 
-  GenericOutputStream( const GenericOutputStream& ); // Not implemented
-  GenericOutputStream& operator=(const GenericOutputStream& ); // Not implemented
-
-  /// @}
 };
 
 } /* namespace slic */
