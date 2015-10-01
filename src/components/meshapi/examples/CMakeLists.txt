@@ -146,38 +146,38 @@ set(tinyHydro_lib_sources
     ${tinyHydro_dir}/Part.cpp
     ${tinyHydro_dir}/State.cpp
     ${tinyHydro_dir}/PolygonMeshXY.cpp
+    ${tinyHydro_dir}/myTimer.cpp        
     )
 set(tinyHydro_exe_source
     ${tinyHydro_dir}/main.cpp
     )
 
 
-SET(EXTRA_WARNING_DISABLE_FLAGS " -Wno-unused-parameter -Wno-unused-variable ")
-#get_source_file_property(_origflags PolygonMeshXY.hpp COMPILE_FLAGS)
-#set_source_files_properties(
-#         ${tinyHydro_dir}/VectorXY.hpp
-#         PROPERTIES COMPILE_FLAGS "${_origflags} ${EXTRA_WARNING_DISABLE_FLAGS}"     
-#         )
-
-#set_source_files_properties(${tinyHydro_dir}/VectorXY.hpp PROPERTIES COMPILE_FLAGS "${EXTRA_WARNING_DISABLE_FLAGS}" )
-
 
 make_library( 
     LIBRARY_NAME meshapiTinyHydroLib 
     LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"  
    ) 
-   
-make_executable( 
-    EXECUTABLE_NAME meshapiTinyHydro 
-    EXECUTABLE_SOURCE ${tinyHydro_exe_source} 
-    DEPENDS_ON "meshapiTinyHydroLib" 
-   ) 
+set(gtest_meshapi_tinyHydro_tests
+    ${tinyHydro_dir}/tests/meshapi_tinyHydro_unitTests.cpp
+    ${tinyHydro_dir}/tests/meshapi_tinyHydro_sedovTwoPart.cpp
+    ${tinyHydro_dir}/tests/meshapi_tinyHydro_sod1DTwoPart.cpp
+)
+
+#
+# Add gtest based tests
+#
+foreach(test ${gtest_meshapi_tinyHydro_tests})
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON meshapiTinyHydroLib slic "-lrt")
+endforeach()
+
+# Add some extra flags to disable warnings about variables used only for SLIC_ASSERTS
+# TODO: Replace with new macros from George..
+#SET(EXTRA_WARNING_DISABLE_FLAGS " -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable ")
+#get_source_file_property(_origflags ${tinyHydro_dir}/tests/meshapi_tinyHydro_unitTests.cpp COMPILE_FLAGS)
+#set_source_files_properties(
+#         ${gtest_meshapi_tinyHydro_tests}
+#         PROPERTIES COMPILE_FLAGS "${_origflags} ${EXTRA_WARNING_DISABLE_FLAGS}"     
+#         )
 
 
-
-set(new_link_flags "-lrt")
-get_target_property(existing_link_flags meshapiTinyHydro LINK_FLAGS)
-if(existing_link_flags)
-    set(new_link_flags "${existing_link_flags} ${new_link_flags}")
-endif()
-set_target_properties(meshapiTinyHydro PROPERTIES LINK_FLAGS ${new_link_flags})

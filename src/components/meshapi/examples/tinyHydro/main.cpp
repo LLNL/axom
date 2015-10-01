@@ -58,15 +58,15 @@ int main()  // sets up Sedov and runs it
    while( h.time < 0.499999 )
        h.step(dt);
 
-   printf("hydro cycle = %i hydro time  = %g", h.cycle, h.time);
+   printf("hydro cycle = %i hydro time  = %g\n", h.cycle, h.time);
 
    double rhoTheory = (1.0/(1.0-h.time));
    rhoTheory = rhoTheory*rhoTheory * rho0;
 
    if( std::fabs(pp->rho(0) - rhoTheory) < 1.0e-10
     && std::fabs(pp->rho(n-1) - rhoTheory) < 1.0e-10)
-       printf ("PASS");
+       printf ("\nPASS\n");
    else
-       printf ("FAIL -- densities are not correct");
+       printf ("\nFAIL -- densities are not correct\n");
 
 }

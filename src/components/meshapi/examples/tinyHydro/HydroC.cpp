@@ -415,12 +415,15 @@ double Hydro::newDT(void)
    {
       double L2 = mesh.zoneVolume[z];
       double dt2 = L2/(maxCs[z]*maxCs[z] + L2*divu[z]*divu[z]);
-      if (minDT > dt2)
+      if (minDT >= dt2)
       {
          minDT = dt2;
          dtZone = z;
       }
    }
+
+   //printf("\n\t\tMin DT is %g -- computed in zone %i \n\n", minDT, dtZone);
+
    return cfl*sqrt(minDT);
 }
 //----------------------------------------------
