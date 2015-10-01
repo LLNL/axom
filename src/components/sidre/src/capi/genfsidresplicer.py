@@ -37,14 +37,14 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
     implicit none
 
     interface
-       function ATK_register_static(group, name, lname, addr, nitems, type) result(rv)
+       function ATK_register_static(group, name, lname, addr, type, nitems) result(rv)
        use iso_c_binding
        type(C_PTR), value, intent(IN)    :: group
        character(*), intent(IN)          :: name
        integer(C_INT), value, intent(IN) :: lname
        type(C_PTR), value,     intent(IN) :: addr
-       integer(C_LONG), value, intent(IN) :: nitems
        integer(C_INT), value, intent(IN)  :: type
+       integer(C_LONG), value, intent(IN) :: nitems
        type(C_PTR) rv
        end function ATK_register_static
     end interface
@@ -59,7 +59,7 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
 
     lname = len_trim(name)
     nitems = {size}
-!    rv%voidptr = ATK_register_static(group%voidptr, name, lname, C_LOC(value), nitems, type)
+!    rv%voidptr = ATK_register_static(group%voidptr, name, lname, C_LOC(value), type, nitems)
 end function datagroup_register_static_{typename}_{nd}""".format(size=size, **d)
 
 

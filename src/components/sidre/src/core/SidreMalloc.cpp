@@ -78,10 +78,36 @@ public:
 private:
 };
 
+//----------------------------------------------------------------------
+
 // XXX - temp code
 MallocMetaBuffer *JUNK_DUMMY = NULL;
 void RegisterMallocMetaBuffers(void);
 
+//----------------------------------------------------------------------
+
+DataView *registerStaticNode(DataGroup * group,
+			     const std::string& name,
+			     void *addr,
+			     TypeID type, SidreLength len )
+{
+  if (JUNK_DUMMY == NULL) {
+      RegisterMallocMetaBuffers();
+  }
+  MallocContext * context = new MallocContext;
+
+  context->m_type = type;
+  context->m_nitems = len;
+  context->m_number_of_bytes = 0;  // XXX
+  context->m_data_pointer = addr;
+
+  DataView *  view  = group->createViewWithMetaBuffer(name,
+						      context,
+						      JUNK_DUMMY);
+  return view;
+}
+
+//----------------------------------------------------------------------
     // XXX TODO - release context
 
 DataView *registerMallocNode(DataGroup * group,

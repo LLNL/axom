@@ -30,48 +30,33 @@ using asctoolkit::sidre::DataType;
 //----------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-TEST(sidre_malloc,int_buffer_from_view)
+TEST(sidre_static,int_buffer_from_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv = registerMallocNode(root, "snode");
+  int buffer[10];
+  for(int i=0 ; i<10 ; i++)
+  {
+    buffer[i] = i*i;
+  }
 
-  dv->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  DataView * dv = registerStaticNode(root, "snode",
+				     static_cast<void *>(buffer),
+				     CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+
   //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dv->getNumberOfElements(), 10u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
 
-  for(int i=0 ; i<10 ; i++)
-  {
-    data_ptr[i] = i*i;
-  }
+  EXPECT_EQ(buffer, data_ptr);
 
-  dv->print();
+  //  dv->print();
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
 
-}
-
-//----------------------------------------------------------------------
-
-// Create a Malloc MetaBuffer node
-// Register with Datastore
-// Extract address from Datastore
-TEST(sidre_malloc,int_array)
-{
-  SidreLength nitems = 10;
-
-  DataStore * ds = new DataStore();
-
-  DataGroup * root = ds->getRoot();
-
-  DataView * view = registerMallocNode(root, "snode", CONDUIT_NATIVE_INT_DATATYPE_ID, nitems);
-  EXPECT_TRUE(view != ATK_NULLPTR);
-  
-  delete ds;
 }
 
 //----------------------------------------------------------------------

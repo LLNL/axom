@@ -39,6 +39,11 @@ namespace sidre
 {
 class DataView;
 
+DataView *registerStaticNode(DataGroup * group,
+			     const std::string& name,
+			     void *addr,
+			     TypeID type, SidreLength len );
+
 DataView *registerMallocNode(DataGroup * group,
 			     const std::string& name);
 
