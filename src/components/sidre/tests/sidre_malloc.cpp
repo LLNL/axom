@@ -39,6 +39,7 @@ TEST(sidre_malloc,int_buffer_from_view)
 
   dv->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
   //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getNumberOfElements(), 10u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
 

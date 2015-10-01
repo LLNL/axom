@@ -68,7 +68,9 @@ public:
     {
 	MallocContext * mcontext = static_cast<MallocContext *>(context);
 	// XXX - replace sizeof
-	mcontext->m_data_pointer = malloc( sizeof(int) * nitems); 
+	mcontext->m_nitems = nitems;
+	mcontext->m_number_of_bytes = sizeof(int) * nitems;
+	mcontext->m_data_pointer = malloc( mcontext->m_number_of_bytes); 
 	mcontext->m_type = type;
 	return;
     }
