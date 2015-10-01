@@ -36,9 +36,9 @@ namespace lumberjack {
  * \brief Abstract base class defining the interface of all Communicator classes.
  *
  *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Communicator using Logger::initialize
+ *  You will need to add your Communicator using Lumberjack::initialize
  *
- * \see BinaryTreeCommunicator RootCommunicator Logger
+ * \see BinaryTreeCommunicator RootCommunicator Lumberjack
  *******************************************************************************
  */
 class Communicator {
@@ -119,7 +119,7 @@ class Communicator {
 
         /*!
          *****************************************************************************
-         * \brief Function used by the Logger to indicate whether this node should be
+         * \brief Function used by the Lumberjack to indicate whether this node should be
          * outputting messages. The Communicator class's tree structure dictates this.
          *****************************************************************************
          */

@@ -37,9 +37,9 @@ namespace lumberjack {
  * \brief A Communicator that utilizes a binary tree stucture of MPI nodes 
  * to scalably pass Message classes.
  *
- *  You will need to add your Communicator using Logger::initialize.
+ *  You will need to add your Communicator using Lumberjack::initialize.
  *
- * \see Communicator Logger
+ * \see Communicator Lumberjack
  *******************************************************************************
  */
 class BinaryTreeCommunicator: public Communicator {
@@ -98,7 +98,7 @@ class BinaryTreeCommunicator: public Communicator {
          * This is helpful when you want to spread your Lumberjack work over a set of 
          * your work. Instead of doing all of Lumberjack's work at one point in your program.
          * This does not guarantee your Message will be ready to output.  After this call
-         * only Message classes at the root node will be returned from Logger::getMessages.
+         * only Message classes at the root node will be returned from Lumberjack::getMessages.
          *
          * \param [in,out] messages All of this rank's Message classes.
          * \param [in,out] combiners All of currently active Combiner classes.
@@ -121,7 +121,7 @@ class BinaryTreeCommunicator: public Communicator {
 
         /*!
          *****************************************************************************
-         * \brief Function used by the Logger to indicate whether this node should be
+         * \brief Function used by the Lumberjack to indicate whether this node should be
          * outputting messages. Only the root node outputs messages.
          *****************************************************************************
          */

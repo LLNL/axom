@@ -10,35 +10,35 @@
 
 /*!
  *******************************************************************************
- * \file Logger.cpp
+ * \file Lumberjack.cpp
  * \author Chris White (white238@llnl.gov)
  *
- * \brief This file contains the class implementation of the Logger. This class
+ * \brief This file contains the class implementation of the Lumberjack. This class
  * is the main class users will interact with.
  *******************************************************************************
  */
 
-#include "lumberjack/Logger.hpp"
+#include "lumberjack/Lumberjack.hpp"
 
 #include "common/CommonTypes.hpp"
 
 namespace asctoolkit {
 namespace lumberjack {
 
-void Logger::initialize(Communicator* communicator, int ranksLimit)
+void Lumberjack::initialize(Communicator* communicator, int ranksLimit)
 {
     m_communicator = communicator;
     m_ranksLimit = ranksLimit;
     m_combiners.push_back(new TextEqualityCombiner);
 }
 
-void Logger::finalize()
+void Lumberjack::finalize()
 {
     m_communicator = ATK_NULLPTR;
     clearCombiners();
 }
 
-void Logger::addCombiner(Combiner* combiner)
+void Lumberjack::addCombiner(Combiner* combiner)
 {
     bool identifierFound = false;
     for (int i=0; i<(int)m_combiners.size(); ++i){
@@ -52,7 +52,7 @@ void Logger::addCombiner(Combiner* combiner)
     }
 }
 
-void Logger::removeCombiner(const std::string& combinerIdentifier)
+void Lumberjack::removeCombiner(const std::string& combinerIdentifier)
 {
     int combinerToBeRemoved = -1;
     for (int i=0; i<(int)m_combiners.size(); ++i){
@@ -67,7 +67,7 @@ void Logger::removeCombiner(const std::string& combinerIdentifier)
     }
 }
 
-void Logger::clearCombiners()
+void Lumberjack::clearCombiners()
 {
     for (int i=0; i<(int)m_combiners.size(); ++i){
         delete m_combiners[i];
@@ -75,41 +75,41 @@ void Logger::clearCombiners()
     m_combiners.clear();
 }
 
-void Logger::getMessages(std::vector<Message*>& filledVector)
+void Lumberjack::getMessages(std::vector<Message*>& filledVector)
 {
     if (m_communicator->shouldMessagesBeOutputted()){
         filledVector.swap(m_messages);
     }
 }
 
-void Logger::ranksLimit(int value)
+void Lumberjack::ranksLimit(int value)
 {
     m_ranksLimit = value;
     m_communicator->ranksLimit(value);
 }
 
-int Logger::ranksLimit()
+int Lumberjack::ranksLimit()
 {
     return m_ranksLimit;
 }
 
-void Logger::queueMessage(const std::string& text)
+void Lumberjack::queueMessage(const std::string& text)
 {
     queueMessage(text, "", -1);
 }
 
-void Logger::queueMessage(const std::string& text, const std::string& fileName, const int lineNumber)
+void Lumberjack::queueMessage(const std::string& text, const std::string& fileName, const int lineNumber)
 {
     Message* mi = new Message(text, m_communicator->rank(), fileName, lineNumber);
     m_messages.push_back(mi);
 }
 
-void Logger::pushMessagesOnce()
+void Lumberjack::pushMessagesOnce()
 {
     m_communicator->pushMessagesOnce(m_messages, m_combiners);
 }
 
-void Logger::pushMessagesFully()
+void Lumberjack::pushMessagesFully()
 {
     m_communicator->pushMessagesFully(m_messages, m_combiners);
 }

@@ -37,9 +37,9 @@ namespace lumberjack {
  * \brief A Communicator that all MPI nodes communicate with the root node. This class
  * does NOT scale and is provided for demonstration purposes only.
  *
- *  You will need to add your Communicator using Logger::initialize.
+ *  You will need to add your Communicator using Lumberjack::initialize.
  *
- * \see BinaryTreeCommunicator Communicator Logger
+ * \see BinaryTreeCommunicator Communicator Lumberjack
  *******************************************************************************
  */
 class RootCommunicator: public Communicator {
@@ -119,7 +119,7 @@ class RootCommunicator: public Communicator {
 
         /*!
          *****************************************************************************
-         * \brief Function used by the Logger to indicate whether this node should be
+         * \brief Function used by the Lumberjack to indicate whether this node should be
          * outputting messages. Only the root node outputs messages.
          *****************************************************************************
          */

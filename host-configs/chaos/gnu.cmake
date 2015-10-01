@@ -16,6 +16,7 @@ endif()
 set(CMAKE_CXX_COMPILER "${COMPILER_PATH}/g++" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "${COMPILER_PATH}/gfortran" CACHE PATH "")
 set(GCOV_PATH "${COMPILER_PATH}/gcov" CACHE PATH "")
+set(ENABLE_MPI ON CACHE PATH "")
 
 #######
 # uberenv host-config for asctoolkit

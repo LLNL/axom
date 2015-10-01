@@ -10,16 +10,16 @@
 
 /*!
  *******************************************************************************
- * \file Logger.hpp
+ * \file Lumberjack.hpp
  * \author Chris White (white238@llnl.gov)
  *
- * \brief This file contains the class definition of the Logger. This class
+ * \brief This file contains the class definition of the Lumberjack. This class
  * is the main class users will interact with.
  *******************************************************************************
  */
 
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef LUMBERJACK_HPP
+#define LUMBERJACK_HPP
 
 #include <string>
 
@@ -35,7 +35,7 @@ namespace lumberjack {
 
 /*!
  *******************************************************************************
- * \class Logger
+ * \class Lumberjack
  *
  * \brief Class that all user interactions with Lumberjack are through.
  *
@@ -46,14 +46,14 @@ namespace lumberjack {
  * \see BinaryTreeCommunicator RootCommunicator Message Combiner
  *******************************************************************************
  */
-class Logger {
+class Lumberjack {
     public:
         /*!
          *****************************************************************************
-         * \brief Called to initialize the Logger.
+         * \brief Called to initialize the Lumberjack.
          *
-         * This performs any setup work the Logger needs before doing any work.
-         * It is required that this is called before using the Logger.
+         * This performs any setup work the Lumberjack needs before doing any work.
+         * It is required that this is called before using the Lumberjack.
          *
          * \param [in] communicator The Lumberjack Communicator that will send/recieve messages
          * \param [in] ranksLimit Limit on how many ranks are individually tracker per Message.
@@ -63,22 +63,22 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Called to finalize the Logger.
+         * \brief Called to finalize the Lumberjack.
          *
-         * This performs any cleanup work the Logger needs to do before going away.
-         * It is required that this is the last function called by the Logger.
+         * This performs any cleanup work the Lumberjack needs to do before going away.
+         * It is required that this is the last function called by the Lumberjack.
          *****************************************************************************
          */
         void finalize();
 
         /*!
          *****************************************************************************
-         * \brief Adds a Combiner to the Logger.
+         * \brief Adds a Combiner to the Lumberjack.
          *
-         * The Logger can have multiple Combiner classes.  This is helpful when you have different
+         * The Lumberjack can have multiple Combiner classes.  This is helpful when you have different
          * combining criteria for different Message classes. If you try to add the same Combiner
          * more than once, the second Combiner will not be added.  This is determined solely
-         * on Combiner::id. Combiner classes that are added first have precedence.  The Logger
+         * on Combiner::id. Combiner classes that are added first have precedence.  The Lumberjack
          * will call delete on the Combiner when finalize is called.
          *
          * \param [in] combiner The Combiner that will be added.
@@ -88,9 +88,9 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Removes a Combiner from the Logger.
+         * \brief Removes a Combiner from the Lumberjack.
          *
-         * This removes and calls delete on a Combiner held by the Logger. If no 
+         * This removes and calls delete on a Combiner held by the Lumberjack. If no 
          * Combiner::id matches the given identifier than nothing is removed. 
          *
          * \param [in] combinerIdentifier The Combiner identifier that will be removed.
@@ -100,9 +100,9 @@ class Logger {
 
         /*!
          *****************************************************************************
-         * \brief Clears all Combiner classes from the Logger.
+         * \brief Clears all Combiner classes from the Lumberjack.
          *
-         * This removes and calls delete on all Combiner classes held by the Logger. 
+         * This removes and calls delete on all Combiner classes held by the Lumberjack. 
          *****************************************************************************
          */
         void clearCombiners();

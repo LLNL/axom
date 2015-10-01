@@ -13,7 +13,7 @@
 #
 
 set(gtest_lumberjack_tests
-    lumberjack_Logger.cpp
+    lumberjack_Lumberjack.cpp
     lumberjack_Message.cpp
     lumberjack_TextEqualityCombiner.cpp
     lumberjack_RootCommunicator.cpp

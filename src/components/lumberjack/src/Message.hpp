@@ -35,7 +35,7 @@ namespace lumberjack {
  *  This class holds all the information about an individual message and where it
  *  came from, such as rank, file name, and line number.
  *
- * \see Combiner Logger
+ * \see Combiner Lumberjack
  *******************************************************************************
  */
 class Message {
