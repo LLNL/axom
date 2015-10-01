@@ -44,6 +44,12 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
        p.setE(i,0.0);
     }
 
+    // set energy spike at the origin
+    //double zonemass = rho0 * mesh.zoneVolume[0];
+    //double E = 4.48333289847;
+    //p.setE(0, E/(4.0*zonemass)); // puts shock at r=0.8 at t=0.3, in XY coords
+
+
     std::cout <<"**setting initial velocities" << std::endl;
     for (int i = 0; i < mesh.nnodes; i++)
     {
@@ -81,9 +87,10 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
     double rhoTheory = (1.0/(1.0-h.time));
     rhoTheory = rhoTheory*rhoTheory * rho0;
 
+    double tol = 1.0e-10;
     SLIC_ASSERT_MSG(
-               std::fabs(pp->rho(0) - rhoTheory) < 1.0e-10
-            && std::fabs(pp->rho(n-1) - rhoTheory) < 1.0e-10
+               std::fabs(pp->rho(0) - rhoTheory) < tol
+            && std::fabs(pp->rho(n-1) - rhoTheory) < tol
             , "FAIL -- densities are not correct\n");
 
     std::cout<<"\nPASS" << std::endl;

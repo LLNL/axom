@@ -21,7 +21,7 @@ class Uberenv(Package):
     depends_on("py-breathe")
     depends_on("py-pyyaml")
     depends_on("py-parsley")
-    depends_on("py-pybindgen")
+    #depends_on("py-pybindgen")
     #depends_on("py-matplotlib")
 
     # boost, header only

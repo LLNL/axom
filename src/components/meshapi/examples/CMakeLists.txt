@@ -148,30 +148,30 @@ set(tinyHydro_lib_sources
     ${tinyHydro_dir}/PolygonMeshXY.cpp
     ${tinyHydro_dir}/myTimer.cpp        
     )
-set(tinyHydro_exe_source
-    ${tinyHydro_dir}/main.cpp
-    )
-
 
 
 make_library( 
     LIBRARY_NAME meshapiTinyHydroLib 
     LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"  
    ) 
+   
+   
+#
+# Add gtest based tests
+#
 set(gtest_meshapi_tinyHydro_tests
     ${tinyHydro_dir}/tests/meshapi_tinyHydro_unitTests.cpp
     ${tinyHydro_dir}/tests/meshapi_tinyHydro_sedovTwoPart.cpp
     ${tinyHydro_dir}/tests/meshapi_tinyHydro_sod1DTwoPart.cpp
 )
 
-#
-# Add gtest based tests
-#
 foreach(test ${gtest_meshapi_tinyHydro_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON meshapiTinyHydroLib slic "-lrt")
 endforeach()
 
+
 # Add some extra flags to disable warnings about variables used only for SLIC_ASSERTS
+# Temporarily used in inaccessible code block to get around warning.
 # TODO: Replace with new macros from George..
 #SET(EXTRA_WARNING_DISABLE_FLAGS " -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable ")
 #get_source_file_property(_origflags ${tinyHydro_dir}/tests/meshapi_tinyHydro_unitTests.cpp COMPILE_FLAGS)
