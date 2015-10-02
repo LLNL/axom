@@ -86,7 +86,7 @@ class PolygonMeshXY
    ZonalScalarField zoneVolume;         // MeshAPI -- Map: Zone -> area (scalar)
 
    // functions that modify the mesh data
-   void moveNodesToPosition(const VectorXY * newPos);
+   void moveNodesToPosition(const NodalVectorField& newPos);
    void computeNewGeometry(void);
    
    // accessors, mostly used from Python

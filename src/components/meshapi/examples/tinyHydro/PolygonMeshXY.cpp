@@ -127,7 +127,7 @@ void PolygonMeshXY::computeNewGeometry(void)
        SLIC_ASSERT(zoneVolume[z] > 0.0);
 }
 //----------------------------------------------
-void PolygonMeshXY::moveNodesToPosition(const VectorXY *newPos)
+void PolygonMeshXY::moveNodesToPosition(const NodalVectorField& newPos)
 {
    for (int i=0; i < numNodes(); i++)
    {

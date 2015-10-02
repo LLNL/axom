@@ -47,7 +47,7 @@ mesh(*(s->mesh)),
       
 
    // space for half-step velocity
-   halfStepVelocity = new VectorXY[mesh.numNodes()];
+   halfStepVelocity = NodalVectorField(& mesh.nodes);
 
    // for dt, Q, and some PdV work schemes
    divu = new double[mesh.numZones()];
@@ -112,7 +112,7 @@ Hydro::~Hydro()
    delete [] totalMass;
    delete [] totalPressure;
    delete [] nodeMass;
-   delete [] halfStepVelocity;
+
    delete [] divu;
    for (int p = 0; p < state.nParts; p++) delete [] pressure[p];
    delete [] pressure;
@@ -172,7 +172,7 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
    // Accelerations are the delta velocities for dState, so let's
    // label that explicitly.  Re-naming makes it less confusing, at
    // least to me.
-   VectorXY * accel = dState.velocity;
+   NodalVectorField& accel = dState.velocity;
    
    // calc accelerations:
    for (int n = 0; n < nnodes; n++)
@@ -437,7 +437,7 @@ double Hydro::newDT(void)
 }
 //----------------------------------------------
 // compute the divergence of velocity
-void Hydro::calcDivU(const VectorXY * velocity)
+void Hydro::calcDivU(const NodalVectorField& velocity)
 {
    // div u = 1/V * sum(u dot dA)
    for (int iz = 0; iz < mesh.numZones(); iz++)
@@ -483,7 +483,7 @@ void Hydro::setBC(const char * boundary, double xVel, double yVel)
    }
 }
 //----------------------------------------------
-void Hydro::applyVelocityBC(VectorXY * u)
+void Hydro::applyVelocityBC(NodalVectorField& u)
 {
    // bottom
    if (bcVelocity[0].x != 0xdeadbeef)

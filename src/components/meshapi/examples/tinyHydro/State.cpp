@@ -6,22 +6,20 @@
 #include "slic/slic.hpp"
 
 //----------------------------------------------
-State::State(PolygonMeshXY & mesh):
-mesh(&mesh),
-   nParts(0),
-   maxNParts(100)
+State::State(PolygonMeshXY & theMesh)
+    : mesh(&theMesh)
+    , nParts(0)
+    , maxNParts(100)
 {
    printf("in State c'tor\n");
-   int nnodes = mesh.numNodes();
-   velocity = new VectorXY[nnodes];
-   position = new VectorXY[nnodes];
+   velocity = NodalVectorField( &mesh->nodes);
+   position = NodalVectorField( &mesh->nodes);
+
    parts = new Part[maxNParts];
 }
 //----------------------------------------------
 State::~State(void)
 {
-   delete [] velocity;
-   delete [] position;
    delete [] parts;
 }
 
@@ -56,11 +54,10 @@ mesh(arg.mesh),
 {
    // printf("in State::copy \n");
 
-   const int nnodes = mesh->numNodes();
-
    // make space for data
-   velocity = new VectorXY[nnodes];
-   position = new VectorXY[nnodes];
+   velocity = NodalVectorField( &mesh->nodes);
+   position = NodalVectorField( &mesh->nodes);
+
    parts = new Part[maxNParts];
 
    // copy over the parts
@@ -70,6 +67,7 @@ mesh(arg.mesh),
    }
 
    // copy over the mesh-based data
+   const int nnodes = mesh->numNodes();
    for (int i = 0; i < nnodes; i++)
    {
       velocity[i] = arg.velocity[i];
@@ -91,14 +89,11 @@ State & State::operator=(const State & rhs)
    SLIC_ASSERT(mesh == rhs.mesh);
    
    // free up old space
-   delete [] velocity;
-   delete [] position;
    delete [] parts;
    
    // make space for data
-   const int nn = mesh->numNodes();
-   velocity = new VectorXY[nn];
-   position = new VectorXY[nn];
+   velocity = NodalVectorField( &mesh->nodes);
+   position = NodalVectorField( &mesh->nodes);
    parts = new Part[maxNParts];
 
    // copy over the parts
@@ -108,6 +103,7 @@ State & State::operator=(const State & rhs)
       parts[i] = rhs.parts[i];
    }
    // copy mesh-based stuff over
+   const int nn = mesh->numNodes();
    for (int i = 0; i < nn; i++)
    {
       velocity[i] = rhs.velocity[i];

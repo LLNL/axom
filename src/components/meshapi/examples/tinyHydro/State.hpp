@@ -3,14 +3,19 @@
 // that hold the data, plus a few functions to do mesh sums and
 // averages of quantities.
 
+#include "meshapi/Map.hpp"
+
 #include "VectorXY.hpp"
 #include "Part.hpp"
 class PolygonMeshXY;
 
+
 class State
 {
  public:
-   State(PolygonMeshXY & mesh);
+    typedef asctoolkit::meshapi::Map<VectorXY> NodalVectorField;
+ public:
+   State(PolygonMeshXY & theMesh);
    ~State(void);
 
    // Copy
@@ -38,8 +43,8 @@ class State
    int nParts;
    const int maxNParts;
 
-   VectorXY * velocity;     // MeshAPI -- Map: Nodes -> VectorXY
-   VectorXY * position;     // MeshAPI -- Map: Nodes -> VectorXY
+   NodalVectorField velocity;     // MeshAPI -- Map: Nodes -> VectorXY
+   NodalVectorField position;     // MeshAPI -- Map: Nodes -> VectorXY
 
 
    void dumpState();

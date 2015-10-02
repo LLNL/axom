@@ -15,6 +15,9 @@
 class Hydro
 {
  public:
+    typedef State::NodalVectorField NodalVectorField;
+
+ public:
    Hydro(State * s); // using a pointer here with PyBindGen prevents
                      // State being garbage collected by Python
 
@@ -34,8 +37,8 @@ class Hydro
    // physics methods
    void calcQ(const State & state);
    void calcForce(const State & state);
-   void calcDivU(const VectorXY * u);
-   void applyVelocityBC(VectorXY * u);
+   void calcDivU(const NodalVectorField& u);
+   void applyVelocityBC(NodalVectorField& u);
    double totalEnergy(const State & s) const;
    double totalEnergy(void) const;
    void calcMaxCs(void);
@@ -63,7 +66,7 @@ class Hydro
    VectorXY * force; // re-used for force calc                  // MeshAPI -- Map: Nodes -> VectorXY
    VectorXY * cornerforce; // re-used for force calc            // <UNUSED>?
 
-   VectorXY * halfStepVelocity; // re-used for work calc        // MeshAPI -- Map: Nodes -> VectorXY
+   NodalVectorField halfStepVelocity; // re-used for work calc        // MeshAPI -- Map: Nodes -> VectorXY
    VectorXY * bcVelocity; // velocity BC values                 // MeshAPI -- Map: Domain edges -> VectorXY
                                                                 // Code is missing a DomainEdge set of fixed size 4.
 
