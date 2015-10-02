@@ -18,12 +18,11 @@ class Part
     typedef asctoolkit::meshapi::FieldRegistry<ZoneSubset::IndexType> SubsetRegistry;
     static SubsetRegistry setRegistry;
 
+    typedef asctoolkit::meshapi::Map<double> ZonalScalarField;
+
  public:
    Part()
      : zones(0)
-     , density(0)
-     , energyPerMass(0)
-     , volumeFraction(0)
      , gamma(0.)
    {}
 
@@ -51,9 +50,9 @@ class Part
 
    ZoneSubset zones;                // MeshAPI : Indirection set of zones in a part/region
 
-   double * density;                // MeshAPI : Map : Zones -> scalar
-   double * energyPerMass;          // MeshAPI : Map : Zones -> scalar
-   double * volumeFraction;         // MeshAPI : Map : Zones -> scalar
+   ZonalScalarField density;                // MeshAPI : Map : Zones -> scalar
+   ZonalScalarField energyPerMass;          // MeshAPI : Map : Zones -> scalar
+   ZonalScalarField volumeFraction;         // MeshAPI : Map : Zones -> scalar
 
    double gamma;
 

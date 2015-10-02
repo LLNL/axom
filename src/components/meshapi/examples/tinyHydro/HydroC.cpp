@@ -144,7 +144,7 @@ void Hydro::initialize(void)
    for (int p = 0; p < state.nParts; p++)  // loop over parts
    {
       Part::ZoneSubset& zones = state.parts[p].zones;
-      const double * rho = state.parts[p].density;
+      const Part::ZonalScalarField& rho = state.parts[p].density;
       for (int iz = 0; iz < state.parts[p].numZones(); iz++) // loop over zones
       {
          initialMass[p][iz] = rho[iz]*mesh.zoneVolume[zones[iz]];
@@ -226,9 +226,9 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
    // the energy production rate is simply -(P+Q) div(u)
    for (int p = 0; p < s.nParts; p++)
    {
-      const double * rho = s.parts[p].density;
+      const Part::ZonalScalarField& rho = s.parts[p].density;
       const double * P = pressure[p];
-      double * de = dState.parts[p].energyPerMass;
+      Part::ZonalScalarField& de = dState.parts[p].energyPerMass;
       const int nzones = state.parts[p].numZones();
       const Part::ZoneSubset& zones = state.parts[p].zones;
       for (int z = 0; z < nzones; z++)
@@ -258,8 +258,8 @@ void Hydro::calcForce(const State & s)
    {
       const int nzones = state.parts[p].numZones();
       const double gammaMinusOne = s.parts[p].gamma - 1.0;
-      const double * rho = s.parts[p].density;
-      const double * e = s.parts[p].energyPerMass;
+      const Part::ZonalScalarField& rho = s.parts[p].density;
+      const Part::ZonalScalarField& e = s.parts[p].energyPerMass;
       double * P = pressure[p];
       const Part::ZoneSubset& zones = s.parts[p].zones;
       for (int z = 0; z < nzones; z++)
@@ -336,7 +336,7 @@ void Hydro::updateConstitutives(State & s)
    {
       const Part::ZoneSubset& zones = s.parts[p].zones;
       const int nzones = s.parts[p].numZones();
-      double * rho = s.parts[p].density;
+      Part::ZonalScalarField& rho = s.parts[p].density;
       for (int z = 0; z < nzones; z++)
       {
          rho[z] = initialMass[p][z]/mesh.zoneVolume[zones[z]];
@@ -399,7 +399,7 @@ void Hydro::calcMaxCs(void)
       const Part::ZoneSubset& zones = state.parts[p].zones;
       const int nzones = state.parts[p].numZones();
       const double gammaGammaMinusOne = state.parts[p].gamma*(state.parts[p].gamma - 1.0);
-      const double * e = state.parts[p].energyPerMass;
+      const Part::ZonalScalarField& e = state.parts[p].energyPerMass;
       for (int z = 0; z < nzones; z++)
       {
          double cs2 = gammaGammaMinusOne*e[z];
@@ -565,7 +565,7 @@ double Hydro::totalEnergy(const State & s) const
    for (int p = 0; p < s.nParts; p++)
    {
       const int nzones = s.parts[p].numZones();
-      const double * e = s.parts[p].energyPerMass;
+      const Part::ZonalScalarField& e = s.parts[p].energyPerMass;
       const double * m = initialMass[p];
       for (int z = 0; z < nzones; z++)
       {

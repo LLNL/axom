@@ -16,9 +16,9 @@ Part::Part(const int * zoneList, int nzones, double gamma)
    memcpy(&ptr[0], zoneList, sizeof(int)*nzones);
    zones.data() = &ptr;
 
-   density = new double[nzones];
-   energyPerMass = new double[nzones];
-   volumeFraction = new double[nzones];
+   density = ZonalScalarField(&zones);
+   energyPerMass = ZonalScalarField(&zones);
+   volumeFraction = ZonalScalarField(&zones);
 }
 //----------------------------------------------
 Part::Part(const std::vector<int>& zoneList, double gamma)
@@ -38,16 +38,13 @@ Part::Part(const std::vector<int>& zoneList, double gamma)
    zones.data() = &zoneList;
 
 
-   density = new double[numZones()];
-   energyPerMass = new double[numZones()];
-   volumeFraction = new double[numZones()];
+   density = ZonalScalarField(&zones);
+   energyPerMass = ZonalScalarField(&zones);
+   volumeFraction = ZonalScalarField(&zones);
 }
 //----------------------------------------------
 Part::~Part(void)
 {
-   delete [] density;
-   delete [] energyPerMass;
-   delete [] volumeFraction;
 }
 
 //----------------------------------------------
@@ -63,9 +60,9 @@ Part::Part(const Part & arg)
     zones.data() = &ptr;
 
    // make space for data
-   density = new double[numZones()];
-   energyPerMass = new double[numZones()];
-   volumeFraction = new double[numZones()];
+    density = ZonalScalarField(&zones);
+    energyPerMass = ZonalScalarField(&zones);
+    volumeFraction = ZonalScalarField(&zones);
    
 
    for (int i = 0; i < numZones(); i++)
@@ -92,26 +89,19 @@ Part & Part::operator=(const Part & rhs)
    std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
    memcpy(&ptr[0], &rhs.zones[0], sizeof(int)*zones.size());
    zones.data() = &ptr;
-
-   
-   // free up old space
-   delete [] density;
-   delete [] energyPerMass;
-   delete [] volumeFraction;
    
    // make space for data
-   density = new double[numZones()];
-   energyPerMass = new double[numZones()];
-   volumeFraction = new double[numZones()];
+   density = ZonalScalarField(&zones);
+   energyPerMass = ZonalScalarField(&zones);
+   volumeFraction = ZonalScalarField(&zones);
    
    // copy data over
    for (int i = 0; i < numZones(); i++)
    {
       density[i] = rhs.density[i];
       energyPerMass[i] = rhs.energyPerMass[i];
+      volumeFraction[i] = rhs.volumeFraction[i];
    }
-   // copy some other data using memcpy for fun
-   memcpy(volumeFraction, rhs.volumeFraction, sizeof(double)*numZones());
    
    return *this;
 }

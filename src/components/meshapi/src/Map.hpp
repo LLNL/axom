@@ -33,6 +33,11 @@ namespace meshapi    {
 
   class NullSet;
 
+
+  // This class is missing some simplifying copy constructors -- or at least ways of interacting with the data store
+  // We should probably support shallow copies with a copy on write pattern when possible...
+
+
   template<typename DataType>
   class Map
   {
