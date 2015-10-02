@@ -6,12 +6,21 @@
 #include <vector>
 #include <assert.h>
 
+#include "meshapi/IndirectionSet.hpp"
+#include "meshapi/FieldRegistry.hpp"
+
+
 class Part
 {
  public:
+    typedef asctoolkit::meshapi::VectorIndirectionSet ZoneSubset;
+
+    typedef asctoolkit::meshapi::FieldRegistry<ZoneSubset::IndexType> SubsetRegistry;
+    static SubsetRegistry setRegistry;
+
+ public:
    Part()
-     : nzones(0)
-     , zones(0)
+     : zones(0)
      , density(0)
      , energyPerMass(0)
      , volumeFraction(0)
@@ -19,7 +28,7 @@ class Part
    {}
 
    Part(const int * zoneList, int nzones, double userGamma = 5.0/3.0);
-   Part(const std::vector<int> zoneList, double userGamma = 5.0/3.0);
+   Part(const std::vector<int>& zoneList, double userGamma = 5.0/3.0);
    ~Part(void);
 
    // Copy
@@ -32,14 +41,15 @@ class Part
    Part & operator*=(const double s);
 
    // python accessors
-   double rho(int i) const {assert (i < nzones); return density[i];}
-   double e(int i) const {assert(i < nzones); return energyPerMass[i];}
-   int meshZone(int i) {assert (i < nzones); return zones[i];}
-   void setRho(int i, double val) {assert(i < nzones); density[i] = val;}
-   void setE(int i, double val) {assert(i < nzones); energyPerMass[i] = val;}
+   double rho(int i) const {assert (i < numZones() ); return density[i];}
+   double e(int i) const {assert(i < numZones() ); return energyPerMass[i];}
+   int meshZone(int i) {assert (i < numZones() ); return zones[i];}
+   void setRho(int i, double val) {assert(i < numZones() ); density[i] = val;}
+   void setE(int i, double val) {assert(i < numZones() ); energyPerMass[i] = val;}
 
-   int nzones;                      // MeshAPI : Indirection set of zones in a part/region
-   int * zones;
+   int numZones() const { return zones.size(); }
+
+   ZoneSubset zones;                // MeshAPI : Indirection set of zones in a part/region
 
    double * density;                // MeshAPI : Map : Zones -> scalar
    double * energyPerMass;          // MeshAPI : Map : Zones -> scalar

@@ -39,7 +39,8 @@ mesh(*(s->mesh)),
    // make memory for holding zone and node masses
    const int nParts = state.nParts;
    initialMass = new double * [nParts];
-   for (int p = 0; p < nParts; p++) initialMass[p] = new double[state.parts[p].nzones];
+   for (int p = 0; p < nParts; p++)
+       initialMass[p] = new double[state.parts[p].numZones()];
    totalMass = new double [mesh.numZones()];
    totalPressure = new double [mesh.numZones()];
    maxCs =  new double [mesh.numZones()];
@@ -54,7 +55,8 @@ mesh(*(s->mesh)),
 
    // zone pressure
    pressure = new double * [nParts];
-   for (int p = 0; p < nParts; p++) pressure[p] = new double[state.parts[p].nzones];
+   for (int p = 0; p < nParts; p++)
+       pressure[p] = new double[state.parts[p].numZones()];
    
    // velocity BC space.  BC's are implicity ordered as 'bottom',
    // 'right', 'top', 'left', numbered 0 through 3.
@@ -141,9 +143,9 @@ void Hydro::initialize(void)
    memset( (void *) nodeMass,  0, sizeof(double)*mesh.numZones()); // zero out before summing
    for (int p = 0; p < state.nParts; p++)  // loop over parts
    {
-      const int * zones = state.parts[p].zones;
+      Part::ZoneSubset& zones = state.parts[p].zones;
       const double * rho = state.parts[p].density;
-      for (int iz = 0; iz < state.parts[p].nzones; iz++) // loop over zones
+      for (int iz = 0; iz < state.parts[p].numZones(); iz++) // loop over zones
       {
          initialMass[p][iz] = rho[iz]*mesh.zoneVolume[zones[iz]];
          totalMass[zones[iz]] += initialMass[p][iz];
@@ -227,8 +229,8 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
       const double * rho = s.parts[p].density;
       const double * P = pressure[p];
       double * de = dState.parts[p].energyPerMass;
-      const int nzones = state.parts[p].nzones;
-      const int * zones = state.parts[p].zones;
+      const int nzones = state.parts[p].numZones();
+      const Part::ZoneSubset& zones = state.parts[p].zones;
       for (int z = 0; z < nzones; z++)
       {
          de[z] = -(P[z] + Q[zones[z]]) * divu[zones[z]] / rho[z];
@@ -254,12 +256,12 @@ void Hydro::calcForce(const State & s)
    // get pressure from EOS: gamma law gas, P = rho*e*(gamma-1)
    for (int p = 0; p < s.nParts; p++)
    {
-      const int nzones = state.parts[p].nzones;
+      const int nzones = state.parts[p].numZones();
       const double gammaMinusOne = s.parts[p].gamma - 1.0;
       const double * rho = s.parts[p].density;
       const double * e = s.parts[p].energyPerMass;
       double * P = pressure[p];
-      const int * zones = s.parts[p].zones;
+      const Part::ZoneSubset& zones = s.parts[p].zones;
       for (int z = 0; z < nzones; z++)
       {
          P[z] = gammaMinusOne*rho[z]*e[z];
@@ -332,8 +334,8 @@ void Hydro::updateConstitutives(State & s)
    mesh.computeNewGeometry();
    for (int p = 0; p < s.nParts; p++)
    {
-      const int * zones = s.parts[p].zones;
-      const int nzones = s.parts[p].nzones;
+      const Part::ZoneSubset& zones = s.parts[p].zones;
+      const int nzones = s.parts[p].numZones();
       double * rho = s.parts[p].density;
       for (int z = 0; z < nzones; z++)
       {
@@ -394,8 +396,8 @@ void Hydro::calcMaxCs(void)
    
    for (int p = 0; p < state.nParts; p++)
    {
-      const int * zones = state.parts[p].zones;
-      const int nzones = state.parts[p].nzones;
+      const Part::ZoneSubset& zones = state.parts[p].zones;
+      const int nzones = state.parts[p].numZones();
       const double gammaGammaMinusOne = state.parts[p].gamma*(state.parts[p].gamma - 1.0);
       const double * e = state.parts[p].energyPerMass;
       for (int z = 0; z < nzones; z++)
@@ -562,7 +564,7 @@ double Hydro::totalEnergy(const State & s) const
    double totE = 0.0;
    for (int p = 0; p < s.nParts; p++)
    {
-      const int nzones = s.parts[p].nzones;
+      const int nzones = s.parts[p].numZones();
       const double * e = s.parts[p].energyPerMass;
       const double * m = initialMass[p];
       for (int z = 0; z < nzones; z++)

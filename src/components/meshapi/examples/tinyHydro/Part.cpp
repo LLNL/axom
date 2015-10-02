@@ -2,33 +2,45 @@
 #include <stdio.h>
 #include <string.h>
 
+Part::SubsetRegistry Part::setRegistry;
+
+
 //----------------------------------------------
-Part::Part(const int * zoneList, int nzones,
-           double gamma)
-    : nzones(nzones)
-    , gamma(gamma)
+Part::Part(const int * zoneList, int nzones, double gamma)
+    : gamma(gamma)
 {
    printf("in Part c'tor\n");
+
+   zones = ZoneSubset(nzones);
+   std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+   memcpy(&ptr[0], zoneList, sizeof(int)*nzones);
+   zones.data() = &ptr;
+
    density = new double[nzones];
    energyPerMass = new double[nzones];
    volumeFraction = new double[nzones];
-   zones = new int[nzones];
-   // copy zone IDs to the Part
-   memcpy(zones, zoneList, sizeof(int)*nzones);
 }
 //----------------------------------------------
-Part::Part(const std::vector<int> zoneList, double gamma)
-    : nzones(zoneList.size())
-    , gamma(gamma)
+Part::Part(const std::vector<int>& zoneList, double gamma)
+    : gamma(gamma)
 {
-   const int nzones = zoneList.size();
    printf("in Part c'tor\n");
-   density = new double[nzones];
-   energyPerMass = new double[nzones];
-   volumeFraction = new double[nzones];
-   zones = new int[nzones];
-   // copy zone IDs to the Part
-   memcpy(zones, &(*(zoneList.begin())), sizeof(int)*nzones);
+
+   /// UGLY hack to place zoneList data in the field registry and set the data of zones to this...
+//   zones = ZoneSubset::SetBuilder()
+//               .size( zoneList.size() )
+//               .data( &zoneList );
+//   setRegistry.addNamelessField( &zones).data().swap( zoneList);
+
+   zones = ZoneSubset( zoneList.size() );
+   std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+   memcpy(&ptr[0], &zoneList[0], sizeof(int)*zones.size());
+   zones.data() = &zoneList;
+
+
+   density = new double[numZones()];
+   energyPerMass = new double[numZones()];
+   volumeFraction = new double[numZones()];
 }
 //----------------------------------------------
 Part::~Part(void)
@@ -36,31 +48,31 @@ Part::~Part(void)
    delete [] density;
    delete [] energyPerMass;
    delete [] volumeFraction;
-   delete [] zones;
 }
 
 //----------------------------------------------
 // Copy
 Part::Part(const Part & arg)
-    : nzones(arg.nzones)
+    :    gamma(arg.gamma)
 {
    // printf("in Part::copy \n");
 
-   // copy over the gamma value
-   gamma = arg.gamma;
+    zones = ZoneSubset(arg.zones.size());
+    std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+    memcpy(&ptr[0], &arg.zones[0], sizeof(int)*zones.size());
+    zones.data() = &ptr;
 
    // make space for data
-   density = new double[nzones];
-   energyPerMass = new double[nzones];
-   volumeFraction = new double[nzones];
-   zones = new int[nzones];
+   density = new double[numZones()];
+   energyPerMass = new double[numZones()];
+   volumeFraction = new double[numZones()];
    
-   for (int i = 0; i < nzones; i++)
+
+   for (int i = 0; i < numZones(); i++)
    {
       density[i] = arg.density[i];
       energyPerMass[i] = arg.energyPerMass[i];
       volumeFraction[i] = arg.volumeFraction[i];
-      zones[i] = arg.zones[i];
    }
 }
 
@@ -75,29 +87,31 @@ Part & Part::operator=(const Part & rhs)
    
    // copy over the gamma value
    gamma = rhs.gamma;
-   nzones = rhs.nzones;
+
+   zones = ZoneSubset(rhs.zones.size());
+   std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+   memcpy(&ptr[0], &rhs.zones[0], sizeof(int)*zones.size());
+   zones.data() = &ptr;
+
    
    // free up old space
    delete [] density;
    delete [] energyPerMass;
    delete [] volumeFraction;
-   delete [] zones;
    
    // make space for data
-   density = new double[nzones];
-   energyPerMass = new double[nzones];
-   volumeFraction = new double[nzones];
-   zones = new int[nzones];
+   density = new double[numZones()];
+   energyPerMass = new double[numZones()];
+   volumeFraction = new double[numZones()];
    
    // copy data over
-   for (int i = 0; i < nzones; i++)
+   for (int i = 0; i < numZones(); i++)
    {
       density[i] = rhs.density[i];
       energyPerMass[i] = rhs.energyPerMass[i];
    }
    // copy some other data using memcpy for fun
-   memcpy(volumeFraction, rhs.volumeFraction, sizeof(double)*nzones);
-   memcpy(zones, rhs.zones, sizeof(int)*nzones);
+   memcpy(volumeFraction, rhs.volumeFraction, sizeof(double)*numZones());
    
    return *this;
 }
@@ -107,9 +121,9 @@ Part & Part::operator=(const Part & rhs)
 Part & Part::operator+=(const Part & rhs)
 {
    // printf("in Part::operator+= \n");
-   assert(nzones == rhs.nzones);
+   SLIC_ASSERT(numZones() == rhs.numZones() );
    
-   for (int i = 0; i < nzones; i++)
+   for (int i = 0; i < numZones(); i++)
    {
       density[i] += rhs.density[i];
       energyPerMass[i] += rhs.energyPerMass[i];
@@ -124,7 +138,7 @@ Part & Part::operator*=(const double s)
 {
    // printf("in Part::operator*= \n");
    
-   for (int i = 0; i < nzones; i++)
+   for (int i = 0; i < numZones(); i++)
    {
       density[i] *= s;
       energyPerMass[i] *= s;
@@ -139,10 +153,10 @@ Part & Part::operator*=(const double s)
 
 void Part::dumpPart()
 {
-    printf("\nPart has %i zones", nzones);
+    printf("\nPart has %i zones", numZones() );
 
     printf("\n\nzones");
-    for(int i=0; i< nzones; ++i)
+    for(int i=0; i< numZones(); ++i)
     {
         printf("\n\t Zone %i -- idx %i"
                 ,i, zones[i]
