@@ -2,7 +2,8 @@
 #include "PolygonMeshXY.hpp"
 #include "Part.hpp"
 #include <stdio.h>
-#include <assert.h>
+
+#include "slic/slic.hpp"
 
 //----------------------------------------------
 State::State(PolygonMeshXY & mesh):
@@ -11,7 +12,7 @@ mesh(&mesh),
    maxNParts(100)
 {
    printf("in State c'tor\n");
-   int nnodes = mesh.nnodes;
+   int nnodes = mesh.numNodes();
    velocity = new VectorXY[nnodes];
    position = new VectorXY[nnodes];
    parts = new Part[maxNParts];
@@ -42,7 +43,7 @@ void State::addPart(Part * partPtr)
    else
    {
       printf("tried to add more than %d parts, limit is hard-wired allowed, craaashing!\n",maxNParts);
-      assert(false);
+      SLIC_ASSERT(false);
    }
 }
 
@@ -55,7 +56,7 @@ mesh(arg.mesh),
 {
    // printf("in State::copy \n");
 
-   const int nnodes = mesh->nnodes;
+   const int nnodes = mesh->numNodes();
 
    // make space for data
    velocity = new VectorXY[nnodes];
@@ -87,7 +88,7 @@ State & State::operator=(const State & rhs)
    
    // assignment can only happen when states
    // are defined on the same mesh
-   assert(mesh == rhs.mesh);
+   SLIC_ASSERT(mesh == rhs.mesh);
    
    // free up old space
    delete [] velocity;
@@ -95,7 +96,7 @@ State & State::operator=(const State & rhs)
    delete [] parts;
    
    // make space for data
-   const int nn = mesh->nnodes;
+   const int nn = mesh->numNodes();
    velocity = new VectorXY[nn];
    position = new VectorXY[nn];
    parts = new Part[maxNParts];
@@ -121,8 +122,8 @@ State & State::operator=(const State & rhs)
 State & State::operator+=(const State & rhs)
 {
    // printf("in State::operator+= \n");
-   assert(mesh == rhs.mesh);
-   assert(nParts == rhs.nParts);
+   SLIC_ASSERT(mesh == rhs.mesh);
+   SLIC_ASSERT(nParts == rhs.nParts);
    
    // part data
    for (int i = 0; i < nParts; i++)
@@ -131,7 +132,7 @@ State & State::operator+=(const State & rhs)
    }
    
    // mesh-based data
-   for (int i = 0; i < mesh->nnodes; i++)
+   for (int i = 0; i < mesh->numNodes(); i++)
    {
       velocity[i] += rhs.velocity[i];
       position[i] += rhs.position[i];
@@ -152,7 +153,7 @@ State & State::operator*=(const double s)
    }
    
    // mesh-based data
-   for (int i = 0; i < mesh->nnodes; i++)
+   for (int i = 0; i < mesh->numNodes(); i++)
    {
       velocity[i] *= s;
       position[i] *= s;
@@ -174,7 +175,7 @@ void State::dumpState()
     }
 
     printf("\n\nVelocities");
-    for(int i=0; i< mesh->nnodes; ++i)
+    for(int i=0; i< mesh->numNodes(); ++i)
     {
         VectorXY v = velocity[i];
         VectorXY p = position[i];

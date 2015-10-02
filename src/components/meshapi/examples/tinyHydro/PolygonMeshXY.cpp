@@ -1,5 +1,6 @@
 #include "PolygonMeshXY.hpp"
-#include <assert.h>
+#include "slic/slic.hpp"
+
 //----------------------------------------------
 PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
                            double xmin, double xmax,
@@ -10,41 +11,53 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
    // intended for making quick test meshes and to do direct speed
    // comparisons between the polygon and regular quad mesh.
    
-   assert(kmax > 0 and lmax > 0);
+   SLIC_ASSERT(kmax > 0 && lmax > 0);
    
-   nnodes = kmax*lmax;
-   nzones = (kmax-1)*(lmax-1);
+   nodes = NodeSet(kmax*lmax);
+   zones = ZoneSet((kmax-1)*(lmax-1));
+   faces = FaceSet( zones.size() * 4);
+   corners = CornerSet( zones.size() * 4);
 
    // make space for connectivity data
-   zNumNodes = new int[nzones];
-   z2firstNode = new int[nzones];
-   z2firstFace = new int[nzones];
-   zNodes = new int[4*nzones]; // ok because we know we have quads
-   zFaces = new int[4*nzones]; // ok because we know we have quads
+   zoneToNodes = ZoneToNodeRelation(&zones, &nodes);
+   zoneToFaces = ZoneToFaceRelation(&zones, &faces);
+
+   IndexMap faceIndices(&faces);
+   IndexMap nodeIndices(&corners);
+
+
+
+//   zNumNodes = new int[nzones];
+//   z2firstNode = new int[nzones];
+//   z2firstFace = new int[nzones];
+//   zNodes = new int[4*nzones]; // ok because we know we have quads
+//   zFaces = new int[4*nzones]; // ok because we know we have quads
    
    // make space for geometry info
-   nodePos = new VectorXY[nnodes];
-   zoneVolume = new double[nzones];
-   zonePos = new VectorXY[nzones];
-   faceArea = new VectorXY[4*nzones]; // ok because we know we have quads
+   nodePos = NodalVectorField(&nodes);
+   zoneVolume = ZonalScalarField(&zones);
+   zonePos = ZonalVectorField(&zones);
+   faceArea = FaceVectorField(&faces);
 
    // set up connectivity data, knowing it's logical orthogonal quads
-   for (int i = 0; i < nzones; i++)
+   for (int i = 0; i < numZones(); i++)
    {
-      zNumNodes[i] = 4;
-      z2firstFace[i] = 4*i;
-      z2firstNode[i] = 4*i;
       int k = i % (kmax-1);
       int l = i / (kmax-1);
-      zNodes[4*i+0] = k     + l*kmax;
-      zNodes[4*i+1] = k + 1 + l*kmax;
-      zNodes[4*i+2] = k + 1 + (l+1)*kmax;;
-      zNodes[4*i+3] = k     + (l+1)*kmax;;
-      zFaces[4*i]   = 4*i; 
-      zFaces[4*i+1] = 4*i+1;
-      zFaces[4*i+2] = 4*i+2;
-      zFaces[4*i+3] = 4*i+3;
+
+      nodeIndices[4*i+0] = k     + l*kmax;
+      nodeIndices[4*i+1] = k + 1 + l*kmax;
+      nodeIndices[4*i+2] = k + 1 + (l+1)*kmax;;
+      nodeIndices[4*i+3] = k     + (l+1)*kmax;;
+
+      faceIndices[4*i]   = 4*i;
+      faceIndices[4*i+1] = 4*i+1;
+      faceIndices[4*i+2] = 4*i+2;
+      faceIndices[4*i+3] = 4*i+3;
    }
+   zoneToNodes.bindRelationData( nodeIndices.data() );
+   zoneToFaces.bindRelationData( faceIndices.data() );
+
    
    // set up initial mesh as regular orthonormal grid
    double dx = (xmax - xmin)/(kmax-1);
@@ -69,56 +82,54 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
 //----------------------------------------------
 PolygonMeshXY::~PolygonMeshXY(void)
 {
-   delete [] z2firstFace;
-   delete [] z2firstNode;
-   delete [] zNodes;
-   delete [] zFaces;
-   delete [] zNumNodes;
-
-   delete [] nodePos;
-   delete [] zonePos;
-   delete [] zoneVolume;
-   delete [] faceArea;
 }
 
 //----------------------------------------------
 void PolygonMeshXY::computeNewGeometry(void)
 {
-   assert(nzones > 0 and nnodes > 2);
+   SLIC_ASSERT(numZones() > 0 && numNodes() > 2);
    
    VectorXY tmp; // we will need this
    
    // zone volumes and positions
-   for (int iz = 0; iz < nzones; iz++)
+   for (int iz = 0; iz < numZones(); iz++)
    {
       zoneVolume[iz] = 0.0;
       zonePos[iz] = VectorXY(0.0, 0.0);
 
-      for (int in = 0; in < zNumNodes[iz]; in++)
+      ZNodeSet zNodes = zoneToNodes[iz];
+      ZFaceSet zFaces = zoneToFaces[iz];
+
+      const int numZNodes = zNodes.size();
+      for (int in = 0; in < numZNodes; in++)
       {
-         // assumption is that zNodes lists nodes in counter-clockwise
-         // order around the zone
-         const VectorXY n0Pos = nodePos[zNodes[z2firstNode[iz]+in]];
-         const VectorXY n1Pos = nodePos[zNodes[z2firstNode[iz]+(in+1) % zNumNodes[iz]]];
+         // assumption is that zNodes lists nodes in counter-clockwise order around the zone
+         IndexType nextInd =  (in+1) %  numZNodes;
+
+         const VectorXY n0Pos = nodePos[ zNodes[in] ];
+         const VectorXY n1Pos = nodePos[ zNodes[nextInd] ];
+
          zoneVolume[iz] += n0Pos.cross(n1Pos); // sum volume
          zonePos[iz] += n1Pos;  // sum position
+
          // Face areas are outward normal vectors
          tmp = n1Pos - n0Pos;
-         faceArea[z2firstFace[iz] + in] = VectorXY(tmp.y, -tmp.x);
+         faceArea[zFaces[in] ] = VectorXY(tmp.y, -tmp.x);
       }
       zoneVolume[iz] *= 0.5; // correct 2x volume from cross product
       // normalize position; if we did it by volume it would be more
       // correct (centroid), but arithmetic average usually works fine
-      zonePos[iz] *= 1.0/zNumNodes[iz];
+      zonePos[iz] *= 1.0/numZNodes;
    }
 
    // check our final volumes are positive
-   for (int z = 0; z < nzones; z++) assert(zoneVolume[z] > 0.0);
+   for (int z = 0; z < numZones(); z++)
+       SLIC_ASSERT(zoneVolume[z] > 0.0);
 }
 //----------------------------------------------
 void PolygonMeshXY::moveNodesToPosition(const VectorXY *newPos)
 {
-   for (int i=0; i < nnodes; i++)
+   for (int i=0; i < numNodes(); i++)
    {
       nodePos[i] = newPos[i];
    }
@@ -139,12 +150,12 @@ VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
 
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);  // TIMER
    VectorXY ret;
-   for (int i = 0; i < nzones; i++)
+   for (int i = 0; i < zones.size(); i++)
    {
       ret.accum(zonePos[i]);
    }
-   ret.x = ret.x / nzones;
-   ret.y = ret.y / nzones;
+   ret.x = ret.x / zones.size();
+   ret.y = ret.y / zones.size();
 
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2); // TIMER
    timeElapsed = diffSeconds(time1, time2);
@@ -157,34 +168,28 @@ VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
 
 void PolygonMeshXY::dumpMesh()
 {
-    printf("Mesh has %i nodes and %i zones", nnodes, nzones);
+    printf("Mesh has %i nodes and %i zones", nodes.size(), zones.size());
 
     printf("\n\nNodes");
-    for(int i=0; i< nnodes; ++i)
+    for(int i=0; i< nodes.size(); ++i)
     {
         VectorXY p = getPos(i);
         printf("\n\t Node %i -- pos (%g,%g) ", i, p.x, p.y);
     }
 
     printf("\n\nZones");
-    for(int i=0; i< nzones; ++i)
+    for(int i=0; i< zones.size(); ++i)
     {
         VectorXY p = getZonePos(i);
-        int firstNodeIdx = z2firstNode[i];
-        int firstFaceIdx = z2firstFace[i];
+        ZoneToNodeRelation::RelationSet zNodes = zoneToNodes[i];
+        ZoneToNodeRelation::RelationSet zFaces = zoneToFaces[i];
         printf("\n\t Zone %i -- pos (%g,%g) -- vol %g -- zNumNodes %i -- zoneNodes %i %i %i %i -- zoneFaces %i %i %i %i"
                 , i
                 , p.x, p.y
                 , zoneVol(i)
-                , zNumNodes[i]
-                , zNodes[firstNodeIdx ]
-                , zNodes[firstNodeIdx +1]
-                , zNodes[firstNodeIdx +2]
-                , zNodes[firstNodeIdx +3]
-                , zFaces[firstFaceIdx ]
-                , zFaces[firstFaceIdx +1]
-                , zFaces[firstFaceIdx +2]
-                , zFaces[firstFaceIdx +3]
+                , zNodes.size()
+                , zNodes[0], zNodes[1], zNodes[2], zNodes[3]
+                , zFaces[0], zFaces[1], zFaces[2], zFaces[3]
                 );
     }
 

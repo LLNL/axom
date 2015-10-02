@@ -259,15 +259,15 @@ namespace meshapi    {
 
     std::stringstream errSstr;
 
-    if( *m_fromSet == s_nullSet || *m_toSet == s_nullSet)
+    if( EmptySetTraits<FromSetType>::isEmpty(m_fromSet) || EmptySetTraits<ToSetType>::isEmpty(m_toSet) )
     {
       if(!m_toSetIndicesVec.empty())
       {
         if(verboseOutput)
         {
           errSstr << "\n\t* toSetIndicesVec was not empty "
-                  << " -- fromSet was " << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
-                  << " , toSet was " << (*m_toSet == s_nullSet ? "" : " not ") << "null";
+                  << " -- fromSet was " << (EmptySetTraits<FromSetType>::isEmpty(m_fromSet) ? "" : " not ") << "null"
+                  << " , toSet was " << (EmptySetTraits<ToSetType>::isEmpty(m_toSet) ? "" : " not ") << "null";
         }
 
         bValid = false;

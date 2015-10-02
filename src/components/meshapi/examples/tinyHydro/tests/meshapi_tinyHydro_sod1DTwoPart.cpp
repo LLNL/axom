@@ -47,7 +47,7 @@ TEST(gtest_meshapi_tinyHydro,test_sod1D_2_part)
 
     PolygonMeshXY mesh(kz+1,lz+1);
 
-    for(int i= mesh.nnodes/2; i< mesh.nnodes; ++i )
+    for(int i= mesh.numNodes()/2; i< mesh.numNodes(); ++i )
     {
         VectorXY pos = mesh.getPos(i);
         mesh.setPos(i, VectorXY(pos.x, dx));
@@ -55,16 +55,15 @@ TEST(gtest_meshapi_tinyHydro,test_sod1D_2_part)
 
     // Create a part
     std::vector<int> reg1, reg2;
-    for(int i=0; i< mesh.nzones; ++i )
+    int halfZones = mesh.numZones()/2;
+    for(int i=0; i< halfZones; ++i )
     {
-        if( i < mesh.nzones/2 )
-            reg1.push_back(i);
-        else
-            reg2.push_back(i);
+        reg1.push_back(i);
+        reg2.push_back(i + halfZones);
     }
 
     SLIC_ASSERT( reg1.size() == reg2.size());
-    SLIC_ASSERT( reg1.size() + reg2.size() == static_cast<size_t>(mesh.nzones));
+    SLIC_ASSERT( reg1.size() + reg2.size() == static_cast<size_t>( mesh.numZones() ));
 
     Part p1(reg1, gamma);
     Part p2(reg2, gamma);
@@ -81,7 +80,7 @@ TEST(gtest_meshapi_tinyHydro,test_sod1D_2_part)
        p2.setRho(i,dm);
        p2.setE(i, em);
     }
-    for (int i = 0; i < mesh.nnodes; i++)
+    for (int i = 0; i < mesh.numNodes(); i++)
         s.setU(i, VectorXY(0.,0.));
 
     s.addPart(&p1);

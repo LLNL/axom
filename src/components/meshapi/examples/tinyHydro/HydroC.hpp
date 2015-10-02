@@ -57,24 +57,30 @@ class Hydro
    State & state;
    State halfStep; // re-used temporary for RK2
    State dState;   // re-used temporary for RK2
-   double * Q; // re-used for Q
+
+   double * Q; // re-used for Q                                 // MeshAPI -- Map: Zones -> scalar
    double * divu; // for dt, Q, and some PdV work schemes
-   VectorXY * force; // re-used for force calc
-   VectorXY * cornerforce; // re-used for force calc
-   VectorXY * halfStepVelocity; // re-used for work calc
-   VectorXY * bcVelocity; // velocity BC values
+   VectorXY * force; // re-used for force calc                  // MeshAPI -- Map: Nodes -> VectorXY
+   VectorXY * cornerforce; // re-used for force calc            // <UNUSED>?
+
+   VectorXY * halfStepVelocity; // re-used for work calc        // MeshAPI -- Map: Nodes -> VectorXY
+   VectorXY * bcVelocity; // velocity BC values                 // MeshAPI -- Map: Domain edges -> VectorXY
+                                                                // Code is missing a DomainEdge set of fixed size 4.
+
+   double ** initialMass; // per material initial mass          // MeshAPI -- Map: Parts -> array of doubles -- relation ???
+   double * totalMass; //  mass in zone                         // MeshAPI -- Map: Zones -> scalar
+   double * nodeMass;  // also keep node masses                 // MeshAPI -- Map: Nodes-> scalar
+   double ** pressure; // per material zone pressure            // MeshAPI -- Map: Material -> zone -> scalar
+   double * totalPressure; // sum of pressures in a zone        // MeshAPI -- Map: Zones -> scalar
+   double * maxCs; //
+
+   int numBCs;                                                  // <UNUSED>?
+   int numBC0Nodes, numBC1Nodes, numBC2Nodes, numBC3Nodes;      // MeshAPI -- Indirection Sets
    int * bc0Nodes; // lower boundary nodes
    int * bc1Nodes; // right boundary nodes
    int * bc2Nodes; // top boundary nodes
    int * bc3Nodes; // left boundary nodes
-   double ** initialMass; // per material initial mass
-   double * totalMass; //  mass in zone
-   double * nodeMass;  // also keep node masses
-   double ** pressure; // per material zone pressure
-   double * totalPressure; // sum of pressures in a zone
-   double * maxCs; //
-   int numBCs;
-   int numBC0Nodes, numBC1Nodes, numBC2Nodes, numBC3Nodes;
+
    int cycle;
    int dtZone;
    double time;

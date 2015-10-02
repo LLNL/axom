@@ -152,7 +152,10 @@ set(tinyHydro_lib_sources
 
 make_library( 
     LIBRARY_NAME meshapiTinyHydroLib 
-    LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"  
+    LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"
+    DEPENDS_ON 
+        slic
+        meshapi 
    ) 
    
    

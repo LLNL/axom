@@ -29,8 +29,8 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
     PolygonMeshXY mesh(kz+1,lz+1);
 
     // Create a part
-    std::vector<int> zones( mesh.nzones );
-    for(int i=0; i< mesh.nzones; ++i )
+    std::vector<int> zones( mesh.numZones() );
+    for(int i=0; i< mesh.numZones(); ++i )
         zones[i] = i;
 
     Part p(zones);
@@ -38,7 +38,7 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
 
     std::cout <<"**setting initial densities" << std::endl;
     double rho0 = 1.0;
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
     {
        p.setRho(i,rho0);
        p.setE(i,0.0);
@@ -51,7 +51,7 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
 
 
     std::cout <<"**setting initial velocities" << std::endl;
-    for (int i = 0; i < mesh.nnodes; i++)
+    for (int i = 0; i < mesh.numNodes(); i++)
     {
        VectorXY pos = mesh.getPos(i);
        double ux = pos.x - 0.5;
@@ -116,8 +116,8 @@ TEST(gtest_meshapi_tinyHydro,test_03_gradAndForce)
     PolygonMeshXY mesh(kz+1,lz+1);
 
     // Create a part
-    std::vector<int> zones( mesh.nzones );
-    for(int i=0; i< mesh.nzones; ++i )
+    std::vector<int> zones( mesh.numZones() );
+    for(int i=0; i< mesh.numZones(); ++i )
         zones[i] = i;
 
     Part p(zones);
@@ -125,7 +125,7 @@ TEST(gtest_meshapi_tinyHydro,test_03_gradAndForce)
 
     std::cout <<"**setting initial density, energy, to make a linear pressure profile" << std::endl;
     double rho0 = 1.0;
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
     {
        p.setRho(i,rho0);
        VectorXY zPos = mesh.getZonePos(i);
@@ -218,8 +218,8 @@ TEST(gtest_meshapi_tinyHydro,test_04_BC)
     PolygonMeshXY mesh(kz+1,lz+1);
 
     // Create a part
-    std::vector<int> zones( mesh.nzones );
-    for(int i=0; i< mesh.nzones; ++i )
+    std::vector<int> zones( mesh.numZones() );
+    for(int i=0; i< mesh.numZones(); ++i )
         zones[i] = i;
 
     Part p(zones);
@@ -227,7 +227,7 @@ TEST(gtest_meshapi_tinyHydro,test_04_BC)
 
     std::cout <<"**setting initial density, energy, to make a linear pressure profile" << std::endl;
     double rho0 = 1.0;
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
     {
        p.setRho(i,rho0);
        VectorXY zPos = mesh.getZonePos(i);
@@ -301,8 +301,8 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Noh)
     PolygonMeshXY mesh(kz+1,lz+1);
 
     // Create a part
-    std::vector<int> zones( mesh.nzones );
-    for(int i=0; i< mesh.nzones; ++i )
+    std::vector<int> zones( mesh.numZones() );
+    for(int i=0; i< mesh.numZones(); ++i )
         zones[i] = i;
 
     Part p(zones);
@@ -310,13 +310,13 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Noh)
 
     std::cout <<"**setting initial density, energy, velocity for Noh problem" << std::endl;
     double rho0 = 1.0;
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
     {
        p.setRho(i,rho0);
        //VectorXY zPos = mesh.getZonePos(i);
        p.setE(i, 0.);
     }
-    for (int i = 0; i < mesh.nnodes; i++)
+    for (int i = 0; i < mesh.numNodes(); i++)
     {
         s.setU(i,VectorXY(-1.,0.));
     }
@@ -386,8 +386,8 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Sedov)
     PolygonMeshXY mesh(kz+1,lz+1);
 
     // Create a part
-    std::vector<int> zones( mesh.nzones );
-    for(int i=0; i< mesh.nzones; ++i )
+    std::vector<int> zones( mesh.numZones() );
+    for(int i=0; i< mesh.numZones(); ++i )
         zones[i] = i;
 
     Part p(zones);
@@ -395,7 +395,7 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Sedov)
 
     std::cout <<"**setting initial density, energy, velocity for Sedov problem" << std::endl;
     double rho0 = 1.0;
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
     {
        p.setRho(i,rho0);
        //kz = i%n;
@@ -415,7 +415,7 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Sedov)
     std::cout <<"**making hydro" << std::endl;
     Hydro h(&s);
 
-    for (int i = 0; i < mesh.nnodes; i++)
+    for (int i = 0; i < mesh.numNodes(); i++)
         s.setU(i,VectorXY(0,0));
 
     std::cout <<"**set boundary conditions" << std::endl;
@@ -459,8 +459,8 @@ TEST(gtest_meshapi_tinyHydro,test_06_PdV_work)
     PolygonMeshXY mesh(kz+1,lz+1);
 
     // Create a part
-    std::vector<int> zones( mesh.nzones );
-    for(int i=0; i< mesh.nzones; ++i )
+    std::vector<int> zones( mesh.numZones() );
+    for(int i=0; i< mesh.numZones(); ++i )
         zones[i] = i;
 
     Part p(zones);
@@ -471,7 +471,7 @@ TEST(gtest_meshapi_tinyHydro,test_06_PdV_work)
     double e0 = 1.0;
     double u0 = -0.1;
 
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
     {
        p.setRho(i,rho0);
        p.setE(i, e0);
@@ -508,7 +508,7 @@ TEST(gtest_meshapi_tinyHydro,test_06_PdV_work)
     double dt = 0.01;
 
     std::cout <<"**take " << steps << " steps with dt = " << dt << std::endl;
-    for (int i = 0; i < mesh.nzones; i++)
+    for (int i = 0; i < mesh.numZones(); i++)
         h.step(dt);
 
     std::cout <<"**done stepping. " << std::endl;

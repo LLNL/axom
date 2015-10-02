@@ -38,13 +38,14 @@ class Part
    void setRho(int i, double val) {assert(i < nzones); density[i] = val;}
    void setE(int i, double val) {assert(i < nzones); energyPerMass[i] = val;}
 
-   int nzones;
+   int nzones;                      // MeshAPI : Indirection set of zones in a part/region
    int * zones;
-   double * density;
-   double * energyPerMass;
-   double * volumeFraction;
-   double gamma;
 
+   double * density;                // MeshAPI : Map : Zones -> scalar
+   double * energyPerMass;          // MeshAPI : Map : Zones -> scalar
+   double * volumeFraction;         // MeshAPI : Map : Zones -> scalar
+
+   double gamma;
 
    void dumpPart();
 };

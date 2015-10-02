@@ -33,11 +33,13 @@ class State
    void setX(int i, VectorXY val) {position[i] = val;}
 
    PolygonMeshXY  * const mesh;
+
    Part * parts;
    int nParts;
    const int maxNParts;
-   VectorXY * velocity;
-   VectorXY * position;
+
+   VectorXY * velocity;     // MeshAPI -- Map: Nodes -> VectorXY
+   VectorXY * position;     // MeshAPI -- Map: Nodes -> VectorXY
 
 
    void dumpState();

@@ -6,6 +6,9 @@
 #include <string.h>
 // #include "/usr/include/gperftools/profiler.h"
 
+#include "slic/slic.hpp"
+
+
 //----------------------------------------------
 // c'tor
 Hydro::Hydro(State * s):
@@ -22,14 +25,14 @@ mesh(*(s->mesh)),
 {
    printf("using HydroC\n");
 
-   assert(state.nParts > 0);
-   assert(mesh.nzones > 0);
+   SLIC_ASSERT(state.nParts > 0);
+   SLIC_ASSERT(mesh.numZones() > 0);
    
    // make memory for Q calculation
-   Q = new double[mesh.nzones];
+   Q = new double[mesh.numZones()];
    
    // make memory for Q calculation
-   force = new VectorXY[mesh.nnodes];
+   force = new VectorXY[mesh.numNodes()];
    /* cornerforce = new VectorXY * [nParts]; */
    /* for (int p = 0; p < nParts; p++) cornerforce[p] = new VectorXY[4*state.parts[p].nzones]; */
    
@@ -37,17 +40,17 @@ mesh(*(s->mesh)),
    const int nParts = state.nParts;
    initialMass = new double * [nParts];
    for (int p = 0; p < nParts; p++) initialMass[p] = new double[state.parts[p].nzones];
-   totalMass = new double [mesh.nzones];
-   totalPressure = new double [mesh.nzones];
-   maxCs =  new double [mesh.nzones];
-   nodeMass = new double [mesh.nnodes];
+   totalMass = new double [mesh.numZones()];
+   totalPressure = new double [mesh.numZones()];
+   maxCs =  new double [mesh.numZones()];
+   nodeMass = new double [mesh.numNodes()];
       
 
    // space for half-step velocity
-   halfStepVelocity = new VectorXY[mesh.nnodes];
+   halfStepVelocity = new VectorXY[mesh.numNodes()];
 
    // for dt, Q, and some PdV work schemes
-   divu = new double[mesh.nzones];
+   divu = new double[mesh.numZones()];
 
    // zone pressure
    pressure = new double * [nParts];
@@ -66,7 +69,7 @@ mesh(*(s->mesh)),
    double maxX = -1e99;
    double minY = 1e99;
    double maxY = -1e99;
-   for (int n = 0; n < mesh.nnodes; n++)
+   for (int n = 0; n < mesh.numNodes(); n++)
    {
       VectorXY & pos = mesh.nodePos[n];
       if (pos.x < minX) minX = pos.x;
@@ -74,7 +77,7 @@ mesh(*(s->mesh)),
       if (pos.y < minY) minY = pos.y;
       if (pos.y > maxY) maxY = pos.y;
    }
-   for (int n = 0; n < mesh.nnodes; n++)
+   for (int n = 0; n < mesh.numNodes(); n++)
    {
       VectorXY & pos = mesh.nodePos[n];
       if (fuzzyEqual(pos.y, minY)) numBC0Nodes++;
@@ -87,7 +90,7 @@ mesh(*(s->mesh)),
    bc2Nodes = new int[numBC2Nodes];
    bc3Nodes = new int[numBC3Nodes];
    int i0 = 0; int i1 = 0; int i2 = 0; int i3 = 0;
-   for (int n = 0; n < mesh.nnodes; n++)
+   for (int n = 0; n < mesh.numNodes(); n++)
    {
       VectorXY & pos = mesh.nodePos[n];
       if (fuzzyEqual(pos.y, minY)) {bc0Nodes[i0] = n; i0++;}
@@ -128,14 +131,14 @@ void Hydro::initialize(void)
    mesh.computeNewGeometry();
    
    // get our state ready with initial mesh positions
-   for (int i = 0; i < mesh.nnodes; i++)
+   for (int i = 0; i < mesh.numNodes(); i++)
    {
       state.position[i] = mesh.nodePos[i];
    }
 
    // tuck away initial zone and node masses and never forget them
-   memset( (void *) totalMass, 0, sizeof(double)*mesh.nzones); // zero out before summing
-   memset( (void *) nodeMass,  0, sizeof(double)*mesh.nzones); // zero out before summing
+   memset( (void *) totalMass, 0, sizeof(double)*mesh.numZones()); // zero out before summing
+   memset( (void *) nodeMass,  0, sizeof(double)*mesh.numZones()); // zero out before summing
    for (int p = 0; p < state.nParts; p++)  // loop over parts
    {
       const int * zones = state.parts[p].zones;
@@ -144,9 +147,11 @@ void Hydro::initialize(void)
       {
          initialMass[p][iz] = rho[iz]*mesh.zoneVolume[zones[iz]];
          totalMass[zones[iz]] += initialMass[p][iz];
-         for (int in = 0; in < mesh.zNumNodes[zones[iz]]; in ++) // loop over nodes
+
+         PolygonMeshXY::ZNodeSet zNodes = mesh.zoneToNodes[ zones[iz] ];
+         for (int in = 0; in < zNodes.size(); in ++) // loop over nodes
          {
-            int node = mesh.zNodes[mesh.z2firstNode[zones[iz]]+in];
+            int node = zNodes[in];
             nodeMass[node] += 0.25*initialMass[p][iz];
          }
       } // end loop over zones
@@ -159,7 +164,7 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
 {
    // printf("Hydro:: blago calcDerivs 0\n");
 
-   const int nnodes = mesh.nnodes;
+   const int nnodes = mesh.numNodes();
    
    // calc forces
    calcForce(s);
@@ -182,7 +187,7 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
    // the conservation properties we like. Note that state.u is the
    // beginning of timestep velocity, which we use even during the
    // second partial RK2 step.
-   for (int i = 0; i < mesh.nnodes; i++)
+   for (int i = 0; i < mesh.numNodes(); i++)
    {
       halfStepVelocity[i] = accel[i];
       halfStepVelocity[i] *= 0.5*dt;
@@ -194,7 +199,7 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
    applyVelocityBC(halfStepVelocity);
    
    // velocities are the delta of position for dState.
-   for (int i = 0; i < mesh.nnodes; i++)
+   for (int i = 0; i < mesh.numNodes(); i++)
    {
       dState.position[i] = halfStepVelocity[i];
    }
@@ -237,14 +242,14 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
 // compute the total force that pushes the nodes
 void Hydro::calcForce(const State & s)
 {
-   assert(s.mesh == &mesh);
+   SLIC_ASSERT(s.mesh == &mesh);
    
    // compute grad of zone-centered (P+Q), return pointer to array of
    // node-centered VectorXY forces.
-   std::fill(force, force+mesh.nnodes, VectorXY(0.0,0.0));
+   std::fill(force, force+mesh.numNodes(), VectorXY(0.0,0.0));
 
    // zero out total before summing
-   for (int z = 0; z < mesh.nzones; z ++) totalPressure[z] = 0.0;
+   for (int z = 0; z < mesh.numZones(); z ++) totalPressure[z] = 0.0;
 
    // get pressure from EOS: gamma law gas, P = rho*e*(gamma-1)
    for (int p = 0; p < s.nParts; p++)
@@ -268,13 +273,17 @@ void Hydro::calcForce(const State & s)
    // compute grad via finite volume method
    // grad(P) = (1/Vn) sum(P*A) for P,A around node
    // for each zone, accumulate P*A to its nodes
-   for (int iz = 0; iz < mesh.nzones; iz++)
+   for (int iz = 0; iz < mesh.numZones(); iz++)
    {
-      for (int in = 0; in < mesh.zNumNodes[iz]; in++)
+      PolygonMeshXY::ZNodeSet zNodes = mesh.zoneToNodes[ iz];
+      PolygonMeshXY::ZFaceSet zFaces = mesh.zoneToFaces[ iz];
+      const int relnSize = zNodes.size();
+      for (int in = 0; in < relnSize; in++)
       {
-         int node = mesh.zNodes[mesh.z2firstNode[iz]+in];
-         int face0 = mesh.zFaces[mesh.z2firstFace[iz]+ (in + mesh.zNumNodes[iz]-1) % mesh.zNumNodes[iz]];
-         int face1 = mesh.zFaces[mesh.z2firstFace[iz]+in];
+         const int node = zNodes[in];
+         const int face0 = zFaces[(in-1 + relnSize) % relnSize];
+         const int face1 = zFaces[in];
+
          VectorXY A = mesh.faceArea[face0] + mesh.faceArea[face1];
          // multiply areas by pressure + Q (and div 2 for area factor)
          double totP = 0.5 * (totalPressure[iz] + Q[iz]);
@@ -296,7 +305,7 @@ void Hydro::calcQ(const State & s)
    calcMaxCs();
 
    // compute Q for each zone
-   for (int z = 0; z < mesh.nzones; z++)
+   for (int z = 0; z < mesh.numZones(); z++)
    {
       if (divu[z] < 0.0)
       {
@@ -381,7 +390,7 @@ void Hydro::step(double dt)
 void Hydro::calcMaxCs(void)
 {
    // zero to start with
-   memset(maxCs, 0, sizeof(double)*mesh.nzones);
+   memset(maxCs, 0, sizeof(double)*mesh.numZones() );
    
    for (int p = 0; p < state.nParts; p++)
    {
@@ -396,7 +405,7 @@ void Hydro::calcMaxCs(void)
       }
    }
    // we saved all the sqrts for the very end
-   for (int z = 0; z < mesh.nzones; z++)
+   for (int z = 0; z < mesh.numZones(); z++)
    {
       maxCs[z] = sqrt(maxCs[z]);
    }
@@ -411,7 +420,7 @@ double Hydro::newDT(void)
    calcDivU(state.velocity);  // we need velocity divergence
    calcMaxCs(); // need max sound speed 
    
-   for (int z = 0; z < mesh.nzones; z++)
+   for (int z = 0; z < mesh.numZones(); z++)
    {
       double L2 = mesh.zoneVolume[z];
       double dt2 = L2/(maxCs[z]*maxCs[z] + L2*divu[z]*divu[z]);
@@ -431,14 +440,19 @@ double Hydro::newDT(void)
 void Hydro::calcDivU(const VectorXY * velocity)
 {
    // div u = 1/V * sum(u dot dA)
-   for (int iz = 0; iz < mesh.nzones; iz++)
+   for (int iz = 0; iz < mesh.numZones(); iz++)
    {
       divu[iz] = 0.0;
-      for (int in = 0; in < mesh.zNumNodes[iz]; in++)
+
+      PolygonMeshXY::ZNodeSet zNodes = mesh.zoneToNodes[ iz];
+      PolygonMeshXY::ZFaceSet zFaces = mesh.zoneToFaces[ iz];
+      const int relnSize = zNodes.size();
+      for (int in = 0; in < relnSize; in++)
       {
-         int node = mesh.zNodes[mesh.z2firstNode[iz]+in];
-         int face0 = mesh.zFaces[mesh.z2firstFace[iz]+ (in + mesh.zNumNodes[iz]-1) % mesh.zNumNodes[iz]];
-         int face1 = mesh.zFaces[mesh.z2firstFace[iz]+in];
+         const int node = zNodes[in];
+         const int face0 = zFaces[(in-1 + relnSize) % relnSize];
+         const int face1 = zFaces[in];
+
          VectorXY A = mesh.faceArea[face0] + mesh.faceArea[face1];
          divu[iz] += velocity[node].dot(A);
       }
@@ -556,7 +570,7 @@ double Hydro::totalEnergy(const State & s) const
          totE += e[z]*m[z];
       }
    }
-   for (int n = 0; n < mesh.nnodes; n++)
+   for (int n = 0; n < mesh.numNodes(); n++)
    {
       totE += 0.5 * nodeMass[n] * s.velocity[n].dot(s.velocity[n]);
    }

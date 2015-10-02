@@ -34,6 +34,9 @@ namespace meshapi    {
   {
       typedef SetType* EmptySetType;
       static EmptySetType emptySet() { return ATK_NULLPTR;}
+
+      template<typename ASetType>
+      static bool isEmpty(ASetType* set) { return set == ATK_NULLPTR || set->empty(); }
   };
 
   template<>
@@ -44,6 +47,8 @@ namespace meshapi    {
           static NullSet s_nullSet;
           return &s_nullSet;
       }
+      static bool isEmpty(Set* set) { return *set == *emptySet() || set->empty(); }
+
   };
 
 

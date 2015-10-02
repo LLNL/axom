@@ -33,7 +33,7 @@ TEST(gtest_meshapi_tinyHydro,test_sedov_2_part)
     // Create a part
     std::vector<int> reg1, reg2;
 
-    for(int i=0; i< mesh.nzones; ++i )
+    for(int i=0; i< mesh.numZones(); ++i )
     {
         VectorXY pos = mesh.getZonePos(i);
         if(pos.y > pos.x)
@@ -60,7 +60,7 @@ TEST(gtest_meshapi_tinyHydro,test_sedov_2_part)
        p2.setRho(i,rho0);
        p2.setE(i, 0.);
     }
-    for (int i = 0; i < mesh.nnodes; i++)
+    for (int i = 0; i < mesh.numNodes(); i++)
         s.setU(i, VectorXY(0.,0.));
 
 
