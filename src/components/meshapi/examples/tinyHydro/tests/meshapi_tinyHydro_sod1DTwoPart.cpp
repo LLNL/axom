@@ -11,6 +11,7 @@
 #include "../HydroC.hpp"
 #include "../myTimer.hpp"
 
+using namespace tinyHydro;
 
 std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 {

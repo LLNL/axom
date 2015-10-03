@@ -133,6 +133,7 @@ endif()
 set(tinyHydro_dir tinyHydro  )
 
 set(tinyHydro_lib_headers
+    ${tinyHydro_dir}/TinyHydroTypes.hpp
     ${tinyHydro_dir}/HydroC.hpp
     ${tinyHydro_dir}/Part.hpp
     ${tinyHydro_dir}/State.hpp
@@ -142,6 +143,7 @@ set(tinyHydro_lib_headers
     )
 
 set(tinyHydro_lib_sources
+    ${tinyHydro_dir}/TinyHydroTypes.cpp
     ${tinyHydro_dir}/HydroC.cpp
     ${tinyHydro_dir}/Part.cpp
     ${tinyHydro_dir}/State.cpp

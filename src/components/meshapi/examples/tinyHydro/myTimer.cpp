@@ -1,5 +1,8 @@
 #include "myTimer.hpp"
 
+namespace tinyHydro {
+
+
 timespec diffTime(timespec start, timespec end)
 {
 	timespec temp;
@@ -34,3 +37,6 @@ double diffSeconds(timespec start, timespec end)
 // 	cout<< "seconds = " << diff(time1,time2).tv_sec + diff(time1,time2).tv_nsec / 1000000000.0 <<endl;
 // 	return 0;
 // }
+
+
+} // end namespace tinyHydro

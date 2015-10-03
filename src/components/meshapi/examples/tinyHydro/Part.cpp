@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-Part::SubsetRegistry Part::setRegistry;
+namespace tinyHydro {
 
 
 //----------------------------------------------
@@ -12,7 +12,7 @@ Part::Part(const int * zoneList, int nzones, double gamma)
    printf("in Part c'tor\n");
 
    zones = ZoneSubset(nzones);
-   std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+   std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
    memcpy(&ptr[0], zoneList, sizeof(int)*nzones);
    zones.data() = &ptr;
 
@@ -33,7 +33,7 @@ Part::Part(const std::vector<int>& zoneList, double gamma)
 //   setRegistry.addNamelessField( &zones).data().swap( zoneList);
 
    zones = ZoneSubset( zoneList.size() );
-   std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+   std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
    memcpy(&ptr[0], &zoneList[0], sizeof(int)*zones.size());
    zones.data() = &zoneList;
 
@@ -55,7 +55,7 @@ Part::Part(const Part & arg)
    // printf("in Part::copy \n");
 
     zones = ZoneSubset(arg.zones.size());
-    std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+    std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
     memcpy(&ptr[0], &arg.zones[0], sizeof(int)*zones.size());
     zones.data() = &ptr;
 
@@ -86,7 +86,7 @@ Part & Part::operator=(const Part & rhs)
    gamma = rhs.gamma;
 
    zones = ZoneSubset(rhs.zones.size());
-   std::vector<int>& ptr = setRegistry.addNamelessField( &zones).data();
+   std::vector<int>& ptr = DataRegistry::setRegistry.addNamelessField( &zones).data();
    memcpy(&ptr[0], &rhs.zones[0], sizeof(int)*zones.size());
    zones.data() = &ptr;
    
@@ -155,3 +155,5 @@ void Part::dumpPart()
     printf("\n\n--\n\n");
 
 }
+
+} // end namespace tinyHydro

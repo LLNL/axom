@@ -5,44 +5,15 @@
 #define __PolygonMeshXY_hh__
 
 #include "VectorXY.hpp"
+#include "TinyHydroTypes.hpp"
+
 #include <string>
 #include <stdio.h>
-#include <assert.h>
 
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/StaticConstantRelation.hpp"
-#include "meshapi/Map.hpp"
+namespace tinyHydro {
 
 class PolygonMeshXY
 {
- public:
-    typedef asctoolkit::meshapi::PositionSet ZoneSet;
-    typedef asctoolkit::meshapi::PositionSet NodeSet;
-    typedef asctoolkit::meshapi::PositionSet FaceSet;
-    typedef asctoolkit::meshapi::PositionSet CornerSet;
-
-    enum { NODES_PER_ZONE = 4, FACES_PER_ZONE = 4};
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ZoneSet::PositionType, FACES_PER_ZONE> ZFStride;
-
-    typedef asctoolkit::meshapi::StaticConstantRelation<ZNStride, ZoneSet, NodeSet> ZoneToNodeRelation;
-    typedef ZoneToNodeRelation::RelationSet ZNodeSet;
-
-    typedef asctoolkit::meshapi::StaticConstantRelation<ZFStride, ZoneSet, FaceSet> ZoneToFaceRelation;
-    typedef ZoneToFaceRelation::RelationSet ZFaceSet;
-
-    typedef ZoneSet::PositionType IndexType;
-    typedef asctoolkit::meshapi::Map<IndexType> IndexMap;
-
-    typedef asctoolkit::meshapi::Map<double>   ScalarField;
-    typedef asctoolkit::meshapi::Map<VectorXY> VectorField;
-
-    typedef ScalarField NodalScalarField;
-    typedef ScalarField ZonalScalarField;
-
-    typedef VectorField NodalVectorField;
-    typedef VectorField ZonalVectorField;
-    typedef VectorField FaceVectorField;
 
  public:
    // c'tor for doing quads
@@ -54,8 +25,7 @@ class PolygonMeshXY
    enum MeshFileType {MT0, SILO, PDB, TRIANGLE};
    PolygonMeshXY(std::string /*filename*/, MeshFileType /*meshfiletype = MT0*/)
    {
-      printf("not implemented yet\n");
-      assert(false);
+      SLIC_ERROR("not implemented yet\n");
    }
 
    // destructor
@@ -106,8 +76,6 @@ class PolygonMeshXY
    void dumpMesh();
 } ;
 
-
-
-
+} // end namespace tinyHydro
 
 #endif      // __PolygonMeshXY_hh__

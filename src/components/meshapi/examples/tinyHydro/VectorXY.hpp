@@ -5,118 +5,136 @@
 #ifndef	_VECTORXY_H
 #define	_VECTORXY_H 1
 
+namespace tinyHydro {
+
 class VectorXY
 {
  public:
-   VectorXY(){x=0.0; y=0.0;}
-   VectorXY(double xx, double yy){x=xx; y=yy;}
+   explicit VectorXY(double xx = 0., double yy = 0.) : x(xx), y(yy) {}
 
    double x;
    double y;
-   
-//----------------------------------------------
 
-VectorXY add(const VectorXY a) const
-{
-   return VectorXY(x+a.x, y+a.y);
-}
+ public:
 
-//----------------------------------------------
+   //----------------------------------------------
+   /// Addition operations
+   VectorXY& accum(const VectorXY & b)
+   {
+      x += b.x;
+      y += b.y;
+      return *this;
+   }
 
-VectorXY operator+(const VectorXY a) const
-{
-   return VectorXY(x+a.x, y+a.y);
-}
+   VectorXY& operator+=(const VectorXY & b)
+   {
+      return accum(b);
+   }
 
-//----------------------------------------------
+   VectorXY add(const VectorXY& a) const
+   {
+      return VectorXY(x+a.x, y+a.y);
+   }
 
-void accum(const VectorXY & b)
-{
-   x += b.x;
-   y += b.y;
-}
+   //----------------------------------------------
+   /// Subtraction operations
+   VectorXY& elim(const VectorXY& b)
+   {
+      x -= b.x;
+      y -= b.y;
+      return *this;
+   }
 
-//----------------------------------------------
+   VectorXY& operator-=(const VectorXY & b)
+   {
+      return elim(b);
+   }
 
-void operator+=(const VectorXY & b)
-{
-   x += b.x;
-   y += b.y;
-}
 
-//----------------------------------------------
+    VectorXY sub(const VectorXY& b) const
+    {
+       return VectorXY(x-b.x, y-b.y);
+    }
 
-VectorXY sub(const VectorXY b) const
-{
-   return VectorXY(x-b.x, y-b.y);
-}
+    //----------------------------------------------
+    // Scalar multiplication operations
 
-//----------------------------------------------
+    VectorXY& scale(const double s)
+    {
+       x *= s;
+       y *= s;
+       return *this;
+    }
 
-VectorXY operator-(const VectorXY & b) const
-{
-   return VectorXY(x-b.x, y-b.y);
-}
+    VectorXY& operator*=(const double s)
+    {
+       return scale(s);
+    }
 
-//----------------------------------------------
+    VectorXY mult(double s) const
+    {
+       return VectorXY(s*x, s*y);
+    }
 
-void elim(const VectorXY b)
-{
-   x -= b.x;
-   y -= b.y;
-}
 
-//----------------------------------------------
+    //----------------------------------------------
+    // Vector product
+    double dot(const VectorXY & v) const
+    {
+       return x*v.x + y*v.y;
+    }
 
-VectorXY mult(double s) const 
-{
-   return VectorXY(s*x, s*y);
-}
+    double cross(const VectorXY & v) const
+    {
+       return x*v.y - y*v.x;
+    }
 
-//----------------------------------------------
+    //----------------------------------------------
+     double mag() const
+    {
+       return sqrt(mag2());
+    }
 
-void scale( double s)
-{
-   x *= s;
-   y *= s;
-}
-
-//----------------------------------------------
-void operator*=(const double s)
-{
-   x *= s;
-   y *= s;
-}
-
-//----------------------------------------------
-
-double dot(const VectorXY & v) const
-{
-   return x*v.x + y*v.y;
-}
-
-//----------------------------------------------
-
-double cross(const VectorXY & v) const
-{
-   return x*v.y - y*v.x;
-}
-
-//----------------------------------------------
-
- double mag(void) const
-{
-   return sqrt(x*x + y*y);
-}
-
-//----------------------------------------------
-
-double mag2(void) const
-{
-   return x*x + y*y;
-}
+    double mag2() const
+    {
+       return x*x + y*y;
+    }
 
 //----------------------------------------------
 };
+
+
+// Free functions
+inline VectorXY operator+(const VectorXY& a, const VectorXY& b)
+{
+   VectorXY v(a);
+   v += b;
+   return v;
+}
+
+inline VectorXY operator-(const VectorXY& a, const VectorXY& b)
+{
+   VectorXY v(a);
+   v -= b;
+   return v;
+}
+
+inline VectorXY operator*(const VectorXY& a, const double s)
+{
+    VectorXY v(a);
+    v *=s;
+    return v;
+}
+inline VectorXY operator*(const double s, const VectorXY& a)
+{
+    VectorXY v(a);
+    v *=s;
+    return v;
+}
+
+
+
+
+} // end namespace tinyHydro
 
 #endif

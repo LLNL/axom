@@ -4,22 +4,13 @@
 #define __Part__
 
 #include <vector>
-#include <assert.h>
 
-#include "meshapi/IndirectionSet.hpp"
-#include "meshapi/FieldRegistry.hpp"
+#include "TinyHydroTypes.hpp"
 
+namespace tinyHydro {
 
 class Part
 {
- public:
-    typedef asctoolkit::meshapi::VectorIndirectionSet ZoneSubset;
-
-    typedef asctoolkit::meshapi::FieldRegistry<ZoneSubset::IndexType> SubsetRegistry;
-    static SubsetRegistry setRegistry;
-
-    typedef asctoolkit::meshapi::Map<double> ZonalScalarField;
-
  public:
    Part()
      : zones(0)
@@ -40,11 +31,11 @@ class Part
    Part & operator*=(const double s);
 
    // python accessors
-   double rho(int i) const {assert (i < numZones() ); return density[i];}
-   double e(int i) const {assert(i < numZones() ); return energyPerMass[i];}
-   int meshZone(int i) {assert (i < numZones() ); return zones[i];}
-   void setRho(int i, double val) {assert(i < numZones() ); density[i] = val;}
-   void setE(int i, double val) {assert(i < numZones() ); energyPerMass[i] = val;}
+   double rho(int i)                const { return density[i];}
+   double e(int i)                  const { return energyPerMass[i];}
+   int meshZone(int i)              const { return zones[i];}
+   void setRho(int i, double val)         { density[i] = val;}
+   void setE(int i, double val)           { energyPerMass[i] = val;}
 
    int numZones() const { return zones.size(); }
 
@@ -58,5 +49,7 @@ class Part
 
    void dumpPart();
 };
+
+} // end namespace tinyHydro
 
 #endif

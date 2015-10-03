@@ -83,6 +83,18 @@ namespace meshapi    {
     bool        isValid(bool verboseOutput = false) const;
 
 
+    void clear() { fill();}
+
+    void fill(DataType val = DataType())
+    {
+        const SetIndex sz = size();
+        for(SetIndex idx = SetIndex(); idx < sz; ++idx)
+        {
+            m_data[idx] = val;
+        }
+    }
+
+
   public:
     /**
      * \name DirectDataAccess

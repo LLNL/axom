@@ -6,14 +6,18 @@
 #include "meshapi/Map.hpp"
 
 #include "VectorXY.hpp"
+#include "TinyHydroTypes.hpp"
 #include "Part.hpp"
+
+
+namespace tinyHydro {
+
+
 class PolygonMeshXY;
 
 
 class State
 {
- public:
-    typedef asctoolkit::meshapi::Map<VectorXY> NodalVectorField;
  public:
    State(PolygonMeshXY & theMesh);
    ~State(void);
@@ -34,8 +38,8 @@ class State
    Part * partBegin(void) {return parts;}
    Part * getPart(int i);
    void addPart(Part * newPart);
-   void setU(int i, VectorXY val) {velocity[i] = val;}
-   void setX(int i, VectorXY val) {position[i] = val;}
+   void setU(int i, const VectorXY& val) { velocity[i] = val;}
+   void setX(int i, const VectorXY& val) { position[i] = val;}
 
    PolygonMeshXY  * const mesh;
 
@@ -49,3 +53,6 @@ class State
 
    void dumpState();
 };
+
+
+} // end namespace tinyHydro

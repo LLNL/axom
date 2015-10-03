@@ -12,10 +12,13 @@
 #include "State.hpp"
 #include <stdio.h>
 
+#include "TinyHydroTypes.hpp"
+
+namespace tinyHydro {
+
 class Hydro
 {
  public:
-    typedef State::NodalVectorField NodalVectorField;
 
  public:
    Hydro(State * s); // using a pointer here with PyBindGen prevents
@@ -61,28 +64,30 @@ class Hydro
    State halfStep; // re-used temporary for RK2
    State dState;   // re-used temporary for RK2
 
-   double * Q; // re-used for Q                                 // MeshAPI -- Map: Zones -> scalar
-   double * divu; // for dt, Q, and some PdV work schemes
-   VectorXY * force; // re-used for force calc                  // MeshAPI -- Map: Nodes -> VectorXY
-   VectorXY * cornerforce; // re-used for force calc            // <UNUSED>?
+   ZonalScalarField Q;    // re-used for Q                          // MeshAPI -- Map: Zones -> scalar
+   ZonalScalarField divu; // for dt, Q, and some PdV work schemes
 
-   NodalVectorField halfStepVelocity; // re-used for work calc        // MeshAPI -- Map: Nodes -> VectorXY
-   VectorXY * bcVelocity; // velocity BC values                 // MeshAPI -- Map: Domain edges -> VectorXY
-                                                                // Code is missing a DomainEdge set of fixed size 4.
+   NodalVectorField force; // re-used for force calc                // MeshAPI -- Map: Nodes -> VectorXY
+   VectorXY * cornerforce; // re-used for force calc                // <UNUSED>?
 
-   double ** initialMass; // per material initial mass          // MeshAPI -- Map: Parts -> array of doubles -- relation ???
-   double * totalMass; //  mass in zone                         // MeshAPI -- Map: Zones -> scalar
-   double * nodeMass;  // also keep node masses                 // MeshAPI -- Map: Nodes-> scalar
-   double ** pressure; // per material zone pressure            // MeshAPI -- Map: Material -> zone -> scalar
-   double * totalPressure; // sum of pressures in a zone        // MeshAPI -- Map: Zones -> scalar
-   double * maxCs; //
+   NodalVectorField halfStepVelocity; // re-used for work calc      // MeshAPI -- Map: Nodes -> VectorXY
 
-   int numBCs;                                                  // <UNUSED>?
-   int numBC0Nodes, numBC1Nodes, numBC2Nodes, numBC3Nodes;      // MeshAPI -- Indirection Sets
-   int * bc0Nodes; // lower boundary nodes
-   int * bc1Nodes; // right boundary nodes
-   int * bc2Nodes; // top boundary nodes
-   int * bc3Nodes; // left boundary nodes
+   int numBCs;                                                      // <UNUSED>?
+   BoundaryEdgeSet boundaryEdgeSet;                                 // MeshAPI -- new edge set (of size 4)
+   BoundaryEdgeVectorField bcVelocity; // velocity BC values        // MeshAPI -- Map: Domain edges -> VectorXY
+   NodeSubset bcNodes[NUM_DOMAIN_BOUNDARIES];
+
+
+   double ** initialMass; // per material initial mass              // MeshAPI -- Map: Parts -> array of doubles -- relation ???
+
+   ZonalScalarField totalMass; //  mass in zone                     // MeshAPI -- Map: Zones -> scalar
+   NodalScalarField nodeMass;  // also keep node masses             // MeshAPI -- Map: Nodes-> scalar
+
+   double ** pressure; // per material zone pressure                // MeshAPI -- Map: Material -> zone -> scalar
+
+   ZonalScalarField totalPressure; // sum of pressures in a zone    // MeshAPI -- Map: Zones -> scalar
+   ZonalScalarField maxCs;          //
+
 
    int cycle;
    int dtZone;
@@ -99,4 +104,4 @@ class Hydro
    
 };
 
-
+} // end namespace tinyHydro

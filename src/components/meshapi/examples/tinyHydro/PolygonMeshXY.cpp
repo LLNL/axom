@@ -1,6 +1,16 @@
 #include "PolygonMeshXY.hpp"
 #include "slic/slic.hpp"
 
+#include "myTimer.hpp"
+#include <stdio.h>
+int clock_getres(clockid_t clk_id, struct timespec *res);
+int clock_gettime(clockid_t clk_id, struct timespec *tp);
+int clock_settime(clockid_t clk_id, const struct timespec *tp);
+
+
+namespace tinyHydro {
+
+
 //----------------------------------------------
 PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
                            double xmin, double xmax,
@@ -129,18 +139,13 @@ void PolygonMeshXY::computeNewGeometry(void)
 //----------------------------------------------
 void PolygonMeshXY::moveNodesToPosition(const NodalVectorField& newPos)
 {
-   for (int i=0; i < numNodes(); i++)
+   const int nnodes = numNodes();
+   for (int i=0; i < nnodes; i++)
    {
       nodePos[i] = newPos[i];
    }
 }
 
-//----------------------------------------------
-#include "myTimer.hpp"
-#include <stdio.h>
-int clock_getres(clockid_t clk_id, struct timespec *res);
-int clock_gettime(clockid_t clk_id, struct timespec *tp);
-int clock_settime(clockid_t clk_id, const struct timespec *tp);
 
 //----------------------------------------------
 
@@ -197,3 +202,4 @@ void PolygonMeshXY::dumpMesh()
 
 }
 
+} // end namespace tinyHydro

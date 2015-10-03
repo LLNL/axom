@@ -11,6 +11,8 @@
 #include "../HydroC.hpp"
 
 
+using namespace tinyHydro;
+
 std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 {
     os <<"(" << vec.x << "," << vec.y <<")";

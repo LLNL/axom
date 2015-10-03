@@ -1,9 +1,14 @@
-#include "State.hpp"
-#include "PolygonMeshXY.hpp"
-#include "Part.hpp"
 #include <stdio.h>
 
+#include "State.hpp"
+
+#include "PolygonMeshXY.hpp"
+#include "Part.hpp"
+
 #include "slic/slic.hpp"
+
+namespace tinyHydro {
+
 
 //----------------------------------------------
 State::State(PolygonMeshXY & theMesh)
@@ -33,16 +38,11 @@ Part * State::getPart(int i)
 void State::addPart(Part * partPtr)
 {
    printf("in State::addPart \n");
-   if (nParts < maxNParts)
-   {
-      parts[nParts] = *partPtr; // copy in part data to the list
-      nParts++; // now is next unused Part ptr
-   }
-   else
-   {
-      printf("tried to add more than %d parts, limit is hard-wired allowed, craaashing!\n",maxNParts);
-      SLIC_ASSERT(false);
-   }
+   SLIC_ASSERT_MSG( nParts < maxNParts
+              , "tried to add more than " << maxNParts <<" parts, limit is hard-wired allowed, craaashing!");
+
+   parts[nParts] = *partPtr; // copy in part data to the list
+   nParts++; // now is next unused Part ptr
 }
 
 //----------------------------------------------
@@ -187,3 +187,4 @@ void State::dumpState()
 }
 
 
+} // end namespace tinyHydro

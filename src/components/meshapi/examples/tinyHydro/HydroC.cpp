@@ -1,13 +1,15 @@
+#include <algorithm>
 #include <stdio.h>
+#include <string.h>
+
 #include "HydroC.hpp"
 #include "PolygonMeshXY.hpp"
 #include "Part.hpp"
-#include <assert.h>
-#include <string.h>
 // #include "/usr/include/gperftools/profiler.h"
 
 #include "slic/slic.hpp"
 
+namespace tinyHydro {
 
 //----------------------------------------------
 // c'tor
@@ -29,10 +31,11 @@ mesh(*(s->mesh)),
    SLIC_ASSERT(mesh.numZones() > 0);
    
    // make memory for Q calculation
-   Q = new double[mesh.numZones()];
+   Q = ZonalScalarField( &mesh.zones);
    
    // make memory for Q calculation
-   force = new VectorXY[mesh.numNodes()];
+   force = NodalVectorField(&mesh.nodes);
+
    /* cornerforce = new VectorXY * [nParts]; */
    /* for (int p = 0; p < nParts; p++) cornerforce[p] = new VectorXY[4*state.parts[p].nzones]; */
    
@@ -41,37 +44,40 @@ mesh(*(s->mesh)),
    initialMass = new double * [nParts];
    for (int p = 0; p < nParts; p++)
        initialMass[p] = new double[state.parts[p].numZones()];
-   totalMass = new double [mesh.numZones()];
-   totalPressure = new double [mesh.numZones()];
-   maxCs =  new double [mesh.numZones()];
-   nodeMass = new double [mesh.numNodes()];
-      
 
+
+
+   totalMass        = ZonalScalarField( &mesh.zones);
+   totalPressure    = ZonalScalarField( &mesh.zones);
+   maxCs            = ZonalScalarField( &mesh.zones);
+
+   nodeMass         = NodalScalarField( &mesh.nodes);
+      
    // space for half-step velocity
    halfStepVelocity = NodalVectorField(& mesh.nodes);
 
    // for dt, Q, and some PdV work schemes
-   divu = new double[mesh.numZones()];
+   divu = ZonalScalarField( &mesh.zones);
+
 
    // zone pressure
    pressure = new double * [nParts];
    for (int p = 0; p < nParts; p++)
        pressure[p] = new double[state.parts[p].numZones()];
    
-   // velocity BC space.  BC's are implicity ordered as 'bottom',
+
+   // velocity BC space.  BC's are implicitly ordered as 'bottom',
    // 'right', 'top', 'left', numbered 0 through 3.
-   bcVelocity = new VectorXY[4];
    // initial BC's are 0xdeadbeef, which we take as a special value
    // meaning free boundary condition.
-   for (int i = 0; i < 4; i ++)
-      bcVelocity[i] = VectorXY(0xdeadbeef, 0xdeadbeef);
-   // find the boundary nodes if any
-   numBC0Nodes = numBC1Nodes = numBC2Nodes = numBC3Nodes = 0;
+
+   bcVelocity = BoundaryEdgeVectorField(&boundaryEdgeSet, VectorXY(0xdeadbeef, 0xdeadbeef));
+
    double minX = 1e99;
    double maxX = -1e99;
    double minY = 1e99;
    double maxY = -1e99;
-   for (int n = 0; n < mesh.numNodes(); n++)
+   for (int n = 0; n < mesh.numNodes(); n++)  // compute bounding box of domain
    {
       VectorXY & pos = mesh.nodePos[n];
       if (pos.x < minX) minX = pos.x;
@@ -79,26 +85,23 @@ mesh(*(s->mesh)),
       if (pos.y < minY) minY = pos.y;
       if (pos.y > maxY) maxY = pos.y;
    }
+
+   std::vector<IndexType> bcNodeLists[NUM_DOMAIN_BOUNDARIES];
    for (int n = 0; n < mesh.numNodes(); n++)
    {
       VectorXY & pos = mesh.nodePos[n];
-      if (fuzzyEqual(pos.y, minY)) numBC0Nodes++;
-      if (fuzzyEqual(pos.x, maxX)) numBC1Nodes++;
-      if (fuzzyEqual(pos.y, maxY)) numBC2Nodes++;
-      if (fuzzyEqual(pos.x, minX)) numBC3Nodes++;
+      if (fuzzyEqual(pos.y, minY)) bcNodeLists[0].push_back(n);
+      if (fuzzyEqual(pos.x, maxX)) bcNodeLists[1].push_back(n);
+      if (fuzzyEqual(pos.y, maxY)) bcNodeLists[2].push_back(n);
+      if (fuzzyEqual(pos.x, minX)) bcNodeLists[3].push_back(n);
    }
-   bc0Nodes = new int[numBC0Nodes];
-   bc1Nodes = new int[numBC1Nodes];
-   bc2Nodes = new int[numBC2Nodes];
-   bc3Nodes = new int[numBC3Nodes];
-   int i0 = 0; int i1 = 0; int i2 = 0; int i3 = 0;
-   for (int n = 0; n < mesh.numNodes(); n++)
+
+   for(int i=0; i< boundaryEdgeSet.size(); ++i)
    {
-      VectorXY & pos = mesh.nodePos[n];
-      if (fuzzyEqual(pos.y, minY)) {bc0Nodes[i0] = n; i0++;}
-      if (fuzzyEqual(pos.x, maxX)) {bc1Nodes[i1] = n; i1++;}
-      if (fuzzyEqual(pos.y, maxY)) {bc2Nodes[i2] = n; i2++;}
-      if (fuzzyEqual(pos.x, minX)) {bc3Nodes[i3] = n; i3++;}
+       bcNodes[i] = NodeSubset( bcNodeLists[i].size() );
+       std::vector<int>& bcVec = DataRegistry::setRegistry.addNamelessField( &bcNodes[i]).data();
+       bcVec.swap( bcNodeLists[i]);
+       bcNodes[i].data() = &bcVec;
    }
 }
    
@@ -106,23 +109,16 @@ mesh(*(s->mesh)),
 // d'tor
 Hydro::~Hydro()
 {
-   delete [] Q;
-   delete [] force;
-   /* delete [] cornerforce; */
-   for (int p = 0; p < state.nParts; p++) delete [] initialMass[p];
-   delete [] initialMass;
-   delete [] totalMass;
-   delete [] totalPressure;
-   delete [] nodeMass;
 
-   delete [] divu;
-   for (int p = 0; p < state.nParts; p++) delete [] pressure[p];
+   /* delete [] cornerforce; */
+
+   for (int p = 0; p < state.nParts; p++)
+       delete [] initialMass[p];
+   delete [] initialMass;
+
+   for (int p = 0; p < state.nParts; p++)
+       delete [] pressure[p];
    delete [] pressure;
-   delete [] bcVelocity;
-   delete [] bc0Nodes;
-   delete [] bc1Nodes;
-   delete [] bc2Nodes;
-   delete [] bc3Nodes;
 }
 //----------------------------------------------
 // set hydro ready to begin taking steps
@@ -139,18 +135,18 @@ void Hydro::initialize(void)
    }
 
    // tuck away initial zone and node masses and never forget them
-   memset( (void *) totalMass, 0, sizeof(double)*mesh.numZones()); // zero out before summing
-   memset( (void *) nodeMass,  0, sizeof(double)*mesh.numZones()); // zero out before summing
+   totalMass.clear();
+   nodeMass.clear();
    for (int p = 0; p < state.nParts; p++)  // loop over parts
    {
-      Part::ZoneSubset& zones = state.parts[p].zones;
-      const Part::ZonalScalarField& rho = state.parts[p].density;
+      ZoneSubset& zones = state.parts[p].zones;
+      const ZonalScalarField& rho = state.parts[p].density;
       for (int iz = 0; iz < state.parts[p].numZones(); iz++) // loop over zones
       {
          initialMass[p][iz] = rho[iz]*mesh.zoneVolume[zones[iz]];
          totalMass[zones[iz]] += initialMass[p][iz];
 
-         PolygonMeshXY::ZNodeSet zNodes = mesh.zoneToNodes[ zones[iz] ];
+         ZNodeSet zNodes = mesh.zoneToNodes[ zones[iz] ];
          for (int in = 0; in < zNodes.size(); in ++) // loop over nodes
          {
             int node = zNodes[in];
@@ -226,11 +222,11 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
    // the energy production rate is simply -(P+Q) div(u)
    for (int p = 0; p < s.nParts; p++)
    {
-      const Part::ZonalScalarField& rho = s.parts[p].density;
+      const ZonalScalarField& rho = s.parts[p].density;
       const double * P = pressure[p];
-      Part::ZonalScalarField& de = dState.parts[p].energyPerMass;
+      ZonalScalarField& de = dState.parts[p].energyPerMass;
       const int nzones = state.parts[p].numZones();
-      const Part::ZoneSubset& zones = state.parts[p].zones;
+      const ZoneSubset& zones = state.parts[p].zones;
       for (int z = 0; z < nzones; z++)
       {
          de[z] = -(P[z] + Q[zones[z]]) * divu[zones[z]] / rho[z];
@@ -240,7 +236,6 @@ void Hydro::calcDerivs(const State & s, State & dState, double dt)
 
 }
 //----------------------------------------------
-#include <algorithm>
 // compute the total force that pushes the nodes
 void Hydro::calcForce(const State & s)
 {
@@ -248,7 +243,7 @@ void Hydro::calcForce(const State & s)
    
    // compute grad of zone-centered (P+Q), return pointer to array of
    // node-centered VectorXY forces.
-   std::fill(force, force+mesh.numNodes(), VectorXY(0.0,0.0));
+   force.clear();
 
    // zero out total before summing
    for (int z = 0; z < mesh.numZones(); z ++) totalPressure[z] = 0.0;
@@ -258,10 +253,10 @@ void Hydro::calcForce(const State & s)
    {
       const int nzones = state.parts[p].numZones();
       const double gammaMinusOne = s.parts[p].gamma - 1.0;
-      const Part::ZonalScalarField& rho = s.parts[p].density;
-      const Part::ZonalScalarField& e = s.parts[p].energyPerMass;
+      const ZonalScalarField& rho = s.parts[p].density;
+      const ZonalScalarField& e = s.parts[p].energyPerMass;
       double * P = pressure[p];
-      const Part::ZoneSubset& zones = s.parts[p].zones;
+      const ZoneSubset& zones = s.parts[p].zones;
       for (int z = 0; z < nzones; z++)
       {
          P[z] = gammaMinusOne*rho[z]*e[z];
@@ -277,8 +272,8 @@ void Hydro::calcForce(const State & s)
    // for each zone, accumulate P*A to its nodes
    for (int iz = 0; iz < mesh.numZones(); iz++)
    {
-      PolygonMeshXY::ZNodeSet zNodes = mesh.zoneToNodes[ iz];
-      PolygonMeshXY::ZFaceSet zFaces = mesh.zoneToFaces[ iz];
+      ZNodeSet zNodes = mesh.zoneToNodes[ iz];
+      ZFaceSet zFaces = mesh.zoneToFaces[ iz];
       const int relnSize = zNodes.size();
       for (int in = 0; in < relnSize; in++)
       {
@@ -334,9 +329,9 @@ void Hydro::updateConstitutives(State & s)
    mesh.computeNewGeometry();
    for (int p = 0; p < s.nParts; p++)
    {
-      const Part::ZoneSubset& zones = s.parts[p].zones;
+      const ZoneSubset& zones = s.parts[p].zones;
       const int nzones = s.parts[p].numZones();
-      Part::ZonalScalarField& rho = s.parts[p].density;
+      ZonalScalarField& rho = s.parts[p].density;
       for (int z = 0; z < nzones; z++)
       {
          rho[z] = initialMass[p][z]/mesh.zoneVolume[zones[z]];
@@ -392,14 +387,14 @@ void Hydro::step(double dt)
 void Hydro::calcMaxCs(void)
 {
    // zero to start with
-   memset(maxCs, 0, sizeof(double)*mesh.numZones() );
+   maxCs.clear();
    
    for (int p = 0; p < state.nParts; p++)
    {
-      const Part::ZoneSubset& zones = state.parts[p].zones;
+      const ZoneSubset& zones = state.parts[p].zones;
       const int nzones = state.parts[p].numZones();
       const double gammaGammaMinusOne = state.parts[p].gamma*(state.parts[p].gamma - 1.0);
-      const Part::ZonalScalarField& e = state.parts[p].energyPerMass;
+      const ZonalScalarField& e = state.parts[p].energyPerMass;
       for (int z = 0; z < nzones; z++)
       {
          double cs2 = gammaGammaMinusOne*e[z];
@@ -446,8 +441,8 @@ void Hydro::calcDivU(const NodalVectorField& velocity)
    {
       divu[iz] = 0.0;
 
-      PolygonMeshXY::ZNodeSet zNodes = mesh.zoneToNodes[ iz];
-      PolygonMeshXY::ZFaceSet zFaces = mesh.zoneToFaces[ iz];
+      ZNodeSet zNodes = mesh.zoneToNodes[ iz];
+      ZFaceSet zFaces = mesh.zoneToFaces[ iz];
       const int relnSize = zNodes.size();
       for (int in = 0; in < relnSize; in++)
       {
@@ -487,49 +482,18 @@ void Hydro::setBC(const char * boundary, double xVel, double yVel)
 //----------------------------------------------
 void Hydro::applyVelocityBC(NodalVectorField& u)
 {
-   // bottom
-   if (bcVelocity[0].x != 0xdeadbeef)
+   for(int i= 0; i < boundaryEdgeSet.size(); ++i)
    {
-      for (int in = 0; in < numBC0Nodes; in++)
-         u[bc0Nodes[in]].x = bcVelocity[0].x;
-   }
-   if (bcVelocity[0].y != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC0Nodes; in++)
-         u[bc0Nodes[in]].y = bcVelocity[0].y;
-   }
-   // right
-   if (bcVelocity[1].x != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC1Nodes; in++)
-         u[bc1Nodes[in]].x = bcVelocity[1].x;
-   }
-   if (bcVelocity[1].y != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC1Nodes; in++)
-         u[bc1Nodes[in]].y = bcVelocity[1].y;
-   }
-   // top
-   if (bcVelocity[2].x != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC2Nodes; in++)
-         u[bc2Nodes[in]].x = bcVelocity[2].x;
-   }
-   if (bcVelocity[2].y != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC2Nodes; in++)
-         u[bc2Nodes[in]].y = bcVelocity[2].y;
-   }
-   // left
-   if (bcVelocity[3].x != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC3Nodes; in++)
-         u[bc3Nodes[in]].x = bcVelocity[3].x;
-   }
-   if (bcVelocity[3].y != 0xdeadbeef)
-   {
-      for (int in = 0; in < numBC3Nodes; in++)
-         u[bc3Nodes[in]].y = bcVelocity[3].y;
+       if (bcVelocity[i].x != 0xdeadbeef)
+       {
+          for(NodeSubset::iterator nIt = bcNodes[i].begin(), nItEnd = bcNodes[i].end(); nIt < nItEnd; ++nIt)
+             u[*nIt].x = bcVelocity[i].x;
+       }
+       if (bcVelocity[i].y != 0xdeadbeef)
+       {
+          for(NodeSubset::iterator nIt = bcNodes[i].begin(), nItEnd = bcNodes[i].end(); nIt < nItEnd; ++nIt)
+             u[*nIt].y = bcVelocity[i].y;
+       }
    }
 }
 //----------------------------------------------
@@ -565,7 +529,7 @@ double Hydro::totalEnergy(const State & s) const
    for (int p = 0; p < s.nParts; p++)
    {
       const int nzones = s.parts[p].numZones();
-      const Part::ZonalScalarField& e = s.parts[p].energyPerMass;
+      const ZonalScalarField& e = s.parts[p].energyPerMass;
       const double * m = initialMass[p];
       for (int z = 0; z < nzones; z++)
       {
@@ -581,46 +545,18 @@ double Hydro::totalEnergy(const State & s) const
 //----------------------------------------------
 int Hydro::numBCnodes(int bc)
 {
-   switch (bc)
-   {
-   case 0:
-      return numBC0Nodes;
-      break;
-   case 1:
-      return numBC1Nodes;
-      break;
-   case 2:
-      return numBC2Nodes;
-      break;
-   case 3:
-      return numBC3Nodes;
-      break;
-   default:
-      assert(bc != 0 and bc != 1 and bc != 2 and bc != 3);
-      return -1;
-   }
+    SLIC_ASSERT_MSG( 0 <= bc && bc < NUM_DOMAIN_BOUNDARIES
+               , "BC identifier must be between 0 and " << NUM_DOMAIN_BOUNDARIES);
+
+    return bcNodes[bc].size();
 }
 //----------------------------------------------
 int Hydro::bcNode(int bc, int node)
 {
-   switch (bc)
-   {
-   case 0:
-      return bc0Nodes[node];
-      break;
-   case 1:
-      return bc1Nodes[node];
-      break;
-   case 2:
-      return bc2Nodes[node];
-      break;
-   case 3:
-      return bc3Nodes[node];
-      break;
-   default:
-      assert(bc != 0 and bc != 1 and bc != 2 and bc != 3);
-      return -1;
-   }
+    SLIC_ASSERT_MSG( 0 <= bc && bc < NUM_DOMAIN_BOUNDARIES
+               , "BC identifier must be between 0 and " << NUM_DOMAIN_BOUNDARIES);
+
+    return bcNodes[bc][node];
 }
 //----------------------------------------------
 double Hydro::totalEnergy(void) const
@@ -628,3 +564,6 @@ double Hydro::totalEnergy(void) const
    return totalEnergy(state);
 }
 //----------------------------------------------
+
+
+} // end namespace tinyHydro
