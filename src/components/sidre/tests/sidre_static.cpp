@@ -60,6 +60,36 @@ TEST(sidre_static,int_buffer_from_view)
 }
 
 //----------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+TEST(sidre_static,int_buffer_from_view_overload)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  int buffer[10];
+  for(int i=0 ; i<10 ; i++)
+  {
+    buffer[i] = i*i;
+  }
+
+  DataView * dv = registerStaticNode(root, "snode", buffer, 10);
+
+  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getNumberOfElements(), 10u);
+  //  int * data_ptr = dv->getValue();
+  int * data_ptr = (int *) dv->getDataPointer();
+
+  EXPECT_EQ(buffer, data_ptr);
+
+  //  dv->print();
+
+  //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
+  delete ds;
+
+}
+
+//----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;

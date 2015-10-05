@@ -107,6 +107,18 @@ DataView *registerStaticNode(DataGroup * group,
   return view;
 }
 
+// XXX - create overloads for each native type
+DataView *registerStaticNode(DataGroup * group,
+			     const std::string& name,
+			     int *addr,
+			     SidreLength len)
+{
+    return  registerStaticNode(group, name,
+			       static_cast<void *>(addr),
+			       CONDUIT_NATIVE_INT_DATATYPE_ID, len);
+}
+
+
 //----------------------------------------------------------------------
     // XXX TODO - release context
 
