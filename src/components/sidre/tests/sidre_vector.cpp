@@ -12,6 +12,7 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreVector.hpp"
+#include "sidre/SidreConduit.hpp"
 
 using asctoolkit::sidre::SidreLength;
 //using asctoolkit::sidre::TypeID;
@@ -52,6 +53,7 @@ TEST(sidre_vector,int_buffer_from_view)
       EXPECT_EQ(var[i], data_ptr[i]);
   }
 
+  //  printView(dv);
   dv->print();
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
