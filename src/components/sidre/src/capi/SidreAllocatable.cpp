@@ -85,7 +85,7 @@ public:
     }
 
     virtual void allocate(void *context,
-			  TypeID type, SidreLength nitems)
+			  TypeID type, SidreLength nitems) const
     {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type

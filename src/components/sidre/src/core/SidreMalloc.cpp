@@ -64,11 +64,10 @@ public:
         return mcontext->m_nitems;
     }
 
-  virtual void allocate(void *context, TypeID type, SidreLength nitems)
-   // XXXconst
+  virtual void allocate(void *context, TypeID type, SidreLength nitems) const
     {
 	SLIC_ASSERT_MSG( false,
-			 "Cannot call allocate an static buffer");
+			 "Cannot call allocate on a static buffer");
 	return;
     }
 
@@ -137,8 +136,7 @@ public:
         return mcontext->m_nitems;
     }
 
-  virtual void allocate(void *context, TypeID type, SidreLength nitems)
-   // XXXconst
+  virtual void allocate(void *context, TypeID type, SidreLength nitems) const
     {
 	MallocContext * mcontext = static_cast<MallocContext *>(context);
 	// XXX - replace sizeof

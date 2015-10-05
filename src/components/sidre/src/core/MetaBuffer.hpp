@@ -52,7 +52,7 @@ public:
   /*!
    * \brief Allocate buffer to requested size.
    */
-  virtual void allocate(void *context, TypeID type, SidreLength nitems) = 0;
+  virtual void allocate(void *context, TypeID type, SidreLength nitems) const = 0;
 
 };
 
