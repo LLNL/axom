@@ -62,6 +62,9 @@ TEST(sidre_static,int_buffer_from_view)
 //----------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
+// Add static array to datastore using overloaded function to
+// imply type.
+
 TEST(sidre_static,int_buffer_from_view_overload)
 {
   DataStore * ds = new DataStore();
@@ -81,6 +84,34 @@ TEST(sidre_static,int_buffer_from_view_overload)
   int * data_ptr = (int *) dv->getDataPointer();
 
   EXPECT_EQ(buffer, data_ptr);
+
+  //  dv->print();
+
+  //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
+  delete ds;
+
+}
+
+//----------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+// Add static scalar to datastore by implying type and length
+TEST(sidre_static,int_buffer_from_view_overload_scalar)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  int buffer;
+  buffer = 2;
+
+  DataView * dv = registerStaticNode(root, "snode", &buffer);
+
+  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getNumberOfElements(), 1u);
+  //  int * data_ptr = dv->getValue();
+  int * data_ptr = (int *) dv->getDataPointer();
+
+  EXPECT_EQ(&buffer, data_ptr);
 
   //  dv->print();
 
