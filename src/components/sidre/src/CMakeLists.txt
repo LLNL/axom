@@ -18,6 +18,7 @@ set(sidre_headers
     core/SidreTypes.hpp
     core/sidre.hpp
     core/SidreMalloc.hpp
+    core/SidreVector.hpp
     conduit/SidreConduit.hpp
     ${capi_headers}
 )
@@ -31,6 +32,7 @@ set(sidre_sources
     core/DataStore.cpp
     core/DataView.cpp
     core/SidreMalloc.cpp
+    core/SidreVector.cpp
     conduit/SidreConduit.cpp
     ${capi_source}
 )
