@@ -49,17 +49,6 @@ DataView *registerStaticNode(DataGroup * group,
 			     const std::string& name,
 			     int *addr,
 			     SidreLength len = 1 );
-#if 0
-{
-#if 0
-    return ATK_NULLPTR;
-#else
-    return  registerStaticNode(group, name,
-			       static_cast<void *>(addr),
-			       CONDUIT_NATIVE_INT_DATATYPE_ID, len);
-#endif
-}
-#endif
 
 DataView *registerMallocNode(DataGroup * group,
 			     const std::string& name);

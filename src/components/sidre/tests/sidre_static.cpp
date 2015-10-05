@@ -62,6 +62,33 @@ TEST(sidre_static,int_buffer_from_view)
 //----------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
+// report error for attempt to allocate static
+TEST(sidre_static,int_buffer_from_view_allocate)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  int buffer[10];
+  for(int i=0 ; i<10 ; i++)
+  {
+    buffer[i] = i*i;
+  }
+
+  DataView * dv = registerStaticNode(root, "snode",
+				     static_cast<void *>(buffer),
+				     CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+
+  EXPECT_TRUE(dv != ATK_NULLPTR);
+  // XXX This raises an error and stops test
+  //  dv->allocate();
+
+  delete ds;
+
+}
+
+//----------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
 // Add static array to datastore using overloaded function to
 // imply type.
 
