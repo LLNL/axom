@@ -48,6 +48,7 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
        type(C_PTR) rv
        end function ATK_register_static
     end interface
+    type(C_PTR), external :: ATK_C_LOC
 
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
@@ -59,7 +60,7 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
 
     lname = len_trim(name)
     nitems = {size}
-    rv%voidptr = ATK_register_static(group%voidptr, name, lname, C_LOC(value), type, nitems)
+    rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
 end function datagroup_register_static_{typename}_{nd}""".format(size=size, **d)
 
 
@@ -217,8 +218,10 @@ def foreach_value(lines, fcn, **kwargs):
     kwargs - additional values for format dictionary.
     """
     shape = []
-    for nd in range(2):
+    lbound = []
+    for nd in range(maxdims + 1):
         shape.append(':')
+        lbound.append('lbound(value,%d)' % (nd+1))
     d = {}
     d.update(kwargs)
     indx = 0
@@ -238,6 +241,7 @@ def foreach_value(lines, fcn, **kwargs):
         d['rank'] = 0
         d['nd'] = 'scalar_ptr'
         d['shape'] = ''
+        d['lower_bound'] = ''
         lines.append(fcn(d))
 
         for nd in range(1,maxdims+1):
@@ -246,6 +250,7 @@ def foreach_value(lines, fcn, **kwargs):
             d['rank'] = nd
             d['nd'] = '%dd_ptr' % nd
             d['shape'] = '(' + ','.join(shape[:nd]) + ')'
+            d['lower_bound'] = '(' + ','.join(lbound[:nd]) + ')'
             lines.append(fcn(d))
 
 def print_lines(printer, fcn, **kwargs):
