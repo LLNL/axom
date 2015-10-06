@@ -64,6 +64,12 @@ public:
         return mcontext->m_nitems;
     }
 
+    virtual TypeID getTypeID(void *context) const
+    {
+	MallocContext * mcontext = static_cast<MallocContext *>(context);
+	return mcontext->m_type;
+    }
+
   virtual void allocate(void *context, TypeID type, SidreLength nitems) const
     {
 	SLIC_ASSERT_MSG( false,
@@ -134,6 +140,12 @@ public:
     {
 	MallocContext * mcontext = static_cast<MallocContext *>(context);
         return mcontext->m_nitems;
+    }
+
+    virtual TypeID getTypeID(void *context) const
+    {
+	MallocContext * mcontext = static_cast<MallocContext *>(context);
+	return mcontext->m_type;
     }
 
   virtual void allocate(void *context, TypeID type, SidreLength nitems) const

@@ -12,6 +12,7 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreMalloc.hpp"
+#include "sidre/SidreConduit.hpp"
 
 using asctoolkit::sidre::SidreLength;
 //using asctoolkit::sidre::TypeID;
@@ -38,7 +39,7 @@ TEST(sidre_malloc,int_buffer_from_view)
   DataView * dv = registerMallocNode(root, "snode");
 
   dv->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
-  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dv->getNumberOfElements(), 10u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
@@ -48,7 +49,7 @@ TEST(sidre_malloc,int_buffer_from_view)
     data_ptr[i] = i*i;
   }
 
-  dv->print();
+  printView(dv);
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;

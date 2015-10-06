@@ -12,6 +12,7 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreMalloc.hpp"
+#include "sidre/SidreConduit.hpp"
 
 using asctoolkit::sidre::SidreLength;
 //using asctoolkit::sidre::TypeID;
@@ -45,14 +46,14 @@ TEST(sidre_static,int_buffer_from_view)
 				     static_cast<void *>(buffer),
 				     CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
 
-  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dv->getNumberOfElements(), 10u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
 
   EXPECT_EQ(buffer, data_ptr);
 
-  //  dv->print();
+  printView(dv);
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
@@ -105,14 +106,14 @@ TEST(sidre_static,int_buffer_from_view_overload)
 
   DataView * dv = registerStaticNode(root, "snode", buffer, 10);
 
-  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dv->getNumberOfElements(), 10u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
 
   EXPECT_EQ(buffer, data_ptr);
 
-  //  dv->print();
+  printView(dv);
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;
@@ -133,14 +134,14 @@ TEST(sidre_static,int_buffer_from_view_overload_scalar)
 
   DataView * dv = registerStaticNode(root, "snode", &buffer);
 
-  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dv->getNumberOfElements(), 1u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
 
   EXPECT_EQ(&buffer, data_ptr);
 
-  //  dv->print();
+  printView(dv);
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;

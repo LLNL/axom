@@ -53,8 +53,7 @@ TEST(sidre_vector,int_buffer_from_view)
       EXPECT_EQ(var[i], data_ptr[i]);
   }
 
-  //  printView(dv);
-  dv->print();
+  printView(dv);
 
   //  EXPECT_EQ(dv->getTotalBytes(), sizeof(int) * 10);
   delete ds;

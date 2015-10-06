@@ -434,7 +434,11 @@ public:
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_node.dtype().id());
+      if (m_metabuffer != ATK_NULLPTR) {
+        return m_metabuffer->getTypeID(m_buffer_context);
+      } else {
+	  return static_cast<TypeID>(m_node.dtype().id());
+      }
   }
 
   /*!

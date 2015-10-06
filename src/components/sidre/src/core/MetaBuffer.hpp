@@ -50,6 +50,11 @@ public:
   virtual size_t getNumberOfElements(void *context) const = 0;
 
   /*!
+   * \brief Return total number of bytes allocated by this DataView object.
+   */
+  virtual TypeID getTypeID(void *context) const = 0;
+
+  /*!
    * \brief Allocate buffer to requested size.
    */
   virtual void allocate(void *context, TypeID type, SidreLength nitems) const = 0;

@@ -84,6 +84,11 @@ public:
 	return m_callbacks.getNumberOfElements(context);
     }
 
+  virtual TypeID getTypeID(void *context) const
+  {
+      return static_cast<TypeID>(m_callbacks.type);
+  }
+
     virtual void allocate(void *context,
 			  TypeID type, SidreLength nitems) const
     {

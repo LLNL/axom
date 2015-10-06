@@ -68,6 +68,13 @@ public:
         return mcontext->size();
     }
 
+  virtual TypeID getTypeID(void *context) const
+  {
+      //      std::vector<int> * mcontext = static_cast<std::vector<int> *>(context);
+      // XXX fix
+      return CONDUIT_NATIVE_INT_DATATYPE_ID;
+  }
+
   virtual void allocate(void *context, TypeID type, SidreLength nitems) const
     {
 	//	std::vector<int> * mcontext = static_cast<std::vector<int> *>(context);
