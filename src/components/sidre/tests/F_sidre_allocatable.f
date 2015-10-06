@@ -20,6 +20,7 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview)  view_iarray1
+    integer type
     integer num_elements
     integer i
 
@@ -32,6 +33,9 @@ contains
     enddo
 
     view_iarray1 = root%register_allocatable("iarray", iarray)
+
+    type = view_iarray1%get_type_id()
+    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
     call assert_equals(num_elements, 10)
@@ -55,6 +59,7 @@ contains
     type(datagroup) root
     type(dataview)  view_iarray1
     integer num_elements
+    integer type
     integer i
 
     ds = datastore_new()
@@ -66,6 +71,9 @@ contains
     enddo
 
     view_iarray1 = root%register_allocatable("iarray", iarray)
+
+    type = view_iarray1%get_type_id()
+    call assert_equals(type, ATK_C_DOUBLE_T)
 
     num_elements = view_iarray1%get_number_of_elements()
     call assert_equals(num_elements, 10)
@@ -87,12 +95,16 @@ contains
     type(datagroup) root
     type(dataview)  view_iarray1
     integer num_elements
+    integer type
     integer i
 
     ds = datastore_new()
     root = ds%get_root()
 
     view_iarray1 = root%register_allocatable("iarray", iarray)
+
+    type = view_iarray1%get_type_id()
+    call assert_equals(type, ATK_C_INT_T)
 
     call view_iarray1%declare(ATK_C_INT_T, 10)
     call view_iarray1%allocate()
@@ -117,6 +129,7 @@ contains
     type(datastore) ds
     type(datagroup) root
     type(dataview)  view_iarray1
+    integer type
     integer num_elements
     integer i
 
@@ -128,6 +141,9 @@ contains
     enddo
 
     view_iarray1 = root%register_static("iarray", iarray)
+
+    type = view_iarray1%get_type_id()
+    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
     call assert_equals(num_elements, 10)
@@ -156,6 +172,7 @@ function fortran_test() bind(C,name="fortran_test")
   call local_allocatable_int
   call local_allocatable_double
   call ds_allocatable_int
+!  call local_static_int_array
 
   call fruit_summary
   call fruit_finalize
