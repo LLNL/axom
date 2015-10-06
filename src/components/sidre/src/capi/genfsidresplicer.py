@@ -37,11 +37,11 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
     implicit none
 
     interface
-       function ATK_register_static(group, name, lname, addr, type, nitems) result(rv)
+       function ATK_register_static(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_register_static")
        use iso_c_binding
-       type(C_PTR), value, intent(IN)    :: group
-       character(*), intent(IN)          :: name
-       integer(C_INT), value, intent(IN) :: lname
+       type(C_PTR), value, intent(IN)     :: group
+       character(kind=C_CHAR), intent(IN) :: name(*)
+       integer(C_INT), value, intent(IN)  :: lname
        type(C_PTR), value,     intent(IN) :: addr
        integer(C_INT), value, intent(IN)  :: type
        integer(C_LONG), value, intent(IN) :: nitems
@@ -55,11 +55,11 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
     integer(C_INT) :: lname
     type(dataview) :: rv
     integer(C_LONG) :: nitems
-    integer(C_INT) :: type = 1
+    integer(C_INT) :: type = {atk_type}
 
     lname = len_trim(name)
     nitems = {size}
-!    rv%voidptr = ATK_register_static(group%voidptr, name, lname, C_LOC(value), type, nitems)
+    rv%voidptr = ATK_register_static(group%voidptr, name, lname, C_LOC(value), type, nitems)
 end function datagroup_register_static_{typename}_{nd}""".format(size=size, **d)
 
 
@@ -336,6 +336,7 @@ def print_atk_register_allocatable(d):
     return """
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_{typename}_{nd}_(
     DataGroup *group,
     char *name, int lname,

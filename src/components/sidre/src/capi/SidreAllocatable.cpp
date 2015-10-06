@@ -8,6 +8,7 @@
 
 #include "sidre/DataGroup.hpp"
 #include "sidre/MetaBuffer.hpp"
+#include "sidre/SidreMalloc.hpp"  // for static variables
 
 // import cog once
 //[[[cog import cog;import genfsidresplicer as gen ]]]
@@ -131,12 +132,25 @@ static void *register_allocatable(DataGroup *group,
 
 extern "C" {
 
+// called from Fortran
+void *ATK_register_static(void *group, char *name, int lname, void *addr, int type, long nitems)
+{
+    return registerStaticNode(
+			      static_cast<DataGroup *>(group),
+			      std::string(name, lname),
+			      addr,
+			      static_cast<TypeID>(type),
+			      static_cast<SidreLength>(nitems));
+}
+
+
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_register_allocatable)
 //]]]
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_int_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -147,6 +161,7 @@ void *atk_register_allocatable_int_scalar_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_int_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -157,6 +172,7 @@ void *atk_register_allocatable_int_1d_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_long_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -167,6 +183,7 @@ void *atk_register_allocatable_long_scalar_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_long_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -177,6 +194,7 @@ void *atk_register_allocatable_long_1d_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_float_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -187,6 +205,7 @@ void *atk_register_allocatable_float_scalar_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_float_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -197,6 +216,7 @@ void *atk_register_allocatable_float_1d_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_double_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
@@ -207,6 +227,7 @@ void *atk_register_allocatable_double_scalar_ptr_(
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
+// array is address of allocatable, not the result of C_LOC(array)
 void *atk_register_allocatable_double_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
