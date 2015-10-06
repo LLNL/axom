@@ -43,7 +43,7 @@ TEST(sidre_vector,int_buffer_from_view)
   }
   DataView * dv = registerVectorNode(root, "snode", &var);
 
-  //  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dv->getNumberOfElements(), 10u);
   //  int * data_ptr = dv->getValue();
   int * data_ptr = (int *) dv->getDataPointer();
