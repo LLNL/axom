@@ -200,7 +200,8 @@ static void *register_allocatable(DataGroup *group,
 				  void *context, int imetabuffer)
 {
   AllocatableMetaBuffer * metabuffer = new AllocatableMetaBuffer(context, fptrs_cache + imetabuffer);
-  return group->createViewWithMetaBuffer(name, NULL, metabuffer);
+  return group->createMetaBufferView(name, metabuffer);
+
 }
 
 extern "C" {
