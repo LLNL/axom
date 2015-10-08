@@ -207,14 +207,14 @@ static void *register_allocatable(DataGroup *group,
 extern "C" {
 
 // called from Fortran
+// return pointer to a DataView
 void *ATK_register_static(void *group, char *name, int lname, void *addr, int type, long nitems)
 {
-    return registerStaticNode(
-			      static_cast<DataGroup *>(group),
-			      std::string(name, lname),
-			      addr,
-			      static_cast<TypeID>(type),
-			      static_cast<SidreLength>(nitems));
+  DataGroup *grp = static_cast<DataGroup *>(group);
+  return grp->createExternalView( std::string(name, lname),
+				  addr,
+				  static_cast<TypeID>(type),
+				  static_cast<SidreLength>(nitems));
 }
 
 // called from Fortran
