@@ -60,6 +60,7 @@ void atk_allocate_allocatable_double_1d_ptr_(void *array, long nitems);
 
 }
 
+//----------------------------------------------------------------------
 // Holds pointers to Fortran functions since they cannot be in the
 // Class AllocatableMetaBuffer directly.
 struct Fptrs {
@@ -70,24 +71,98 @@ struct Fptrs {
     void (*allocate)(void *array, long nitems);
 };
 
+//[[[cog cog.outl('static struct Fptrs fptrs_cache[%s] = {' % gen.num_metabuffers()) ]]]
+static struct Fptrs fptrs_cache[8] = {
+//[[[end]]]
+
+//[[[cog
+//gen.print_lines(cog.out, gen.print_fptrs_cache)
+//]]]
+
+{
+  0,
+  ATK_C_INT_T,
+  atk_size_allocatable_int_scalar_ptr_,
+  atk_address_allocatable_int_scalar_ptr_,
+  atk_allocate_allocatable_int_scalar_ptr_
+},
+
+{
+  1,
+  ATK_C_INT_T,
+  atk_size_allocatable_int_1d_ptr_,
+  atk_address_allocatable_int_1d_ptr_,
+  atk_allocate_allocatable_int_1d_ptr_
+},
+
+{
+  0,
+  ATK_C_LONG_T,
+  atk_size_allocatable_long_scalar_ptr_,
+  atk_address_allocatable_long_scalar_ptr_,
+  atk_allocate_allocatable_long_scalar_ptr_
+},
+
+{
+  1,
+  ATK_C_LONG_T,
+  atk_size_allocatable_long_1d_ptr_,
+  atk_address_allocatable_long_1d_ptr_,
+  atk_allocate_allocatable_long_1d_ptr_
+},
+
+{
+  0,
+  ATK_C_FLOAT_T,
+  atk_size_allocatable_float_scalar_ptr_,
+  atk_address_allocatable_float_scalar_ptr_,
+  atk_allocate_allocatable_float_scalar_ptr_
+},
+
+{
+  1,
+  ATK_C_FLOAT_T,
+  atk_size_allocatable_float_1d_ptr_,
+  atk_address_allocatable_float_1d_ptr_,
+  atk_allocate_allocatable_float_1d_ptr_
+},
+
+{
+  0,
+  ATK_C_DOUBLE_T,
+  atk_size_allocatable_double_scalar_ptr_,
+  atk_address_allocatable_double_scalar_ptr_,
+  atk_allocate_allocatable_double_scalar_ptr_
+},
+
+{
+  1,
+  ATK_C_DOUBLE_T,
+  atk_size_allocatable_double_1d_ptr_,
+  atk_address_allocatable_double_1d_ptr_,
+  atk_allocate_allocatable_double_1d_ptr_
+},
+//[[[end]]]
+};
+
+//----------------------------------------------------------------------
+
 class AllocatableMetaBuffer : public MetaBuffer
 {
 public:
-  Fptrs *getFptrs() { return &m_callbacks; };
-
   virtual void *getDataPointer(void *context) const
     {
-	return m_callbacks.getDataPointer(context);
+	return m_callbacks->getDataPointer(context);
     }
 
   virtual size_t getNumberOfElements(void *context) const
     {
-	return m_callbacks.getNumberOfElements(context);
+	return m_callbacks->getNumberOfElements(context);
     }
 
   virtual TypeID getTypeID(void *context) const
   {
-      return static_cast<TypeID>(m_callbacks.type);
+      return static_cast<TypeID>(m_callbacks->type);
   }
 
     virtual void allocate(void *context,
@@ -95,13 +170,20 @@ public:
     {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type
-	m_callbacks.allocate(context, nitems);
+	m_callbacks->allocate(context, nitems);
 	return;
     }
 
+  //  Fptrs *getFptrs() { return m_callbacks; };
+
+  void setFptrs(const Fptrs * callbacks)
+  {
+    m_callbacks = callbacks;
+  }
+
 
 private:
-  Fptrs m_callbacks;
+  const Fptrs * m_callbacks;
 
 };
 
@@ -259,76 +341,33 @@ void *atk_register_allocatable_double_1d_ptr_(
 
 void RegisterFortranAllocatableMetaBuffers(void)
 {
-  Fptrs *callbacks;
-
-
 //[[[cog
 //gen.print_lines(cog.out, gen.print_metabuffer)
 //]]]
 
 metabuffer_cache[0] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[0]->getFptrs();
-callbacks->rank = 0;
-callbacks->type = ATK_C_INT_T;
-callbacks->getNumberOfElements = atk_size_allocatable_int_scalar_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_int_scalar_ptr_;
-callbacks->allocate = atk_allocate_allocatable_int_scalar_ptr_;
+metabuffer_cache[0]->setFptrs(fptrs_cache + 0);
 
 metabuffer_cache[1] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[1]->getFptrs();
-callbacks->rank = 1;
-callbacks->type = ATK_C_INT_T;
-callbacks->getNumberOfElements = atk_size_allocatable_int_1d_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_int_1d_ptr_;
-callbacks->allocate = atk_allocate_allocatable_int_1d_ptr_;
+metabuffer_cache[1]->setFptrs(fptrs_cache + 1);
 
 metabuffer_cache[2] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[2]->getFptrs();
-callbacks->rank = 0;
-callbacks->type = ATK_C_LONG_T;
-callbacks->getNumberOfElements = atk_size_allocatable_long_scalar_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_long_scalar_ptr_;
-callbacks->allocate = atk_allocate_allocatable_long_scalar_ptr_;
+metabuffer_cache[2]->setFptrs(fptrs_cache + 2);
 
 metabuffer_cache[3] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[3]->getFptrs();
-callbacks->rank = 1;
-callbacks->type = ATK_C_LONG_T;
-callbacks->getNumberOfElements = atk_size_allocatable_long_1d_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_long_1d_ptr_;
-callbacks->allocate = atk_allocate_allocatable_long_1d_ptr_;
+metabuffer_cache[3]->setFptrs(fptrs_cache + 3);
 
 metabuffer_cache[4] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[4]->getFptrs();
-callbacks->rank = 0;
-callbacks->type = ATK_C_FLOAT_T;
-callbacks->getNumberOfElements = atk_size_allocatable_float_scalar_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_float_scalar_ptr_;
-callbacks->allocate = atk_allocate_allocatable_float_scalar_ptr_;
+metabuffer_cache[4]->setFptrs(fptrs_cache + 4);
 
 metabuffer_cache[5] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[5]->getFptrs();
-callbacks->rank = 1;
-callbacks->type = ATK_C_FLOAT_T;
-callbacks->getNumberOfElements = atk_size_allocatable_float_1d_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_float_1d_ptr_;
-callbacks->allocate = atk_allocate_allocatable_float_1d_ptr_;
+metabuffer_cache[5]->setFptrs(fptrs_cache + 5);
 
 metabuffer_cache[6] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[6]->getFptrs();
-callbacks->rank = 0;
-callbacks->type = ATK_C_DOUBLE_T;
-callbacks->getNumberOfElements = atk_size_allocatable_double_scalar_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_double_scalar_ptr_;
-callbacks->allocate = atk_allocate_allocatable_double_scalar_ptr_;
+metabuffer_cache[6]->setFptrs(fptrs_cache + 6);
 
 metabuffer_cache[7] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[7]->getFptrs();
-callbacks->rank = 1;
-callbacks->type = ATK_C_DOUBLE_T;
-callbacks->getNumberOfElements = atk_size_allocatable_double_1d_ptr_;
-callbacks->getDataPointer = atk_address_allocatable_double_1d_ptr_;
-callbacks->allocate = atk_allocate_allocatable_double_1d_ptr_;
+metabuffer_cache[7]->setFptrs(fptrs_cache + 7);
 //[[[end]]]
 }
 

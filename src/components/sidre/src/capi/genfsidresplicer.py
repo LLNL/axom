@@ -431,12 +431,18 @@ def print_atk_allocate_allocatable_header(d):
 def print_metabuffer(d):
     return """
 metabuffer_cache[{index}] = new AllocatableMetaBuffer;
-callbacks = metabuffer_cache[{index}]->getFptrs();
-callbacks->rank = {rank};
-callbacks->type = {atk_type};
-callbacks->getNumberOfElements = atk_size_allocatable_{typename}_{nd}_;
-callbacks->getDataPointer = atk_address_allocatable_{typename}_{nd}_;
-callbacks->allocate = atk_allocate_allocatable_{typename}_{nd}_;
+metabuffer_cache[{index}]->setFptrs(fptrs_cache + {index});
+""".format(**d)
+
+def print_fptrs_cache(d):
+    return """
+{{
+  {rank},   // rank
+  {atk_type},
+  atk_size_allocatable_{typename}_{nd}_,
+  atk_address_allocatable_{typename}_{nd}_,
+  atk_allocate_allocatable_{typename}_{nd}_
+}},
 """.format(**d)
 
 
