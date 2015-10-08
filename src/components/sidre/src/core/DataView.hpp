@@ -434,11 +434,7 @@ public:
    */
   TypeID getTypeID() const
   {
-      if (m_metabuffer != ATK_NULLPTR) {
-        return m_metabuffer->getTypeID(m_buffer_context);
-      } else {
-	  return static_cast<TypeID>(m_node.dtype().id());
-      }
+    return static_cast<TypeID>(m_node.dtype().id());
   }
 
   /*!
@@ -454,11 +450,7 @@ public:
    */
   size_t getNumberOfElements() const
   {
-      if (m_metabuffer != ATK_NULLPTR) {
-        return m_metabuffer->getNumberOfElements(m_buffer_context);
-      } else {
-        return m_node.dtype().number_of_elements();
-      }
+      return m_node.dtype().number_of_elements();
   }
 
 //@}
@@ -537,20 +529,6 @@ private:
 
   /// Has Schema been applied data?
   bool m_is_applied;
-
-public: // XXX for development
-  // requested type
-  TypeID m_type;
-
-  // requested number of items
-  SidreLength m_nitems;
-
-  /// MetaBuffer context
-  void * m_buffer_context;
-private:
-
-  // MetaBuffer methods
-  MetaBuffer * m_metabuffer;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

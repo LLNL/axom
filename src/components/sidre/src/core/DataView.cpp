@@ -58,9 +58,6 @@ DataView * DataView::declare(TypeID type, SidreLength len)
 
     m_schema.set(dtype);
     m_is_applied = false;
-
-    m_type = type;
-    m_nitems = len;
   }
   return this;
 }
@@ -114,13 +111,6 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::allocate()
 {
-  if (m_metabuffer != ATK_NULLPTR)
-  {
-      // XXX  check m_type and m_nitems
-      m_metabuffer->allocate(m_buffer_context, m_type, m_nitems);
-      return this;
-  }
-
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
@@ -143,13 +133,6 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
-  if (m_metabuffer != ATK_NULLPTR)
-  {
-      // XXX  check m_type and m_nitems
-      m_metabuffer->allocate(m_buffer_context, type, len);
-      return this;
-  }
-
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to allocate an external or opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
@@ -352,9 +335,7 @@ DataView * DataView::apply(const DataType &dtype)
  */
 void * DataView::getDataPointer() const
 {
-  if (m_metabuffer != ATK_NULLPTR) {
-      return m_metabuffer->getDataPointer(m_buffer_context);
-  } else if ( isOpaque() ) {
+  if ( isOpaque() ) {
       return (void *)(getNode().as_uint64());
   } else {
       return m_data_buffer->getData();
@@ -443,11 +424,7 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(false),
-  m_is_applied(false),
-  m_type(CONDUIT_EMPTY_T),
-  m_nitems(-1),
-  m_buffer_context(ATK_NULLPTR),
-  m_metabuffer(ATK_NULLPTR)
+  m_is_applied(false)
 {}
 
 /*
@@ -466,39 +443,12 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(true),
-  m_is_applied(false),
-  m_type(CONDUIT_EMPTY_T),
-  m_nitems(-1),
-  m_buffer_context(ATK_NULLPTR),
-  m_metabuffer(ATK_NULLPTR)
+  m_is_applied(false)
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
   m_node.set((conduit::uint64)opaque_ptr);
 }
-
-/*
- *************************************************************************
- *
- * PRIVATE ctor for DataView associated with meta-buffer.
- *
- *************************************************************************
- */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group,
-                    void * context, MetaBuffer * metabuffer)
-  : m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(ATK_NULLPTR),
-  m_schema(),
-  m_node(),
-  m_is_opaque(false),
-  m_is_applied(false),
-  m_type(CONDUIT_EMPTY_T),
-  m_nitems(-1),
-  m_buffer_context(context),
-  m_metabuffer(metabuffer)
-{}
 
 /*
  *************************************************************************

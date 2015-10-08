@@ -369,16 +369,6 @@ public:
 
 
   /*!
-   * \brief Create a DataView object (and meta-buffer) with given name.
-   */
-    // XXX
-  DataView * createViewWithMetaBuffer( const std::string& name,
-                                       void *context,
-                                       MetaBuffer *metabuffer);
-
-
-
-  /*!
    * \brief Create a DataView object (for view into given buffer) with
    *        given name, and attach to this DataGroup object.
    *
