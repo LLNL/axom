@@ -41,13 +41,7 @@ class PolygonMeshXY
 
    // connectivity arrays
    ZoneToFaceRelation zoneToFaces;
-//   int * z2firstFace;           // MeshAPI -- StaticConstantRelation ( compile time cardinality of 4 )
-//   int * zFaces;
-
    ZoneToNodeRelation zoneToNodes;
-//   int * z2firstNode;           // MeshAPI -- StaticConstantRelation ( compile time cardinality of 4 )
-//   int * zNodes;
-//   int * zNumNodes;
 
    // geometry information
    NodalVectorField nodePos;          // MeshAPI -- Map: Node -> VectorXY -- node positions

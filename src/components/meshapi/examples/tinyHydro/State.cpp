@@ -17,10 +17,10 @@ State::State(PolygonMeshXY & theMesh)
     , maxNParts(100)
 {
    printf("in State c'tor\n");
+   parts = new Part[maxNParts];
+
    velocity = NodalVectorField( &mesh->nodes);
    position = NodalVectorField( &mesh->nodes);
-
-   parts = new Part[maxNParts];
 }
 //----------------------------------------------
 State::~State(void)
@@ -47,32 +47,23 @@ void State::addPart(Part * partPtr)
 
 //----------------------------------------------
 // Copy operator
-State::State(const State & arg):
-mesh(arg.mesh),
-   nParts(arg.nParts),
-   maxNParts(arg.maxNParts)
+State::State(const State & arg)
+    : mesh(arg.mesh)
+    , nParts(arg.nParts)
+    , maxNParts(arg.maxNParts)
 {
    // printf("in State::copy \n");
 
-   // make space for data
-   velocity = NodalVectorField( &mesh->nodes);
-   position = NodalVectorField( &mesh->nodes);
-
-   parts = new Part[maxNParts];
-
    // copy over the parts
+   parts = new Part[maxNParts];
    for (int i = 0; i < nParts; i++)
    {
       parts[i] = arg.parts[i];
    }
 
-   // copy over the mesh-based data
-   const int nnodes = mesh->numNodes();
-   for (int i = 0; i < nnodes; i++)
-   {
-      velocity[i] = arg.velocity[i];
-      position[i] = arg.position[i];
-   }
+   // copy other data
+   velocity = NodalVectorField(arg.velocity);
+   position = NodalVectorField(arg.position);
 }
 
 //----------------------------------------------
@@ -88,27 +79,18 @@ State & State::operator=(const State & rhs)
    // are defined on the same mesh
    SLIC_ASSERT(mesh == rhs.mesh);
    
-   // free up old space
+   // free up old parts data and copy rhs's parts
    delete [] parts;
-   
-   // make space for data
-   velocity = NodalVectorField( &mesh->nodes);
-   position = NodalVectorField( &mesh->nodes);
    parts = new Part[maxNParts];
-
-   // copy over the parts
    nParts = rhs.nParts;
    for (int i = 0; i < nParts; i++)
    {
       parts[i] = rhs.parts[i];
    }
-   // copy mesh-based stuff over
-   const int nn = mesh->numNodes();
-   for (int i = 0; i < nn; i++)
-   {
-      velocity[i] = rhs.velocity[i];
-      position[i] = rhs.position[i];
-   }
+
+   // copy other data from rhs
+   velocity = NodalVectorField( rhs.velocity);
+   position = NodalVectorField( rhs.position);
    
    return *this;
 }
@@ -128,7 +110,8 @@ State & State::operator+=(const State & rhs)
    }
    
    // mesh-based data
-   for (int i = 0; i < mesh->numNodes(); i++)
+   const int numNodes = mesh->numNodes();
+   for (int i = 0; i < numNodes; i++)
    {
       velocity[i] += rhs.velocity[i];
       position[i] += rhs.position[i];
@@ -149,7 +132,8 @@ State & State::operator*=(const double s)
    }
    
    // mesh-based data
-   for (int i = 0; i < mesh->numNodes(); i++)
+   const int numNodes = mesh->numNodes();
+   for (int i = 0; i < numNodes; i++)
    {
       velocity[i] *= s;
       position[i] *= s;

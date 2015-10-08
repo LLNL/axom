@@ -31,19 +31,19 @@ class Part
    Part & operator*=(const double s);
 
    // python accessors
-   double rho(int i)                const { return density[i];}
-   double e(int i)                  const { return energyPerMass[i];}
-   int meshZone(int i)              const { return zones[i];}
-   void setRho(int i, double val)         { density[i] = val;}
-   void setE(int i, double val)           { energyPerMass[i] = val;}
+   double   rho(int i)                const { return density[i];}
+   double   e(int i)                  const { return energyPerMass[i];}
+   int      meshZone(int i)           const { return zones[i];}
+   void     setRho(int i, double val)       { density[i] = val;}
+   void     setE(int i, double val)         { energyPerMass[i] = val;}
 
-   int numZones() const { return zones.size(); }
+   int      numZones()                const { return zones.size(); }
 
-   ZoneSubset zones;                // MeshAPI : Indirection set of zones in a part/region
 
-   ZonalScalarField density;                // MeshAPI : Map : Zones -> scalar
-   ZonalScalarField energyPerMass;          // MeshAPI : Map : Zones -> scalar
-   ZonalScalarField volumeFraction;         // MeshAPI : Map : Zones -> scalar
+   ZoneSubset zones;                        // Indirection set of zones in a part/region
+   ZonalScalarField density;
+   ZonalScalarField energyPerMass;
+   ZonalScalarField volumeFraction;
 
    double gamma;
 

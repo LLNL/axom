@@ -37,7 +37,6 @@ Part::Part(const std::vector<int>& zoneList, double gamma)
    memcpy(&ptr[0], &zoneList[0], sizeof(int)*zones.size());
    zones.data() = &zoneList;
 
-
    density = ZonalScalarField(&zones);
    energyPerMass = ZonalScalarField(&zones);
    volumeFraction = ZonalScalarField(&zones);
@@ -59,18 +58,10 @@ Part::Part(const Part & arg)
     memcpy(&ptr[0], &arg.zones[0], sizeof(int)*zones.size());
     zones.data() = &ptr;
 
-   // make space for data
-    density = ZonalScalarField(&zones);
-    energyPerMass = ZonalScalarField(&zones);
-    volumeFraction = ZonalScalarField(&zones);
-   
-
-   for (int i = 0; i < numZones(); i++)
-   {
-      density[i] = arg.density[i];
-      energyPerMass[i] = arg.energyPerMass[i];
-      volumeFraction[i] = arg.volumeFraction[i];
-   }
+   // copy field data
+    density = ZonalScalarField(arg.density);
+    energyPerMass = ZonalScalarField(arg.energyPerMass);
+    volumeFraction = ZonalScalarField(arg.volumeFraction);
 }
 
 //----------------------------------------------
@@ -90,19 +81,11 @@ Part & Part::operator=(const Part & rhs)
    memcpy(&ptr[0], &rhs.zones[0], sizeof(int)*zones.size());
    zones.data() = &ptr;
    
-   // make space for data
-   density = ZonalScalarField(&zones);
-   energyPerMass = ZonalScalarField(&zones);
-   volumeFraction = ZonalScalarField(&zones);
-   
-   // copy data over
-   for (int i = 0; i < numZones(); i++)
-   {
-      density[i] = rhs.density[i];
-      energyPerMass[i] = rhs.energyPerMass[i];
-      volumeFraction[i] = rhs.volumeFraction[i];
-   }
-   
+   // copy field data
+   density = ZonalScalarField(rhs.density);
+   energyPerMass = ZonalScalarField(rhs.energyPerMass);
+   volumeFraction = ZonalScalarField(rhs.volumeFraction);
+
    return *this;
 }
    
@@ -113,7 +96,8 @@ Part & Part::operator+=(const Part & rhs)
    // printf("in Part::operator+= \n");
    SLIC_ASSERT(numZones() == rhs.numZones() );
    
-   for (int i = 0; i < numZones(); i++)
+   const int nZones = numZones();
+   for (int i = 0; i < nZones; i++)
    {
       density[i] += rhs.density[i];
       energyPerMass[i] += rhs.energyPerMass[i];
@@ -128,7 +112,8 @@ Part & Part::operator*=(const double s)
 {
    // printf("in Part::operator*= \n");
    
-   for (int i = 0; i < numZones(); i++)
+   const int nZones = numZones();
+   for (int i = 0; i < nZones; i++)
    {
       density[i] *= s;
       energyPerMass[i] *= s;

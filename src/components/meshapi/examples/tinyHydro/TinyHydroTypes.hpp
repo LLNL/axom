@@ -43,7 +43,8 @@ namespace tinyHydro {
 
 
 
-    enum { NODES_PER_ZONE       = 4
+    enum {
+          NODES_PER_ZONE        = 4
         , FACES_PER_ZONE        = 4
         , BD_BOTTOM             = 0     // lower boundary nodes
         , BD_RIGHT              = 1     // right boundary nodes

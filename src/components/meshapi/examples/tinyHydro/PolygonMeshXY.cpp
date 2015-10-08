@@ -35,14 +35,6 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
    IndexMap faceIndices(&faces);
    IndexMap nodeIndices(&corners);
 
-
-
-//   zNumNodes = new int[nzones];
-//   z2firstNode = new int[nzones];
-//   z2firstFace = new int[nzones];
-//   zNodes = new int[4*nzones]; // ok because we know we have quads
-//   zFaces = new int[4*nzones]; // ok because we know we have quads
-   
    // make space for geometry info
    nodePos = NodalVectorField(&nodes);
    zoneVolume = ZonalScalarField(&zones);
@@ -50,7 +42,8 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
    faceArea = FaceVectorField(&faces);
 
    // set up connectivity data, knowing it's logical orthogonal quads
-   for (int i = 0; i < numZones(); i++)
+   const int nZones = numZones();
+   for (int i = 0; i < nZones; i++)
    {
       int k = i % (kmax-1);
       int l = i / (kmax-1);
@@ -102,13 +95,14 @@ void PolygonMeshXY::computeNewGeometry(void)
    VectorXY tmp; // we will need this
    
    // zone volumes and positions
-   for (int iz = 0; iz < numZones(); iz++)
+   const int nZones = numZones();
+   for (int iz = 0; iz < nZones; iz++)
    {
-      zoneVolume[iz] = 0.0;
-      zonePos[iz] = VectorXY(0.0, 0.0);
-
       ZNodeSet zNodes = zoneToNodes[iz];
       ZFaceSet zFaces = zoneToFaces[iz];
+
+      double zVol = 0.;
+      VectorXY zPos(0.,0.);
 
       const int numZNodes = zNodes.size();
       for (int in = 0; in < numZNodes; in++)
@@ -116,34 +110,31 @@ void PolygonMeshXY::computeNewGeometry(void)
          // assumption is that zNodes lists nodes in counter-clockwise order around the zone
          IndexType nextInd =  (in+1) %  numZNodes;
 
-         const VectorXY n0Pos = nodePos[ zNodes[in] ];
-         const VectorXY n1Pos = nodePos[ zNodes[nextInd] ];
+         const VectorXY& n0Pos = nodePos[ zNodes[in] ];
+         const VectorXY& n1Pos = nodePos[ zNodes[nextInd] ];
 
-         zoneVolume[iz] += n0Pos.cross(n1Pos); // sum volume
-         zonePos[iz] += n1Pos;  // sum position
+         zVol += n0Pos.cross(n1Pos); // sum volume
+         zPos += n1Pos;  // sum position
 
          // Face areas are outward normal vectors
          tmp = n1Pos - n0Pos;
          faceArea[zFaces[in] ] = VectorXY(tmp.y, -tmp.x);
       }
-      zoneVolume[iz] *= 0.5; // correct 2x volume from cross product
+      zoneVolume[iz] = 0.5 * zVol; // correct 2x volume from cross product
       // normalize position; if we did it by volume it would be more
       // correct (centroid), but arithmetic average usually works fine
-      zonePos[iz] *= 1.0/numZNodes;
+      zonePos[iz] =  (1.0/numZNodes) * zPos;
+
    }
 
    // check our final volumes are positive
-   for (int z = 0; z < numZones(); z++)
-       SLIC_ASSERT(zoneVolume[z] > 0.0);
+   for (int iz = 0; iz < nZones; iz++)
+       SLIC_ASSERT(zoneVolume[iz] > 0.0);
 }
 //----------------------------------------------
 void PolygonMeshXY::moveNodesToPosition(const NodalVectorField& newPos)
 {
-   const int nnodes = numNodes();
-   for (int i=0; i < nnodes; i++)
-   {
-      nodePos[i] = newPos[i];
-   }
+   nodePos.copy(newPos);
 }
 
 
@@ -151,18 +142,20 @@ void PolygonMeshXY::moveNodesToPosition(const NodalVectorField& newPos)
 
 VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
 {
-   timespec time1, time2; // TIMER
-
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);  // TIMER
    VectorXY ret;
-   for (int i = 0; i < zones.size(); i++)
+
+   timespec time1, time2;                            // TIMER
+   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);  // TIMER
+
+   const int nZones = numZones();
+   for (int i = 0; i < nZones; i++)
    {
       ret.accum(zonePos[i]);
    }
-   ret.x = ret.x / zones.size();
-   ret.y = ret.y / zones.size();
+   ret.x = ret.x / nZones;
+   ret.y = ret.y / nZones;
 
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2); // TIMER
+   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);  // TIMER
    timeElapsed = diffSeconds(time1, time2);
           
    return ret;

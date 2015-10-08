@@ -59,49 +59,56 @@ class Hydro
    int numBCnodes(int bc);
    int bcNode(int bc, int node);
    
-   PolygonMeshXY & mesh;
-   State & state;
-   State halfStep; // re-used temporary for RK2
-   State dState;   // re-used temporary for RK2
 
-   ZonalScalarField Q;    // re-used for Q                          // MeshAPI -- Map: Zones -> scalar
-   ZonalScalarField divu; // for dt, Q, and some PdV work schemes
+   PolygonMeshXY&       mesh;
+   State&               state;
+   State                halfStep; // re-used temporary for RK2
+   State                dState;   // re-used temporary for RK2
 
-   NodalVectorField force; // re-used for force calc                // MeshAPI -- Map: Nodes -> VectorXY
-   VectorXY * cornerforce; // re-used for force calc                // <UNUSED>?
+   ZonalScalarField     Q;    // re-used for Q
+   ZonalScalarField     divu; // for dt, Q, and some PdV work schemes
 
-   NodalVectorField halfStepVelocity; // re-used for work calc      // MeshAPI -- Map: Nodes -> VectorXY
+   NodalVectorField     force; // re-used for force calc
 
-   int numBCs;                                                      // <UNUSED>?
-   BoundaryEdgeSet boundaryEdgeSet;                                 // MeshAPI -- new edge set (of size 4)
-   BoundaryEdgeVectorField bcVelocity; // velocity BC values        // MeshAPI -- Map: Domain edges -> VectorXY
-   NodeSubset bcNodes[NUM_DOMAIN_BOUNDARIES];
+   NodalVectorField     halfStepVelocity;   // re-used for work calc
 
-
-   double ** initialMass; // per material initial mass              // MeshAPI -- Map: Parts -> array of doubles -- relation ???
-
-   ZonalScalarField totalMass; //  mass in zone                     // MeshAPI -- Map: Zones -> scalar
-   NodalScalarField nodeMass;  // also keep node masses             // MeshAPI -- Map: Nodes-> scalar
-
-   double ** pressure; // per material zone pressure                // MeshAPI -- Map: Material -> zone -> scalar
-
-   ZonalScalarField totalPressure; // sum of pressures in a zone    // MeshAPI -- Map: Zones -> scalar
-   ZonalScalarField maxCs;          //
+   BoundaryEdgeSet          boundaryEdgeSet;                             // MeshAPI -- new edge set (of size 4)
+   BoundaryEdgeVectorField  bcVelocity;  // velocity BC values        // MeshAPI -- Map: Domain edges -> VectorXY
+   NodeSubset           bcNodes[NUM_DOMAIN_BOUNDARIES];
 
 
-   int cycle;
-   int dtZone;
-   double time;
-   double Cq, Cl; // Q coefficients
-   double cfl;
-   int printCycle;
+   ZonalScalarField*    initialMass;    // per material initial mass of zones
+
+   ZonalScalarField     totalMass;      // overall mass in zone
+   NodalScalarField     nodeMass;       // also keep node masses
+
+   ZonalScalarField*    pressure;       // per material zone pressure
+
+   ZonalScalarField     totalPressure;  // sum of pressures in a zone
+   ZonalScalarField     maxCs;          //
+
+
+   int      cycle;
+   int      dtZone;
+   double   time;
+   double   Cq, Cl; // Q coefficients
+   double   cfl;
+   int      printCycle;
+
 
    bool fuzzyEqual(double a, double b, double tol=1.0e-15)
    {
       if (fabs(a-b) < tol) return true;
       else return false;
    }
-   
+
+ private:
+   // Unused variables...
+   // int numBCs;                                                      // <UNUSED>?
+
+#ifdef TINY_HYDRO_USE_CORNER_DATA
+   VectorXY * cornerforce; // re-used for force calc                // <UNUSED>?
+#endif
 };
 
 } // end namespace tinyHydro

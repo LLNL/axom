@@ -60,6 +60,16 @@ namespace meshapi    {
       m_data.resize( m_set->size(), defaultValue );
     }
 
+    /**
+     * Copy constructor from another map
+     */
+    Map(const Map& otherMap) : m_set(otherMap.m_set)
+    {
+      m_data.resize( m_set->size());
+      copy( otherMap);
+    }
+
+
     ~Map(){}
 
     const DataType & operator[](SetPosition setIndex) const
@@ -85,12 +95,29 @@ namespace meshapi    {
 
     void clear() { fill();}
 
+    /**
+     * Set each entry in the map to the given value
+     */
     void fill(DataType val = DataType())
     {
         const SetIndex sz = size();
         for(SetIndex idx = SetIndex(); idx < sz; ++idx)
         {
             m_data[idx] = val;
+        }
+    }
+
+    /**
+     * Element-wise copy of data from another map
+     */
+    void copy(const Map& other)
+    {
+        SLIC_ASSERT( other.size() == size() );
+
+        const SetIndex sz = size();
+        for(SetIndex idx = SetIndex(); idx < sz; ++idx)
+        {
+            m_data[idx] = other[idx];
         }
     }
 
