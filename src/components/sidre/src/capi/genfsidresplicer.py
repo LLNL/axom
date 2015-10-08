@@ -428,12 +428,6 @@ def print_atk_allocate_allocatable_header(d):
 
 ######################################################################
 
-def print_metabuffer(d):
-    return """
-metabuffer_cache[{index}] = new AllocatableMetaBuffer;
-metabuffer_cache[{index}]->setFptrs(fptrs_cache + {index});
-""".format(**d)
-
 def print_fptrs_cache(d):
     return """
 {{

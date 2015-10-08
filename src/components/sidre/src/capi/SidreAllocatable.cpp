@@ -152,12 +152,12 @@ class AllocatableMetaBuffer : public MetaBuffer
 public:
   virtual void *getDataPointer(void *context) const
     {
-	return m_callbacks->getDataPointer(context);
+	return m_callbacks->getDataPointer(m_context);
     }
 
   virtual size_t getNumberOfElements(void *context) const
     {
-	return m_callbacks->getNumberOfElements(context);
+	return m_callbacks->getNumberOfElements(m_context);
     }
 
   virtual TypeID getTypeID(void *context) const
@@ -170,11 +170,14 @@ public:
     {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type
-	m_callbacks->allocate(context, nitems);
+	m_callbacks->allocate(m_context, nitems);
 	return;
     }
 
-  //  Fptrs *getFptrs() { return m_callbacks; };
+  AllocatableMetaBuffer(void *context, const Fptrs * callbacks) :
+    m_context(context),
+    m_callbacks(callbacks)
+  { }
 
   void setFptrs(const Fptrs * callbacks)
   {
@@ -183,17 +186,9 @@ public:
 
 
 private:
+  void * m_context;   // pointer to Fortran allocatable
   const Fptrs * m_callbacks;
-
 };
-
-// XXX - temp code
-bool JUNK_DUMMY = false;
-void RegisterFortranAllocatableMetaBuffers(void);
-
-//[[[cog cog.outl('static AllocatableMetaBuffer *metabuffer_cache[%s];' % gen.num_metabuffers()) ]]]
-static AllocatableMetaBuffer *metabuffer_cache[8];
-//[[[end]]]
 
 /*!
  * \brief Return DataView for a Fortran allocatable.
@@ -204,12 +199,8 @@ static void *register_allocatable(DataGroup *group,
 				  const std::string &name,
 				  void *context, int imetabuffer)
 {
-  if (! JUNK_DUMMY) {
-      RegisterFortranAllocatableMetaBuffers();
-      JUNK_DUMMY = true;
-  }
-  return group->createViewWithMetaBuffer(name, context,
-					 metabuffer_cache[imetabuffer]);
+  AllocatableMetaBuffer * metabuffer = new AllocatableMetaBuffer(context, fptrs_cache + imetabuffer);
+  return group->createViewWithMetaBuffer(name, NULL, metabuffer);
 }
 
 extern "C" {
@@ -334,42 +325,6 @@ void *atk_register_allocatable_double_1d_ptr_(
 
 }  // extern "C"
 
-
-// Create MetaBuffer classes to describe how to access Fortran allocatables.
-// An instance is needed for each type-kind-rank since this depends on using
-// the Fortran compiler to unpack the allocatable dope-vector.
-
-void RegisterFortranAllocatableMetaBuffers(void)
-{
-//[[[cog
-//gen.print_lines(cog.out, gen.print_metabuffer)
-//]]]
-
-metabuffer_cache[0] = new AllocatableMetaBuffer;
-metabuffer_cache[0]->setFptrs(fptrs_cache + 0);
-
-metabuffer_cache[1] = new AllocatableMetaBuffer;
-metabuffer_cache[1]->setFptrs(fptrs_cache + 1);
-
-metabuffer_cache[2] = new AllocatableMetaBuffer;
-metabuffer_cache[2]->setFptrs(fptrs_cache + 2);
-
-metabuffer_cache[3] = new AllocatableMetaBuffer;
-metabuffer_cache[3]->setFptrs(fptrs_cache + 3);
-
-metabuffer_cache[4] = new AllocatableMetaBuffer;
-metabuffer_cache[4]->setFptrs(fptrs_cache + 4);
-
-metabuffer_cache[5] = new AllocatableMetaBuffer;
-metabuffer_cache[5]->setFptrs(fptrs_cache + 5);
-
-metabuffer_cache[6] = new AllocatableMetaBuffer;
-metabuffer_cache[6]->setFptrs(fptrs_cache + 6);
-
-metabuffer_cache[7] = new AllocatableMetaBuffer;
-metabuffer_cache[7]->setFptrs(fptrs_cache + 7);
-//[[[end]]]
-}
 
 }  // namespace asctoolkit
 }  // namespace sidre
