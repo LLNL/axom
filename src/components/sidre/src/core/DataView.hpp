@@ -450,7 +450,7 @@ public:
    */
   size_t getNumberOfElements() const
   {
-      return m_node.dtype().number_of_elements();
+    return m_node.dtype().number_of_elements();
   }
 
 //@}

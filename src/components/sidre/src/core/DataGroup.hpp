@@ -367,7 +367,6 @@ public:
   DataView * createViewAndBuffer( const std::string& name,
                                   const Schema& schema);
 
-
   /*!
    * \brief Create a DataView object (for view into given buffer) with
    *        given name, and attach to this DataGroup object.
