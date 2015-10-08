@@ -11,7 +11,6 @@ set(gtest_sidre_tests
    sidre_group.cpp
    sidre_opaque.cpp
    sidre_view.cpp
-   sidre_static.cpp
    sidre_malloc.cpp
    sidre_vector.cpp
    sidre_conduit.cpp
