@@ -350,9 +350,9 @@ DataView * DataGroup::createMetaBufferView( const std::string& name, MetaBuffer 
   }
   else
   {
-    void * external_data = meta_buffer->getDataPointer(ATK_NULLPTR);
-    TypeID type = meta_buffer->getTypeID(ATK_NULLPTR);
-    SidreLength len = meta_buffer->getNumberOfElements(ATK_NULLPTR);
+    void * external_data = meta_buffer->getDataPointer();
+    TypeID type = meta_buffer->getTypeID();
+    SidreLength len = meta_buffer->getNumberOfElements();
 
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(len);

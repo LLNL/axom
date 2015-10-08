@@ -150,23 +150,22 @@ static struct Fptrs fptrs_cache[8] = {
 class AllocatableMetaBuffer : public MetaBuffer
 {
 public:
-  virtual void *getDataPointer(void *context) const
+  virtual void *getDataPointer() const
     {
 	return m_callbacks->getDataPointer(m_context);
     }
 
-  virtual size_t getNumberOfElements(void *context) const
+  virtual size_t getNumberOfElements() const
     {
 	return m_callbacks->getNumberOfElements(m_context);
     }
 
-  virtual TypeID getTypeID(void *context) const
+  virtual TypeID getTypeID() const
   {
       return static_cast<TypeID>(m_callbacks->type);
   }
 
-    virtual void allocate(void *context,
-			  TypeID type, SidreLength nitems) const
+    virtual void allocate(TypeID type, SidreLength nitems) const
     {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type

@@ -42,22 +42,22 @@ public:
   /*!
    * \brief Return void-pointer to data associated with MetaBuffer.
    */
-  virtual void *getDataPointer(void *context) const = 0;
+  virtual void *getDataPointer() const = 0;
 
   /*!
    * \brief Return total number of elements allocated by this MetaBuffer object.
    */
-  virtual size_t getNumberOfElements(void *context) const = 0;
+  virtual size_t getNumberOfElements() const = 0;
 
   /*!
    * \brief Return total number of bytes allocated by this DataView object.
    */
-  virtual TypeID getTypeID(void *context) const = 0;
+  virtual TypeID getTypeID() const = 0;
 
   /*!
    * \brief Allocate buffer to requested size.
    */
-  virtual void allocate(void *context, TypeID type, SidreLength nitems) const = 0;
+  virtual void allocate(TypeID type, SidreLength nitems) const = 0;
 
 };
 

@@ -36,7 +36,7 @@ namespace sidre
 class VectorMetaBuffer : public MetaBuffer
 {
 public:
-  virtual void *getDataPointer(void *context) const
+  virtual void *getDataPointer() const
     {
 #ifdef USE_CXX11
 	return m_context->data();
@@ -45,18 +45,18 @@ public:
 #endif
     }
 
-  virtual size_t getNumberOfElements(void *context) const
+  virtual size_t getNumberOfElements() const
     {
         return m_context->size();
     }
 
-  virtual TypeID getTypeID(void *context) const
+  virtual TypeID getTypeID() const
   {
       // XXX fix
       return CONDUIT_NATIVE_INT_DATATYPE_ID;
   }
 
-  virtual void allocate(void *context, TypeID type, SidreLength nitems) const
+  virtual void allocate(TypeID type, SidreLength nitems) const
     {
 	return;
     }
