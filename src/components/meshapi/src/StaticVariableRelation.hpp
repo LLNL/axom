@@ -114,7 +114,7 @@ namespace meshapi    {
      */
     const RelationSet operator[](SetPosition fromSetElt) const
     {
-        typedef typename RelationSet::SetBuilder SetBuilder;
+        typedef RelationSet::SetBuilder SetBuilder;
         return SetBuilder()
                     .size(  elemSize(fromSetElt))
                     .offset( toSetBeginIndex(fromSetElt) )

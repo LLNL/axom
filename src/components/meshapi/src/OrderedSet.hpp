@@ -142,7 +142,7 @@ public:
      * */
     struct SetBuilder
     {
-        friend class OrderedSet;
+        friend struct OrderedSet;
 
         typedef typename IndirectionPolicyType::IndirectionBufferType DataType;
         typedef typename SubsettingPolicyType::ParentSetType  ParentSetType;
