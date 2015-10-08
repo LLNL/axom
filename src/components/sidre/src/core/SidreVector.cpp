@@ -33,79 +33,50 @@ namespace asctoolkit
 namespace sidre
 {
 
-class VectorContext {
-public:
-    VectorContext () :
-	m_type(CONDUIT_EMPTY_T),
-	m_nitems(0),
-	m_number_of_bytes(0),
-	m_data_pointer(ATK_NULLPTR)
-    {};
-    // m_bytes_per_item?
-    TypeID m_type;
-    SidreLength m_nitems;
-    size_t m_number_of_bytes;
-    void *m_data_pointer;
-};
-
-//---------- Static
 class VectorMetaBuffer : public MetaBuffer
 {
 public:
   virtual void *getDataPointer(void *context) const
     {
-	std::vector<int> * mcontext = static_cast<std::vector<int> *>(context);
 #ifdef USE_CXX11
-	return mcontext->data();
+	return m_context->data();
 #else
-	return  mcontext->empty() ? ATK_NULLPTR : &(*mcontext)[0];
+	return  m_context->empty() ? ATK_NULLPTR : &(*m_context)[0];
 #endif
     }
 
   virtual size_t getNumberOfElements(void *context) const
     {
-	std::vector<int> * mcontext = static_cast<std::vector<int> *>(context);
-        return mcontext->size();
+        return m_context->size();
     }
 
   virtual TypeID getTypeID(void *context) const
   {
-      //      std::vector<int> * mcontext = static_cast<std::vector<int> *>(context);
       // XXX fix
       return CONDUIT_NATIVE_INT_DATATYPE_ID;
   }
 
   virtual void allocate(void *context, TypeID type, SidreLength nitems) const
     {
-	//	std::vector<int> * mcontext = static_cast<std::vector<int> *>(context);
 	return;
     }
+
+  VectorMetaBuffer(std::vector<int> * context) :
+    m_context(context)
+  { }
+
+private:
+  std::vector<int> * m_context;
 };
-
-//----------------------------------------------------------------------
-
-// XXX - temp code
-VectorMetaBuffer *JUNK_DUMMY = NULL;
-void RegisterVectorMetaBuffers(void);
 
 //----------------------------------------------------------------------
 
 DataView *registerVectorNode(DataGroup * group,
 			     const std::string& name,
-			     std::vector<int> *vect)
+			     std::vector<int> * vect)
 {
-  if (JUNK_DUMMY == NULL) {
-      RegisterVectorMetaBuffers();
-  }
-  DataView * view  = group->createViewWithMetaBuffer(name,
-						     static_cast<void *>(vect),
-						     JUNK_DUMMY);
-  return view;
-}
-
-void RegisterVectorMetaBuffers(void)
-{
-    JUNK_DUMMY = new VectorMetaBuffer;
+  VectorMetaBuffer * metabuffer = new VectorMetaBuffer(vect);
+  return group->createMetaBufferView(name, metabuffer);
 }
 
 } /* end namespace sidre */
