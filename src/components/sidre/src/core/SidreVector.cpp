@@ -58,8 +58,21 @@ public:
 
   virtual void * allocate(TypeID type, SidreLength nitems) const
     {
-      return ATK_NULLPTR;;
+      m_context->reserve(nitems);
+      return getDataPointer();
     }
+
+    virtual void release() const
+    {
+      m_context->clear();
+    }
+
+    virtual void * reallocate(TypeID type, SidreLength nitems) const
+    {
+      m_context->resize(nitems);
+      return getDataPointer();
+    }
+
 
   VectorMetaBuffer(std::vector<int> * context) :
     m_context(context)

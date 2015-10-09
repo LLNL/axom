@@ -59,6 +59,17 @@ public:
    */
   virtual void * allocate(TypeID type, SidreLength nitems) const = 0;
 
+  /*!
+   * \brief Release buffer.
+   */
+  virtual void release() const = 0;
+
+  /*!
+   * \brief Reallocate buffer to requested size.
+   *        This should move data if necessary.
+   */
+  virtual void * reallocate(TypeID type, SidreLength nitems) const = 0;
+
   /* destructor */
   virtual ~MetaBuffer()
   {

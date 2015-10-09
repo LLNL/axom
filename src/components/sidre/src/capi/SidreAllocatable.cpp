@@ -217,6 +217,19 @@ public:
 	return m_callbacks->getDataPointer(m_context);
     }
 
+    virtual void release() const
+    {
+	m_callbacks->deallocate(m_context);
+    }
+
+    virtual void * reallocate(TypeID type, SidreLength nitems) const
+    {
+    // XXX - type is fixed in the context, unused
+    // XXX - check requested type vs context type
+	m_callbacks->reallocate(m_context, nitems);
+	return m_callbacks->getDataPointer(m_context);
+    }
+
   AllocatableMetaBuffer(void *context, const Fptrs * callbacks) :
     m_context(context),
     m_callbacks(callbacks)
