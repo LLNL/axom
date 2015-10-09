@@ -235,12 +235,6 @@ public:
     m_callbacks(callbacks)
   { }
 
-  void setFptrs(const Fptrs * callbacks)
-  {
-    m_callbacks = callbacks;
-  }
-
-
 private:
   void * m_context;   // pointer to Fortran allocatable
   const Fptrs * m_callbacks;
