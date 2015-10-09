@@ -32,6 +32,7 @@ set(sidre_sources
     core/DataView.cpp
     core/SidreVector.cpp
     conduit/SidreConduit.cpp
+    conduit/SidreConduitSave.cpp
     ${capi_source}
 )
 
