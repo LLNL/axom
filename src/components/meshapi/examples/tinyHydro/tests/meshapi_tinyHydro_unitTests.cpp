@@ -177,7 +177,12 @@ TEST(gtest_meshapi_tinyHydro,test_03_gradAndForce)
     SLIC_ASSERT_MSG(    std::fabs(f12.x - f13.x) < tol
                      && std::fabs(f12.y) < tol
                      && std::fabs(f13.y) < tol
-        , "force calculation FAILS -- f12-f13: " << f12-f13 );
+        , "force calculation FAILS --"
+              <<"  f12: " << f12
+              <<", f13: " << f13
+              <<", diff in x: " << std::fabs(f12.x - f13.x)
+              <<", tolerance: " << tol
+            );
 
     std::cout <<"**Testing acceleration:" << std::endl;
 

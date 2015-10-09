@@ -10,6 +10,7 @@ set(meshapi_headers
     Utilities.hpp
     FileUtilities.hpp
     FieldRegistry.hpp
+    ModularInt.hpp
     
     #SRM policies
     policies/SizePolicies.hpp    
@@ -25,7 +26,7 @@ set(meshapi_headers
     OrderedSet.hpp
     RangeSet.hpp
     #ProductSet.hpp
-    Set.hpp
+    Set.hpp    
     
     # SRM Relation headers
     Relation.hpp

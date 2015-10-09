@@ -20,6 +20,9 @@ set(gtest_meshapi_tests
    
    # test integration of sets, relations and maps
    testAccessingRelationDataInMap.cpp
+
+   # aux tests
+   testModularInt.cpp
    )
 
 

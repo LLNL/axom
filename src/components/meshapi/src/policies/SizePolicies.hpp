@@ -26,6 +26,7 @@
 #ifndef MESHAPI_POLICIES_SIZE_H_
 #define MESHAPI_POLICIES_SIZE_H_
 
+#include "slic/slic.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

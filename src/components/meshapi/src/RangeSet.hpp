@@ -10,7 +10,7 @@
 
 
 /**
- * \file RangeSet.hpp
+ * \file
  *
  * \brief Basic API for an ordered set of entities in a simulation
  *

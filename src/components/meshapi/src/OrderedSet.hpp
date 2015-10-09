@@ -47,6 +47,7 @@
 #include "meshapi/StridePolicies.hpp"
 #include "meshapi/IndirectionPolicies.hpp"
 #include "meshapi/SubsettingPolicies.hpp"
+#include "meshapi/ModularInt.hpp"
 
 
 namespace asctoolkit {
@@ -83,6 +84,7 @@ namespace meshapi {
     typedef IndirectionPolicy   IndirectionPolicyType;
     typedef SubsettingPolicy    SubsettingPolicyType;
 
+    typedef ModularInt<SizePolicy> ModularIntType;
 
     struct SetBuilder;
 

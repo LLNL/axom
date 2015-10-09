@@ -77,7 +77,6 @@ namespace meshapi    {
                       , policies::StrideOne<Set::PositionType>
                       , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
-
   public:
     StaticVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
     ~StaticVariableRelation(){}

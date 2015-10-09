@@ -266,9 +266,10 @@ void Hydro::calcForce(const State & s)
       const int relnSize = zNodes.size();
       for (int in = 0; in < relnSize; in++)
       {
-         const int node = zNodes[in];
-         const int face0 = zFaces[(in-1 + relnSize) % relnSize];
-         const int face1 = zFaces[in];
+         ZNodeSet::ModularIntType modIdx(in, relnSize);
+         const int node  = zNodes[ modIdx  ];
+         const int face0 = zFaces[ modIdx-1];
+         const int face1 = zFaces[ modIdx  ];
 
          VectorXY A = mesh.faceArea[face0] + mesh.faceArea[face1];
          // multiply areas by pressure + Q (and div 2 for area factor)
@@ -440,9 +441,10 @@ void Hydro::calcDivU(const NodalVectorField& velocity)
       double du = 0.;
       for (int in = 0; in < relnSize; in++)
       {
-         const int node = zNodes[in];
-         const int face0 = zFaces[(in-1 + relnSize) % relnSize];
-         const int face1 = zFaces[in];
+         ZNodeSet::ModularIntType modIdx(in, relnSize);
+         const int node  = zNodes[modIdx  ];
+         const int face0 = zFaces[modIdx-1];
+         const int face1 = zFaces[modIdx  ];
 
          VectorXY A = mesh.faceArea[face0] + mesh.faceArea[face1];
          du += velocity[node].dot(A);
