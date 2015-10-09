@@ -428,12 +428,10 @@ DataBuffer::DataBuffer(const DataBuffer& source )
 DataBuffer::~DataBuffer()
 {
   cleanup();
-#if 0
   if (m_meta_buffer != ATK_NULLPTR)
   {
     delete m_meta_buffer;
   }
-#endif
 }
 
 

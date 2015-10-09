@@ -59,6 +59,10 @@ public:
    */
   virtual void * allocate(TypeID type, SidreLength nitems) const = 0;
 
+  /* destructor */
+  virtual ~MetaBuffer()
+  {
+  };
 };
 
 
