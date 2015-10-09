@@ -360,6 +360,7 @@ DataView * DataGroup::createMetaBufferView( const std::string& name, MetaBuffer 
     DataBuffer * buff = this->getDataStore()->createBuffer();
     buff->declare(dtype);
     buff->setExternalData(external_data);
+    buff->setMetaBuffer(meta_buffer);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);

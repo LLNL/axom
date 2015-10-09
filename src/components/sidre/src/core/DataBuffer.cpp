@@ -118,6 +118,16 @@ DataBuffer * DataBuffer::declare(const DataType& dtype)
  */
 DataBuffer * DataBuffer::allocate()
 {
+  if (m_meta_buffer != ATK_NULLPTR)
+  {
+    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+    SidreLength nitems = m_schema.dtype().number_of_elements();
+    m_data = m_meta_buffer->allocate(type, nitems);
+    m_node.set_external(m_schema,m_data);
+    return this;
+  }
+
+
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
@@ -164,6 +174,13 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
  */
 DataBuffer * DataBuffer::allocate(const Schema& schema)
 {
+  if (m_meta_buffer != ATK_NULLPTR)
+  {
+    declare(schema);
+    allocate();
+    return this;
+  }
+
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
@@ -297,6 +314,7 @@ DataBuffer * DataBuffer::reallocate(const DataType& dtype)
  */
 DataBuffer * DataBuffer::setExternalData(void * external_data)
 {
+#if 0
   SLIC_ASSERT_MSG( external_data != ATK_NULLPTR, 
                   "Attempting to set buffer to external data given null pointer" );
 
@@ -306,6 +324,12 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
     m_node.set_external(m_schema, m_data);
     m_is_data_external = true;
   }
+#else
+  // XXX allow ATK_NULLPTR
+  m_data = external_data;
+  m_node.set_external(m_schema, m_data);
+  m_is_data_external = true;
+#endif
   return this;
 }
 
@@ -369,7 +393,8 @@ DataBuffer::DataBuffer( IndexType index )
   m_data(ATK_NULLPTR),
   m_node(),
   m_schema(),
-  m_is_data_external(false)
+  m_is_data_external(false),
+  m_meta_buffer(ATK_NULLPTR)
 {}
 
 
@@ -386,7 +411,8 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_data(source.m_data),
   m_node(source.m_node),
   m_schema(source.m_schema),
-  m_is_data_external(source.m_is_data_external)
+  m_is_data_external(source.m_is_data_external),
+  m_meta_buffer(ATK_NULLPTR)
 {
 // disallow?
 }
@@ -402,6 +428,12 @@ DataBuffer::DataBuffer(const DataBuffer& source )
 DataBuffer::~DataBuffer()
 {
   cleanup();
+#if 0
+  if (m_meta_buffer != ATK_NULLPTR)
+  {
+    delete m_meta_buffer;
+  }
+#endif
 }
 
 

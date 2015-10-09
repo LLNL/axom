@@ -90,6 +90,7 @@ contains
 ! Allocate array via the datastore
   subroutine ds_allocatable_int
     integer, allocatable :: iarray(:)
+    integer, pointer :: ipointer(:)
 
     type(datastore) ds
     type(datagroup) root
@@ -100,8 +101,6 @@ contains
 
     ds = datastore_new()
     root = ds%get_root()
-
-!XXX must allocate before registering
 
     view_iarray1 = root%register_allocatable("iarray", iarray)
 
@@ -115,6 +114,14 @@ contains
 
     ! Check size intrinsic
     call assert_equals(size(iarray), 10)
+
+    do i=1,10
+       iarray(i) = i
+    enddo
+    
+    ! get array via a pointer
+    call view_iarray1%get_value(ipointer)
+    call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
 
@@ -173,7 +180,7 @@ function fortran_test() bind(C,name="fortran_test")
 
   call local_allocatable_int
   call local_allocatable_double
-!XXX  call ds_allocatable_int
+  call ds_allocatable_int
   call local_static_int_array
 
   call fruit_summary

@@ -31,6 +31,7 @@
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
+#include "MetaBuffer.hpp"
 
 
 
@@ -349,6 +350,17 @@ public:
    */
   DataBuffer * setExternalData(void * external_data);
 
+  /*!
+   * \brief Set buffer to external data.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setMetaBuffer(MetaBuffer * meta_buffer)
+  {
+    m_meta_buffer = meta_buffer;
+    return this;
+  };
+
 
 //@}
 
@@ -424,6 +436,7 @@ private:
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
 
+  MetaBuffer * m_meta_buffer;
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */

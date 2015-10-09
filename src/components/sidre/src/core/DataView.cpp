@@ -111,6 +111,7 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::allocate()
 {
+  // XXX - check message - A view is not external, only a buffer.
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call allocate an external or opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \

@@ -56,9 +56,9 @@ public:
       return CONDUIT_NATIVE_INT_DATATYPE_ID;
   }
 
-  virtual void allocate(TypeID type, SidreLength nitems) const
+  virtual void * allocate(TypeID type, SidreLength nitems) const
     {
-	return;
+      return ATK_NULLPTR;;
     }
 
   VectorMetaBuffer(std::vector<int> * context) :

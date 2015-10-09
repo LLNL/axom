@@ -57,7 +57,7 @@ public:
   /*!
    * \brief Allocate buffer to requested size.
    */
-  virtual void allocate(TypeID type, SidreLength nitems) const = 0;
+  virtual void * allocate(TypeID type, SidreLength nitems) const = 0;
 
 };
 

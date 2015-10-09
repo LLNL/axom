@@ -165,12 +165,12 @@ public:
       return static_cast<TypeID>(m_callbacks->type);
   }
 
-    virtual void allocate(TypeID type, SidreLength nitems) const
+    virtual void * allocate(TypeID type, SidreLength nitems) const
     {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type
 	m_callbacks->allocate(m_context, nitems);
-	return;
+	return m_callbacks->getDataPointer(m_context);
     }
 
   AllocatableMetaBuffer(void *context, const Fptrs * callbacks) :
