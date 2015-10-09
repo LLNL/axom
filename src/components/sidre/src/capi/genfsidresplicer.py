@@ -428,6 +428,51 @@ def print_atk_allocate_allocatable_header(d):
 
 ######################################################################
 
+def print_atk_deallocate_allocatable(d):
+    """Write Fortran routine to deallocate an allocatable.
+    """
+# XXX - need cmake macro to mangle name portably
+
+    return """
+subroutine atk_deallocate_allocatable_{typename}_{nd}(array)
+    use iso_c_binding
+    implicit none
+    {f_type}, allocatable, intent(INOUT), target :: array{shape}
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_{typename}_{nd}""".format(**d)
+
+def print_atk_deallocate_allocatable_header(d):
+    return "void atk_deallocate_allocatable_{typename}_{nd}_(void *array);".format(**d)
+
+######################################################################
+
+def print_atk_reallocate_allocatable(d):
+    """Write Fortran routine to allocate an allocatable.
+    """
+# XXX - need cmake macro to mangle name portably
+    if d['rank'] == 0:
+        size = '';
+    elif d['rank'] == 1:
+        size = '(nitems)'
+    else:
+        raise NotImplementedError
+    
+
+    return """
+subroutine atk_reallocate_allocatable_{typename}_{nd}(array, nitems)
+    use iso_c_binding
+    implicit none
+    {f_type}, allocatable, intent(INOUT), target :: array{shape}
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array{size})
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_{typename}_{nd}""".format(size=size, **d)
+
+def print_atk_reallocate_allocatable_header(d):
+    return "void atk_reallocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
+
+######################################################################
+
 def print_fptrs_cache(d):
     return """
 {{
@@ -435,7 +480,9 @@ def print_fptrs_cache(d):
   {atk_type},
   atk_size_allocatable_{typename}_{nd}_,
   atk_address_allocatable_{typename}_{nd}_,
-  atk_allocate_allocatable_{typename}_{nd}_
+  atk_allocate_allocatable_{typename}_{nd}_,
+  atk_deallocate_allocatable_{typename}_{nd}_,
+  atk_reallocate_allocatable_{typename}_{nd}_
 }},
 """.format(**d)
 

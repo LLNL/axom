@@ -3,6 +3,7 @@
 ! Uses cog to insert some generated code into this file.
 !
 
+!----------------------------------------------------------------------
 ![[[cog
 !import cog
 !import genfsidresplicer as gen
@@ -74,7 +75,7 @@ function atk_size_allocatable_double_1d_ptr(array) result(rv)
 end function atk_size_allocatable_double_1d_ptr
 ![[[end]]]
 
-
+!----------------------------------------------------------------------
 ![[[cog
 !gen.print_lines(cog.outl, gen.print_atk_address_allocatable)
 !]]]
@@ -144,8 +145,7 @@ function atk_address_allocatable_double_1d_ptr(array) result(rv)
 end function atk_address_allocatable_double_1d_ptr
 ![[[end]]]
 
-
-
+!----------------------------------------------------------------------
 ![[[cog
 !gen.print_lines(cog.outl, gen.print_atk_allocate_allocatable)
 !]]]
@@ -214,3 +214,144 @@ subroutine atk_allocate_allocatable_double_1d_ptr(array, nitems)
     allocate(array(nitems))
 end subroutine atk_allocate_allocatable_double_1d_ptr
 ![[[end]]]
+
+!----------------------------------------------------------------------
+![[[cog
+!gen.print_lines(cog.outl, gen.print_atk_deallocate_allocatable)
+!]]]
+
+subroutine atk_deallocate_allocatable_int_scalar_ptr(array)
+    use iso_c_binding
+    implicit none
+    integer(C_INT), allocatable, intent(INOUT), target :: array
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_int_scalar_ptr
+
+subroutine atk_deallocate_allocatable_int_1d_ptr(array)
+    use iso_c_binding
+    implicit none
+    integer(C_INT), allocatable, intent(INOUT), target :: array(:)
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_int_1d_ptr
+
+subroutine atk_deallocate_allocatable_long_scalar_ptr(array)
+    use iso_c_binding
+    implicit none
+    integer(C_LONG), allocatable, intent(INOUT), target :: array
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_long_scalar_ptr
+
+subroutine atk_deallocate_allocatable_long_1d_ptr(array)
+    use iso_c_binding
+    implicit none
+    integer(C_LONG), allocatable, intent(INOUT), target :: array(:)
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_long_1d_ptr
+
+subroutine atk_deallocate_allocatable_float_scalar_ptr(array)
+    use iso_c_binding
+    implicit none
+    real(C_FLOAT), allocatable, intent(INOUT), target :: array
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_float_scalar_ptr
+
+subroutine atk_deallocate_allocatable_float_1d_ptr(array)
+    use iso_c_binding
+    implicit none
+    real(C_FLOAT), allocatable, intent(INOUT), target :: array(:)
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_float_1d_ptr
+
+subroutine atk_deallocate_allocatable_double_scalar_ptr(array)
+    use iso_c_binding
+    implicit none
+    real(C_DOUBLE), allocatable, intent(INOUT), target :: array
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_double_scalar_ptr
+
+subroutine atk_deallocate_allocatable_double_1d_ptr(array)
+    use iso_c_binding
+    implicit none
+    real(C_DOUBLE), allocatable, intent(INOUT), target :: array(:)
+    deallocate(array)
+end subroutine atk_deallocate_allocatable_double_1d_ptr
+![[[end]]]
+
+!----------------------------------------------------------------------
+![[[cog
+!gen.print_lines(cog.outl, gen.print_atk_reallocate_allocatable)
+!]]]
+
+subroutine atk_reallocate_allocatable_int_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_INT), allocatable, intent(INOUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_int_scalar_ptr
+
+subroutine atk_reallocate_allocatable_int_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_INT), allocatable, intent(INOUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_int_1d_ptr
+
+subroutine atk_reallocate_allocatable_long_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_LONG), allocatable, intent(INOUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_long_scalar_ptr
+
+subroutine atk_reallocate_allocatable_long_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    integer(C_LONG), allocatable, intent(INOUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_long_1d_ptr
+
+subroutine atk_reallocate_allocatable_float_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_FLOAT), allocatable, intent(INOUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_float_scalar_ptr
+
+subroutine atk_reallocate_allocatable_float_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_FLOAT), allocatable, intent(INOUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_float_1d_ptr
+
+subroutine atk_reallocate_allocatable_double_scalar_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_DOUBLE), allocatable, intent(INOUT), target :: array
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array)
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_double_scalar_ptr
+
+subroutine atk_reallocate_allocatable_double_1d_ptr(array, nitems)
+    use iso_c_binding
+    implicit none
+    real(C_DOUBLE), allocatable, intent(INOUT), target :: array(:)
+    integer(C_INT), value, intent(IN) :: nitems
+    allocate(array(nitems))
+! XXX move_alloc ...
+end subroutine atk_reallocate_allocatable_double_1d_ptr
+![[[end]]]
+

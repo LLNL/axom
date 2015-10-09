@@ -58,6 +58,32 @@ void atk_allocate_allocatable_double_scalar_ptr_(void *array, long nitems);
 void atk_allocate_allocatable_double_1d_ptr_(void *array, long nitems);
 //[[[end]]]
 
+//[[[cog
+//gen.print_lines(cog.outl, gen.print_atk_deallocate_allocatable_header)
+//]]]
+void atk_deallocate_allocatable_int_scalar_ptr_(void *array);
+void atk_deallocate_allocatable_int_1d_ptr_(void *array);
+void atk_deallocate_allocatable_long_scalar_ptr_(void *array);
+void atk_deallocate_allocatable_long_1d_ptr_(void *array);
+void atk_deallocate_allocatable_float_scalar_ptr_(void *array);
+void atk_deallocate_allocatable_float_1d_ptr_(void *array);
+void atk_deallocate_allocatable_double_scalar_ptr_(void *array);
+void atk_deallocate_allocatable_double_1d_ptr_(void *array);
+//[[[end]]]
+
+//[[[cog
+//gen.print_lines(cog.outl, gen.print_atk_reallocate_allocatable_header)
+//]]]
+void atk_reallocate_allocatable_int_scalar_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_int_1d_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_long_scalar_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_long_1d_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_float_scalar_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_float_1d_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_double_scalar_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_double_1d_ptr_(void *array, long nitems);
+//[[[end]]]
+
 }
 
 //----------------------------------------------------------------------
@@ -69,6 +95,8 @@ struct Fptrs {
     size_t (*getNumberOfElements)(void *array);
     void *(*getDataPointer)(void *array);
     void (*allocate)(void *array, long nitems);
+    void (*deallocate)(void *array);
+    void (*reallocate)(void *array, long nitems);
 };
 
 //[[[cog cog.outl('static struct Fptrs fptrs_cache[%s] = {' % gen.num_metabuffers()) ]]]
@@ -80,67 +108,83 @@ static struct Fptrs fptrs_cache[8] = {
 //]]]
 
 {
-  0,
+  0,   // rank
   ATK_C_INT_T,
   atk_size_allocatable_int_scalar_ptr_,
   atk_address_allocatable_int_scalar_ptr_,
-  atk_allocate_allocatable_int_scalar_ptr_
+  atk_allocate_allocatable_int_scalar_ptr_,
+  atk_deallocate_allocatable_int_scalar_ptr_,
+  atk_reallocate_allocatable_int_scalar_ptr_
 },
 
 {
-  1,
+  1,   // rank
   ATK_C_INT_T,
   atk_size_allocatable_int_1d_ptr_,
   atk_address_allocatable_int_1d_ptr_,
-  atk_allocate_allocatable_int_1d_ptr_
+  atk_allocate_allocatable_int_1d_ptr_,
+  atk_deallocate_allocatable_int_1d_ptr_,
+  atk_reallocate_allocatable_int_1d_ptr_
 },
 
 {
-  0,
+  0,   // rank
   ATK_C_LONG_T,
   atk_size_allocatable_long_scalar_ptr_,
   atk_address_allocatable_long_scalar_ptr_,
-  atk_allocate_allocatable_long_scalar_ptr_
+  atk_allocate_allocatable_long_scalar_ptr_,
+  atk_deallocate_allocatable_long_scalar_ptr_,
+  atk_reallocate_allocatable_long_scalar_ptr_
 },
 
 {
-  1,
+  1,   // rank
   ATK_C_LONG_T,
   atk_size_allocatable_long_1d_ptr_,
   atk_address_allocatable_long_1d_ptr_,
-  atk_allocate_allocatable_long_1d_ptr_
+  atk_allocate_allocatable_long_1d_ptr_,
+  atk_deallocate_allocatable_long_1d_ptr_,
+  atk_reallocate_allocatable_long_1d_ptr_
 },
 
 {
-  0,
+  0,   // rank
   ATK_C_FLOAT_T,
   atk_size_allocatable_float_scalar_ptr_,
   atk_address_allocatable_float_scalar_ptr_,
-  atk_allocate_allocatable_float_scalar_ptr_
+  atk_allocate_allocatable_float_scalar_ptr_,
+  atk_deallocate_allocatable_float_scalar_ptr_,
+  atk_reallocate_allocatable_float_scalar_ptr_
 },
 
 {
-  1,
+  1,   // rank
   ATK_C_FLOAT_T,
   atk_size_allocatable_float_1d_ptr_,
   atk_address_allocatable_float_1d_ptr_,
-  atk_allocate_allocatable_float_1d_ptr_
+  atk_allocate_allocatable_float_1d_ptr_,
+  atk_deallocate_allocatable_float_1d_ptr_,
+  atk_reallocate_allocatable_float_1d_ptr_
 },
 
 {
-  0,
+  0,   // rank
   ATK_C_DOUBLE_T,
   atk_size_allocatable_double_scalar_ptr_,
   atk_address_allocatable_double_scalar_ptr_,
-  atk_allocate_allocatable_double_scalar_ptr_
+  atk_allocate_allocatable_double_scalar_ptr_,
+  atk_deallocate_allocatable_double_scalar_ptr_,
+  atk_reallocate_allocatable_double_scalar_ptr_
 },
 
 {
-  1,
+  1,   // rank
   ATK_C_DOUBLE_T,
   atk_size_allocatable_double_1d_ptr_,
   atk_address_allocatable_double_1d_ptr_,
-  atk_allocate_allocatable_double_1d_ptr_
+  atk_allocate_allocatable_double_1d_ptr_,
+  atk_deallocate_allocatable_double_1d_ptr_,
+  atk_reallocate_allocatable_double_1d_ptr_
 },
 //[[[end]]]
 };
