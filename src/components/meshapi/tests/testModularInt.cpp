@@ -20,6 +20,68 @@
 #include "meshapi/SizePolicies.hpp"
 #include "meshapi/ModularInt.hpp"
 
+TEST(gtest_meshapi_modInt,runtime_modular_int_unitialized_and_full)
+{
+    typedef asctoolkit::meshapi::ModularInt<asctoolkit::meshapi::policies::RuntimeSizeHolder<int> > ModularIntType;
+
+#ifdef ATK_DEBUG
+  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  std::cout << "\n -- Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: " << std::endl;
+
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ASSERT_DEATH( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  ASSERT_DEATH( ModularIntType(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  ASSERT_DEATH( ModularIntType(),"") << " SIZE of Modular int not allowed to be zero";
+  ASSERT_DEATH( ModularIntType(1),"") << " SIZE of Modular int not allowed to be zero";
+#else
+  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
+
+  std::cout << "\n -- Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 (runtime)" << std::endl;
+  volatile int sz = 5;
+  for(int i= 1; i< sz; ++i)
+  {
+      ModularIntType modIntFull(i,i);
+      EXPECT_EQ( modIntFull, 0);
+  }
+}
+
+TEST(gtest_meshapi_modInt,compile_modular_int_unitialized_and_full)
+{
+    using namespace asctoolkit::meshapi;
+    typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
+
+#ifdef ATK_DEBUG
+  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+  std::cout << "\n -- Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: " << std::endl;
+
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ASSERT_DEATH( ModularIntZero(0,0),"") << " SIZE of Modular int not allowed to be zero";
+  ASSERT_DEATH( ModularIntZero(1,0),"") << " SIZE of Modular int not allowed to be zero";
+  ASSERT_DEATH( ModularIntZero(),"") << " SIZE of Modular int not allowed to be zero";
+  ASSERT_DEATH( ModularIntZero(1),"") << " SIZE of Modular int not allowed to be zero";
+#else
+  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
+
+  std::cout << "\n -- Checking modular int with value set to modulus equals (i.e. is equivalent to) 0 for (compile time)" << std::endl;
+  ModularInt<policies::CompileTimeSizeHolder<int, 1> > m1(1);
+  EXPECT_EQ( m1, 0);
+
+  ModularInt<policies::CompileTimeSizeHolder<int, 2> > m2(2);
+  EXPECT_EQ( m2, 0);
+
+  ModularInt<policies::CompileTimeSizeHolder<int, 3> > m3(3);
+  EXPECT_EQ( m3, 0);
+
+  ModularInt<policies::CompileTimeSizeHolder<int, 4> > m4(4);
+  EXPECT_EQ( m4, 0);
+
+}
+
+
 TEST(gtest_meshapi_modInt,runtime_modular_int)
 {
   std::cout << "\n -- Checking modular int addition and subtraction when supplying the max value at runtime" << std::endl;
@@ -27,22 +89,6 @@ TEST(gtest_meshapi_modInt,runtime_modular_int)
   typedef asctoolkit::meshapi::ModularInt<asctoolkit::meshapi::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 937;
-
-  ModularIntType modIntFull(sz,sz);
-  EXPECT_EQ( modIntFull, 0);
-
-
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
-  std::cout << "\n -- Checking that modular int over zero fails" << std::endl;
-
-  // add this line to avoid a warning in the output about thread safety
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  ASSERT_DEATH( ModularIntType(0,0),"") << " SIZE of Modular int not allowed to be zero";
-  ASSERT_DEATH( ModularIntType(),"") << " SIZE of Modular int not allowed to be zero";
-#else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
-#endif
 
   for(int i= 0; i< sz; ++i)
   {
