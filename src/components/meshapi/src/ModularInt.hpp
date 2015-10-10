@@ -23,7 +23,7 @@ namespace meshapi {
      * This class is a wrapper around an int and encapsulates modular arithmetic with a given modulus,
      * and can be useful e.g. when we are iterating circularly through the elements in a relation (e.g. consecutive edges around a polygon)
      * The class invariant is that 0 <= val < modulus(), where val is the wrapped integer.
-     * The modulus cam
+     * The modulus is controlled by a SizePolicy which allows it to be given at compile time or at runtime.
      */
     template< typename SizePolicy          = policies::RuntimeSizeHolder<int> >
     class ModularInt : private SizePolicy
@@ -38,7 +38,9 @@ namespace meshapi {
         ModularInt(const ModularInt& zn) : SizePolicy( zn ), m_val( zn.m_val)
         {
             SLIC_ASSERT( modulus() != 0);
-            normalize();
+
+            //normalize();      // For efficiency, we are assuming that argument zn is consistent (and avoiding normalization).
+            verifyValue();      // This assumption is tested in debug builds...
         }
 
 
@@ -71,11 +73,14 @@ namespace meshapi {
         {
             const int sz = modulus();
 
+            // We want this to be fast, so we tried a few variations.
+            // This choice can be made into a Policy class (e.g. ModulusPolicy?) if we see
+            // a significant difference between the branching and branchless implementations
         #if MODINT_BRANCHLESS
             // This solution avoids branching (at the expense of a second mod operation), but appears to be slower on chaos
             m_val = (sz + (m_val % sz)) % sz;
 
-        #elif MODINT_STRAIGHTFORWARD
+        #elif 1 or MODINT_STRAIGHTFORWARD
             // Straightforward solution -- possibly adds sz to ensure that m_val is non-negative -- which involves a branch
             m_val %= sz;
             if(m_val < 0)

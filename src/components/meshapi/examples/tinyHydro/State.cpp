@@ -78,6 +78,7 @@ State & State::operator=(const State & rhs)
    // assignment can only happen when states
    // are defined on the same mesh
    SLIC_ASSERT(mesh == rhs.mesh);
+   SLIC_ASSERT(maxNParts > rhs.nParts);
    
    // free up old parts data and copy rhs's parts
    delete [] parts;

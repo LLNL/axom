@@ -65,12 +65,13 @@ Hydro::Hydro(State * s)
    // 'right', 'top', 'left', numbered 0 through 3.
    // initial BC's are 0xdeadbeef, which we take as a special value
    // meaning free boundary condition.
-   const VectorXY defaultBC(0xdeadbeef,0xdeadbeef);
-   bcVelocity = BoundaryEdgeVectorField(&boundaryEdgeSet, defaultBC);
+   bcVelocity = BoundaryEdgeVectorField(&boundaryEdgeSet, VectorXY(0xdeadbeef,0xdeadbeef) );
 
+  #ifndef TINY_HYDRO_REGULAR_MESH
+   // compute bounding box of domain
    VectorXY bbLower( mesh.nodePos[0]);
    VectorXY bbUpper( mesh.nodePos[0]);
-   for (int n = 1; n < mesh.numNodes(); n++)  // compute bounding box of domain
+   for (int n = 1; n < mesh.numNodes(); n++)
    {
       const VectorXY & pos = mesh.nodePos[n];
       if (pos.x < bbLower.x) bbLower.x = pos.x;
@@ -79,6 +80,7 @@ Hydro::Hydro(State * s)
       if (pos.y > bbUpper.y) bbUpper.y = pos.y;
    }
 
+   // Find nodes on each boundary
    std::vector<IndexType> bcNodeLists[NUM_DOMAIN_BOUNDARIES];
    for (int n = 0; n < mesh.numNodes(); n++)
    {
@@ -89,6 +91,7 @@ Hydro::Hydro(State * s)
       if (fuzzyEqual(pos.x, bbLower.x)) bcNodeLists[3].push_back(n);
    }
 
+   // Setup the node lists as indirection sets
    for(int i=0; i< boundaryEdgeSet.size(); ++i)
    {
        bcNodes[i] = NodeSubset( bcNodeLists[i].size() );
@@ -96,6 +99,7 @@ Hydro::Hydro(State * s)
        bcVec.swap( bcNodeLists[i]);
        bcNodes[i].data() = &bcVec;
    }
+  #endif
 }
    
 //----------------------------------------------
@@ -127,14 +131,16 @@ void Hydro::initialize(void)
       for (int iz = 0; iz < part.numZones(); ++iz) // loop over zones
       {
          const IndexType meshZoneId = zones[iz];
-         initialMass[p][iz] = rho[iz]*mesh.zoneVolume[ meshZoneId ];
-         totalMass[meshZoneId] += initialMass[p][iz];
+         double massInit = rho[iz]*mesh.zoneVolume[ meshZoneId ];
+         initialMass[p][iz] = massInit;
+         totalMass[meshZoneId] += massInit;
 
          ZNodeSet zNodes = mesh.zoneToNodes[ meshZoneId ];
-         for (int in = 0; in < zNodes.size(); in ++) // loop over nodes
+         const int znSize = zNodes.size();
+         for (int in = 0; in < znSize; ++in) // loop over nodes
          {
             const int node = zNodes[in];
-            nodeMass[node] += 0.25*initialMass[p][iz];
+            nodeMass[node] += 0.25*massInit;
          }
       } // end loop over zones
    } // end loop over parts
@@ -263,18 +269,17 @@ void Hydro::calcForce(const State & s)
 
       ZNodeSet zNodes = mesh.zoneToNodes[ iz];
       ZFaceSet zFaces = mesh.zoneToFaces[ iz];
-      const int relnSize = zNodes.size();
-      for (int in = 0; in < relnSize; in++)
-      {
-         ZNodeSet::ModularIntType modIdx(in, relnSize);
-         const int node  = zNodes[ modIdx  ];
-         const int face0 = zFaces[ modIdx-1];
-         const int face1 = zFaces[ modIdx  ];
 
-         VectorXY A = mesh.faceArea[face0] + mesh.faceArea[face1];
+      const int relnSize = zNodes.size();
+      ZNodeSet::ModularIntType modIdx(-1, relnSize);    // start at one-before first face
+      for (int in = 0; in < relnSize; ++in)
+      {
+         const int face0 = zFaces[ modIdx++];   // get idx of previous face and increment
+         const int face1 = zFaces[ modIdx  ];
+         const int node  = zNodes[ modIdx  ];
+
          // multiply areas by pressure + Q (and div 2 for area factor)
-         A *= totP;
-         force[node] += A;
+         force[node] += totP * (mesh.faceArea[face0] + mesh.faceArea[face1]);
       }
    }
 }
@@ -291,14 +296,15 @@ void Hydro::calcQ(const State & s)
    calcMaxCs();
 
    // compute Q for each zone
-   for (int z = 0; z < mesh.numZones(); z++)
+   const int nZones = mesh.numZones();
+   for (int z = 0; z < nZones; ++z)
    {
       if (divu[z] < 0.0)
       {
          const double vol = mesh.zoneVolume[z];
          const double L = sqrt(vol);
          const double deltaU = L*divu[z];
-         double rho = totalMass[z]/vol;
+         const double rho = totalMass[z]/vol;
          Q[z] = rho*(Cq*deltaU*deltaU - Cl*maxCs[z]*deltaU);
       }
       else
@@ -439,11 +445,11 @@ void Hydro::calcDivU(const NodalVectorField& velocity)
       ZFaceSet zFaces = mesh.zoneToFaces[ iz];
       const int relnSize = zNodes.size();
       double du = 0.;
+      ZNodeSet::ModularIntType modIdx(-1, relnSize);    // start at one-before first face
       for (int in = 0; in < relnSize; in++)
       {
-         ZNodeSet::ModularIntType modIdx(in, relnSize);
+         const int face0 = zFaces[modIdx++];
          const int node  = zNodes[modIdx  ];
-         const int face0 = zFaces[modIdx-1];
          const int face1 = zFaces[modIdx  ];
 
          VectorXY A = mesh.faceArea[face0] + mesh.faceArea[face1];

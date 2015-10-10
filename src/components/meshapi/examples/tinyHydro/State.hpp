@@ -26,6 +26,7 @@ class State
    State( const State & arg);
    // Assignment
    State & operator=(const State & rhs);
+
    // addition in place
    State & operator+=(const State & rhs);
    // scalar multiply in place
@@ -34,24 +35,28 @@ class State
    // python accessors
    /* double averageRho(int i) const; */
    /* double totalE(int i) const; */
-   VectorXY u(int i) const {return velocity[i];}
-   Part * partBegin(void) {return parts;}
+   VectorXY u(int i)            const    {return velocity[i];}
+
+   // Related to the part of a state
+   Part * partBegin(void)                {return parts;}
    Part * getPart(int i);
    void addPart(Part * newPart);
+
+   // Access positions and velocities
    void setU(int i, const VectorXY& val) { velocity[i] = val;}
    void setX(int i, const VectorXY& val) { position[i] = val;}
 
-   PolygonMeshXY  * const mesh;
+   void dumpState();
+
+ public:
+   PolygonMeshXY * const mesh;
 
    Part * parts;
    int nParts;
    const int maxNParts;
 
-   NodalVectorField velocity;     // MeshAPI -- Map: Nodes -> VectorXY
-   NodalVectorField position;     // MeshAPI -- Map: Nodes -> VectorXY
-
-
-   void dumpState();
+   NodalVectorField velocity;
+   NodalVectorField position;
 };
 
 

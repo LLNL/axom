@@ -28,18 +28,13 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
    faces = FaceSet( zones.size() * 4);
    corners = CornerSet( zones.size() * 4);
 
-   // make space for connectivity data
+  #ifndef TINY_HYDRO_REGULAR_MESH
+   /// Setup mesh topology
    zoneToNodes = ZoneToNodeRelation(&zones, &nodes);
    zoneToFaces = ZoneToFaceRelation(&zones, &faces);
 
    IndexMap faceIndices(&faces);
    IndexMap nodeIndices(&corners);
-
-   // make space for geometry info
-   nodePos = NodalVectorField(&nodes);
-   zoneVolume = ZonalScalarField(&zones);
-   zonePos = ZonalVectorField(&zones);
-   faceArea = FaceVectorField(&faces);
 
    // set up connectivity data, knowing it's logical orthogonal quads
    const int nZones = numZones();
@@ -60,7 +55,13 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
    }
    zoneToNodes.bindRelationData( nodeIndices.data() );
    zoneToFaces.bindRelationData( faceIndices.data() );
+  #endif
 
+   /// Geometric fields on the mesh
+   nodePos = NodalVectorField(&nodes);
+   zoneVolume = ZonalScalarField(&zones);
+   zonePos = ZonalVectorField(&zones);
+   faceArea = FaceVectorField(&faces);
    
    // set up initial mesh as regular orthonormal grid
    double dx = (xmax - xmin)/(kmax-1);
@@ -81,18 +82,10 @@ PolygonMeshXY::PolygonMeshXY(int kmax, int lmax,
 }
 
 
-
-//----------------------------------------------
-PolygonMeshXY::~PolygonMeshXY(void)
-{
-}
-
 //----------------------------------------------
 void PolygonMeshXY::computeNewGeometry(void)
 {
    SLIC_ASSERT(numZones() > 0 && numNodes() > 2);
-   
-   VectorXY tmp; // we will need this
    
    // zone volumes and positions
    const int nZones = numZones();
@@ -108,23 +101,21 @@ void PolygonMeshXY::computeNewGeometry(void)
       for (int in = 0; in < numZNodes; in++)
       {
          // assumption is that zNodes lists nodes in counter-clockwise order around the zone
-         IndexType nextInd =  (in+1) %  numZNodes;
+         ZNodeSet::ModularIntType modIdx(in, numZNodes);
+         const VectorXY& n0Pos = nodePos[ zNodes[modIdx  ] ];
+         const VectorXY& n1Pos = nodePos[ zNodes[modIdx+1] ];
 
-         const VectorXY& n0Pos = nodePos[ zNodes[in] ];
-         const VectorXY& n1Pos = nodePos[ zNodes[nextInd] ];
-
-         zVol += n0Pos.cross(n1Pos); // sum volume
-         zPos += n1Pos;  // sum position
+         zVol += n0Pos.cross(n1Pos);    // sum volume
+         zPos += n1Pos;                 // sum position
 
          // Face areas are outward normal vectors
-         tmp = n1Pos - n0Pos;
-         faceArea[zFaces[in] ] = VectorXY(tmp.y, -tmp.x);
+         faceArea[zFaces[modIdx] ] = (n0Pos - n1Pos).perp();
       }
       zoneVolume[iz] = 0.5 * zVol; // correct 2x volume from cross product
+
       // normalize position; if we did it by volume it would be more
       // correct (centroid), but arithmetic average usually works fine
       zonePos[iz] =  (1.0/numZNodes) * zPos;
-
    }
 
    // check our final volumes are positive
@@ -152,8 +143,7 @@ VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
    {
       ret.accum(zonePos[i]);
    }
-   ret.x = ret.x / nZones;
-   ret.y = ret.y / nZones;
+   ret *= (1./nZones);
 
    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);  // TIMER
    timeElapsed = diffSeconds(time1, time2);

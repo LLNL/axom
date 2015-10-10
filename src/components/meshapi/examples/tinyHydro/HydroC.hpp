@@ -23,7 +23,6 @@ class Hydro
  public:
    Hydro(State * s); // using a pointer here with PyBindGen prevents
                      // State being garbage collected by Python
-
    ~Hydro();
 
    // problem control and advance methods
@@ -59,22 +58,27 @@ class Hydro
    int numBCnodes(int bc);
    int bcNode(int bc, int node);
    
+   bool fuzzyEqual(double a, double b, double tol=1.0e-15)
+   {
+      return (fabs(a-b) < tol);
+   }
 
+public:
    PolygonMeshXY&       mesh;
+
    State&               state;
-   State                halfStep; // re-used temporary for RK2
-   State                dState;   // re-used temporary for RK2
+   State                halfStep;           // re-used temporary for RK2
+   State                dState;             // re-used temporary for RK2
 
-   ZonalScalarField     Q;    // re-used for Q
-   ZonalScalarField     divu; // for dt, Q, and some PdV work schemes
+   ZonalScalarField     Q;                  // re-used for Q
+   ZonalScalarField     divu;               // for dt, Q, and some PdV work schemes
 
-   NodalVectorField     force; // re-used for force calc
-
+   NodalVectorField     force;              // re-used for force calc
    NodalVectorField     halfStepVelocity;   // re-used for work calc
 
-   BoundaryEdgeSet          boundaryEdgeSet;                             // MeshAPI -- new edge set (of size 4)
-   BoundaryEdgeVectorField  bcVelocity;  // velocity BC values        // MeshAPI -- Map: Domain edges -> VectorXY
-   NodeSubset           bcNodes[NUM_DOMAIN_BOUNDARIES];
+   BoundaryEdgeSet          boundaryEdgeSet;                          // MeshAPI -- new set for domain boundaries (of size 4)
+   BoundaryEdgeVectorField  bcVelocity;     // velocity BC values     // MeshAPI -- map to velocity boundary conditions for each edge
+   NodeSubset               bcNodes[NUM_DOMAIN_BOUNDARIES];           // MeshAPI -- indirection sets of nodes on each boundary edge
 
 
    ZonalScalarField*    initialMass;    // per material initial mass of zones
@@ -91,16 +95,9 @@ class Hydro
    int      cycle;
    int      dtZone;
    double   time;
-   double   Cq, Cl; // Q coefficients
+   double   Cq, Cl;                     // Q coefficients
    double   cfl;
    int      printCycle;
-
-
-   bool fuzzyEqual(double a, double b, double tol=1.0e-15)
-   {
-      if (fabs(a-b) < tol) return true;
-      else return false;
-   }
 
  private:
    // Unused variables...

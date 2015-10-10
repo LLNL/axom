@@ -28,46 +28,45 @@ class PolygonMeshXY
       SLIC_ERROR("not implemented yet\n");
    }
 
-   // destructor
-   ~PolygonMeshXY();
-   
-   ZoneSet zones;                   // MeshAPI -- Set of zones -- PositionSet (wrapper around an int)
-   NodeSet nodes;                   // MeshAPI -- Set of nodes -- PositionSet (wrapper around an int)
-   FaceSet faces;                   // MeshAPI -- Set of faces -- missing (wrapper around an int)
-   CornerSet corners;               // MeshAPI -- Set of corners -- missing (wrapper around an int)
 
-   int numNodes() const { return nodes.size(); }
-   int numZones() const { return zones.size(); }
+   // functions that access the mesh topology
+   int numNodes()                           const { return nodes.size(); }
+   int numZones()                           const { return zones.size(); }
+   int zoneNumNodes(int i)                  const { return zoneToNodes.size(i);}
+   int zoneNode(int iz, int in)             const { return zoneToNodes[iz][in];}
+   VectorXY zoneNodePos(int iz, int in)     const { return nodePos[ zoneNode(iz,in) ];}
 
-   // connectivity arrays
-   ZoneToFaceRelation zoneToFaces;
-   ZoneToNodeRelation zoneToNodes;
-
-   // geometry information
-   NodalVectorField nodePos;          // MeshAPI -- Map: Node -> VectorXY -- node positions
-   ZonalVectorField zonePos;          // MeshAPI -- Map: Zone -> VectorXY -- zone positions (barycenters)
-   FaceVectorField faceArea;         // MeshAPI -- Map: Face -> VectorXY -- face areas -- outward normals
-   ZonalScalarField zoneVolume;         // MeshAPI -- Map: Zone -> area (scalar)
-
-   // functions that modify the mesh data
+   // functions that access and modify the mesh geometry
    void moveNodesToPosition(const NodalVectorField& newPos);
    void computeNewGeometry(void);
    
    // accessors, mostly used from Python
-   VectorXY getPos(int i) const {return nodePos[i];}
-   VectorXY getZonePos(int i) const {return zonePos[i];}
-   double zoneVol(int i) const {return zoneVolume[i];}
-   void setPos(int i, const VectorXY & v) {nodePos[i] = v;}
-
-   int zoneNumNodes(int i) const {return zoneToNodes.size(i);}
-   int zoneNode(int iz, int in) const {return zoneToNodes[iz][in];}
-   VectorXY zoneNodePos(int iz, int in) const {return nodePos[ zoneNode(iz,in) ];}
+   VectorXY getPos(int i)                   const { return nodePos[i];}
+   VectorXY getZonePos(int i)               const { return zonePos[i];}
+   double zoneVol(int i)                    const { return zoneVolume[i];}
+   void setPos(int i, const VectorXY & v)         { nodePos[i] = v;}
 
    VectorXY meshAverageKLZMemOrderA();
-   double timeElapsed;
-
 
    void dumpMesh();
+
+ public:
+   ZoneSet zones;                   // Set of zones in the mesh -- PositionSet (wrapper around an int)
+   NodeSet nodes;                   // Set of nodes in the mesh -- PositionSet (wrapper around an int)
+   FaceSet faces;                   // Set of faces in the mesh -- missing (wrapper around an int)
+   CornerSet corners;               // Set of corners in the mesh -- missing (wrapper around an int)
+
+   // Mesh topology
+   ZoneToFaceRelation zoneToFaces;
+   ZoneToNodeRelation zoneToNodes;
+
+   // Mesh geometry
+   NodalVectorField nodePos;          // node positions
+   ZonalVectorField zonePos;          // zone positions (barycenters)
+   FaceVectorField faceArea;          // face areas -- scaled outward-facing normals
+   ZonalScalarField zoneVolume;       // zone volumes (scalar)
+
+   double timeElapsed;
 } ;
 
 } // end namespace tinyHydro

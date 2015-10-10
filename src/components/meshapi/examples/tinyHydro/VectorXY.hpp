@@ -56,6 +56,11 @@ class VectorXY
        return VectorXY(x-b.x, y-b.y);
     }
 
+    VectorXY perp() const
+    {
+       return VectorXY(-y, x);
+    }
+
     //----------------------------------------------
     // Scalar multiplication operations
 
@@ -84,6 +89,7 @@ class VectorXY
        return x*v.x + y*v.y;
     }
 
+    // Perp-dot product of a 2D vector -- equivalent to 'return perp().dot(v)'
     double cross(const VectorXY & v) const
     {
        return x*v.y - y*v.x;
@@ -95,6 +101,7 @@ class VectorXY
        return sqrt(mag2());
     }
 
+     // Magnitude of the vector -- Equivalent to dot(*this)
     double mag2() const
     {
        return x*x + y*y;
