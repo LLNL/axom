@@ -20,6 +20,9 @@
 
 #include "slic/slic.hpp"
 
+#include <sstream>    // for std::ostringstream
+#include <execinfo.h> // for backtrace()
+
 namespace asctoolkit {
 
 namespace slic {
@@ -162,6 +165,9 @@ void logErrorMessage( const std::string& message,
                       int line,
                       bool shouldAbort )
 {
+  std::ostringstream oss;
+  oss << message << slic::stacktrace();
+
   slic::logMessage( message::Fatal, message, fileName, line );
   if ( shouldAbort ) {
     asctoolkit::utilities::processAbort();
@@ -186,6 +192,26 @@ void flushStreams()
 void finalize()
 {
   Logger::finalize();
+}
+
+//------------------------------------------------------------------------------
+std::string stacktrace( )
+{
+  void* array[10];
+  const int size = backtrace( array, 10 );
+  char** strings = backtrace_symbols( array, size );
+
+  std::ostringstream oss;
+  oss << "\n** StackTrace of " << size << " frames **\n";
+  for ( int i=0; i < size; ++i ) {
+     oss << strings[ i ] << std::endl;
+  }
+  oss << "=====\n\n";
+
+
+  free( strings );
+
+  return ( oss.str() );
 }
 
 } /* namespace slic */

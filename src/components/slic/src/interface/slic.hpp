@@ -489,6 +489,14 @@ void flushStreams();
  */
 void finalize();
 
+/*!
+ *******************************************************************************
+ * \brief Uses glibc's backtrace() functionality to return a stacktrace
+ * \return s a string corresponding to the stacktrace.
+ *******************************************************************************
+ */
+std::string stacktrace( );
+
 } /* namespace slic */
 
 } /* namespace asctoolkit */
