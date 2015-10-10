@@ -56,6 +56,12 @@ void activateLogger( const std::string& name )
 }
 
 //------------------------------------------------------------------------------
+std::string getActiveLoggerName()
+{
+  return ( Logger::getActiveLoggerName() );
+}
+
+//------------------------------------------------------------------------------
 void setLoggingLevel( message::Level level )
 {
   Logger::getActiveLogger()->setLoggingLevel( level );

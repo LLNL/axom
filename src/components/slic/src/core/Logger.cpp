@@ -48,6 +48,19 @@ Logger::Logger()
 }
 
 //------------------------------------------------------------------------------
+Logger::Logger(const std::string& name) :
+        m_name( name )
+{
+  // by default, all message streams are disabled
+  for ( int i=0; i < message::Num_Levels; ++i ) {
+
+    m_isEnabled[ i ] = false;
+
+  }
+
+}
+
+//------------------------------------------------------------------------------
 Logger::~Logger()
 {
   std::map< LogStream*, LogStream* >::iterator it =
@@ -222,7 +235,7 @@ bool Logger::createLogger( const std::string& name, char imask )
     return false;
   }
 
-  s_loggers[ name ] = new Logger();
+  s_loggers[ name ] = new Logger( name );
 
   if ( imask == inherit::nothing ) {
     /* short-circuit */
@@ -288,6 +301,12 @@ void Logger::finalize()
 
   s_loggers.clear();
   s_Logger = ATK_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+std::string Logger::getActiveLoggerName()
+{
+  return s_Logger->getName();
 }
 
 //------------------------------------------------------------------------------

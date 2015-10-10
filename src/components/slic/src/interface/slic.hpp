@@ -307,6 +307,14 @@ void activateLogger( const std::string& name );
 
 /*!
  *******************************************************************************
+ * \brief Returns the name of the active logger.
+ * \return s a string corresponding to the name of the active logger.
+ *******************************************************************************
+ */
+std::string getActiveLoggerName();
+
+/*!
+ *******************************************************************************
  * \brief Sets desired logging level.
  * \param [in] level user-supplied level to log.
  *******************************************************************************
