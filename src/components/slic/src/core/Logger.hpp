@@ -75,6 +75,15 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns the name of this logger instance.
+   * \return s a string corresponding to the name of this logger instance.
+   * \post s.length() > 0
+   *****************************************************************************
+   */
+  std::string getName() const { return this->m_name; };
+
+  /*!
+   *****************************************************************************
    * \brief Binds the given stream to the given level for this Logger instance.
    * \param [in] ls pointer to the user-supplied LogStream object.
    * \param [in] level the level that this stream will be associated with.
@@ -242,6 +251,15 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns the name of the currently active logger instance.
+   * \return s a string corresponding to the name of the active logger.
+   * \post s.length() > 0
+   *****************************************************************************
+   */
+  static std::string getActiveLoggerName();
+
+  /*!
+   *****************************************************************************
    * \brief Returns a pointer to the logger instance.
    * \return logger pointer to the logger instance.
    * \pre s_Logger != NULL
@@ -271,6 +289,14 @@ private:
 
   /*!
    *****************************************************************************
+   * \brief Custom constructor. Constructs a Logger instance with the given name.
+   * \param [in] name the name associated with the logger.
+   *****************************************************************************
+   */
+  Logger(const std::string& name);
+
+  /*!
+   *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
@@ -278,6 +304,8 @@ private:
 
   /// \name Private class members
   ///@{
+
+  std::string m_name;
 
   bool m_isEnabled[ message::Num_Levels ];
   std::map< LogStream*, LogStream* > m_streamObjectsManager;
