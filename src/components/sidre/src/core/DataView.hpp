@@ -32,7 +32,6 @@
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
-#include "sidre/MetaBuffer.hpp"
 
 
 
@@ -489,14 +488,6 @@ private:
   DataView( const std::string& name,
             DataGroup * const owning_group,
             void * opaque_ptr);
-
-  /*!
-   *  \brief Private ctor that creates associates meta-buffer with given name
-   *         in given parent group.
-   */
-  DataView( const std::string& name,
-	    DataGroup * const owning_group,
-	    void * context, MetaBuffer * metabuffer);
 
   /*!
    * \brief Private copy ctor.

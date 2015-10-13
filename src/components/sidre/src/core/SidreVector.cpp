@@ -36,42 +36,42 @@ namespace sidre
 class VectorMetaBuffer : public MetaBuffer
 {
 public:
-  virtual void *getDataPointer() const
-    {
+  virtual void * getDataPointer() const
+  {
 #ifdef USE_CXX11
-	return m_context->data();
+    return m_context->data();
 #else
-	return  m_context->empty() ? ATK_NULLPTR : &(*m_context)[0];
+    return m_context->empty() ? ATK_NULLPTR : &(*m_context)[0];
 #endif
-    }
+  }
 
   virtual size_t getNumberOfElements() const
-    {
-        return m_context->size();
-    }
+  {
+    return m_context->size();
+  }
 
   virtual TypeID getTypeID() const
   {
-      // XXX fix
-      return CONDUIT_NATIVE_INT_DATATYPE_ID;
+    // XXX fix
+    return CONDUIT_NATIVE_INT_DATATYPE_ID;
   }
 
   virtual void * allocate(TypeID type, SidreLength nitems) const
-    {
-      m_context->reserve(nitems);
-      return getDataPointer();
-    }
+  {
+    m_context->reserve(nitems);
+    return getDataPointer();
+  }
 
-    virtual void release() const
-    {
-      m_context->clear();
-    }
+  virtual void release() const
+  {
+    m_context->clear();
+  }
 
-    virtual void * reallocate(TypeID type, SidreLength nitems) const
-    {
-      m_context->resize(nitems);
-      return getDataPointer();
-    }
+  virtual void * reallocate(TypeID type, SidreLength nitems) const
+  {
+    m_context->resize(nitems);
+    return getDataPointer();
+  }
 
 
   VectorMetaBuffer(std::vector<int> * context) :
@@ -84,9 +84,9 @@ private:
 
 //----------------------------------------------------------------------
 
-DataView *registerVectorNode(DataGroup * group,
-			     const std::string& name,
-			     std::vector<int> * vect)
+DataView * registerVectorNode(DataGroup * group,
+                              const std::string& name,
+                              std::vector<int> * vect)
 {
   VectorMetaBuffer * metabuffer = new VectorMetaBuffer(vect);
   return group->createMetaBufferView(name, metabuffer);

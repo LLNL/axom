@@ -40,12 +40,11 @@ namespace sidre
 {
 class DataView;
 
-DataView *registerVectorNode(DataGroup * group,
-			     const std::string& name,
-			     std::vector<int> *vect);
+DataView * registerVectorNode(DataGroup * group,
+                              const std::string& name,
+                              std::vector<int> * vect);
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
 
 #endif /* SIDREVECTOR_HPP_ */
-
