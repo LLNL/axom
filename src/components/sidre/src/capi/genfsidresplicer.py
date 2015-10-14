@@ -372,7 +372,11 @@ function atk_size_allocatable_{typename}_{nd}(array) result(rv)
     implicit none
     {f_type}, allocatable, intent(IN) :: array{shape}
     integer(C_SIZE_T) :: rv
-    rv = size(array)
+    if (allocated(array)) then
+        rv = size(array)
+    else
+        rv = 0
+    endif
 end function atk_size_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_size_allocatable_header(d):
