@@ -336,6 +336,15 @@ public:
    */
   DataBuffer * reallocate(const DataType& dtype);
 
+  /*
+   * \brief Sync buffer with meta data.
+   *
+   *  When a buffer described by a MetaBuffer is changed external to Sidre,
+   *  this function must be called to sync the type, len, and address of
+   *  the MetaBuffer with the DataBuffer.
+   */
+  DataBuffer * sync();
+
   /*!
    * \brief Set buffer to external data.
    *

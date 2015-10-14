@@ -234,6 +234,18 @@ public:
    */
   DataView * reallocate(const DataType& dtype);
 
+  /*!
+   * \brief  Sync Dataview with DataBufferer.
+   *
+   * This is required when a MetaBuffer is changed by the user.
+   *   integer, allocatable :: array(:)
+   *   view = root%register_allocatable("array", array)
+   *   allocate(array(10))   ! MetaBuffer changed
+   *   call view%sync        ! Tell Sidre that MetaBuffer has changed.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * sync();
 
   /*!
    * \brief Apply a previously declared data view to data held in
