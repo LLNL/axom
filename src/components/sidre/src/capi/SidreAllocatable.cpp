@@ -35,53 +35,53 @@ size_t atk_size_allocatable_double_1d_ptr_(void * array);
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_address_allocatable_header)
 //]]]
-void *atk_address_allocatable_int_scalar_ptr_(void * array);
-void *atk_address_allocatable_int_1d_ptr_(void * array);
-void *atk_address_allocatable_long_scalar_ptr_(void * array);
-void *atk_address_allocatable_long_1d_ptr_(void * array);
-void *atk_address_allocatable_float_scalar_ptr_(void * array);
-void *atk_address_allocatable_float_1d_ptr_(void * array);
-void *atk_address_allocatable_double_scalar_ptr_(void * array);
-void *atk_address_allocatable_double_1d_ptr_(void * array);
+void * atk_address_allocatable_int_scalar_ptr_(void * array);
+void * atk_address_allocatable_int_1d_ptr_(void * array);
+void * atk_address_allocatable_long_scalar_ptr_(void * array);
+void * atk_address_allocatable_long_1d_ptr_(void * array);
+void * atk_address_allocatable_float_scalar_ptr_(void * array);
+void * atk_address_allocatable_float_1d_ptr_(void * array);
+void * atk_address_allocatable_double_scalar_ptr_(void * array);
+void * atk_address_allocatable_double_1d_ptr_(void * array);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_allocate_allocatable_header)
 //]]]
-void atk_allocate_allocatable_int_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_int_1d_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_long_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_long_1d_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_float_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_float_1d_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_double_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_double_1d_ptr_(void *array, long nitems);
+void atk_allocate_allocatable_int_scalar_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_int_1d_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_long_scalar_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_long_1d_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_float_scalar_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_float_1d_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_double_scalar_ptr_(void * array, long nitems);
+void atk_allocate_allocatable_double_1d_ptr_(void * array, long nitems);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_deallocate_allocatable_header)
 //]]]
-void atk_deallocate_allocatable_int_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_int_1d_ptr_(void *array);
-void atk_deallocate_allocatable_long_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_long_1d_ptr_(void *array);
-void atk_deallocate_allocatable_float_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_float_1d_ptr_(void *array);
-void atk_deallocate_allocatable_double_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_double_1d_ptr_(void *array);
+void atk_deallocate_allocatable_int_scalar_ptr_(void * array);
+void atk_deallocate_allocatable_int_1d_ptr_(void * array);
+void atk_deallocate_allocatable_long_scalar_ptr_(void * array);
+void atk_deallocate_allocatable_long_1d_ptr_(void * array);
+void atk_deallocate_allocatable_float_scalar_ptr_(void * array);
+void atk_deallocate_allocatable_float_1d_ptr_(void * array);
+void atk_deallocate_allocatable_double_scalar_ptr_(void * array);
+void atk_deallocate_allocatable_double_1d_ptr_(void * array);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_reallocate_allocatable_header)
 //]]]
-void atk_reallocate_allocatable_int_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_int_1d_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_long_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_long_1d_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_float_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_float_1d_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_double_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_double_1d_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_int_scalar_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_int_1d_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_long_scalar_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_long_1d_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_float_scalar_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_float_1d_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_double_scalar_ptr_(void * array, long nitems);
+void atk_reallocate_allocatable_double_1d_ptr_(void * array, long nitems);
 //[[[end]]]
 
 }
@@ -288,10 +288,10 @@ void *atk_c_loc_(void *addr)
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_int_scalar_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_int_scalar_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -299,10 +299,10 @@ void *atk_register_allocatable_int_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_int_1d_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_int_1d_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -310,10 +310,10 @@ void *atk_register_allocatable_int_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_long_scalar_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_long_scalar_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -321,10 +321,10 @@ void *atk_register_allocatable_long_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_long_1d_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_long_1d_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -332,10 +332,10 @@ void *atk_register_allocatable_long_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_float_scalar_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_float_scalar_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -343,10 +343,10 @@ void *atk_register_allocatable_float_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_float_1d_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_float_1d_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -354,10 +354,10 @@ void *atk_register_allocatable_float_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_double_scalar_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_double_scalar_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }
@@ -365,10 +365,10 @@ void *atk_register_allocatable_double_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_double_1d_ptr_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_double_1d_ptr_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }

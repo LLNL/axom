@@ -342,10 +342,10 @@ def print_atk_register_allocatable(d):
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_{typename}_{nd}_(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int indx)
+void * atk_register_allocatable_{typename}_{nd}_(
+  DataGroup * group,
+  char * name, int lname,
+  void * array, int indx)
 {{
     return register_allocatable(group, std::string(name, lname), array, indx); 
 }}""".format(**d)
@@ -402,7 +402,7 @@ function atk_address_allocatable_{typename}_{nd}(array) result(rv)
 end function atk_address_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_address_allocatable_header(d):
-    return "void *atk_address_allocatable_{typename}_{nd}_(void * array);".format(**d)
+    return "void * atk_address_allocatable_{typename}_{nd}_(void * array);".format(**d)
 
 ######################################################################
 
@@ -428,7 +428,7 @@ subroutine atk_allocate_allocatable_{typename}_{nd}(array, nitems)
 end subroutine atk_allocate_allocatable_{typename}_{nd}""".format(size=size, **d)
 
 def print_atk_allocate_allocatable_header(d):
-    return "void atk_allocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
+    return "void atk_allocate_allocatable_{typename}_{nd}_(void * array, long nitems);".format(**d)
 
 ######################################################################
 
@@ -446,7 +446,7 @@ subroutine atk_deallocate_allocatable_{typename}_{nd}(array)
 end subroutine atk_deallocate_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_deallocate_allocatable_header(d):
-    return "void atk_deallocate_allocatable_{typename}_{nd}_(void *array);".format(**d)
+    return "void atk_deallocate_allocatable_{typename}_{nd}_(void * array);".format(**d)
 
 ######################################################################
 
@@ -473,21 +473,21 @@ subroutine atk_reallocate_allocatable_{typename}_{nd}(array, nitems)
 end subroutine atk_reallocate_allocatable_{typename}_{nd}""".format(size=size, **d)
 
 def print_atk_reallocate_allocatable_header(d):
-    return "void atk_reallocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
+    return "void atk_reallocate_allocatable_{typename}_{nd}_(void * array, long nitems);".format(**d)
 
 ######################################################################
 
 def print_fptrs_cache(d):
     return """
-{{
-  {rank},   // rank
-  {atk_type},
-  atk_size_allocatable_{typename}_{nd}_,
-  atk_address_allocatable_{typename}_{nd}_,
-  atk_allocate_allocatable_{typename}_{nd}_,
-  atk_deallocate_allocatable_{typename}_{nd}_,
-  atk_reallocate_allocatable_{typename}_{nd}_
-}},
+  {{
+    {rank},   // rank
+    {atk_type},
+    atk_size_allocatable_{typename}_{nd}_,
+    atk_address_allocatable_{typename}_{nd}_,
+    atk_allocate_allocatable_{typename}_{nd}_,
+    atk_deallocate_allocatable_{typename}_{nd}_,
+    atk_reallocate_allocatable_{typename}_{nd}_
+  }},
 """.format(**d)
 
 
