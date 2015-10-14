@@ -8,7 +8,7 @@
 
 #include "sidre/DataGroup.hpp"
 #include "sidre/MetaBuffer.hpp"
-#include "sidre/SidreMalloc.hpp"  // for static variables
+#include "SidreWrapperHelpers.hpp"  // XXX until types are fixed
 
 // import cog once
 //[[[cog import cog;import genfsidresplicer as gen ]]]
@@ -206,7 +206,8 @@ public:
 
   virtual TypeID getTypeID() const
   {
-      return static_cast<TypeID>(m_callbacks->type);
+    // XXX     return static_cast<TypeID>(m_callbacks->type);
+    return asctoolkit::sidre::getTypeID(m_callbacks->type);
   }
 
     virtual void * allocate(TypeID type, SidreLength nitems) const

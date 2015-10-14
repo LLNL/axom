@@ -313,6 +313,22 @@ DataBuffer * DataBuffer::reallocate(const DataType& dtype)
  */
 DataBuffer * DataBuffer::sync()
 {
+  SLIC_ASSERT_MSG(m_meta_buffer != ATK_NULLPTR,
+		  "Attempt to sync buffer which does not have a metabuffer");
+
+  if (m_meta_buffer != ATK_NULLPTR)
+  {
+    void * external_data = m_meta_buffer->getDataPointer();
+    TypeID type = m_meta_buffer->getTypeID();
+    SidreLength len = m_meta_buffer->getNumberOfElements();
+
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(len);
+
+    declare(dtype);
+    setExternalData(external_data);
+  }
+
   return this;
 }
 

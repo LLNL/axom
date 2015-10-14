@@ -290,7 +290,7 @@ DataView * DataView::sync()
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     m_data_buffer->sync();
-    apply();
+    apply(m_data_buffer->getSchema());
   }
   return this;
 }

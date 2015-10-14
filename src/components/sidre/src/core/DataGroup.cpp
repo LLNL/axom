@@ -350,6 +350,15 @@ DataView * DataGroup::createMetaBufferView( const std::string& name, MetaBuffer 
   }
   else
   {
+#if 1
+    DataBuffer * buff = this->getDataStore()->createBuffer();
+    buff->setMetaBuffer(meta_buffer);
+    buff->sync();
+
+    DataView * const view = new DataView( name, this, buff);
+    buff->attachView(view);
+    view->apply(buff->getSchema());
+#else
     void * external_data = meta_buffer->getDataPointer();
     TypeID type = meta_buffer->getTypeID();
     SidreLength len = meta_buffer->getNumberOfElements();
@@ -365,6 +374,7 @@ DataView * DataGroup::createMetaBufferView( const std::string& name, MetaBuffer 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
     view->apply(dtype);
+#endif
 
     return attachView(view);
   }

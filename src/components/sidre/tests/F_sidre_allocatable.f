@@ -35,7 +35,7 @@ contains
     view_iarray1 = root%register_allocatable("iarray", iarray)
 
 ! Query metadata using datastore API.
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
@@ -75,7 +75,7 @@ contains
     ! Register with datastore, check type and length
     view_iarray1 = root%register_allocatable("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
@@ -92,7 +92,7 @@ contains
     call assert_equals(size(iarray), 10)
 
 ! Check datastore metadata
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
@@ -132,7 +132,7 @@ contains
     ! Register with datastore
     view_iarray1 = root%register_allocatable("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
     ! Allocate array via Fortran
@@ -142,7 +142,7 @@ contains
 
     ! Check datastore metadata
     call view_iarray1%sync
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
@@ -184,7 +184,7 @@ contains
 
     view_iarray1 = root%register_static("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
     num_elements = view_iarray1%get_number_of_elements()
@@ -222,7 +222,7 @@ contains
 
     view_iarray1 = root%register_allocatable("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_DOUBLE_T)
 
     num_elements = view_iarray1%get_number_of_elements()
@@ -253,7 +253,7 @@ function fortran_test() bind(C,name="fortran_test")
 
   call local_allocatable_int
   call ds_allocatable_int
-!  call sync_allocatable_int
+  call sync_allocatable_int
   call local_static_int_array
   call local_allocatable_double
 
