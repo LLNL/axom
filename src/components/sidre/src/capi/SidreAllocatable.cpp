@@ -14,8 +14,10 @@
 //[[[cog import cog;import genfsidresplicer as gen ]]]
 //[[[end]]]
 
-namespace asctoolkit {
-namespace sidre {
+namespace asctoolkit
+{
+namespace sidre
+{
 class DataView;
 
 extern "C" {
@@ -89,14 +91,15 @@ void atk_reallocate_allocatable_double_1d_ptr_(void * array, long nitems);
 //----------------------------------------------------------------------
 // Holds pointers to Fortran functions since they cannot be in the
 // Class AllocatableMetaBuffer directly.
-struct Fptrs {
-    int rank;
-    int type;
-    size_t (*getNumberOfElements)(void *array);
-    void *(*getDataPointer)(void *array);
-    void (*allocate)(void *array, long nitems);
-    void (*deallocate)(void *array);
-    void (*reallocate)(void *array, long nitems);
+struct Fptrs
+{
+  int rank;
+  int type;
+  size_t (* getNumberOfElements)(void * array);
+  void * (* getDataPointer)(void * array);
+  void (* allocate)(void * array, long nitems);
+  void (* deallocate)(void * array);
+  void (* reallocate)(void * array, long nitems);
 };
 
 //[[[cog cog.outl('static struct Fptrs fptrs_cache[%s] = {' % gen.num_metabuffers()) ]]]
@@ -194,15 +197,15 @@ static struct Fptrs fptrs_cache[8] = {
 class AllocatableMetaBuffer : public MetaBuffer
 {
 public:
-  virtual void *getDataPointer() const
-    {
-	return m_callbacks->getDataPointer(m_context);
-    }
+  virtual void * getDataPointer() const
+  {
+    return m_callbacks->getDataPointer(m_context);
+  }
 
   virtual size_t getNumberOfElements() const
-    {
-	return m_callbacks->getNumberOfElements(m_context);
-    }
+  {
+    return m_callbacks->getNumberOfElements(m_context);
+  }
 
   virtual TypeID getTypeID() const
   {
@@ -210,28 +213,28 @@ public:
     return asctoolkit::sidre::getTypeID(m_callbacks->type);
   }
 
-    virtual void * allocate(TypeID type, SidreLength nitems) const
-    {
+  virtual void * allocate(TypeID type, SidreLength nitems) const
+  {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type
-	m_callbacks->allocate(m_context, nitems);
-	return m_callbacks->getDataPointer(m_context);
-    }
+    m_callbacks->allocate(m_context, nitems);
+    return m_callbacks->getDataPointer(m_context);
+  }
 
-    virtual void release() const
-    {
-	m_callbacks->deallocate(m_context);
-    }
+  virtual void release() const
+  {
+    m_callbacks->deallocate(m_context);
+  }
 
-    virtual void * reallocate(TypeID type, SidreLength nitems) const
-    {
+  virtual void * reallocate(TypeID type, SidreLength nitems) const
+  {
     // XXX - type is fixed in the context, unused
     // XXX - check requested type vs context type
-	m_callbacks->reallocate(m_context, nitems);
-	return m_callbacks->getDataPointer(m_context);
-    }
+    m_callbacks->reallocate(m_context, nitems);
+    return m_callbacks->getDataPointer(m_context);
+  }
 
-  AllocatableMetaBuffer(void *context, const Fptrs * callbacks) :
+  AllocatableMetaBuffer(void * context, const Fptrs * callbacks) :
     m_context(context),
     m_callbacks(callbacks)
   { }
@@ -246,9 +249,9 @@ private:
  *
  * The Fortran allocatable array is the buffer for the DataView.
  */
-static void *register_allocatable(DataGroup *group,
-				  const std::string &name,
-				  void *context, int imetabuffer)
+static void * register_allocatable(DataGroup * group,
+                                   const std::string &name,
+                                   void * context, int imetabuffer)
 {
   AllocatableMetaBuffer * metabuffer = new AllocatableMetaBuffer(context, fptrs_cache + imetabuffer);
   return group->createMetaBufferView(name, metabuffer);
@@ -258,13 +261,13 @@ extern "C" {
 
 // called from Fortran
 // return pointer to a DataView
-void *ATK_register_static(void *group, char *name, int lname, void *addr, int type, long nitems)
+void * ATK_register_static(void * group, char * name, int lname, void * addr, int type, long nitems)
 {
-  DataGroup *grp = static_cast<DataGroup *>(group);
+  DataGroup * grp = static_cast<DataGroup *>(group);
   return grp->createExternalView( std::string(name, lname),
-				  addr,
-				  static_cast<TypeID>(type),
-				  static_cast<SidreLength>(nitems));
+                                  addr,
+                                  static_cast<TypeID>(type),
+                                  static_cast<SidreLength>(nitems));
 }
 
 // called from Fortran
@@ -276,9 +279,9 @@ void *ATK_register_static(void *group, char *name, int lname, void *addr, int ty
 // the same as C_LOC.
 // XXX Pass the first element, not the entire array, to avoid getting
 // XXX a copy of the array.
-void *atk_c_loc_(void *addr)
+void * atk_c_loc_(void * addr)
 {
-    return addr;
+  return addr;
 }
 
 //[[[cog
@@ -379,4 +382,3 @@ void * atk_register_allocatable_double_1d_ptr_(
 
 }  // namespace asctoolkit
 }  // namespace sidre
-
