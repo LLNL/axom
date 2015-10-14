@@ -41,6 +41,8 @@ void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLen
 
 void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len);
 
+void ATK_dataview_sync(ATK_dataview * self);
+
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 
 bool ATK_dataview_is_opaque(ATK_dataview * self);

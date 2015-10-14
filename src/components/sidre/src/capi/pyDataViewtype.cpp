@@ -154,6 +154,22 @@ PY_dataview_reallocate(
 // splicer end class.DataView.method.reallocate
 }
 
+static char PY_dataview_sync__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_sync(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.sync
+    self->BBB->sync();
+    Py_RETURN_NONE;
+// splicer end class.DataView.method.sync
+}
+
 static char PY_dataview_has_buffer__doc__[] =
 "documentation"
 ;
@@ -378,6 +394,7 @@ static PyMethodDef PY_DataView_methods[] = {
 {"allocate_simple", (PyCFunction)PY_dataview_allocate_simple, METH_NOARGS, PY_dataview_allocate_simple__doc__},
 {"allocate_from_type", (PyCFunction)PY_dataview_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_dataview_reallocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_reallocate__doc__},
+{"sync", (PyCFunction)PY_dataview_sync, METH_NOARGS, PY_dataview_sync__doc__},
 {"hasBuffer", (PyCFunction)PY_dataview_has_buffer, METH_NOARGS, PY_dataview_has_buffer__doc__},
 {"isOpaque", (PyCFunction)PY_dataview_is_opaque, METH_NOARGS, PY_dataview_is_opaque__doc__},
 {"getName", (PyCFunction)PY_dataview_get_name, METH_NOARGS, PY_dataview_get_name__doc__},

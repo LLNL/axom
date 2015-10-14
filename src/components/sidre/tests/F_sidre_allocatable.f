@@ -137,13 +137,11 @@ contains
 
     ! Allocate array via Fortran
     allocate(iarray(10))
-    
     call assert_true(allocated(iarray))
-
-    ! Check size intrinsic
     call assert_equals(size(iarray), 10)
 
     ! Check datastore metadata
+    call view_iarray1%sync
 !XXX    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 

@@ -208,6 +208,7 @@ module sidre_mod
         procedure :: allocate_long => dataview_allocate_long
         procedure :: reallocate_int => dataview_reallocate_int
         procedure :: reallocate_long => dataview_reallocate_long
+        procedure :: sync => dataview_sync
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
@@ -873,6 +874,13 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_reallocate
+        
+        subroutine atk_dataview_sync(self) &
+                bind(C, name="ATK_dataview_sync")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+        end subroutine atk_dataview_sync
         
         pure function atk_dataview_has_buffer(self) result(rv) &
                 bind(C, name="ATK_dataview_has_buffer")
@@ -2287,6 +2295,15 @@ contains
             int(len, C_LONG))
         ! splicer end class.DataView.method.reallocate_long
     end subroutine dataview_reallocate_long
+    
+    subroutine dataview_sync(obj)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        ! splicer begin class.DataView.method.sync
+        call atk_dataview_sync(obj%voidptr)
+        ! splicer end class.DataView.method.sync
+    end subroutine dataview_sync
     
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding

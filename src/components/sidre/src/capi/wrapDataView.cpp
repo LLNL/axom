@@ -54,6 +54,15 @@ return;
 // splicer end class.DataView.method.reallocate
 }
 
+void ATK_dataview_sync(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.sync
+selfobj->sync();
+return;
+// splicer end class.DataView.method.sync
+}
+
 bool ATK_dataview_has_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
