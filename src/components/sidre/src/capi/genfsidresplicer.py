@@ -481,6 +481,14 @@ end subroutine atk_allocate_allocatable_{typename}_{nd}""".format(size=size, **d
 def print_atk_allocate_allocatable_header(d):
     return "void atk_allocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
 
+def AllocateAllocatable(printer):
+    d = dict(
+        prefix = 'atk_allocate_allocatable',
+        args   = '(array, nitems)'
+    )
+    print_switch(printer, d)
+
+
 ######################################################################
 
 def print_atk_deallocate_allocatable(d):

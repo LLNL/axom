@@ -9,6 +9,12 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
+size_t SizeAllocatable(void * array, TypeID type, int rank);
+
+void * AddressAllocatable(void * array, TypeID type, int rank);
+
+void AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nitems);
+
 void RegisterFortranAllocatableMetaBuffers(void);
 
 }  // namespace asctoolkit
