@@ -87,6 +87,7 @@ void atk_reallocate_allocatable_double_1d_ptr_(void *array, long nitems);
 }
 
 //----------------------------------------------------------------------
+#if 0
 // Holds pointers to Fortran functions since they cannot be in the
 // Class AllocatableMetaBuffer directly.
 struct Fptrs {
@@ -239,6 +240,7 @@ private:
   void * m_context;   // pointer to Fortran allocatable
   const Fptrs * m_callbacks;
 };
+#endif
 
 
 
@@ -457,6 +459,7 @@ default:
  *
  * The Fortran allocatable array is the buffer for the DataView.
  */
+#if 0
 static void * register_allocatable(DataGroup *group,
 				  const std::string &name,
 				  void *context, int imetabuffer)
@@ -464,16 +467,18 @@ static void * register_allocatable(DataGroup *group,
   AllocatableMetaBuffer * metabuffer = new AllocatableMetaBuffer(context, fptrs_cache + imetabuffer);
   return group->createMetaBufferView(name, metabuffer);
 }
+#endif
 
 extern "C" {
 
-void *atk_create_fortran_allocatable_view(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, TypeID type, int rank)
+static void *ATK_create_fortran_allocatable_view(DataGroup *group,
+						 char *name, int lname,
+						 void *array, int type, int rank)
 {
   DataView *view = group->createFortranAllocatableView(std::string(name, lname),
-						       array, type, rank);
+						       array,
+						       static_cast<TypeID>(type),
+						       rank);
   return view;
 }
 
@@ -520,9 +525,9 @@ void *atk_c_loc_(void *addr)
 void *atk_register_allocatable_int_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -531,9 +536,9 @@ void *atk_register_allocatable_int_scalar_ptr_(
 void *atk_register_allocatable_int_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -542,9 +547,9 @@ void *atk_register_allocatable_int_1d_ptr_(
 void *atk_register_allocatable_long_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -553,9 +558,9 @@ void *atk_register_allocatable_long_scalar_ptr_(
 void *atk_register_allocatable_long_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -564,9 +569,9 @@ void *atk_register_allocatable_long_1d_ptr_(
 void *atk_register_allocatable_float_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -575,9 +580,9 @@ void *atk_register_allocatable_float_scalar_ptr_(
 void *atk_register_allocatable_float_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -586,9 +591,9 @@ void *atk_register_allocatable_float_1d_ptr_(
 void *atk_register_allocatable_double_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
 // Fortran callable routine.
@@ -597,9 +602,9 @@ void *atk_register_allocatable_double_scalar_ptr_(
 void *atk_register_allocatable_double_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
-    void *array, int indx)
+    void *array, int itype, int rank)
 {
-    return register_allocatable(group, std::string(name, lname), array, indx); 
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 //[[[end]]]
 
