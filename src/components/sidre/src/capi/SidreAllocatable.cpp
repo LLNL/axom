@@ -8,7 +8,6 @@
 
 #include "sidre/DataGroup.hpp"
 #include "sidre/MetaBuffer.hpp"
-#include "sidre/SidreMalloc.hpp"  // for static variables
 
 // import cog once
 //[[[cog import cog;import genfsidresplicer as gen ]]]
