@@ -32,7 +32,7 @@
 // SiDRe project headers
 #include "SidreTypes.hpp"
 #include "MetaBuffer.hpp"
-
+#include "sidre/SidreAllocatable.hpp"
 
 
 namespace asctoolkit

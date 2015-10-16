@@ -387,8 +387,9 @@ default:
 /*
  * Call a Fortran function to allocate an allocatable.
  */
-void AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nitems)
+void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nitems)
 {
+  void * addr = ATK_NULLPTR;
 //[[[cog
 //gen.AllocateAllocatable(cog.outl)
 //]]]
@@ -450,7 +451,7 @@ default:
   break;
 }
 //[[[end]]]
-  return;
+  return addr;
 }
 
 

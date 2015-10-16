@@ -118,20 +118,19 @@ DataBuffer * DataBuffer::declare(const DataType& dtype)
  */
 DataBuffer * DataBuffer::allocate()
 {
-  if (m_meta_buffer != ATK_NULLPTR)
-  {
-    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-    SidreLength nitems = m_schema.dtype().number_of_elements();
-    m_data = m_meta_buffer->allocate(type, nitems);
-    m_node.set_external(m_schema,m_data);
-    return this;
-  }
-
-
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if ( !m_is_data_external )
+  if(m_fortran_allocatable != ATK_NULLPTR)
+  {
+    // cleanup old data
+    cleanup();
+    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+    SidreLength nitems = m_schema.dtype().number_of_elements();
+    m_data = AllocateAllocatable(m_fortran_allocatable, type, m_rank, nitems);
+    m_node.set_external(m_schema,m_data);
+  }
+  else if ( !m_is_data_external )
   {
     // cleanup old data
     cleanup();
