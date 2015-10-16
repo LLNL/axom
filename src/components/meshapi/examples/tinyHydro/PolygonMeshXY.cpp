@@ -3,10 +3,6 @@
 
 #include "myTimer.hpp"
 #include <stdio.h>
-int clock_getres(clockid_t clk_id, struct timespec *res);
-int clock_gettime(clockid_t clk_id, struct timespec *tp);
-int clock_settime(clockid_t clk_id, const struct timespec *tp);
-
 
 namespace tinyHydro {
 
@@ -135,8 +131,8 @@ VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
 {
    VectorXY ret;
 
-   timespec time1, time2;                            // TIMER
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);  // TIMER
+   Timer timer;
+   timer.start();
 
    const int nZones = numZones();
    for (int i = 0; i < nZones; i++)
@@ -145,8 +141,8 @@ VectorXY PolygonMeshXY::meshAverageKLZMemOrderA()
    }
    ret *= (1./nZones);
 
-   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);  // TIMER
-   timeElapsed = diffSeconds(time1, time2);
+   timer.stop();
+   std::cout<<"Elapsed time for averaging was " << timer.getElapsedTime() << " seconds." << std::endl;
           
    return ret;
 }

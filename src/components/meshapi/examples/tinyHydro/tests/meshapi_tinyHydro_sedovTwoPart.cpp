@@ -92,8 +92,8 @@ TEST(gtest_meshapi_tinyHydro,test_sedov_2_part)
 
     double E0 = h.totalEnergy();
 
-    timespec time1, time2; // TIMER
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);  // TIMER
+    Timer timer;
+    timer.start();
     if(steps > 0)
     {
         h.steps(steps);
@@ -102,9 +102,8 @@ TEST(gtest_meshapi_tinyHydro,test_sedov_2_part)
     {
         h.advance(0.3);
     }
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2); // TIMER
-    double timeElapsed = diffSeconds(time1, time2);
-    std::cout<<"Elapsed time after advancing was " << timeElapsed << " seconds." << std::endl;
+    timer.stop();
+    std::cout<<"Elapsed time after advancing was " << timer.getElapsedTime() << " seconds." << std::endl;
 
 
     double E1 = h.totalEnergy();

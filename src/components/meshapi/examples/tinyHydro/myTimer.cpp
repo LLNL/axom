@@ -2,7 +2,7 @@
 
 namespace tinyHydro {
 
-
+/*
 timespec diffTime(timespec start, timespec end)
 {
 	timespec temp;
@@ -20,7 +20,7 @@ double diffSeconds(timespec start, timespec end)
 {
    return diffTime(start, end).tv_sec + diffTime(start, end).tv_nsec / 1000000000.0;
 }
-
+*/
 // example
 // int main()
 // {

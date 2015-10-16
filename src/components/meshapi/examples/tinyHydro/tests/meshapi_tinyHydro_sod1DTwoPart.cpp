@@ -110,8 +110,9 @@ TEST(gtest_meshapi_tinyHydro,test_sod1D_2_part)
     //bool testP = false;
     bool special = false;
     double E0 = 0.; // starting energy
-    timespec time1, time2; // TIMER
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);  // TIMER
+
+    Timer timer;
+    timer.start();
 
     if (special)
     {
@@ -138,9 +139,9 @@ TEST(gtest_meshapi_tinyHydro,test_sod1D_2_part)
         h.advance(goalTime); // puts shock at 0.8 (p.57, Triangular Hydro Schemes notebook)
     }
     double E1 = h.totalEnergy();
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2); // TIMER
-    double timeElapsed = diffSeconds(time1, time2);
-    std::cout<<"Elapsed time after advancing was " << timeElapsed << " seconds." << std::endl;
+
+    timer.stop();
+    std::cout<<"Elapsed time after advancing was " << timer.getElapsedTime() << " seconds." << std::endl;
 
     std::cout <<"\n\t Total final energy: " << E1 << std::endl;
     std::cout <<"\t (E1-E0)/E0 = : " << (E1-E0)/E0 << std::endl;
