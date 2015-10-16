@@ -268,7 +268,7 @@ def print_lines(printer, fcn, **kwargs):
 
 #----------------------------------------------------------------------
 
-def print_switch(printer, d):
+def print_switch(printer, calls):
     """Print a switch statement on type and rank.
     Caller must set fileds in d:
       prefix = call or assignment
@@ -278,21 +278,24 @@ def print_switch(printer, d):
                   '(args)'
                   ''           -- subroutine with no arguments
     """
+    d = {}
     printer('switch(type)')
     printer('{')
     for typetuple in types:
         d['typename'], f_type, atk_type, cpp_type = typetuple
-        d['nd'] = 'scalar_ptr'
         printer('case %s:' % cpp_type)
         printer('  switch(rank)')
         printer('  {')
-        printer('  case 0:')
-        printer('    {prefix}_{typename}_{nd}_{args};'.format(**d))
-        printer('    break;')
-        for nd in range(1,maxdims+1):
-            d['nd'] = '%dd_ptr' % nd
+        for nd in range(0,maxdims+1):
+            if nd == 0:
+                d['nd'] = 'scalar_ptr'
+            else:
+                d['nd'] = '%dd_ptr' % nd
             printer('  case %d:' % nd)
-            printer('    {prefix}_{typename}_{nd}_{args};'.format(**d))
+            for ca in calls:
+                d['prefix'] = ca[0]
+                d['args']   = ca[1]
+                printer('    {prefix}_{typename}_{nd}_{args};'.format(**d))
             printer('    break;')
         printer('  default:')
         printer('    break;')
@@ -426,11 +429,8 @@ def print_atk_size_allocatable_header(d):
     return "size_t atk_size_allocatable_{typename}_{nd}_(void * array);".format(**d)
 
 def SizeAllocatable(printer):
-    d = dict(
-        prefix = 'nitems = atk_size_allocatable',
-        args   = '(array)'
-    )
-    print_switch(printer, d)
+    calls = [ ('nitems = atk_size_allocatable', '(array)') ]
+    print_switch(printer, calls)
 
 ######################################################################
 
@@ -452,11 +452,8 @@ def print_atk_address_allocatable_header(d):
     return "void *atk_address_allocatable_{typename}_{nd}_(void * array);".format(**d)
 
 def AddressAllocatable(printer):
-    d = dict(
-        prefix = 'addr = atk_address_allocatable',
-        args   = '(array)'
-    )
-    print_switch(printer, d)
+    calls = [ ('addr = atk_address_allocatable', '(array)') ]
+    print_switch(printer, calls)
 
 
 ######################################################################
@@ -486,11 +483,11 @@ def print_atk_allocate_allocatable_header(d):
     return "void atk_allocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
 
 def AllocateAllocatable(printer):
-    d = dict(
-        prefix = 'atk_allocate_allocatable',
-        args   = '(array, nitems)'
-    )
-    print_switch(printer, d)
+    calls = [
+        ('atk_allocate_allocatable', '(array, nitems)'),
+        ('addr = atk_address_allocatable', '(array)'),
+        ]
+    print_switch(printer, calls)
 
 
 ######################################################################
@@ -566,6 +563,6 @@ if __name__ == '__main__':
         # fortran splicers
         gen_fortran()
     elif cmd == 'test':
-        SizeAllocatable(print)
+        AllocateAllocatable(print)
     else:
         raise RuntimeError("Unknown command")

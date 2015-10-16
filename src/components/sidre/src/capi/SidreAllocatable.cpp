@@ -400,9 +400,11 @@ case CONDUIT_NATIVE_INT_DATATYPE_ID:
   {
   case 0:
     atk_allocate_allocatable_int_scalar_ptr_(array, nitems);
+    addr = atk_address_allocatable_int_scalar_ptr_(array);
     break;
   case 1:
     atk_allocate_allocatable_int_1d_ptr_(array, nitems);
+    addr = atk_address_allocatable_int_1d_ptr_(array);
     break;
   default:
     break;
@@ -413,9 +415,11 @@ case CONDUIT_NATIVE_LONG_DATATYPE_ID:
   {
   case 0:
     atk_allocate_allocatable_long_scalar_ptr_(array, nitems);
+    addr = atk_address_allocatable_long_scalar_ptr_(array);
     break;
   case 1:
     atk_allocate_allocatable_long_1d_ptr_(array, nitems);
+    addr = atk_address_allocatable_long_1d_ptr_(array);
     break;
   default:
     break;
@@ -426,9 +430,11 @@ case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
   {
   case 0:
     atk_allocate_allocatable_float_scalar_ptr_(array, nitems);
+    addr = atk_address_allocatable_float_scalar_ptr_(array);
     break;
   case 1:
     atk_allocate_allocatable_float_1d_ptr_(array, nitems);
+    addr = atk_address_allocatable_float_1d_ptr_(array);
     break;
   default:
     break;
@@ -439,9 +445,11 @@ case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
   {
   case 0:
     atk_allocate_allocatable_double_scalar_ptr_(array, nitems);
+    addr = atk_address_allocatable_double_scalar_ptr_(array);
     break;
   case 1:
     atk_allocate_allocatable_double_1d_ptr_(array, nitems);
+    addr = atk_address_allocatable_double_1d_ptr_(array);
     break;
   default:
     break;
