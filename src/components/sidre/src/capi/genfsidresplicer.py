@@ -7,10 +7,10 @@ from __future__ import print_function
 import sys
 
 types = (
-    ( 'int',    'integer(C_INT)',  'ATK_C_INT_T'),
-    ( 'long',   'integer(C_LONG)', 'ATK_C_LONG_T'),
-    ( 'float',  'real(C_FLOAT)',   'ATK_C_FLOAT_T'),
-    ( 'double', 'real(C_DOUBLE)',  'ATK_C_DOUBLE_T'),
+    ( 'int',    'integer(C_INT)',  'ATK_C_INT_T',    'CONDUIT_NATIVE_INT_DATATYPE_ID'),
+    ( 'long',   'integer(C_LONG)', 'ATK_C_LONG_T',   'CONDUIT_NATIVE_LONG_DATATYPE_ID'),
+    ( 'float',  'real(C_FLOAT)',   'ATK_C_FLOAT_T',  'CONDUIT_NATIVE_FLOAT_DATATYPE_ID'),
+    ( 'double', 'real(C_DOUBLE)',  'ATK_C_DOUBLE_T', 'CONDUIT_NATIVE_DOUBLE_DATATYPE_ID'),
 )
 
 # XXX - only doing 0-d and 1-d for now
@@ -226,7 +226,7 @@ def foreach_value(lines, fcn, **kwargs):
     d.update(kwargs)
     indx = 0
     for typetuple in types:
-        d['typename'], d['f_type'], d['atk_type'] = typetuple
+        d['typename'], d['f_type'], d['atk_type'], d['cpp_type'] = typetuple
 
         # scalar values
         # XXX - generic does not distinguish between pointer and non-pointer
@@ -381,6 +381,33 @@ def print_atk_size_allocatable_header(d):
 # XXX - need cmake macro to mangle name portably
     return "size_t atk_size_allocatable_{typename}_{nd}_(void * array);".format(**d)
 
+def SizeAllocatable(printer):
+    printer('switch(type)')
+    printer('{')
+    d = {}
+    for typetuple in types:
+        d['typename'], f_type, atk_type, cpp_type = typetuple
+        d['nd'] = 'scalar_ptr'
+        printer('case %s:' % cpp_type)
+        printer('  switch(rank)')
+        printer('  {')
+        printer('  case 0:')
+        printer('    nitems = atk_size_allocatable_{typename}_{nd}_(array);'.format(**d))
+        printer('    break;')
+        for nd in range(1,maxdims+1):
+            d['nd'] = '%dd_ptr' % nd
+            printer('  case %d:' % nd)
+            printer('    nitems = atk_size_allocatable_{typename}_{nd}_(array);'.format(**d))
+            printer('    break;')
+        printer('  default:')
+        printer('    break;')
+        printer('  }')
+        printer('  break;')
+    printer('default:')
+    printer('  break;')
+    printer('}')
+
+
 ######################################################################
 
 def print_atk_address_allocatable(d):
@@ -498,5 +525,7 @@ if __name__ == '__main__':
     if cmd == 'fortran':
         # fortran splicers
         gen_fortran()
+    elif cmd == 'test':
+        SizeAllocatable(print)
     else:
         raise RuntimeError("Unknown command")

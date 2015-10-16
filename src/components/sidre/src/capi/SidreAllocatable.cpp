@@ -239,6 +239,79 @@ private:
   const Fptrs * m_callbacks;
 };
 
+
+
+/*
+ * Call a Fortran function to find the size of an allocatable.
+ */
+size_t SizeAllocatable(void *array, TypeID type, int rank)
+{
+  size_t nitems = 0;
+//[[[cog
+//gen.SizeAllocatable(cog.outl)
+//]]]
+switch(type)
+{
+case CONDUIT_NATIVE_INT_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    nitems = atk_size_allocatable_int_scalar_ptr_(array);
+    break;
+  case 1:
+    nitems = atk_size_allocatable_int_1d_ptr_(array);
+    break;
+  default:
+    break;
+  }
+  break;
+case CONDUIT_NATIVE_LONG_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    nitems = atk_size_allocatable_long_scalar_ptr_(array);
+    break;
+  case 1:
+    nitems = atk_size_allocatable_long_1d_ptr_(array);
+    break;
+  default:
+    break;
+  }
+  break;
+case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    nitems = atk_size_allocatable_float_scalar_ptr_(array);
+    break;
+  case 1:
+    nitems = atk_size_allocatable_float_1d_ptr_(array);
+    break;
+  default:
+    break;
+  }
+  break;
+case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    nitems = atk_size_allocatable_double_scalar_ptr_(array);
+    break;
+  case 1:
+    nitems = atk_size_allocatable_double_1d_ptr_(array);
+    break;
+  default:
+    break;
+  }
+  break;
+default:
+  break;
+}
+//[[[end]]]
+  return nitems;
+}
+
+
 /*!
  * \brief Return DataView for a Fortran allocatable.
  *
