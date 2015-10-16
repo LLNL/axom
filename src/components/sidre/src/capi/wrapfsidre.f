@@ -114,40 +114,40 @@ module sidre_mod
             get_view_from_name,  &
             get_view_from_index
         ! splicer begin class.DataGroup.type_bound_procedure_part
-        procedure :: create_allocatable_view_int_scalar_ptr => datagroup_create_allocatable_view_int_scalar_ptr
-        procedure :: create_allocatable_view_int_1d_ptr => datagroup_create_allocatable_view_int_1d_ptr
-        procedure :: create_allocatable_view_long_scalar_ptr => datagroup_create_allocatable_view_long_scalar_ptr
-        procedure :: create_allocatable_view_long_1d_ptr => datagroup_create_allocatable_view_long_1d_ptr
-        procedure :: create_allocatable_view_float_scalar_ptr => datagroup_create_allocatable_view_float_scalar_ptr
-        procedure :: create_allocatable_view_float_1d_ptr => datagroup_create_allocatable_view_float_1d_ptr
-        procedure :: create_allocatable_view_double_scalar_ptr => datagroup_create_allocatable_view_double_scalar_ptr
-        procedure :: create_allocatable_view_double_1d_ptr => datagroup_create_allocatable_view_double_1d_ptr
+        procedure :: create_allocatable_view_int_scalar => datagroup_create_allocatable_view_int_scalar
+        procedure :: create_allocatable_view_int_1d => datagroup_create_allocatable_view_int_1d
+        procedure :: create_allocatable_view_long_scalar => datagroup_create_allocatable_view_long_scalar
+        procedure :: create_allocatable_view_long_1d => datagroup_create_allocatable_view_long_1d
+        procedure :: create_allocatable_view_float_scalar => datagroup_create_allocatable_view_float_scalar
+        procedure :: create_allocatable_view_float_1d => datagroup_create_allocatable_view_float_1d
+        procedure :: create_allocatable_view_double_scalar => datagroup_create_allocatable_view_double_scalar
+        procedure :: create_allocatable_view_double_1d => datagroup_create_allocatable_view_double_1d
         generic :: create_allocatable_view => &
-            create_allocatable_view_int_scalar_ptr,  &
-            create_allocatable_view_int_1d_ptr,  &
-            create_allocatable_view_long_scalar_ptr,  &
-            create_allocatable_view_long_1d_ptr,  &
-            create_allocatable_view_float_scalar_ptr,  &
-            create_allocatable_view_float_1d_ptr,  &
-            create_allocatable_view_double_scalar_ptr,  &
-            create_allocatable_view_double_1d_ptr
-        procedure :: register_static_int_scalar_ptr => datagroup_register_static_int_scalar_ptr
-        procedure :: register_static_int_1d_ptr => datagroup_register_static_int_1d_ptr
-        procedure :: register_static_long_scalar_ptr => datagroup_register_static_long_scalar_ptr
-        procedure :: register_static_long_1d_ptr => datagroup_register_static_long_1d_ptr
-        procedure :: register_static_float_scalar_ptr => datagroup_register_static_float_scalar_ptr
-        procedure :: register_static_float_1d_ptr => datagroup_register_static_float_1d_ptr
-        procedure :: register_static_double_scalar_ptr => datagroup_register_static_double_scalar_ptr
-        procedure :: register_static_double_1d_ptr => datagroup_register_static_double_1d_ptr
+            create_allocatable_view_int_scalar,  &
+            create_allocatable_view_int_1d,  &
+            create_allocatable_view_long_scalar,  &
+            create_allocatable_view_long_1d,  &
+            create_allocatable_view_float_scalar,  &
+            create_allocatable_view_float_1d,  &
+            create_allocatable_view_double_scalar,  &
+            create_allocatable_view_double_1d
+        procedure :: register_static_int_scalar => datagroup_register_static_int_scalar
+        procedure :: register_static_int_1d => datagroup_register_static_int_1d
+        procedure :: register_static_long_scalar => datagroup_register_static_long_scalar
+        procedure :: register_static_long_1d => datagroup_register_static_long_1d
+        procedure :: register_static_float_scalar => datagroup_register_static_float_scalar
+        procedure :: register_static_float_1d => datagroup_register_static_float_1d
+        procedure :: register_static_double_scalar => datagroup_register_static_double_scalar
+        procedure :: register_static_double_1d => datagroup_register_static_double_1d
         generic :: register_static => &
-            register_static_int_scalar_ptr,  &
-            register_static_int_1d_ptr,  &
-            register_static_long_scalar_ptr,  &
-            register_static_long_1d_ptr,  &
-            register_static_float_scalar_ptr,  &
-            register_static_float_1d_ptr,  &
-            register_static_double_scalar_ptr,  &
-            register_static_double_1d_ptr
+            register_static_int_scalar,  &
+            register_static_int_1d,  &
+            register_static_long_scalar,  &
+            register_static_long_1d,  &
+            register_static_float_scalar,  &
+            register_static_float_1d,  &
+            register_static_double_scalar,  &
+            register_static_double_1d
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
     
@@ -1548,12 +1548,12 @@ contains
     ! splicer begin class.DataGroup.additional_functions
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_int_scalar_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_int_scalar_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_int_scalar(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1562,7 +1562,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_int_scalar_ptr
+           end function ATK_create_allocatable_view_int_scalar
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1574,16 +1574,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_INT_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_int_scalar_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_int_scalar_ptr
+        rv%voidptr = ATK_create_allocatable_view_int_scalar(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_int_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_int_1d_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_int_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_int_1d_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_int_1d(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1592,7 +1592,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_int_1d_ptr
+           end function ATK_create_allocatable_view_int_1d
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1604,16 +1604,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_INT_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_int_1d_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_int_1d_ptr
+        rv%voidptr = ATK_create_allocatable_view_int_1d(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_int_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_long_scalar_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_long_scalar_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_long_scalar(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1622,7 +1622,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_long_scalar_ptr
+           end function ATK_create_allocatable_view_long_scalar
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1634,16 +1634,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_LONG_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_long_scalar_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_long_scalar_ptr
+        rv%voidptr = ATK_create_allocatable_view_long_scalar(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_long_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_long_1d_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_long_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_long_1d_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_long_1d(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1652,7 +1652,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_long_1d_ptr
+           end function ATK_create_allocatable_view_long_1d
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1664,16 +1664,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_LONG_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_long_1d_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_long_1d_ptr
+        rv%voidptr = ATK_create_allocatable_view_long_1d(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_long_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_float_scalar_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_float_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_float_scalar_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_float_scalar(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1682,7 +1682,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_float_scalar_ptr
+           end function ATK_create_allocatable_view_float_scalar
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1694,16 +1694,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_FLOAT_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_float_scalar_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_float_scalar_ptr
+        rv%voidptr = ATK_create_allocatable_view_float_scalar(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_float_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_float_1d_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_float_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_float_1d_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_float_1d(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1712,7 +1712,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_float_1d_ptr
+           end function ATK_create_allocatable_view_float_1d
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1724,16 +1724,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_FLOAT_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_float_1d_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_float_1d_ptr
+        rv%voidptr = ATK_create_allocatable_view_float_1d(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_float_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_double_scalar_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_double_scalar_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_double_scalar(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1742,7 +1742,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_double_scalar_ptr
+           end function ATK_create_allocatable_view_double_scalar
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1754,16 +1754,16 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_DOUBLE_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_double_scalar_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_double_scalar_ptr
+        rv%voidptr = ATK_create_allocatable_view_double_scalar(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_double_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_double_1d_ptr(group, name, value) result(rv)
+    function datagroup_create_allocatable_view_double_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
         interface
-           function ATK_create_allocatable_view_double_1d_ptr(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_double_1d(group, name, lname, array, itype, rank) result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1772,7 +1772,7 @@ contains
            integer(C_INT), value, intent(IN) :: itype
            integer(C_INT), value, intent(IN) :: rank
            type(C_PTR) rv
-           end function ATK_create_allocatable_view_double_1d_ptr
+           end function ATK_create_allocatable_view_double_1d
         end interface
     
         class(datagroup), intent(IN) :: group
@@ -1784,11 +1784,11 @@ contains
         integer(C_INT), parameter :: itype = ATK_C_DOUBLE_T
     
         lname = len_trim(name)
-        rv%voidptr = ATK_create_allocatable_view_double_1d_ptr(group%voidptr, name, lname, value, itype, rank)
-    end function datagroup_create_allocatable_view_double_1d_ptr
+        rv%voidptr = ATK_create_allocatable_view_double_1d(group%voidptr, name, lname, value, itype, rank)
+    end function datagroup_create_allocatable_view_double_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_int_scalar_ptr(group, name, value) result(rv)
+    function datagroup_register_static_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -1817,10 +1817,10 @@ contains
         lname = len_trim(name)
         nitems = 1_C_LONG
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_int_scalar_ptr
+    end function datagroup_register_static_int_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_int_1d_ptr(group, name, value) result(rv)
+    function datagroup_register_static_int_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -1849,10 +1849,10 @@ contains
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_int_1d_ptr
+    end function datagroup_register_static_int_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_long_scalar_ptr(group, name, value) result(rv)
+    function datagroup_register_static_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -1881,10 +1881,10 @@ contains
         lname = len_trim(name)
         nitems = 1_C_LONG
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_long_scalar_ptr
+    end function datagroup_register_static_long_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_long_1d_ptr(group, name, value) result(rv)
+    function datagroup_register_static_long_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -1913,10 +1913,10 @@ contains
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_long_1d_ptr
+    end function datagroup_register_static_long_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_float_scalar_ptr(group, name, value) result(rv)
+    function datagroup_register_static_float_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -1945,10 +1945,10 @@ contains
         lname = len_trim(name)
         nitems = 1_C_LONG
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_float_scalar_ptr
+    end function datagroup_register_static_float_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_float_1d_ptr(group, name, value) result(rv)
+    function datagroup_register_static_float_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -1977,10 +1977,10 @@ contains
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_float_1d_ptr
+    end function datagroup_register_static_float_1d
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_double_scalar_ptr(group, name, value) result(rv)
+    function datagroup_register_static_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -2009,10 +2009,10 @@ contains
         lname = len_trim(name)
         nitems = 1_C_LONG
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_double_scalar_ptr
+    end function datagroup_register_static_double_scalar
     
     ! Generated by genfsidresplicer.py
-    function datagroup_register_static_double_1d_ptr(group, name, value) result(rv)
+    function datagroup_register_static_double_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
     
@@ -2041,7 +2041,7 @@ contains
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
         rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-    end function datagroup_register_static_double_1d_ptr
+    end function datagroup_register_static_double_1d
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)

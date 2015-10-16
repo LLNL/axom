@@ -22,66 +22,66 @@ extern "C" {
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_size_allocatable_header)
 //]]]
-size_t atk_size_allocatable_int_scalar_ptr_(void * array);
-size_t atk_size_allocatable_int_1d_ptr_(void * array);
-size_t atk_size_allocatable_long_scalar_ptr_(void * array);
-size_t atk_size_allocatable_long_1d_ptr_(void * array);
-size_t atk_size_allocatable_float_scalar_ptr_(void * array);
-size_t atk_size_allocatable_float_1d_ptr_(void * array);
-size_t atk_size_allocatable_double_scalar_ptr_(void * array);
-size_t atk_size_allocatable_double_1d_ptr_(void * array);
+size_t atk_size_allocatable_int_scalar_(void * array);
+size_t atk_size_allocatable_int_1d_(void * array);
+size_t atk_size_allocatable_long_scalar_(void * array);
+size_t atk_size_allocatable_long_1d_(void * array);
+size_t atk_size_allocatable_float_scalar_(void * array);
+size_t atk_size_allocatable_float_1d_(void * array);
+size_t atk_size_allocatable_double_scalar_(void * array);
+size_t atk_size_allocatable_double_1d_(void * array);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_address_allocatable_header)
 //]]]
-void *atk_address_allocatable_int_scalar_ptr_(void * array);
-void *atk_address_allocatable_int_1d_ptr_(void * array);
-void *atk_address_allocatable_long_scalar_ptr_(void * array);
-void *atk_address_allocatable_long_1d_ptr_(void * array);
-void *atk_address_allocatable_float_scalar_ptr_(void * array);
-void *atk_address_allocatable_float_1d_ptr_(void * array);
-void *atk_address_allocatable_double_scalar_ptr_(void * array);
-void *atk_address_allocatable_double_1d_ptr_(void * array);
+void *atk_address_allocatable_int_scalar_(void * array);
+void *atk_address_allocatable_int_1d_(void * array);
+void *atk_address_allocatable_long_scalar_(void * array);
+void *atk_address_allocatable_long_1d_(void * array);
+void *atk_address_allocatable_float_scalar_(void * array);
+void *atk_address_allocatable_float_1d_(void * array);
+void *atk_address_allocatable_double_scalar_(void * array);
+void *atk_address_allocatable_double_1d_(void * array);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_allocate_allocatable_header)
 //]]]
-void atk_allocate_allocatable_int_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_int_1d_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_long_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_long_1d_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_float_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_float_1d_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_double_scalar_ptr_(void *array, long nitems);
-void atk_allocate_allocatable_double_1d_ptr_(void *array, long nitems);
+void atk_allocate_allocatable_int_scalar_(void *array, long nitems);
+void atk_allocate_allocatable_int_1d_(void *array, long nitems);
+void atk_allocate_allocatable_long_scalar_(void *array, long nitems);
+void atk_allocate_allocatable_long_1d_(void *array, long nitems);
+void atk_allocate_allocatable_float_scalar_(void *array, long nitems);
+void atk_allocate_allocatable_float_1d_(void *array, long nitems);
+void atk_allocate_allocatable_double_scalar_(void *array, long nitems);
+void atk_allocate_allocatable_double_1d_(void *array, long nitems);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_deallocate_allocatable_header)
 //]]]
-void atk_deallocate_allocatable_int_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_int_1d_ptr_(void *array);
-void atk_deallocate_allocatable_long_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_long_1d_ptr_(void *array);
-void atk_deallocate_allocatable_float_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_float_1d_ptr_(void *array);
-void atk_deallocate_allocatable_double_scalar_ptr_(void *array);
-void atk_deallocate_allocatable_double_1d_ptr_(void *array);
+void atk_deallocate_allocatable_int_scalar_(void *array);
+void atk_deallocate_allocatable_int_1d_(void *array);
+void atk_deallocate_allocatable_long_scalar_(void *array);
+void atk_deallocate_allocatable_long_1d_(void *array);
+void atk_deallocate_allocatable_float_scalar_(void *array);
+void atk_deallocate_allocatable_float_1d_(void *array);
+void atk_deallocate_allocatable_double_scalar_(void *array);
+void atk_deallocate_allocatable_double_1d_(void *array);
 //[[[end]]]
 
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_reallocate_allocatable_header)
 //]]]
-void atk_reallocate_allocatable_int_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_int_1d_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_long_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_long_1d_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_float_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_float_1d_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_double_scalar_ptr_(void *array, long nitems);
-void atk_reallocate_allocatable_double_1d_ptr_(void *array, long nitems);
+void atk_reallocate_allocatable_int_scalar_(void *array, long nitems);
+void atk_reallocate_allocatable_int_1d_(void *array, long nitems);
+void atk_reallocate_allocatable_long_scalar_(void *array, long nitems);
+void atk_reallocate_allocatable_long_1d_(void *array, long nitems);
+void atk_reallocate_allocatable_float_scalar_(void *array, long nitems);
+void atk_reallocate_allocatable_float_1d_(void *array, long nitems);
+void atk_reallocate_allocatable_double_scalar_(void *array, long nitems);
+void atk_reallocate_allocatable_double_1d_(void *array, long nitems);
 //[[[end]]]
 
 }
@@ -111,81 +111,81 @@ static struct Fptrs fptrs_cache[8] = {
 {
   0,   // rank
   ATK_C_INT_T,
-  atk_size_allocatable_int_scalar_ptr_,
-  atk_address_allocatable_int_scalar_ptr_,
-  atk_allocate_allocatable_int_scalar_ptr_,
-  atk_deallocate_allocatable_int_scalar_ptr_,
-  atk_reallocate_allocatable_int_scalar_ptr_
+  atk_size_allocatable_int_scalar_,
+  atk_address_allocatable_int_scalar_,
+  atk_allocate_allocatable_int_scalar_,
+  atk_deallocate_allocatable_int_scalar_,
+  atk_reallocate_allocatable_int_scalar_
 },
 
 {
   1,   // rank
   ATK_C_INT_T,
-  atk_size_allocatable_int_1d_ptr_,
-  atk_address_allocatable_int_1d_ptr_,
-  atk_allocate_allocatable_int_1d_ptr_,
-  atk_deallocate_allocatable_int_1d_ptr_,
-  atk_reallocate_allocatable_int_1d_ptr_
+  atk_size_allocatable_int_1d_,
+  atk_address_allocatable_int_1d_,
+  atk_allocate_allocatable_int_1d_,
+  atk_deallocate_allocatable_int_1d_,
+  atk_reallocate_allocatable_int_1d_
 },
 
 {
   0,   // rank
   ATK_C_LONG_T,
-  atk_size_allocatable_long_scalar_ptr_,
-  atk_address_allocatable_long_scalar_ptr_,
-  atk_allocate_allocatable_long_scalar_ptr_,
-  atk_deallocate_allocatable_long_scalar_ptr_,
-  atk_reallocate_allocatable_long_scalar_ptr_
+  atk_size_allocatable_long_scalar_,
+  atk_address_allocatable_long_scalar_,
+  atk_allocate_allocatable_long_scalar_,
+  atk_deallocate_allocatable_long_scalar_,
+  atk_reallocate_allocatable_long_scalar_
 },
 
 {
   1,   // rank
   ATK_C_LONG_T,
-  atk_size_allocatable_long_1d_ptr_,
-  atk_address_allocatable_long_1d_ptr_,
-  atk_allocate_allocatable_long_1d_ptr_,
-  atk_deallocate_allocatable_long_1d_ptr_,
-  atk_reallocate_allocatable_long_1d_ptr_
+  atk_size_allocatable_long_1d_,
+  atk_address_allocatable_long_1d_,
+  atk_allocate_allocatable_long_1d_,
+  atk_deallocate_allocatable_long_1d_,
+  atk_reallocate_allocatable_long_1d_
 },
 
 {
   0,   // rank
   ATK_C_FLOAT_T,
-  atk_size_allocatable_float_scalar_ptr_,
-  atk_address_allocatable_float_scalar_ptr_,
-  atk_allocate_allocatable_float_scalar_ptr_,
-  atk_deallocate_allocatable_float_scalar_ptr_,
-  atk_reallocate_allocatable_float_scalar_ptr_
+  atk_size_allocatable_float_scalar_,
+  atk_address_allocatable_float_scalar_,
+  atk_allocate_allocatable_float_scalar_,
+  atk_deallocate_allocatable_float_scalar_,
+  atk_reallocate_allocatable_float_scalar_
 },
 
 {
   1,   // rank
   ATK_C_FLOAT_T,
-  atk_size_allocatable_float_1d_ptr_,
-  atk_address_allocatable_float_1d_ptr_,
-  atk_allocate_allocatable_float_1d_ptr_,
-  atk_deallocate_allocatable_float_1d_ptr_,
-  atk_reallocate_allocatable_float_1d_ptr_
+  atk_size_allocatable_float_1d_,
+  atk_address_allocatable_float_1d_,
+  atk_allocate_allocatable_float_1d_,
+  atk_deallocate_allocatable_float_1d_,
+  atk_reallocate_allocatable_float_1d_
 },
 
 {
   0,   // rank
   ATK_C_DOUBLE_T,
-  atk_size_allocatable_double_scalar_ptr_,
-  atk_address_allocatable_double_scalar_ptr_,
-  atk_allocate_allocatable_double_scalar_ptr_,
-  atk_deallocate_allocatable_double_scalar_ptr_,
-  atk_reallocate_allocatable_double_scalar_ptr_
+  atk_size_allocatable_double_scalar_,
+  atk_address_allocatable_double_scalar_,
+  atk_allocate_allocatable_double_scalar_,
+  atk_deallocate_allocatable_double_scalar_,
+  atk_reallocate_allocatable_double_scalar_
 },
 
 {
   1,   // rank
   ATK_C_DOUBLE_T,
-  atk_size_allocatable_double_1d_ptr_,
-  atk_address_allocatable_double_1d_ptr_,
-  atk_allocate_allocatable_double_1d_ptr_,
-  atk_deallocate_allocatable_double_1d_ptr_,
-  atk_reallocate_allocatable_double_1d_ptr_
+  atk_size_allocatable_double_1d_,
+  atk_address_allocatable_double_1d_,
+  atk_allocate_allocatable_double_1d_,
+  atk_deallocate_allocatable_double_1d_,
+  atk_reallocate_allocatable_double_1d_
 },
 //[[[end]]]
 };
@@ -259,10 +259,10 @@ case CONDUIT_NATIVE_INT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    nitems = atk_size_allocatable_int_scalar_ptr_(array);
+    nitems = atk_size_allocatable_int_scalar_(array);
     break;
   case 1:
-    nitems = atk_size_allocatable_int_1d_ptr_(array);
+    nitems = atk_size_allocatable_int_1d_(array);
     break;
   default:
     break;
@@ -272,10 +272,10 @@ case CONDUIT_NATIVE_LONG_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    nitems = atk_size_allocatable_long_scalar_ptr_(array);
+    nitems = atk_size_allocatable_long_scalar_(array);
     break;
   case 1:
-    nitems = atk_size_allocatable_long_1d_ptr_(array);
+    nitems = atk_size_allocatable_long_1d_(array);
     break;
   default:
     break;
@@ -285,10 +285,10 @@ case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    nitems = atk_size_allocatable_float_scalar_ptr_(array);
+    nitems = atk_size_allocatable_float_scalar_(array);
     break;
   case 1:
-    nitems = atk_size_allocatable_float_1d_ptr_(array);
+    nitems = atk_size_allocatable_float_1d_(array);
     break;
   default:
     break;
@@ -298,10 +298,10 @@ case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    nitems = atk_size_allocatable_double_scalar_ptr_(array);
+    nitems = atk_size_allocatable_double_scalar_(array);
     break;
   case 1:
-    nitems = atk_size_allocatable_double_1d_ptr_(array);
+    nitems = atk_size_allocatable_double_1d_(array);
     break;
   default:
     break;
@@ -329,10 +329,10 @@ case CONDUIT_NATIVE_INT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = atk_address_allocatable_int_scalar_ptr_(array);
+    addr = atk_address_allocatable_int_scalar_(array);
     break;
   case 1:
-    addr = atk_address_allocatable_int_1d_ptr_(array);
+    addr = atk_address_allocatable_int_1d_(array);
     break;
   default:
     break;
@@ -342,10 +342,10 @@ case CONDUIT_NATIVE_LONG_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = atk_address_allocatable_long_scalar_ptr_(array);
+    addr = atk_address_allocatable_long_scalar_(array);
     break;
   case 1:
-    addr = atk_address_allocatable_long_1d_ptr_(array);
+    addr = atk_address_allocatable_long_1d_(array);
     break;
   default:
     break;
@@ -355,10 +355,10 @@ case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = atk_address_allocatable_float_scalar_ptr_(array);
+    addr = atk_address_allocatable_float_scalar_(array);
     break;
   case 1:
-    addr = atk_address_allocatable_float_1d_ptr_(array);
+    addr = atk_address_allocatable_float_1d_(array);
     break;
   default:
     break;
@@ -368,10 +368,10 @@ case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = atk_address_allocatable_double_scalar_ptr_(array);
+    addr = atk_address_allocatable_double_scalar_(array);
     break;
   case 1:
-    addr = atk_address_allocatable_double_1d_ptr_(array);
+    addr = atk_address_allocatable_double_1d_(array);
     break;
   default:
     break;
@@ -399,12 +399,12 @@ case CONDUIT_NATIVE_INT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    atk_allocate_allocatable_int_scalar_ptr_(array, nitems);
-    addr = atk_address_allocatable_int_scalar_ptr_(array);
+    atk_allocate_allocatable_int_scalar_(array, nitems);
+    addr = atk_address_allocatable_int_scalar_(array);
     break;
   case 1:
-    atk_allocate_allocatable_int_1d_ptr_(array, nitems);
-    addr = atk_address_allocatable_int_1d_ptr_(array);
+    atk_allocate_allocatable_int_1d_(array, nitems);
+    addr = atk_address_allocatable_int_1d_(array);
     break;
   default:
     break;
@@ -414,12 +414,12 @@ case CONDUIT_NATIVE_LONG_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    atk_allocate_allocatable_long_scalar_ptr_(array, nitems);
-    addr = atk_address_allocatable_long_scalar_ptr_(array);
+    atk_allocate_allocatable_long_scalar_(array, nitems);
+    addr = atk_address_allocatable_long_scalar_(array);
     break;
   case 1:
-    atk_allocate_allocatable_long_1d_ptr_(array, nitems);
-    addr = atk_address_allocatable_long_1d_ptr_(array);
+    atk_allocate_allocatable_long_1d_(array, nitems);
+    addr = atk_address_allocatable_long_1d_(array);
     break;
   default:
     break;
@@ -429,12 +429,12 @@ case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    atk_allocate_allocatable_float_scalar_ptr_(array, nitems);
-    addr = atk_address_allocatable_float_scalar_ptr_(array);
+    atk_allocate_allocatable_float_scalar_(array, nitems);
+    addr = atk_address_allocatable_float_scalar_(array);
     break;
   case 1:
-    atk_allocate_allocatable_float_1d_ptr_(array, nitems);
-    addr = atk_address_allocatable_float_1d_ptr_(array);
+    atk_allocate_allocatable_float_1d_(array, nitems);
+    addr = atk_address_allocatable_float_1d_(array);
     break;
   default:
     break;
@@ -444,12 +444,12 @@ case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    atk_allocate_allocatable_double_scalar_ptr_(array, nitems);
-    addr = atk_address_allocatable_double_scalar_ptr_(array);
+    atk_allocate_allocatable_double_scalar_(array, nitems);
+    addr = atk_address_allocatable_double_scalar_(array);
     break;
   case 1:
-    atk_allocate_allocatable_double_1d_ptr_(array, nitems);
-    addr = atk_address_allocatable_double_1d_ptr_(array);
+    atk_allocate_allocatable_double_1d_(array, nitems);
+    addr = atk_address_allocatable_double_1d_(array);
     break;
   default:
     break;
@@ -531,7 +531,7 @@ void *atk_c_loc_(void *addr)
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_int_scalar_ptr_(
+void *atk_create_allocatable_view_int_scalar_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -542,7 +542,7 @@ void *atk_create_allocatable_view_int_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_int_1d_ptr_(
+void *atk_create_allocatable_view_int_1d_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -553,7 +553,7 @@ void *atk_create_allocatable_view_int_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_long_scalar_ptr_(
+void *atk_create_allocatable_view_long_scalar_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -564,7 +564,7 @@ void *atk_create_allocatable_view_long_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_long_1d_ptr_(
+void *atk_create_allocatable_view_long_1d_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -575,7 +575,7 @@ void *atk_create_allocatable_view_long_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_float_scalar_ptr_(
+void *atk_create_allocatable_view_float_scalar_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -586,7 +586,7 @@ void *atk_create_allocatable_view_float_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_float_1d_ptr_(
+void *atk_create_allocatable_view_float_1d_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -597,7 +597,7 @@ void *atk_create_allocatable_view_float_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_double_scalar_ptr_(
+void *atk_create_allocatable_view_double_scalar_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -608,7 +608,7 @@ void *atk_create_allocatable_view_double_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_double_1d_ptr_(
+void *atk_create_allocatable_view_double_1d_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
