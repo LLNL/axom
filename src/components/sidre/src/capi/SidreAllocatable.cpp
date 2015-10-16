@@ -525,13 +525,13 @@ void *atk_c_loc_(void *addr)
  * not the address of the contents of the allocatable array.
  */
 //[[[cog
-//gen.print_lines(cog.outl, gen.print_atk_register_allocatable)
+//gen.print_lines(cog.outl, gen.print_atk_create_allocatable_view)
 //]]]
 
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_int_scalar_ptr_(
+void *atk_create_allocatable_view_int_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -542,7 +542,7 @@ void *atk_register_allocatable_int_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_int_1d_ptr_(
+void *atk_create_allocatable_view_int_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -553,7 +553,7 @@ void *atk_register_allocatable_int_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_long_scalar_ptr_(
+void *atk_create_allocatable_view_long_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -564,7 +564,7 @@ void *atk_register_allocatable_long_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_long_1d_ptr_(
+void *atk_create_allocatable_view_long_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -575,7 +575,7 @@ void *atk_register_allocatable_long_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_float_scalar_ptr_(
+void *atk_create_allocatable_view_float_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -586,7 +586,7 @@ void *atk_register_allocatable_float_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_float_1d_ptr_(
+void *atk_create_allocatable_view_float_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -597,7 +597,7 @@ void *atk_register_allocatable_float_1d_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_double_scalar_ptr_(
+void *atk_create_allocatable_view_double_scalar_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -608,7 +608,7 @@ void *atk_register_allocatable_double_scalar_ptr_(
 // Fortran callable routine.
 // Needed for each type-kind-rank to get address of allocatable array.
 // array is address of allocatable, not the result of C_LOC(array)
-void *atk_register_allocatable_double_1d_ptr_(
+void *atk_create_allocatable_view_double_1d_ptr_(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)

@@ -32,7 +32,7 @@ contains
        iarray(i) = i
     enddo
 
-    view_iarray1 = root%register_allocatable("iarray", iarray)
+    view_iarray1 = root%create_allocatable_view("iarray", iarray)
 
 !XXX    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
@@ -70,7 +70,7 @@ contains
        iarray(i) = i + 0.5d0
     enddo
 
-    view_iarray1 = root%register_allocatable("iarray", iarray)
+    view_iarray1 = root%create_allocatable_view("iarray", iarray)
 
 !XXX    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_DOUBLE_T)
@@ -102,7 +102,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    view_iarray1 = root%register_allocatable("iarray", iarray)
+    view_iarray1 = root%create_allocatable_view("iarray", iarray)
 
 !XXX    type = view_iarray1%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
