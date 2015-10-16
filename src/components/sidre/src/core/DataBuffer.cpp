@@ -333,6 +333,29 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
   return this;
 }
 
+/*
+ *************************************************************************
+ *
+ * Set as Fortran allocatable buffer.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::setFortranAllocatable(void * array, int rank)
+{
+  SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
+		   "Attempting to set buffer to Fortran allocatable given null pointer" );
+  // XXX check rank too
+
+  if ( array != ATK_NULLPTR )
+  {
+    m_fortran_allocatable = array;
+    m_rank = rank;
+    //m_node.set_external(m_schema, m_data);
+    //m_is_data_external = true;
+  }
+  return this;
+}
+
 
 /*
  *************************************************************************
@@ -390,10 +413,12 @@ void DataBuffer::print(std::ostream& os) const
 DataBuffer::DataBuffer( IndexType index )
   : m_index(index),
   m_views(),
+  m_rank(0),
   m_data(ATK_NULLPTR),
   m_node(),
   m_schema(),
   m_is_data_external(false),
+  m_fortran_allocatable(ATK_NULLPTR),
   m_meta_buffer(ATK_NULLPTR)
 {}
 
@@ -408,10 +433,12 @@ DataBuffer::DataBuffer( IndexType index )
 DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
+  m_rank(0),
   m_data(source.m_data),
   m_node(source.m_node),
   m_schema(source.m_schema),
   m_is_data_external(source.m_is_data_external),
+  m_fortran_allocatable(ATK_NULLPTR),
   m_meta_buffer(ATK_NULLPTR)
 {
 // disallow?

@@ -351,6 +351,15 @@ public:
   DataBuffer * setExternalData(void * external_data);
 
   /*!
+   * \brief Set as Fortran allocatable.
+   *
+   * If given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setFortranAllocatable(void * array, int rank);
+
+  /*!
    * \brief Set buffer to external data.
    *
    * \return pointer to this DataBuffer object.
@@ -424,6 +433,9 @@ private:
   /// Container of DataViews attached to this buffer.
   std::vector<DataView *> m_views;
 
+  /// Number of dimensions
+  int m_rank;
+
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
 
@@ -435,6 +447,9 @@ private:
 
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
+
+  /// Is buffer holding Fortran allocatable?
+  void *m_fortran_allocatable;
 
   MetaBuffer * m_meta_buffer;
   /*!

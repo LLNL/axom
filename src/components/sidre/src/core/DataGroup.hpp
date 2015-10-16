@@ -448,7 +448,7 @@ public:
                                void * opaque_ptr);
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given Sidre TypeID and length to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -464,7 +464,7 @@ public:
                                  TypeID type, SidreLength len );
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given MetaBuffer to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -479,7 +479,7 @@ public:
                                    MetaBuffer *meta_buffer );
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given Conduit DataType to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -495,7 +495,7 @@ public:
                                  const DataType& dtype );
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given Conduit Schema to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -509,6 +509,20 @@ public:
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
                                  const Schema& schema );
+
+  /*!
+   * \brief Create a DataView to a Fortran allocatable.
+   *
+   * New view will be attached to this DataGroup object.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given data pointer is null, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createFortranAllocatableView( const std::string& name,
+					   void * array, TypeID type, int rank );
 
   /*!
    * \brief Destroy view in this DataGroup with given name and leave its

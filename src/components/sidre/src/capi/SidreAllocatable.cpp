@@ -457,7 +457,7 @@ default:
  *
  * The Fortran allocatable array is the buffer for the DataView.
  */
-static void *register_allocatable(DataGroup *group,
+static void * register_allocatable(DataGroup *group,
 				  const std::string &name,
 				  void *context, int imetabuffer)
 {
@@ -467,15 +467,28 @@ static void *register_allocatable(DataGroup *group,
 
 extern "C" {
 
+void *atk_create_fortran_allocatable_view(
+    DataGroup *group,
+    char *name, int lname,
+    void *array, TypeID type, int rank)
+{
+  DataView *view = group->createFortranAllocatableView(std::string(name, lname),
+						       array, type, rank);
+  return view;
+}
+
+
 // called from Fortran
 // return pointer to a DataView
-void *ATK_register_static(void *group, char *name, int lname, void *addr, int type, long nitems)
+void * ATK_register_static(void * group, char * name, int lname,
+			   void * addr, int type, long nitems)
 {
-  DataGroup *grp = static_cast<DataGroup *>(group);
-  return grp->createExternalView( std::string(name, lname),
-				  addr,
-				  static_cast<TypeID>(type),
-				  static_cast<SidreLength>(nitems));
+  DataGroup * grp = static_cast<DataGroup *>(group);
+  DataView * view = grp->createExternalView( std::string(name, lname),
+					     addr,
+					     static_cast<TypeID>(type),
+					     static_cast<SidreLength>(nitems));
+  return view;
 }
 
 // called from Fortran
@@ -492,6 +505,11 @@ void *atk_c_loc_(void *addr)
     return addr;
 }
 
+/*
+ * These routines are used from Fortran with an interface
+ * since they need the address of the allocatable array,
+ * not the address of the contents of the allocatable array.
+ */
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_register_allocatable)
 //]]]
