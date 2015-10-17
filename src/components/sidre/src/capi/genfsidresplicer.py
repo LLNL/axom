@@ -321,25 +321,21 @@ def gen_fortran():
 def print_atk_create_allocatable_view(d):
     """Write C++ routine to accept Fortran allocatable.
     """
-# XXX - need cmake macro to mangle name portably
+    name = 'atk_create_allocatable_view_{typename}_{nd}'.format(**d)
     return """
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_{typename}_{nd}_(
+void * FC_GLOBAL({lower},{upper})(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
 {{
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
-}}""".format(**d)
+}}""".format(lower=name.lower(), upper=name.upper())
 
 ######################################################################
 
 def print_atk_size_allocatable(d):
     """Write Fortran routine to return size of allocatable.
     """
-# XXX - need cmake macro to mangle name portably
     if d['rank'] == 0:
         return """
 function atk_size_allocatable_{typename}_{nd}(array) result(rv)
@@ -377,7 +373,6 @@ def print_atk_address_allocatable(d):
     """Write Fortran routine to return address of allocatable.
     Use C_LOC and add TARGET attribute
     """
-# XXX - need cmake macro to mangle name portably
     return """
 function atk_address_allocatable_{typename}_{nd}(array) result(rv)
     use iso_c_binding
@@ -403,7 +398,6 @@ def AddressAllocatable(printer):
 def print_atk_allocate_allocatable(d):
     """Write Fortran routine to allocate an allocatable.
     """
-# XXX - need cmake macro to mangle name portably
     if d['rank'] == 0:
         size = '';
     elif d['rank'] == 1:
@@ -440,8 +434,6 @@ def AllocateAllocatable(printer):
 def print_atk_deallocate_allocatable(d):
     """Write Fortran routine to deallocate an allocatable.
     """
-# XXX - need cmake macro to mangle name portably
-
     return """
 subroutine atk_deallocate_allocatable_{typename}_{nd}(array)
     use iso_c_binding
@@ -461,7 +453,6 @@ void {upper}(void * array);
 def print_atk_reallocate_allocatable(d):
     """Write Fortran routine to allocate an allocatable.
     """
-# XXX - need cmake macro to mangle name portably
     if d['rank'] == 0:
         size = '';
     elif d['rank'] == 1:

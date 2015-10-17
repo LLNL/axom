@@ -601,18 +601,22 @@ void *atk_c_loc_(void *addr)
 }
 
 /*
- * These routines are used from Fortran with an interface
+ *************************************************************************
+ * These routines are called from Fortran with an interface
+ * but without BIND(C)
  * since they need the address of the allocatable array,
  * not the address of the contents of the allocatable array.
+ *
+ * XXX - In the future it should be possible to replace them with one routine
+ * with an interface like:
+ *    type(*), allocatable :: array(..)
+ *************************************************************************
  */
 //[[[cog
 //gen.print_lines(cog.outl, gen.print_atk_create_allocatable_view)
 //]]]
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_int_scalar_(
+void * FC_GLOBAL(atk_create_allocatable_view_int_scalar,ATK_CREATE_ALLOCATABLE_VIEW_INT_SCALAR)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -620,10 +624,7 @@ void *atk_create_allocatable_view_int_scalar_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_int_1d_(
+void * FC_GLOBAL(atk_create_allocatable_view_int_1d,ATK_CREATE_ALLOCATABLE_VIEW_INT_1D)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -631,10 +632,7 @@ void *atk_create_allocatable_view_int_1d_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_long_scalar_(
+void * FC_GLOBAL(atk_create_allocatable_view_long_scalar,ATK_CREATE_ALLOCATABLE_VIEW_LONG_SCALAR)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -642,10 +640,7 @@ void *atk_create_allocatable_view_long_scalar_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_long_1d_(
+void * FC_GLOBAL(atk_create_allocatable_view_long_1d,ATK_CREATE_ALLOCATABLE_VIEW_LONG_1D)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -653,10 +648,7 @@ void *atk_create_allocatable_view_long_1d_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_float_scalar_(
+void * FC_GLOBAL(atk_create_allocatable_view_float_scalar,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_SCALAR)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -664,10 +656,7 @@ void *atk_create_allocatable_view_float_scalar_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_float_1d_(
+void * FC_GLOBAL(atk_create_allocatable_view_float_1d,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_1D)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -675,10 +664,7 @@ void *atk_create_allocatable_view_float_1d_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_double_scalar_(
+void * FC_GLOBAL(atk_create_allocatable_view_double_scalar,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_SCALAR)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
@@ -686,10 +672,7 @@ void *atk_create_allocatable_view_double_scalar_(
     return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
 }
 
-// Fortran callable routine.
-// Needed for each type-kind-rank to get address of allocatable array.
-// array is address of allocatable, not the result of C_LOC(array)
-void *atk_create_allocatable_view_double_1d_(
+void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_1D)(
     DataGroup *group,
     char *name, int lname,
     void *array, int itype, int rank)
