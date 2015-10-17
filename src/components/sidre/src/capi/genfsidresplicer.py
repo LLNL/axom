@@ -328,8 +328,10 @@ void * FC_GLOBAL({lower},{upper})(
     char *name, int lname,
     void *array, int itype, int rank)
 {{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }}""".format(lower=name.lower(), upper=name.upper())
+# XXX remove cast after native types are resolved
 
 ######################################################################
 
@@ -447,6 +449,13 @@ def print_atk_deallocate_allocatable_header(d):
     return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
 void {upper}(void * array);
 """.format(lower=name.lower(), upper=name.upper())
+
+def DeallocateAllocatable(printer):
+    calls = [
+        ('deallocate_allocatable', '{macro}(array)'),
+        ]
+    print_switch(printer, calls)
+
 
 ######################################################################
 

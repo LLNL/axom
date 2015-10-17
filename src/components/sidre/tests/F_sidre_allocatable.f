@@ -125,6 +125,9 @@ contains
 
     call ds%delete()
 
+    ! deleting the datastore deallocates iarray
+    call assert_false(allocated(iarray))
+
   end subroutine ds_allocatable_int
 
 !----------------------------------------------------------------------

@@ -357,7 +357,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * setFortranAllocatable(void * array, int rank);
+  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
 
   /*!
    * \brief Set buffer to external data.

@@ -15,6 +15,8 @@ void * AddressAllocatable(void * array, TypeID type, int rank);
 
 void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nitems);
 
+void DeallocateAllocatable(void * array, TypeID type, int rank);
+
 void RegisterFortranAllocatableMetaBuffers(void);
 
 }  // namespace asctoolkit

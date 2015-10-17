@@ -466,7 +466,7 @@ DataView * DataGroup::createFortranAllocatableView( const std::string& name,
     DataBuffer * buff = this->getDataStore()->createBuffer();
     buff->declare(dtype);
     //    buff->setExternalData(external_data);
-    buff->setFortranAllocatable(array, rank);
+    buff->setFortranAllocatable(array, type, rank);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);

@@ -339,7 +339,7 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::setFortranAllocatable(void * array, int rank)
+DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int rank)
 {
   SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
 		   "Attempting to set buffer to Fortran allocatable given null pointer" );
@@ -349,7 +349,8 @@ DataBuffer * DataBuffer::setFortranAllocatable(void * array, int rank)
   {
     m_fortran_allocatable = array;
     m_rank = rank;
-    //m_node.set_external(m_schema, m_data);
+    m_data = AddressAllocatable(array, type, rank);
+    m_node.set_external(m_schema, m_data);
     //m_is_data_external = true;
   }
   return this;
@@ -498,10 +499,18 @@ void DataBuffer::detachView( DataView * view )
  */
 void DataBuffer::cleanup()
 {
-  // cleanup alloced data
-  if ( m_data != ATK_NULLPTR && !m_is_data_external )
+  // cleanup allocated data
+  if ( m_data != ATK_NULLPTR )
   {
-    releaseBytes(m_data);
+    if (m_fortran_allocatable != ATK_NULLPTR)
+    {
+      TypeID type = static_cast<TypeID>(m_node.dtype().id());
+      DeallocateAllocatable(m_fortran_allocatable, type, m_rank);
+    }
+    else if (!m_is_data_external )
+    {
+      releaseBytes(m_data);
+    }
   }
 }
 

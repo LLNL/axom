@@ -543,6 +543,75 @@ default:
   return addr;
 }
 
+/*
+ * Call a Fortran function to deallocate an allocatable.
+ */
+void DeallocateAllocatable(void * array, TypeID type, int rank)
+{
+//[[[cog
+//gen.DeallocateAllocatable(cog.outl)
+//]]]
+switch(type)
+{
+case CONDUIT_NATIVE_INT_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    DEALLOCATE_ALLOCATABLE_INT_SCALAR(array);
+    break;
+  case 1:
+    DEALLOCATE_ALLOCATABLE_INT_1D(array);
+    break;
+  default:
+    break;
+  }
+  break;
+case CONDUIT_NATIVE_LONG_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    DEALLOCATE_ALLOCATABLE_LONG_SCALAR(array);
+    break;
+  case 1:
+    DEALLOCATE_ALLOCATABLE_LONG_1D(array);
+    break;
+  default:
+    break;
+  }
+  break;
+case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    DEALLOCATE_ALLOCATABLE_FLOAT_SCALAR(array);
+    break;
+  case 1:
+    DEALLOCATE_ALLOCATABLE_FLOAT_1D(array);
+    break;
+  default:
+    break;
+  }
+  break;
+case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
+  switch(rank)
+  {
+  case 0:
+    DEALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(array);
+    break;
+  case 1:
+    DEALLOCATE_ALLOCATABLE_DOUBLE_1D(array);
+    break;
+  default:
+    break;
+  }
+  break;
+default:
+  break;
+}
+//[[[end]]]
+  return;
+}
+
 
 /*!
  * \brief Return DataView for a Fortran allocatable.
@@ -621,7 +690,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_int_scalar,ATK_CREATE_ALLOCATABLE_V
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_int_1d,ATK_CREATE_ALLOCATABLE_VIEW_INT_1D)(
@@ -629,7 +699,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_int_1d,ATK_CREATE_ALLOCATABLE_VIEW_
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_long_scalar,ATK_CREATE_ALLOCATABLE_VIEW_LONG_SCALAR)(
@@ -637,7 +708,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_long_scalar,ATK_CREATE_ALLOCATABLE_
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_long_1d,ATK_CREATE_ALLOCATABLE_VIEW_LONG_1D)(
@@ -645,7 +717,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_long_1d,ATK_CREATE_ALLOCATABLE_VIEW
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_float_scalar,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_SCALAR)(
@@ -653,7 +726,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_float_scalar,ATK_CREATE_ALLOCATABLE
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_float_1d,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_1D)(
@@ -661,7 +735,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_float_1d,ATK_CREATE_ALLOCATABLE_VIE
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_double_scalar,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_SCALAR)(
@@ -669,7 +744,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_double_scalar,ATK_CREATE_ALLOCATABL
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_1D)(
@@ -677,7 +753,8 @@ void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VI
     char *name, int lname,
     void *array, int itype, int rank)
 {
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, itype, rank);
+    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
+        getTypeID(itype), rank);
 }
 //[[[end]]]
 
