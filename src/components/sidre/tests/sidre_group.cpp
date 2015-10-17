@@ -11,7 +11,6 @@
 #include "gtest/gtest.h"
 
 #include "sidre/sidre.hpp"
-#include "sidre/SidreConduit.hpp"
 
 using asctoolkit::sidre::SidreLength;
 using asctoolkit::sidre::TypeID;
@@ -555,14 +554,12 @@ TEST(sidre_group,save_restore_simple)
 
 
   ds->getRoot()->save("out_sidre_group_save_restore_simple","conduit");
-  SaveAsConduit(ds->getRoot(), "out_sidre_group_save_restore_simple2");
 
   //ds->print();
 
   DataStore * ds2 = new DataStore();
 
-  //  ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
-  LoadFromConduit(ds2->getRoot(), "out_sidre_group_save_restore_simple2");
+  ds2->getRoot()->load("out_sidre_group_save_restore_simple","conduit");
 
   //ds2->print();
 

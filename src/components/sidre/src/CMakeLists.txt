@@ -17,8 +17,6 @@ set(sidre_headers
     core/MetaBuffer.hpp
     core/SidreTypes.hpp
     core/sidre.hpp
-    core/SidreVector.hpp
-    conduit/SidreConduit.hpp
     ${capi_headers}
 )
 
@@ -30,9 +28,6 @@ set(sidre_sources
     core/DataGroup.cpp
     core/DataStore.cpp
     core/DataView.cpp
-    core/SidreVector.cpp
-    conduit/SidreConduit.cpp
-    conduit/SidreConduitSave.cpp
     ${capi_source}
 )
 
