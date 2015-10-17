@@ -31,7 +31,6 @@
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-#include "MetaBuffer.hpp"
 #include "sidre/SidreAllocatable.hpp"
 
 
@@ -359,17 +358,6 @@ public:
    */
   DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
 
-  /*!
-   * \brief Set buffer to external data.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * setMetaBuffer(MetaBuffer * meta_buffer)
-  {
-    m_meta_buffer = meta_buffer;
-    return this;
-  };
-
 
 //@}
 
@@ -451,7 +439,6 @@ private:
   /// Is buffer holding Fortran allocatable?
   void *m_fortran_allocatable;
 
-  MetaBuffer * m_meta_buffer;
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */

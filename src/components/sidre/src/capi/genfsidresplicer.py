@@ -16,7 +16,7 @@ types = (
 # XXX - only doing 0-d and 1-d for now
 maxdims = 1
 
-def num_metabuffers():
+def XXnum_metabuffers():
     return len(types) * (maxdims + 1) # include scalars
 ######################################################################
 
@@ -485,22 +485,6 @@ def print_atk_reallocate_allocatable_header(d):
     return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
 void {upper}(void * array, long nitems);
 """.format(lower=name.lower(), upper=name.upper())
-
-######################################################################
-
-def print_fptrs_cache(d):
-    return """
-{{
-  {rank},   // rank
-  {atk_type},
-  atk_size_allocatable_{typename}_{nd}_,
-  atk_address_allocatable_{typename}_{nd}_,
-  atk_allocate_allocatable_{typename}_{nd}_,
-  atk_deallocate_allocatable_{typename}_{nd}_,
-  atk_reallocate_allocatable_{typename}_{nd}_
-}},
-""".format(**d)
-
 
 ######################################################################
 

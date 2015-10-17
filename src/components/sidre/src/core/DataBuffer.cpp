@@ -173,13 +173,6 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
  */
 DataBuffer * DataBuffer::allocate(const Schema& schema)
 {
-  if (m_meta_buffer != ATK_NULLPTR)
-  {
-    declare(schema);
-    allocate();
-    return this;
-  }
-
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
@@ -418,8 +411,7 @@ DataBuffer::DataBuffer( IndexType index )
   m_node(),
   m_schema(),
   m_is_data_external(false),
-  m_fortran_allocatable(ATK_NULLPTR),
-  m_meta_buffer(ATK_NULLPTR)
+  m_fortran_allocatable(ATK_NULLPTR)
 {}
 
 
@@ -438,8 +430,7 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_node(source.m_node),
   m_schema(source.m_schema),
   m_is_data_external(source.m_is_data_external),
-  m_fortran_allocatable(ATK_NULLPTR),
-  m_meta_buffer(ATK_NULLPTR)
+  m_fortran_allocatable(ATK_NULLPTR)
 {
 // disallow?
 }
@@ -455,7 +446,6 @@ DataBuffer::DataBuffer(const DataBuffer& source )
 DataBuffer::~DataBuffer()
 {
   cleanup();
-  delete m_meta_buffer;
 }
 
 

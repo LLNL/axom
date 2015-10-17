@@ -56,7 +56,6 @@
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-#include "MetaBuffer.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
 
@@ -462,21 +461,6 @@ public:
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
                                  TypeID type, SidreLength len );
-
-  /*!
-   * \brief Create a DataView into externally-owned data with given name,
-   *        using the given MetaBuffer to describe the data.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createMetaBufferView( const std::string& name,
-                                   MetaBuffer *meta_buffer );
 
   /*!
    * \brief Create a DataView into externally-owned data with given name,

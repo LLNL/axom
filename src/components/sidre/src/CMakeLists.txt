@@ -14,7 +14,6 @@ set(sidre_headers
     core/DataGroup.hpp
     core/DataStore.hpp
     core/DataView.hpp
-    core/MetaBuffer.hpp
     core/SidreTypes.hpp
     core/sidre.hpp
     ${capi_headers}

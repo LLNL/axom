@@ -334,46 +334,6 @@ DataView * DataGroup::createExternalView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create metabuffer view and attach to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createMetaBufferView( const std::string& name, MetaBuffer * meta_buffer)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( meta_buffer != ATK_NULLPTR ,
-                   "Cannot create metabuffer view with null data pointer" );
- 
-  if ( name.empty() || hasView(name) || meta_buffer == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    void * external_data = meta_buffer->getDataPointer();
-    TypeID type = meta_buffer->getTypeID();
-    SidreLength len = meta_buffer->getNumberOfElements();
-
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
-
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(dtype);
-    buff->setExternalData(external_data);
-    buff->setMetaBuffer(meta_buffer);
-
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-    view->apply(dtype);
-
-    return attachView(view);
-  }
-}
-
-/*
- *************************************************************************
- *
  * Create external view with given data type and attach to group.
  *
  *************************************************************************
