@@ -420,6 +420,7 @@ DataView * DataGroup::createFortranAllocatableView( const std::string& name,
   }
   else
   {
+#ifdef ATK_ENABLE_FORTRAN
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(SizeAllocatable(array, type, rank));
 
@@ -433,6 +434,11 @@ DataView * DataGroup::createFortranAllocatableView( const std::string& name,
     view->apply(dtype);
 
     return attachView(view);
+#else
+    SLIC_ASSERT_MSG( true ,
+		     "Fortran support is not compiled into this version of Sidre" );
+    return ATK_NULLPTR;
+#endif
   }
 }
 

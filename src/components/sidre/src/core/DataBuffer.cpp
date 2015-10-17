@@ -340,11 +340,15 @@ DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int ra
 
   if ( array != ATK_NULLPTR )
   {
+#ifdef ATK_ENABLE_FORTRAN
     m_fortran_allocatable = array;
     m_rank = rank;
     m_data = AddressAllocatable(array, type, rank);
     m_node.set_external(m_schema, m_data);
-    //m_is_data_external = true;
+#else
+    SLIC_ASSERT_MSG( true ,
+		     "Fortran support is not compiled into this version of Sidre" );
+#endif
   }
   return this;
 }
@@ -494,8 +498,13 @@ void DataBuffer::cleanup()
   {
     if (m_fortran_allocatable != ATK_NULLPTR)
     {
+#ifdef ATK_ENABLE_FORTRAN
       TypeID type = static_cast<TypeID>(m_node.dtype().id());
       DeallocateAllocatable(m_fortran_allocatable, type, m_rank);
+#else
+    SLIC_ASSERT_MSG( true ,
+		     "Fortran support is not compiled into this version of Sidre" );
+#endif
     }
     else if (!m_is_data_external )
     {
