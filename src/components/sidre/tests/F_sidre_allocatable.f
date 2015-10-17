@@ -19,7 +19,7 @@ contains
 
     type(datastore) ds
     type(datagroup) root
-    type(dataview)  view_iarray1
+    type(dataview)  view
     integer type
     integer num_elements
     integer i
@@ -32,59 +32,21 @@ contains
        iarray(i) = i
     enddo
 
-    view_iarray1 = root%create_allocatable_view("iarray", iarray)
+    view = root%create_allocatable_view("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+!XXX    type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    num_elements = view_iarray1%get_number_of_elements()
+    num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
-    call view_iarray1%get_value(ipointer)
+    call view%get_value(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
 
   end subroutine local_allocatable_int
-
-!----------------------------------------------------------------------
-
-  subroutine local_allocatable_double
-    use iso_c_binding
-    real(C_DOUBLE), allocatable :: iarray(:)
-    real(C_DOUBLE), pointer :: ipointer(:)
-
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view_iarray1
-    integer num_elements
-    integer type
-    integer i
-
-    ds = datastore_new()
-    root = ds%get_root()
-
-    allocate(iarray(10))
-    do i=1,10
-       iarray(i) = i + 0.5d0
-    enddo
-
-    view_iarray1 = root%create_allocatable_view("iarray", iarray)
-
-!XXX    type = view_iarray1%get_type_id()
-!XXX    call assert_equals(type, ATK_C_DOUBLE_T)
-
-    num_elements = view_iarray1%get_number_of_elements()
-    call assert_equals(num_elements, 10)
-
-    ! get array via a pointer
-    call view_iarray1%get_value(ipointer)
-    call assert_true(all(abs(iarray-ipointer).lt..0005))
-
-    call ds%delete()
-
-  end subroutine local_allocatable_double
 
 !----------------------------------------------------------------------
 ! Allocate array via the datastore
@@ -94,7 +56,7 @@ contains
 
     type(datastore) ds
     type(datagroup) root
-    type(dataview)  view_iarray1
+    type(dataview)  view
     integer num_elements
     integer type
     integer i
@@ -102,13 +64,13 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    view_iarray1 = root%create_allocatable_view("iarray", iarray)
+    view = root%create_allocatable_view("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+!XXX    type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    call view_iarray1%declare(ATK_C_INT_T, 10)
-    call view_iarray1%allocate()
+    call view%declare(ATK_C_INT_T, 10)
+    call view%allocate()
     
     call assert_true(allocated(iarray))
 
@@ -120,7 +82,7 @@ contains
     enddo
     
     ! get array via a pointer
-    call view_iarray1%get_value(ipointer)
+    call view%get_value(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -140,7 +102,7 @@ contains
 
     type(datastore) ds
     type(datagroup) root
-    type(dataview)  view_iarray1
+    type(dataview)  view
     integer type
     integer num_elements
     integer i
@@ -152,21 +114,59 @@ contains
        iarray(i) = i
     enddo
 
-    view_iarray1 = root%register_static("iarray", iarray)
+    view = root%register_static("iarray", iarray)
 
-!XXX    type = view_iarray1%get_type_id()
+!XXX    type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    num_elements = view_iarray1%get_number_of_elements()
+    num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
-    call view_iarray1%get_value(ipointer)
+    call view%get_value(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
 
   end subroutine local_static_int_array
+
+!----------------------------------------------------------------------
+
+  subroutine local_allocatable_double
+    use iso_c_binding
+    real(C_DOUBLE), allocatable :: iarray(:)
+    real(C_DOUBLE), pointer :: ipointer(:)
+
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview)  view
+    integer num_elements
+    integer type
+    integer i
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    allocate(iarray(10))
+    do i=1,10
+       iarray(i) = i + 0.5d0
+    enddo
+
+    view = root%create_allocatable_view("iarray", iarray)
+
+!XXX    type = view%get_type_id()
+!XXX    call assert_equals(type, ATK_C_DOUBLE_T)
+
+    num_elements = view%get_number_of_elements()
+    call assert_equals(num_elements, 10)
+
+    ! get array via a pointer
+    call view%get_value(ipointer)
+    call assert_true(all(abs(iarray-ipointer).lt..0005))
+
+    call ds%delete()
+
+  end subroutine local_allocatable_double
 
 end module sidre_allocatable
 
@@ -182,9 +182,9 @@ function fortran_test() bind(C,name="fortran_test")
   call init_fruit
 
   call local_allocatable_int
-  call local_allocatable_double
   call ds_allocatable_int
   call local_static_int_array
+  call local_allocatable_double
 
   call fruit_summary
   call fruit_finalize
