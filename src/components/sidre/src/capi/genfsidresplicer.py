@@ -230,8 +230,8 @@ def print_switch(printer, calls):
             printer('  case %d:' % nd)
             for ca in calls:
                 d['prefix'] = ca[0]
-                d['args']   = ca[1]
-                printer('    {prefix}_{typename}_{nd}_{args};'.format(**d))
+                d['macro'] = '{prefix}_{typename}_{nd}'.format(**d).upper()
+                printer('    ' + ca[1].format(**d) + ';')
             printer('    break;')
         printer('  default:')
         printer('    break;')
@@ -362,11 +362,13 @@ end function atk_size_allocatable_{typename}_{nd}""".format(**d)
 def print_atk_size_allocatable_header(d):
     """Write C++ declarations for Fortran routines.
     """
-# XXX - need cmake macro to mangle name portably
-    return "size_t atk_size_allocatable_{typename}_{nd}_(void * array);".format(**d)
+    name = 'size_allocatable_{typename}_{nd}'.format(**d)
+    return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
+size_t {upper}(void * array);
+""".format(lower=name.lower(), upper=name.upper())
 
 def SizeAllocatable(printer):
-    calls = [ ('nitems = atk_size_allocatable', '(array)') ]
+    calls = [ ('size_allocatable', 'nitems = {macro}(array)') ]
     print_switch(printer, calls)
 
 ######################################################################
@@ -386,10 +388,13 @@ function atk_address_allocatable_{typename}_{nd}(array) result(rv)
 end function atk_address_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_address_allocatable_header(d):
-    return "void *atk_address_allocatable_{typename}_{nd}_(void * array);".format(**d)
+    name = 'address_allocatable_{typename}_{nd}'.format(**d)
+    return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
+void * {upper}(void * array);
+""".format(lower=name.lower(), upper=name.upper())
 
 def AddressAllocatable(printer):
-    calls = [ ('addr = atk_address_allocatable', '(array)') ]
+    calls = [ ('address_allocatable', 'addr = {macro}(array)') ]
     print_switch(printer, calls)
 
 
@@ -417,12 +422,15 @@ subroutine atk_allocate_allocatable_{typename}_{nd}(array, nitems)
 end subroutine atk_allocate_allocatable_{typename}_{nd}""".format(size=size, **d)
 
 def print_atk_allocate_allocatable_header(d):
-    return "void atk_allocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
+    name = 'allocate_allocatable_{typename}_{nd}'.format(**d)
+    return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
+void {upper}(void * array, long nitems);
+""".format(lower=name.lower(), upper=name.upper())
 
 def AllocateAllocatable(printer):
     calls = [
-        ('atk_allocate_allocatable', '(array, nitems)'),
-        ('addr = atk_address_allocatable', '(array)'),
+        ('allocate_allocatable', '{macro}(array, nitems)'),
+        ('address_allocatable', 'addr = {macro}(array)'),
         ]
     print_switch(printer, calls)
 
@@ -443,7 +451,10 @@ subroutine atk_deallocate_allocatable_{typename}_{nd}(array)
 end subroutine atk_deallocate_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_deallocate_allocatable_header(d):
-    return "void atk_deallocate_allocatable_{typename}_{nd}_(void *array);".format(**d)
+    name = 'deallocate_allocatable_{typename}_{nd}'.format(**d)
+    return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
+void {upper}(void * array);
+""".format(lower=name.lower(), upper=name.upper())
 
 ######################################################################
 
@@ -470,7 +481,10 @@ subroutine atk_reallocate_allocatable_{typename}_{nd}(array, nitems)
 end subroutine atk_reallocate_allocatable_{typename}_{nd}""".format(size=size, **d)
 
 def print_atk_reallocate_allocatable_header(d):
-    return "void atk_reallocate_allocatable_{typename}_{nd}_(void *array, long nitems);".format(**d)
+    name = 'reallocate_allocatable_{typename}_{nd}'.format(**d)
+    return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
+void {upper}(void * array, long nitems);
+""".format(lower=name.lower(), upper=name.upper())
 
 ######################################################################
 
