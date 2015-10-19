@@ -603,6 +603,66 @@ void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VI
 }
 //[[[end]]]
 
+
+/*
+ *************************************************************************
+ * These routines are called from Fortran with an interface
+ * but without BIND(C)
+ * since they need the address of the allocatable array,
+ * not the address of the contents of the allocatable array.
+ *
+ * XXX - In the future it should be possible to replace them with one routine
+ * with an interface like:
+ *    type(*), allocatable :: array(..)
+ *************************************************************************
+ */
+//[[[cog
+//gen.print_lines(cog.outl, gen.print_atk_c_loc_allocatable)
+//]]]
+
+void * FC_GLOBAL(atk_c_loc_allocatable_int_scalar,ATK_C_LOC_ALLOCATABLE_INT_SCALAR)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_int_1d,ATK_C_LOC_ALLOCATABLE_INT_1D)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_long_scalar,ATK_C_LOC_ALLOCATABLE_LONG_SCALAR)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_long_1d,ATK_C_LOC_ALLOCATABLE_LONG_1D)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_float_scalar,ATK_C_LOC_ALLOCATABLE_FLOAT_SCALAR)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_float_1d,ATK_C_LOC_ALLOCATABLE_FLOAT_1D)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_double_scalar,ATK_C_LOC_ALLOCATABLE_DOUBLE_SCALAR)(void * allocatable)
+{
+    return allocatable;
+}
+
+void * FC_GLOBAL(atk_c_loc_allocatable_double_1d,ATK_C_LOC_ALLOCATABLE_DOUBLE_1D)(void * allocatable)
+{
+    return allocatable;
+}
+//[[[end]]]
+
+
+
 }  // extern "C"
 
 
