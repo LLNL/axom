@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description="Configure cmake build.")
 parser.add_argument("-bp", "--buildpath", type=str, default="", help="specify path for build directory.  If not specified, will create one under current directory.")
 parser.add_argument("-ip", "--installpath", type=str, default="", help="specify path for installation directory.  If not specified, will create one under current directory.")
 parser.add_argument("-e", "--eclipse", action='store_true', help="create an eclipse project file.")
-parser.add_argument("-c", "--compiler", type=str, choices=["intel","gnu","clang","xl"], default="gnu", help="compiler to use.")
+parser.add_argument("-c", "--compiler", type=str, choices=["intel","intel_16_0_109","gnu","gnu_4_9_3","clang","clang_3_5_0","xl"], default="gnu", help="compiler to use.")
 parser.add_argument("-bt", "--buildtype", type=str, choices=["Release", "Debug", "RelWithDebInfo", "MinSizeRel"], default="Debug", help="build type.")
 parser.add_argument("-ecc", "--exportcompilercommands", action='store_true',
 	 help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a file called 'compile_commands.json' in your build directory.")
