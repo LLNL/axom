@@ -474,14 +474,15 @@ static void * register_allocatable(DataGroup *group,
 
 extern "C" {
 
-static void *ATK_create_fortran_allocatable_view(DataGroup *group,
-						 char *name, int lname,
-						 void *array, int type, int rank)
+static void *ATK_create_fortran_allocatable_view(void * group,
+						 char * name, int lname,
+						 void * array, int type, int rank)
 {
-  DataView *view = group->createFortranAllocatableView(std::string(name, lname),
-						       array,
-						       static_cast<TypeID>(type),
-						       rank);
+  DataGroup * grp = static_cast<DataGroup *>(group);
+  DataView * view = grp->createFortranAllocatableView(std::string(name, lname),
+						      array,
+						      static_cast<TypeID>(type),
+						      rank);
   return view;
 }
 
@@ -508,7 +509,7 @@ void * ATK_register_static(void * group, char * name, int lname,
 // the same as C_LOC.
 // XXX Pass the first element, not the entire array, to avoid getting
 // XXX a copy of the array.
-void * atk_c_loc_(void * addr)
+void * FC_GLOBAL(atk_c_loc,ATK_C_LOC)(void * addr)
 {
   return addr;
 }
@@ -530,72 +531,72 @@ void * atk_c_loc_(void * addr)
 //]]]
 
 void * FC_GLOBAL(atk_create_allocatable_view_int_scalar,ATK_CREATE_ALLOCATABLE_VIEW_INT_SCALAR)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_int_1d,ATK_CREATE_ALLOCATABLE_VIEW_INT_1D)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_long_scalar,ATK_CREATE_ALLOCATABLE_VIEW_LONG_SCALAR)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_long_1d,ATK_CREATE_ALLOCATABLE_VIEW_LONG_1D)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_float_scalar,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_SCALAR)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_float_1d,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_1D)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_double_scalar,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_SCALAR)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);
 }
 
 void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_1D)(
-    DataGroup *group,
-    char *name, int lname,
-    void *array, int itype, int rank)
+    void * group,
+    char * name, int lname,
+    void * array, int itype, int rank)
 {
     return ATK_create_fortran_allocatable_view(group, name, lname, array, 
         getTypeID(itype), rank);

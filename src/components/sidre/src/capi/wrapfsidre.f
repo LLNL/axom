@@ -1553,7 +1553,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_int_scalar(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_int_scalar(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1583,7 +1584,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_int_1d(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_int_1d(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1613,7 +1615,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_long_scalar(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_long_scalar(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1643,7 +1646,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_long_1d(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_long_1d(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1673,7 +1677,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_float_scalar(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_float_scalar(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1703,7 +1708,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_float_1d(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_float_1d(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1733,7 +1739,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_double_scalar(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_double_scalar(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
@@ -1763,7 +1770,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_allocatable_view_double_1d(group, name, lname, array, itype, rank) result(rv)
+           function ATK_create_allocatable_view_double_1d(group, name, lname, array, itype, rank) &
+              result(rv)
            use iso_c_binding
            type(C_PTR), value, intent(IN)    :: group
            character(*), intent(IN)          :: name
