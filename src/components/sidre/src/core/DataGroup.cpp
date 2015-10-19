@@ -28,8 +28,9 @@
 #include "DataBuffer.hpp"
 #include "DataStore.hpp"
 #include "DataView.hpp"
+#if ATK_ENABLE_FORTRAN
 #include "sidre/SidreAllocatable.hpp"
-
+#endif
 
 namespace asctoolkit
 {
