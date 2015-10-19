@@ -270,6 +270,7 @@ struct RuntimeAbortBehavior
    static bool willAbortOnError;
 };
 
+
 /*!
  *******************************************************************************
  * \brief Initializes the SLIC logging environment.
@@ -284,6 +285,33 @@ void initialize();
  *******************************************************************************
  */
 bool isInitialized();
+
+/*!
+ *******************************************************************************
+ * \brief Creates a new logger associated with the given name.
+ * \param [in] name the name to associate with the new logger.
+ * \param [in] imask inheritance mask, indicates the log level streams that
+ *  will be inherited from the "root" logger. By default, nothing is inherited.
+ *******************************************************************************
+ */
+void createLogger( const std::string& name,
+                   char imask=inherit::nothing );
+
+/*!
+ *******************************************************************************
+ * \brief Activates the logger associated with the given name.
+ * \param [in] name the name of the logger to activate.
+ *******************************************************************************
+ */
+void activateLogger( const std::string& name );
+
+/*!
+ *******************************************************************************
+ * \brief Returns the name of the active logger.
+ * \return s a string corresponding to the name of the active logger.
+ *******************************************************************************
+ */
+std::string getActiveLoggerName();
 
 /*!
  *******************************************************************************
@@ -333,11 +361,12 @@ bool getAbortOnError();
 /*!
  *******************************************************************************
  * \brief Adds the given stream to the the given level.
+ * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
  * \pre ls != ATK_NULLPTR
  *******************************************************************************
  */
-void addStreamToLevel( LogStream* ls, message::Level level );
+void addStreamToLevel( LogStream* ls, message::Level level);
 
 /*!
  *******************************************************************************
@@ -353,10 +382,14 @@ void addStreamToAllLevels( LogStream* ls );
  * \brief Logs the given message to all registered streams.
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
+ * \param [in] filter_dulicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
  *******************************************************************************
  */
 void logMessage( message::Level level,
-                 const std::string& message );
+                 const std::string& message,
+                 bool filter_duplicates=false );
 
 /*!
  *******************************************************************************
@@ -364,11 +397,15 @@ void logMessage( message::Level level,
  * \param [in] level the level of the message being logged.
  * \param [in] message user-supplied message.
  * \param [in] tag user-supplied associated with this message.
+ * \param [in] filter_dulicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
  *******************************************************************************
  */
 void logMessage( message::Level level,
                  const std::string& message,
-                 const std::string& tag );
+                 const std::string& tag,
+                 bool filter_duplicates=false );
 
 /*!
  *******************************************************************************
@@ -377,12 +414,16 @@ void logMessage( message::Level level,
  * \param [in] message user-supplied message.
  * \param [in] fileName the name of the file this message is logged from.
  * \param [in] line the line number within the file this message is logged.
+ * \param [in] filter_dulicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
  *******************************************************************************
  */
 void logMessage( message::Level level,
                 const std::string& message,
                 const std::string& fileName,
-                int line );
+                int line,
+                bool filter_duplicates=false );
 
 /*!
  *******************************************************************************
@@ -392,13 +433,17 @@ void logMessage( message::Level level,
  * \param [in] tag user-supplied tag associated with the message.
  * \param [in] fileName the name of the file this message is logged form.
  * \param [in] line the line number within the file this message is logged.
+ * \param [in] filter_dulicates optional parameter that indicates whether
+ * duplicate messages resulting from running in parallel will be filtered out.
+ * Default is false.
  *******************************************************************************
  */
 void logMessage( message::Level level,
                  const std::string& message,
                  const std::string& tag,
                  const std::string& fileName,
-                 int line );
+                 int line,
+                 bool filter_duplicates=false );
 
 /*!
  *******************************************************************************

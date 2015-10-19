@@ -17,9 +17,11 @@
  *
  *******************************************************************************
  */
+#include "SynchronizedStream.hpp"
 
 #include <vector>
-#include "SynchronizedStream.hpp"
+
+#include "common/ATKMacros.hpp"
 
 namespace asctoolkit {
 namespace slic {
@@ -84,8 +86,10 @@ void SynchronizedStream::append( message::Level msgLevel,
                                   const std::string& message,
                                   const std::string& tagName,
                                   const std::string& fileName,
-                                  int line )
+                                  int line,
+                                  bool ATK_NOT_USED(filter_duplicates) )
 {
+
   if ( m_cache == ATK_NULLPTR ) {
     std::cerr << "ERROR: NULL cache!\n";
     return;

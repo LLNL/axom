@@ -64,7 +64,7 @@ const static std::string MessageLevelName[ Num_Levels ] = {
 
 /*!
  *******************************************************************************
- * \brief Returns the string name represetnation of the given level.
+ * \brief Returns the string name representation of the given level.
  * \param [in] l the level in query.
  * \return name a string corresponding to the name of the given leve.
  * \pre l >= 0 && l < Num_levels
@@ -82,7 +82,50 @@ static inline std::string getLevelAsString( Level l )
   return( MessageLevelName[ l ] );
 }
 
-} /* namespace loglevel */
+} /* namespace message */
+
+namespace inherit {
+
+/*!
+ *******************************************************************************
+ * \enum flags
+ *
+ * \brief Holds the bit flags associated with each level.
+ *******************************************************************************
+ */
+enum flags {
+  nothing =  0,//!< nothing, no bit is set.
+  fatal   =  1,//!< fatal,   2^0, i.e., the zeroth bit is set.
+  error   =  2,//!< error,   2^1, i.e., the 1st bit is set.
+  warning =  4,//!< warning, 2^2, i.e., the 2nd bit is set.
+  info    =  8,//!< info,    2^3, i.e., the 3rd bit is set.
+  debug   = 16 //!< debug,   2^4, i.e., the 4th bit is set.
+};
+
+/*!
+ * \brief Convenience bit mask that turns on all four bits.
+ */
+const static char everything = fatal | error | warning | info | debug;
+
+/*!
+ * \brief Convenience bit mask that turns on fatal,error and warning bits.
+ */
+const static char errors_and_warnings =  fatal | error | warning;
+
+/*!
+ * \brief Array of bit masks corresponding to each level.
+ * \note Used to loop through the bit mask associated with each level.
+ */
+const static flags masks[ message::Num_Levels ] = {
+    fatal,
+    error,
+    warning,
+    info,
+    debug
+};
+
+} /* namespace inherit */
+
 
 } /* namespace slic */
 

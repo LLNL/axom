@@ -28,6 +28,8 @@
 #include <vector> // for STL vector
 #include <map>    // for STL map
 
+#include "common/ATKMacros.hpp"
+
 namespace asctoolkit {
 
 namespace slic {
@@ -73,14 +75,27 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns the name of this logger instance.
+   * \return s a string corresponding to the name of this logger instance.
+   * \post s.length() > 0
+   *****************************************************************************
+   */
+  std::string getName() const { return this->m_name; };
+
+  /*!
+   *****************************************************************************
    * \brief Binds the given stream to the given level for this Logger instance.
    * \param [in] ls pointer to the user-supplied LogStream object.
    * \param [in] level the level that this stream will be associated with.
+   * \param [in] pass_ownership flag that indicates whether the given logger
+   *  instance owns the supplied LogStream object. This parameter is optional.
+   *  Default is true.
    * \note The Logger takes ownership of the LogStream object.
    * \pre ls != NULL.
    *****************************************************************************
    */
-  void addStreamToLevel( LogStream* ls, message::Level level );
+  void addStreamToLevel( LogStream* ls, message::Level level,
+                         bool pass_ownership=true );
 
   /*!
    *****************************************************************************
@@ -92,15 +107,40 @@ public:
    */
   void addStreamToAllLevels( LogStream* ls );
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the number of streams at the given level.
+   * \param [in] level the level in query.
+   * \return N the number of streams at the given level.
+   * \post N >= 0
+   *****************************************************************************
+   */
+  int getNumStreamsAtLevel( message::Level level );
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the ith stream at the given level.
+   * \param [in] level the level in query.
+   * \param [in] i the index of the stream in query.
+   * \return stream_ptr pointer to the stream.
+   * \pre i >= 0 && i < this->getNumStreamsAtLevel( level )
+   * \post stream_ptr != NULL.
+   *****************************************************************************
+   */
+  LogStream* getStream( message::Level level, int i );
 
   /*!
    *****************************************************************************
    * \brief Logs the given message to all registered streams.
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
+   * \param [in] filter_dulicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
    *****************************************************************************
    */
-  void logMessage( message::Level level, const std::string& message );
+  void logMessage( message::Level level, const std::string& message,
+                   bool filter_duplicates=false );
 
   /*!
    *****************************************************************************
@@ -108,11 +148,15 @@ public:
    * \param [in] level the level of the given message.
    * \param [in] message the user-supplied message to log.
    * \param [in] tagName user-supplied tag to associated with the given message.
+   * \param [in] filter_dulicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
    *****************************************************************************
    */
   void logMessage( message::Level level,
                    const std::string& message,
-                   const std::string& tagName );
+                   const std::string& tagName,
+                   bool filter_duplicates=false );
 
   /*!
    *****************************************************************************
@@ -121,12 +165,16 @@ public:
    * \param [in] message the user-supplied message to log.
    * \param [in] fileName name of the file this call is made from.
    * \param [in] line line within the file that this call is made from.
+   * \param [in] filter_dulicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
    *****************************************************************************
    */
   void logMessage( message::Level level,
                    const std::string& message,
                    const std::string& fileName,
-                   int line );
+                   int line,
+                   bool filter_duplicates=false );
 
   /*!
    *****************************************************************************
@@ -136,13 +184,17 @@ public:
    * \param [in] tagName user-supplied tag to associated with the given message.
    * \param [in] fileName name of the file this call is made from.
    * \param [in] line line within the file that this call is made from.
+   * \param [in] filter_dulicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
+   * Default is false.
    *****************************************************************************
    */
   void logMessage( message::Level level,
                    const std::string& message,
                    const std::string& tagName,
                    const std::string& fileName,
-                   int line );
+                   int line,
+                   bool filter_duplicates=false );
 
   /*!
    *****************************************************************************
@@ -159,19 +211,52 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Initializes the logging environment.
-   * \post Logger::getInstance() != NULL.
+   * \brief Initializes the logging environment, with the root logger.
+   * \post Logger::getActiveLogger() != NULL.
    *****************************************************************************
    */
   static void initialize();
 
   /*!
    *****************************************************************************
+   * \brief Creates a new logger associated with the given name.
+   * \param [in] name the name to associate with the new logger.
+   * \param [in] imask inheritance mask, indicates the log level(s), which will
+   *  be inherited from the "root" logger. By default, nothing is inherited.
+   * \return status return status, true if the logger is created, else false.
+   * \note False is returned if a logger associated with the given name
+   *  already exists.
+   *****************************************************************************
+   */
+  static bool createLogger(const std::string& name,
+                           char imask=inherit::nothing );
+
+  /*!
+   *****************************************************************************
+   * \brief Activates the logger with the associate name.
+   * \param [in] name the name of the logger to activate.
+   * \return status return status, true if the logger is activated, else false.
+   * \note False is returned if the logger with the given name does not exist.
+   *****************************************************************************
+   */
+  static bool activateLogger(const std::string& name);
+
+  /*!
+   *****************************************************************************
    * \brief Finalizes the logging environment.
-   * \post Logger::getInstance() == NULL.
+   * \post Logger::getActiveLogger() == NULL.
    *****************************************************************************
    */
   static void finalize();
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the name of the currently active logger instance.
+   * \return s a string corresponding to the name of the active logger.
+   * \post s.length() > 0
+   *****************************************************************************
+   */
+  static std::string getActiveLoggerName();
 
   /*!
    *****************************************************************************
@@ -181,7 +266,15 @@ public:
    * \post logger != NULL
    *****************************************************************************
    */
-  static Logger* getInstance();
+  static Logger* getActiveLogger();
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the root logger
+   * \return logger pointer to the root logger instance.
+   *****************************************************************************
+   */
+  static Logger* getRootLogger();
 
   ///@}
 
@@ -196,6 +289,14 @@ private:
 
   /*!
    *****************************************************************************
+   * \brief Custom constructor. Constructs a Logger instance with the given name.
+   * \param [in] name the name associated with the logger.
+   *****************************************************************************
+   */
+  Logger(const std::string& name);
+
+  /*!
+   *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
@@ -203,6 +304,8 @@ private:
 
   /// \name Private class members
   ///@{
+
+  std::string m_name;
 
   bool m_isEnabled[ message::Num_Levels ];
   std::map< LogStream*, LogStream* > m_streamObjectsManager;
@@ -214,16 +317,11 @@ private:
   ///@{
 
   static Logger* s_Logger;
+  static std::map< std::string, Logger* > s_loggers;
 
   ///@}
 
-  /// \name Disabled Methods
-  ///@{
-
-  Logger( const Logger& ); // Not implemented
-  Logger& operator=( const Logger& ); // Not implemented
-
-  ///@}
+  DISABLE_COPY_AND_ASSIGNMENT(Logger);
 
 };
 

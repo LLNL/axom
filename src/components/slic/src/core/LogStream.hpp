@@ -22,6 +22,7 @@
 #define LOGSTREAM_HPP_
 
 #include "slic/MessageLevel.h"
+#include "common/ATKMacros.hpp"
 
 /// \name Wildcards
 /// @{
@@ -97,6 +98,8 @@ public:
    * \param [in] tagName user-supplied tag to associate with the given message.
    * \param [in] fileName the file where this message is appended
    * \param [in] line the line within the file at which the message is appended.
+   * \param [in] filter_dulicates optional parameter that indicates whether
+   * duplicate messages resulting from running in parallel will be filtered out.
    *
    * \note The following wildcards may be used to ignore a particular field:
    * <ul>
@@ -110,7 +113,8 @@ public:
                        const std::string& message,
                        const std::string& tagName,
                        const std::string& fileName,
-                       int line
+                       int line,
+                       bool filter_duplicates
                        ) = 0;
 
   /*!
@@ -171,13 +175,7 @@ private:
                    const std::string& value,
                    std::size_t pos=std::string::npos );
 
-  /// \name Disabled Methods
-  ///@{
-
-  LogStream( const LogStream& ); // Not implemented
-  LogStream& operator=( const LogStream& ); // Not implemented
-
-  ///@}
+  DISABLE_COPY_AND_ASSIGNMENT(LogStream);
 };
 
 } /* namespace slic */

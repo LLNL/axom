@@ -20,6 +20,8 @@
 
 #include "GenericOutputStream.hpp"
 
+#include "common/ATKMacros.hpp"
+
 namespace asctoolkit {
 
 namespace slic {
@@ -48,7 +50,8 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   const std::string& message,
                                   const std::string& tagName,
                                   const std::string& fileName,
-                                  int line )
+                                  int line,
+                                  bool ATK_NOT_USED(filtered_duplicates) )
 {
   if ( m_stream == ATK_NULLPTR ) {
     std::cerr << "ERROR: NULL stream!\n";
