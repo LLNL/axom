@@ -245,8 +245,6 @@ classes:
         -  long
 #    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* reallocate(const DataType& dtype)
-#    - decl: DataView * sync()
-      return_this: True
 #    - decl: DataView* apply()
 #    - decl: DataView* apply(const Schema& schema)
 #    - decl: DataView* apply(const DataType& dtype)

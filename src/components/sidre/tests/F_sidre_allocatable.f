@@ -112,56 +112,6 @@ contains
 
   end subroutine ds_allocatable_int
 
-
-!----------------------------------------------------------------------
-! Register with datastore
-! Allocate array via Fortran
-! Check datastore metadata
-  subroutine sync_allocatable_int
-    integer, allocatable :: iarray(:)
-    integer, pointer :: ipointer(:)
-
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
-    integer num_elements
-    integer type
-    integer i
-
-    ds = datastore_new()
-    root = ds%get_root()
-
-    ! Register with datastore
-    view = root%create_allocatable_view("iarray", iarray)
-
-    type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
-
-    ! Allocate array via Fortran
-    allocate(iarray(10))
-    call assert_true(allocated(iarray))
-    call assert_equals(size(iarray), 10)
-
-    ! Check datastore metadata
-!XXX    call view%sync
-    type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
-
-    num_elements = view%get_number_of_elements()
-    call assert_equals(num_elements, 10)
-
-    do i=1,10
-       iarray(i) = i
-    enddo
-
-    ! get array via a pointer
-    call view%get_value(ipointer)
-    call assert_true(all(iarray.eq.ipointer))
-
-    call ds%delete()
-
-  end subroutine sync_allocatable_int
-
 !----------------------------------------------------------------------
 !
 ! register a static array with the datastore
@@ -257,7 +207,6 @@ function fortran_test() bind(C,name="fortran_test")
 
   call local_allocatable_int
   call ds_allocatable_int
-!XXX  call sync_allocatable_int
   call local_static_int_array
   call local_allocatable_double
 
