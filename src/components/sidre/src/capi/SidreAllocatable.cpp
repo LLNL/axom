@@ -14,8 +14,10 @@
 //[[[cog import cog;import genfsidresplicer as gen ]]]
 //[[[end]]]
 
-namespace asctoolkit {
-namespace sidre {
+namespace asctoolkit
+{
+namespace sidre
+{
 class DataView;
 
 extern "C" {
@@ -455,7 +457,6 @@ default:
   return;
 }
 
-
 /*!
  * \brief Return DataView for a Fortran allocatable.
  *
@@ -507,9 +508,9 @@ void * ATK_register_static(void * group, char * name, int lname,
 // the same as C_LOC.
 // XXX Pass the first element, not the entire array, to avoid getting
 // XXX a copy of the array.
-void *atk_c_loc_(void *addr)
+void * atk_c_loc_(void * addr)
 {
-    return addr;
+  return addr;
 }
 
 /*
@@ -606,4 +607,3 @@ void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VI
 
 }  // namespace asctoolkit
 }  // namespace sidre
-

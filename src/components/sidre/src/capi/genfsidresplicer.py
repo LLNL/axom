@@ -354,7 +354,11 @@ function atk_size_allocatable_{typename}_{nd}(array) result(rv)
     implicit none
     {f_type}, allocatable, intent(IN) :: array{shape}
     integer(C_SIZE_T) :: rv
-    rv = size(array)
+    if (allocated(array)) then
+        rv = size(array)
+    else
+        rv = 0
+    endif
 end function atk_size_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_size_allocatable_header(d):
@@ -394,7 +398,6 @@ def AddressAllocatable(printer):
     calls = [ ('address_allocatable', 'addr = {macro}(array)') ]
     print_switch(printer, calls)
 
-
 ######################################################################
 
 def print_atk_allocate_allocatable(d):
@@ -430,7 +433,6 @@ def AllocateAllocatable(printer):
         ]
     print_switch(printer, calls)
 
-
 ######################################################################
 
 def print_atk_deallocate_allocatable(d):
@@ -455,7 +457,6 @@ def DeallocateAllocatable(printer):
         ('deallocate_allocatable', '{macro}(array)'),
         ]
     print_switch(printer, calls)
-
 
 ######################################################################
 

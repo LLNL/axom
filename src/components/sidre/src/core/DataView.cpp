@@ -267,6 +267,36 @@ DataView * DataView::reallocate(const DataType& dtype)
 }
 
 
+#if 0
+/*
+ *************************************************************************
+ *
+ * Sync Dataview with DataBufferer.
+ * This is required when a MetaBuffer is changed by the user.
+ *   integer, allocatable :: array(:)
+ *   view = root%register_allocatable("array", array)
+ *   allocate(array(10))   ! MetaBuffer changed
+ *   call view%sync        ! Tell Sidre that MetaBuffer has changed.
+ *
+ *************************************************************************
+ */
+DataView * DataView::sync()
+{
+  // XXX - check message - A view is not external, only a buffer.
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call allocate an external or opaque view");
+  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
+                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+
+  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  {
+    m_data_buffer->sync();
+    apply(m_data_buffer->getSchema());
+  }
+  return this;
+}
+#endif
+
 /*
  *************************************************************************
  *

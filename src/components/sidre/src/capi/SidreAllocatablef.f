@@ -23,7 +23,11 @@ function atk_size_allocatable_int_1d(array) result(rv)
     implicit none
     integer(C_INT), allocatable, intent(IN) :: array(:)
     integer(C_SIZE_T) :: rv
-    rv = size(array)
+    if (allocated(array)) then
+        rv = size(array)
+    else
+        rv = 0
+    endif
 end function atk_size_allocatable_int_1d
 
 function atk_size_allocatable_long_scalar(array) result(rv)
@@ -39,7 +43,11 @@ function atk_size_allocatable_long_1d(array) result(rv)
     implicit none
     integer(C_LONG), allocatable, intent(IN) :: array(:)
     integer(C_SIZE_T) :: rv
-    rv = size(array)
+    if (allocated(array)) then
+        rv = size(array)
+    else
+        rv = 0
+    endif
 end function atk_size_allocatable_long_1d
 
 function atk_size_allocatable_float_scalar(array) result(rv)
@@ -55,7 +63,11 @@ function atk_size_allocatable_float_1d(array) result(rv)
     implicit none
     real(C_FLOAT), allocatable, intent(IN) :: array(:)
     integer(C_SIZE_T) :: rv
-    rv = size(array)
+    if (allocated(array)) then
+        rv = size(array)
+    else
+        rv = 0
+    endif
 end function atk_size_allocatable_float_1d
 
 function atk_size_allocatable_double_scalar(array) result(rv)
@@ -71,7 +83,11 @@ function atk_size_allocatable_double_1d(array) result(rv)
     implicit none
     real(C_DOUBLE), allocatable, intent(IN) :: array(:)
     integer(C_SIZE_T) :: rv
-    rv = size(array)
+    if (allocated(array)) then
+        rv = size(array)
+    else
+        rv = 0
+    endif
 end function atk_size_allocatable_double_1d
 ![[[end]]]
 
