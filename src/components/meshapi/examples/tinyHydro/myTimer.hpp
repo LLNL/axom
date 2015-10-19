@@ -1,4 +1,5 @@
 #include <sys/time.h>
+#include "common/CommonTypes.hpp"
 
 namespace tinyHydro {
 
@@ -21,7 +22,7 @@ public:
     void start()
     {
         m_running = true;
-        gettimeofday(&m_startTime, NULL);
+        gettimeofday(&m_startTime, ATK_NULLPTR);
     }
 
     /**
@@ -29,7 +30,7 @@ public:
      */
     void stop()
     {
-        gettimeofday(&m_endTime, NULL);
+        gettimeofday(&m_endTime, ATK_NULLPTR);
         m_running = false;
     }
 

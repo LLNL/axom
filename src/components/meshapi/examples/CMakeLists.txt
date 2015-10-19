@@ -170,15 +170,8 @@ set(gtest_meshapi_tinyHydro_tests
     ${tinyHydro_dir}/tests/meshapi_tinyHydro_sod1DTwoPart.cpp
 )
 
-
-if(UNIX AND NOT APPLE)
-    set(rtDep "-lrt")
-else()
-    set(rtDep "")
-endif()
-    
 foreach(test ${gtest_meshapi_tinyHydro_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON meshapiTinyHydroLib slic ${rtDep})
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON meshapiTinyHydroLib slic)
 endforeach()
 
 
