@@ -56,9 +56,7 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
     for (int i = 0; i < mesh.numNodes(); i++)
     {
        VectorXY pos = mesh.getPos(i);
-       double ux = pos.x - 0.5;
-       double uy = pos.y - 0.5;
-       s.setU(i, VectorXY(-ux,-uy));
+       s.setU(i, VectorXY(0.5 - pos.x, 0.5-pos.y));
     }
 
     s.addPart(&p);

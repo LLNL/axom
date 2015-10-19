@@ -34,16 +34,17 @@ class PolygonMeshXY
    int numZones()                           const { return zones.size(); }
    int zoneNumNodes(int i)                  const { return zoneToNodes.size(i);}
    int zoneNode(int iz, int in)             const { return zoneToNodes[iz][in];}
-   VectorXY zoneNodePos(int iz, int in)     const { return nodePos[ zoneNode(iz,in) ];}
 
    // functions that access and modify the mesh geometry
    void moveNodesToPosition(const NodalVectorField& newPos);
    void computeNewGeometry(void);
    
    // accessors, mostly used from Python
+   double zoneVol(int i)                    const { return zoneVolume[i];}
    VectorXY getPos(int i)                   const { return nodePos[i];}
    VectorXY getZonePos(int i)               const { return zonePos[i];}
-   double zoneVol(int i)                    const { return zoneVolume[i];}
+   VectorXY zoneNodePos(int iz, int in)     const { return nodePos[ zoneNode(iz,in) ];}
+
    void setPos(int i, const VectorXY & v)         { nodePos[i] = v;}
 
    VectorXY meshAverageKLZMemOrderA();
@@ -51,16 +52,17 @@ class PolygonMeshXY
    void dumpMesh();
 
  public:
+   // Mesh entities -- sets
    ZoneSet zones;                   // Set of zones in the mesh -- PositionSet (wrapper around an int)
    NodeSet nodes;                   // Set of nodes in the mesh -- PositionSet (wrapper around an int)
-   FaceSet faces;                   // Set of faces in the mesh -- missing (wrapper around an int)
-   CornerSet corners;               // Set of corners in the mesh -- missing (wrapper around an int)
+   FaceSet faces;                   // Set of faces in the mesh -- added in meshapi version (wrapper around an int)
+   CornerSet corners;               // Set of corners in the mesh -- added in meshapi version (wrapper around an int)
 
-   // Mesh topology
+   // Mesh topology -- relations
    ZoneToFaceRelation zoneToFaces;
    ZoneToNodeRelation zoneToNodes;
 
-   // Mesh geometry
+   // Mesh geometry -- fields
    NodalVectorField nodePos;          // node positions
    ZonalVectorField zonePos;          // zone positions (barycenters)
    FaceVectorField faceArea;          // face areas -- scaled outward-facing normals
