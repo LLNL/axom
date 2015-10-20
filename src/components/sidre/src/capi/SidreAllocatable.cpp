@@ -474,14 +474,14 @@ static void * register_allocatable(DataGroup *group,
 
 extern "C" {
 
-static void *ATK_create_fortran_allocatable_view(void * group,
-						 char * name, int lname,
-						 void * array, int type, int rank)
+void * ATK_create_fortran_allocatable_view(void * group,
+					   char * name, int lname,
+					   void * array, int type, int rank)
 {
   DataGroup * grp = static_cast<DataGroup *>(group);
   DataView * view = grp->createFortranAllocatableView(std::string(name, lname),
 						      array,
-						      static_cast<TypeID>(type),
+						      getTypeID(type), // XXX static_cast<TypeID>(type),
 						      rank);
   return view;
 }

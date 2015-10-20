@@ -205,10 +205,10 @@ function fortran_test() bind(C,name="fortran_test")
 
   call init_fruit
 
-  call local_allocatable_int
-  call ds_allocatable_int
+!  call local_allocatable_int
+!  call ds_allocatable_int
   call local_static_int_array
-  call local_allocatable_double
+!  call local_allocatable_double
 
   call fruit_summary
   call fruit_finalize
