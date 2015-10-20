@@ -148,7 +148,7 @@ class Message {
          *****************************************************************************
          * \brief Sets a new text for this Message.
          *
-         * \param [in] newMessage The new text to be set for this Message.
+         * \param [in] newText The new text to be set for this Message.
          *****************************************************************************
          */
         void text(const std::string& newText);
