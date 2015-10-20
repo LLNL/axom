@@ -45,6 +45,8 @@ slic::message::Level getRandomLevel()
 //------------------------------------------------------------------------------
 void init()
 {
+  std::string current_logger = slic::getActiveLoggerName();
+
   std::string physicsB_format =
       std::string( "***************************************************\n" ) +
       std::string( "<TIMESTAMP>" ) +
@@ -61,12 +63,13 @@ void init()
   slic::setLoggingLevel( slic::message::Debug );
   slic::addStreamToAllLevels( ls );
 
-  slic::activateLogger("root");
+  slic::activateLogger( current_logger );
 }
 
 //------------------------------------------------------------------------------
 void timestep(int step, int n)
 {
+  std::string current_logger = slic::getActiveLoggerName();
   slic::activateLogger( "physicsB" );
 
   std::ostringstream oss;
@@ -82,7 +85,7 @@ void timestep(int step, int n)
     slic::logMessage(random,oss.str(),__FILE__,__LINE__);
   }
 
-  slic::activateLogger( "root" );
+  slic::activateLogger( current_logger );
 }
 
 //------------------------------------------------------------------------------
