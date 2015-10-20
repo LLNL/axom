@@ -500,6 +500,7 @@ void * ATK_register_static(void * group, char * name, int lname,
   return view;
 }
 
+// equivalent to C_LOC
 // called from Fortran
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53945
 // Work around a problem with gfortran 4.7 where C_LOC does not work
@@ -509,9 +510,12 @@ void * ATK_register_static(void * group, char * name, int lname,
 // the same as C_LOC.
 // XXX Pass the first element, not the entire array, to avoid getting
 // XXX a copy of the array.
-void * FC_GLOBAL(atk_c_loc,ATK_C_LOC)(void * addr)
+//
+// The result must be an argument because some compilers (Intel)
+// cannot return type(C_PTR)
+void FC_GLOBAL(atk_c_loc,ATK_C_LOC)(void * addr, void **out)
 {
-  return addr;
+  *out = addr;
 }
 
 /*

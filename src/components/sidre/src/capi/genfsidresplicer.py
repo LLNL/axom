@@ -48,7 +48,7 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
        type(C_PTR) rv
        end function ATK_register_static
     end interface
-    type(C_PTR), external :: ATK_C_LOC
+    external :: ATK_C_LOC
 
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
@@ -56,12 +56,15 @@ function datagroup_register_static_{typename}_{nd}(group, name, value) result(rv
     integer(C_INT) :: lname
     type(dataview) :: rv
     integer(C_LONG) :: nitems
-    integer(C_INT) :: type = {atk_type}
+    integer(C_INT), parameter :: type = {atk_type}
+    type(C_PTR) addr
 
     lname = len_trim(name)
     nitems = {size}
-    rv%voidptr = ATK_register_static(group%voidptr, name, lname, ATK_C_LOC(value), type, nitems)
-end function datagroup_register_static_{typename}_{nd}""".format(size=size, **d)
+    call ATK_C_LOC(value, addr)
+    rv%voidptr = ATK_register_static(group%voidptr, name, lname, addr, type, nitems)
+end function datagroup_register_static_{typename}_{nd}""".format(
+        size=size, **d)
 
 
 def create_allocatable_view(d):
