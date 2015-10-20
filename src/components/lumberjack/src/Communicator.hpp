@@ -45,6 +45,13 @@ class Communicator {
     public:
         /*!
          *****************************************************************************
+         * \brief Virtual destructor.
+         *****************************************************************************
+         */
+        virtual ~Communicator(){};
+        
+        /*!
+         *****************************************************************************
          * \brief Called to initialize the Communicator.
          *
          * This performs any setup work the Communicator needs before doing any work.
