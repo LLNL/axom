@@ -22,6 +22,7 @@
 #include "lumberjack/Utility.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 namespace asctoolkit {
 namespace lumberjack {
@@ -160,6 +161,10 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
         }
         currString += packedMessage[i];
     }
+    if (i >= messageLength) {
+        //ToDo: figure out a better error handling method
+        std::cout << "Error: Lumberjack recieved a truncated message that ended in the rank section." << std::endl;
+    }
 
     //Grab rank count since it can differ from list that is sent
     currString = "";
@@ -170,6 +175,10 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
             break;
         }
         currString += packedMessage[i];
+    }
+    if (i >= messageLength) {
+        //ToDo: figure out a better error handling method
+        std::cout << "Error: Lumberjack recieved a truncated message that ended in the rank count section." << std::endl;
     }
 
     //Grab file name
@@ -182,6 +191,10 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
         }
         currString += packedMessage[i];
     }
+    if (i >= messageLength) {
+        //ToDo: figure out a better error handling method
+        std::cout << "Error: Lumberjack recieved a truncated message that ended in the file name section." << std::endl;
+    }
 
     //Grab line number
     currString = "";
@@ -192,6 +205,10 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
             break;
         }
         currString += packedMessage[i];
+    }
+    if (i >= messageLength) {
+        //ToDo: figure out a better error handling method
+        std::cout << "Error: Lumberjack recieved a truncated message that ended in the line number section." << std::endl;
     }
 
     //Grab message
