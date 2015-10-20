@@ -25,3 +25,13 @@ set(gtest_lumberjack_tests
 foreach(test ${gtest_lumberjack_tests})
     add_gtest(TEST_SOURCE ${test} DEPENDS_ON lumberjack)
 endforeach()
+
+#
+# ToDo: should be added some other way
+#
+make_executable(WITH_MPI
+                EXECUTABLE_SOURCE lumberjack_mpiBasicTest.cpp)
+
+make_executable(WITH_MPI
+                EXECUTABLE_SOURCE lumberjack_speedTest.cpp
+                DEPENDS_ON lumberjack )
