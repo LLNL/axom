@@ -184,10 +184,10 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_INT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       nitems = SIZE_ALLOCATABLE_INT_SCALAR(array);
       break;
-  case 1:
+    case 1:
       nitems = SIZE_ALLOCATABLE_INT_1D(array);
       break;
     default:
@@ -197,10 +197,10 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_LONG_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       nitems = SIZE_ALLOCATABLE_LONG_SCALAR(array);
       break;
-  case 1:
+    case 1:
       nitems = SIZE_ALLOCATABLE_LONG_1D(array);
       break;
     default:
@@ -210,10 +210,10 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       nitems = SIZE_ALLOCATABLE_FLOAT_SCALAR(array);
       break;
-  case 1:
+    case 1:
       nitems = SIZE_ALLOCATABLE_FLOAT_1D(array);
       break;
     default:
@@ -223,10 +223,10 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       nitems = SIZE_ALLOCATABLE_DOUBLE_SCALAR(array);
       break;
-  case 1:
+    case 1:
       nitems = SIZE_ALLOCATABLE_DOUBLE_1D(array);
       break;
     default:
@@ -254,10 +254,10 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_INT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ADDRESS_ALLOCATABLE_INT_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ADDRESS_ALLOCATABLE_INT_1D(array, &addr);
       break;
     default:
@@ -267,10 +267,10 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_LONG_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ADDRESS_ALLOCATABLE_LONG_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ADDRESS_ALLOCATABLE_LONG_1D(array, &addr);
       break;
     default:
@@ -280,10 +280,10 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ADDRESS_ALLOCATABLE_FLOAT_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ADDRESS_ALLOCATABLE_FLOAT_1D(array, &addr);
       break;
     default:
@@ -293,10 +293,10 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ADDRESS_ALLOCATABLE_DOUBLE_1D(array, &addr);
       break;
     default:
@@ -324,11 +324,11 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
   case CONDUIT_NATIVE_INT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ALLOCATE_ALLOCATABLE_INT_SCALAR(array, &nitems);
       ADDRESS_ALLOCATABLE_INT_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ALLOCATE_ALLOCATABLE_INT_1D(array, &nitems);
       ADDRESS_ALLOCATABLE_INT_1D(array, &addr);
       break;
@@ -339,11 +339,11 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
   case CONDUIT_NATIVE_LONG_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ALLOCATE_ALLOCATABLE_LONG_SCALAR(array, &nitems);
       ADDRESS_ALLOCATABLE_LONG_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ALLOCATE_ALLOCATABLE_LONG_1D(array, &nitems);
       ADDRESS_ALLOCATABLE_LONG_1D(array, &addr);
       break;
@@ -354,11 +354,11 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
   case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ALLOCATE_ALLOCATABLE_FLOAT_SCALAR(array, &nitems);
       ADDRESS_ALLOCATABLE_FLOAT_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ALLOCATE_ALLOCATABLE_FLOAT_1D(array, &nitems);
       ADDRESS_ALLOCATABLE_FLOAT_1D(array, &addr);
       break;
@@ -369,11 +369,11 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
   case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(array, &nitems);
       ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(array, &addr);
       break;
-  case 1:
+    case 1:
       ALLOCATE_ALLOCATABLE_DOUBLE_1D(array, &nitems);
       ADDRESS_ALLOCATABLE_DOUBLE_1D(array, &addr);
       break;
@@ -401,10 +401,10 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_INT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       DEALLOCATE_ALLOCATABLE_INT_SCALAR(array);
       break;
-  case 1:
+    case 1:
       DEALLOCATE_ALLOCATABLE_INT_1D(array);
       break;
     default:
@@ -414,10 +414,10 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_LONG_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       DEALLOCATE_ALLOCATABLE_LONG_SCALAR(array);
       break;
-  case 1:
+    case 1:
       DEALLOCATE_ALLOCATABLE_LONG_1D(array);
       break;
     default:
@@ -427,10 +427,10 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       DEALLOCATE_ALLOCATABLE_FLOAT_SCALAR(array);
       break;
-  case 1:
+    case 1:
       DEALLOCATE_ALLOCATABLE_FLOAT_1D(array);
       break;
     default:
@@ -440,10 +440,10 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
   case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
     switch(rank)
     {
-  case 0:
+    case 0:
       DEALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(array);
       break;
-  case 1:
+    case 1:
       DEALLOCATE_ALLOCATABLE_DOUBLE_1D(array);
       break;
     default:
@@ -537,49 +537,49 @@ void FC_GLOBAL(atk_c_loc,ATK_C_LOC)(void * addr, void * * out)
 void FC_GLOBAL(atk_c_loc_allocatable_int_scalar,ATK_C_LOC_ALLOCATABLE_INT_SCALAR)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_int_1d,ATK_C_LOC_ALLOCATABLE_INT_1D)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_long_scalar,ATK_C_LOC_ALLOCATABLE_LONG_SCALAR)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_long_1d,ATK_C_LOC_ALLOCATABLE_LONG_1D)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_float_scalar,ATK_C_LOC_ALLOCATABLE_FLOAT_SCALAR)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_float_1d,ATK_C_LOC_ALLOCATABLE_FLOAT_1D)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_double_scalar,ATK_C_LOC_ALLOCATABLE_DOUBLE_SCALAR)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 
 void FC_GLOBAL(atk_c_loc_allocatable_double_1d,ATK_C_LOC_ALLOCATABLE_DOUBLE_1D)
   (void * allocatable, void * * addr)
 {
-    *addr = allocatable;
+  *addr = allocatable;
 }
 //[[[end]]]
 

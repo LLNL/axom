@@ -235,7 +235,7 @@ def print_switch(printer, calls):
                 d['nd'] = 'scalar'
             else:
                 d['nd'] = '%dd' % nd
-            printer('  case %d:' % nd)
+            printer('    case %d:' % nd)
             for ca in calls:
                 d['prefix'] = ca[0]
                 d['macro'] = '{prefix}_{typename}_{nd}'.format(**d).upper()
@@ -354,7 +354,7 @@ def print_atk_c_loc_allocatable(d):
 void FC_GLOBAL({lower},{upper})
   (void * allocatable, void * * addr)
 {{
-    *addr = allocatable;
+  *addr = allocatable;
 }}""".format(lower=name.lower(), upper=name.upper())
 # XXX remove cast after native types are resolved
 
