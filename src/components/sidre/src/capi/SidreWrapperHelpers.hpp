@@ -22,7 +22,6 @@
 #include "conduit/Bitwidth_Style_Types.h"
 
 // SiDRe project headers
-#include "sidre/DataGroup.hpp"
 #include "sidre/SidreTypes.hpp"
 #include "sidre/SidreTypes.h"
 

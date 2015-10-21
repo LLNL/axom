@@ -143,7 +143,6 @@ list(APPEND parent_list
 )
 
 list(APPEND generated_list ${parent_list})
-#list(APPEND parent_list ${API_OUTPUT_DIR}/SidreWrapperHelpers.cpp)
 set (capi_source ${parent_list} PARENT_SCOPE)
 
 

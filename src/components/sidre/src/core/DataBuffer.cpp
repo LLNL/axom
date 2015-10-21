@@ -305,7 +305,6 @@ DataBuffer * DataBuffer::reallocate(const DataType& dtype)
  */
 DataBuffer * DataBuffer::setExternalData(void * external_data)
 {
-#if 0
   SLIC_ASSERT_MSG( external_data != ATK_NULLPTR, 
                   "Attempting to set buffer to external data given null pointer" );
 
@@ -315,12 +314,6 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
     m_node.set_external(m_schema, m_data);
     m_is_data_external = true;
   }
-#else
-  // XXX allow ATK_NULLPTR
-  m_data = external_data;
-  m_node.set_external(m_schema, m_data);
-  m_is_data_external = true;
-#endif
   return this;
 }
 
