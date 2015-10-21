@@ -525,97 +525,11 @@ void FC_GLOBAL(atk_c_loc,ATK_C_LOC)(void * addr, void **out)
  * since they need the address of the allocatable array,
  * not the address of the contents of the allocatable array.
  *
- * XXX - In the future it should be possible to replace them with one routine
- * with an interface like:
- *    type(*), allocatable :: array(..)
- *************************************************************************
- */
-//[[[cog
-//gen.print_lines(cog.outl, gen.print_atk_create_allocatable_view)
-//]]]
-
-void * FC_GLOBAL(atk_create_allocatable_view_int_scalar,ATK_CREATE_ALLOCATABLE_VIEW_INT_SCALAR)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_int_1d,ATK_CREATE_ALLOCATABLE_VIEW_INT_1D)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_long_scalar,ATK_CREATE_ALLOCATABLE_VIEW_LONG_SCALAR)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_long_1d,ATK_CREATE_ALLOCATABLE_VIEW_LONG_1D)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_float_scalar,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_SCALAR)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_float_1d,ATK_CREATE_ALLOCATABLE_VIEW_FLOAT_1D)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_double_scalar,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_SCALAR)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-
-void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VIEW_DOUBLE_1D)(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}
-//[[[end]]]
-
-
-/*
- *************************************************************************
- * These routines are called from Fortran with an interface
- * but without BIND(C)
- * since they need the address of the allocatable array,
- * not the address of the contents of the allocatable array.
+ * They are subroutines instead of functions since Intel has a different ABI
+ * for returning derived types like type(CPTR). [They add an additional
+ * argument at the beginning for the result]
  *
- * XXX - In the future it should be possible to replace them with one routine
+ * XXX - In the future it may be possible to replace them with one routine
  * with an interface like:
  *    type(*), allocatable :: array(..)
  *************************************************************************

@@ -333,24 +333,6 @@ def gen_fortran():
         print(line)
     print('! splicer end class.DataView.additional_functions')
 
-
-######################################################################
-
-def print_atk_create_allocatable_view(d):
-    """Write C++ routine to accept Fortran allocatable.
-    """
-    name = 'atk_create_allocatable_view_{typename}_{nd}'.format(**d)
-    return """
-void * FC_GLOBAL({lower},{upper})(
-    void * group,
-    char * name, int lname,
-    void * array, int itype, int rank)
-{{
-    return ATK_create_fortran_allocatable_view(group, name, lname, array, 
-        getTypeID(itype), rank);
-}}""".format(lower=name.lower(), upper=name.upper())
-# XXX remove cast after native types are resolved
-
 ######################################################################
 #
 # Create functions to return the address of an allocatable array as a type(C_PTR)
