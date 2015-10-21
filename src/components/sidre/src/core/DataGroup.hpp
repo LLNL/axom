@@ -39,7 +39,7 @@
 //#endif
 
 #if defined(USE_UNORDERED_MAP)
-//STL or Boost unordered_map, depending on 
+//STL or Boost unordered_map, depending on
 #if defined(USE_CXX11)
 #include <unordered_map>
 #else

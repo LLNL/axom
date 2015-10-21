@@ -37,7 +37,7 @@ TEST(sidre_datastore,detach_buffer)
   std::cerr << ds->getFirstValidBufferIndex() << std::endl;
   std::cerr << bufferIndex << std::endl;
   EXPECT_TRUE( ds->getFirstValidBufferIndex() == bufferIndex );
- 
+
   // check error condition
   IndexType badBufferIndex = 9999;
   EXPECT_TRUE( ds->detachBuffer(badBufferIndex) == ATK_NULLPTR );

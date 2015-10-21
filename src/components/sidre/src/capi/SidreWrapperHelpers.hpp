@@ -115,6 +115,3 @@ inline TypeID getTypeID( const int typeID )
 } /* end namespace asctoolkit */
 
 #endif /* SIDREWRAPPERHELPERS_HPP_ */
-
-
-

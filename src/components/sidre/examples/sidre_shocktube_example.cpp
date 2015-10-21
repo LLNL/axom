@@ -720,7 +720,8 @@ int main(void)
   for (*currCycle = 0 ; *currCycle < numTotalCycles ; ++(*currCycle) )
   {
     /* dump the ultra file, based on the user chosen attribute mask */
-    if ( (*currCycle) % dumpInterval == 0) {
+    if ( (*currCycle) % dumpInterval == 0)
+    {
       DumpUltra(prob);
     }
 
