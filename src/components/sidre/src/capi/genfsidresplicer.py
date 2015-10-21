@@ -223,13 +223,13 @@ def print_switch(printer, calls):
                   ''           -- subroutine with no arguments
     """
     d = {}
-    printer('switch(type)')
-    printer('{')
+    printer('  switch(type)')
+    printer('  {')
     for typetuple in types:
         d['typename'], f_type, atk_type, cpp_type = typetuple
-        printer('case %s:' % cpp_type)
-        printer('  switch(rank)')
-        printer('  {')
+        printer('  case %s:' % cpp_type)
+        printer('    switch(rank)')
+        printer('    {')
         for nd in range(0,maxdims+1):
             if nd == 0:
                 d['nd'] = 'scalar'
@@ -239,15 +239,15 @@ def print_switch(printer, calls):
             for ca in calls:
                 d['prefix'] = ca[0]
                 d['macro'] = '{prefix}_{typename}_{nd}'.format(**d).upper()
-                printer('    ' + ca[1].format(**d) + ';')
-            printer('    break;')
-        printer('  default:')
+                printer('      ' + ca[1].format(**d) + ';')
+            printer('      break;')
+        printer('    default:')
+        printer('      break;')
+        printer('    }')
         printer('    break;')
-        printer('  }')
-        printer('  break;')
-    printer('default:')
-    printer('  break;')
-    printer('}')
+    printer('  default:')
+    printer('    break;')
+    printer('  }')
 
 #----------------------------------------------------------------------
 
@@ -352,7 +352,7 @@ def print_atk_c_loc_allocatable(d):
     name = 'atk_c_loc_allocatable_{typename}_{nd}'.format(**d)
     return """
 void FC_GLOBAL({lower},{upper})
-  (void * allocatable, void ** addr)
+  (void * allocatable, void * * addr)
 {{
     *addr = allocatable;
 }}""".format(lower=name.lower(), upper=name.upper())
@@ -396,7 +396,11 @@ size_t {upper}(void * array);
 
 def SizeAllocatable(printer):
     calls = [ ('size_allocatable', 'nitems = {macro}(array)') ]
+    printer('{')
+    printer('  size_t nitems = 0;')
     print_switch(printer, calls)
+    printer('  return nitems;')
+    printer('}')
 
 ######################################################################
 
@@ -416,12 +420,16 @@ end subroutine atk_address_allocatable_{typename}_{nd}""".format(**d)
 def print_atk_address_allocatable_header(d):
     name = 'address_allocatable_{typename}_{nd}'.format(**d)
     return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
-void {upper}(void * array, void ** addr);
+void {upper}(void * array, void * * addr);
 """.format(lower=name.lower(), upper=name.upper())
 
 def AddressAllocatable(printer):
     calls = [ ('address_allocatable', '{macro}(array, &addr)') ]
+    printer('{')
+    printer('  void * addr = ATK_NULLPTR;')
     print_switch(printer, calls)
+    printer('  return addr;')
+    printer('}')
 
 ######################################################################
 
@@ -456,7 +464,11 @@ def AllocateAllocatable(printer):
         ('allocate_allocatable', '{macro}(array, &nitems)'),
         ('address_allocatable', '{macro}(array, &addr)'),
         ]
+    printer('{')
+    printer('  void * addr = ATK_NULLPTR;')
     print_switch(printer, calls)
+    printer('  return addr;')
+    printer('}')
 
 ######################################################################
 
@@ -481,7 +493,10 @@ def DeallocateAllocatable(printer):
     calls = [
         ('deallocate_allocatable', '{macro}(array)'),
         ]
+    printer('{')
     print_switch(printer, calls)
+    printer('  return;')
+    printer('}')
 
 ######################################################################
 

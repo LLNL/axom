@@ -6,8 +6,10 @@
 #define SIDREALLOCATABLE_HPP_
 
 extern "C" {
-namespace asctoolkit {
-namespace sidre {
+namespace asctoolkit
+{
+namespace sidre
+{
 
 size_t SizeAllocatable(void * array, TypeID type, int rank);
 
@@ -21,4 +23,3 @@ void DeallocateAllocatable(void * array, TypeID type, int rank);
 }  // namespace sidre
 }  // extern "C"
 #endif /* SIDREALLOCATABLE_HPP_ */
-
