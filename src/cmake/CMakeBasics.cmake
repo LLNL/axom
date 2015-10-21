@@ -62,6 +62,11 @@ include(Setup3rdParty)
 include(SetupDocs)
 
 ################################
+# Setup toolkit generate targets
+################################
+include(SetupGenerate)
+
+################################
 # Setup toolkit source checks
 ################################
 include(SetupCodeChecks)
