@@ -55,11 +55,8 @@
 do {                                                                          \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,oss.str(),__FILE__, __LINE__ );      \
-    if ( asctoolkit::slic::getAbortOnError() ) {                              \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__,          \
+                                 asctoolkit::slic::getAbortOnError() );       \
 } while ( 0 )
 
 /*!
@@ -83,11 +80,8 @@ do {                                                                          \
   if ( EXP ) {                                                                \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(                                             \
-      asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );         \
-    if ( asctoolkit::slic::getAbortOnError() ) {                              \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__,            \
+                                    asctoolkit::slic::getAbortOnError() );    \
   }                                                                           \
 } while( 0 )
 
@@ -114,8 +108,7 @@ do {                                                                          \
 do {                                                                          \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Warning,oss.str(),__FILE__, __LINE__ );    \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );       \
 } while ( 0 )
 
 /*!
@@ -138,8 +131,7 @@ do {                                                                          \
   if ( EXP ) {                                                                \
     std::ostringstream oss;                                                   \
     oss << msg;                                                               \
-    asctoolkit::slic::logMessage(                                             \
-      asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );       \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
   }                                                                           \
 } while( 0 )
 
@@ -172,11 +164,8 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::ends;                           \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    if ( asctoolkit::slic::getAbortOnAssert() ) {                             \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__,            \
+                                asctoolkit::slic::getAbortOnAssert() );       \
   }                                                                           \
 } while ( 0 )
 
@@ -202,11 +191,8 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    if ( asctoolkit::slic::getAbortOnAssert() ) {                             \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__,            \
+                                asctoolkit::slic::getAbortOnAssert() );       \
   }                                                                           \
 } while ( 0 )
 
@@ -237,8 +223,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::ends;                            \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );     \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
   }                                                                           \
 } while ( 0 )
 
@@ -263,8 +248,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;       \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );     \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
   }                                                                           \
 } while ( 0 )
 
@@ -464,6 +448,31 @@ void logMessage( message::Level level,
                  const std::string& fileName,
                  int line,
                  bool filter_duplicates=false );
+
+/*!
+ *******************************************************************************
+ * \brief Convenience method to log an error message.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file that the message is logged.
+ *******************************************************************************
+ */
+void logErrorMessage( const std::string& message,
+                      const std::string& fileName,
+                      int line,
+                      bool shouldAbort );
+
+/*!
+ *******************************************************************************
+ * \brief Convenience method to log warning messages.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file that the message is logged.
+ *******************************************************************************
+ */
+void logWarningMessage( const std::string& message,
+                        const std::string& fileName,
+                        int line );
 
 /*!
  *******************************************************************************
