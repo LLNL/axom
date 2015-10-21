@@ -104,7 +104,7 @@ function datagroup_create_allocatable_view_{typename}_{nd}(group, name, value) r
     integer(C_INT), parameter :: itype = {atk_type}
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_{typename}_{nd}""".format(callname=callname, **d)
 
@@ -358,20 +358,20 @@ void * FC_GLOBAL({lower},{upper})(
 
 def iface_atk_c_loc_allocatable(d):
     return """
-   function atk_c_loc_allocatable_{typename}_{nd}(variable) result(rv)
+   subroutine atk_c_loc_allocatable_{typename}_{nd}(variable, addr)
      use iso_c_binding
      {f_type}, allocatable, intent(IN) :: variable{shape}
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_{typename}_{nd}""".format(**d)
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_c_loc_allocatable(d):
     """Write C++ routine to accept Fortran allocatable.
     """
     name = 'atk_c_loc_allocatable_{typename}_{nd}'.format(**d)
     return """
-void * FC_GLOBAL({lower},{upper})(void * allocatable)
+void FC_GLOBAL({lower},{upper})(void * allocatable, void ** addr)
 {{
-    return allocatable;
+    *addr = allocatable;
 }}""".format(lower=name.lower(), upper=name.upper())
 # XXX remove cast after native types are resolved
 
@@ -422,22 +422,22 @@ def print_atk_address_allocatable(d):
     Use C_LOC and add TARGET attribute
     """
     return """
-function atk_address_allocatable_{typename}_{nd}(array) result(rv)
+subroutine atk_address_allocatable_{typename}_{nd}(array, addr)
     use iso_c_binding
     implicit none
     {f_type}, allocatable, intent(IN), target :: array{shape}
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_{typename}_{nd}""".format(**d)
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_{typename}_{nd}""".format(**d)
 
 def print_atk_address_allocatable_header(d):
     name = 'address_allocatable_{typename}_{nd}'.format(**d)
     return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
-void * {upper}(void * array);
+void {upper}(void * array, void ** addr);
 """.format(lower=name.lower(), upper=name.upper())
 
 def AddressAllocatable(printer):
-    calls = [ ('address_allocatable', 'addr = {macro}(array)') ]
+    calls = [ ('address_allocatable', '{macro}(array, &addr)') ]
     print_switch(printer, calls)
 
 ######################################################################
@@ -458,20 +458,20 @@ subroutine atk_allocate_allocatable_{typename}_{nd}(array, nitems)
     use iso_c_binding
     implicit none
     {f_type}, allocatable, intent(OUT), target :: array{shape}
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array{size})
 end subroutine atk_allocate_allocatable_{typename}_{nd}""".format(size=size, **d)
 
 def print_atk_allocate_allocatable_header(d):
     name = 'allocate_allocatable_{typename}_{nd}'.format(**d)
     return """#define {upper} FC_GLOBAL(atk_{lower},ATK_{upper})
-void {upper}(void * array, long nitems);
+void {upper}(void * array, long * nitems);
 """.format(lower=name.lower(), upper=name.upper())
 
 def AllocateAllocatable(printer):
     calls = [
-        ('allocate_allocatable', '{macro}(array, nitems)'),
-        ('address_allocatable', 'addr = {macro}(array)'),
+        ('allocate_allocatable', '{macro}(array, &nitems)'),
+        ('address_allocatable', '{macro}(array, &addr)'),
         ]
     print_switch(printer, calls)
 

@@ -96,69 +96,69 @@ end function atk_size_allocatable_double_1d
 !gen.print_lines(cog.outl, gen.print_atk_address_allocatable)
 !]]]
 
-function atk_address_allocatable_int_scalar(array) result(rv)
+subroutine atk_address_allocatable_int_scalar(array, addr)
     use iso_c_binding
     implicit none
     integer(C_INT), allocatable, intent(IN), target :: array
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_int_scalar
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_int_scalar
 
-function atk_address_allocatable_int_1d(array) result(rv)
+subroutine atk_address_allocatable_int_1d(array, addr)
     use iso_c_binding
     implicit none
     integer(C_INT), allocatable, intent(IN), target :: array(:)
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_int_1d
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_int_1d
 
-function atk_address_allocatable_long_scalar(array) result(rv)
+subroutine atk_address_allocatable_long_scalar(array, addr)
     use iso_c_binding
     implicit none
     integer(C_LONG), allocatable, intent(IN), target :: array
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_long_scalar
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_long_scalar
 
-function atk_address_allocatable_long_1d(array) result(rv)
+subroutine atk_address_allocatable_long_1d(array, addr)
     use iso_c_binding
     implicit none
     integer(C_LONG), allocatable, intent(IN), target :: array(:)
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_long_1d
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_long_1d
 
-function atk_address_allocatable_float_scalar(array) result(rv)
+subroutine atk_address_allocatable_float_scalar(array, addr)
     use iso_c_binding
     implicit none
     real(C_FLOAT), allocatable, intent(IN), target :: array
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_float_scalar
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_float_scalar
 
-function atk_address_allocatable_float_1d(array) result(rv)
+subroutine atk_address_allocatable_float_1d(array, addr)
     use iso_c_binding
     implicit none
     real(C_FLOAT), allocatable, intent(IN), target :: array(:)
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_float_1d
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_float_1d
 
-function atk_address_allocatable_double_scalar(array) result(rv)
+subroutine atk_address_allocatable_double_scalar(array, addr)
     use iso_c_binding
     implicit none
     real(C_DOUBLE), allocatable, intent(IN), target :: array
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_double_scalar
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_double_scalar
 
-function atk_address_allocatable_double_1d(array) result(rv)
+subroutine atk_address_allocatable_double_1d(array, addr)
     use iso_c_binding
     implicit none
     real(C_DOUBLE), allocatable, intent(IN), target :: array(:)
-    type(C_PTR) :: rv
-    rv = c_loc(array)
-end function atk_address_allocatable_double_1d
+    type(C_PTR), intent(OUT) :: addr
+    addr = c_loc(array)
+end subroutine atk_address_allocatable_double_1d
 ![[[end]]]
 
 !----------------------------------------------------------------------
@@ -170,7 +170,7 @@ subroutine atk_allocate_allocatable_int_scalar(array, nitems)
     use iso_c_binding
     implicit none
     integer(C_INT), allocatable, intent(OUT), target :: array
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array)
 end subroutine atk_allocate_allocatable_int_scalar
 
@@ -178,7 +178,7 @@ subroutine atk_allocate_allocatable_int_1d(array, nitems)
     use iso_c_binding
     implicit none
     integer(C_INT), allocatable, intent(OUT), target :: array(:)
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array(nitems))
 end subroutine atk_allocate_allocatable_int_1d
 
@@ -186,7 +186,7 @@ subroutine atk_allocate_allocatable_long_scalar(array, nitems)
     use iso_c_binding
     implicit none
     integer(C_LONG), allocatable, intent(OUT), target :: array
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array)
 end subroutine atk_allocate_allocatable_long_scalar
 
@@ -194,7 +194,7 @@ subroutine atk_allocate_allocatable_long_1d(array, nitems)
     use iso_c_binding
     implicit none
     integer(C_LONG), allocatable, intent(OUT), target :: array(:)
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array(nitems))
 end subroutine atk_allocate_allocatable_long_1d
 
@@ -202,7 +202,7 @@ subroutine atk_allocate_allocatable_float_scalar(array, nitems)
     use iso_c_binding
     implicit none
     real(C_FLOAT), allocatable, intent(OUT), target :: array
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array)
 end subroutine atk_allocate_allocatable_float_scalar
 
@@ -210,7 +210,7 @@ subroutine atk_allocate_allocatable_float_1d(array, nitems)
     use iso_c_binding
     implicit none
     real(C_FLOAT), allocatable, intent(OUT), target :: array(:)
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array(nitems))
 end subroutine atk_allocate_allocatable_float_1d
 
@@ -218,7 +218,7 @@ subroutine atk_allocate_allocatable_double_scalar(array, nitems)
     use iso_c_binding
     implicit none
     real(C_DOUBLE), allocatable, intent(OUT), target :: array
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array)
 end subroutine atk_allocate_allocatable_double_scalar
 
@@ -226,7 +226,7 @@ subroutine atk_allocate_allocatable_double_1d(array, nitems)
     use iso_c_binding
     implicit none
     real(C_DOUBLE), allocatable, intent(OUT), target :: array(:)
-    integer(C_INT), value, intent(IN) :: nitems
+    integer(C_INT), intent(IN) :: nitems
     allocate(array(nitems))
 end subroutine atk_allocate_allocatable_double_1d
 ![[[end]]]

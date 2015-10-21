@@ -54,28 +54,28 @@ size_t SIZE_ALLOCATABLE_DOUBLE_1D(void * array);
 //gen.print_lines(cog.outl, gen.print_atk_address_allocatable_header)
 //]]]
 #define ADDRESS_ALLOCATABLE_INT_SCALAR FC_GLOBAL(atk_address_allocatable_int_scalar,ATK_ADDRESS_ALLOCATABLE_INT_SCALAR)
-void * ADDRESS_ALLOCATABLE_INT_SCALAR(void * array);
+void ADDRESS_ALLOCATABLE_INT_SCALAR(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_INT_1D FC_GLOBAL(atk_address_allocatable_int_1d,ATK_ADDRESS_ALLOCATABLE_INT_1D)
-void * ADDRESS_ALLOCATABLE_INT_1D(void * array);
+void ADDRESS_ALLOCATABLE_INT_1D(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_LONG_SCALAR FC_GLOBAL(atk_address_allocatable_long_scalar,ATK_ADDRESS_ALLOCATABLE_LONG_SCALAR)
-void * ADDRESS_ALLOCATABLE_LONG_SCALAR(void * array);
+void ADDRESS_ALLOCATABLE_LONG_SCALAR(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_LONG_1D FC_GLOBAL(atk_address_allocatable_long_1d,ATK_ADDRESS_ALLOCATABLE_LONG_1D)
-void * ADDRESS_ALLOCATABLE_LONG_1D(void * array);
+void ADDRESS_ALLOCATABLE_LONG_1D(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_FLOAT_SCALAR FC_GLOBAL(atk_address_allocatable_float_scalar,ATK_ADDRESS_ALLOCATABLE_FLOAT_SCALAR)
-void * ADDRESS_ALLOCATABLE_FLOAT_SCALAR(void * array);
+void ADDRESS_ALLOCATABLE_FLOAT_SCALAR(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_FLOAT_1D FC_GLOBAL(atk_address_allocatable_float_1d,ATK_ADDRESS_ALLOCATABLE_FLOAT_1D)
-void * ADDRESS_ALLOCATABLE_FLOAT_1D(void * array);
+void ADDRESS_ALLOCATABLE_FLOAT_1D(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_DOUBLE_SCALAR FC_GLOBAL(atk_address_allocatable_double_scalar,ATK_ADDRESS_ALLOCATABLE_DOUBLE_SCALAR)
-void * ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(void * array);
+void ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(void * array, void ** addr);
 
 #define ADDRESS_ALLOCATABLE_DOUBLE_1D FC_GLOBAL(atk_address_allocatable_double_1d,ATK_ADDRESS_ALLOCATABLE_DOUBLE_1D)
-void * ADDRESS_ALLOCATABLE_DOUBLE_1D(void * array);
+void ADDRESS_ALLOCATABLE_DOUBLE_1D(void * array, void ** addr);
 
 //[[[end]]]
 
@@ -83,28 +83,28 @@ void * ADDRESS_ALLOCATABLE_DOUBLE_1D(void * array);
 //gen.print_lines(cog.outl, gen.print_atk_allocate_allocatable_header)
 //]]]
 #define ALLOCATE_ALLOCATABLE_INT_SCALAR FC_GLOBAL(atk_allocate_allocatable_int_scalar,ATK_ALLOCATE_ALLOCATABLE_INT_SCALAR)
-void ALLOCATE_ALLOCATABLE_INT_SCALAR(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_INT_SCALAR(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_INT_1D FC_GLOBAL(atk_allocate_allocatable_int_1d,ATK_ALLOCATE_ALLOCATABLE_INT_1D)
-void ALLOCATE_ALLOCATABLE_INT_1D(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_INT_1D(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_LONG_SCALAR FC_GLOBAL(atk_allocate_allocatable_long_scalar,ATK_ALLOCATE_ALLOCATABLE_LONG_SCALAR)
-void ALLOCATE_ALLOCATABLE_LONG_SCALAR(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_LONG_SCALAR(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_LONG_1D FC_GLOBAL(atk_allocate_allocatable_long_1d,ATK_ALLOCATE_ALLOCATABLE_LONG_1D)
-void ALLOCATE_ALLOCATABLE_LONG_1D(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_LONG_1D(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_FLOAT_SCALAR FC_GLOBAL(atk_allocate_allocatable_float_scalar,ATK_ALLOCATE_ALLOCATABLE_FLOAT_SCALAR)
-void ALLOCATE_ALLOCATABLE_FLOAT_SCALAR(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_FLOAT_SCALAR(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_FLOAT_1D FC_GLOBAL(atk_allocate_allocatable_float_1d,ATK_ALLOCATE_ALLOCATABLE_FLOAT_1D)
-void ALLOCATE_ALLOCATABLE_FLOAT_1D(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_FLOAT_1D(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR FC_GLOBAL(atk_allocate_allocatable_double_scalar,ATK_ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR)
-void ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(void * array, long * nitems);
 
 #define ALLOCATE_ALLOCATABLE_DOUBLE_1D FC_GLOBAL(atk_allocate_allocatable_double_1d,ATK_ALLOCATE_ALLOCATABLE_DOUBLE_1D)
-void ALLOCATE_ALLOCATABLE_DOUBLE_1D(void * array, long nitems);
+void ALLOCATE_ALLOCATABLE_DOUBLE_1D(void * array, long * nitems);
 
 //[[[end]]]
 
@@ -255,10 +255,10 @@ case CONDUIT_NATIVE_INT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = ADDRESS_ALLOCATABLE_INT_SCALAR(array);
+    ADDRESS_ALLOCATABLE_INT_SCALAR(array, &addr);
     break;
   case 1:
-    addr = ADDRESS_ALLOCATABLE_INT_1D(array);
+    ADDRESS_ALLOCATABLE_INT_1D(array, &addr);
     break;
   default:
     break;
@@ -268,10 +268,10 @@ case CONDUIT_NATIVE_LONG_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = ADDRESS_ALLOCATABLE_LONG_SCALAR(array);
+    ADDRESS_ALLOCATABLE_LONG_SCALAR(array, &addr);
     break;
   case 1:
-    addr = ADDRESS_ALLOCATABLE_LONG_1D(array);
+    ADDRESS_ALLOCATABLE_LONG_1D(array, &addr);
     break;
   default:
     break;
@@ -281,10 +281,10 @@ case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = ADDRESS_ALLOCATABLE_FLOAT_SCALAR(array);
+    ADDRESS_ALLOCATABLE_FLOAT_SCALAR(array, &addr);
     break;
   case 1:
-    addr = ADDRESS_ALLOCATABLE_FLOAT_1D(array);
+    ADDRESS_ALLOCATABLE_FLOAT_1D(array, &addr);
     break;
   default:
     break;
@@ -294,10 +294,10 @@ case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    addr = ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(array);
+    ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(array, &addr);
     break;
   case 1:
-    addr = ADDRESS_ALLOCATABLE_DOUBLE_1D(array);
+    ADDRESS_ALLOCATABLE_DOUBLE_1D(array, &addr);
     break;
   default:
     break;
@@ -325,12 +325,12 @@ case CONDUIT_NATIVE_INT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    ALLOCATE_ALLOCATABLE_INT_SCALAR(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_INT_SCALAR(array);
+    ALLOCATE_ALLOCATABLE_INT_SCALAR(array, &nitems);
+    ADDRESS_ALLOCATABLE_INT_SCALAR(array, &addr);
     break;
   case 1:
-    ALLOCATE_ALLOCATABLE_INT_1D(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_INT_1D(array);
+    ALLOCATE_ALLOCATABLE_INT_1D(array, &nitems);
+    ADDRESS_ALLOCATABLE_INT_1D(array, &addr);
     break;
   default:
     break;
@@ -340,12 +340,12 @@ case CONDUIT_NATIVE_LONG_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    ALLOCATE_ALLOCATABLE_LONG_SCALAR(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_LONG_SCALAR(array);
+    ALLOCATE_ALLOCATABLE_LONG_SCALAR(array, &nitems);
+    ADDRESS_ALLOCATABLE_LONG_SCALAR(array, &addr);
     break;
   case 1:
-    ALLOCATE_ALLOCATABLE_LONG_1D(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_LONG_1D(array);
+    ALLOCATE_ALLOCATABLE_LONG_1D(array, &nitems);
+    ADDRESS_ALLOCATABLE_LONG_1D(array, &addr);
     break;
   default:
     break;
@@ -355,12 +355,12 @@ case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    ALLOCATE_ALLOCATABLE_FLOAT_SCALAR(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_FLOAT_SCALAR(array);
+    ALLOCATE_ALLOCATABLE_FLOAT_SCALAR(array, &nitems);
+    ADDRESS_ALLOCATABLE_FLOAT_SCALAR(array, &addr);
     break;
   case 1:
-    ALLOCATE_ALLOCATABLE_FLOAT_1D(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_FLOAT_1D(array);
+    ALLOCATE_ALLOCATABLE_FLOAT_1D(array, &nitems);
+    ADDRESS_ALLOCATABLE_FLOAT_1D(array, &addr);
     break;
   default:
     break;
@@ -370,12 +370,12 @@ case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
   switch(rank)
   {
   case 0:
-    ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(array);
+    ALLOCATE_ALLOCATABLE_DOUBLE_SCALAR(array, &nitems);
+    ADDRESS_ALLOCATABLE_DOUBLE_SCALAR(array, &addr);
     break;
   case 1:
-    ALLOCATE_ALLOCATABLE_DOUBLE_1D(array, nitems);
-    addr = ADDRESS_ALLOCATABLE_DOUBLE_1D(array);
+    ALLOCATE_ALLOCATABLE_DOUBLE_1D(array, &nitems);
+    ADDRESS_ALLOCATABLE_DOUBLE_1D(array, &addr);
     break;
   default:
     break;
@@ -624,44 +624,44 @@ void * FC_GLOBAL(atk_create_allocatable_view_double_1d,ATK_CREATE_ALLOCATABLE_VI
 //gen.print_lines(cog.outl, gen.print_atk_c_loc_allocatable)
 //]]]
 
-void * FC_GLOBAL(atk_c_loc_allocatable_int_scalar,ATK_C_LOC_ALLOCATABLE_INT_SCALAR)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_int_scalar,ATK_C_LOC_ALLOCATABLE_INT_SCALAR)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_int_1d,ATK_C_LOC_ALLOCATABLE_INT_1D)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_int_1d,ATK_C_LOC_ALLOCATABLE_INT_1D)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_long_scalar,ATK_C_LOC_ALLOCATABLE_LONG_SCALAR)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_long_scalar,ATK_C_LOC_ALLOCATABLE_LONG_SCALAR)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_long_1d,ATK_C_LOC_ALLOCATABLE_LONG_1D)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_long_1d,ATK_C_LOC_ALLOCATABLE_LONG_1D)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_float_scalar,ATK_C_LOC_ALLOCATABLE_FLOAT_SCALAR)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_float_scalar,ATK_C_LOC_ALLOCATABLE_FLOAT_SCALAR)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_float_1d,ATK_C_LOC_ALLOCATABLE_FLOAT_1D)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_float_1d,ATK_C_LOC_ALLOCATABLE_FLOAT_1D)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_double_scalar,ATK_C_LOC_ALLOCATABLE_DOUBLE_SCALAR)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_double_scalar,ATK_C_LOC_ALLOCATABLE_DOUBLE_SCALAR)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 
-void * FC_GLOBAL(atk_c_loc_allocatable_double_1d,ATK_C_LOC_ALLOCATABLE_DOUBLE_1D)(void * allocatable)
+void FC_GLOBAL(atk_c_loc_allocatable_double_1d,ATK_C_LOC_ALLOCATABLE_DOUBLE_1D)(void * allocatable, void ** addr)
 {
-    return allocatable;
+    *addr = allocatable;
 }
 //[[[end]]]
 

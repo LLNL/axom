@@ -2,53 +2,53 @@
 ! splicer begin class.DataStore.module_top
 interface c_loc_allocatable
 
-   function atk_c_loc_allocatable_int_scalar(variable) result(rv)
+   subroutine atk_c_loc_allocatable_int_scalar(variable, addr)
      use iso_c_binding
      integer(C_INT), allocatable, intent(IN) :: variable
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_int_scalar
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_int_scalar
 
-   function atk_c_loc_allocatable_int_1d(variable) result(rv)
+   subroutine atk_c_loc_allocatable_int_1d(variable, addr)
      use iso_c_binding
      integer(C_INT), allocatable, intent(IN) :: variable(:)
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_int_1d
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_int_1d
 
-   function atk_c_loc_allocatable_long_scalar(variable) result(rv)
+   subroutine atk_c_loc_allocatable_long_scalar(variable, addr)
      use iso_c_binding
      integer(C_LONG), allocatable, intent(IN) :: variable
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_long_scalar
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_long_scalar
 
-   function atk_c_loc_allocatable_long_1d(variable) result(rv)
+   subroutine atk_c_loc_allocatable_long_1d(variable, addr)
      use iso_c_binding
      integer(C_LONG), allocatable, intent(IN) :: variable(:)
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_long_1d
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_long_1d
 
-   function atk_c_loc_allocatable_float_scalar(variable) result(rv)
+   subroutine atk_c_loc_allocatable_float_scalar(variable, addr)
      use iso_c_binding
      real(C_FLOAT), allocatable, intent(IN) :: variable
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_float_scalar
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_float_scalar
 
-   function atk_c_loc_allocatable_float_1d(variable) result(rv)
+   subroutine atk_c_loc_allocatable_float_1d(variable, addr)
      use iso_c_binding
      real(C_FLOAT), allocatable, intent(IN) :: variable(:)
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_float_1d
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_float_1d
 
-   function atk_c_loc_allocatable_double_scalar(variable) result(rv)
+   subroutine atk_c_loc_allocatable_double_scalar(variable, addr)
      use iso_c_binding
      real(C_DOUBLE), allocatable, intent(IN) :: variable
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_double_scalar
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_double_scalar
 
-   function atk_c_loc_allocatable_double_1d(variable) result(rv)
+   subroutine atk_c_loc_allocatable_double_1d(variable, addr)
      use iso_c_binding
      real(C_DOUBLE), allocatable, intent(IN) :: variable(:)
-     type(C_PTR) rv
-   end function atk_c_loc_allocatable_double_1d
+     type(C_PTR), intent(OUT) :: addr
+   end subroutine atk_c_loc_allocatable_double_1d
 end interface c_loc_allocatable
 ! splicer end class.DataStore.module_top
 
@@ -123,7 +123,7 @@ function datagroup_create_allocatable_view_int_scalar(group, name, value) result
     integer(C_INT), parameter :: itype = ATK_C_INT_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_int_scalar
 
@@ -157,7 +157,7 @@ function datagroup_create_allocatable_view_int_1d(group, name, value) result(rv)
     integer(C_INT), parameter :: itype = ATK_C_INT_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_int_1d
 
@@ -191,7 +191,7 @@ function datagroup_create_allocatable_view_long_scalar(group, name, value) resul
     integer(C_INT), parameter :: itype = ATK_C_LONG_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_long_scalar
 
@@ -225,7 +225,7 @@ function datagroup_create_allocatable_view_long_1d(group, name, value) result(rv
     integer(C_INT), parameter :: itype = ATK_C_LONG_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_long_1d
 
@@ -259,7 +259,7 @@ function datagroup_create_allocatable_view_float_scalar(group, name, value) resu
     integer(C_INT), parameter :: itype = ATK_C_FLOAT_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_float_scalar
 
@@ -293,7 +293,7 @@ function datagroup_create_allocatable_view_float_1d(group, name, value) result(r
     integer(C_INT), parameter :: itype = ATK_C_FLOAT_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_float_1d
 
@@ -327,7 +327,7 @@ function datagroup_create_allocatable_view_double_scalar(group, name, value) res
     integer(C_INT), parameter :: itype = ATK_C_DOUBLE_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_double_scalar
 
@@ -361,7 +361,7 @@ function datagroup_create_allocatable_view_double_1d(group, name, value) result(
     integer(C_INT), parameter :: itype = ATK_C_DOUBLE_T
 
     lname = len_trim(name)
-    addr = c_loc_allocatable(value)
+    call c_loc_allocatable(value, addr)
     rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
 end function datagroup_create_allocatable_view_double_1d
 
