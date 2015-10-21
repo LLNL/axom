@@ -134,7 +134,7 @@ contains
        iarray(i) = i
     enddo
 
-    view = root%register_static("iarray", iarray)
+    view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
@@ -208,7 +208,7 @@ function fortran_test() bind(C,name="fortran_test")
   call local_allocatable_int
   call ds_allocatable_int
   call local_static_int_array
-!  call local_allocatable_double
+  call local_allocatable_double
 
   call fruit_summary
   call fruit_finalize

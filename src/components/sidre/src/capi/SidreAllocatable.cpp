@@ -457,22 +457,14 @@ default:
   return;
 }
 
+extern "C" {
+
 /*!
  * \brief Return DataView for a Fortran allocatable.
  *
  * The Fortran allocatable array is the buffer for the DataView.
+ * Called from Fortran.
  */
-#if 0
-static void * register_allocatable(DataGroup *group,
-				  const std::string &name,
-				  void *context, int imetabuffer)
-{
-  AllocatableMetaBuffer * metabuffer = new AllocatableMetaBuffer(context, fptrs_cache + imetabuffer);
-  return group->createMetaBufferView(name, metabuffer);
-}
-#endif
-
-extern "C" {
 
 void * ATK_create_fortran_allocatable_view(void * group,
 					   char * name, int lname,
@@ -487,16 +479,20 @@ void * ATK_create_fortran_allocatable_view(void * group,
 }
 
 
-// called from Fortran
-// return pointer to a DataView
-void * ATK_register_static(void * group, char * name, int lname,
-			   void * addr, int type, long nitems)
+/*!
+ * \brief Return DataView for a Fortran array.
+ *
+ * Create an external view using information derived from a Fortran array.
+ * Called from Fortran.
+ */
+void * ATK_create_array_view(void * group, char * name, int lname,
+			     void * addr, int type, long nitems)
 {
   DataGroup * grp = static_cast<DataGroup *>(group);
-  DataView * view = grp->createExternalView( std::string(name, lname),
-					     addr,
-					     static_cast<TypeID>(type),
-					     static_cast<SidreLength>(nitems));
+  DataView * view = grp->createExternalView(std::string(name, lname),
+					    addr,
+					    static_cast<TypeID>(type),
+					    static_cast<SidreLength>(nitems));
   return view;
 }
 
@@ -538,42 +534,50 @@ void FC_GLOBAL(atk_c_loc,ATK_C_LOC)(void * addr, void **out)
 //gen.print_lines(cog.outl, gen.print_atk_c_loc_allocatable)
 //]]]
 
-void FC_GLOBAL(atk_c_loc_allocatable_int_scalar,ATK_C_LOC_ALLOCATABLE_INT_SCALAR)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_int_scalar,ATK_C_LOC_ALLOCATABLE_INT_SCALAR)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_int_1d,ATK_C_LOC_ALLOCATABLE_INT_1D)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_int_1d,ATK_C_LOC_ALLOCATABLE_INT_1D)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_long_scalar,ATK_C_LOC_ALLOCATABLE_LONG_SCALAR)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_long_scalar,ATK_C_LOC_ALLOCATABLE_LONG_SCALAR)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_long_1d,ATK_C_LOC_ALLOCATABLE_LONG_1D)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_long_1d,ATK_C_LOC_ALLOCATABLE_LONG_1D)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_float_scalar,ATK_C_LOC_ALLOCATABLE_FLOAT_SCALAR)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_float_scalar,ATK_C_LOC_ALLOCATABLE_FLOAT_SCALAR)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_float_1d,ATK_C_LOC_ALLOCATABLE_FLOAT_1D)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_float_1d,ATK_C_LOC_ALLOCATABLE_FLOAT_1D)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_double_scalar,ATK_C_LOC_ALLOCATABLE_DOUBLE_SCALAR)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_double_scalar,ATK_C_LOC_ALLOCATABLE_DOUBLE_SCALAR)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }
 
-void FC_GLOBAL(atk_c_loc_allocatable_double_1d,ATK_C_LOC_ALLOCATABLE_DOUBLE_1D)(void * allocatable, void ** addr)
+void FC_GLOBAL(atk_c_loc_allocatable_double_1d,ATK_C_LOC_ALLOCATABLE_DOUBLE_1D)
+  (void * allocatable, void ** addr)
 {
     *addr = allocatable;
 }

@@ -17,8 +17,6 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
 
 void DeallocateAllocatable(void * array, TypeID type, int rank);
 
-void RegisterFortranAllocatableMetaBuffers(void);
-
 }  // namespace asctoolkit
 }  // namespace sidre
 }  // extern "C"
