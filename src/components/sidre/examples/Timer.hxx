@@ -103,7 +103,9 @@ private:
                                          tstop.tv_sec - tstart.tv_sec); 
                         nstime_elapsed += static_cast<long double>(
                                           tstop.tv_nsec - tstart.tv_nsec ) /
-                                          1000000000.0; } 
+                                          1000000000.0;
+			// private field 'telapsed' is not used [-Werror,-Wunused-private-field]
+			telapsed = 0.0; } 
 #endif
    
 };
