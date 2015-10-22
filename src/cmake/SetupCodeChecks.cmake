@@ -57,9 +57,18 @@ macro(add_uncrustify_inplace cfg_file)
     
     MESSAGE(STATUS "Creating uncrustify inplace target: uncrustify_inplace_${PROJECT_NAME}")
 
+    # Only run uncrustify on C++ files
+    set(_cpp_source)
+    foreach(_file ${${PROJECT_NAME}_ALL_SOURCES})
+      get_filename_component(_ext ${_file} EXT)
+      if(_ext MATCHES .cpp OR _ext MATCHES .hpp)
+         list(APPEND _cpp_source ${_file})
+      endif()
+    endforeach()
+
     add_custom_target("uncrustify_inplace_${PROJECT_NAME}"
             ${UNCRUSTIFY_EXECUTABLE}
-            -c ${CMAKE_CURRENT_SOURCE_DIR}/${cfg_file} --no-backup ${${PROJECT_NAME}_ALL_SOURCES}
+            -c ${CMAKE_CURRENT_SOURCE_DIR}/${cfg_file} --no-backup ${_cpp_source}
              COMMENT "Running uncrustify to apply code formatting settings.")
         
     # hook our new target into the uncrustify_inplace dependency chain
