@@ -157,6 +157,26 @@ void logMessage( message::Level level,
 }
 
 //------------------------------------------------------------------------------
+void logErrorMessage( const std::string& message,
+                      const std::string& fileName,
+                      int line,
+                      bool shouldAbort )
+{
+  slic::logMessage( message::Fatal, message, fileName, line );
+  if ( shouldAbort ) {
+    asctoolkit::utilities::processAbort();
+  }
+}
+
+//------------------------------------------------------------------------------
+void logWarningMessage( const std::string& message,
+                        const std::string& fileName,
+                        int line )
+{
+  slic::logMessage( message::Warning, message, fileName, line );
+}
+
+//------------------------------------------------------------------------------
 void flushStreams()
 {
   Logger::getActiveLogger()->flushStreams();
