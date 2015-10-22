@@ -133,6 +133,9 @@ class Domain {
           Index_t rowLoc, Index_t planeLoc,
           Index_t nx, Int_t tp, Int_t nr, Int_t balance, Int_t cost);
 
+   // Destructor
+   ~Domain();
+
    //
    // ALLOCATION
    //

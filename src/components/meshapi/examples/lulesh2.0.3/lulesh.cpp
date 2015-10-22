@@ -2964,6 +2964,8 @@ int main(int argc, char *argv[])
     VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
   }
 
+  delete locDom;
+
 #ifdef USE_MPI
   MPI_Finalize();
 #endif

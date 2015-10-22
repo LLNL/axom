@@ -183,6 +183,22 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
 } // End constructor
 
+////////////////////////////////////////////////////////////////////////////////
+Domain::~Domain()
+{
+
+    if(m_nodeElemStart)
+       delete m_nodeElemStart;
+    if(m_nodeElemCornerList)
+       delete m_nodeElemCornerList;
+
+    //Determine the relative weights of all the regions.  This is based off the -b flag.  Balance is the value passed into b.
+    for (Index_t i=0 ; i<numReg() ; ++i)
+        delete[] m_regElemlist[i];
+    delete [] m_regElemlist;
+    delete [] m_regNumList;
+    delete [] m_regElemSize;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void
@@ -462,6 +478,8 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 	 }
 	 lastReg = regionNum;
       } 
+
+     delete [] regBinEnd;
    }
    // Convert regNumList to region index sets
    // First, count size of each region 
@@ -480,7 +498,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       Index_t regndx = regElemSize(r)++; // Note increment
       regElemlist(r,regndx) = i;
    }
-   
+
 }
 
 /////////////////////////////////////////////////////////////
