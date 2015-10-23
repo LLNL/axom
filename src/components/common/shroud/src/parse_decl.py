@@ -38,7 +38,7 @@ number = spaces ('-' | -> ''):sign (digits:ds (floatPart(sign ds)
 
 value = name | string | number
 
-attr = '+' name:n ( '=' value | -> True ):v
+attr = '+' ws name:n ( '=' value | -> True ):v
         -> (n,v)
 
 qualifier = 'const' -> [('const', True)]
@@ -60,8 +60,8 @@ parameter_list = declarator:first ( ws ',' ws declarator)*:rest -> [first] + res
 argument_list = ( '(' ws parameter_list:l ws ')' ) -> l
                 | -> []
 
-decl = declarator:dd ws argument_list:args ws qualifier:qual
-        -> dict( result=dd, args=args, qualifiers=dict(qual))
+decl = declarator:dd ws argument_list:args ws qualifier:qual (ws attr)*:at
+        -> dict( result=dd, args=args, attrs=dict(qual + at))
 """, {})
 
 
@@ -153,6 +153,7 @@ if __name__ == '__main__':
         "void foo(int arg1, double arg2)",
         "const std::string& getName() const",
         "const void foo(int arg1+in, double arg2+out)",
+        "void new() + constructor",
         ]:
         r = x(test).decl()
         print('decl: "{0}"'.format(test))

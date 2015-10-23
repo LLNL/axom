@@ -16,7 +16,7 @@ options:
   library: UserLibrary
   C_prefix: AA_
   namespace: example nested
-#  F_module_per_class: False
+  F_module_per_class: True
   # include files to add to module
 
   PY_prefix: PP_
@@ -65,10 +65,10 @@ classes:
       type: [ init, repr, richcompare ]
 
     methods:
-    - decl: ExClass1 *new+constructor ( const string *name )
+    - decl: ExClass1 *new ( const string *name ) +constructor
       docs: constructor
 
-    - decl: void delete+destructor
+    - decl: void delete() +destructor
 
     - decl: int incrementCount(int incr)
       docs: blah blah
@@ -91,12 +91,12 @@ classes:
     - decl: const string& getNameArg() const
     # This function will convert the return value into a argument
       options:
-         F_string_result_as_arg: True
+         F_string_result_as_arg: name
 
     - decl: ExClass2 *getRoot()
 
     - decl: int  getValue(int value)
-      method_suffix: _from_int
+      function_suffix: _from_int
     - decl: long getValue(long value)
 
     - decl: void *getAddr()
@@ -115,7 +115,7 @@ classes:
              init, alloc, new, free, del]
 
     methods:
-    - decl: ExClass2 *ExClass2+constructor (const string *name)
+    - decl: ExClass2 *ExClass2 (const string *name) +constructor
 
       # test annotating arguments
       args:
@@ -125,7 +125,7 @@ classes:
            random: 2
       -  name: extra
 
-    - decl: void delete+destructor
+    - decl: void delete() +destructor
 
     - decl: const string& getName const
       # test annotating result

@@ -155,7 +155,7 @@ namespace unstructured {
             vtkMesh.open( pFileName.c_str() );
         }
 
-        SLIC_ERROR_MSG( !vtkMesh
+        SLIC_ERROR_IF( !vtkMesh
           , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName <<"')"
                                                         << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() << "'");
     }

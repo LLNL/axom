@@ -8,19 +8,20 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-## Build examples using logapi
-make_executable( EXECUTABLE_SOURCE logging_example.cc DEPENDS_ON slic )
-make_executable( EXECUTABLE_SOURCE cpplogger_example.cc DEPENDS_ON slic )
+## Build examples using slic
+make_executable( EXECUTABLE_SOURCE basic/logging_example.cc DEPENDS_ON slic )
+make_executable( EXECUTABLE_SOURCE basic/cpplogger_example.cc DEPENDS_ON slic )
+make_executable( EXECUTABLE_SOURCE multicode/driver.cpp DEPENDS_ON slic )
 
-## Build MPI examples using logapi
+## Build MPI examples using slic
 if (ENABLE_MPI)
 
    make_executable( WITH_MPI
-                    EXECUTABLE_SOURCE parallel_logging_example.cc
+                    EXECUTABLE_SOURCE basic/parallel_logging_example.cc
                     DEPENDS_ON slic )
 
    make_executable( WITH_MPI
-                    EXECUTABLE_SOURCE seperate_file_per_rank.cc
+                    EXECUTABLE_SOURCE basic/seperate_file_per_rank.cc
                     DEPENDS_ON slic )
 
 endif()

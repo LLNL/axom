@@ -62,6 +62,15 @@ module exclass1_mod
             type(C_PTR) :: rv
         end function aa_exclass1_new
         
+        function aa_exclass1_new_bufferify(name, Lname) result(rv) &
+                bind(C, name="AA_exclass1_new_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR) :: rv
+        end function aa_exclass1_new_bufferify
+        
         subroutine aa_exclass1_delete(self) &
                 bind(C, name="AA_exclass1_delete")
             use iso_c_binding
@@ -172,7 +181,9 @@ contains
         character(*) :: name
         type(exclass1) :: rv
         ! splicer begin class.ExClass1.method.new
-        rv%voidptr = aa_exclass1_new(trim(name) // C_NULL_CHAR)
+        rv%voidptr = aa_exclass1_new_bufferify(  &
+            name,  &
+            len_trim(name))
         ! splicer end class.ExClass1.method.new
     end function exclass1_new
     
@@ -229,15 +240,15 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    subroutine exclass1_get_name_arg(obj, rv)
+    subroutine exclass1_get_name_arg(obj, name)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        character(*), intent(OUT) :: rv
-        type(C_PTR) :: rv_ptr
+        character(*), intent(OUT) :: name
+        type(C_PTR) :: rv
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv_ptr = aa_exclass1_get_name_arg(obj%voidptr)
-        call FccCopyPtr(rv, len(rv), rv_ptr)
+        rv = aa_exclass1_get_name_arg(obj%voidptr)
+        call FccCopyPtr(name, len(name), rv)
         ! splicer end class.ExClass1.method.get_name_arg
     end subroutine exclass1_get_name_arg
     
@@ -293,10 +304,12 @@ contains
         class(exclass1) :: obj
         logical :: in
         logical :: rv
+        logical(C_BOOL) tmp_in
+        tmp_in = in  ! coerce to C_BOOL
         ! splicer begin class.ExClass1.method.has_addr
-        rv = booltological(aa_exclass1_has_addr(  &
+        rv = aa_exclass1_has_addr(  &
             obj%voidptr,  &
-            logicaltobool(in)))
+            tmp_in)
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     

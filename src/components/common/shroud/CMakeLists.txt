@@ -1,6 +1,11 @@
 #
 #
 #
+if (ENABLE_FORTRAN)
+    add_subdirectory(runtime)
+
+    add_subdirectory(tests/run-tutorial)
+endif()
 
 #
 # Write the driver script

@@ -24,3 +24,8 @@ if (ENABLE_BOOST)
   MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
   MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )
 endif()
+
+find_package(Sparsehash
+              2.0.2
+              REQUIRED)
+MESSAGE(STATUS "Sparsehash include dir: " ${Sparsehash_INCLUDE_DIR})

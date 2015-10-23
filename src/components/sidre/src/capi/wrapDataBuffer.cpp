@@ -10,7 +10,6 @@
 // further review from Lawrence Livermore National Laboratory.
 //
 // wrapDataBuffer.cpp
-#define EXAMPLE_WRAPPER_IMPL
 #include "wrapDataBuffer.h"
 #include "sidre/DataBuffer.hpp"
 #include "sidre/SidreWrapperHelpers.hpp"
@@ -21,7 +20,7 @@ namespace sidre {
 
 ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_index
 IndexType rv = selfobj->getIndex();
 return rv;
@@ -30,7 +29,7 @@ return rv;
 
 size_t ATK_databuffer_get_num_views(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_num_views
 size_t rv = selfobj->getNumViews();
 return rv;
@@ -39,7 +38,7 @@ return rv;
 
 void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.declare
 selfobj->declare(getTypeID(type), len);
 return;
@@ -48,7 +47,7 @@ return;
 
 void ATK_databuffer_allocate_existing(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.allocate_existing
 selfobj->allocate();
 return;
@@ -57,7 +56,7 @@ return;
 
 void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.allocate_from_type
 selfobj->allocate(getTypeID(type), len);
 return;
@@ -66,7 +65,7 @@ return;
 
 void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.reallocate
 selfobj->reallocate(getTypeID(type), len);
 return;
@@ -75,7 +74,7 @@ return;
 
 void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.set_external_data
 selfobj->setExternalData(external_data);
 return;
@@ -84,7 +83,7 @@ return;
 
 bool ATK_databuffer_is_external(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.is_external
 bool rv = selfobj->isExternal();
 return rv;
@@ -93,7 +92,7 @@ return rv;
 
 void * ATK_databuffer_get_data(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_data
 void * rv = selfobj->getData();
 return rv;
@@ -102,7 +101,7 @@ return rv;
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_total_bytes
 size_t rv = selfobj->getTotalBytes();
 return rv;
@@ -111,7 +110,7 @@ return rv;
 
 void ATK_databuffer_print(ATK_databuffer * self)
 {
-DataBuffer *selfobj = static_cast<DataBuffer *>(self);
+DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.print
 selfobj->print();
 return;

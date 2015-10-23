@@ -23,12 +23,8 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-#ifdef EXAMPLE_WRAPPER_IMPL
-typedef void ATK_databuffer;
-#else
 struct s_ATK_databuffer;
 typedef struct s_ATK_databuffer ATK_databuffer;
-#endif
 
 // splicer begin class.DataBuffer.C_definition
 // splicer end class.DataBuffer.C_definition
