@@ -75,6 +75,9 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
 
   if ( len >= 0 )
   {
+    m_type = type;
+    m_nitems = len;
+
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(len);
     m_schema.set(dtype);
@@ -91,7 +94,10 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
  */
 DataBuffer * DataBuffer::declare(const Schema& schema)
 {
-  m_schema.set(schema);
+  TypeID type = static_cast<TypeID>(schema.dtype().id());
+  SidreLength nitems = schema.dtype().number_of_elements();
+  declare(type, nitems);
+    
   return this;
 }
 
@@ -104,7 +110,10 @@ DataBuffer * DataBuffer::declare(const Schema& schema)
  */
 DataBuffer * DataBuffer::declare(const DataType& dtype)
 {
-  m_schema.set(dtype);
+  TypeID type = static_cast<TypeID>(dtype.id());
+  SidreLength nitems = dtype.number_of_elements();
+  declare(type, nitems);
+
   return this;
 }
 
