@@ -1,6 +1,8 @@
 #
 #
 #
+add_subdirectory(docs)
+
 if(ENABLE_FORTRAN)
     # Build runtime library
     add_subdirectory(runtime)
