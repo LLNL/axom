@@ -370,6 +370,12 @@ private:
   /// Container of DataViews attached to this buffer.
   std::vector<DataView *> m_views;
 
+  // Type of data pointed to by m_data
+  TypeID m_type;
+
+  // Length of data pointed to by m_data
+  SidreLength m_nitems;
+  
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
 

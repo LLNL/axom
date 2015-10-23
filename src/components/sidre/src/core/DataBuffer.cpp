@@ -366,6 +366,8 @@ void DataBuffer::print(std::ostream& os) const
 DataBuffer::DataBuffer( IndexType index )
   : m_index(index),
   m_views(),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(0),
   m_data(ATK_NULLPTR),
   m_node(),
   m_schema(),
@@ -383,6 +385,8 @@ DataBuffer::DataBuffer( IndexType index )
 DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(0),
   m_data(source.m_data),
   m_node(source.m_node),
   m_schema(source.m_schema),
