@@ -12,26 +12,28 @@ set(API_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 #
 add_custom_command(
     OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/capi.time
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.time
-            ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
             ${CMAKE_CURRENT_SOURCE_DIR}/csidresplicer.c
             ${CMAKE_CURRENT_SOURCE_DIR}/fsidresplicer.f
-            ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.f
             ${CMAKE_CURRENT_SOURCE_DIR}/pysidresplicer.c
-    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud --logdir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
+	    # generated
+            ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
+    COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
+            --logdir ${CMAKE_CURRENT_BINARY_DIR}
+            --path ${CMAKE_CURRENT_BINARY_DIR}
+            --path ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_SOURCE_DIR}/api.yaml
     COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/capi.time
     COMMENT "Running shroud api.yaml"
     WORKING_DIRECTORY ${API_OUTPUT_DIR}
 )
 
 add_custom_command(
-    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.time
+    OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
     COMMAND ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py > 
-            ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.f
-    COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.time
-    COMMENT "Running genfsidresplicer.py"
+            ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
 
 ADD_CUSTOM_TARGET(sidre_generate
