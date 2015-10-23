@@ -1,9 +1,8 @@
+
 ################################
 # documentation targets
 ################################
 
-add_subdirectory(web)
-add_subdirectory(coding_guidelines)
+# add a target to generate documentation with Sphinx
 
-
-
+add_sphinx_target( web_docs )
