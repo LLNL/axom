@@ -96,14 +96,14 @@ TEST(sidre_view,int_array_multi_view)
 
   dbuff->declare(DataType::c_int(10));
   dbuff->allocate();
-  int * data_ptr = dbuff->getValue();
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i;
   }
 
-  dbuff->getValue();
+  dbuff->print();
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
@@ -146,7 +146,7 @@ TEST(sidre_view,init_int_array_multi_view)
   DataBuffer * dbuff = ds->createBuffer();
 
   dbuff->allocate(DataType::c_int(10));
-  int * data_ptr = dbuff->getValue();
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
