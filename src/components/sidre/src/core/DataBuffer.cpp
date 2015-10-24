@@ -43,6 +43,35 @@ namespace sidre
 /*
  *************************************************************************
  *
+ * Return total number of bytes associated with this DataBuffer object.
+ *
+ *************************************************************************
+ */
+size_t DataBuffer::getTotalBytes() const
+{
+  static size_t bytes_per_item[] = {
+    0, // CONDUIT_EMPTY_T
+    0, // CONDUIT_OBJECT_T
+    0,// CONDUIT_LIST_T
+    1, // CONDUIT_INT8_T
+    2, // CONDUIT_INT16_T
+    4, // CONDUIT_INT32_T
+    8, // CONDUIT_INT64_T
+    1, // CONDUIT_UINT8_T
+    2, // CONDUIT_UINT16_T
+    4, // CONDUIT_UINT32_T
+    8, // CONDUIT_UINT64_T
+    4, // CONDUIT_FLOAT32_T
+    8, // CONDUIT_FLOAT64_T
+    1, // CONDUIT_CHAR8_STR_T
+  };
+
+  return bytes_per_item[m_type] * m_nitems;
+}
+
+/*
+ *************************************************************************
+ *
  * Return non-cost pointer to view with given index or null ptr.
  *
  *************************************************************************

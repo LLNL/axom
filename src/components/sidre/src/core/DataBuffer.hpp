@@ -137,10 +137,7 @@ public:
   /*!
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
-  size_t getTotalBytes() const
-  {
-    return m_schema.total_bytes();
-  }
+  size_t getTotalBytes() const;
 
   /*!
    * \brief Return non-const reference to Conduit node holding data.
