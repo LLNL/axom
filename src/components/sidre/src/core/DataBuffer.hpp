@@ -119,6 +119,22 @@ public:
   }
 
   /*!
+   * \brief Return type of data for this DataBuffer object.
+   */
+  TypeID getTypeID() const
+  {
+    return m_type;
+  }
+
+  /*!
+   * \brief Return total number of elements allocated by this DataBuffer object.
+   */
+  size_t getNumberOfElements() const
+  {
+    return m_nitems;
+  }
+
+  /*!
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
   size_t getTotalBytes() const

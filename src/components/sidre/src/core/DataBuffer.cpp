@@ -259,6 +259,9 @@ DataBuffer * DataBuffer::reallocate(const Schema& schema)
     // use conduit update, need more error checking.
     n.update(m_node);
 
+    // XXX update m_type and m_nitems too
+    declare(schema);
+
     // cleanup old data
     cleanup();
 

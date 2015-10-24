@@ -200,6 +200,8 @@ classes:
         return_this: True
       - decl: bool isExternal() const
       - decl: void* getData()
+      - decl: TypeID getTypeID() const
+      - decl: size_t getNumberOfElements() const
       - decl: size_t getTotalBytes() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const

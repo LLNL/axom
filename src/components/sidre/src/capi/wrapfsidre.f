@@ -137,6 +137,8 @@ module sidre_mod
         procedure :: set_external_data => databuffer_set_external_data
         procedure :: is_external => databuffer_is_external
         procedure :: get_data => databuffer_get_data
+        procedure :: get_type_id => databuffer_get_type_id
+        procedure :: get_number_of_elements => databuffer_get_number_of_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
         procedure :: print => databuffer_print
         generic :: allocate => &
@@ -787,6 +789,22 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_databuffer_get_data
+        
+        pure function atk_databuffer_get_type_id(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_type_id")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function atk_databuffer_get_type_id
+        
+        pure function atk_databuffer_get_number_of_elements(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_number_of_elements")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_databuffer_get_number_of_elements
         
         pure function atk_databuffer_get_total_bytes(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_total_bytes")
@@ -1658,6 +1676,26 @@ contains
         rv = atk_databuffer_get_data(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_data
     end function databuffer_get_data
+    
+    function databuffer_get_type_id(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataBuffer.method.get_type_id
+        rv = atk_databuffer_get_type_id(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_type_id
+    end function databuffer_get_type_id
+    
+    function databuffer_get_number_of_elements(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataBuffer.method.get_number_of_elements
+        rv = atk_databuffer_get_number_of_elements(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_number_of_elements
+    end function databuffer_get_number_of_elements
     
     function databuffer_get_total_bytes(obj) result(rv)
         use iso_c_binding

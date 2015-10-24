@@ -429,7 +429,7 @@ public:
   }
 
   /*!
-   * \brief Return total number of bytes allocated by this DataView object.
+   * \brief Return type of data for this DataView object.
    */
   TypeID getTypeID() const
   {

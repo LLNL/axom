@@ -243,6 +243,38 @@ PY_databuffer_get_data(
 // splicer end class.DataBuffer.method.get_data
 }
 
+static char PY_databuffer_get_type_id__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_databuffer_get_type_id(
+  PY_DataBuffer *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataBuffer.method.get_type_id
+    TypeID rv = self->BBB->getTypeID();
+    return Py_BuildValue("i", rv);
+// splicer end class.DataBuffer.method.get_type_id
+}
+
+static char PY_databuffer_get_number_of_elements__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_databuffer_get_number_of_elements(
+  PY_DataBuffer *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataBuffer.method.get_number_of_elements
+    size_t rv = self->BBB->getNumberOfElements();
+    return PyInt_FromLong(rv);
+// splicer end class.DataBuffer.method.get_number_of_elements
+}
+
 static char PY_databuffer_get_total_bytes__doc__[] =
 "documentation"
 ;
@@ -324,6 +356,8 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"setExternalData", (PyCFunction)PY_databuffer_set_external_data, METH_VARARGS|METH_KEYWORDS, PY_databuffer_set_external_data__doc__},
 {"isExternal", (PyCFunction)PY_databuffer_is_external, METH_NOARGS, PY_databuffer_is_external__doc__},
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
+{"getTypeID", (PyCFunction)PY_databuffer_get_type_id, METH_NOARGS, PY_databuffer_get_type_id__doc__},
+{"getNumberOfElements", (PyCFunction)PY_databuffer_get_number_of_elements, METH_NOARGS, PY_databuffer_get_number_of_elements__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
 {"allocate", (PyCFunction)PY_databuffer_allocate, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate__doc__},
