@@ -52,7 +52,7 @@ size_t DataBuffer::getTotalBytes() const
   static size_t bytes_per_item[] = {
     0, // CONDUIT_EMPTY_T
     0, // CONDUIT_OBJECT_T
-    0,// CONDUIT_LIST_T
+    0, // CONDUIT_LIST_T
     1, // CONDUIT_INT8_T
     2, // CONDUIT_INT16_T
     4, // CONDUIT_INT32_T

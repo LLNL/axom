@@ -16,7 +16,6 @@
 
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 
@@ -44,7 +43,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_int(10));
+  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
   dbuff->allocate();
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
@@ -71,7 +70,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_int(10));
+  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
@@ -98,7 +97,7 @@ TEST(sidre_buffer,realloc_buffer)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_long(5));
+  dbuff->allocate(CONDUIT_NATIVE_LONG_DATATYPE_ID, 5);
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 5u);
@@ -113,7 +112,7 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->print();
 
-  dbuff->reallocate(DataType::c_long(10));
+  dbuff->reallocate(CONDUIT_NATIVE_LONG_DATATYPE_ID, 10);
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
