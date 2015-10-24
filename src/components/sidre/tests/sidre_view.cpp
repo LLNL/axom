@@ -94,7 +94,7 @@ TEST(sidre_view,int_array_multi_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->declare(DataType::c_int(10));
+  dbuff->declare(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
   dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
