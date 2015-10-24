@@ -226,33 +226,6 @@ public:
   DataBuffer * allocate(TypeID type, SidreLength len);
 
   /*!
-   * \brief Declare and allocate data described as a Conduit schema.
-   *
-   * This is equivalent to calling declare(schema), then allocate().
-   * on this DataBuffer object.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * allocate(const Schema &schema);
-
-  /*!
-   * \brief Declare and allocate data described as a pre-defined
-   *        Conduit data type.
-   *
-   * This is equivalent to calling declare(dtype), then allocate().
-   * on this DataBuffer object.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * allocate(const DataType& dtype);
-
-  /*!
    * \brief Reallocate data described with Sidre type and length.
    *
    *        Equivalent to calling declare(type), then allocate().

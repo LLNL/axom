@@ -118,7 +118,9 @@ DataView * DataView::allocate()
 
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
-    m_data_buffer->allocate(m_schema);
+    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+    SidreLength nitems = m_schema.dtype().number_of_elements();
+    m_data_buffer->allocate(type, nitems);
     apply();
   }
   return this;

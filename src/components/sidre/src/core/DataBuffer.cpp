@@ -163,52 +163,6 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Declare and allocate data described using a Conduit schema.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::allocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to allocate buffer holding external data");
-
-  if ( !m_is_data_external )
-  {
-    TypeID type = static_cast<TypeID>(schema.dtype().id());
-    SidreLength nitems = schema.dtype().number_of_elements();
-    declare(type, nitems);
-    allocate();
-  }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare and allocate data described using a Conduit pre-defined data type.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::allocate(const DataType& dtype)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to allocate buffer holding external data");
-
-  if ( !m_is_data_external )
-  {
-    TypeID type = static_cast<TypeID>(dtype.id());
-    SidreLength nitems = dtype.number_of_elements();
-    declare(type, nitems);
-    allocate();
-  }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
  * Reallocate data using a Sidre type and length.
  *
  *************************************************************************
