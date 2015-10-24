@@ -117,39 +117,6 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Declare buffer to OWN data described as a Conduit schema.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::declare(const Schema& schema)
-{
-  TypeID type = static_cast<TypeID>(schema.dtype().id());
-  SidreLength nitems = schema.dtype().number_of_elements();
-  declare(type, nitems);
-    
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare buffer to OWN data described as a Conduit data type.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::declare(const DataType& dtype)
-{
-  TypeID type = static_cast<TypeID>(dtype.id());
-  SidreLength nitems = dtype.number_of_elements();
-  declare(type, nitems);
-
-  return this;
-}
-
-
-/*
- *************************************************************************
- *
  * Allocate data previously declared.
  *
  *************************************************************************
@@ -207,7 +174,9 @@ DataBuffer * DataBuffer::allocate(const Schema& schema)
 
   if ( !m_is_data_external )
   {
-    declare(schema);
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    SidreLength nitems = schema.dtype().number_of_elements();
+    declare(type, nitems);
     allocate();
   }
 
@@ -228,7 +197,9 @@ DataBuffer * DataBuffer::allocate(const DataType& dtype)
 
   if ( !m_is_data_external )
   {
-    declare(dtype);
+    TypeID type = static_cast<TypeID>(dtype.id());
+    SidreLength nitems = dtype.number_of_elements();
+    declare(type, nitems);
     allocate();
   }
 
@@ -274,6 +245,8 @@ DataBuffer * DataBuffer::reallocate(const Schema& schema)
 
   if ( !m_is_data_external )
   {
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    SidreLength nitems = schema.dtype().number_of_elements();
 
     //  make sure realloc actually makes sense
     SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
@@ -289,7 +262,7 @@ DataBuffer * DataBuffer::reallocate(const Schema& schema)
     n.update(m_node);
 
     // XXX update m_type and m_nitems too
-    declare(schema);
+    declare(type, nitems);
 
     // cleanup old data
     cleanup();
@@ -321,8 +294,9 @@ DataBuffer * DataBuffer::reallocate(const DataType& dtype)
 
   if ( !m_is_data_external )
   {
-    Schema s(dtype);
-    reallocate(s);
+    TypeID type = static_cast<TypeID>(dtype.id());
+    SidreLength nitems = dtype.number_of_elements();
+    reallocate(type, nitems);
   }
 
   return this;

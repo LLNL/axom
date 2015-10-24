@@ -302,7 +302,7 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
  */
 DataView * DataGroup::createExternalView( const std::string& name,
                                           void * external_data,
-					  TypeID type, SidreLength len )
+					  TypeID type, SidreLength nitems )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
@@ -316,10 +316,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
+    dtype.set_number_of_elements(nitems);
 
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(dtype);
+    buff->declare(type, nitems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -352,8 +352,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   }
   else
   {
+    TypeID type = static_cast<TypeID>(dtype.id());
+    SidreLength nitems = dtype.number_of_elements();
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(dtype);
+    buff->declare(type, nitems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -386,8 +388,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   }
   else
   {
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    SidreLength nitems = schema.dtype().number_of_elements();
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(schema);
+    buff->declare(type, nitems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -1178,7 +1182,9 @@ void DataGroup::copyFromNode(Node& n,
         id_map[buffer_id] = buffer_ds_id;
         // setup the new data store buffer
         Schema schema(n_buff["schema"].as_string());
-        ds_buff->declare(schema);
+	TypeID type = static_cast<TypeID>(schema.dtype().id());
+	SidreLength nitems = schema.dtype().number_of_elements();
+        ds_buff->declare(type, nitems);
         if (n_buff.has_path("data"))
         {
           ds_buff->allocate();

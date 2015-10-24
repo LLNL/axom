@@ -460,7 +460,7 @@ public:
    */
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
-                                 TypeID type, SidreLength len );
+                                 TypeID type, SidreLength nitems );
 
   /*!
    * \brief Create an DataView into externally-owned data with given name,

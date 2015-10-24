@@ -198,27 +198,6 @@ public:
   DataBuffer * declare(TypeID type, SidreLength len);
 
   /*!
-   * \brief Declare a buffer with data described as a Conduit schema.
-   *
-   * To use the buffer, the data must be allocated by calling allocate()
-   * or set to external data by calling setExternalData().
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declare(const Schema& schema);
-
-  /*!
-   * \brief Declare a buffer with data described as a pre-defined
-   *        Conduit data type.
-   *
-   * To use the buffer, the data must be allocated by calling allocate()
-   * or set to external data by calling setExternalData().
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declare(const DataType& dtype);
-
-  /*!
    * \brief Allocate data previously declared using a declare() method.
    *
    * It is the responsibility of the caller to make sure that the buffer
