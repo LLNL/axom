@@ -48,7 +48,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   dbuff->allocate();
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 10);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   int * data_ptr = static_cast<int *>(dbuff->getData());
@@ -74,7 +74,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   dbuff->allocate(DataType::c_int(10));
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 10);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   int * data_ptr = static_cast<int *>(dbuff->getData());
@@ -101,7 +101,7 @@ TEST(sidre_buffer,realloc_buffer)
   dbuff->allocate(DataType::c_long(5));
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 5);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 5u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 5);
 
   long * data_ptr = static_cast<long *>(dbuff->getData());
@@ -116,7 +116,7 @@ TEST(sidre_buffer,realloc_buffer)
   dbuff->reallocate(DataType::c_long(10));
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 10);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
   // data buffer changes
