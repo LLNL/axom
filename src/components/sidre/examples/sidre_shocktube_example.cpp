@@ -57,12 +57,7 @@ const double gammaaInverse = M_SQRT1_2;
 
 void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
 {
-  DataBuffer * const buffer = grp->getDataStore()->createBuffer()
-                              ->declare(DataType::int32())
-                              ->allocate();
-
-
-  DataView * const view = grp->createView(name, buffer)->apply(DataType::int32());
+  DataView * const view = grp->createViewAndBuffer(name, DataType::int32())->allocate();
   view->setValue(value);
 
 }
@@ -70,14 +65,8 @@ void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::strin
 
 void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp, const std::string& name, float64 const value )
 {
-  DataBuffer * const buffer = grp->getDataStore()->createBuffer()
-                              ->declare(DataType::float64())
-                              ->allocate();
-
-
-  DataView * const view = grp->createView(name,buffer)->apply(DataType::float64());
+  DataView * const view = grp->createViewAndBuffer(name, DataType::float64())->allocate();
   view->setValue(value);
-
 }
 
 
@@ -305,9 +294,6 @@ void InitializeShockTube(DataGroup * const prob)
 
   /* Create element centered quantities */
 
-
-  DataBuffer * buffer = ATK_NULLPTR;
-
   int32 const numElems = prob->getView("numElems")->getValue();
   int32 const numFaces = prob->getView("numFaces")->getValue();
 
@@ -371,27 +357,9 @@ void InitializeShockTube(DataGroup * const prob)
 
   /* Create face centered quantities */
 
-  buffer = face->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numFaces))
-           ->allocate();
-
-  face->createView("F0", buffer)
-  ->apply(DataType::float64(numFaces));
-
-  buffer = face->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numFaces))
-           ->allocate();
-
-  face->createView("F1", buffer)
-  ->apply(DataType::float64(numFaces));
-
-  buffer = face->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numFaces))
-           ->allocate();
-
-  face->createView("F2", buffer)
-  ->apply(DataType::float64(numFaces));
-
+  face->createViewAndBuffer("F0", DataType::float64(numFaces))->allocate();
+  face->createViewAndBuffer("F1", DataType::float64(numFaces))->allocate();
+  face->createViewAndBuffer("F2", DataType::float64(numFaces))->allocate();
 
 //  face->fieldCreateReal("F", 3); /* mv, mv^2+P, and v(E+P) */
 
