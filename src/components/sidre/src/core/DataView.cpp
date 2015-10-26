@@ -238,7 +238,9 @@ DataView * DataView::reallocate(const Schema& schema)
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     declare(schema);
-    m_data_buffer->reallocate(m_schema);
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    SidreLength nitems = schema.dtype().number_of_elements();
+    m_data_buffer->reallocate(type, nitems);
     apply();
   }
   return this;
@@ -261,7 +263,9 @@ DataView * DataView::reallocate(const DataType& dtype)
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     declare(dtype);
-    m_data_buffer->reallocate(m_schema);
+    TypeID type = static_cast<TypeID>(dtype.id());
+    SidreLength nitems = dtype.number_of_elements();
+    m_data_buffer->reallocate(type, nitems);
     apply();
   }
   return this;

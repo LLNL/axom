@@ -127,6 +127,11 @@ public:
   }
 
   /*!
+   * \brief Return number of bytes associated with a single item of DataBuffer's type.
+   */
+  size_t getBytesPerItem() const;
+
+  /*!
    * \brief Return total number of elements allocated by this DataBuffer object.
    */
   size_t getNumberOfElements() const
@@ -212,27 +217,6 @@ public:
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * reallocate(TypeID type, SidreLength len);
-
-  /*!
-   * \brief Reallocate data described as a Conduit schema.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * reallocate(const Schema& schema);
-
-  /*!
-   * \brief Reallocate data described as a pre-defined
-   *        Conduit data type.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * reallocate(const DataType& dtype);
 
   /*!
    * \brief Update contents of buffer memory.

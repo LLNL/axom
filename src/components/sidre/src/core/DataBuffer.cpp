@@ -43,11 +43,11 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Return total number of bytes associated with this DataBuffer object.
+ * Return number of bytes associated with a single item of DataBuffer's type.
  *
  *************************************************************************
  */
-size_t DataBuffer::getTotalBytes() const
+size_t DataBuffer::getBytesPerItem() const
 {
   static size_t bytes_per_item[] = {
     0, // CONDUIT_EMPTY_T
@@ -66,7 +66,19 @@ size_t DataBuffer::getTotalBytes() const
     1, // CONDUIT_CHAR8_STR_T
   };
 
-  return bytes_per_item[m_type] * m_nitems;
+  return bytes_per_item[m_type];
+}
+
+/*
+ *************************************************************************
+ *
+ * Return total number of bytes associated with this DataBuffer object.
+ *
+ *************************************************************************
+ */
+size_t DataBuffer::getTotalBytes() const
+{
+  return getBytesPerItem() * m_nitems;
 }
 
 /*
@@ -173,84 +185,30 @@ DataBuffer * DataBuffer::reallocate( TypeID type, SidreLength len)
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
-  if ( len >= 0 && !m_is_data_external )
-  {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
-
-    Schema s(dtype);
-    reallocate(s);
-  }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Reallocate data using a Conduit schema.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::reallocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to re-allocate buffer holding external data");
-
   if ( !m_is_data_external )
   {
-    TypeID type = static_cast<TypeID>(schema.dtype().id());
-    SidreLength nitems = schema.dtype().number_of_elements();
-
     //  make sure realloc actually makes sense
     SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
                    "Attempting to reallocate an unallocated buffer");
 
-    std::size_t realloc_size = schema.total_bytes();
+    std::size_t realloc_size = len * getBytesPerItem();
     void * realloc_data = allocateBytes(realloc_size);
 
-    // use conduit to get data from old to new schema.
-    Node n;
-    n.set_external(schema, realloc_data);
-    // use conduit update, need more error checking.
-    n.update(m_node);
-
-    // XXX update m_type and m_nitems too
-    declare(type, nitems);
+    memcpy(realloc_data, m_data, std::min(getTotalBytes(), realloc_size));
 
     // cleanup old data
     cleanup();
 
-    // set the buffer to use the new schema
-    m_schema = schema;
-
     // let the buffer hold the new data
     m_data = realloc_data;
+    m_type = type; /// XXX remove argument
+    m_nitems = len;
 
     // update the buffer's Conduit Node
+    DataType dtype = conduit::DataType::default_dtype(m_type);
+    dtype.set_number_of_elements(m_nitems);
+    m_schema.set(dtype);
     m_node.set_external(m_schema, m_data);
-  }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Reallocate data using a basic Conduit data type.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::reallocate(const DataType& dtype)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to re-allocate buffer holding external data");
-
-  if ( !m_is_data_external )
-  {
-    TypeID type = static_cast<TypeID>(dtype.id());
-    SidreLength nitems = dtype.number_of_elements();
-    reallocate(type, nitems);
   }
 
   return this;
