@@ -256,6 +256,25 @@ DataBuffer * DataBuffer::reallocate(const DataType& dtype)
   return this;
 }
 
+/*
+ *************************************************************************
+ *
+ * Update contents of buffer from src and which is nbytes long.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
+{
+  size_t buff_nbytes = getTotalBytes();
+  SLIC_ASSERT_MSG(nbytes <= buff_nbytes, "Must allocate number of elements >=0");
+
+  if ( src != ATK_NULLPTR && nbytes <= buff_nbytes)
+  {
+    memcpy(m_data, src, nbytes);
+  }
+
+  return this;
+}
 
 /*
  *************************************************************************

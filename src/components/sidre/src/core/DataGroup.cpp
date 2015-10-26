@@ -1083,12 +1083,14 @@ void DataGroup::copyToNode(Node& n) const
     IndexType buffer_id = buffer_ids[i];
     DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
     buff["id"].set(buffer_id);
-    buff["schema"].set(ds_buff->getSchema().to_json());
+    DataType dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
+    dtype.set_number_of_elements(ds_buff->getNumberOfElements());
+    buff["schema"].set(dtype.to_json());
 
     // only set our data if the buffer was initialized
     if (ds_buff->getData() != NULL )
     {
-      buff["data"].set_external(ds_buff->getNode());
+      buff["data"].set_external(dtype, ds_buff->getData());
     }
   }
 
@@ -1189,7 +1191,9 @@ void DataGroup::copyFromNode(Node& n,
         {
           ds_buff->allocate();
           // copy the data from the node
-          ds_buff->getNode().update(n_buff["data"]);
+	  void * data = n_buff["data"].element_ptr(0);
+	  size_t nbytes = n_buff["data"].total_bytes();
+	  ds_buff->update(data, nbytes);
         }
       }
     }

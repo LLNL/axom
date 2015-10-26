@@ -140,30 +140,6 @@ public:
   size_t getTotalBytes() const;
 
   /*!
-   * \brief Return non-const reference to Conduit node holding data.
-   */
-  Node& getNode()
-  {
-    return m_node;
-  }
-
-  /*!
-   * \brief Return const reference to Conduit node holding data.
-   */
-  const Node& getNode() const
-  {
-    return m_node;
-  }
-
-  /*!
-   * \brief Return const reference to Conduit schema describing data.
-   */
-  const Schema& getSchema() const
-  {
-    return m_schema;
-  }
-
-  /*!
    * \brief Return true if DataBuffer has an associated DataView with given
    *        index; else false.
    */
@@ -257,6 +233,18 @@ public:
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * reallocate(const DataType& dtype);
+
+  /*!
+   * \brief Update contents of buffer memory.
+   *
+   * This will copy nbytes of data into the buffer.  nbytes must be greater
+   * than 0 and less than getTotalBytes().
+   *
+   * If given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * update(const void * src, size_t nbytes);
 
   /*!
    * \brief Set buffer to external data.
