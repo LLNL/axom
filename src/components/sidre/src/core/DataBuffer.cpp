@@ -264,10 +264,17 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
  */
 void DataBuffer::info(Node &n) const
 {
+  // Create a conduit node
+  DataType dtype = conduit::DataType::default_dtype(m_type);
+  dtype.set_number_of_elements(m_nitems);
+  Schema schema(dtype);
+  Node node;
+  node.set_external(schema, m_data);
+
   n["index"].set(m_index);
   n["is_data_external"].set(m_is_data_external);
-  n["schema"].set(m_schema.to_json());
-  n["node"].set(m_node.to_json());
+  n["schema"].set(schema.to_json());
+  n["node"].set(node.to_json());
 }
 
 /*
