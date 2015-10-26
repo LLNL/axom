@@ -196,15 +196,14 @@ DataView * DataView::allocate(const DataType& dtype)
   return this;
 }
 
-
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit schema.
+ * Reallocate the data view's buffer according to a length.
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(TypeID type, SidreLength len)
+DataView * DataView::reallocate(SidreLength len)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Attempting to reallocate an external or opaque view");
@@ -214,8 +213,10 @@ DataView * DataView::reallocate(TypeID type, SidreLength len)
 
   if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 )
   {
-    declare(type, len);
-    m_data_buffer->reallocate(type, len);
+    // preserve current type
+    TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
+    declare(vtype, len);
+    m_data_buffer->reallocate(len);
     apply();
   }
   return this;
@@ -239,9 +240,15 @@ DataView * DataView::reallocate(const Schema& schema)
   {
     declare(schema);
     TypeID type = static_cast<TypeID>(schema.dtype().id());
-    SidreLength nitems = schema.dtype().number_of_elements();
-    m_data_buffer->reallocate(type, nitems);
-    apply();
+    TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
+    SLIC_ASSERT_MSG( type == vtype,
+		     "Attempting to reallocate with a different type");
+    if (type == vtype)
+    {
+      SidreLength nitems = schema.dtype().number_of_elements();
+      m_data_buffer->reallocate(nitems);
+      apply();
+    }
   }
   return this;
 }
@@ -264,9 +271,15 @@ DataView * DataView::reallocate(const DataType& dtype)
   {
     declare(dtype);
     TypeID type = static_cast<TypeID>(dtype.id());
-    SidreLength nitems = dtype.number_of_elements();
-    m_data_buffer->reallocate(type, nitems);
-    apply();
+    TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
+    SLIC_ASSERT_MSG( type == vtype,
+		     "Attempting to reallocate with a different type");
+    if (type == vtype)
+    {
+      SidreLength nitems = dtype.number_of_elements();
+      m_data_buffer->reallocate(nitems);
+      apply();
+    }
   }
   return this;
 }

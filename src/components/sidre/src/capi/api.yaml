@@ -186,16 +186,12 @@ classes:
           len:
           -  int
           -  long
-#      - decl: DataBuffer* allocate(const Schema &schema)
-#      - decl: DataBuffer* allocate(const DataType& dtype)
-      - decl: DataBuffer * reallocate(TypeID type, SidreLength len)
+      - decl: DataBuffer * reallocate(SidreLength len)
         return_this: True
         fortran_generic:
           len:
           -  int
           -  long
-#      - decl: DataBuffer* reallocate(const Schema& schema)
-#      - decl: DataBuffer* reallocate(const DataType& dtype)
       - decl: DataBuffer * setExternalData( void* external_data)
         return_this: True
       - decl: bool isExternal() const
@@ -239,7 +235,7 @@ classes:
         -  long
 #    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
-    - decl: DataView * reallocate(TypeID type, SidreLength len)
+    - decl: DataView * reallocate(SidreLength len)
       return_this: True
       fortran_generic:
         len:

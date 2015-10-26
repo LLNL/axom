@@ -112,7 +112,7 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->print();
 
-  dbuff->reallocate(CONDUIT_NATIVE_LONG_DATATYPE_ID, 10);
+  dbuff->reallocate(10);
 
   EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 10u);

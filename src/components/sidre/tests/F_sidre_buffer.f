@@ -126,7 +126,7 @@ contains
 
     call dbuff%print()
   
-    call dbuff%reallocate(ATK_C_LONG_T, 10_8)
+    call dbuff%reallocate(10)
 
 !    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
     call assert_true(dbuff%get_number_of_elements() == 10)

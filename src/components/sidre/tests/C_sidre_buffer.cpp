@@ -109,7 +109,7 @@ TEST(C_sidre_buffer,realloc_buffer)
 
   ATK_databuffer_print(dbuff);
 
-  ATK_databuffer_reallocate(dbuff, ATK_C_LONG_T, 10);
+  ATK_databuffer_reallocate(dbuff, 10);
 
 //  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_LONG_T);  // XXX NATIVE TYPE
   EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);

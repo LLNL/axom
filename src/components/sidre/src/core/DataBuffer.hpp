@@ -207,7 +207,7 @@ public:
   DataBuffer * allocate(TypeID type, SidreLength len);
 
   /*!
-   * \brief Reallocate data described with Sidre type and length.
+   * \brief Reallocate data to len items.
    *
    *        Equivalent to calling declare(type), then allocate().
    *
@@ -216,7 +216,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(TypeID type, SidreLength len);
+  DataBuffer * reallocate(SidreLength len);
 
   /*!
    * \brief Update contents of buffer memory.

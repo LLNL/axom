@@ -39,7 +39,7 @@ void ATK_databuffer_allocate_existing(ATK_databuffer * self);
 
 void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len);
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len);
+void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength len);
 
 void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data);
 

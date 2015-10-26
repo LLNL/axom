@@ -193,12 +193,12 @@ public:
   DataView * allocate(const DataType& dtype);
 
   /*!
-   * \brief  Reallocate the view's underlying buffer using a Sidre type
-   *         and length.
+   * \brief  Reallocate the view's underlying buffer using a length.
    *
-   * This is equivalent to calling declare(TypeID), then allocate(),
+   * This is equivalent to calling declare(TypeID, len), then allocate(),
    * and then calling apply() on this DataView object.
    *
+   * NOTE: The current type is unchanged.
    * NOTE: Re-allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.  Also, if the given length is < 0 or if
@@ -206,12 +206,13 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * reallocate(TypeID type, SidreLength len);
+  DataView * reallocate(SidreLength len);
 
   /*!
    * \brief  Reallocate the view's underlying buffer using a Conduit
    *         schema.
    *
+   * NOTE: schema's type id must match the current type.
    * NOTE: Re-allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.  Also, if this is an opaque view, this
@@ -225,6 +226,7 @@ public:
    * \brief  Reallocate the view's underlying buffer using a Conduit
    *         data type.
    *
+   * NOTE: dtype's type id must match the current type.
    * NOTE: Re-allocation from a view only makes sense if this is the only
    *       view associated with its buffer. If this is not the case, the
    *       method does nothing.  Also, if this is an opaque view, this

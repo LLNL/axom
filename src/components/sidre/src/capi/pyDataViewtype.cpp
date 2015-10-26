@@ -139,17 +139,16 @@ PY_dataview_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.reallocate
-    int type;
     ATK_SidreLength len;
-    const char *kwcpp = "type\0len";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    const char *kwcpp = "len";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:reallocate", kw_list,
-        &type, &len))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:reallocate", kw_list,
+        &len))
     {
         return NULL;
     }
-    self->BBB->reallocate(getTypeID(type), len);
+    self->BBB->reallocate(len);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.reallocate
 }

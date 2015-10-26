@@ -63,11 +63,11 @@ return;
 // splicer end class.DataBuffer.method.allocate_from_type
 }
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, int type, ATK_SidreLength len)
+void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength len)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.reallocate
-selfobj->reallocate(getTypeID(type), len);
+selfobj->reallocate(len);
 return;
 // splicer end class.DataBuffer.method.reallocate
 }

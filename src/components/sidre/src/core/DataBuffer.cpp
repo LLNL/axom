@@ -175,11 +175,11 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Reallocate data using a Sidre type and length.
+ * Reallocate data using a length.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::reallocate( TypeID type, SidreLength len)
+DataBuffer * DataBuffer::reallocate( SidreLength len)
 {
   SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
@@ -201,7 +201,6 @@ DataBuffer * DataBuffer::reallocate( TypeID type, SidreLength len)
 
     // let the buffer hold the new data
     m_data = realloc_data;
-    m_type = type; /// XXX remove argument
     m_nitems = len;
 
     // update the buffer's Conduit Node
