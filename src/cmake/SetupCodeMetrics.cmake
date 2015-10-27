@@ -15,7 +15,7 @@ if ( (CMAKE_BUILD_TYPE STREQUAL "Debug") AND (ENABLE_CODECOV) )
       SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_COVERAGE}" )
  	   MESSAGE(STATUS "Code coverage: Detected clang or gnu, compiler flags added.")
    else()
- 	   MESSAGE(WARNING "Code coverage: Did not clang or gnu, compiler flags not added.")
+ 	   MESSAGE(STATUS "Code coverage: Did not clang or gnu, compiler flags not added.")
    endif()
 
 endif()
