@@ -238,13 +238,13 @@ DataView * DataView::reallocate(const Schema& schema)
 
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
-    declare(schema);
     TypeID type = static_cast<TypeID>(schema.dtype().id());
     TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
     SLIC_ASSERT_MSG( type == vtype,
 		     "Attempting to reallocate with a different type");
     if (type == vtype)
     {
+      declare(schema);
       SidreLength nitems = schema.dtype().number_of_elements();
       m_data_buffer->reallocate(nitems);
       apply();
@@ -269,13 +269,13 @@ DataView * DataView::reallocate(const DataType& dtype)
 
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
-    declare(dtype);
     TypeID type = static_cast<TypeID>(dtype.id());
     TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
     SLIC_ASSERT_MSG( type == vtype,
 		     "Attempting to reallocate with a different type");
     if (type == vtype)
     {
+      declare(dtype);
       SidreLength nitems = dtype.number_of_elements();
       m_data_buffer->reallocate(nitems);
       apply();

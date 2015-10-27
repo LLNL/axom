@@ -415,6 +415,9 @@ TEST(sidre_view,int_array_realloc)
   EXPECT_EQ(a1->getTotalBytes(), sizeof(float)*10);
   EXPECT_EQ(a2->getTotalBytes(), sizeof(int)*15);
 
+  // Try some errors
+  // XXX  a1->reallocate(DataType::c_int(20));
+  // XXX reallocate with a Schema
 
   ds->print();
   delete ds;
