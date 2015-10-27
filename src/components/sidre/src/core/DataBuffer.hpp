@@ -316,12 +316,6 @@ private:
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
 
-  /// Conduit Node that holds buffer data.
-  Node m_node;
-
-  /// Conduit Schema that describes buffer data.
-  Schema m_schema;
-
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
 

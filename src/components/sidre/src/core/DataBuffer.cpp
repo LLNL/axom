@@ -118,10 +118,6 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
   {
     m_type = type;
     m_nitems = len;
-
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
-    m_schema.set(dtype);
   }
   return this;
 }
@@ -142,9 +138,8 @@ DataBuffer * DataBuffer::allocate()
   {
     // cleanup old data
     cleanup();
-    std::size_t alloc_size = m_schema.total_bytes();
+    std::size_t alloc_size = getTotalBytes();
     m_data = allocateBytes(alloc_size);
-    m_node.set_external(m_schema,m_data);
   }
 
   return this;
@@ -202,12 +197,6 @@ DataBuffer * DataBuffer::reallocate( SidreLength len)
     // let the buffer hold the new data
     m_data = realloc_data;
     m_nitems = len;
-
-    // update the buffer's Conduit Node
-    DataType dtype = conduit::DataType::default_dtype(m_type);
-    dtype.set_number_of_elements(m_nitems);
-    m_schema.set(dtype);
-    m_node.set_external(m_schema, m_data);
   }
 
   return this;
@@ -248,7 +237,6 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
   if ( external_data != ATK_NULLPTR )
   {
     m_data = external_data;
-    m_node.set_external(m_schema, m_data);
     m_is_data_external = true;
   }
   return this;
@@ -321,8 +309,6 @@ DataBuffer::DataBuffer( IndexType index )
   m_type(CONDUIT_EMPTY_T),
   m_nitems(0),
   m_data(ATK_NULLPTR),
-  m_node(),
-  m_schema(),
   m_is_data_external(false)
 {}
 
@@ -340,8 +326,6 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_type(CONDUIT_EMPTY_T),
   m_nitems(0),
   m_data(source.m_data),
-  m_node(source.m_node),
-  m_schema(source.m_schema),
   m_is_data_external(source.m_is_data_external)
 {
 // disallow?
