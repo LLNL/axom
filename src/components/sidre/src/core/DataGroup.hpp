@@ -34,9 +34,9 @@
 //#define USE_DENSE_HASH_MAP
 //#endif
 
-//#ifndef USE_NEW_MAP_COLLECTION
-//#define USE_NEW_MAP_COLLECTION
-//#endif
+#ifndef USE_NEW_MAP_COLLECTION
+#define USE_NEW_MAP_COLLECTION
+#endif
 
 #if defined(USE_UNORDERED_MAP)
 //STL or Boost unordered_map, depending on
