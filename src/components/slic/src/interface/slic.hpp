@@ -38,62 +38,52 @@
 
 /*!
  ******************************************************************************
- * \def SLIC_ERROR( EXP, msg )
- * \brief Logs an error iff EXP is true and aborts the application.
- * \param [in] EXP user-supplied boolean expression.
+ * \def SLIC_ERROR( msg )
+ * \brief Logs an error and aborts the application.
  * \param [in] msg user-supplied message
  * \note The SLIC_ERROR macro is always active.
- * \warning This macro calls processAbort() if EXP is false.
+ * \warning This macro calls processAbort().
  *
  * Usage:
  * \code
- *   SLIC_ERROR( my_val < 0, "my_val should always be positive" );
+ *   SLIC_ERROR( "my_val should always be positive" );
  * \endcode
  *
  ******************************************************************************
  */
-#define SLIC_ERROR( EXP, msg )                                                \
+#define SLIC_ERROR( msg )                                                     \
 do {                                                                          \
-  if ( EXP ) {                                                                \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,msg,__FILE__, __LINE__ );            \
-    if ( asctoolkit::slic::getAbortOnError() ) {                             \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
-  }                                                                           \
+    std::ostringstream oss;                                                   \
+    oss << msg;                                                               \
+    asctoolkit::slic::logErrorMessage( oss.str(),__FILE__, __LINE__,          \
+                                 asctoolkit::slic::getAbortOnError() );       \
 } while ( 0 )
-
-/// @}
 
 /*!
  ******************************************************************************
- * \def SLIC_ERROR_MSG( EXP, msg )
- * \brief Same as SLIC_ERROR, but with a custom error message.
+ * \def SLIC_ERROR_IF( EXP, msg )
+ * \brief Logs an error iff EXP is true and aborts the application.
  * \param [in] EXP user-supplied boolean expression.
- * \param [in] msg user-supplied message
- * \note The SLIC_ERROR_MSG is always active.
- * \warning This macro calls processAbort() if EXP is false.
- * \see SLIC_ERROR( EXP )
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_ERROR_IF macro is always active.
+ * \warning This macro calls processAbort() if EXP is true.
  *
  * Usage:
  * \code
- *   SLIC_ERROR_MSG( my_val >= 0, "my_val must always be positive" );
+ *   SLIC_ERROR_IF( (val < 0), "my_val should always be positive" );
  * \endcode
  *
  ******************************************************************************
  */
-#define SLIC_ERROR_MSG( EXP, msg )                                            \
+#define SLIC_ERROR_IF( EXP, msg )                                             \
 do {                                                                          \
-  if ( !(EXP) ) {                                                             \
+  if ( EXP ) {                                                                \
     std::ostringstream oss;                                                   \
-    oss << "Failed Error: " << # EXP << std::endl << msg << std::ends;        \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    if ( asctoolkit::slic::getAbortOnError() ) {                             \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    oss << msg;                                                               \
+    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__,            \
+                                    asctoolkit::slic::getAbortOnError() );    \
   }                                                                           \
-} while ( 0 )
+} while( 0 )
 
 /// @}
 
@@ -102,26 +92,48 @@ do {                                                                          \
 
 /*!
  ******************************************************************************
- * \def SLIC_WARNING( EXP, msg )
- * \brief Logs a warning iff EXP is true.
- * \param [in] EXP user-supplied boolean expression.
+ * \def SLIC_WARNING( msg )
+ * \brief Logs a warning message.
  * \param [in] msg user-supplied message
  * \note The SLIC_WARNING macro is always active.
  *
  * Usage:
  * \code
- *   SLIC_WARNING( my_val < 0, "my_val should always be positive" );
+ *   SLIC_WARNING( "my_val should always be positive" );
  * \endcode
  *
  ******************************************************************************
  */
-#define SLIC_WARNING( EXP, msg )                                              \
+#define SLIC_WARNING( msg )                                                   \
+do {                                                                          \
+    std::ostringstream oss;                                                   \
+    oss << msg;                                                               \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__, __LINE__ );       \
+} while ( 0 )
+
+/*!
+ ******************************************************************************
+ * \def SLIC_WARNING_IF( EXP, msg )
+ * \brief Logs an error iff EXP is true and aborts the application.
+ * \param [in] EXP user-supplied boolean expression.
+ * \param [in] msg user-supplied message.
+ * \note The SLIC_WARNING_IF macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_WARNING_IF( (val < 0), "my_val should always be positive" );
+ * \endcode
+ *
+ ******************************************************************************
+ */
+#define SLIC_WARNING_IF( EXP, msg )                                           \
 do {                                                                          \
   if ( EXP ) {                                                                \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Warning,msg,__FILE__, __LINE__ );          \
+    std::ostringstream oss;                                                   \
+    oss << msg;                                                               \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
   }                                                                           \
-} while ( 0 )
+} while( 0 )
 
 /// @}
 
@@ -152,11 +164,8 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::ends;                           \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    if ( asctoolkit::slic::getAbortOnAssert() ) {                            \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__,            \
+                                asctoolkit::slic::getAbortOnAssert() );       \
   }                                                                           \
 } while ( 0 )
 
@@ -182,11 +191,8 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Assert: " << # EXP << std::endl << msg << std::ends;       \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Fatal,oss.str(),__FILE__,__LINE__ );       \
-    if ( asctoolkit::slic::getAbortOnAssert() ) {                            \
-       asctoolkit::utilities::processAbort();                                 \
-    }                                                                         \
+    asctoolkit::slic::logErrorMessage(oss.str(),__FILE__,__LINE__,            \
+                                asctoolkit::slic::getAbortOnAssert() );       \
   }                                                                           \
 } while ( 0 )
 
@@ -217,8 +223,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::ends;                            \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );     \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
   }                                                                           \
 } while ( 0 )
 
@@ -243,8 +248,7 @@ do {                                                                          \
   if ( !(EXP) ) {                                                             \
     std::ostringstream oss;                                                   \
     oss << "Failed Check: " << # EXP << std::endl << msg <<  std::ends;       \
-    asctoolkit::slic::logMessage(                                             \
-        asctoolkit::slic::message::Warning,oss.str(),__FILE__,__LINE__ );     \
+    asctoolkit::slic::logWarningMessage(oss.str(),__FILE__,__LINE__ );        \
   }                                                                           \
 } while ( 0 )
 
@@ -447,6 +451,31 @@ void logMessage( message::Level level,
 
 /*!
  *******************************************************************************
+ * \brief Convenience method to log an error message.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file that the message is logged.
+ *******************************************************************************
+ */
+void logErrorMessage( const std::string& message,
+                      const std::string& fileName,
+                      int line,
+                      bool shouldAbort );
+
+/*!
+ *******************************************************************************
+ * \brief Convenience method to log warning messages.
+ * \param [in] message user-supplied message.
+ * \param [in] fileName the name of the file this message is logged from.
+ * \param [in] line the line number within the file that the message is logged.
+ *******************************************************************************
+ */
+void logWarningMessage( const std::string& message,
+                        const std::string& fileName,
+                        int line );
+
+/*!
+ *******************************************************************************
  * \brief Flushes all streams.
  * \see Logger::flushStreams.
  *******************************************************************************
@@ -459,6 +488,14 @@ void flushStreams();
  *******************************************************************************
  */
 void finalize();
+
+/*!
+ *******************************************************************************
+ * \brief Uses glibc's backtrace() functionality to return a stacktrace
+ * \return s a string corresponding to the stacktrace.
+ *******************************************************************************
+ */
+std::string stacktrace( );
 
 } /* namespace slic */
 
