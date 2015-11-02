@@ -58,6 +58,9 @@
 #include "SidreTypes.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
+#if ATK_ENABLE_FORTRAN
+#include "sidre/SidreAllocatable.hpp"
+#endif
 
 
 
@@ -495,20 +498,6 @@ public:
                                  const Schema& schema );
 
   /*!
-   * \brief Create a DataView to a Fortran allocatable.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createFortranAllocatableView( const std::string& name,
-					   void * array, TypeID type, int rank );
-
-  /*!
    * \brief Destroy view in this DataGroup with given name and leave its
    *        associated DataBuffer intact.
    */
@@ -865,6 +854,28 @@ private:
   DataGroup * detachGroup(const std::string& name);
   ///
   DataGroup * detachGroup(IndexType idx);
+
+#ifdef ATK_ENABLE_FORTRAN
+  /*!
+   * \brief Create a DataView to a Fortran allocatable.
+   *
+   * New view will be attached to this DataGroup object.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given data pointer is null, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createFortranAllocatableView( const std::string& name,
+					   void * array, TypeID type, int rank );
+
+  /* extern "C" function which calls createFortranAllocatableView
+   */
+  friend void * ATK_create_fortran_allocatable_view(void * group,
+						    char * name, int lname,
+						    void * array, int type, int rank);
+#endif
 
   /*!
    * \brief Private methods to copy DataGroup to/from Conduit Node.

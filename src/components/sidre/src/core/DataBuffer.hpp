@@ -422,9 +422,6 @@ private:
   /// Container of DataViews attached to this buffer.
   std::vector<DataView *> m_views;
 
-  /// Number of dimensions
-  int m_rank;
-
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
 
@@ -437,7 +434,10 @@ private:
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
 
-  /// Is buffer holding Fortran allocatable?
+  /// Number of dimensions
+  int m_fortran_rank;
+
+  /// Pointer to Fortran allocatable array.
   void *m_fortran_allocatable;
 
   /*!

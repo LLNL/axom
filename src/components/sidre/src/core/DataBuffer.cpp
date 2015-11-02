@@ -123,12 +123,14 @@ DataBuffer * DataBuffer::allocate()
 
   if(m_fortran_allocatable != ATK_NULLPTR)
   {
+#ifdef ATK_ENABLE_FORTRAN
     // cleanup old data
     cleanup();
     TypeID type = static_cast<TypeID>(m_schema.dtype().id());
     SidreLength nitems = m_schema.dtype().number_of_elements();
-    m_data = AllocateAllocatable(m_fortran_allocatable, type, m_rank, nitems);
+    m_data = AllocateAllocatable(m_fortran_allocatable, type, m_fortran_rank, nitems);
     m_node.set_external(m_schema,m_data);
+#endif
   }
   else if ( !m_is_data_external )
   {
@@ -334,7 +336,7 @@ DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int ra
   {
 #ifdef ATK_ENABLE_FORTRAN
     m_fortran_allocatable = array;
-    m_rank = rank;
+    m_fortran_rank = rank;
     m_data = AddressAllocatable(array, type, rank);
     m_node.set_external(m_schema, m_data);
 #else
@@ -402,11 +404,11 @@ void DataBuffer::print(std::ostream& os) const
 DataBuffer::DataBuffer( IndexType index )
   : m_index(index),
   m_views(),
-  m_rank(0),
   m_data(ATK_NULLPTR),
   m_node(),
   m_schema(),
   m_is_data_external(false),
+  m_fortran_rank(0),
   m_fortran_allocatable(ATK_NULLPTR)
 {}
 
@@ -421,11 +423,11 @@ DataBuffer::DataBuffer( IndexType index )
 DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
-  m_rank(0),
   m_data(source.m_data),
   m_node(source.m_node),
   m_schema(source.m_schema),
   m_is_data_external(source.m_is_data_external),
+  m_fortran_rank(0),
   m_fortran_allocatable(ATK_NULLPTR)
 {
 // disallow?
@@ -492,10 +494,10 @@ void DataBuffer::cleanup()
     {
 #ifdef ATK_ENABLE_FORTRAN
       TypeID type = static_cast<TypeID>(m_node.dtype().id());
-      DeallocateAllocatable(m_fortran_allocatable, type, m_rank);
+      DeallocateAllocatable(m_fortran_allocatable, type, m_fortran_rank);
 #else
-    SLIC_ASSERT_MSG( true ,
-		     "Fortran support is not compiled into this version of Sidre" );
+      SLIC_ASSERT_MSG( true ,
+		       "Fortran support is not compiled into this version of Sidre" );
 #endif
     }
     else if (!m_is_data_external )
