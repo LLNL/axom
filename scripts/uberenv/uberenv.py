@@ -31,6 +31,11 @@ def parse_args():
                       dest="prefix",
                       default="uberenv_libs",
                       help="destination dir")
+    # what compiler to use
+    parser.add_option("--spec",
+                      dest="spec",
+                      default=None,
+                      help="spack compiler spec")
     # parse args
     opts, extras = parser.parse_args()
     # we want a dict b/c the values could 
@@ -50,6 +55,12 @@ def main():
         env["MACOSX_DEPLOYMENT_TARGET"] = dep_tgt
     # parse args from command line
     opts, extras = parse_args()
+    # setup default spec
+    if opts["spec"] is None:
+        if "darwin" in platform.system().lower():
+            opts["spec"] = "%clang"
+        else:
+            opts["spec"] = "%gcc"
     # get the current working path, and the glob used to identify the 
     # package files we want to hot-copy to spack
     uberenv_path = os.path.split(os.path.abspath(__file__))[0]
@@ -71,7 +82,7 @@ def main():
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
-    sexe("spack/bin/spack install uberenv")
+    sexe("spack/bin/spack install uberenv-asctoolkit " + opts["spec"])
     host_cfg = "%s.cmake" % socket.gethostname()
     if os.path.isfile(host_cfg):
         print "[result host-config file: %s]" % os.path.abspath(host_cfg)

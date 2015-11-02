@@ -288,10 +288,7 @@ void DataBuffer::print(std::ostream& os) const
 {
   Node n;
   info(n);
-  /// TODO: after conduit update, use new ostream variant of to_json.
-  std::ostringstream oss;
-  n.json_to_stream(oss);
-  os << oss.str();
+  n.to_json_stream(os);
 }
 
 

@@ -9,7 +9,7 @@
 #ifndef SIDREWRAPPERHELPERS_HPP_
 #define SIDREWRAPPERHELPERS_HPP_
 
-#include "conduit/Bitwidth_Style_Types.h"
+#include "Bitwidth_Style_Types.h"
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
@@ -40,7 +40,9 @@ inline TypeID getTypeID( const int typeID )
 
   switch( typeID )
   {
-#if 0
+  /****************************************************************************
+   We don't support these Conduit cases as Sidre Types
+   ****************************************************************************
   case 0:
     rval = CONDUIT_EMPTY_T;
     break;
@@ -50,7 +52,8 @@ inline TypeID getTypeID( const int typeID )
   case 2:
     rval = CONDUIT_LIST_T;
     break;
-#endif
+  ****************************************************************************/
+
   case ATK_INT8_T:
     rval = CONDUIT_INT8_T;
     break;

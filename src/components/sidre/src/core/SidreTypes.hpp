@@ -9,7 +9,7 @@
 #define SIDRETYPES_HPP_
 
 // Other CS Toolkit headers
-#include "conduit/conduit.hpp"
+#include "conduit.hpp"
 
 namespace asctoolkit
 {
@@ -17,7 +17,8 @@ namespace sidre
 {
 
 typedef conduit::DataType DataType;
-typedef conduit_datatype_type_id TypeID;
+// Changed from Conduit Enum, since NATIVE types aren't part of the enum. 
+typedef conduit_int64 TypeID;
 
 
 /*!
