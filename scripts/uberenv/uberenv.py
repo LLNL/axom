@@ -11,6 +11,7 @@ import subprocess
 import shutil
 import socket
 import platform
+import json
 
 from os import environ as env
 
@@ -42,6 +43,23 @@ def parse_args():
     # be passed without using optparse
     opts = vars(opts)
     return opts, extras
+
+def setup_spack_compilers():
+    # setup compilers via sys type only
+    if not env.has_key("SYS_TYPE"):
+        return
+    # read "compilers.json" to a list of compilers to add
+    compilers_json = pjoin(os.path.split(os.path.abspath(__file__)[0]),
+                           "compilers.json")
+    compilers = json.load(open(compilers_json))
+    # add compilers for this sys type
+    if not env["SYS_TYPE"] in compilers.keys():
+        return
+    for cset_name, cset in compilers[env["SYS_TYPE"]].items():
+        print "[adding compiler set: %s]" % cset_name
+        for ctype, cpath in cset.items():
+            print "[adding %s compiler: %s]" % (ctype,cpath)
+            sexe("spack/bin/spack compiler add %s" % cpath)
 
 def main():
     """
@@ -79,6 +97,8 @@ def main():
     # clone spack into the dest path
     os.chdir(dest_dir)
     sexe("git clone https://github.com/scalability-llnl/spack.git")
+    # setup our compilers
+    setup_spack_compilers()
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
