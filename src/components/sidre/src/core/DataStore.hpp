@@ -99,7 +99,7 @@ public:
    * \brief Return (non-const) pointer to data buffer object with given index,
    *        or ATK_NULLPTR if none exists.
    */
-  DataBuffer * getBuffer( IndexType idx );
+  DataBuffer * getBuffer( IndexType idx ) const;
 
   /*!
    * \brief Create a data buffer object and return a pointer to it.

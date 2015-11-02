@@ -31,8 +31,9 @@
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-
-
+#if ATK_ENABLE_FORTRAN
+#include "sidre/SidreAllocatable.hpp"
+#endif
 
 namespace asctoolkit
 {
@@ -349,6 +350,15 @@ public:
    */
   DataBuffer * setExternalData(void * external_data);
 
+  /*!
+   * \brief Set as Fortran allocatable.
+   *
+   * If given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
+
 
 //@}
 
@@ -423,6 +433,12 @@ private:
 
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
+
+  /// Number of dimensions
+  int m_fortran_rank;
+
+  /// Pointer to Fortran allocatable array.
+  void *m_fortran_allocatable;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

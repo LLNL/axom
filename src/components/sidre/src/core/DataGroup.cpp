@@ -29,7 +29,6 @@
 #include "DataStore.hpp"
 #include "DataView.hpp"
 
-
 namespace asctoolkit
 {
 namespace sidre
@@ -397,7 +396,6 @@ DataView * DataGroup::createExternalView( const std::string& name,
     return attachView(view);
   }
 }
-
 
 /*
  *************************************************************************
@@ -1059,6 +1057,44 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
   return group;
 }
 
+/*
+ *************************************************************************
+ *
+ * Create external view for a Fortran allocatable and attach to group.
+ *
+ *************************************************************************
+ */
+#ifdef ATK_ENABLE_FORTRAN
+DataView * DataGroup::createFortranAllocatableView( const std::string& name,
+						    void * array, TypeID type, int rank )
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( array != ATK_NULLPTR ,
+                   "Cannot create Fortran allocatable view with null array pointer" );
+ 
+  if ( name.empty() || hasView(name) || array == ATK_NULLPTR )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(SizeAllocatable(array, type, rank));
+
+    DataBuffer * buff = this->getDataStore()->createBuffer();
+    buff->declare(dtype);
+    //    buff->setExternalData(external_data);
+    buff->setFortranAllocatable(array, type, rank);
+
+    DataView * const view = new DataView( name, this, buff);
+    buff->attachView(view);
+    view->apply(dtype);
+
+    return attachView(view);
+  }
+}
+#endif
 
 /*
  *************************************************************************
