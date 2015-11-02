@@ -60,4 +60,6 @@ make_library( LIBRARY_NAME
                   common
               )
 
+add_subdirectory(interface/shroud_api)
+
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

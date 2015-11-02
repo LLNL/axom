@@ -1,0 +1,36 @@
+#
+# API for SLIC
+#
+copyright:
+  -
+  - Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+  - Produced at the Lawrence Livermore National Laboratory.
+  - 
+  - All rights reserved.
+  -
+  - This source code cannot be distributed without permission and 
+  - further review from Lawrence Livermore National Laboratory.
+  -
+
+options:
+  library: SLIC
+  C_prefix: SLIC_
+  namespace: asctoolkit slic
+#  F_module_per_class: False
+
+  # header file for function, each class has its own header file
+  cpp_header: slic/slic.hpp
+
+  # Any C++ function which returns a string will be wrapped in
+  # Fortran as a subroutine with an additional character argument
+  # for the result.
+  F_string_result_as_arg: name
+  
+######################################################################
+
+functions:
+  -  decl: void initialize()
+  -  decl: bool isInitialized()
+  -  decl: void finalize()
+  
+  
