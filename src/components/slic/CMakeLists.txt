@@ -37,7 +37,7 @@ add_subdirectory(examples)
 ################################
 # Add docs
 ################################
-#add_subdirectory(docs)
+add_subdirectory(docs)
 
 
 ################################
