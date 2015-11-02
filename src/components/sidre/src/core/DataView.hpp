@@ -236,7 +236,6 @@ public:
    */
   DataView * reallocate(const DataType& dtype);
 
-
   /*!
    * \brief Apply a previously declared data view to data held in
    *        the DataBuffer associated with this DataView object.

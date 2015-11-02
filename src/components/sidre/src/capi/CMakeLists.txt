@@ -36,9 +36,31 @@ add_custom_command(
             ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
 )
 
+get_filename_component(PyDir ${PYTHON_EXECUTABLE} DIRECTORY)
+set(COG_EXECUTABLE ${PyDir}/cog.py)
+
+add_custom_command(
+    OUTPUT  ${API_OUTPUT_DIR}/SidreAllocatable.cpp
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
+    COMMAND ${COG_EXECUTABLE} -r ${API_OUTPUT_DIR}/SidreAllocatable.cpp
+)
+
+add_custom_command(
+    OUTPUT  ${API_OUTPUT_DIR}/SidreAllocatablef.f
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/genfsidresplicer.py
+    COMMAND ${COG_EXECUTABLE} -r ${API_OUTPUT_DIR}/SidreAllocatablef.f
+)
+
+add_custom_target(sidre_cog
+                  DEPENDS
+                      ${API_OUTPUT_DIR}/SidreAllocatable.cpp
+                      ${API_OUTPUT_DIR}/SidreAllocatablef.f
+)
+
 ADD_CUSTOM_TARGET(sidre_generate
      DEPENDS
          ${CMAKE_CURRENT_BINARY_DIR}/capi.time
+         sidre_cog
 )
 
 add_dependencies(generate sidre_generate)

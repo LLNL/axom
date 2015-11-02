@@ -29,6 +29,7 @@ if (ENABLE_FORTRAN)
         capi/sidre.h
         capi/SidreTypes.h
         capi/SidreWrapperHelpers.hpp
+        capi/SidreAllocatable.hpp
         # generated headers
         capi/wrapSidre.h
         capi/wrapDataStore.h
@@ -44,6 +45,8 @@ if (ENABLE_FORTRAN)
         capi/wrapDataBuffer.cpp
         capi/wrapDataView.cpp
         capi/wrapfsidre.f
+        capi/SidreAllocatable.cpp
+        capi/SidreAllocatablef.f
     )
     add_subdirectory(capi)
 
@@ -75,6 +78,8 @@ make_library( LIBRARY_NAME
                   conduit
                   slic
              )
+set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+
 # XXX - would like to have shroudrt loaded automatically with sidre
 #target_link_libraries(sidre ${capi_depends_on})
 
