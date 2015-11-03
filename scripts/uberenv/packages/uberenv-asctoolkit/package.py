@@ -39,28 +39,55 @@ class UberenvAsctoolkit(Package):
 
     def install(self, spec, prefix):
         #mkdirp(prefix)
-        dest_dir = env["SPACK_DEBUG_LOG_DIR"]
-        cmake_exe        = pjoin(spec['cmake'].prefix.bin,"cmake")
+        dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
+        c_compiler   = env["SPACK_CC"]
+        cpp_compiler = env["SPACK_CXX"]
+        f_compiler   = env["SPACK_FC"]
+        sys_type     = spec.architecture
+        if env.has_key("SYS_TYPE"):
+            sys_type = env["SYS_TYPE"]
+        # conduit
         conduit_dir      = spec['conduit'].prefix
+        cmake_exe        = pjoin(spec['cmake'].prefix.bin,"cmake")
         python_exe       = pjoin(spec['python'].prefix.bin,"python")
         sphinx_build_exe = pjoin(spec['python'].prefix.bin,"sphinx-build")
         uncrustify_exe   = pjoin(spec['uncrustify'].prefix.bin,"uncrustify")
-        # TODO: better name (use sys-type and compiler name ?)
-        cfg = open(pjoin(dest_dir,"%s.cmake" % socket.gethostname()),"w")
-        cfg.write("#######\n")
-        cfg.write("# uberenv host-config for asctoolkit\n")
-        cfg.write("#######\n")
+
+        host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname(),sys_type,spec.compiler)
+        host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
+        cfg = open(host_cfg_fname,"w")
+        cfg.write("##################################\n")
+        cfg.write("# uberenv host-config\n")
+        cfg.write("##################################\n")
+        cfg.write("# %s-%s\n" % (sys_type,spec.compiler))
+        cfg.write("##################################\n\n")
+        # show path to cmake for reference
         cfg.write("# cmake from uberenv\n")
         cfg.write("# cmake exectuable path: %s\n\n" % cmake_exe)
+
+        # compiler settings
+        cfg.write("#######\n")
+        cfg.write("# using %s compiler spec\n" % spec.compiler)
+        cfg.write("#######\n\n")
+        cfg.write("# c compiler used by spack\n")
+        cfg.write('set(CMAKE_C_COMPILER "%s" CACHE PATH "")\n\n' % c_compiler)
+        cfg.write("# cpp compiler used by spack\n")
+        cfg.write('set(CMAKE_CXX_COMPILER "%s" CACHE PATH "")\n\n' % cpp_compiler)
+        cfg.write("# fortran compiler used by spack\n")
+        if f_compiler is None:
+            cfg.write('set(CMAKE_Fortran_COMPILER  "%s" CACHE PATH "")\n\n' % f_compiler)
+        else:
+            cfg.write("# no fortran compiler\n\n")
 
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)
 
         cfg.write("# python from uberenv\n")
         cfg.write('set(PYTHON_EXECUTABLE "%s" CACHE PATH "")\n\n' % python_exe)
-
+        
         cfg.write("# sphinx from uberenv\n")
         cfg.write('set(SPHINX_EXECUTABLE "%s" CACHE PATH "")\n\n' % sphinx_build_exe)
+        
 
         cfg.write("# uncrustify from uberenv\n")
         cfg.write('set(UNCRUSTIFY_EXECUTABLE "%s" CACHE PATH "")\n\n' % uncrustify_exe)

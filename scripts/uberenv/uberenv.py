@@ -44,22 +44,16 @@ def parse_args():
     opts = vars(opts)
     return opts, extras
 
-def setup_spack_compilers():
-    # setup compilers via sys type only
-    if not env.has_key("SYS_TYPE"):
-        return
-    # read "compilers.json" to a list of compilers to add
-    compilers_json = pjoin(os.path.split(os.path.abspath(__file__)[0]),
-                           "compilers.json")
-    compilers = json.load(open(compilers_json))
-    # add compilers for this sys type
-    if not env["SYS_TYPE"] in compilers.keys():
-        return
-    for cset_name, cset in compilers[env["SYS_TYPE"]].items():
-        print "[adding compiler set: %s]" % cset_name
-        for ctype, cpath in cset.items():
-            print "[adding %s compiler: %s]" % (ctype,cpath)
-            sexe("spack/bin/spack compiler add %s" % cpath)
+def spack_compilers_yaml_file():
+    # read "compilers.yaml" to a list of compilers to add
+    compilers_yaml = pjoin(os.path.split(os.path.abspath(__file__))[0],
+                           "compilers.yaml")
+    if not os.path.isfile(compilers_yaml):
+        print "[failed to find uberenv 'compilers.yaml' file]"
+        sys.exit(-1)
+    return compilers_yaml
+
+
 
 def main():
     """
@@ -94,11 +88,17 @@ def main():
         print "[info: destination '%s' already exists]"  % dest_dir
     if os.path.isdir(dest_spack):
         print "[info: destination '%s' already exists]"  % dest_spack
+    compilers_yaml = spack_compilers_yaml_file()
     # clone spack into the dest path
     os.chdir(dest_dir)
-    sexe("git clone https://github.com/scalability-llnl/spack.git")
-    # setup our compilers
-    setup_spack_compilers()
+    sexe("git clone -b develop https://github.com/scalability-llnl/spack.git")
+    # copy in the compiler spec
+    print "[copying asctoolkit compiler specs]"
+    if not os.path.isdir("spack/etc"):
+        os.mkdir("spack/etc")
+    if not os.path.isdir("spack/etc/spack"):
+        os.mkdir("spack/etc/spack")
+    sexe("cp %s spack/etc/spack" % compilers_yaml)
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
     # use the uberenv package to trigger the right builds and build an host-config.cmake file
