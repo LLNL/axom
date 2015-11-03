@@ -134,7 +134,7 @@ DataBuffer * DataBuffer::allocate()
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if(m_fortran_allocatable != ATK_NULLPTR)
+  if (m_fortran_allocatable != ATK_NULLPTR)
   {
 #ifdef ATK_ENABLE_FORTRAN
     // cleanup old data
@@ -190,7 +190,15 @@ DataBuffer * DataBuffer::reallocate( SidreLength len)
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
-  if ( !m_is_data_external )
+  if (m_fortran_allocatable != ATK_NULLPTR)
+  {
+#ifdef ATK_ENABLE_FORTRAN
+    SLIC_ERROR("TODO: Fortran reallocate");
+#else
+    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
+#endif
+  }
+  else if ( !m_is_data_external )
   {
     //  make sure realloc actually makes sense
     SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
