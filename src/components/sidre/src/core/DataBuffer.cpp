@@ -140,6 +140,8 @@ DataBuffer * DataBuffer::allocate()
     // cleanup old data
     cleanup();
     m_data = AllocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank, m_nitems);
+#else
+    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
   }
   else if ( !m_is_data_external )
@@ -270,8 +272,7 @@ DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int ra
     m_fortran_rank = rank;
     m_data = AddressAllocatable(array, type, rank);
 #else
-    SLIC_ASSERT_MSG( true ,
-		     "Fortran support is not compiled into this version of Sidre" );
+    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
   }
   return this;
@@ -432,8 +433,7 @@ void DataBuffer::cleanup()
 #ifdef ATK_ENABLE_FORTRAN
       DeallocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank);
 #else
-      SLIC_ASSERT_MSG( true ,
-		       "Fortran support is not compiled into this version of Sidre" );
+      SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
     }
     else if (!m_is_data_external )
