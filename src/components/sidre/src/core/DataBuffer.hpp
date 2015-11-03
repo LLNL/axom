@@ -245,16 +245,6 @@ public:
    */
   DataBuffer * setExternalData(void * external_data);
 
-  /*!
-   * \brief Set as Fortran allocatable.
-   *
-   * If given pointer is null, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
-
-
 //@}
 
 
@@ -310,6 +300,16 @@ private:
   ///
   void  releaseBytes(void * );
 
+#ifdef ATK_ENABLE_FORTRAN
+  /*!
+   * \brief Set as Fortran allocatable.
+   *
+   * If given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
+#endif
 
   /// Index Identifier - unique within a dataStore.
   IndexType m_index;

@@ -255,33 +255,6 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
 /*
  *************************************************************************
  *
- * Set as Fortran allocatable buffer.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int rank)
-{
-  SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
-		   "Attempting to set buffer to Fortran allocatable given null pointer" );
-  // XXX check rank too
-
-  if ( array != ATK_NULLPTR )
-  {
-#ifdef ATK_ENABLE_FORTRAN
-    m_fortran_allocatable = array;
-    m_fortran_rank = rank;
-    m_data = AddressAllocatable(array, type, rank);
-#else
-    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
-#endif
-  }
-  return this;
-}
-
-
-/*
- *************************************************************************
- *
  * Copy data buffer description to given Conduit node.
  *
  *************************************************************************
@@ -475,7 +448,29 @@ void DataBuffer::releaseBytes(void * ptr)
   }
 }
 
+#ifdef ATK_ENABLE_FORTRAN
+/*
+ *************************************************************************
+ *
+ * PRIVATE Set as Fortran allocatable buffer.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int rank)
+{
+  SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
+		   "Attempting to set buffer to Fortran allocatable given null pointer" );
+  // XXX check rank too
 
+  if ( array != ATK_NULLPTR )
+  {
+    m_fortran_allocatable = array;
+    m_fortran_rank = rank;
+    m_data = AddressAllocatable(array, type, rank);
+  }
+  return this;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
