@@ -460,7 +460,7 @@ void DataBuffer::releaseBytes(void * ptr)
 /*
  *************************************************************************
  *
- * PRIVATE Set as Fortran allocatable buffer.
+ * PRIVATE Set Fortran allocatable buffer.
  *
  *************************************************************************
  */

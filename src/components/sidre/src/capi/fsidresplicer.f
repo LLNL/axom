@@ -25,3 +25,22 @@ integer, parameter :: ATK_C_DOUBLE_T = 17
 integer, parameter :: invalid_index = -1
 
 ! splicer end module_top
+
+
+# ATK_create_fortran_allocatable_view is not in api.yaml since it is not in src/core and
+# only required for the fortran interface.
+
+! splicer begin additional_interfaces
+function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
+   bind(C,name="ATK_create_fortran_allocatable_view") &
+   result(rv)
+      use iso_c_binding
+      type(C_PTR), value, intent(IN)    :: group
+      character(kind=C_CHAR), intent(IN) :: name(*)
+      integer(C_INT), value, intent(IN) :: lname
+      type(C_PTR), value                :: addr
+      integer(C_INT), value, intent(IN) :: itype
+      integer(C_INT), value, intent(IN) :: rank
+      type(C_PTR) rv
+end function ATK_create_fortran_allocatable_view
+! splicer end additional_interfaces
