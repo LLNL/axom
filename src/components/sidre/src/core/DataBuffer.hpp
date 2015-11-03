@@ -322,7 +322,7 @@ private:
 
   // Length of data pointed to by m_data
   SidreLength m_nitems;
-  
+
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
 
@@ -333,7 +333,7 @@ private:
   int m_fortran_rank;
 
   /// Pointer to Fortran allocatable array.
-  void *m_fortran_allocatable;
+  void * m_fortran_allocatable;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

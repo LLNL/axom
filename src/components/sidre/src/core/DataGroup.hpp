@@ -868,13 +868,13 @@ private:
    * view is not created.
    */
   DataView * createFortranAllocatableView( const std::string& name,
-					   void * array, TypeID type, int rank );
+                                           void * array, TypeID type, int rank );
 
   /* extern "C" function which calls createFortranAllocatableView
    */
   friend void * ATK_create_fortran_allocatable_view(void * group,
-						    char * name, int lname,
-						    void * array, int type, int rank);
+                                                    char * name, int lname,
+                                                    void * array, int type, int rank);
 #endif
 
   /*!
