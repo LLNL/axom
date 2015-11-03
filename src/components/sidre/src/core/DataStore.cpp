@@ -71,7 +71,7 @@ DataStore::~DataStore()
  *
  *************************************************************************
  */
-DataBuffer * DataStore::getBuffer( IndexType idx )
+DataBuffer * DataStore::getBuffer( IndexType idx ) const
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 

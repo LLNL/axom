@@ -112,7 +112,7 @@ DataView * DataView::declare(const DataType& dtype)
 DataView * DataView::allocate()
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call allocate an external or opaque view");
+                  "Cannot call allocate on an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -136,7 +136,7 @@ DataView * DataView::allocate()
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Attempting to allocate an opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
@@ -160,7 +160,7 @@ DataView * DataView::allocate( TypeID type, SidreLength len)
 DataView * DataView::allocate(const Schema& schema)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Attempting to allocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -183,7 +183,7 @@ DataView * DataView::allocate(const Schema& schema)
 DataView * DataView::allocate(const DataType& dtype)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Attempting to allocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -206,7 +206,7 @@ DataView * DataView::allocate(const DataType& dtype)
 DataView * DataView::reallocate(SidreLength len)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an external or opaque view");
+                  "Attempting to reallocate an opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements in view >=0");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
@@ -232,7 +232,7 @@ DataView * DataView::reallocate(SidreLength len)
 DataView * DataView::reallocate(const Schema& schema)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an external or opaque view");
+                  "Attempting to reallocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -263,7 +263,7 @@ DataView * DataView::reallocate(const Schema& schema)
 DataView * DataView::reallocate(const DataType& dtype)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an external or opaque view");
+                  "Attempting to reallocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -283,7 +283,6 @@ DataView * DataView::reallocate(const DataType& dtype)
   }
   return this;
 }
-
 
 /*
  *************************************************************************

@@ -34,9 +34,9 @@
 //#define USE_DENSE_HASH_MAP
 //#endif
 
-//#ifndef USE_NEW_MAP_COLLECTION
-//#define USE_NEW_MAP_COLLECTION
-//#endif
+#ifndef USE_NEW_MAP_COLLECTION
+#define USE_NEW_MAP_COLLECTION
+#endif
 
 #if defined(USE_UNORDERED_MAP)
 //STL or Boost unordered_map, depending on
@@ -55,9 +55,12 @@
 #include "slic/slic.hpp"
 
 // SiDRe project headers
+#include "SidreTypes.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
-#include "SidreTypes.hpp"
+#if ATK_ENABLE_FORTRAN
+#include "sidre/SidreAllocatable.hpp"
+#endif
 
 
 
@@ -447,7 +450,7 @@ public:
                                void * opaque_ptr);
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given Sidre TypeID and length to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -463,7 +466,7 @@ public:
                                  TypeID type, SidreLength nitems );
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given Conduit DataType to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -479,7 +482,7 @@ public:
                                  const DataType& dtype );
 
   /*!
-   * \brief Create an DataView into externally-owned data with given name,
+   * \brief Create a DataView into externally-owned data with given name,
    *        using the given Conduit Schema to describe the data.
    *
    * New view will be attached to this DataGroup object.
@@ -851,6 +854,28 @@ private:
   DataGroup * detachGroup(const std::string& name);
   ///
   DataGroup * detachGroup(IndexType idx);
+
+#ifdef ATK_ENABLE_FORTRAN
+  /*!
+   * \brief Create a DataView to a Fortran allocatable.
+   *
+   * New view will be attached to this DataGroup object.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given data pointer is null, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createFortranAllocatableView( const std::string& name,
+                                           void * array, TypeID type, int rank );
+
+  /* extern "C" function which calls createFortranAllocatableView
+   */
+  friend void * ATK_create_fortran_allocatable_view(void * group,
+                                                    char * name, int lname,
+                                                    void * array, int type, int rank);
+#endif
 
   /*!
    * \brief Private methods to copy DataGroup to/from Conduit Node.

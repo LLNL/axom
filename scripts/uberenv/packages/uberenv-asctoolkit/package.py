@@ -19,6 +19,7 @@ class UberenvAsctoolkit(Package):
     depends_on("py-breathe")
     depends_on("py-pyyaml")
     depends_on("py-parsley")
+    depends_on("py-cogapp")
 
     if not "darwin" in platform.system().lower():
         depends_on("lcov")

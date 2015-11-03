@@ -134,7 +134,17 @@ DataBuffer * DataBuffer::allocate()
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if ( !m_is_data_external )
+  if(m_fortran_allocatable != ATK_NULLPTR)
+  {
+#ifdef ATK_ENABLE_FORTRAN
+    // cleanup old data
+    cleanup();
+    m_data = AllocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank, m_nitems);
+#else
+    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
+#endif
+  }
+  else if ( !m_is_data_external )
   {
     // cleanup old data
     cleanup();
@@ -242,7 +252,6 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
   return this;
 }
 
-
 /*
  *************************************************************************
  *
@@ -306,7 +315,9 @@ DataBuffer::DataBuffer( IndexType index )
   m_type(CONDUIT_EMPTY_T),
   m_nitems(0),
   m_data(ATK_NULLPTR),
-  m_is_data_external(false)
+  m_is_data_external(false),
+  m_fortran_rank(0),
+  m_fortran_allocatable(ATK_NULLPTR)
 {}
 
 
@@ -323,7 +334,9 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_type(CONDUIT_EMPTY_T),
   m_nitems(0),
   m_data(source.m_data),
-  m_is_data_external(source.m_is_data_external)
+  m_is_data_external(source.m_is_data_external),
+  m_fortran_rank(0),
+  m_fortran_allocatable(ATK_NULLPTR)
 {
 // disallow?
 }
@@ -382,10 +395,21 @@ void DataBuffer::detachView( DataView * view )
  */
 void DataBuffer::cleanup()
 {
-  // cleanup alloced data
-  if ( m_data != ATK_NULLPTR && !m_is_data_external )
+  // cleanup allocated data
+  if ( m_data != ATK_NULLPTR )
   {
-    releaseBytes(m_data);
+    if (m_fortran_allocatable != ATK_NULLPTR)
+    {
+#ifdef ATK_ENABLE_FORTRAN
+      DeallocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank);
+#else
+      SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
+#endif
+    }
+    else if (!m_is_data_external )
+    {
+      releaseBytes(m_data);
+    }
   }
 }
 
@@ -421,7 +445,29 @@ void DataBuffer::releaseBytes(void * ptr)
   }
 }
 
+#ifdef ATK_ENABLE_FORTRAN
+/*
+ *************************************************************************
+ *
+ * PRIVATE Set as Fortran allocatable buffer.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int rank)
+{
+  SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
+		   "Attempting to set buffer to Fortran allocatable given null pointer" );
+  // XXX check rank too
 
+  if ( array != ATK_NULLPTR )
+  {
+    m_fortran_allocatable = array;
+    m_fortran_rank = rank;
+    m_data = AddressAllocatable(array, type, rank);
+  }
+  return this;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
