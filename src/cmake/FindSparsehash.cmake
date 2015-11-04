@@ -22,7 +22,7 @@ find_path( SPARSEHASH_INCLUDE_DIRS type_traits.h
 
 
 include(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments and set SILO_FOUND to TRUE
+# handle the QUIETLY and REQUIRED arguments and set SPARSEHASH_FOUND to TRUE
 # if all listed variables are TRUE
 find_package_handle_standard_args(Sparsehash  DEFAULT_MSG
                                   SPARSEHASH_INCLUDE_DIRS)
