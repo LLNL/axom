@@ -7,6 +7,8 @@ import sys
 import os
 import subprocess
 import argparse
+import platform
+import shutil
 
 parser = argparse.ArgumentParser(description="Configure cmake build.")
 
@@ -69,25 +71,24 @@ args = parser.parse_args()
 ########################
 # Find CMake Cache File
 ########################
-shortsystype = ""
+platform_info = ""
 scriptsdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
 
 if args.hostconfig != "":
     cachefile = os.path.abspath(args.hostconfig)
-    shortsystype = os.path.split(cachefile)[1]
-    if shortsystype.endswith(".cmake"):
-        shortsystype = shortsystype[:-6]
+    platform_info = os.path.split(cachefile)[1]
+    if platform_info.endswith(".cmake"):
+        platform_info = platform_info[:-6]
 else:
     # Check if 'SYS_TYPE' exists, and look for cache file there.
     cachefile = scriptsdir.replace("scripts","host-configs")
     if "SYS_TYPE" in os.environ:
         systype = os.environ["SYS_TYPE"]
-        shortsystype = systype.split("_")[0]
-        cachefile = os.path.join( cachefile, shortsystype, "%s.cmake" % args.compiler ) 
+        platform_info = systype.split("_")[0]
+        cachefile = os.path.join( cachefile, platform_info, "%s.cmake" % args.compiler ) 
     else:
-        import platform
-        shortsystype = platform.node()
-        cachefile = os.path.join(cachefile, "other", "%s.cmake" % shortsystype )
+        platform_info = platform.node()
+        cachefile = os.path.join(cachefile, "other", "%s.cmake" % platform_info )
 
 assert os.path.exists( cachefile ), "Could not find cmake cache file '%s'." % cachefile
 
@@ -99,17 +100,16 @@ if args.buildpath != "":
     # use explicit build path
     buildpath = args.buildpath
 elif args.hostconfig != "":
-    # use host config name (via shortsystype) as build dir base
-    buildpath = "-".join(["build",shortsystype,args.buildtype])
+    # use host config name (via platform_info) as build dir base
+    buildpath = "-".join(["build",platform_info,args.buildtype.lower()])
 elif args.buildpath == "":
     # Generate build directory name based on platform, buildtype, compiler
-    buildpath = "-".join([shortsystype, args.compiler, args.buildtype])
+    buildpath = "-".join(["build",platform_info, args.compiler, args.buildtype.lower()])
 
 buildpath = os.path.abspath(buildpath)
 
 if os.path.exists(buildpath):
     print "Build directory '%s' already exists.  Deleting..." % buildpath
-    import shutil
     shutil.rmtree(buildpath)
 
 print "Creating build directory '%s'..." % buildpath
@@ -122,11 +122,11 @@ os.makedirs(buildpath)
 if args.installpath != "":
     installpath = os.path.abspath(args.installpath)
 elif args.hostconfig != "":
-    # use host config name (via shortsystype) as install dir base
-    installpath = "-".join(["install",shortsystype,args.buildtype])
+    # use host config name (via platform_info) as install dir base
+    installpath = "-".join(["install",platform_info,args.buildtype.lower()])
 else:
     # Generate install directory name based on platform, buildtype, compiler
-    installpath = "-".join([shortsystype, args.compiler, args.buildtype,"install"])
+    installpath = "-".join(["install",platform_info, args.compiler, args.buildtype.lower()])
 
 installpath = os.path.abspath(installpath)
 
@@ -169,7 +169,7 @@ cmakeline += " %s/../src " % scriptsdir
 ############################
 print "Changing to build directory..."
 os.chdir(buildpath)
-print "Executing cmake line: '%s'..." % cmakeline
+print "Executing cmake line: '%s'" % cmakeline
 print 
 subprocess.call(cmakeline,shell=True)
 

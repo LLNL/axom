@@ -43,9 +43,11 @@ class UberenvAsctoolkit(Package):
         dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
         c_compiler   = env["SPACK_CC"]
         cpp_compiler = env["SPACK_CXX"]
-        f_compiler   = env["SPACK_FC"]
+	f_compiler = None
+	if "SPACK_FC" in env.keys():
+	        f_compiler   = env["SPACK_FC"]
         sys_type     = spec.architecture
-        if env.has_key("SYS_TYPE"):
+        if "SYS_TYPE" in env.keys():
             sys_type = env["SYS_TYPE"]
         # conduit
         conduit_dir      = spec['conduit'].prefix
@@ -75,10 +77,12 @@ class UberenvAsctoolkit(Package):
         cfg.write("# cpp compiler used by spack\n")
         cfg.write('set(CMAKE_CXX_COMPILER "%s" CACHE PATH "")\n\n' % cpp_compiler)
         cfg.write("# fortran compiler used by spack\n")
-        if f_compiler is None:
+        if not f_compiler is None:
+            cfg.write('set(ENABLE_FORTRAN ON CACHE PATH "")\n\n')
             cfg.write('set(CMAKE_Fortran_COMPILER  "%s" CACHE PATH "")\n\n' % f_compiler)
         else:
             cfg.write("# no fortran compiler\n\n")
+            cfg.write('set(ENABLE_FORTRAN OFF CACHE PATH "")\n\n')
 
         cfg.write("# conduit from uberenv\n")
         cfg.write('set(CONDUIT_DIR "%s" CACHE PATH "")\n\n' % conduit_dir)

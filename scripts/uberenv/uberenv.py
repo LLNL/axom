@@ -101,7 +101,10 @@ def main():
     sexe("cp %s spack/etc/spack" % compilers_yaml)
     # hot-copy our packages into spack
     sexe("cp -Rf %s %s" % (pkgs,dest_spack_pkgs))
-    # use the uberenv package to trigger the right builds and build an host-config.cmake file
+    # clean up old builds of the toolkit config
+    sexe("spack/bin/spack uninstall uberenv-asctoolkit " + opts["spec"])
+    sexe("spack/bin/spack clean uberenv-asctoolkit " + opts["spec"])
+    # use the uberenv package to trigger the right builds and build a host-config.cmake file
     sexe("spack/bin/spack install uberenv-asctoolkit " + opts["spec"])
     host_cfg = "%s.cmake" % socket.gethostname()
     if os.path.isfile(host_cfg):
