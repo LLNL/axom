@@ -43,9 +43,9 @@ class UberenvAsctoolkit(Package):
         dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
         c_compiler   = env["SPACK_CC"]
         cpp_compiler = env["SPACK_CXX"]
-	f_compiler = None
-	if "SPACK_FC" in env.keys():
-	        f_compiler   = env["SPACK_FC"]
+        f_compiler = None
+        if "SPACK_FC" in env.keys():
+            f_compiler   = env["SPACK_FC"]
         sys_type     = spec.architecture
         if "SYS_TYPE" in env.keys():
             sys_type = env["SYS_TYPE"]
@@ -106,6 +106,4 @@ class UberenvAsctoolkit(Package):
 
         cfg.write("\n")
         cfg.close()
-        
-        
-        
+
