@@ -78,22 +78,6 @@ def create_allocatable_view(d):
 function datagroup_create_allocatable_view_{typename}_{nd}(group, name, value) result(rv)
     use iso_c_binding
     implicit none
-
-    interface
-       function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-          bind(C,name="ATK_create_fortran_allocatable_view") &
-          result(rv)
-       use iso_c_binding
-       type(C_PTR), value, intent(IN)    :: group
-       character(kind=C_CHAR), intent(IN) :: name(*)
-       integer(C_INT), value, intent(IN) :: lname
-       type(C_PTR), value                :: addr
-       integer(C_INT), value, intent(IN) :: itype
-       integer(C_INT), value, intent(IN) :: rank
-       type(C_PTR) rv
-       end function ATK_create_fortran_allocatable_view
-    end interface
-
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
     {f_type}, allocatable, intent(IN) :: value{shape}
