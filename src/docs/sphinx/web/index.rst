@@ -21,6 +21,16 @@ Useful links
   * `Jira <https://lc.llnl.gov/jira/secure/RapidBoard.jspa?rapidView=96&projectKey=ATK>`_
   * `Stash <https://lc.llnl.gov/stash/projects/ATK>`_
   * `Bamboo <https://lc.llnl.gov/bamboo/browse/ASC>`_
+  * `Coding Guidelines <https://lc.llnl.gov/toolkit/docs/sphinx/coding_guidlines_docs/html/index.html>`_
+
+Components
+
+  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_
+  *  Lumberjack (Scalable Message Filtering)
+  *  `SiDRe: Simulation Data Repository (formerly known as Datastore) <https://lc.llnl.gov/toolkit/docs/sphinx/sidre_docs/html/index.html>`_
+  *  SLAM (Set-theoretic Lightweight API for Meshes)
+  *  SLIC (Simple Logging Interface Code)
+  *  `Shroud (Fortran wrapping utility)  <https://lc.llnl.gov/toolkit/docs/sphinx/shroud_docs/html/index.html>`_
 
 
 .. toctree::
