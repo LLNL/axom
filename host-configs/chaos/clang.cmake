@@ -1,1 +1,1 @@
-clang_default.cmake
+clang_3_5_0.cmake

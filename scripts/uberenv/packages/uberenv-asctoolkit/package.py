@@ -115,4 +115,9 @@ class UberenvAsctoolkit(Package):
         cfg.write("##################################\n")
         cfg.write("\n")
         cfg.close()
+        mkdirp(prefix)
+        install(host_cfg_fname,prefix)
+        print "[result host-config file: %s]" % host_cfg_fname
+
+
 
