@@ -26,7 +26,6 @@ parser.add_argument("-ip",
 parser.add_argument("-c",
                     "--compiler",
                     type=str,
-                    choices=["intel","intel_16_0_109","gnu","gnu_4_9_3","clang","clang_3_5_0","xl"],
                     default="gnu",
                     help="compiler to use.")
 
