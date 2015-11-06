@@ -4,31 +4,57 @@
 #
 ###############################################################################
 
-###############################################################################
-# Select the c and c++ compiler though the standard CMake Variables.
-###############################################################################
-set(CMAKE_C_COMPILER "/usr/local/tools/ic-16.0.109/bin/icc" CACHE PATH "")
-set(CMAKE_CXX_COMPILER "/usr/local/tools/ic-16.0.109/bin/icpc" CACHE PATH "")
-set(CMAKE_FORTRAN_COMPILER "/usr/local/tools/ic-16.0.109/bin/ifort" CACHE PATH "")
+##################################
+# uberenv host-config
+##################################
+# chaos_5_x86_64_ib-intel@16.0.0
+##################################
+
+# cmake from uberenv
+# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/cmake-3.2.2-xl2rbk2uazutimxpt4dttzyba52aopnl/bin/cmake
 
 #######
-# uberenv host-config for asctoolkit
+# using intel@16.0.0 compiler spec
 #######
-# cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/cmake@3.2.2/bin/cmake
+
+# c compiler used by spack
+set(CMAKE_C_COMPILER "/usr/local/bin/icc-16.0.109" CACHE PATH "")
+
+# cpp compiler used by spack
+set(CMAKE_CXX_COMPILER "/usr/local/bin/icpc-16.0.109" CACHE PATH "")
+
+# fortran compiler used by spack
+set(ENABLE_FORTRAN ON CACHE PATH "")
+
+set(CMAKE_Fortran_COMPILER  "/usr/local/bin/ifort-16.0.109" CACHE PATH "")
+
+# conduit from uberenv
+set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/conduit-github-pnols5i47e5ho5i3xy5nvrxvb4aduszy" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/python@2.7.8/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/python-2.7.8-osaphsdmxddmc7iesqrvgvbcl5gkiza3/bin/python" CACHE PATH "")
 
 # sphinx from uberenv
-set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/python@2.7.8/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/python-2.7.8-osaphsdmxddmc7iesqrvgvbcl5gkiza3/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/uncrustify-0.61-bdb34qerzc4hyzwcsskx4sqlgszigu6i/bin/uncrustify" CACHE PATH "")
+
+# sparsehash headers from uberenv
+set(SPARSEHASH_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/sparsehash-headers-2.0.2-icz2df4kuxs25a43nuklriz5tmbzbqn3" CACHE PATH "")
 
 # boost headers from uberenv
 set(ENABLE_BOOST ON CACHE PATH "")
-set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.58.0" CACHE PATH "")
+set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/boost-headers-1.58.0-pmcsxznf2dvn6qrtbix5jiycpcc4vuqj" CACHE PATH "")
+
+# lcov and genhtml from uberenv
+set(LCOV_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/lcov-1.11-3ykfvl67oshgejtlgkgus66wn7umx32k/usr/bin/lcov" CACHE PATH "")
+
+set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-16.0.0/lcov-1.11-3ykfvl67oshgejtlgkgus66wn7umx32k/usr/bin/genhtml" CACHE PATH "")
+
+##################################
+# end uberenv host-config
+##################################
 
 
 ###############################################################################
