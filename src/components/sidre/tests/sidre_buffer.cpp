@@ -12,7 +12,6 @@
 
 #include "sidre/sidre.hpp"
 
-#include "conduit/conduit.hpp"
 
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;

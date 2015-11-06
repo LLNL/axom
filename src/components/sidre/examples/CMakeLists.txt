@@ -12,12 +12,19 @@ set(F_example_sources
     F_sidre_shocktube.f
 )
 
+
+if(APPLE)
+    set(EXTRA_LIBS "")
+elseif(UNIX)
+    set(EXTRA_LIBS rt)
+endif()
+
 #
 # Build the example sources
 #
 foreach(example_source ${example_sources})
     make_executable( EXECUTABLE_SOURCE ${example_source}
-        DEPENDS_ON sidre conduit slic rt)
+        DEPENDS_ON sidre conduit slic ${EXTRA_LIBS})
 endforeach()
 
 if(ENABLE_FORTRAN)
@@ -26,7 +33,7 @@ if(ENABLE_FORTRAN)
         make_executable(
             EXECUTABLE_NAME   ${exe_name}
             EXECUTABLE_SOURCE ${example_source}
-            DEPENDS_ON sidre conduit slic rt shroudrt)
+            DEPENDS_ON sidre conduit slic shroudrt ${EXTRA_LIBS})
     endforeach()
     set_target_properties(${exe_name} PROPERTIES LINKER_LANGUAGE Fortran)
 #   set_target_properties(${exe_name} PROPERTIES Fortran_FORMAT "FREE")

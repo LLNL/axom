@@ -20,16 +20,22 @@
 #define SIDRETYPES_HPP_
 
 // Other CS Toolkit headers
-#include "conduit/conduit.hpp"
+#include "conduit.hpp"
 
 namespace asctoolkit
 {
 namespace sidre
 {
 
+/*!
+ * \brief DataType is a general Conduit descriptor.
+ */
 typedef conduit::DataType DataType;
-typedef conduit_datatype_type_id TypeID;
 
+/*!
+ * \brief TypeID is used to identify the type of a buffer (ATK_INT8_T, etc).
+ */
+typedef int TypeID;
 
 /*!
  * \brief IndexType is used for any labeling of a sidre object by an

@@ -15,7 +15,13 @@
 #ifndef RAJA_Timer_HXX
 #define RAJA_Timer_HXX
 
+// use clock on osx, gettime isn't available
+
+#if defined(__APPLE__)
+#define RAJA_USE_CLOCK
+#else
 #define RAJA_USE_GETTIME
+#endif
 
 #if defined(RAJA_USE_CYCLE)
 #include "./cycle.h"
