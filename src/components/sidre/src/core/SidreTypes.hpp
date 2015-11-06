@@ -16,10 +16,15 @@ namespace asctoolkit
 namespace sidre
 {
 
+/*!
+ * \brief DataType is a general Conduit descriptor.
+ */
 typedef conduit::DataType DataType;
-// Changed from Conduit Enum, since NATIVE types aren't part of the enum. 
-typedef conduit_int64 TypeID;
 
+/*!
+ * \brief TypeID is used to identify the type of a buffer (ATK_INT8_T, etc).
+ */
+typedef int TypeID;
 
 /*!
  * \brief IndexType is used for any labeling of a sidre object by an
