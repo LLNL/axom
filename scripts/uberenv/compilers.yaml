@@ -15,6 +15,11 @@ compilers:
             cxx: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/bin/clang++
             f77: None
             fc:  None     
+        intel@15.0.0:
+            cc:  /usr/local/tools/ic-15.0.187/bin/icc
+            cxx: /usr/local/tools/ic-15.0.187/bin/icpc
+            f77: /usr/local/tools/ic-15.0.187/bin/ifort
+            fc:  /usr/local/tools/ic-15.0.187/bin/ifort
         intel@16.0.0:
             cc: /usr/local/tools/ic-16.0.109/bin/icc
             cxx: /usr/local/tools/ic-16.0.109/bin/icpc
@@ -36,11 +41,10 @@ compilers:
              cxx: /usr/local/bin/bgclang++
              f77: None
              fc:  None
-     macosx_10.9_x86_64:
+    darwin-x86_64:
          clang@3.4svn:
              cc:  /usr/bin/clang
              cxx: /usr/bin/clang++
-             # assumes llnl osx install of fortran
              f77: /sw/bin/gfortran
              fc:  /sw/bin/gfortran
 

@@ -92,7 +92,6 @@ class UberenvAsctoolkit(Package):
         
         cfg.write("# sphinx from uberenv\n")
         cfg.write('set(SPHINX_EXECUTABLE "%s" CACHE PATH "")\n\n' % sphinx_build_exe)
-        
 
         cfg.write("# uncrustify from uberenv\n")
         cfg.write('set(UNCRUSTIFY_EXECUTABLE "%s" CACHE PATH "")\n\n' % uncrustify_exe)
@@ -104,6 +103,16 @@ class UberenvAsctoolkit(Package):
         cfg.write('set(ENABLE_BOOST ON CACHE PATH "")\n')
         cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
 
+        cfg.write("# lcov and genhtml from uberenv\n")
+        if "lcov" in spec:
+            cfg.write('set(LCOV_PATH "%s/usr/bin/lcov" CACHE PATH "")\n\n' % spec['lcov'].prefix)
+            cfg.write('set(GENHTML_PATH "%s/usr/bin/genhtml" CACHE PATH "")\n\n' % spec['lcov'].prefix)
+        else:
+            cfg.write("# lcov and genhtml not build by uberenv\n\n")
+
+        cfg.write("##################################\n")
+        cfg.write("# end uberenv host-config\n")
+        cfg.write("##################################\n")
         cfg.write("\n")
         cfg.close()
 

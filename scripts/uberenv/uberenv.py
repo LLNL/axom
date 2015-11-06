@@ -106,10 +106,6 @@ def main():
     sexe("spack/bin/spack clean uberenv-asctoolkit " + opts["spec"])
     # use the uberenv package to trigger the right builds and build a host-config.cmake file
     sexe("spack/bin/spack install uberenv-asctoolkit " + opts["spec"])
-    host_cfg = "%s.cmake" % socket.gethostname()
-    if os.path.isfile(host_cfg):
-        print "[result host-config file: %s]" % os.path.abspath(host_cfg)
-
 
 if __name__ == "__main__":
     main()
