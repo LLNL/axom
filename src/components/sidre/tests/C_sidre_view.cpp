@@ -389,8 +389,8 @@ TEST(C_sidre_view,int_array_realloc)
   EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5);
 
 
-  ATK_dataview_reallocate(a1, ATK_C_FLOAT_T, 10);
-  ATK_dataview_reallocate(a2, ATK_C_INT_T, 15);
+  ATK_dataview_reallocate(a1, 10);
+  ATK_dataview_reallocate(a2, 15);
 
   a1_ptr = (float *) ATK_dataview_get_data_pointer(a1);
   a2_ptr = (int *) ATK_dataview_get_data_pointer(a2);

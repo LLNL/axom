@@ -732,12 +732,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog=appname)
     parser.add_argument('--version', action='version', version=appver)
-    parser.add_argument('--indir', default='',
-                        help='directory for input source files')
     parser.add_argument('--outdir', default='',
                         help='directory for output files')
     parser.add_argument('--logdir', default='',
                         help='directory for log files')
+    parser.add_argument('--path', default=[], action='append',
+                        help='colon delimited paths to search for splicer files, may be supplied multiple times to create path')
     parser.add_argument('filename', nargs='*',
                         help='Input file to process')
 
@@ -746,12 +746,18 @@ if __name__ == '__main__':
     # check command line options
     if len(args.filename) == 0:
         raise SystemExit("Must give at least one input file")
-    if args.indir and not os.path.isdir(args.indir):
-        raise SystemExit("indir %s does not exist" % args.indir)
     if args.outdir and not os.path.isdir(args.outdir):
         raise SystemExit("outdir %s does not exist" % args.outdir)
     if args.logdir and not os.path.isdir(args.logdir):
         raise SystemExit("logdir %s does not exist" % args.logdir)
+
+    # append all paths together
+    if args.path:
+        search_path = []
+        for pth in args.path:
+            search_path.extend(pth.split(':'))
+    else:
+        search_path = ['.']
 
     basename = os.path.splitext(os.path.basename(args.filename[0]))[0]
     logpath = os.path.join(args.logdir, basename + '.log')
@@ -760,7 +766,6 @@ if __name__ == '__main__':
     # pass around a configuration object
     config = Config()
     config.binary_dir = args.outdir
-    config.source_dir = args.indir
     config.log = log
 
     # accumulated input
@@ -779,7 +784,7 @@ if __name__ == '__main__':
         elif ext == '.json':
             raise NotImplemented("Can not deal with json input for now")
         else:
-            # process splicer file on command line
+            # process splicer file on command line, search path is not used
             splicer.get_splicer_based_on_suffix(filename, splicers)
 
 #    print(all)
@@ -792,9 +797,18 @@ if __name__ == '__main__':
     if 'splicer' in all:
         # read splicer files defined in input yaml file
         for suffix, names in all['splicer'].items():
+            # suffix = 'c', 'f', 'py'
             subsplicer = splicers.setdefault(suffix, {})
             for name in names:
-                fullname = os.path.join(config.source_dir, name)
+                for pth in search_path:
+                    fullname = os.path.join(pth, name)
+#                    log.write("Try splicer %s\n" % fullname)
+                    if os.path.isfile(fullname):
+                        break
+                else:
+                    fullname = None
+                if not fullname:
+                    raise RuntimeError("File not found: %s" % name)
                 log.write("Read splicer %s\n" % name)
                 splicer.get_splicers(fullname, subsplicer)
 

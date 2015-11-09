@@ -52,6 +52,10 @@ contains
     call dbuff%declare(ATK_C_INT_T, 10_8)
     call dbuff%allocate()
 
+!    call assert_equals(dbuff%get_type_id(), ATK_C_INT_T) ! XXX NATIVE TYPE
+    call assert_true(dbuff%get_number_of_elements() == 10)
+!    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
+
     data_ptr = dbuff%get_data()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
@@ -60,9 +64,6 @@ contains
     enddo
 
     call dbuff%print()
-
-!    call assert_equals(dbuff%getNode().schema().total_bytes(), &
-!         dbuff%getSchema().total_bytes())
 
     call ds%print()
     call ds%delete()
@@ -81,6 +82,11 @@ contains
     dbuff = ds%create_buffer()
 
     call dbuff%allocate(ATK_C_INT_T, 10_8)
+
+!    call assert_equals(dbuff%get_type_id(), ATK_C_INT_T) ! XXX NATIVE TYPE
+    call assert_true(dbuff%get_number_of_elements() == 10)
+!    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
+
     data_ptr = dbuff%get_data()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
@@ -89,9 +95,6 @@ contains
     enddo
 
     call dbuff%print()
-
-!  call assert_equals(dbuff%getNode().schema().total_bytes(),
-!            dbuff%getSchema().total_bytes())
 
     call ds%print()
     call ds%delete()
@@ -112,7 +115,9 @@ contains
 
     call dbuff%allocate(ATK_C_LONG_T, 5_8)
 
-!    call assert_equals(dbuff%getNode().schema().total_bytes(), sizeof(long)*5)
+!    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
+    call assert_true(dbuff%get_number_of_elements() == 5)
+!    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     data_ptr = dbuff%get_data()
     call c_f_pointer(data_ptr, data, [ 5 ])
@@ -121,7 +126,11 @@ contains
 
     call dbuff%print()
   
-    call dbuff%reallocate(ATK_C_LONG_T, 10_8)
+    call dbuff%reallocate(10)
+
+!    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
+    call assert_true(dbuff%get_number_of_elements() == 10)
+!    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     ! data buffer changes
     data_ptr = dbuff%get_data()
@@ -134,8 +143,6 @@ contains
     do i = 6, 10
        data(i) = 10
     enddo
-
-!  call assert_equals(dbuff%getNode().schema().total_bytes(), sizeof(long)*10)
 
     call dbuff%print()
 

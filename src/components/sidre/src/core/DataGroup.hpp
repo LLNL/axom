@@ -34,12 +34,12 @@
 //#define USE_DENSE_HASH_MAP
 //#endif
 
-//#ifndef USE_NEW_MAP_COLLECTION
-//#define USE_NEW_MAP_COLLECTION
-//#endif
+#ifndef USE_NEW_MAP_COLLECTION
+#define USE_NEW_MAP_COLLECTION
+#endif
 
 #if defined(USE_UNORDERED_MAP)
-//STL or Boost unordered_map, depending on 
+//STL or Boost unordered_map, depending on
 #if defined(USE_CXX11)
 #include <unordered_map>
 #else
@@ -463,7 +463,7 @@ public:
    */
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
-                                 TypeID type, SidreLength len );
+                                 TypeID type, SidreLength nitems );
 
   /*!
    * \brief Create a DataView into externally-owned data with given name,
@@ -868,13 +868,13 @@ private:
    * view is not created.
    */
   DataView * createFortranAllocatableView( const std::string& name,
-					   void * array, TypeID type, int rank );
+                                           void * array, TypeID type, int rank );
 
   /* extern "C" function which calls createFortranAllocatableView
    */
   friend void * ATK_create_fortran_allocatable_view(void * group,
-						    char * name, int lname,
-						    void * array, int type, int rank);
+                                                    char * name, int lname,
+                                                    void * array, int type, int rank);
 #endif
 
   /*!

@@ -301,7 +301,7 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
  */
 DataView * DataGroup::createExternalView( const std::string& name,
                                           void * external_data,
-					  TypeID type, SidreLength len )
+					  TypeID type, SidreLength nitems )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
@@ -315,10 +315,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
+    dtype.set_number_of_elements(nitems);
 
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(dtype);
+    buff->declare(type, nitems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -351,8 +351,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   }
   else
   {
+    TypeID type = static_cast<TypeID>(dtype.id());
+    SidreLength nitems = dtype.number_of_elements();
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(dtype);
+    buff->declare(type, nitems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -385,8 +387,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   }
   else
   {
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    SidreLength nitems = schema.dtype().number_of_elements();
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(schema);
+    buff->declare(type, nitems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -797,10 +801,7 @@ void DataGroup::print(std::ostream& os) const
 {
   Node n;
   info(n);
-  /// TODO: after conduit update, use new ostream variant of to_json.
-  std::ostringstream oss;
-  n.json_to_stream(oss);
-  os << oss.str();
+  n.to_json_stream(os);
 }
 
 /*
@@ -1079,16 +1080,17 @@ DataView * DataGroup::createFortranAllocatableView( const std::string& name,
   }
   else
   {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(SizeAllocatable(array, type, rank));
 
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(dtype);
-    //    buff->setExternalData(external_data);
+    SidreLength nitems = SizeAllocatable(array, type, rank);
+    buff->declare(type, nitems);
     buff->setFortranAllocatable(array, type, rank);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
+
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(nitems);
     view->apply(dtype);
 
     return attachView(view);
@@ -1115,12 +1117,14 @@ void DataGroup::copyToNode(Node& n) const
     IndexType buffer_id = buffer_ids[i];
     DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
     buff["id"].set(buffer_id);
-    buff["schema"].set(ds_buff->getSchema().to_json());
+    DataType dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
+    dtype.set_number_of_elements(ds_buff->getNumberOfElements());
+    buff["schema"].set(dtype.to_json());
 
     // only set our data if the buffer was initialized
     if (ds_buff->getData() != NULL )
     {
-      buff["data"].set_external(ds_buff->getNode());
+      buff["data"].set_external(dtype, ds_buff->getData());
     }
   }
 
@@ -1214,12 +1218,16 @@ void DataGroup::copyFromNode(Node& n,
         id_map[buffer_id] = buffer_ds_id;
         // setup the new data store buffer
         Schema schema(n_buff["schema"].as_string());
-        ds_buff->declare(schema);
+	TypeID type = static_cast<TypeID>(schema.dtype().id());
+	SidreLength nitems = schema.dtype().number_of_elements();
+        ds_buff->declare(type, nitems);
         if (n_buff.has_path("data"))
         {
           ds_buff->allocate();
           // copy the data from the node
-          ds_buff->getNode().update(n_buff["data"]);
+	  void * data = n_buff["data"].element_ptr(0);
+	  size_t nbytes = n_buff["data"].total_bytes();
+	  ds_buff->update(data, nbytes);
         }
       }
     }

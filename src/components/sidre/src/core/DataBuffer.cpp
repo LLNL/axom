@@ -43,6 +43,47 @@ namespace sidre
 /*
  *************************************************************************
  *
+ * Return number of bytes associated with a single item of DataBuffer's type.
+ *
+ *************************************************************************
+ */
+size_t DataBuffer::getBytesPerItem() const
+{
+  static size_t bytes_per_item[] = {
+    0, // CONDUIT_EMPTY_T
+    0, // CONDUIT_OBJECT_T
+    0, // CONDUIT_LIST_T
+    1, // CONDUIT_INT8_T
+    2, // CONDUIT_INT16_T
+    4, // CONDUIT_INT32_T
+    8, // CONDUIT_INT64_T
+    1, // CONDUIT_UINT8_T
+    2, // CONDUIT_UINT16_T
+    4, // CONDUIT_UINT32_T
+    8, // CONDUIT_UINT64_T
+    4, // CONDUIT_FLOAT32_T
+    8, // CONDUIT_FLOAT64_T
+    1, // CONDUIT_CHAR8_STR_T
+  };
+
+  return bytes_per_item[m_type];
+}
+
+/*
+ *************************************************************************
+ *
+ * Return total number of bytes associated with this DataBuffer object.
+ *
+ *************************************************************************
+ */
+size_t DataBuffer::getTotalBytes() const
+{
+  return getBytesPerItem() * m_nitems;
+}
+
+/*
+ *************************************************************************
+ *
  * Return non-cost pointer to view with given index or null ptr.
  *
  *************************************************************************
@@ -75,39 +116,11 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
 
   if ( len >= 0 )
   {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
-    m_schema.set(dtype);
+    m_type = type;
+    m_nitems = len;
   }
   return this;
 }
-
-/*
- *************************************************************************
- *
- * Declare buffer to OWN data described as a Conduit schema.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::declare(const Schema& schema)
-{
-  m_schema.set(schema);
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare buffer to OWN data described as a Conduit data type.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::declare(const DataType& dtype)
-{
-  m_schema.set(dtype);
-  return this;
-}
-
 
 /*
  *************************************************************************
@@ -121,24 +134,22 @@ DataBuffer * DataBuffer::allocate()
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if(m_fortran_allocatable != ATK_NULLPTR)
+  if (m_fortran_allocatable != ATK_NULLPTR)
   {
 #ifdef ATK_ENABLE_FORTRAN
     // cleanup old data
     cleanup();
-    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-    SidreLength nitems = m_schema.dtype().number_of_elements();
-    m_data = AllocateAllocatable(m_fortran_allocatable, type, m_fortran_rank, nitems);
-    m_node.set_external(m_schema,m_data);
+    m_data = AllocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank, m_nitems);
+#else
+    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
   }
   else if ( !m_is_data_external )
   {
     // cleanup old data
     cleanup();
-    std::size_t alloc_size = m_schema.total_bytes();
+    std::size_t alloc_size = getTotalBytes();
     m_data = allocateBytes(alloc_size);
-    m_node.set_external(m_schema,m_data);
   }
 
   return this;
@@ -169,109 +180,41 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Declare and allocate data described using a Conduit schema.
+ * Reallocate data using a length.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to allocate buffer holding external data");
-
-  if ( !m_is_data_external )
-  {
-    declare(schema);
-    allocate();
-  }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare and allocate data described using a Conduit pre-defined data type.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::allocate(const DataType& dtype)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to allocate buffer holding external data");
-
-  if ( !m_is_data_external )
-  {
-    declare(dtype);
-    allocate();
-  }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Reallocate data using a Sidre type and length.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::reallocate( TypeID type, SidreLength len)
+DataBuffer * DataBuffer::reallocate( SidreLength len)
 {
   SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
-  if ( len >= 0 && !m_is_data_external )
+  if (m_fortran_allocatable != ATK_NULLPTR)
   {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
-
-    Schema s(dtype);
-    reallocate(s);
+#ifdef ATK_ENABLE_FORTRAN
+    SLIC_ERROR("TODO: Fortran reallocate");
+#else
+    SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
+#endif
   }
-
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Reallocate data using a Conduit schema.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::reallocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to re-allocate buffer holding external data");
-
-  if ( !m_is_data_external )
+  else if ( !m_is_data_external )
   {
-
     //  make sure realloc actually makes sense
     SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
                    "Attempting to reallocate an unallocated buffer");
 
-    std::size_t realloc_size = schema.total_bytes();
+    std::size_t realloc_size = len * getBytesPerItem();
     void * realloc_data = allocateBytes(realloc_size);
 
-    // use conduit to get data from old to new schema.
-    Node n;
-    n.set_external(schema, realloc_data);
-    // use conduit update, need more error checking.
-    n.update(m_node);
+    memcpy(realloc_data, m_data, std::min(getTotalBytes(), realloc_size));
 
     // cleanup old data
     cleanup();
 
-    // set the buffer to use the new schema
-    m_schema = schema;
-
     // let the buffer hold the new data
     m_data = realloc_data;
-
-    // update the buffer's Conduit Node
-    m_node.set_external(m_schema, m_data);
+    m_nitems = len;
   }
 
   return this;
@@ -280,19 +223,18 @@ DataBuffer * DataBuffer::reallocate(const Schema& schema)
 /*
  *************************************************************************
  *
- * Reallocate data using a basic Conduit data type.
+ * Update contents of buffer from src and which is nbytes long.
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::reallocate(const DataType& dtype)
+DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
 {
-  SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to re-allocate buffer holding external data");
+  size_t buff_nbytes = getTotalBytes();
+  SLIC_ASSERT_MSG(nbytes <= buff_nbytes, "Must allocate number of elements >=0");
 
-  if ( !m_is_data_external )
+  if ( src != ATK_NULLPTR && nbytes <= buff_nbytes)
   {
-    Schema s(dtype);
-    reallocate(s);
+    memcpy(m_data, src, nbytes);
   }
 
   return this;
@@ -313,40 +255,10 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
   if ( external_data != ATK_NULLPTR )
   {
     m_data = external_data;
-    m_node.set_external(m_schema, m_data);
     m_is_data_external = true;
   }
   return this;
 }
-
-/*
- *************************************************************************
- *
- * Set as Fortran allocatable buffer.
- *
- *************************************************************************
- */
-DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int rank)
-{
-  SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
-		   "Attempting to set buffer to Fortran allocatable given null pointer" );
-  // XXX check rank too
-
-  if ( array != ATK_NULLPTR )
-  {
-#ifdef ATK_ENABLE_FORTRAN
-    m_fortran_allocatable = array;
-    m_fortran_rank = rank;
-    m_data = AddressAllocatable(array, type, rank);
-    m_node.set_external(m_schema, m_data);
-#else
-    SLIC_ASSERT_MSG( true ,
-		     "Fortran support is not compiled into this version of Sidre" );
-#endif
-  }
-  return this;
-}
-
 
 /*
  *************************************************************************
@@ -357,10 +269,17 @@ DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int ra
  */
 void DataBuffer::info(Node &n) const
 {
+  // Create a conduit node
+  DataType dtype = conduit::DataType::default_dtype(m_type);
+  dtype.set_number_of_elements(m_nitems);
+  Schema schema(dtype);
+  Node node;
+  node.set_external(schema, m_data);
+
   n["index"].set(m_index);
   n["is_data_external"].set(m_is_data_external);
-  n["schema"].set(m_schema.to_json());
-  n["node"].set(m_node.to_json());
+  n["schema"].set(schema.to_json());
+  n["node"].set(node.to_json());
 }
 
 /*
@@ -386,10 +305,7 @@ void DataBuffer::print(std::ostream& os) const
 {
   Node n;
   info(n);
-  /// TODO: after conduit update, use new ostream variant of to_json.
-  std::ostringstream oss;
-  n.json_to_stream(oss);
-  os << oss.str();
+  n.to_json_stream(os);
 }
 
 
@@ -404,9 +320,9 @@ void DataBuffer::print(std::ostream& os) const
 DataBuffer::DataBuffer( IndexType index )
   : m_index(index),
   m_views(),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(0),
   m_data(ATK_NULLPTR),
-  m_node(),
-  m_schema(),
   m_is_data_external(false),
   m_fortran_rank(0),
   m_fortran_allocatable(ATK_NULLPTR)
@@ -423,9 +339,9 @@ DataBuffer::DataBuffer( IndexType index )
 DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
+  m_type(CONDUIT_EMPTY_T),
+  m_nitems(0),
   m_data(source.m_data),
-  m_node(source.m_node),
-  m_schema(source.m_schema),
   m_is_data_external(source.m_is_data_external),
   m_fortran_rank(0),
   m_fortran_allocatable(ATK_NULLPTR)
@@ -493,11 +409,9 @@ void DataBuffer::cleanup()
     if (m_fortran_allocatable != ATK_NULLPTR)
     {
 #ifdef ATK_ENABLE_FORTRAN
-      TypeID type = static_cast<TypeID>(m_node.dtype().id());
-      DeallocateAllocatable(m_fortran_allocatable, type, m_fortran_rank);
+      DeallocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank);
 #else
-      SLIC_ASSERT_MSG( true ,
-		       "Fortran support is not compiled into this version of Sidre" );
+      SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
     }
     else if (!m_is_data_external )
@@ -539,7 +453,29 @@ void DataBuffer::releaseBytes(void * ptr)
   }
 }
 
+#ifdef ATK_ENABLE_FORTRAN
+/*
+ *************************************************************************
+ *
+ * PRIVATE Set Fortran allocatable buffer.
+ *
+ *************************************************************************
+ */
+DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int rank)
+{
+  SLIC_ASSERT_MSG( array != ATK_NULLPTR, 
+		   "Attempting to set buffer to Fortran allocatable given null pointer" );
+  // XXX check rank too
 
+  if ( array != ATK_NULLPTR )
+  {
+    m_fortran_allocatable = array;
+    m_fortran_rank = rank;
+    m_data = AddressAllocatable(array, type, rank);
+  }
+  return this;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

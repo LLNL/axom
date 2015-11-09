@@ -420,8 +420,8 @@ contains
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
 
 
-    call a1%reallocate(ATK_C_FLOAT_T, 10)
-    call a2%reallocate(ATK_C_INT_T, 15)
+    call a1%reallocate(10)
+    call a2%reallocate(15)
 
     call a1%get_value(a1_data)
     call a2%get_value(a2_data)

@@ -120,78 +120,30 @@ public:
   }
 
   /*!
+   * \brief Return type of data for this DataBuffer object.
+   */
+  TypeID getTypeID() const
+  {
+    return m_type;
+  }
+
+  /*!
+   * \brief Return number of bytes associated with a single item of DataBuffer's type.
+   */
+  size_t getBytesPerItem() const;
+
+  /*!
+   * \brief Return total number of elements allocated by this DataBuffer object.
+   */
+  size_t getNumberOfElements() const
+  {
+    return m_nitems;
+  }
+
+  /*!
    * \brief Return total number of bytes associated with this DataBuffer object.
    */
-  size_t getTotalBytes() const
-  {
-    return m_schema.total_bytes();
-  }
-
-  /*!
-   * \brief Return non-const reference to Conduit node holding data.
-   */
-  Node& getNode()
-  {
-    return m_node;
-  }
-
-  /*!
-   * \brief Return const reference to Conduit node holding data.
-   */
-  const Node& getNode() const
-  {
-    return m_node;
-  }
-
-  /*!
-   * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
-   * version does require enough type information for the compiler to know what to cast the Value class to.
-   * Example:
-   * int* myptr = getValue();
-   * int myint = getValue();
-   */
-  Node::Value getValue()
-  {
-    return m_node.value();
-  }
-
-  /*!
-   * \brief Set value in conduit node.
-   */
-  template<typename ValueType>
-  void setValue(ValueType value)
-  {
-    m_node.set(value);
-  }
-
-
-  /*!
-   * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
-   * were not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
-   * function template type must be explicitly provided on call.
-   *
-   * Example:
-   * // will not work, compiler does not know what type to cast to for above getValue function.
-   * assert( getValue() == 10 );
-   * // use the templated version instead
-   * assert (getValue<int>() == 10);
-   */
-  template<typename ValueType>
-  ValueType getValue()
-  {
-    ValueType valueptr = m_node.value();
-    return valueptr;
-  }
-
-
-
-  /*!
-   * \brief Return const reference to Conduit schema describing data.
-   */
-  const Schema& getSchema() const
-  {
-    return m_schema;
-  }
+  size_t getTotalBytes() const;
 
   /*!
    * \brief Return true if DataBuffer has an associated DataView with given
@@ -228,27 +180,6 @@ public:
   DataBuffer * declare(TypeID type, SidreLength len);
 
   /*!
-   * \brief Declare a buffer with data described as a Conduit schema.
-   *
-   * To use the buffer, the data must be allocated by calling allocate()
-   * or set to external data by calling setExternalData().
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declare(const Schema& schema);
-
-  /*!
-   * \brief Declare a buffer with data described as a pre-defined
-   *        Conduit data type.
-   *
-   * To use the buffer, the data must be allocated by calling allocate()
-   * or set to external data by calling setExternalData().
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * declare(const DataType& dtype);
-
-  /*!
    * \brief Allocate data previously declared using a declare() method.
    *
    * It is the responsibility of the caller to make sure that the buffer
@@ -277,34 +208,7 @@ public:
   DataBuffer * allocate(TypeID type, SidreLength len);
 
   /*!
-   * \brief Declare and allocate data described as a Conduit schema.
-   *
-   * This is equivalent to calling declare(schema), then allocate().
-   * on this DataBuffer object.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * allocate(const Schema &schema);
-
-  /*!
-   * \brief Declare and allocate data described as a pre-defined
-   *        Conduit data type.
-   *
-   * This is equivalent to calling declare(dtype), then allocate().
-   * on this DataBuffer object.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * allocate(const DataType& dtype);
-
-  /*!
-   * \brief Reallocate data described with Sidre type and length.
+   * \brief Reallocate data to len items.
    *
    *        Equivalent to calling declare(type), then allocate().
    *
@@ -313,28 +217,19 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(TypeID type, SidreLength len);
+  DataBuffer * reallocate(SidreLength len);
 
   /*!
-   * \brief Reallocate data described as a Conduit schema.
+   * \brief Update contents of buffer memory.
    *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
+   * This will copy nbytes of data into the buffer.  nbytes must be greater
+   * than 0 and less than getTotalBytes().
+   *
+   * If given pointer is null, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(const Schema& schema);
-
-  /*!
-   * \brief Reallocate data described as a pre-defined
-   *        Conduit data type.
-   *
-   * If buffer is already set to externally-owned data, this method
-   * does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * reallocate(const DataType& dtype);
+  DataBuffer * update(const void * src, size_t nbytes);
 
   /*!
    * \brief Set buffer to external data.
@@ -349,16 +244,6 @@ public:
    * \return pointer to this DataBuffer object.
    */
   DataBuffer * setExternalData(void * external_data);
-
-  /*!
-   * \brief Set as Fortran allocatable.
-   *
-   * If given pointer is null, this method does nothing.
-   *
-   * \return pointer to this DataBuffer object.
-   */
-  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
-
 
 //@}
 
@@ -415,6 +300,16 @@ private:
   ///
   void  releaseBytes(void * );
 
+#ifdef ATK_ENABLE_FORTRAN
+  /*!
+   * \brief Set as Fortran allocatable.
+   *
+   * If given pointer is null, this method does nothing.
+   *
+   * \return pointer to this DataBuffer object.
+   */
+  DataBuffer * setFortranAllocatable(void * array, TypeID type, int rank);
+#endif
 
   /// Index Identifier - unique within a dataStore.
   IndexType m_index;
@@ -422,14 +317,14 @@ private:
   /// Container of DataViews attached to this buffer.
   std::vector<DataView *> m_views;
 
+  // Type of data pointed to by m_data
+  TypeID m_type;
+
+  // Length of data pointed to by m_data
+  SidreLength m_nitems;
+
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
-
-  /// Conduit Node that holds buffer data.
-  Node m_node;
-
-  /// Conduit Schema that describes buffer data.
-  Schema m_schema;
 
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
@@ -438,7 +333,7 @@ private:
   int m_fortran_rank;
 
   /// Pointer to Fortran allocatable array.
-  void *m_fortran_allocatable;
+  void * m_fortran_allocatable;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

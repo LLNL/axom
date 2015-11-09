@@ -221,6 +221,8 @@ module sidre_mod
         procedure :: set_external_data => databuffer_set_external_data
         procedure :: is_external => databuffer_is_external
         procedure :: get_data => databuffer_get_data
+        procedure :: get_type_id => databuffer_get_type_id
+        procedure :: get_number_of_elements => databuffer_get_number_of_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
         procedure :: print => databuffer_print
         generic :: allocate => &
@@ -839,12 +841,11 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_allocate_from_type
         
-        subroutine atk_databuffer_reallocate(self, type, len) &
+        subroutine atk_databuffer_reallocate(self, len) &
                 bind(C, name="ATK_databuffer_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_databuffer_reallocate
         
@@ -871,6 +872,22 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
         end function atk_databuffer_get_data
+        
+        pure function atk_databuffer_get_type_id(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_type_id")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function atk_databuffer_get_type_id
+        
+        pure function atk_databuffer_get_number_of_elements(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_number_of_elements")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_SIZE_T) :: rv
+        end function atk_databuffer_get_number_of_elements
         
         pure function atk_databuffer_get_total_bytes(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_total_bytes")
@@ -915,12 +932,11 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_allocate_from_type
         
-        subroutine atk_dataview_reallocate(self, type, len) &
+        subroutine atk_dataview_reallocate(self, len) &
                 bind(C, name="ATK_dataview_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
         end subroutine atk_dataview_reallocate
         
@@ -1087,6 +1103,18 @@ module sidre_mod
         end function atk_is_name_valid
         
         ! splicer begin additional_interfaces
+        function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
+           bind(C,name="ATK_create_fortran_allocatable_view") &
+           result(rv)
+              use iso_c_binding
+              type(C_PTR), value, intent(IN)    :: group
+              character(kind=C_CHAR), intent(IN) :: name(*)
+              integer(C_INT), value, intent(IN) :: lname
+              type(C_PTR), value                :: addr
+              integer(C_INT), value, intent(IN) :: itype
+              integer(C_INT), value, intent(IN) :: rank
+              type(C_PTR) rv
+        end function ATK_create_fortran_allocatable_view
         ! splicer end additional_interfaces
     end interface
 
@@ -1601,22 +1629,6 @@ contains
     function datagroup_create_allocatable_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         integer(C_INT), allocatable, intent(IN) :: value
@@ -1635,22 +1647,6 @@ contains
     function datagroup_create_allocatable_view_int_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         integer(C_INT), allocatable, intent(IN) :: value(:)
@@ -1669,22 +1665,6 @@ contains
     function datagroup_create_allocatable_view_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         integer(C_LONG), allocatable, intent(IN) :: value
@@ -1703,22 +1683,6 @@ contains
     function datagroup_create_allocatable_view_long_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         integer(C_LONG), allocatable, intent(IN) :: value(:)
@@ -1737,22 +1701,6 @@ contains
     function datagroup_create_allocatable_view_float_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         real(C_FLOAT), allocatable, intent(IN) :: value
@@ -1771,22 +1719,6 @@ contains
     function datagroup_create_allocatable_view_float_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         real(C_FLOAT), allocatable, intent(IN) :: value(:)
@@ -1805,22 +1737,6 @@ contains
     function datagroup_create_allocatable_view_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         real(C_DOUBLE), allocatable, intent(IN) :: value
@@ -1839,22 +1755,6 @@ contains
     function datagroup_create_allocatable_view_double_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-              bind(C,name="ATK_create_fortran_allocatable_view") &
-              result(rv)
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)    :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN) :: lname
-           type(C_PTR), value                :: addr
-           integer(C_INT), value, intent(IN) :: itype
-           integer(C_INT), value, intent(IN) :: rank
-           type(C_PTR) rv
-           end function ATK_create_fortran_allocatable_view
-        end interface
-    
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
         real(C_DOUBLE), allocatable, intent(IN) :: value(:)
@@ -2227,30 +2127,26 @@ contains
         ! splicer end class.DataBuffer.method.allocate_long
     end subroutine databuffer_allocate_long
     
-    subroutine databuffer_reallocate_int(obj, type, len)
+    subroutine databuffer_reallocate_int(obj, len)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: type
         integer(C_INT) :: len
         ! splicer begin class.DataBuffer.method.reallocate_int
         call atk_databuffer_reallocate(  &
             obj%voidptr,  &
-            type,  &
             int(len, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_int
     end subroutine databuffer_reallocate_int
     
-    subroutine databuffer_reallocate_long(obj, type, len)
+    subroutine databuffer_reallocate_long(obj, len)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataBuffer.method.reallocate_long
         call atk_databuffer_reallocate(  &
             obj%voidptr,  &
-            type,  &
             int(len, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_long
     end subroutine databuffer_reallocate_long
@@ -2286,6 +2182,26 @@ contains
         rv = atk_databuffer_get_data(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_data
     end function databuffer_get_data
+    
+    function databuffer_get_type_id(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataBuffer.method.get_type_id
+        rv = atk_databuffer_get_type_id(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_type_id
+    end function databuffer_get_type_id
+    
+    function databuffer_get_number_of_elements(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(databuffer) :: obj
+        integer(C_SIZE_T) :: rv
+        ! splicer begin class.DataBuffer.method.get_number_of_elements
+        rv = atk_databuffer_get_number_of_elements(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_number_of_elements
+    end function databuffer_get_number_of_elements
     
     function databuffer_get_total_bytes(obj) result(rv)
         use iso_c_binding
@@ -2374,30 +2290,26 @@ contains
         ! splicer end class.DataView.method.allocate_long
     end subroutine dataview_allocate_long
     
-    subroutine dataview_reallocate_int(obj, type, len)
+    subroutine dataview_reallocate_int(obj, len)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
         integer(C_INT) :: len
         ! splicer begin class.DataView.method.reallocate_int
         call atk_dataview_reallocate(  &
             obj%voidptr,  &
-            type,  &
             int(len, C_LONG))
         ! splicer end class.DataView.method.reallocate_int
     end subroutine dataview_reallocate_int
     
-    subroutine dataview_reallocate_long(obj, type, len)
+    subroutine dataview_reallocate_long(obj, len)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
         integer(C_LONG) :: len
         ! splicer begin class.DataView.method.reallocate_long
         call atk_dataview_reallocate(  &
             obj%voidptr,  &
-            type,  &
             int(len, C_LONG))
         ! splicer end class.DataView.method.reallocate_long
     end subroutine dataview_reallocate_long
