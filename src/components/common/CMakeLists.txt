@@ -8,7 +8,6 @@ project(common)
 # Add the common sources
 ################################
 add_subdirectory(src)
-add_subdirectory(shroud)
 
 ################################
 # Add tests
