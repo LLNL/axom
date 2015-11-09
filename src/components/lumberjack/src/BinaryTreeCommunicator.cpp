@@ -87,35 +87,32 @@ int BinaryTreeCommunicator::ranksLimit()
     return m_ranksLimit;
 }
 
-void BinaryTreeCommunicator::pushMessagesOnce(std::vector<Message*>& messages,
-                                              std::vector<Combiner*>& combiners)
+void BinaryTreeCommunicator::pushMessagesOnce(const char* packedMessagesToBeSent,
+                                              std::vector<const char*>& receivedPackedMessages)
 {
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank != 0){
-        mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, messages);
+        mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, packedMessagesToBeSent);
     }
 
-    Message* message;
     int childrenDoneCount = 0;
+    const char* currPackedMessages;
     while(childrenDoneCount < m_childCount){
-        message = mpiBlockingRecieveAnyMessage(m_mpiComm, m_ranksLimit);
-        if (message == ATK_NULLPTR) {
-            ++childrenDoneCount;
+        currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm, m_ranksLimit);
+        if (currPackedMessages != ATK_NULLPTR) {
+            receivedPackedMessages.push_back(currPackedMessages);
         }
-        else {
-            messages.push_back(message);
-        }
+        ++childrenDoneCount;
     }
 
-    combineMessages(messages, combiners, m_ranksLimit);
     MPI_Barrier(m_mpiComm);
 }
 
-void BinaryTreeCommunicator::pushMessagesFully(std::vector<Message*>& messages,
-                                               std::vector<Combiner*>& combiners)
+void BinaryTreeCommunicator::pushMessagesFully(const char* packedMessagesToBeSent,
+                                               std::vector<const char*>& receivedPackedMessages)
 {
     for (int i=0; i<(m_treeHeight-1); ++i){
-        pushMessagesOnce(messages, combiners);
+        pushMessagesOnce(packedMessagesToBeSent, receivedPackedMessages);
     }
 }
 

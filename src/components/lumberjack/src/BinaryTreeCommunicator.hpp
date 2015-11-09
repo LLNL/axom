@@ -104,7 +104,8 @@ class BinaryTreeCommunicator: public Communicator {
          * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
+        void pushMessagesOnce(const char* packedMessagesToBeSent,
+                              std::vector<const char*>& receivedPackedMessages);
 
         /*!
          *****************************************************************************
@@ -117,7 +118,8 @@ class BinaryTreeCommunicator: public Communicator {
          * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
+        void pushMessagesFully(const char* packedMessagesToBeSent,
+                               std::vector<const char*>& receivedPackedMessages);
 
         /*!
          *****************************************************************************

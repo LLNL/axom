@@ -26,6 +26,9 @@
 namespace asctoolkit {
 namespace lumberjack {
 
+const char memberDelimiter = '*';
+const char rankDelimiter = ',';
+
 /*!
  *******************************************************************************
  * \class Message

@@ -195,6 +195,10 @@ class Lumberjack {
          */
         void pushMessagesFully();
     private:
+        const char* packMessages();
+        void unpackMessages(const char* packedMessages);
+        void combineMessages();
+
         Communicator* m_communicator;
         int m_ranksLimit;
         std::vector<Combiner*> m_combiners;

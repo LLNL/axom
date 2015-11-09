@@ -36,7 +36,7 @@ namespace lumberjack {
 * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
 *****************************************************************************
 */
-Message* mpiBlockingRecieveAnyMessage(MPI_Comm comm, int ranksLimit);
+const char* mpiBlockingRecieveMessages(MPI_Comm comm, int ranksLimit);
 
 /*!
 *****************************************************************************
@@ -49,8 +49,7 @@ Message* mpiBlockingRecieveAnyMessage(MPI_Comm comm, int ranksLimit);
 * \param [in,out] messages All of the Message classes to be sent.
 *****************************************************************************
 */
-void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, std::vector<Message*>& messages);
-
+void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, const char* packedMessagesToBeSent);
 } // end namespace lumberjack
 } // end namespace asctoolkit
 

@@ -109,7 +109,8 @@ class Communicator {
          * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        virtual void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners) = 0;
+        virtual void pushMessagesOnce(const char* packedMessagesToBeSent,
+                                      std::vector<const char*>& receivedPackedMessages) = 0;
 
         /*!
          *****************************************************************************
@@ -122,7 +123,8 @@ class Communicator {
          * \param [in,out] combiners All of currently active Combiner classes.
          *****************************************************************************
          */
-        virtual void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners) = 0;
+        virtual void pushMessagesFully(const char* packedMessagesToBeSent,
+                                       std::vector<const char*>& receivedPackedMessages) = 0;
 
         /*!
          *****************************************************************************
