@@ -20,7 +20,7 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 }
 
 
-TEST(gtest_meshapi_tinyHydro,test_sod1D_2_part)
+TEST(gtest_slam_tinyHydro,test_sod1D_2_part)
 {
     std::cout <<"\n****** Sod 1D test, two parts." << std::endl;
 

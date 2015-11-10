@@ -21,7 +21,7 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 
 
 
-TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
+TEST(gtest_slam_tinyHydro,test_02_density_with_prescribed_velocity)
 {
     std::cout <<"\n****** move mesh with prescribed velocity, test density change." << std::endl;
 
@@ -97,7 +97,7 @@ TEST(gtest_meshapi_tinyHydro,test_02_density_with_prescribed_velocity)
 }
 
 
-TEST(gtest_meshapi_tinyHydro,test_03_gradAndForce)
+TEST(gtest_slam_tinyHydro,test_03_gradAndForce)
 {
     std::cout <<"\n****** test gradient operator and force calculation." << std::endl;
 
@@ -213,7 +213,7 @@ TEST(gtest_meshapi_tinyHydro,test_03_gradAndForce)
 
 
 
-TEST(gtest_meshapi_tinyHydro,test_04_BC)
+TEST(gtest_slam_tinyHydro,test_04_BC)
 {
     std::cout <<"\n****** testing boundary conditions." << std::endl;
 
@@ -296,7 +296,7 @@ TEST(gtest_meshapi_tinyHydro,test_04_BC)
 
 
 
-TEST(gtest_meshapi_tinyHydro,test_05_newDT_Noh)
+TEST(gtest_slam_tinyHydro,test_05_newDT_Noh)
 {
     std::cout <<"\n****** testing newDT method -- Noh." << std::endl;
 
@@ -381,7 +381,7 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Noh)
 
 
 
-TEST(gtest_meshapi_tinyHydro,test_05_newDT_Sedov)
+TEST(gtest_slam_tinyHydro,test_05_newDT_Sedov)
 {
     std::cout <<"\n****** testing newDT method -- Sedov." << std::endl;
 
@@ -452,7 +452,7 @@ TEST(gtest_meshapi_tinyHydro,test_05_newDT_Sedov)
 
 
 
-TEST(gtest_meshapi_tinyHydro,test_06_PdV_work)
+TEST(gtest_slam_tinyHydro,test_06_PdV_work)
 {
     std::cout <<"\n****** testing PdV work." << std::endl;
 

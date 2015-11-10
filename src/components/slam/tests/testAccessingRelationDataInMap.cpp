@@ -29,8 +29,8 @@
 #include "slam/Map.hpp"
 
 
-using asctoolkit::meshapi::RangeSet;
-using asctoolkit::meshapi::StaticVariableRelation;
+using asctoolkit::slam::RangeSet;
+using asctoolkit::slam::StaticVariableRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  SetPosition;
@@ -66,7 +66,7 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   beginsVec[FROMSET_SIZE] = curIdx;
 }
 
-TEST(gtest_meshapi_set_relation_map,access_pattern)
+TEST(gtest_slam_set_relation_map,access_pattern)
 {
   std::cout << "\n****** Testing accessing relation data." << std::endl;
 

@@ -23,7 +23,7 @@
 #include "slam/RangeSet.hpp"
 
 
-typedef asctoolkit::meshapi::RangeSet SetType;
+typedef asctoolkit::slam::RangeSet SetType;
 typedef SetType::iterator             SetIterator;
 typedef SetType::PositionType         SetPosition;
 typedef SetType::ElementType          SetElement;
@@ -31,7 +31,7 @@ typedef SetType::ElementType          SetElement;
 static const SetPosition MAX_SET_SIZE = 10;
 
 
-TEST(gtest_meshapi_range_set,construct_range_set)
+TEST(gtest_slam_range_set,construct_range_set)
 {
 
   SetType s(MAX_SET_SIZE);
@@ -89,7 +89,7 @@ TEST(gtest_meshapi_range_set,construct_range_set)
 
 }
 
-TEST(gtest_meshapi_range_set,test_range_set_out_of_bounds)
+TEST(gtest_slam_range_set,test_range_set_out_of_bounds)
 {
   std::cout << "\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;
 

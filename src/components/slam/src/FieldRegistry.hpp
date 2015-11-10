@@ -9,8 +9,8 @@
  */
 
 
-#ifndef MESHAPI_FIELD_REGISTRY_H_
-#define MESHAPI_FIELD_REGISTRY_H_
+#ifndef SLAM_FIELD_REGISTRY_H_
+#define SLAM_FIELD_REGISTRY_H_
 
 
 #include <sstream>
@@ -22,7 +22,7 @@
 #include "slam/Map.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 
@@ -38,7 +38,7 @@ namespace meshapi {
   public:
     typedef TheDataType                         DataType;
     typedef std::string                         KeyType;
-    typedef asctoolkit::meshapi::Map<DataType>  MapType;
+    typedef asctoolkit::slam::Map<DataType>  MapType;
     typedef typename MapType::OrderedMap        BufferType;
 
     typedef std::map<KeyType, MapType>          DataVecMap;
@@ -82,17 +82,17 @@ namespace meshapi {
   private:
     inline void verifyFieldsKey(KeyType key){
       SLIC_ASSERT_MSG( m_dataVecs.find(key) != m_dataVecs.end()
-          , "Didn't find " << asctoolkit::meshapi::util::TypeToString<DataType>::to_string() << " field named " << key );
+          , "Didn't find " << asctoolkit::slam::util::TypeToString<DataType>::to_string() << " field named " << key );
     }
     inline void verifyScalarsKey(KeyType key){
       SLIC_ASSERT_MSG( m_dataScalars.find(key) != m_dataScalars.end()
-          , "Didn't find " << asctoolkit::meshapi::util::TypeToString<DataType>::to_string() << " scalar named " << key );
+          , "Didn't find " << asctoolkit::slam::util::TypeToString<DataType>::to_string() << " scalar named " << key );
     }
   private:
     DataVecMap m_dataVecs;
     DataAttrMap m_dataScalars;
   };
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_FIELD_REGISTRY_H_
+#endif // SLAM_FIELD_REGISTRY_H_

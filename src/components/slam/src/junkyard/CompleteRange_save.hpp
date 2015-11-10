@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef MESHAPI_ORDERED_SET_H_
-#define MESHAPI_ORDERED_SET_H_
+#ifndef SLAM_ORDERED_SET_H_
+#define SLAM_ORDERED_SET_H_
 
 #include <cstddef>
 #include <vector>
@@ -18,7 +18,7 @@
 #include "NullSet.hpp"
 
 namespace asctoolkit{
-namespace meshapi{
+namespace slam{
 
 
     template<bool IS_SUBRANGE = true>
@@ -57,7 +57,7 @@ namespace meshapi{
       inline void  verifyPosition(SetPosition pos)       const
       {
           ATK_ASSERT_MSG( pos < static_cast<SetPosition>( size() )
-                          , "MeshAPI::RangeSet -- requested out of range element at position "
+                          , "SLAM::RangeSet -- requested out of range element at position "
                           << pos << ", but set only has " << size() << " elements." );
       }
 
@@ -82,7 +82,7 @@ namespace meshapi{
     inline bool operator!=(RangeSet const& firstSet, RangeSet const& otherSet) { return !(firstSet==otherSet); }
 #endif
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_ORDERED_SET_H_
+#endif //  SLAM_ORDERED_SET_H_

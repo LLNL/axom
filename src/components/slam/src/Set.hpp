@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef MESHAPI_SET_H_
-#define MESHAPI_SET_H_
+#ifndef SLAM_SET_H_
+#define SLAM_SET_H_
 
 #include <cstddef>
 #include <vector>
@@ -26,7 +26,7 @@
 #include "slam/Utilities.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 /**
@@ -167,7 +167,7 @@ namespace meshapi {
   inline bool operator!=(Set const& set1, Set const& set2){ return !(set1 == set2); }
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_SET_H_
+#endif //  SLAM_SET_H_

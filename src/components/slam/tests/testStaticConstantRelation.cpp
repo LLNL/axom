@@ -27,8 +27,8 @@
 #include "slam/Relation.hpp"
 #include "slam/StaticConstantRelation.hpp"
 
-using asctoolkit::meshapi::RangeSet;
-using asctoolkit::meshapi::StaticConstantRelation;
+using asctoolkit::slam::RangeSet;
+using asctoolkit::slam::StaticConstantRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  PositionType;
@@ -37,7 +37,7 @@ const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 6;
 
 
-TEST(gtest_meshapi_static_constant_relation,empty_relation)
+TEST(gtest_slam_static_constant_relation,empty_relation)
 {
   std::cout << "\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
@@ -48,7 +48,7 @@ TEST(gtest_meshapi_static_constant_relation,empty_relation)
   std::cout << "\n****** done." << std::endl;
 }
 
-TEST(gtest_meshapi_static_constant_relation,empty_relation_out_of_bounds)
+TEST(gtest_slam_static_constant_relation,empty_relation_out_of_bounds)
 {
   std::cout << "\n****** Testing access on empty relation -- code is expected to assert and die." << std::endl;
 
@@ -65,7 +65,7 @@ TEST(gtest_meshapi_static_constant_relation,empty_relation_out_of_bounds)
 
 }
 
-TEST(gtest_meshapi_static_constant_relation,test_uninitialized_relation)
+TEST(gtest_slam_static_constant_relation,test_uninitialized_relation)
 {
   std::cout << "\n****** Testing uninitialized relation.  isValid() should be TRUE since stride is 0 by default." << std::endl;
 
@@ -104,7 +104,7 @@ void generateIncrementingRelations(PositionType stride, VecType* offsets)
   }
 }
 
-TEST(gtest_meshapi_static_constant_relation,simple_relation)
+TEST(gtest_slam_static_constant_relation,simple_relation)
 {
   std::cout << "\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
@@ -164,7 +164,7 @@ TEST(gtest_meshapi_static_constant_relation,simple_relation)
   std::cout << "\n****** done." << std::endl;
 }
 
-TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
+TEST(gtest_slam_static_constant_relation,initialized_rel_out_of_bounds)
 {
   std::cout << "\n****** Testing out of bounds access on initialized relation.  Code is expected to assert and die." << std::endl;
 
@@ -191,7 +191,7 @@ TEST(gtest_meshapi_static_constant_relation,initialized_rel_out_of_bounds)
 }
 
 
-TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
+TEST(gtest_slam_static_constant_relation,test_iterator_range)
 {
   std::cout << "\n****** Testing range function on incrementing relation." << std::endl;
 
@@ -235,7 +235,7 @@ TEST(gtest_meshapi_static_constant_relation,test_iterator_range)
 }
 
 
-TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
+TEST(gtest_slam_static_constant_relation,double_subscript_test)
 {
   std::cout << "\n****** Testing access via double subscript." << std::endl;
 
@@ -273,7 +273,7 @@ TEST(gtest_meshapi_static_constant_relation,double_subscript_test)
 }
 
 
-TEST(gtest_meshapi_static_constant_relation,delayed_double_subscript_test)
+TEST(gtest_slam_static_constant_relation,delayed_double_subscript_test)
 {
   std::cout << "\n****** Testing access via delayed double subscript." << std::endl;
 

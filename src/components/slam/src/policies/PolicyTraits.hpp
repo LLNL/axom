@@ -1,12 +1,12 @@
-#ifndef MESHAPI_POLICY_TRAITS_H_
-#define MESHAPI_POLICY_TRAITS_H_
+#ifndef SLAM_POLICY_TRAITS_H_
+#define SLAM_POLICY_TRAITS_H_
 
 
 #include "slam/SizePolicies.hpp"
 #include "slam/StridePolicies.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace policies {
 
   template<typename StridePolicyType, typename IntType, IntType VAL> struct StrideToSize;
@@ -30,7 +30,7 @@ namespace policies {
 
 
 } // end namespace policies
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_POLICY_TRAITS_H_
+#endif // SLAM_POLICY_TRAITS_H_

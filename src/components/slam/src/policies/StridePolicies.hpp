@@ -11,7 +11,7 @@
 /**
  * \file
  *
- * \brief Stride policies for the meshapi
+ * \brief Stride policies for SLAM
  *
  * Stride policies are meant to represent the fixed distance between consecutive elements of an OrderedSet
  *   A valid stride policy must support the following interface:
@@ -22,12 +22,12 @@
  *      * operator(): IntType -- alternate accessor for the stride value
  */
 
-#ifndef MESHAPI_POLICIES_STRIDE_H_
-#define MESHAPI_POLICIES_STRIDE_H_
+#ifndef SLAM_POLICIES_STRIDE_H_
+#define SLAM_POLICIES_STRIDE_H_
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace policies {
 
     /**
@@ -81,7 +81,7 @@ namespace policies {
         void setStride(IntType val)
         {
             SLIC_ASSERT_MSG( val == INT_VAL
-                           , "MeshAPI::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
+                           , "SLAM::CompileTimeStrideHolder -- tried to set a compile time stride with value ("
                            << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
         inline bool isValid(bool)         const { return true; }
@@ -108,7 +108,7 @@ namespace policies {
         void setStride(IntType val)
         {
             SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-                           , "MeshAPI::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
+                           , "SLAM::StrideOne policy -- tried to set a stride-one StridePolicy with value ("
                            << val <<"), but should always be 1.");
         }
         inline bool isValid(bool )         const { return true; }
@@ -118,7 +118,7 @@ namespace policies {
     /// \}
 
 } // end namespace policies
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_POLICIES_STRIDE_H_
+#endif // SLAM_POLICIES_STRIDE_H_

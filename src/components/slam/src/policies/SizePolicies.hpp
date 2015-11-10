@@ -11,9 +11,9 @@
 /**
  * \file
  *
- * \brief Size policies for the meshapi
+ * \brief Size policies for SLAM
  *
- * Size policies are meant to represent the size of a meshapi entity (e.g. the size of a set).
+ * Size policies are meant to represent the size of a SLAM entity (e.g. the size of a set).
  *   A valid size policy must support the following interface:
  *      [required]
  *      * DEFAULT_VALUE is a public static const IntType
@@ -23,13 +23,13 @@
  *      * operator(): IntType -- alternate accessor for the size value
  */
 
-#ifndef MESHAPI_POLICIES_SIZE_H_
-#define MESHAPI_POLICIES_SIZE_H_
+#ifndef SLAM_POLICIES_SIZE_H_
+#define SLAM_POLICIES_SIZE_H_
 
 #include "slic/slic.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace policies {
 
     /**
@@ -70,7 +70,7 @@ namespace policies {
 
         CompileTimeSizeHolder(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == INT_VAL
-                              , "MeshAPI::CompileTimeSizeHolder -- tried to initialize a compile time size policy with value ("
+                              , "SLAM::CompileTimeSizeHolder -- tried to initialize a compile time size policy with value ("
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
@@ -90,7 +90,7 @@ namespace policies {
 
          ZeroSize(IntType val = DEFAULT_VALUE) {
                 SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-                               , "MeshAPI::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
+                               , "SLAM::ZeroSize policy-- tried to initialize a NoSize set with value with value ("
                               << val <<" ) but should always be zero.");
          }
 
@@ -103,7 +103,7 @@ namespace policies {
     /// \}
 
 } // end namespace policies
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_POLICIES_SIZE_H_
+#endif // SLAM_POLICIES_SIZE_H_

@@ -55,8 +55,8 @@ class PolygonMeshXY
    // Mesh entities -- sets
    ZoneSet zones;                   // Set of zones in the mesh -- PositionSet (wrapper around an int)
    NodeSet nodes;                   // Set of nodes in the mesh -- PositionSet (wrapper around an int)
-   FaceSet faces;                   // Set of faces in the mesh -- added in meshapi version (wrapper around an int)
-   CornerSet corners;               // Set of corners in the mesh -- added in meshapi version (wrapper around an int)
+   FaceSet faces;                   // Set of faces in the mesh -- added in SLAM version (wrapper around an int)
+   CornerSet corners;               // Set of corners in the mesh -- added in SLAM version (wrapper around an int)
 
    // Mesh topology -- relations
    ZoneToFaceRelation zoneToFaces;

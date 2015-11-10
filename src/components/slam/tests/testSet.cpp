@@ -23,9 +23,9 @@
 
 static unsigned int const NUM_ELEMS = 5;
 
-TEST(gtest_meshapi_set,construct_set)
+TEST(gtest_slam_set,construct_set)
 {
-  asctoolkit::meshapi::Set* s = new asctoolkit::meshapi::RangeSet(NUM_ELEMS);
+  asctoolkit::slam::Set* s = new asctoolkit::slam::RangeSet(NUM_ELEMS);
 
   delete s;
 

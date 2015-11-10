@@ -16,7 +16,7 @@
 #include <iterator>
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 
@@ -149,5 +149,5 @@ namespace meshapi {
     return bValid;
   }
 
-} // namespace meshapi
+} // namespace slam
 } // namespace asctoolkit

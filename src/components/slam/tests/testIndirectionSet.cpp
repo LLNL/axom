@@ -19,7 +19,7 @@
 #include "slam/Utilities.hpp"
 #include "slam/IndirectionSet.hpp"
 
-typedef asctoolkit::meshapi::ArrayIndirectionSet SetType;
+typedef asctoolkit::slam::ArrayIndirectionSet SetType;
 typedef SetType::iterator                   SetIterator;
 typedef SetType::PositionType               SetPosition;
 typedef SetType::ElementType                SetElement;
@@ -27,7 +27,7 @@ typedef SetType::ElementType                SetElement;
 static const SetPosition MAX_SET_SIZE = 10;
 
 
-TEST(gtest_meshapi_indirection_set,construct_indirection_set)
+TEST(gtest_slam_indirection_set,construct_indirection_set)
 {
   SetPosition arr[MAX_SET_SIZE];
   for(int i=0;i<MAX_SET_SIZE; ++i)
@@ -86,7 +86,7 @@ TEST(gtest_meshapi_indirection_set,construct_indirection_set)
 }
 
 
-TEST(gtest_meshapi_range_set,test_indirection_set_out_of_bounds)
+TEST(gtest_slam_range_set,test_indirection_set_out_of_bounds)
 {
 
   std::cout<<"\n****** Testing out of bounds access on initialized set-- code is expected to assert and die." << std::endl;

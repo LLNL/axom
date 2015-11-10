@@ -243,9 +243,9 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
 
 
   // embed hexahedral elements in nodal point lattice
-  // MeshAPI NOTE: This should really be a DynamicConstantRelation
-  // MeshAPI TODO: Change this once DynamicConstantRelation becomes available
-  // MeshAPI TODO: Actually the underlying connectivity should be derivable from an implicit Fixed grid in 3D.
+  // SLAM NOTE: This should really be a DynamicConstantRelation
+  // SLAM TODO: Change this once DynamicConstantRelation becomes available
+  // SLAM TODO: Actually the underlying connectivity should be derivable from an implicit Fixed grid in 3D.
   std::vector<Index_t>  local_nodelist( 8 * numElem() );
   Index_t zidx = 0;
   nidx = 0;
@@ -273,7 +273,7 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
     nidx += edgeNodes;
   }
 
-  // MeshAPI NOTE: The following call copies the data array.
+  // SLAM NOTE: The following call copies the data array.
   //               The actual data should just be referenced by the relation.
   m_nodelist.bindRelationData(local_nodelist, 8);
 
@@ -394,7 +394,7 @@ Domain::SetupCommBuffers()
 void
 Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 {
-  typedef asctoolkit::meshapi::DynamicVariableRelation RegionToElemDynamicRelation;
+  typedef asctoolkit::slam::DynamicVariableRelation RegionToElemDynamicRelation;
 
 
 
@@ -554,7 +554,7 @@ Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   SymmVec& loc_symmY = m_intsRegistry.addField("symmY", &m_symmY).data();
   SymmVec& loc_symmZ = m_intsRegistry.addField("symmZ", &m_symmZ).data();
 
-  // MeshAPI Note: We should be able to compute these directory from a Cartesian product set defining a regular grid.
+  // SLAM Note: We should be able to compute these directory from a Cartesian product set defining a regular grid.
   Index_t nidx = 0;
   for (Index_t i = 0; i<edgeNodes; ++i)
   {
@@ -700,7 +700,7 @@ Domain::SetupBoundaryConditions(Int_t edgeElems)
   }
 
 
-  // MeshAPI HACK: We are directly accessing the relation data of a StaticConstantRelation (ElemFaceAdjacencyRelation)
+  // SLAM HACK: We are directly accessing the relation data of a StaticConstantRelation (ElemFaceAdjacencyRelation)
   //               so that we can modify it. A nicer solution can be implemented once we define DynamicConstantRelations
   //               which we can use to wrap the code.  However, the code should still look similar for now...
 

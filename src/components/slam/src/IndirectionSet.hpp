@@ -15,8 +15,8 @@
  * \brief A few indirection set classes
  */
 
-#ifndef MESHAPI_INDIRECTION_SET_H_
-#define MESHAPI_INDIRECTION_SET_H_
+#ifndef SLAM_INDIRECTION_SET_H_
+#define SLAM_INDIRECTION_SET_H_
 
 #include <cstddef>
 #include <vector>
@@ -24,7 +24,7 @@
 #include "slam/OrderedSet.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 /**
@@ -107,7 +107,7 @@ namespace meshapi {
   };
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_INDIRECTION_SET_H_
+#endif //  SLAM_INDIRECTION_SET_H_

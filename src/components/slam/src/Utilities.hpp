@@ -11,16 +11,16 @@
 
 /**
  * \file
- * \brief A few utility functions used by the MeshAPI component.
+ * \brief A few utility functions used by the SLAM component.
  */
-#ifndef MESHAPI_UTILITIES_H_
-#define MESHAPI_UTILITIES_H_
+#ifndef SLAM_UTILITIES_H_
+#define SLAM_UTILITIES_H_
 
 #include <string>
 #include <cmath>
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
   typedef int MeshIndexType;
   typedef int MeshSizeType;
@@ -44,7 +44,7 @@ namespace util {
 
 
 } // end namespace util
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_UTILITIES_H_
+#endif //  SLAM_UTILITIES_H_

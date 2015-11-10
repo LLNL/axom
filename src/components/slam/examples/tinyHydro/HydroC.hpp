@@ -76,9 +76,9 @@ public:
    NodalVectorField     force;              // re-used for force calc
    NodalVectorField     halfStepVelocity;   // re-used for work calc
 
-   BoundaryEdgeSet          boundaryEdgeSet;                          // MeshAPI -- new set for domain boundaries (of size 4)
-   BoundaryEdgeVectorField  bcVelocity;     // velocity BC values     // MeshAPI -- map to velocity boundary conditions for each edge
-   NodeSubset               bcNodes[NUM_DOMAIN_BOUNDARIES];           // MeshAPI -- indirection sets of nodes on each boundary edge
+   BoundaryEdgeSet          boundaryEdgeSet;                          // SLAM -- new set for domain boundaries (of size 4)
+   BoundaryEdgeVectorField  bcVelocity;     // velocity BC values     // SLAM -- map to velocity boundary conditions for each edge
+   NodeSubset               bcNodes[NUM_DOMAIN_BOUNDARIES];           // SLAM -- indirection sets of nodes on each boundary edge
 
 
    ZonalScalarField*    initialMass;    // per material initial mass of zones

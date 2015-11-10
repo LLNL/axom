@@ -16,7 +16,7 @@
 #include <iterator>
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
   StaticConstantRelation::StaticConstantRelation (Set* fromSet, Set* toSet)
       : StridePolicy(StridePolicyType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet)
@@ -121,5 +121,5 @@ namespace meshapi {
     return bValid;
   }
 
-} // namespace meshapi
+} // namespace slam
 } // namespace asctoolkit

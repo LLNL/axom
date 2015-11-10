@@ -17,11 +17,11 @@
  *
  */
 
-#ifndef MESHAPI_STATIC_VARIABLE_RELATION_HPP_
-#define MESHAPI_STATIC_VARIABLE_RELATION_HPP_
+#ifndef SLAM_STATIC_VARIABLE_RELATION_HPP_
+#define SLAM_STATIC_VARIABLE_RELATION_HPP_
 
-#ifndef MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
-//  #define MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+#ifndef SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+//  #define SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
 #endif
 
 
@@ -36,12 +36,12 @@
 
 
 namespace asctoolkit {
-namespace meshapi    {
+namespace slam    {
 
   class StaticVariableRelation : public Relation
   {
 
-#ifdef MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+#ifdef SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
   private:
     /**
      * A small helper class to allow double subscripting on the relation
@@ -102,7 +102,7 @@ namespace meshapi    {
       return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
     }
 
-#ifdef MESHAPI_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
+#ifdef SLAM_STATIC_VARIABLE_RELATION_ITERATOR_USE_PROXY
     const SubscriptProxy operator[](SetPosition fromSetElt) const
     {
       return SubscriptProxy( begin(fromSetElt), size(fromSetElt) );
@@ -192,7 +192,7 @@ namespace meshapi    {
   };
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_STATIC_VARIABLE_RELATION_HPP_
+#endif // SLAM_STATIC_VARIABLE_RELATION_HPP_

@@ -17,18 +17,18 @@
  *
  */
 
-#ifndef MESHAPI_ORDERED_SET_H_
-#define MESHAPI_ORDERED_SET_H_
+#ifndef SLAM_ORDERED_SET_H_
+#define SLAM_ORDERED_SET_H_
 
 #include <cstddef>
 #include <vector>
 
 
-#ifndef MESHAPI_USE_COUNTING_ITERATOR
-//    #define MESHAPI_USE_COUNTING_ITERATOR
+#ifndef SLAM_USE_COUNTING_ITERATOR
+//    #define SLAM_USE_COUNTING_ITERATOR
 #endif
 
-#ifdef MESHAPI_USE_COUNTING_ITERATOR
+#ifdef SLAM_USE_COUNTING_ITERATOR
     #include <boost/iterator/counting_iterator.hpp>
 #else
     #include <boost/iterator/iterator_facade.hpp>
@@ -51,7 +51,7 @@
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 /**
@@ -88,7 +88,7 @@ namespace meshapi {
 
     struct SetBuilder;
 
-#ifdef MESHAPI_USE_COUNTING_ITERATOR
+#ifdef SLAM_USE_COUNTING_ITERATOR
     typedef boost::counting_iterator<ElementType> iterator;
     typedef std::pair<iterator,iterator>          iterator_pair;
 
@@ -248,7 +248,7 @@ public:
 
   public:   // Functions related to iteration
 
-#ifdef MESHAPI_USE_COUNTING_ITERATOR
+#ifdef SLAM_USE_COUNTING_ITERATOR
     const_iterator          begin() const { return iterator( OffsetPolicyType::offset() ); }
     const_iterator          end()   const { return iterator( size() + OffsetPolicyType::offset() );}
     const_iterator_pair     range() const { return std::make_pair(begin(), end()); }
@@ -276,7 +276,7 @@ public:
     inline void         verifyPositionImpl(PositionType pos)       const
     {
        SLIC_ASSERT_MSG( pos >= 0 && pos < size()
-          , "MeshAPI::OrderedSet -- requested out-of-range element at position "
+          , "SLAM::OrderedSet -- requested out-of-range element at position "
           << pos << ", but set only has " << size() << " elements." );
     }
 
@@ -304,7 +304,7 @@ public:
     }
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_ORDERED_SET_H_
+#endif //  SLAM_ORDERED_SET_H_

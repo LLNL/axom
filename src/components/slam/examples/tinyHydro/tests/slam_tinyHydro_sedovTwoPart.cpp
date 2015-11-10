@@ -21,7 +21,7 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 }
 
 
-TEST(gtest_meshapi_tinyHydro,test_sedov_2_part)
+TEST(gtest_slam_tinyHydro,test_sedov_2_part)
 {
     std::cout <<"\n****** Sedov cylindrical square grid test." << std::endl;
 

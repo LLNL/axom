@@ -11,9 +11,9 @@
 /**
  * \file
  *
- * \brief Indirection policies for the meshapi
+ * \brief Indirection policies for SLAM
  *
- * Indirection policies encompass the underlying storage for indirection buffers for a meshapi set, relation or map.
+ * Indirection policies encompass the underlying storage for indirection buffers for a SLAM set, relation or map.
  *
  * A valid indirection policy must support the following interface:
  *      * typedef IndirectionResult -- the type of the result of an indirection (const/nonconst and ref/nonref)
@@ -23,8 +23,8 @@
  *      * [optional] data() : ElementType* -- allows direct access to the underlying buffer (when this exists)
  */
 
-#ifndef MESHAPI_POLICIES_INDIRECTION_H_
-#define MESHAPI_POLICIES_INDIRECTION_H_
+#ifndef SLAM_POLICIES_INDIRECTION_H_
+#define SLAM_POLICIES_INDIRECTION_H_
 
 #include "slic/slic.hpp"
 
@@ -32,7 +32,7 @@
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace policies {
 
     /**
@@ -79,7 +79,7 @@ namespace policies {
         inline IndirectionResult indirection(PositionType pos) const
         {
             SLIC_ASSERT_MSG( hasIndirection()
-                           , "MeshAPI::Set:ArrayIndirection -- Tried to dereference a null array in an array based indirection set.");
+                           , "SLAM::Set:ArrayIndirection -- Tried to dereference a null array in an array based indirection set.");
             return m_arrBuf[pos];
         }
 
@@ -124,8 +124,8 @@ namespace policies {
 
         inline IndirectionResult indirection(PositionType pos) const
         {
-            SLIC_ASSERT_MSG( hasIndirection(), "MeshAPI::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
-            //SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "MeshAPI::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
+            SLIC_ASSERT_MSG( hasIndirection(), "SLAM::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
+            //SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "SLAM::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
             //        << pos << " in vector with only " << m_vecBuf->size() << " elements.");
 
             return (*m_vecBuf)[pos];
@@ -170,7 +170,7 @@ namespace policies {
     /// \}
 
 } // end namespace policies
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_POLICIES_INDIRECTION_H_
+#endif // SLAM_POLICIES_INDIRECTION_H_

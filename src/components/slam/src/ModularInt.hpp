@@ -7,15 +7,15 @@
  *
  */
 
-#ifndef MESHAPI_MODULAR_INT_H_
-#define MESHAPI_MODULAR_INT_H_
+#ifndef SLAM_MODULAR_INT_H_
+#define SLAM_MODULAR_INT_H_
 
 #include "slic/slic.hpp"
 #include "slam/SizePolicies.hpp"
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
     /**
@@ -159,7 +159,7 @@ namespace meshapi {
 
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_MODULAR_INT_H_
+#endif //  SLAM_MODULAR_INT_H_

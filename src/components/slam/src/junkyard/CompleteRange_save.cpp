@@ -11,7 +11,7 @@
 #include "RangeSet.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 const NullSet RangeSet::s_nullSet;
@@ -57,6 +57,6 @@ bool RangeSet::isValid(bool verboseOutput) const
     return bValid;
 }
 
-} /* namespace meshapi */
+} /* namespace slam */
 } /* namespace asctoolkit */
 

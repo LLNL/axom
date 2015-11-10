@@ -27,18 +27,18 @@
 #include "slam/Relation.hpp"
 #include "slam/DynamicVariableRelation.hpp"
 
-using asctoolkit::meshapi::RangeSet;
-using asctoolkit::meshapi::DynamicVariableRelation;
+using asctoolkit::slam::RangeSet;
+using asctoolkit::slam::DynamicVariableRelation;
 
 typedef RangeSet::PositionType  PositionType;
 typedef RangeSet::ElementType   ElementType;
-// typedef asctoolkit::meshapi::Set::SetPosition PositionType;
+// typedef asctoolkit::slam::Set::SetPosition PositionType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 8;
 
 
-TEST(gtest_meshapi_dynamic_variable_relation,empty_relation)
+TEST(gtest_slam_dynamic_variable_relation,empty_relation)
 {
   std::cout << "\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
@@ -49,7 +49,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,empty_relation)
   std::cout << "\n****** done." << std::endl;
 }
 
-TEST(gtest_meshapi_dynamic_variable_relation,test_uninitialized_relation)
+TEST(gtest_slam_dynamic_variable_relation,test_uninitialized_relation)
 {
   std::cout << "\n****** Testing uninitialized relation.  isValid() should be false." << std::endl;
 
@@ -85,7 +85,7 @@ void generateIncrementingRelations(DynamicVariableRelation* rel)
   }
 }
 
-TEST(gtest_meshapi_dynamic_variable_relation,simple_relation)
+TEST(gtest_slam_dynamic_variable_relation,simple_relation)
 {
   std::cout << "\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
@@ -138,7 +138,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,simple_relation)
   std::cout << "\n****** done." << std::endl;
 }
 
-TEST(gtest_meshapi_dynamic_variable_relation,test_iterator_range)
+TEST(gtest_slam_dynamic_variable_relation,test_iterator_range)
 {
   std::cout << "\n****** Testing range function on incrementing relation." << std::endl;
 
@@ -184,7 +184,7 @@ TEST(gtest_meshapi_dynamic_variable_relation,test_iterator_range)
 }
 
 
-TEST(gtest_meshapi_dynamic_variable_relation,double_subscript_test)
+TEST(gtest_slam_dynamic_variable_relation,double_subscript_test)
 {
   std::cout << "\n****** Testing access via double subscript." << std::endl;
 

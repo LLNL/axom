@@ -13,7 +13,7 @@
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 /**
  * \brief Definition of static instance of nullSet for all relations
@@ -21,5 +21,5 @@ namespace meshapi {
  */
   NullSet Relation::s_nullSet;
 
-} // namespace meshapi
+} // namespace slam
 } // namespace asctoolkit

@@ -20,9 +20,9 @@
 #include "slam/SizePolicies.hpp"
 #include "slam/ModularInt.hpp"
 
-TEST(gtest_meshapi_modInt,runtime_modular_int_unitialized_and_full)
+TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-    typedef asctoolkit::meshapi::ModularInt<asctoolkit::meshapi::policies::RuntimeSizeHolder<int> > ModularIntType;
+    typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
 #ifdef ATK_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
@@ -47,9 +47,9 @@ TEST(gtest_meshapi_modInt,runtime_modular_int_unitialized_and_full)
   }
 }
 
-TEST(gtest_meshapi_modInt,compile_modular_int_unitialized_and_full)
+TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 {
-    using namespace asctoolkit::meshapi;
+    using namespace asctoolkit::slam;
     typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
 
 #ifdef ATK_DEBUG
@@ -82,11 +82,11 @@ TEST(gtest_meshapi_modInt,compile_modular_int_unitialized_and_full)
 }
 
 
-TEST(gtest_meshapi_modInt,runtime_modular_int)
+TEST(gtest_slam_modInt,runtime_modular_int)
 {
   std::cout << "\n -- Checking modular int addition and subtraction when supplying the max value at runtime" << std::endl;
 
-  typedef asctoolkit::meshapi::ModularInt<asctoolkit::meshapi::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 937;
 
@@ -117,9 +117,9 @@ TEST(gtest_meshapi_modInt,runtime_modular_int)
   }
 }
 
-TEST(gtest_meshapi_modInt,runtime_modular_int_mult)
+TEST(gtest_slam_modInt,runtime_modular_int_mult)
 {
-  typedef asctoolkit::meshapi::ModularInt<asctoolkit::meshapi::policies::RuntimeSizeHolder<int> > ModularIntType;
+  typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::RuntimeSizeHolder<int> > ModularIntType;
 
   volatile int sz = 10;
 
@@ -147,12 +147,12 @@ TEST(gtest_meshapi_modInt,runtime_modular_int_mult)
 
 }
 
-TEST(gtest_meshapi_modInt,compiletime_modular_int)
+TEST(gtest_slam_modInt,compiletime_modular_int)
 {
     std::cout << "\n -- Checking modular int addition and subtraction when supplying the max value at compile time" << std::endl;
 
     const int SZ = 937;
-    typedef asctoolkit::meshapi::ModularInt<asctoolkit::meshapi::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
+    typedef asctoolkit::slam::ModularInt<asctoolkit::slam::policies::CompileTimeSizeHolder<int, SZ> > ModularIntType;
 
     int sz = SZ;
 

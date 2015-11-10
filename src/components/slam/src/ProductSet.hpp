@@ -12,22 +12,22 @@
 /**
  * \file ProductSet.hpp
  *
- * \brief Basic API for a Cartesian product MeshAPI sets
+ * \brief Basic API for a SLAM Cartesian product set
  *
  */
 
-#ifndef MESHAPI_PRODUCT_SET_H_
-#define MESHAPI_PRODUCT_SET_H_
+#ifndef SLAM_PRODUCT_SET_H_
+#define SLAM_PRODUCT_SET_H_
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
     class ProductSet {};
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_ORDERED_SET_H_
+#endif //  SLAM_ORDERED_SET_H_

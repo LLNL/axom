@@ -18,14 +18,14 @@
 
 namespace tinyHydro {
 
-    typedef asctoolkit::meshapi::Map<int> IndexField;
+    typedef asctoolkit::slam::Map<int> IndexField;
 
 
-    typedef asctoolkit::meshapi::Map<double> ScalarField;
+    typedef asctoolkit::slam::Map<double> ScalarField;
     typedef ScalarField NodalScalarField;
     typedef ScalarField ZonalScalarField;
 
-    typedef asctoolkit::meshapi::Map<VectorXY> VectorField;
+    typedef asctoolkit::slam::Map<VectorXY> VectorField;
     typedef VectorField NodalVectorField;
     typedef VectorField ZonalVectorField;
     typedef VectorField FaceVectorField;
@@ -33,13 +33,13 @@ namespace tinyHydro {
     typedef VectorField BoundaryEdgeVectorField;
 
 
-    typedef asctoolkit::meshapi::PositionSet ZoneSet;
-    typedef asctoolkit::meshapi::PositionSet NodeSet;
-    typedef asctoolkit::meshapi::PositionSet FaceSet;
-    typedef asctoolkit::meshapi::PositionSet CornerSet;
+    typedef asctoolkit::slam::PositionSet ZoneSet;
+    typedef asctoolkit::slam::PositionSet NodeSet;
+    typedef asctoolkit::slam::PositionSet FaceSet;
+    typedef asctoolkit::slam::PositionSet CornerSet;
 
-    typedef asctoolkit::meshapi::VectorIndirectionSet ZoneSubset;
-    typedef asctoolkit::meshapi::VectorIndirectionSet NodeSubset;
+    typedef asctoolkit::slam::VectorIndirectionSet ZoneSubset;
+    typedef asctoolkit::slam::VectorIndirectionSet NodeSubset;
 
 
 
@@ -52,24 +52,24 @@ namespace tinyHydro {
         , BD_LEFT               = 3     // left boundary nodes
         , NUM_DOMAIN_BOUNDARIES = 4
     };
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ZoneSet::PositionType, FACES_PER_ZONE> ZFStride;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, FACES_PER_ZONE> ZFStride;
 
-    typedef asctoolkit::meshapi::StaticConstantRelation<ZNStride, ZoneSet, NodeSet> ZoneToNodeRelation;
+    typedef asctoolkit::slam::StaticConstantRelation<ZNStride, ZoneSet, NodeSet> ZoneToNodeRelation;
     typedef ZoneToNodeRelation::RelationSet ZNodeSet;
 
-    typedef asctoolkit::meshapi::StaticConstantRelation<ZFStride, ZoneSet, FaceSet> ZoneToFaceRelation;
+    typedef asctoolkit::slam::StaticConstantRelation<ZFStride, ZoneSet, FaceSet> ZoneToFaceRelation;
     typedef ZoneToFaceRelation::RelationSet ZFaceSet;
 
 
-    typedef asctoolkit::meshapi::policies::CompileTimeSizeHolder<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
-    typedef asctoolkit::meshapi::OrderedSet< NUM_BD_SZ> BoundaryEdgeSet;
+    typedef asctoolkit::slam::policies::CompileTimeSizeHolder<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
+    typedef asctoolkit::slam::OrderedSet< NUM_BD_SZ> BoundaryEdgeSet;
 
 
     typedef ZoneSet::PositionType IndexType;
-    typedef asctoolkit::meshapi::Map<IndexType> IndexMap;
+    typedef asctoolkit::slam::Map<IndexType> IndexMap;
 
-    typedef asctoolkit::meshapi::FieldRegistry<ZoneSet::IndexType> SubsetRegistry;
+    typedef asctoolkit::slam::FieldRegistry<ZoneSet::IndexType> SubsetRegistry;
 
     struct DataRegistry
     {

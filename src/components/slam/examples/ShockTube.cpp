@@ -59,12 +59,12 @@
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace examples {
 namespace shocktube {
 
-  asctoolkit::meshapi::MeshIndexType const UPWIND   = 0;
-  asctoolkit::meshapi::MeshIndexType const DOWNWIND = 1;
+  asctoolkit::slam::MeshIndexType const UPWIND   = 0;
+  asctoolkit::slam::MeshIndexType const DOWNWIND = 1;
 
   const double gammaa = M_SQRT2;
   const double gammaaInverse = M_SQRT1_2;
@@ -98,26 +98,26 @@ namespace shocktube {
   public:
 
     // other types
-    typedef asctoolkit::meshapi::Set::IndexType         IndexType;
-    typedef asctoolkit::meshapi::Set::PositionType      PositionType;
-    typedef asctoolkit::meshapi::Set::ElementType      ElementType;
+    typedef asctoolkit::slam::Set::IndexType         IndexType;
+    typedef asctoolkit::slam::Set::PositionType      PositionType;
+    typedef asctoolkit::slam::Set::ElementType      ElementType;
 
     // types for Element and Face sets
-    typedef asctoolkit::meshapi::PositionSet               ElemSet;
-    typedef asctoolkit::meshapi::PositionSet               FaceSet;
+    typedef asctoolkit::slam::PositionSet               ElemSet;
+    typedef asctoolkit::slam::PositionSet               FaceSet;
 
     // types for Tube and {In,Out}Flow subsets
-    typedef asctoolkit::meshapi::policies::StrideOne<PositionType> StrideOnePolicy;
-    typedef asctoolkit::meshapi::policies::NoIndirection<PositionType,ElementType> NoIndirectionPolicy;
-    typedef asctoolkit::meshapi::policies::ConcreteParentSubset<ElemSet> TubeSubsetPolicy;
-    typedef asctoolkit::meshapi::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
+    typedef asctoolkit::slam::policies::StrideOne<PositionType> StrideOnePolicy;
+    typedef asctoolkit::slam::policies::NoIndirection<PositionType,ElementType> NoIndirectionPolicy;
+    typedef asctoolkit::slam::policies::ConcreteParentSubset<ElemSet> TubeSubsetPolicy;
+    typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
 
     // types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM> EFStride;
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE> FEStride;
-    typedef asctoolkit::meshapi::StaticConstantRelation<EFStride> ElemToFaceRelation;
-    typedef asctoolkit::meshapi::StaticConstantRelation<FEStride> FaceToElemRelation;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM> EFStride;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE> FEStride;
+    typedef asctoolkit::slam::StaticConstantRelation<EFStride> ElemToFaceRelation;
+    typedef asctoolkit::slam::StaticConstantRelation<FEStride> FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
@@ -546,7 +546,7 @@ namespace shocktube {
 
 } // end namespace shocktube
 } // end namespace examples
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
 
@@ -557,7 +557,7 @@ namespace shocktube {
 
 int main(void)
 {
-  using namespace asctoolkit::meshapi::examples::shocktube;
+  using namespace asctoolkit::slam::examples::shocktube;
   asctoolkit::slic::UnitTestLogger logger;
 
   // We should be able to parallelize pretty easily by

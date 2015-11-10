@@ -20,7 +20,7 @@ endforeach()
 
 
 ####################################
-# Build slam (meshAPI) version of lulesh 2.0
+# Build slam (MeshAPI) version of lulesh 2.0
 ####################################
 
 set(lulesh_dir lulesh2.0.3  )
@@ -127,7 +127,7 @@ endif()
 
 
 ####################################
-# Build slam (meshapi) version of tinyHydro
+# Build slam (MeshAPI) version of tinyHydro
 ####################################
       
 set(tinyHydro_dir tinyHydro  )

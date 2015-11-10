@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef MESHAPI_RELATION_HPP_
-#define MESHAPI_RELATION_HPP_
+#ifndef SLAM_RELATION_HPP_
+#define SLAM_RELATION_HPP_
 
 #include <vector>
 
@@ -25,7 +25,7 @@
 #include "slam/NullSet.hpp"
 
 namespace asctoolkit {
-namespace meshapi    {
+namespace slam    {
 
   class NullSet;
 
@@ -103,7 +103,7 @@ namespace meshapi    {
   };
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_RELATION_HPP_
+#endif // SLAM_RELATION_HPP_

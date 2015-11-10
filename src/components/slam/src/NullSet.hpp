@@ -16,14 +16,14 @@
  *
  */
 
-#ifndef MESHAPI_NULL_SET_H_
-#define MESHAPI_NULL_SET_H_
+#ifndef SLAM_NULL_SET_H_
+#define SLAM_NULL_SET_H_
 
 #include "slic/slic.hpp"
 #include "slam/Set.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
 /**
@@ -77,7 +77,7 @@ namespace meshapi {
 #endif
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_SET_H_
+#endif //  SLAM_SET_H_

@@ -16,12 +16,12 @@
 #include "OrderedSet.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 namespace policies {
   const NullSet NoSubset::s_nullSet;
   NullSet VirtualParentSubset::s_nullSet;
 
 } // namespace policies
-} // namespace meshapi
+} // namespace slam
 } // namespace asctoolkit

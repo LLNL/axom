@@ -47,17 +47,17 @@
   #define USE_CONSTANT_RELATION
 #endif
 
-#ifndef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
-  #define MESHAPI_USE_DOUBLE_ARRAY_ACCESS
+#ifndef SLAM_USE_DOUBLE_ARRAY_ACCESS
+  #define SLAM_USE_DOUBLE_ARRAY_ACCESS
 #endif
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace examples {
 namespace unstructured {
 
-  typedef asctoolkit::meshapi::MeshIndexType  IndexType;
+  typedef asctoolkit::slam::MeshIndexType  IndexType;
   typedef double                              DataType;
 
 
@@ -89,18 +89,18 @@ namespace unstructured {
     enum { NODES_PER_ZONE = 8 };
 
     // types for sets
-    typedef asctoolkit::meshapi::PositionSet                 NodeSet;
-    typedef asctoolkit::meshapi::PositionSet                 ZoneSet;
+    typedef asctoolkit::slam::PositionSet                 NodeSet;
+    typedef asctoolkit::slam::PositionSet                 ZoneSet;
 
     // types for relations
-    typedef asctoolkit::meshapi::StaticVariableRelation   NodeToZoneRelation;
+    typedef asctoolkit::slam::StaticVariableRelation   NodeToZoneRelation;
     typedef NodeToZoneRelation::RelationVecConstIterator  NodeZoneIterator;
 
 #ifdef USE_CONSTANT_RELATION
-    typedef asctoolkit::meshapi::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
-    typedef asctoolkit::meshapi::StaticConstantRelation<ZNStride>   ZoneToNodeRelation;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
+    typedef asctoolkit::slam::StaticConstantRelation<ZNStride>   ZoneToNodeRelation;
 #else
-    typedef asctoolkit::meshapi::StaticVariableRelation   ZoneToNodeRelation;
+    typedef asctoolkit::slam::StaticVariableRelation   ZoneToNodeRelation;
 #endif
     typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
 
@@ -108,9 +108,9 @@ namespace unstructured {
     typedef NodeSet::PositionType                         PositionType;
 
     // types for maps
-    typedef asctoolkit::meshapi::Map< Point >             PositionsVec;
-    typedef asctoolkit::meshapi::Map< DataType >          NodeField;
-    typedef asctoolkit::meshapi::Map< DataType >          ZoneField;
+    typedef asctoolkit::slam::Map< Point >             PositionsVec;
+    typedef asctoolkit::slam::Map< DataType >          NodeField;
+    typedef asctoolkit::slam::Map< DataType >          ZoneField;
 
   public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -157,7 +157,7 @@ namespace unstructured {
 
         SLIC_ERROR_IF( !vtkMesh
           , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName <<"')"
-                                                        << "\nThe current working directory is: '" << asctoolkit::meshapi::util::getCWD() << "'");
+                                                        << "\nThe current working directory is: '" << asctoolkit::slam::util::getCWD() << "'");
     }
     ~SimpleVTKHeshMeshReader()
     {
@@ -284,7 +284,7 @@ namespace unstructured {
     // In both cases, we are using the relation's range() function to get a pair of iterators to the inner relation
 
     // --- Step 1: Generate a dynamic variable relation from Nodes to Zones
-    typedef asctoolkit::meshapi::DynamicVariableRelation  DynRelation;
+    typedef asctoolkit::slam::DynamicVariableRelation  DynRelation;
     typedef DynRelation::RelationVecConstIteratorPair     DynRelationIteratorPair;
 
     DynRelation tmpZonesOfNode( &mesh->nodes, &mesh->zones );
@@ -292,7 +292,7 @@ namespace unstructured {
     for(HexMesh::ZoneSet::iterator zIt = mesh->zones.begin(); zIt < mesh->zones.end(); ++zIt)
     {
       IndexType const& zoneIdx = *zIt;
-#ifndef MESHAPI_USE_DOUBLE_ARRAY_ACCESS
+#ifndef SLAM_USE_DOUBLE_ARRAY_ACCESS
       typedef HexMesh::ZoneToNodeRelation::RelationVecConstIteratorPair RelVecItPair;
       for(RelVecItPair znItPair  = mesh->relationZoneNode.range(zoneIdx); znItPair.first < znItPair.second; ++znItPair.first )
       {
@@ -427,13 +427,13 @@ namespace unstructured {
 
 }   // end namespace unstructured
 }   // end namespace examples
-}   // end namespace meshapi
+}   // end namespace slam
 }   // end namespace asctoolkit
 
 
 int main()
 {
-  using namespace asctoolkit::meshapi::examples::unstructured;
+  using namespace asctoolkit::slam::examples::unstructured;
 
   asctoolkit::slic::UnitTestLogger logger;
 

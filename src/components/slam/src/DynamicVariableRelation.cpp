@@ -16,7 +16,7 @@
 #include <iterator>
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
   DynamicVariableRelation::DynamicVariableRelation (Set* fromSet, Set* toSet)
       : m_fromSet(fromSet), m_toSet(toSet)
@@ -128,5 +128,5 @@ namespace meshapi {
     return bValid;
   }
 
-} // namespace meshapi
+} // namespace slam
 } // namespace asctoolkit

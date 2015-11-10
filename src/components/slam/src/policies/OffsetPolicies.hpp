@@ -11,9 +11,9 @@
 /**
  * \file
  *
- * \brief Offset policies for the meshapi
+ * \brief Offset policies for SLAM
  *
- * Offset policies are meant to represent the offset to the first element of meshapi ordered set
+ * Offset policies are meant to represent the offset to the first element of SLAM ordered set
  *   A valid offset policy must support the following interface:
  *      [required]
  *      * DEFAULT_VALUE is a public static const IntType
@@ -22,12 +22,12 @@
  *      * operator(): IntType -- alternate accessor for the offset value
  */
 
-#ifndef MESHAPI_POLICIES_OFFSET_H_
-#define MESHAPI_POLICIES_OFFSET_H_
+#ifndef SLAM_POLICIES_OFFSET_H_
+#define SLAM_POLICIES_OFFSET_H_
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace policies {
 
     /**
@@ -68,7 +68,7 @@ namespace policies {
 
         CompileTimeOffsetHolder(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == INT_VAL
-                              , "MeshAPI::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
+                              , "SLAM::CompileTimeOffsetHolder -- tried to initialize a compile time offset with value ("
                               << val <<" ) that differs from the template parameter of " << INT_VAL <<".");
         }
 
@@ -86,7 +86,7 @@ namespace policies {
 
         ZeroOffset(IntType val = DEFAULT_VALUE) {
                SLIC_ASSERT_MSG( val == DEFAULT_VALUE
-                              , "MeshAPI::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
+                              , "SLAM::ZeroOffset policy -- tried to initialize a NoOffset policy with ("
                               << val <<", but should always be 0");
         }
 
@@ -98,7 +98,7 @@ namespace policies {
     /// \}
 
 } // end namespace policies
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_POLICIES_OFFSET_H_
+#endif // SLAM_POLICIES_OFFSET_H_

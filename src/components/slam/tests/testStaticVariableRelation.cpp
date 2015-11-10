@@ -27,8 +27,8 @@
 #include "slam/Relation.hpp"
 #include "slam/StaticVariableRelation.hpp"
 
-using asctoolkit::meshapi::RangeSet;
-using asctoolkit::meshapi::StaticVariableRelation;
+using asctoolkit::slam::RangeSet;
+using asctoolkit::slam::StaticVariableRelation;
 
 typedef RangeSet::ElementType   ElementType;
 typedef RangeSet::PositionType  PositionType;
@@ -37,7 +37,7 @@ const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 8;
 
 
-TEST(gtest_meshapi_static_variable_relation,empty_relation)
+TEST(gtest_slam_static_variable_relation,empty_relation)
 {
   std::cout << "\n****** Testing empty relation.  isValid() should be true." << std::endl;
 
@@ -50,7 +50,7 @@ TEST(gtest_meshapi_static_variable_relation,empty_relation)
   std::cout << "\n****** done." << std::endl;
 }
 
-TEST(gtest_meshapi_static_variable_relation,empty_relation_out_of_bounds)
+TEST(gtest_slam_static_variable_relation,empty_relation_out_of_bounds)
 {
 
   StaticVariableRelation emptyRel;
@@ -67,7 +67,7 @@ TEST(gtest_meshapi_static_variable_relation,empty_relation_out_of_bounds)
 
 
 
-TEST(gtest_meshapi_static_variable_relation,test_uninitialized_relation)
+TEST(gtest_slam_static_variable_relation,test_uninitialized_relation)
 {
   std::cout << "\n****** Testing uninitialized relation.  isValid() should be false." << std::endl;
 
@@ -109,7 +109,7 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   beginsVec[FROMSET_SIZE] = curIdx;
 }
 
-TEST(gtest_meshapi_static_variable_relation,simple_relation)
+TEST(gtest_slam_static_variable_relation,simple_relation)
 {
   std::cout << "\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
@@ -169,7 +169,7 @@ TEST(gtest_meshapi_static_variable_relation,simple_relation)
   std::cout << "\n****** done." << std::endl;
 }
 
-TEST(gtest_meshapi_static_variable_relation,initialized_rel_out_of_bounds)
+TEST(gtest_slam_static_variable_relation,initialized_rel_out_of_bounds)
 {
   std::cout << "\n****** Testing simple incrementing relation.  isValid() should be true." << std::endl;
 
@@ -194,7 +194,7 @@ TEST(gtest_meshapi_static_variable_relation,initialized_rel_out_of_bounds)
 
 }
 
-TEST(gtest_meshapi_static_variable_relation,test_iterator_range)
+TEST(gtest_slam_static_variable_relation,test_iterator_range)
 {
   std::cout << "\n****** Testing range function on incrementing relation." << std::endl;
 
@@ -237,7 +237,7 @@ TEST(gtest_meshapi_static_variable_relation,test_iterator_range)
 }
 
 
-TEST(gtest_meshapi_static_variable_relation,double_subscript_test)
+TEST(gtest_slam_static_variable_relation,double_subscript_test)
 {
   std::cout << "\n****** Testing access via double subscript." << std::endl;
 
@@ -274,7 +274,7 @@ TEST(gtest_meshapi_static_variable_relation,double_subscript_test)
 }
 
 
-TEST(gtest_meshapi_static_variable_relation,delayed_double_subscript_test)
+TEST(gtest_slam_static_variable_relation,delayed_double_subscript_test)
 {
   std::cout << "\n****** Testing access via delayed double subscript." << std::endl;
 

@@ -20,9 +20,9 @@
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
 
-TEST(gtest_meshapi_set,construct_nullset)
+TEST(gtest_slam_set,construct_nullset)
 {
-  asctoolkit::meshapi::Set* s = new asctoolkit::meshapi::NullSet();
+  asctoolkit::slam::Set* s = new asctoolkit::slam::NullSet();
 
   EXPECT_TRUE(s->empty());
 
@@ -31,12 +31,12 @@ TEST(gtest_meshapi_set,construct_nullset)
   EXPECT_TRUE( true );
 }
 
-TEST(gtest_meshapi_set,subscript_fails_nullset)
+TEST(gtest_slam_set,subscript_fails_nullset)
 {
   std::cout << "\n****** Testing subscript access on NullSet -- code is expected to assert and die." << std::endl;
 
-  typedef asctoolkit::meshapi::Set::PositionType SetPosition;
-  asctoolkit::meshapi::NullSet n;
+  typedef asctoolkit::slam::Set::PositionType SetPosition;
+  asctoolkit::slam::NullSet n;
 
   EXPECT_EQ(n.size(), SetPosition()) << "size of null set is defined to be zero";
 

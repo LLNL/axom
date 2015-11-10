@@ -83,7 +83,7 @@ make_library( LIBRARY_NAME
             )
 
 ####################################=
-# install target for meshapi
+# install target for slam
 ####################################
 
 install(TARGETS slam DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

@@ -11,7 +11,7 @@
 /**
  * \file
  *
- * \brief Subsetting policies for the meshapi
+ * \brief Subsetting policies for SLAM
  *
  * Subsetting policies encompass the type and availability of a set's parent
  *   A valid subset policy must support the following interface:
@@ -22,13 +22,13 @@
  *      * operator(): IntType -- alternate accessor for indirection
  */
 
-#ifndef MESHAPI_POLICIES_SUBSET_H_
-#define MESHAPI_POLICIES_SUBSET_H_
+#ifndef SLAM_POLICIES_SUBSET_H_
+#define SLAM_POLICIES_SUBSET_H_
 
 #include <set>
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace policies {
 
     /**
@@ -168,7 +168,7 @@ namespace policies {
     /// \}
 
 } // end namespace policies
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_POLICIES_SUBSET_H_
+#endif // SLAM_POLICIES_SUBSET_H_

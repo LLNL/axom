@@ -23,22 +23,22 @@
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 
-typedef asctoolkit::meshapi::Set::PositionType         SetPosition;
-typedef asctoolkit::meshapi::Set::ElementType          SetElement;
+typedef asctoolkit::slam::Set::PositionType         SetPosition;
+typedef asctoolkit::slam::Set::ElementType          SetElement;
 
-typedef asctoolkit::meshapi::policies::StrideOne<SetPosition> StrideOnePolicy;
-typedef asctoolkit::meshapi::policies::NoIndirection<SetPosition,SetElement> NoIndirectionPolicy;
-typedef asctoolkit::meshapi::policies::VirtualParentSubset SubsetPolicy;
+typedef asctoolkit::slam::policies::StrideOne<SetPosition> StrideOnePolicy;
+typedef asctoolkit::slam::policies::NoIndirection<SetPosition,SetElement> NoIndirectionPolicy;
+typedef asctoolkit::slam::policies::VirtualParentSubset SubsetPolicy;
 
 
 
-typedef asctoolkit::meshapi::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
+typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
 typedef SetType::iterator             SetIterator;
 
 static const SetPosition MAX_SET_SIZE = 20;
 
 
-TEST(gtest_meshapi_windowed_range_set,construct_windowed_range_set)
+TEST(gtest_slam_windowed_range_set,construct_windowed_range_set)
 {
   const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SET_SIZE);
   const SetElement upperIndex = static_cast<SetElement>( .7 * MAX_SET_SIZE);
@@ -100,7 +100,7 @@ TEST(gtest_meshapi_windowed_range_set,construct_windowed_range_set)
   std::cout << "--\ndone." << std::endl;
 }
 
-TEST(gtest_meshapi_windowed_range_set,test_windowed_range_set_parents)
+TEST(gtest_slam_windowed_range_set,test_windowed_range_set_parents)
 {
   const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SET_SIZE);
   const SetElement upperIndex = static_cast<SetElement>( .7 * MAX_SET_SIZE);

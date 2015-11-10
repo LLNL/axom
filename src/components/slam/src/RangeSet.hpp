@@ -16,13 +16,13 @@
  *
  */
 
-#ifndef MESHAPI_RANGE_SET_H_
-#define MESHAPI_RANGE_SET_H_
+#ifndef SLAM_RANGE_SET_H_
+#define SLAM_RANGE_SET_H_
 
 #include "slam/OrderedSet.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
 
     /**
@@ -134,7 +134,7 @@ namespace meshapi {
     };
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_RANGE_SET_H_
+#endif //  SLAM_RANGE_SET_H_

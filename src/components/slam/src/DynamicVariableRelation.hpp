@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef MESHAPI_DYNAMIC_VARIABLE_RELATION_HPP_
-#define MESHAPI_DYNAMIC_VARIABLE_RELATION_HPP_
+#ifndef SLAM_DYNAMIC_VARIABLE_RELATION_HPP_
+#define SLAM_DYNAMIC_VARIABLE_RELATION_HPP_
 
 #include <vector>
 
@@ -31,7 +31,7 @@
 
 
 namespace asctoolkit {
-namespace meshapi    {
+namespace slam    {
 
   class DynamicVariableRelation : public Relation
   {
@@ -141,7 +141,7 @@ namespace meshapi    {
   };
 
 
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif // MESHAPI_DYNAMIC_VARIABLE_RELATION_HPP_
+#endif // SLAM_DYNAMIC_VARIABLE_RELATION_HPP_

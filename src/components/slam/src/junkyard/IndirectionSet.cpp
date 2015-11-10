@@ -10,7 +10,7 @@
 #include "IndirectionSet.hpp"
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 
   const NullSet IndirectionSet::s_nullSet;
 
@@ -31,5 +31,5 @@ namespace meshapi {
     return bValid;
   }
 
-} /* namespace meshapi */
+} /* namespace slam */
 } /* namespace asctoolkit */

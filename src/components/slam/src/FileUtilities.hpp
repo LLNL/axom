@@ -9,8 +9,8 @@
  */
 
 
-#ifndef MESHAPI_FILE_UTILITIES_H_
-#define MESHAPI_FILE_UTILITIES_H_
+#ifndef SLAM_FILE_UTILITIES_H_
+#define SLAM_FILE_UTILITIES_H_
 
 #include <string>
 
@@ -25,7 +25,7 @@
 
 
 namespace asctoolkit {
-namespace meshapi {
+namespace slam {
 namespace util {
 
 /**
@@ -45,7 +45,7 @@ namespace util {
 
 
 } // end namespace util
-} // end namespace meshapi
+} // end namespace slam
 } // end namespace asctoolkit
 
-#endif //  MESHAPI_FILE_UTILITIES_H_
+#endif //  SLAM_FILE_UTILITIES_H_

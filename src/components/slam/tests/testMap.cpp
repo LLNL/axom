@@ -24,9 +24,9 @@
 #include "slam/Map.hpp"
 
 
-typedef asctoolkit::meshapi::RangeSet     SetType;
-typedef asctoolkit::meshapi::Map<int>     IntMap;
-typedef asctoolkit::meshapi::Map<double>  RealMap;
+typedef asctoolkit::slam::RangeSet     SetType;
+typedef asctoolkit::slam::Map<int>     IntMap;
+typedef asctoolkit::slam::Map<double>  RealMap;
 
 typedef SetType::PositionType             PositionType;
 typedef SetType::ElementType              ElementType;
@@ -34,7 +34,7 @@ typedef SetType::ElementType              ElementType;
 typedef SetType::iterator                 SetIterator;
 static PositionType const MAX_SET_SIZE = 10;
 
-TEST(gtest_meshapi_map,construct_empty_map)
+TEST(gtest_slam_map,construct_empty_map)
 {
   IntMap m;
 
@@ -51,8 +51,8 @@ bool constructAndTestMap()
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  std::cout << "\nCreating " << asctoolkit::meshapi::util::TypeToString<T>::to_string() << " map on the set " << std::endl;
-  asctoolkit::meshapi::Map<T> m(&s);
+  std::cout << "\nCreating " << asctoolkit::slam::util::TypeToString<T>::to_string() << " map on the set " << std::endl;
+  asctoolkit::slam::Map<T> m(&s);
   EXPECT_TRUE(m.isValid());
 
   std::cout << "\nSetting the elements.";
@@ -73,12 +73,12 @@ bool constructAndTestMap()
   return true;
 }
 
-TEST(gtest_meshapi_map,construct_int_map)
+TEST(gtest_slam_map,construct_int_map)
 {
   EXPECT_TRUE( constructAndTestMap<int>() );
 }
 
-TEST(gtest_meshapi_map,construct_double_map)
+TEST(gtest_slam_map,construct_double_map)
 {
   EXPECT_TRUE( constructAndTestMap<double>());
 }
