@@ -71,7 +71,7 @@ DataStore::~DataStore()
  *
  *************************************************************************
  */
-DataBuffer * DataStore::getBuffer( IndexType idx )
+DataBuffer * DataStore::getBuffer( IndexType idx ) const
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
@@ -252,10 +252,7 @@ void DataStore::print(std::ostream& os) const
 {
   Node n;
   info(n);
-  /// TODO: after conduit update, use new ostream variant of to_json.
-  std::ostringstream oss;
-  n.json_to_stream(oss);
-  os << oss.str();
+  n.to_json_stream(os);
 }
 
 

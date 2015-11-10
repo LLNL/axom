@@ -43,6 +43,10 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
   ATK_databuffer_allocate_existing(dbuff);
 
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_INT_T);  // XXX NATIVE TYPE
+  EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
@@ -51,8 +55,6 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   }
 
   ATK_databuffer_print(dbuff);
-
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
@@ -66,6 +68,11 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
   ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
+
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_INT_T);  // XXX NATIVE TYPE
+  EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
@@ -74,8 +81,6 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
   }
 
   ATK_databuffer_print(dbuff);
-
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
@@ -91,6 +96,8 @@ TEST(C_sidre_buffer,realloc_buffer)
   ATK_databuffer_declare(dbuff, ATK_C_LONG_T, 5);
   ATK_databuffer_allocate_existing(dbuff);
 
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_LONG_T);  // XXX NATIVE TYPE
+  EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 5u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
   long * data_ptr = (long *) ATK_databuffer_get_data(dbuff);
@@ -102,7 +109,11 @@ TEST(C_sidre_buffer,realloc_buffer)
 
   ATK_databuffer_print(dbuff);
 
-  ATK_databuffer_reallocate(dbuff, ATK_C_LONG_T, 10);
+  ATK_databuffer_reallocate(dbuff, 10);
+
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_LONG_T);  // XXX NATIVE TYPE
+  EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);
+  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 
   // data buffer changes
   data_ptr = (long *) ATK_databuffer_get_data(dbuff);
@@ -116,8 +127,6 @@ TEST(C_sidre_buffer,realloc_buffer)
   {
     data_ptr[i] = 10;
   }
-
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 
   ATK_databuffer_print(dbuff);
 

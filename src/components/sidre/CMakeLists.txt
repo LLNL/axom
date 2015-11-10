@@ -3,16 +3,20 @@
 ################################
 project(sidre)
 
+################################
+# Add the conduit include path
+################################
+include_directories(${CONDUIT_INCLUDE_DIRS})
+
+################################
+# Add the sparsehash headers include
+################################
+include_directories( ${SPARSEHASH_INCLUDE_DIRS} )
 
 ################################
 # Add the boost headers include
 ################################
 include_directories( ${Boost_INCLUDE_DIRS} )
-
-################################
-# Add the sparsehash headers include
-################################
-include_directories( ${Sparsehash_INCLUDE_DIRS} )
 
 ################################
 # Add the sidre sources

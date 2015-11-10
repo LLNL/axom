@@ -42,10 +42,10 @@ TEST(sidre_external, declare_external_buffer)
   DataBuffer * dbuff_1 = ds->createBuffer();
   DataBuffer * dbuff_2 = ds->createBuffer();
 
-  dbuff_0->allocate(DataType::c_double(len));
-  dbuff_1->declare(DataType::c_int(len));
+  dbuff_0->allocate(CONDUIT_NATIVE_DOUBLE_DATATYPE_ID, len);
+  dbuff_1->declare(CONDUIT_NATIVE_INT_DATATYPE_ID, len);
   dbuff_1->setExternalData(idata);
-  dbuff_2->declare(DataType::c_double(len));
+  dbuff_2->declare(CONDUIT_NATIVE_DOUBLE_DATATYPE_ID, len);
   dbuff_2->setExternalData(ddata);
 
   EXPECT_EQ(dbuff_0->isExternal(), false);
