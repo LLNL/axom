@@ -45,11 +45,11 @@ return;
 // splicer end class.DataView.method.allocate_from_type
 }
 
-void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength len)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.reallocate
-selfobj->reallocate(getTypeID(type), len);
+selfobj->reallocate(len);
 return;
 // splicer end class.DataView.method.reallocate
 }

@@ -47,11 +47,6 @@ include(SetupCmakeOptions)
 include(PreventInSourceBuilds)
 
 ################################
-# Setup compiler options
-################################
-include(SetupCompilerOptions)
-
-################################
 # Setup 3rd Party Libs
 ################################
 include(Setup3rdParty)
@@ -60,6 +55,11 @@ include(Setup3rdParty)
 # Setup toolkit docs targets
 ################################
 include(SetupDocs)
+
+################################
+# Setup toolkit generate targets
+################################
+include(SetupGenerate)
 
 ################################
 # Setup toolkit source checks
@@ -124,6 +124,12 @@ mark_as_advanced(
      EXECUTABLE_OUTPUT_PATH
      CMAKE_Fortran_MODULE_DIRECTORY
      )
+
+################################
+# Setup compiler options
+# (must be included after HEADER_INCLUDES_DIRECTORY is set)
+################################
+include(SetupCompilerOptions)
 
 ################################
 # Standard CMake Options

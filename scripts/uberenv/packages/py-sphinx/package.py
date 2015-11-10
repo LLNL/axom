@@ -8,6 +8,8 @@ class PySphinx(Package):
 
     version('1.3.1', '8786a194acf9673464c5455b11fd4332')
 
+    depends_on("py-setuptools")
+
     extends('python')
 
     def install(self, spec, prefix):

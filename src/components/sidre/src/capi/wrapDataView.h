@@ -39,7 +39,7 @@ void ATK_dataview_allocate_simple(ATK_dataview * self);
 
 void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len);
 
-void ATK_dataview_reallocate(ATK_dataview * self, int type, ATK_SidreLength len);
+void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength len);
 
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 

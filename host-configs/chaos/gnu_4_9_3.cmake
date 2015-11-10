@@ -1,44 +1,60 @@
 ###############################################################################
 #
-# CMake Cache Seed file for chaos_5_x86_64_ib machines using gcc 4.7
+# CMake Cache Seed file for chaos_5_x86_64_ib machines using gcc 4.9.3
 #
 ###############################################################################
 
-###############################################################################
-# Select the c and c++ compiler though the standard CMake Variables.
-###############################################################################
-set(COMPILER_PATH "/usr/apps/gnu/4.9.3/bin" CACHE PATH "")
+##################################
+# uberenv host-config
+##################################
+# chaos_5_x86_64_ib-gcc@4.9.3
+##################################
 
-set(CMAKE_C_COMPILER "${COMPILER_PATH}/gcc" CACHE PATH "")
-if (NOT EXISTS ${COMPILER_PATH})
-   MESSAGE(FATAL_ERROR "Compiler directory ${COMPILER_PATH} does not exist.")
-endif()
-set(CMAKE_CXX_COMPILER "${COMPILER_PATH}/g++" CACHE PATH "")
-set(CMAKE_Fortran_COMPILER "${COMPILER_PATH}/gfortran" CACHE PATH "")
-set(GCOV_PATH "${COMPILER_PATH}/gcov" CACHE PATH "")
-
-#######
-# uberenv host-config for asctoolkit
-#######
 # cmake from uberenv
-# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/cmake@3.2.2/bin/cmake
+# cmake exectuable path: /usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/cmake-3.2.2-jnpt24vowmusazje5nogmtkk2mmriu7u/bin/cmake
+
+#######
+# using gcc@4.9.3 compiler spec
+#######
+
+# c compiler used by spack
+set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/gcc" CACHE PATH "")
+
+# cpp compiler used by spack
+set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/g++" CACHE PATH "")
+
+# fortran compiler used by spack
+set(ENABLE_FORTRAN ON CACHE PATH "")
+
+set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
+
+# conduit from uberenv
+set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/conduit-github-6y2swpnp6vthtm43ddawh4mn4jefan5j" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/python@2.7.8/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/python-2.7.8-wxs6x4molggy6niut2czpjfhvhmrscj5/bin/python" CACHE PATH "")
 
 # sphinx from uberenv
-set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/python@2.7.8/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/python-2.7.8-wxs6x4molggy6niut2czpjfhvhmrscj5/bin/sphinx-build" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/uncrustify-0.61-um6yrn4vqk3iwjv4cj7f5vt3oqe2gihp/bin/uncrustify" CACHE PATH "")
+
+# sparsehash headers from uberenv
+set(SPARSEHASH_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/sparsehash-headers-2.0.2-tdigejugdkoolzqjke75rc7jd236fcm4" CACHE PATH "")
 
 # boost headers from uberenv
 set(ENABLE_BOOST ON CACHE PATH "")
-set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.58.0" CACHE PATH "")
+set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/boost-headers-1.58.0-jo2qfge5otlfcp7ahwgu27opxweoouga" CACHE PATH "")
 
 # lcov and genhtml from uberenv
-set(LCOV_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/lcov@1.11/usr/bin/lcov" CACHE PATH "")
-set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/lcov@1.11/usr/bin/genhtml" CACHE PATH "")
+set(LCOV_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/lcov-1.11-mrnut4rtvsbdmkfvjf454flkk5wxilra/usr/bin/lcov" CACHE PATH "")
+
+set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/lcov-1.11-mrnut4rtvsbdmkfvjf454flkk5wxilra/usr/bin/genhtml" CACHE PATH "")
+
+##################################
+# end uberenv host-config
+##################################
 
 
 ###############################################################################

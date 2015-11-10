@@ -476,7 +476,7 @@ TEST(C_sidre_group,save_restore_simple)
 
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
 
-  ATK_dataview *i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
+  ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
   ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
   ATK_dataview_set_value_int(i0_view, 1);
 
@@ -530,7 +530,7 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
 
-  ATK_dataview *d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
+  ATK_dataview * d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
   ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
   ATK_dataview_set_value_double(d0_view, 3000.0);
 

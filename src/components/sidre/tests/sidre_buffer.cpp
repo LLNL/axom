@@ -12,11 +12,9 @@
 
 #include "sidre/sidre.hpp"
 
-#include "conduit/conduit.hpp"
 
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;
-using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 
@@ -44,10 +42,14 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_int(10));
+  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
   dbuff->allocate();
 
-  int * data_ptr = dbuff->getValue();
+  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
+
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -55,8 +57,6 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   }
 
   dbuff->print();
-
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
@@ -69,8 +69,13 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_int(10));
-  int * data_ptr = dbuff->getValue();
+  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+
+  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
+
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -78,8 +83,6 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   }
 
   dbuff->print();
-
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   ds->print();
   delete ds;
@@ -93,11 +96,13 @@ TEST(sidre_buffer,realloc_buffer)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_long(5));
+  dbuff->allocate(CONDUIT_NATIVE_LONG_DATATYPE_ID, 5);
 
+  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 5u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 5);
 
-  long * data_ptr = dbuff->getValue();
+  long * data_ptr = static_cast<long *>(dbuff->getData());
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -106,10 +111,14 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->print();
 
-  dbuff->reallocate(DataType::c_long(10));
+  dbuff->reallocate(10);
+
+  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
   // data buffer changes
-  data_ptr = dbuff->getValue();
+  data_ptr = static_cast<long *>(dbuff->getData());
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -120,8 +129,6 @@ TEST(sidre_buffer,realloc_buffer)
   {
     data_ptr[i] = 10;
   }
-
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
 
   dbuff->print();
 

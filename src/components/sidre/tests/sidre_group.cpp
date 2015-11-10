@@ -265,7 +265,7 @@ TEST(sidre_group,create_destroy_has_viewbuffer)
 
   // try api call that specifies data type in another way
   group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) );
-  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR ) ;
+  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
   // destroy this view using index
   group->destroyViewAndBuffer( group->getFirstValidViewIndex() );
 
@@ -314,7 +314,7 @@ TEST(sidre_group,group_name_collisions)
   setAbortOnAssert(false);
   DataGroup * badGroup = ds->getRoot()->createGroup("fields");
   EXPECT_TRUE( badGroup == ATK_NULLPTR );
-  
+
   //check error condition
   // attempt to create duplicate view name.
   EXPECT_TRUE(flds->createViewAndBuffer("a") == ATK_NULLPTR);

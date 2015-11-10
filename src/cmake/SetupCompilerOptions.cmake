@@ -120,6 +120,10 @@ if(ENABLE_FORTRAN)
 
     # default property to free form
     set(CMAKE_Fortran_FORMAT FREE)
+
+    # Create macros for Fortran name mangling
+    include(FortranCInterface)
+    FortranCInterface_HEADER(${HEADER_INCLUDES_DIRECTORY}/common/FC.h MACRO_NAMESPACE "FC_")
 else()
     MESSAGE(STATUS  "Fortran support disabled.")
 endif()

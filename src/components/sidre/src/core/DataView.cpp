@@ -112,13 +112,15 @@ DataView * DataView::declare(const DataType& dtype)
 DataView * DataView::allocate()
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call allocate an external or opaque view");
+                  "Cannot call allocate on an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
-    m_data_buffer->allocate(m_schema);
+    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+    SidreLength nitems = m_schema.dtype().number_of_elements();
+    m_data_buffer->allocate(type, nitems);
     apply();
   }
   return this;
@@ -134,7 +136,7 @@ DataView * DataView::allocate()
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Attempting to allocate an opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
@@ -158,7 +160,7 @@ DataView * DataView::allocate( TypeID type, SidreLength len)
 DataView * DataView::allocate(const Schema& schema)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Attempting to allocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -181,7 +183,7 @@ DataView * DataView::allocate(const Schema& schema)
 DataView * DataView::allocate(const DataType& dtype)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an external or opaque view");
+                  "Attempting to allocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
@@ -194,26 +196,27 @@ DataView * DataView::allocate(const DataType& dtype)
   return this;
 }
 
-
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit schema.
+ * Reallocate the data view's buffer according to a length.
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(TypeID type, SidreLength len)
+DataView * DataView::reallocate(SidreLength len)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an external or opaque view");
+                  "Attempting to reallocate an opaque view");
   SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements in view >=0");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
   if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 )
   {
-    declare(type, len);
-    m_data_buffer->reallocate(type, len);
+    // preserve current type
+    TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
+    declare(vtype, len);
+    m_data_buffer->reallocate(len);
     apply();
   }
   return this;
@@ -229,15 +232,23 @@ DataView * DataView::reallocate(TypeID type, SidreLength len)
 DataView * DataView::reallocate(const Schema& schema)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an external or opaque view");
+                  "Attempting to reallocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
-    declare(schema);
-    m_data_buffer->reallocate(m_schema);
-    apply();
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
+    SLIC_ASSERT_MSG( type == view_type,
+		     "Attempting to reallocate with a different type");
+    if (type == view_type)
+    {
+      declare(schema);
+      SidreLength nitems = schema.dtype().number_of_elements();
+      m_data_buffer->reallocate(nitems);
+      apply();
+    }
   }
   return this;
 }
@@ -252,19 +263,26 @@ DataView * DataView::reallocate(const Schema& schema)
 DataView * DataView::reallocate(const DataType& dtype)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an external or opaque view");
+                  "Attempting to reallocate an opaque view");
   SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
                   "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
-    declare(dtype);
-    m_data_buffer->reallocate(m_schema);
-    apply();
+    TypeID type = static_cast<TypeID>(dtype.id());
+    TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
+    SLIC_ASSERT_MSG( type == view_type,
+		     "Attempting to reallocate with a different type");
+    if (type == view_type)
+    {
+      declare(dtype);
+      SidreLength nitems = dtype.number_of_elements();
+      m_data_buffer->reallocate(nitems);
+      apply();
+    }
   }
   return this;
 }
-
 
 /*
  *************************************************************************
@@ -402,10 +420,7 @@ void DataView::print(std::ostream& os) const
 {
   Node n;
   info(n);
-  /// TODO: after conduit update, use new ostream variant of to_json.
-  std::ostringstream oss;
-  n.json_to_stream(oss);
-  os << oss.str();
+  n.to_json_stream(os);
 }
 
 /*

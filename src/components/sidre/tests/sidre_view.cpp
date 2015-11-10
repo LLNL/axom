@@ -94,16 +94,16 @@ TEST(sidre_view,int_array_multi_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->declare(DataType::c_int(10));
+  dbuff->declare(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
   dbuff->allocate();
-  int * data_ptr = dbuff->getValue();
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i;
   }
 
-  dbuff->getValue();
+  dbuff->print();
 
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
@@ -145,8 +145,8 @@ TEST(sidre_view,init_int_array_multi_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(DataType::c_int(10));
-  int * data_ptr = dbuff->getValue();
+  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -415,6 +415,9 @@ TEST(sidre_view,int_array_realloc)
   EXPECT_EQ(a1->getTotalBytes(), sizeof(float)*10);
   EXPECT_EQ(a2->getTotalBytes(), sizeof(int)*15);
 
+  // Try some errors
+  // XXX  a1->reallocate(DataType::c_int(20));
+  // XXX reallocate with a Schema
 
   ds->print();
   delete ds;
