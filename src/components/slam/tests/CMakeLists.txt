@@ -2,7 +2,7 @@
 # Specify list of tests
 #
 
-set(gtest_meshapi_tests
+set(gtest_slam_tests
    # test sets
    testSet.cpp
    testNullSet.cpp
@@ -29,8 +29,8 @@ set(gtest_meshapi_tests
 #
 # Add gtest based tests
 #
-foreach(test ${gtest_meshapi_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON meshapi slic)
+foreach(test ${gtest_slam_tests})
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON slam slic)
 endforeach()
 
 

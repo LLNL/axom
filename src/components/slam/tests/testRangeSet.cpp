@@ -19,8 +19,8 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "meshapi/Utilities.hpp"
-#include "meshapi/RangeSet.hpp"
+#include "slam/Utilities.hpp"
+#include "slam/RangeSet.hpp"
 
 
 typedef asctoolkit::meshapi::RangeSet SetType;

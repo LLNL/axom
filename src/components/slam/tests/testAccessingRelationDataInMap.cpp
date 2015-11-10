@@ -23,10 +23,10 @@
 #include "gtest/gtest.h"
 
 
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/Relation.hpp"
-#include "meshapi/StaticVariableRelation.hpp"
-#include "meshapi/Map.hpp"
+#include "slam/RangeSet.hpp"
+#include "slam/Relation.hpp"
+#include "slam/StaticVariableRelation.hpp"
+#include "slam/Map.hpp"
 
 
 using asctoolkit::meshapi::RangeSet;

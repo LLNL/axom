@@ -2,8 +2,8 @@
 #define MESHAPI_POLICY_TRAITS_H_
 
 
-#include "meshapi/SizePolicies.hpp"
-#include "meshapi/StridePolicies.hpp"
+#include "slam/SizePolicies.hpp"
+#include "slam/StridePolicies.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

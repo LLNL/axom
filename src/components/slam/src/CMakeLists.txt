@@ -5,7 +5,7 @@ INCLUDE_DIRECTORIES(
 ######################################
 # Specify all headers and source files
 ######################################
-set(meshapi_headers
+set(slam_headers
     # Utility files
     Utilities.hpp
     FileUtilities.hpp
@@ -38,7 +38,7 @@ set(meshapi_headers
     Map.hpp
     )
 
-set(meshapi_sources
+set(slam_sources
     # SRM Set sources
     # RangeSet.cpp
     # IndirectionSet.cpp
@@ -55,15 +55,15 @@ set(meshapi_sources
 
 
 #get_source_file_property(_origflags StaticVariableRelation.hpp COMPILE_FLAGS)
-#set_source_files_properties(${meshapi_headers} "${_origflags} -fwhole-program -funroll-loops ")
-#set_source_files_properties(${meshapi_sources} "${_origflags} -fwhole-program -funroll-loops ")
+#set_source_files_properties(${slam_headers} "${_origflags} -fwhole-program -funroll-loops ")
+#set_source_files_properties(${slam_sources} "${_origflags} -fwhole-program -funroll-loops ")
 
 
 #########################################################################
 # custom target to copy header files in the "include" folder of the build tree.
 #########################################################################
 
-copy_headers_target(  ${PROJECT_NAME}  "${meshapi_headers}"
+copy_headers_target(  ${PROJECT_NAME}  "${slam_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 
@@ -73,10 +73,10 @@ copy_headers_target(  ${PROJECT_NAME}  "${meshapi_headers}"
 ####################################
 
 make_library( LIBRARY_NAME
-                meshapi
+                slam
               LIBRARY_SOURCES
-                "${meshapi_sources}"
-                "${meshapi_headers}"
+                "${slam_sources}"
+                "${slam_headers}"
               DEPENDS_ON
                 slic
                 sidre
@@ -86,4 +86,4 @@ make_library( LIBRARY_NAME
 # install target for meshapi
 ####################################
 
-install(TARGETS meshapi DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
+install(TARGETS slam DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

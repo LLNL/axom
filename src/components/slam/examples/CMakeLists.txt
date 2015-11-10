@@ -15,12 +15,12 @@ set(example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    make_executable(EXECUTABLE_NAME "meshapi${example_name}" EXECUTABLE_SOURCE ${example_source} DEPENDS_ON meshapi slic)
+    make_executable(EXECUTABLE_NAME "slam${example_name}" EXECUTABLE_SOURCE ${example_source} DEPENDS_ON slam slic)
 endforeach()
 
 
 ####################################
-# Build meshapi version of lulesh 2.0
+# Build slam (meshAPI) version of lulesh 2.0
 ####################################
 
 set(lulesh_dir lulesh2.0.3  )
@@ -47,21 +47,21 @@ if ( NOT ENABLE_OMP )
 endif()
 
 
-make_library( LIBRARY_NAME      meshapiLuleshLib
+make_library( LIBRARY_NAME      slamLuleshLib
               LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
               USE_OPENMP ${ENABLE_OMP} 
               USE_MPI ${ENABLE_MPI}              
               ) 
 
-add_dependencies(meshapiLuleshLib meshapi)
-target_link_libraries( meshapiLuleshLib  meshapi )
+add_dependencies(slamLuleshLib slam)
+target_link_libraries( slamLuleshLib  slam )
                   
-make_executable( EXECUTABLE_NAME    meshapiLulesh 
+make_executable( EXECUTABLE_NAME    slamLulesh 
                  EXECUTABLE_SOURCE  ${lulesh_exe_source}
                  DEPENDS_ON 
                     slic
-                    meshapi 
-                    meshapiLuleshLib
+                    slam 
+                    slamLuleshLib
                   USE_OPENMP ${ENABLE_OMP} 
                   USE_MPI ${ENABLE_MPI}              
                   ) 
@@ -109,15 +109,15 @@ if ( ${buildOrigLulesh} )
                                 PROPERTIES COMPILE_FLAGS " ${luleshExtraCompileFlags} " )
 
     make_library( 
-        LIBRARY_NAME meshapiLuleshOrigLib 
+        LIBRARY_NAME slamLuleshOrigLib 
         LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
         USE_OPENMP ${ENABLE_OMP} 
         USE_MPI ${ENABLE_MPI}              
        ) 
     make_executable( 
-        EXECUTABLE_NAME meshapiOrigLulesh 
+        EXECUTABLE_NAME slamOrigLulesh 
         EXECUTABLE_SOURCE ${lulesh_exe_source} 
-        DEPENDS_ON "meshapiLuleshOrigLib" 
+        DEPENDS_ON "slamLuleshOrigLib" 
         USE_OPENMP ${ENABLE_OMP} 
         USE_MPI ${ENABLE_MPI}              
        ) 
@@ -127,7 +127,7 @@ endif()
 
 
 ####################################
-# Build meshapi version of tinyHydro
+# Build slam (meshapi) version of tinyHydro
 ####################################
       
 set(tinyHydro_dir tinyHydro  )
@@ -153,25 +153,25 @@ set(tinyHydro_lib_sources
 
 
 make_library( 
-    LIBRARY_NAME meshapiTinyHydroLib 
+    LIBRARY_NAME slamTinyHydroLib 
     LIBRARY_SOURCES "${tinyHydro_lib_sources}"  "${tinyHydro_lib_headers}"
     DEPENDS_ON 
         slic
-        meshapi 
+        slam
    ) 
    
    
 #
 # Add gtest based tests
 #
-set(gtest_meshapi_tinyHydro_tests
-    ${tinyHydro_dir}/tests/meshapi_tinyHydro_unitTests.cpp
-    ${tinyHydro_dir}/tests/meshapi_tinyHydro_sedovTwoPart.cpp
-    ${tinyHydro_dir}/tests/meshapi_tinyHydro_sod1DTwoPart.cpp
+set(gtest_slam_tinyHydro_tests
+    ${tinyHydro_dir}/tests/slam_tinyHydro_unitTests.cpp
+    ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
+    ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
 )
 
-foreach(test ${gtest_meshapi_tinyHydro_tests})
-    add_gtest( TEST_SOURCE ${test} DEPENDS_ON meshapiTinyHydroLib slic)
+foreach(test ${gtest_slam_tinyHydro_tests})
+    add_gtest( TEST_SOURCE ${test} DEPENDS_ON slamTinyHydroLib slic)
 endforeach()
 
 
@@ -179,9 +179,9 @@ endforeach()
 # Temporarily used in inaccessible code block to get around warning.
 # TODO: Replace with new macros from George..
 #SET(EXTRA_WARNING_DISABLE_FLAGS " -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable ")
-#get_source_file_property(_origflags ${tinyHydro_dir}/tests/meshapi_tinyHydro_unitTests.cpp COMPILE_FLAGS)
+#get_source_file_property(_origflags ${tinyHydro_dir}/tests/slam_tinyHydro_unitTests.cpp COMPILE_FLAGS)
 #set_source_files_properties(
-#         ${gtest_meshapi_tinyHydro_tests}
+#         ${gtest_slam_tinyHydro_tests}
 #         PROPERTIES COMPILE_FLAGS "${_origflags} ${EXTRA_WARNING_DISABLE_FLAGS}"     
 #         )
 

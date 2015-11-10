@@ -21,8 +21,8 @@
 
 #include <vector>
 
-#include "meshapi/Set.hpp"
-#include "meshapi/NullSet.hpp"
+#include "slam/Set.hpp"
+#include "slam/NullSet.hpp"
 
 namespace asctoolkit {
 namespace meshapi    {

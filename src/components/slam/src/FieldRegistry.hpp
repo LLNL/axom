@@ -17,9 +17,9 @@
 
 #include "slic/slic.hpp"
 
-#include "meshapi/Utilities.hpp"
-#include "meshapi/Set.hpp"
-#include "meshapi/Map.hpp"
+#include "slam/Utilities.hpp"
+#include "slam/Set.hpp"
+#include "slam/Map.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

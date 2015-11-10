@@ -21,7 +21,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "meshapi/OrderedSet.hpp"
+#include "slam/OrderedSet.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

@@ -3,7 +3,7 @@
 // that hold the data, plus a few functions to do mesh sums and
 // averages of quantities.
 
-#include "meshapi/Map.hpp"
+#include "slam/Map.hpp"
 
 #include "VectorXY.hpp"
 #include "TinyHydroTypes.hpp"

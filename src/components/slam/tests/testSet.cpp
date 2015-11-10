@@ -18,8 +18,8 @@
 
 #include "gtest/gtest.h"
 
-#include "meshapi/Set.hpp"
-#include "meshapi/RangeSet.hpp"
+#include "slam/Set.hpp"
+#include "slam/RangeSet.hpp"
 
 static unsigned int const NUM_ELEMS = 5;
 

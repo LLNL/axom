@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "common/Utilities.hpp"
-#include "meshapi/Utilities.hpp"
+#include "slam/Utilities.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

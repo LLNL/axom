@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "meshapi/Set.hpp"
-#include "meshapi/NullSet.hpp"
+#include "slam/Set.hpp"
+#include "slam/NullSet.hpp"
 
 TEST(gtest_meshapi_set,construct_nullset)
 {

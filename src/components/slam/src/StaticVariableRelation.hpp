@@ -30,9 +30,9 @@
 //#include <iostream>
 
 #include "slic/slic.hpp"
-#include "meshapi/OrderedSet.hpp"
-#include "meshapi/NullSet.hpp"
-#include "meshapi/Relation.hpp"
+#include "slam/OrderedSet.hpp"
+#include "slam/NullSet.hpp"
+#include "slam/Relation.hpp"
 
 
 namespace asctoolkit {

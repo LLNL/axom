@@ -11,7 +11,7 @@
 #define MESHAPI_MODULAR_INT_H_
 
 #include "slic/slic.hpp"
-#include "meshapi/SizePolicies.hpp"
+#include "slam/SizePolicies.hpp"
 
 
 namespace asctoolkit {

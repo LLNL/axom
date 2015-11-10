@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "meshapi/SizePolicies.hpp"
-#include "meshapi/ModularInt.hpp"
+#include "slam/SizePolicies.hpp"
+#include "slam/ModularInt.hpp"
 
 TEST(gtest_meshapi_modInt,runtime_modular_int_unitialized_and_full)
 {

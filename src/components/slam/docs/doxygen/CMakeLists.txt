@@ -2,4 +2,4 @@
 # documentation targets
 ################################
 
-add_doxygen_target( meshapi_doxygen )
+add_doxygen_target( slam_doxygen )

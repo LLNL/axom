@@ -19,7 +19,7 @@
 #ifndef MESHAPI_RANGE_SET_H_
 #define MESHAPI_RANGE_SET_H_
 
-#include "meshapi/OrderedSet.hpp"
+#include "slam/OrderedSet.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

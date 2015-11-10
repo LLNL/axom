@@ -23,9 +23,9 @@
 #include "gtest/gtest.h"
 
 
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/Relation.hpp"
-#include "meshapi/DynamicVariableRelation.hpp"
+#include "slam/RangeSet.hpp"
+#include "slam/Relation.hpp"
+#include "slam/DynamicVariableRelation.hpp"
 
 using asctoolkit::meshapi::RangeSet;
 using asctoolkit::meshapi::DynamicVariableRelation;

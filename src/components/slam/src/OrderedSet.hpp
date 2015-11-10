@@ -39,15 +39,15 @@
 #include "common/CommonTypes.hpp" // for ATK_NULLPTR
 #include "slic/slic.hpp"
 
-#include "meshapi/Set.hpp"
-#include "meshapi/NullSet.hpp"
+#include "slam/Set.hpp"
+#include "slam/NullSet.hpp"
 
-#include "meshapi/SizePolicies.hpp"
-#include "meshapi/OffsetPolicies.hpp"
-#include "meshapi/StridePolicies.hpp"
-#include "meshapi/IndirectionPolicies.hpp"
-#include "meshapi/SubsettingPolicies.hpp"
-#include "meshapi/ModularInt.hpp"
+#include "slam/SizePolicies.hpp"
+#include "slam/OffsetPolicies.hpp"
+#include "slam/StridePolicies.hpp"
+#include "slam/IndirectionPolicies.hpp"
+#include "slam/SubsettingPolicies.hpp"
+#include "slam/ModularInt.hpp"
 
 
 namespace asctoolkit {

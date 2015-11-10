@@ -20,7 +20,7 @@
 #define MESHAPI_NULL_SET_H_
 
 #include "slic/slic.hpp"
-#include "meshapi/Set.hpp"
+#include "slam/Set.hpp"
 
 namespace asctoolkit {
 namespace meshapi {

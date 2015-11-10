@@ -16,8 +16,8 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "meshapi/Utilities.hpp"
-#include "meshapi/IndirectionSet.hpp"
+#include "slam/Utilities.hpp"
+#include "slam/IndirectionSet.hpp"
 
 typedef asctoolkit::meshapi::ArrayIndirectionSet SetType;
 typedef SetType::iterator                   SetIterator;

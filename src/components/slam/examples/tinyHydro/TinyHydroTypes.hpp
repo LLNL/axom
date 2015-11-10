@@ -5,15 +5,15 @@
 
 
 #include "VectorXY.hpp"
-#include "meshapi/OrderedSet.hpp"
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/IndirectionSet.hpp"
+#include "slam/OrderedSet.hpp"
+#include "slam/RangeSet.hpp"
+#include "slam/IndirectionSet.hpp"
 
-#include "meshapi/StaticConstantRelation.hpp"
+#include "slam/StaticConstantRelation.hpp"
 
-#include "meshapi/Map.hpp"
+#include "slam/Map.hpp"
 
-#include "meshapi/FieldRegistry.hpp"
+#include "slam/FieldRegistry.hpp"
 
 
 namespace tinyHydro {

@@ -32,15 +32,15 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "meshapi/FileUtilities.hpp"
+#include "slam/FileUtilities.hpp"
 
-#include "meshapi/Set.hpp"
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/StaticVariableRelation.hpp"
-#include "meshapi/StaticConstantRelation.hpp"
-#include "meshapi/DynamicVariableRelation.hpp"
+#include "slam/Set.hpp"
+#include "slam/RangeSet.hpp"
+#include "slam/StaticVariableRelation.hpp"
+#include "slam/StaticConstantRelation.hpp"
+#include "slam/DynamicVariableRelation.hpp"
 
-#include "meshapi/Map.hpp"
+#include "slam/Map.hpp"
 
 
 #ifndef USE_CONSTANT_RELATION
@@ -449,7 +449,7 @@ int main()
   for(int res = 0; res < NUM_RESOLUTIONS; ++res)
   {
     std::stringstream filePath;
-    filePath  << "../src/components/meshapi/data/"
+    filePath  << "../src/components/slam/data/"
               << "ball_" << fileResolutions[res] << ".vtk";
     std::string meshName = filePath.str();
 

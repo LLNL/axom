@@ -19,9 +19,9 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "meshapi/Utilities.hpp"
-#include "meshapi/Set.hpp"
-#include "meshapi/RangeSet.hpp"
+#include "slam/Utilities.hpp"
+#include "slam/Set.hpp"
+#include "slam/RangeSet.hpp"
 
 typedef asctoolkit::meshapi::Set::PositionType         SetPosition;
 typedef asctoolkit::meshapi::Set::ElementType          SetElement;

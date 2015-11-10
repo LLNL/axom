@@ -32,14 +32,14 @@
 #include <vector>
 
 #include "slic/slic.hpp"
-#include "meshapi/NullSet.hpp"
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/IndirectionSet.hpp"
-#include "meshapi/StaticConstantRelation.hpp"
-#include "meshapi/StaticVariableRelation.hpp"
-#include "meshapi/DynamicVariableRelation.hpp"
-#include "meshapi/Map.hpp"
-#include "meshapi/FieldRegistry.hpp"
+#include "slam/NullSet.hpp"
+#include "slam/RangeSet.hpp"
+#include "slam/IndirectionSet.hpp"
+#include "slam/StaticConstantRelation.hpp"
+#include "slam/StaticVariableRelation.hpp"
+#include "slam/DynamicVariableRelation.hpp"
+#include "slam/Map.hpp"
+#include "slam/FieldRegistry.hpp"
 
 
 //**************************************************

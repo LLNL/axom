@@ -1,5 +1,5 @@
-PROJECT_NAME  = MeshAPI
-PROJECT_BRIEF = "Reusable components for defining distributed meshes on simulation codes"
+PROJECT_NAME  = SLAM
+PROJECT_BRIEF = "SLAM: Set-theoretic Lightweight API for Meshes. Reusable components for defining distributed meshes on simulation codes."
 INPUT = @PROJECT_SOURCE_DIR@/src @PROJECT_SOURCE_DIR@/src/policies @PROJECT_SOURCE_DIR@/examples
 GENERATE_XML = YES
 USE_MATHJAX = YES

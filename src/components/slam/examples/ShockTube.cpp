@@ -53,9 +53,9 @@
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
 
-#include "meshapi/FieldRegistry.hpp"
-#include "meshapi/RangeSet.hpp"
-#include "meshapi/StaticConstantRelation.hpp"
+#include "slam/FieldRegistry.hpp"
+#include "slam/RangeSet.hpp"
+#include "slam/StaticConstantRelation.hpp"
 
 
 namespace asctoolkit {

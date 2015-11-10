@@ -30,9 +30,9 @@
 //#include <iostream>
 
 #include "slic/slic.hpp"
-#include "meshapi/OrderedSet.hpp"
-#include "meshapi/Relation.hpp"
-#include "meshapi/PolicyTraits.hpp"
+#include "slam/OrderedSet.hpp"
+#include "slam/Relation.hpp"
+#include "slam/PolicyTraits.hpp"
 
 
 // TODO: We need to add policies to this relation class

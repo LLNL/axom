@@ -26,8 +26,8 @@
 //#include <iostream>
 
 #include "slic/slic.hpp"
-#include "meshapi/Set.hpp"
-#include "meshapi/Relation.hpp"
+#include "slam/Set.hpp"
+#include "slam/Relation.hpp"
 
 
 namespace asctoolkit {
