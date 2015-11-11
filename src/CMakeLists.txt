@@ -14,6 +14,11 @@ enable_language(Fortran OPTIONAL)
 include(CMakeBasics)
 
 ################################
+# Add Thirdparty Builtin Libs
+################################
+add_subdirectory(thirdparty)
+
+################################
 # Add components
 ################################
 add_subdirectory(components)
