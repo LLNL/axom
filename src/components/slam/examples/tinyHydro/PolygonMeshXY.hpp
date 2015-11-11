@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
+
 // arbitrary mesh of polygons in XY geom
 // Thu Mar 26 09:38:50 PDT 2015
 

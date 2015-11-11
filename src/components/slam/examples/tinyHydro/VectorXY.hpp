@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and further
+ * review from Lawrence Livermore National Laboratory.
+ */
+
+
 // 2D vector for XY geometry
 // Fri Nov 21 10:50:53 PST 2014
 #include <math.h>
