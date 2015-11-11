@@ -93,18 +93,19 @@ namespace slam    {
     bool        isValid(bool verboseOutput = false) const;
 
 
-    void clear() { fill();}
+    void        clear() { fill(); }
 
     /**
      * Set each entry in the map to the given value
      */
-    void fill(DataType val = DataType())
+    void        fill(DataType val = DataType())
     {
-        const SetIndex sz = size();
-        for(SetIndex idx = SetIndex(); idx < sz; ++idx)
-        {
-            m_data[idx] = val;
-        }
+      const SetIndex sz = size();
+
+      for(SetIndex idx = SetIndex(); idx < sz; ++idx)
+      {
+        m_data[idx] = val;
+      }
     }
 
     /**
@@ -112,13 +113,13 @@ namespace slam    {
      */
     void copy(const Map& other)
     {
-        SLIC_ASSERT( other.size() == size() );
+      SLIC_ASSERT( other.size() == size() );
 
-        const SetIndex sz = size();
-        for(SetIndex idx = SetIndex(); idx < sz; ++idx)
-        {
-            m_data[idx] = other[idx];
-        }
+      const SetIndex sz = size();
+      for(SetIndex idx = SetIndex(); idx < sz; ++idx)
+      {
+        m_data[idx] = other[idx];
+      }
     }
 
 

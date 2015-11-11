@@ -57,8 +57,8 @@ namespace slam {
 namespace examples {
 namespace unstructured {
 
-  typedef asctoolkit::slam::MeshIndexType  IndexType;
-  typedef double                              DataType;
+  typedef asctoolkit::slam::MeshIndexType IndexType;
+  typedef double                          DataType;
 
 
   struct Point
@@ -66,20 +66,20 @@ namespace unstructured {
     Point(const DataType& x, const DataType& y, const DataType& z) : m_x(x), m_y(y), m_z(z){}
     Point() : m_x(DataType()), m_y(DataType()), m_z(DataType()){}
 
-    DataType radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
-    Point& operator+=(const Point& pt){ m_x+= pt.m_x; m_y+=pt.m_y; m_z += pt.m_z; return *this;}
-    Point& operator*=(const DataType& sc){ m_x *= sc; m_y*=sc; m_z *= sc; return *this;}
-    template<typename T>    Point& operator/=(const T& sc){ return operator*=( 1./sc);}
+    DataType                                radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
+    Point& operator                         +=(const Point& pt){ m_x += pt.m_x; m_y += pt.m_y; m_z += pt.m_z; return *this; }
+    Point& operator                         *=(const DataType& sc){ m_x *= sc; m_y *= sc; m_z *= sc; return *this; }
+    template<typename T>    Point& operator /=(const T& sc){ return operator*=( 1. / sc); }
 
     DataType m_x, m_y, m_z;
   };
-  Point operator+(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
+  Point operator                            +(const Point& pt1, const Point& pt2)  { Point pt(pt1); pt += pt2;      return pt; }
 
-  Point operator*(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
-  Point operator*(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
+  Point operator                            *(const Point& pt1, const DataType& sc){ Point pt(pt1); pt *= sc;       return pt; }
+  Point operator                            *(const DataType& sc,const Point& pt1) { Point pt(pt1); pt *= sc;       return pt; }
 
   template<typename T>
-  Point operator/(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1./sc);  return pt; }
+  Point operator                            /(const Point& pt1, const T& sc){ Point pt(pt1); pt *= (1. / sc);  return pt; }
 
 
   struct HexMesh
@@ -89,28 +89,28 @@ namespace unstructured {
     enum { NODES_PER_ZONE = 8 };
 
     // types for sets
-    typedef asctoolkit::slam::PositionSet                 NodeSet;
-    typedef asctoolkit::slam::PositionSet                 ZoneSet;
+    typedef asctoolkit::slam::PositionSet                                                               NodeSet;
+    typedef asctoolkit::slam::PositionSet                                                               ZoneSet;
 
     // types for relations
-    typedef asctoolkit::slam::StaticVariableRelation   NodeToZoneRelation;
-    typedef NodeToZoneRelation::RelationVecConstIterator  NodeZoneIterator;
+    typedef asctoolkit::slam::StaticVariableRelation                                                    NodeToZoneRelation;
+    typedef NodeToZoneRelation::RelationVecConstIterator                                                NodeZoneIterator;
 
 #ifdef USE_CONSTANT_RELATION
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE> ZNStride;
-    typedef asctoolkit::slam::StaticConstantRelation<ZNStride>   ZoneToNodeRelation;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ZoneSet::PositionType, NODES_PER_ZONE>  ZNStride;
+    typedef asctoolkit::slam::StaticConstantRelation<ZNStride>                                          ZoneToNodeRelation;
 #else
-    typedef asctoolkit::slam::StaticVariableRelation   ZoneToNodeRelation;
+    typedef asctoolkit::slam::StaticVariableRelation                                                    ZoneToNodeRelation;
 #endif
-    typedef ZoneToNodeRelation::RelationVecConstIterator  ZoneNodeIterator;
+    typedef ZoneToNodeRelation::RelationVecConstIterator                                                ZoneNodeIterator;
 
-    typedef NodeSet::IndexType                            IndexType;
-    typedef NodeSet::PositionType                         PositionType;
+    typedef NodeSet::IndexType                                                                          IndexType;
+    typedef NodeSet::PositionType                                                                       PositionType;
 
     // types for maps
-    typedef asctoolkit::slam::Map< Point >             PositionsVec;
-    typedef asctoolkit::slam::Map< DataType >          NodeField;
-    typedef asctoolkit::slam::Map< DataType >          ZoneField;
+    typedef asctoolkit::slam::Map< Point >                                                              PositionsVec;
+    typedef asctoolkit::slam::Map< DataType >                                                           NodeField;
+    typedef asctoolkit::slam::Map< DataType >                                                           ZoneField;
 
   public:
     /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -148,15 +148,15 @@ namespace unstructured {
     // uses RAII to open/close the file
     SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
     {
-        // check if the file opened, if not try one directory higher
-        if(!vtkMesh)
-        {
-            std::string pFileName = "../" + fileName;
-            vtkMesh.open( pFileName.c_str() );
-        }
+      // check if the file opened, if not try one directory higher
+      if(!vtkMesh)
+      {
+        std::string pFileName = "../" + fileName;
+        vtkMesh.open( pFileName.c_str() );
+      }
 
-        SLIC_ERROR_IF( !vtkMesh
-          , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName <<"')"
+      SLIC_ERROR_IF( !vtkMesh
+          , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName << "')"
                                                         << "\nThe current working directory is: '" << asctoolkit::slam::util::getCWD() << "'");
     }
     ~SimpleVTKHeshMeshReader()
@@ -284,8 +284,8 @@ namespace unstructured {
     // In both cases, we are using the relation's range() function to get a pair of iterators to the inner relation
 
     // --- Step 1: Generate a dynamic variable relation from Nodes to Zones
-    typedef asctoolkit::slam::DynamicVariableRelation  DynRelation;
-    typedef DynRelation::RelationVecConstIteratorPair     DynRelationIteratorPair;
+    typedef asctoolkit::slam::DynamicVariableRelation DynRelation;
+    typedef DynRelation::RelationVecConstIteratorPair DynRelationIteratorPair;
 
     DynRelation tmpZonesOfNode( &mesh->nodes, &mesh->zones );
     IndexType numZonesOfNode = 0;
@@ -378,7 +378,7 @@ namespace unstructured {
     mesh->zoneField = HexMesh::ZoneField ( &mesh->zones );
 
     const IndexType numZones = mesh->numZones();
-    for (IndexType zIdx=0; zIdx < numZones; ++zIdx )
+    for (IndexType zIdx = 0; zIdx < numZones; ++zIdx )
     {
       mesh->zoneField[zIdx] = mesh->zonePosition[zIdx].radius();
     }
@@ -387,9 +387,9 @@ namespace unstructured {
   DataType computeNodalErrors(HexMesh* mesh)
   {
     // Compute the node average version, and the maximum relative error
-    typedef HexMesh::NodeSet::iterator  NodeIter;
+    typedef HexMesh::NodeSet::iterator                NodeIter;
     typedef HexMesh::NodeToZoneRelation::RelationSet  NZRelSet;
-    typedef NZRelSet::const_iterator NZIter;
+    typedef NZRelSet::const_iterator                  NZIter;
 
     mesh->nodeFieldAvg   = HexMesh::NodeField(&mesh->nodes);
     mesh->nodeFieldExact = HexMesh::NodeField(&mesh->nodes);
@@ -405,7 +405,7 @@ namespace unstructured {
       // Inner loop over each zone of the node to find average value
       const NZRelSet & zoneSet = mesh->relationNodeZone[nIdx];
       DataType nodalAvg = DataType();
-      for(NZIter zIt=zoneSet.begin(), zItEnd=zoneSet.end(); zIt < zItEnd; ++zIt)
+      for(NZIter zIt = zoneSet.begin(), zItEnd = zoneSet.end(); zIt < zItEnd; ++zIt)
       {
         nodalAvg += mesh->zoneField[ *zIt ];
       }

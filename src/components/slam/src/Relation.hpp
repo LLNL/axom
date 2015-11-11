@@ -32,22 +32,23 @@ namespace slam    {
   template<typename SetType>
   struct EmptySetTraits
   {
-      typedef SetType* EmptySetType;
-      static EmptySetType emptySet() { return ATK_NULLPTR;}
+    typedef SetType* EmptySetType;
+    static EmptySetType emptySet() { return ATK_NULLPTR; }
 
-      template<typename ASetType>
-      static bool isEmpty(ASetType* set) { return set == ATK_NULLPTR || set->empty(); }
+    template<typename ASetType>
+    static bool         isEmpty(ASetType* set) { return set == ATK_NULLPTR || set->empty(); }
   };
 
   template<>
   struct EmptySetTraits<Set>
   {
-      typedef Set* EmptySetType;
-      static EmptySetType emptySet() {
-          static NullSet s_nullSet;
-          return &s_nullSet;
-      }
-      static bool isEmpty(Set* set) { return *set == *emptySet() || set->empty(); }
+    typedef Set* EmptySetType;
+    static EmptySetType emptySet() {
+      static NullSet s_nullSet;
+
+      return &s_nullSet;
+    }
+    static bool isEmpty(Set* set) { return *set == *emptySet() || set->empty(); }
 
   };
 

@@ -25,30 +25,30 @@ namespace asctoolkit {
 namespace slam {
 
 
-    /**
-     * \class PositionSet
-     * \brief Models a set whose elements belong to a contiguous range \f$ \in [0,size) \f$
-     */
-      class PositionSet : public OrderedSet<>
-      {
+  /**
+   * \class PositionSet
+   * \brief Models a set whose elements belong to a contiguous range \f$ \in [0,size) \f$
+   */
+  class PositionSet : public OrderedSet<>
+  {
 
-          typedef OrderedSet<> OrderedSetType;
-          static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-          static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-          static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+    typedef OrderedSet<> OrderedSetType;
+    static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
-      public:
-          typedef OrderedSetType::PositionType PositionType;
-          typedef OrderedSetType::IndexType IndexType;
-          typedef OrderedSetType::ElementType ElementType;
+  public:
+    typedef OrderedSetType::PositionType  PositionType;
+    typedef OrderedSetType::IndexType     IndexType;
+    typedef OrderedSetType::ElementType   ElementType;
 
 
-      public:
-          PositionSet(PositionType size = DEFAULT_SIZE)
-            : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+  public:
+    PositionSet(PositionType size = DEFAULT_SIZE)
+        : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-          PositionSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
-      };
+    PositionSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
+  };
 
 
 /**
@@ -59,41 +59,41 @@ namespace slam {
  *          This version of a range set still allows you to have different policies on striding, indirection and subsetting
  */
   template< typename StridingPolicy
-          , typename IndirectionPolicy
-          , typename SubsettingPolicy
-          >
+  , typename IndirectionPolicy
+  , typename SubsettingPolicy
+  >
   class GenericRangeSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                                    , policies::RuntimeOffsetHolder<Set::PositionType>
-                                    , StridingPolicy
-                                    , IndirectionPolicy
-                                    , SubsettingPolicy
-                                    >
-  {
-
-  private:
-      typedef OrderedSet<   policies::RuntimeSizeHolder<Set::PositionType>
                           , policies::RuntimeOffsetHolder<Set::PositionType>
                           , StridingPolicy
                           , IndirectionPolicy
-                          , SubsettingPolicy                                     > OrderedSetType;
+                          , SubsettingPolicy
+    >
+  {
 
-      static const typename OrderedSetType::PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-      static const typename OrderedSetType::PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-      static const typename OrderedSetType::PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+  private:
+    typedef OrderedSet<   policies::RuntimeSizeHolder<Set::PositionType>
+        , policies::RuntimeOffsetHolder<Set::PositionType>
+        , StridingPolicy
+        , IndirectionPolicy
+        , SubsettingPolicy                                     > OrderedSetType;
+
+    static const typename OrderedSetType::PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const typename OrderedSetType::PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const typename OrderedSetType::PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
   public:
-      typedef typename OrderedSetType::PositionType PositionType;
-      typedef typename OrderedSetType::IndexType IndexType;
-      typedef typename OrderedSetType::ElementType ElementType;
+    typedef typename OrderedSetType::PositionType PositionType;
+    typedef typename OrderedSetType::IndexType    IndexType;
+    typedef typename OrderedSetType::ElementType  ElementType;
 
   public:
-      GenericRangeSet(PositionType size = DEFAULT_SIZE)
+    GenericRangeSet(PositionType size = DEFAULT_SIZE)
         : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-      GenericRangeSet(const typename OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
+    GenericRangeSet(const typename OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
 
-      GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
-        : OrderedSetType(upperIndex-lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
+    GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
+        : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
   };
 
 
@@ -103,35 +103,35 @@ namespace slam {
    * \details The ElementType here needs to be computable as offsets (of PositionType) from the lowerIndex
    *          Examples include: signed and unsigned integral types
    */
-    class RangeSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                                      , policies::RuntimeOffsetHolder<Set::PositionType>
-                                      >
-    {
+  class RangeSet : public OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
+                   , policies::RuntimeOffsetHolder<Set::PositionType>
+    >
+  {
 
-    private:
-        typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
-                          , policies::RuntimeOffsetHolder<Set::PositionType>  >  OrderedSetType;
+  private:
+    typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>
+        , policies::RuntimeOffsetHolder<Set::PositionType>  >  OrderedSetType;
 
-    public:
-        typedef OrderedSetType::PositionType PositionType;
-        typedef OrderedSetType::IndexType IndexType;
-        typedef OrderedSetType::ElementType ElementType;
-    private:
-        static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-        static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-        static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+  public:
+    typedef OrderedSetType::PositionType  PositionType;
+    typedef OrderedSetType::IndexType     IndexType;
+    typedef OrderedSetType::ElementType   ElementType;
+  private:
+    static const PositionType DEFAULT_SIZE = OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_OFFSET = OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+    static const PositionType DEFAULT_STRIDE = OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
 
-    public:
-      RangeSet(PositionType size = DEFAULT_SIZE)
-          : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+  public:
+    RangeSet(PositionType size = DEFAULT_SIZE)
+        : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-      RangeSet(PositionType lowerIndex, PositionType upperIndex)
-          : OrderedSetType(upperIndex-lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
+    RangeSet(PositionType lowerIndex, PositionType upperIndex)
+        : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
 
-      RangeSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
+    RangeSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder) {}
 
-    };
+  };
 
 
 } // end namespace slam

@@ -23,10 +23,10 @@
 #include "slam/RangeSet.hpp"
 
 
-typedef asctoolkit::slam::RangeSet SetType;
-typedef SetType::iterator             SetIterator;
-typedef SetType::PositionType         SetPosition;
-typedef SetType::ElementType          SetElement;
+typedef asctoolkit::slam::RangeSet  SetType;
+typedef SetType::iterator           SetIterator;
+typedef SetType::PositionType       SetPosition;
+typedef SetType::ElementType        SetElement;
 
 static const SetPosition MAX_SET_SIZE = 10;
 

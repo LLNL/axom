@@ -98,26 +98,26 @@ namespace shocktube {
   public:
 
     // other types
-    typedef asctoolkit::slam::Set::IndexType         IndexType;
-    typedef asctoolkit::slam::Set::PositionType      PositionType;
-    typedef asctoolkit::slam::Set::ElementType      ElementType;
+    typedef asctoolkit::slam::Set::IndexType                                                            IndexType;
+    typedef asctoolkit::slam::Set::PositionType                                                         PositionType;
+    typedef asctoolkit::slam::Set::ElementType                                                          ElementType;
 
     // types for Element and Face sets
-    typedef asctoolkit::slam::PositionSet               ElemSet;
-    typedef asctoolkit::slam::PositionSet               FaceSet;
+    typedef asctoolkit::slam::PositionSet                                                               ElemSet;
+    typedef asctoolkit::slam::PositionSet                                                               FaceSet;
 
     // types for Tube and {In,Out}Flow subsets
-    typedef asctoolkit::slam::policies::StrideOne<PositionType> StrideOnePolicy;
-    typedef asctoolkit::slam::policies::NoIndirection<PositionType,ElementType> NoIndirectionPolicy;
-    typedef asctoolkit::slam::policies::ConcreteParentSubset<ElemSet> TubeSubsetPolicy;
-    typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy> ElemSubset;
+    typedef asctoolkit::slam::policies::StrideOne<PositionType>                                         StrideOnePolicy;
+    typedef asctoolkit::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
+    typedef asctoolkit::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
+    typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
 
     // types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM> EFStride;
-    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE> FEStride;
-    typedef asctoolkit::slam::StaticConstantRelation<EFStride> ElemToFaceRelation;
-    typedef asctoolkit::slam::StaticConstantRelation<FEStride> FaceToElemRelation;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ELEM>  EFStride;
+    typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, ELEMS_PER_FACE>  FEStride;
+    typedef asctoolkit::slam::StaticConstantRelation<EFStride>                                          ElemToFaceRelation;
+    typedef asctoolkit::slam::StaticConstantRelation<FEStride>                                          FaceToElemRelation;
 
   public:
     ElemSet elems;              // The entire set of elements
@@ -250,11 +250,11 @@ namespace shocktube {
     // constuct the element subsets using the named-parameter idiom
     typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
     mesh->inFlowElems    = ElemSubsetBuilder().range(0,1)
-                                              .parent(&mesh->elems);
+        . parent( &mesh->elems);
     mesh->tubeElems      = ElemSubsetBuilder().range(1,numElems - 1)
-                                              .parent(&mesh->elems);
+        . parent( &mesh->elems);
     mesh->outFlowElems   = ElemSubsetBuilder().range(numElems - 1,numElems)
-                                              .parent(&mesh->elems);
+        . parent( &mesh->elems);
 
 
     // ------------ Set up relations

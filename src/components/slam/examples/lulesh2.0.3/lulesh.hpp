@@ -151,33 +151,33 @@ class Domain {
 
 public:
 
-  typedef asctoolkit::slam::Set                    Set;
-  typedef asctoolkit::slam::NullSet                NullSet;
+  typedef asctoolkit::slam::Set                                                                       Set;
+  typedef asctoolkit::slam::NullSet                                                                   NullSet;
 
-  typedef asctoolkit::slam::RangeSet               ElemSet;
-  typedef asctoolkit::slam::RangeSet               NodeSet;
-  typedef asctoolkit::slam::RangeSet               CornerSet;
-  typedef asctoolkit::slam::RangeSet               ExtendedElemSet;
+  typedef asctoolkit::slam::RangeSet                                                                  ElemSet;
+  typedef asctoolkit::slam::RangeSet                                                                  NodeSet;
+  typedef asctoolkit::slam::RangeSet                                                                  CornerSet;
+  typedef asctoolkit::slam::RangeSet                                                                  ExtendedElemSet;
 
-  typedef asctoolkit::slam::VectorIndirectionSet   SymmNodeSet;
+  typedef asctoolkit::slam::VectorIndirectionSet                                                      SymmNodeSet;
 
   enum { NODES_PER_ZONE = 8, FACES_PER_ZONE = 1};
-  typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE> ZNStride;
-  typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE> ZFStride;
-  typedef asctoolkit::slam::StaticConstantRelation<ZNStride, ElemSet,NodeSet> ElemToNodeRelation;
-  typedef asctoolkit::slam::StaticConstantRelation<ZFStride, ElemSet,ExtendedElemSet> ElemFaceAdjacencyRelation;
+  typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, NODES_PER_ZONE>  ZNStride;
+  typedef asctoolkit::slam::policies::CompileTimeStrideHolder<ElemSet::PositionType, FACES_PER_ZONE>  ZFStride;
+  typedef asctoolkit::slam::StaticConstantRelation<ZNStride, ElemSet,NodeSet>                         ElemToNodeRelation;
+  typedef asctoolkit::slam::StaticConstantRelation<ZFStride, ElemSet,ExtendedElemSet>                 ElemFaceAdjacencyRelation;
 
 
-  typedef asctoolkit::slam::RangeSet               RegionSet;
-  typedef asctoolkit::slam::StaticVariableRelation RegionToElemRelation;
+  typedef asctoolkit::slam::RangeSet                                                                  RegionSet;
+  typedef asctoolkit::slam::StaticVariableRelation                                                    RegionToElemRelation;
 
-  typedef asctoolkit::slam::StaticVariableRelation NodeToCornerRelation;
+  typedef asctoolkit::slam::StaticVariableRelation                                                    NodeToCornerRelation;
 
-  typedef asctoolkit::slam::Map<Index_t>           ElemIndexMap;
-  typedef asctoolkit::slam::Map<Int_t>             ElemIntMap;
+  typedef asctoolkit::slam::Map<Index_t>                                                              ElemIndexMap;
+  typedef asctoolkit::slam::Map<Int_t>                                                                ElemIntMap;
   //typedef asctoolkit::slam::Map<Real_t>            ElemRealMap;
 
-  typedef asctoolkit::slam::Map<Index_t>           NodeIndexMap;
+  typedef asctoolkit::slam::Map<Index_t>                                                              NodeIndexMap;
   //typedef asctoolkit::slam::Map<Int_t>             NodeIntMap;
   //typedef asctoolkit::slam::Map<Real_t>            NodeRealMap;
 

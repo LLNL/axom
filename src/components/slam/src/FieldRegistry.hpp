@@ -36,13 +36,13 @@ namespace slam {
   class FieldRegistry
   {
   public:
-    typedef TheDataType                         DataType;
-    typedef std::string                         KeyType;
-    typedef asctoolkit::slam::Map<DataType>  MapType;
-    typedef typename MapType::OrderedMap        BufferType;
+    typedef TheDataType                     DataType;
+    typedef std::string                     KeyType;
+    typedef asctoolkit::slam::Map<DataType> MapType;
+    typedef typename MapType::OrderedMap    BufferType;
 
-    typedef std::map<KeyType, MapType>          DataVecMap;
-    typedef std::map<KeyType, DataType>         DataAttrMap;
+    typedef std::map<KeyType, MapType>      DataVecMap;
+    typedef std::map<KeyType, DataType>     DataAttrMap;
 
   public:
     MapType&  addField(KeyType key, Set const* theSet) { return m_dataVecs[key] = MapType(theSet); }
@@ -50,14 +50,15 @@ namespace slam {
 
     MapType&  addNamelessField(Set const* theSet)
     {
-        static int cnt = 0;
-        std::stringstream key;
-        key << "__field_" << cnt++;
-        return m_dataVecs[key.str()] = MapType(theSet);
+      static int cnt = 0;
+      std::stringstream key;
+
+      key << "__field_" << cnt++;
+      return m_dataVecs[key.str()] = MapType(theSet);
     }
 
 
-    MapType&  getField(KeyType key)
+    MapType& getField(KeyType key)
     {
       verifyFieldsKey(key);
       return m_dataVecs[key];

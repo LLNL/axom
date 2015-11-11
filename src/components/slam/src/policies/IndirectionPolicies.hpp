@@ -35,139 +35,139 @@ namespace asctoolkit {
 namespace slam {
 namespace policies {
 
-    /**
-     * \name OrderedSet_Indirection_Policies
-     * \brief A few default policies for the indirection of an OrderedSet
-     */
+  /**
+   * \name OrderedSet_Indirection_Policies
+   * \brief A few default policies for the indirection of an OrderedSet
+   */
 
-    /// \{
+  /// \{
 
-    /**
-     * \brief A policy class for sets with no indirection
-     */
-    template<typename PositionType, typename ElementType>
-    struct NoIndirection
+  /**
+   * \brief A policy class for sets with no indirection
+   */
+  template<typename PositionType, typename ElementType>
+  struct NoIndirection
+  {
+    typedef const ElementType IndirectionResult;
+    typedef struct {}         IndirectionBufferType;
+
+    NoIndirection() {}
+    NoIndirection(IndirectionBufferType*) {}         // This empty .ctor exists to satisfy IndirectionPolicy interface
+
+    inline IndirectionResult          indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
+    inline IndirectionResult operator ()(PositionType pos)  const { return indirection(pos); }
+
+    IndirectionBufferType*            data() { return ATK_NULLPTR; }
+
+    bool                              hasIndirection() const { return false; }
+    inline bool                       isValid(PositionType, PositionType, PositionType, bool ) const { return true; }
+  };
+
+  /**
+   * \brief A policy class for sets with array-based indirection
+   */
+  template<typename PositionType, typename ElementType>
+  struct ArrayIndirection
+  {
+    typedef const ElementType&  IndirectionResult;
+    typedef ElementType         IndirectionBufferType;
+
+    ArrayIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_arrBuf(buf) {}
+
+    IndirectionBufferType*&   data() { return m_arrBuf; }
+
+    inline IndirectionResult  indirection(PositionType pos) const
     {
-        typedef const ElementType IndirectionResult;
-        typedef struct{} IndirectionBufferType;
+      SLIC_ASSERT_MSG( hasIndirection()
+          , "SLAM::Set:ArrayIndirection -- Tried to dereference a null array in an array based indirection set.");
+      return m_arrBuf[pos];
+    }
 
-        NoIndirection() {}
-        NoIndirection(IndirectionBufferType*) {}     // This empty .ctor exists to satisfy IndirectionPolicy interface
+    inline IndirectionResult operator ()(PositionType pos)  const { return indirection(pos); }
 
-        inline IndirectionResult indirection(PositionType pos) const { return static_cast<ElementType>(pos); }
-        inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
+    bool                              hasIndirection() const { return m_arrBuf != ATK_NULLPTR; }
 
-        IndirectionBufferType* data() { return ATK_NULLPTR;}
-
-        bool hasIndirection() const { return false;}
-        inline bool isValid(PositionType, PositionType, PositionType, bool ) const     { return true; }
-    };
-
-    /**
-     * \brief A policy class for sets with array-based indirection
-     */
-    template<typename PositionType, typename ElementType>
-    struct ArrayIndirection
+    inline bool                       isValid(PositionType size, PositionType, PositionType, bool verboseOutput = false) const
     {
-        typedef const ElementType& IndirectionResult;
-        typedef ElementType IndirectionBufferType;
+      // set of zero size is always valid
+      if(size == 0)
+        return true;
 
-        ArrayIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_arrBuf(buf) {}
+      bool bValid = hasIndirection();
+      SLIC_CHECK_MSG(verboseOutput && !bValid
+          , "Array-based indirection set with non-zero size (size=" << size
+                                                                    << ") requires valid data buffer, but buffer pointer was null.");
 
-        IndirectionBufferType*& data() { return m_arrBuf;}
+      // Since array-based indirection sets don't encode a buffer size, that is all we can check
 
-        inline IndirectionResult indirection(PositionType pos) const
-        {
-            SLIC_ASSERT_MSG( hasIndirection()
-                           , "SLAM::Set:ArrayIndirection -- Tried to dereference a null array in an array based indirection set.");
-            return m_arrBuf[pos];
-        }
+      return bValid;
+    }
 
-        inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
+  private:
+    IndirectionBufferType* m_arrBuf;
+  };
 
-        bool hasIndirection() const { return m_arrBuf != ATK_NULLPTR;}
+  /**
+   * \brief A policy class for sets with array-based indirection
+   */
+  template<typename PositionType, typename ElementType>
+  struct STLVectorIndirection
+  {
+    typedef std::vector<ElementType>  VectorType;
+    typedef const ElementType&        IndirectionResult;
+    typedef const VectorType          IndirectionBufferType;
 
-        inline bool isValid(PositionType size, PositionType, PositionType, bool verboseOutput = false) const
-        {
-            // set of zero size is always valid
-            if(size == 0)
-                return true;
 
-            bool bValid = hasIndirection();
-            SLIC_CHECK_MSG(verboseOutput && !bValid
-                         , "Array-based indirection set with non-zero size (size=" << size
-                           << ") requires valid data buffer, but buffer pointer was null.");
+    STLVectorIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
 
-            // Since array-based indirection sets don't encode a buffer size, that is all we can check
+    IndirectionBufferType*&   data() { return m_vecBuf; }
 
-            return bValid;
-        }
-
-    private:
-        IndirectionBufferType* m_arrBuf;
-    };
-
-    /**
-     * \brief A policy class for sets with array-based indirection
-     */
-    template<typename PositionType, typename ElementType>
-    struct STLVectorIndirection
+    inline IndirectionResult  indirection(PositionType pos) const
     {
-        typedef std::vector<ElementType> VectorType;
-        typedef const ElementType& IndirectionResult;
-        typedef const VectorType IndirectionBufferType;
+      SLIC_ASSERT_MSG( hasIndirection(), "SLAM::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
+      //SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "SLAM::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
+      //        << pos << " in vector with only " << m_vecBuf->size() << " elements.");
 
+      return (*m_vecBuf)[pos];
+    }
+    inline IndirectionResult operator ()(PositionType pos)  const { return indirection(pos); }
 
-        STLVectorIndirection(IndirectionBufferType* buf = ATK_NULLPTR) : m_vecBuf(buf) {}
+    bool                              hasIndirection() const { return m_vecBuf != ATK_NULLPTR; }
 
-        IndirectionBufferType*& data() { return m_vecBuf;}
+    inline bool                       isValid(PositionType size, PositionType offset, PositionType stride, bool verboseOutput = false) const
+    {
+      // If set has zero size, we are always valid (even if indirection buffer is null)
+      if(size == 0)
+        return true;
 
-        inline IndirectionResult indirection(PositionType pos) const
-        {
-            SLIC_ASSERT_MSG( hasIndirection(), "SLAM::Set:STLVectorIndirection -- Tried to dereference a null vector in a vector based indirection set.");
-            //SLIC_ASSERT_MSG( pos < m_vecBuf->size(), "SLAM::Set:STLVectorIndirection -- Tried to access an out of bounds element at position "
-            //        << pos << " in vector with only " << m_vecBuf->size() << " elements.");
+      // Otherwise, check whether the set has elements, but the array ptr is null
+      bool bValid = hasIndirection();
+      SLIC_CHECK_MSG(!verboseOutput || bValid
+          , "Vector-based indirection set with non-zero size (size="  << size
+                                                                      << ") requires valid data buffer, but buffer pointer was null.");
+      if(!bValid)
+        return false;
 
-            return (*m_vecBuf)[pos];
-        }
-        inline IndirectionResult operator()(PositionType pos)  const { return indirection(pos); }
+      // Finally, check that the underlying vector has sufficient storage for all set elements
+      // Note that it is valid for the data buffer to have more space than the set's positions
+      PositionType firstElt = offset;
+      PositionType lastElt = (size - 1) * stride + offset;
+      PositionType vecSize = m_vecBuf->size();
 
-        bool hasIndirection() const { return m_vecBuf != ATK_NULLPTR;}
+      bValid = (firstElt < vecSize) && (lastElt < vecSize);
+      SLIC_CHECK_MSG(!verboseOutput || bValid
+          , "Data buffer in vector-based IndirectionSet must be large enough to hold all elements of the set. "
+          << "Underlying buffer size is " << vecSize << ", and set's range is from "
+          << "positions " << firstElt << " to " << lastElt << ".");
 
-        inline bool isValid(PositionType size, PositionType offset, PositionType stride, bool verboseOutput = false) const
-        {
-            // If set has zero size, we are always valid (even if indirection buffer is null)
-            if(size == 0)
-                return true;
+      return bValid;
+    }
 
-            // Otherwise, check whether the set has elements, but the array ptr is null
-            bool bValid = hasIndirection();
-            SLIC_CHECK_MSG(!verboseOutput || bValid
-                          , "Vector-based indirection set with non-zero size (size=" << size
-                              << ") requires valid data buffer, but buffer pointer was null.");
-            if(!bValid)
-                return false;
+  private:
+    IndirectionBufferType* m_vecBuf;
+  };
 
-            // Finally, check that the underlying vector has sufficient storage for all set elements
-            // Note that it is valid for the data buffer to have more space than the set's positions
-            PositionType firstElt = offset;
-            PositionType lastElt = (size-1)*stride + offset;
-            PositionType vecSize = m_vecBuf->size();
-
-            bValid = (firstElt < vecSize) && (lastElt < vecSize);
-            SLIC_CHECK_MSG(!verboseOutput || bValid
-                          , "Data buffer in vector-based IndirectionSet must be large enough to hold all elements of the set. "
-                          << "Underlying buffer size is " << vecSize << ", and set's range is from "
-                          <<"positions " << firstElt << " to " << lastElt <<".");
-
-            return bValid;
-        }
-
-    private:
-        IndirectionBufferType* m_vecBuf;
-    };
-
-    /// \}
+  /// \}
 
 } // end namespace policies
 } // end namespace slam

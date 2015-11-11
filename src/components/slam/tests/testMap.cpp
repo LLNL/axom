@@ -24,14 +24,14 @@
 #include "slam/Map.hpp"
 
 
-typedef asctoolkit::slam::RangeSet     SetType;
-typedef asctoolkit::slam::Map<int>     IntMap;
-typedef asctoolkit::slam::Map<double>  RealMap;
+typedef asctoolkit::slam::RangeSet    SetType;
+typedef asctoolkit::slam::Map<int>    IntMap;
+typedef asctoolkit::slam::Map<double> RealMap;
 
-typedef SetType::PositionType             PositionType;
-typedef SetType::ElementType              ElementType;
+typedef SetType::PositionType         PositionType;
+typedef SetType::ElementType          ElementType;
 
-typedef SetType::iterator                 SetIterator;
+typedef SetType::iterator             SetIterator;
 static PositionType const MAX_SET_SIZE = 10;
 
 TEST(gtest_slam_map,construct_empty_map)

@@ -13,51 +13,51 @@
 namespace tinyHydro {
 
 
-class PolygonMeshXY;
+  class PolygonMeshXY;
 
 
-class State
-{
- public:
-   State(PolygonMeshXY & theMesh);
-   ~State(void);
+  class State
+  {
+  public:
+    State(PolygonMeshXY & theMesh);
+    ~State(void);
 
-   // Copy
-   State( const State & arg);
-   // Assignment
-   State & operator=(const State & rhs);
+    // Copy
+    State( const State & arg);
+    // Assignment
+    State & operator=(const State & rhs);
 
-   // addition in place
-   State & operator+=(const State & rhs);
-   // scalar multiply in place
-   State & operator*=(const double s);
+    // addition in place
+    State & operator+=(const State & rhs);
+    // scalar multiply in place
+    State & operator*=(const double s);
 
-   // python accessors
-   /* double averageRho(int i) const; */
-   /* double totalE(int i) const; */
-   VectorXY u(int i)            const    {return velocity[i];}
+    // python accessors
+    /* double averageRho(int i) const; */
+    /* double totalE(int i) const; */
+    VectorXY  u(int i)            const {return velocity[i]; }
 
-   // Related to the part of a state
-   Part * partBegin(void)                {return parts;}
-   Part * getPart(int i);
-   void addPart(Part * newPart);
+    // Related to the part of a state
+    Part *    partBegin(void)                {return parts; }
+    Part *    getPart(int i);
+    void      addPart(Part * newPart);
 
-   // Access positions and velocities
-   void setU(int i, const VectorXY& val) { velocity[i] = val;}
-   void setX(int i, const VectorXY& val) { position[i] = val;}
+    // Access positions and velocities
+    void      setU(int i, const VectorXY& val) { velocity[i] = val; }
+    void      setX(int i, const VectorXY& val) { position[i] = val; }
 
-   void dumpState();
+    void      dumpState();
 
- public:
-   PolygonMeshXY * const mesh;
+  public:
+    PolygonMeshXY * const mesh;
 
-   Part * parts;
-   int nParts;
-   const int maxNParts;
+    Part * parts;
+    int nParts;
+    const int maxNParts;
 
-   NodalVectorField velocity;
-   NodalVectorField position;
-};
+    NodalVectorField velocity;
+    NodalVectorField position;
+  };
 
 
 } // end namespace tinyHydro

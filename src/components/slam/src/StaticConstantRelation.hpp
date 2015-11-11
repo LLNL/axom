@@ -54,11 +54,11 @@ namespace asctoolkit {
 namespace slam    {
 
   template< typename StridePolicy = policies::RuntimeStrideHolder<Set::PositionType>
-          , typename FromSetType = Set
-          , typename ToSetType = Set
-          >
+  , typename FromSetType = Set
+  , typename ToSetType = Set
+  >
   class StaticConstantRelation : public Relation
-                               , StridePolicy
+                                 , StridePolicy
   {
 #ifdef SLAM_STATIC_CONSTANT_RELATION_ITERATOR_USE_PROXY
   private:
@@ -83,37 +83,37 @@ namespace slam    {
 
   public:
 
-    typedef StridePolicy        StridePolicyType;
+    typedef StridePolicy                                                                                              StridePolicyType;
 
     //-----
 
-    typedef Relation::SetPosition                                         SetPosition;
+    typedef Relation::SetPosition                                                                                     SetPosition;
 
-    typedef std::vector<SetPosition>                                      RelationVec;
-    typedef RelationVec::iterator                                         RelationVecIterator;
-    typedef std::pair<RelationVecIterator,RelationVecIterator>            RelationVecIteratorPair;
+    typedef std::vector<SetPosition>                                                                                  RelationVec;
+    typedef RelationVec::iterator                                                                                     RelationVecIterator;
+    typedef std::pair<RelationVecIterator,RelationVecIterator>                                                        RelationVecIteratorPair;
 
-    typedef RelationVec::const_iterator                                   RelationVecConstIterator;
-    typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
+    typedef RelationVec::const_iterator                                                                               RelationVecConstIterator;
+    typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>                                              RelationVecConstIteratorPair;
 
     typedef typename policies::StrideToSize<StridePolicyType, SetPosition, StridePolicyType::DEFAULT_VALUE>::SizeType CorrespondingSizeType;
     typedef OrderedSet< CorrespondingSizeType      // The cardinality of each relational operator is determined by the StridePolicy of the relation
-                      , policies::RuntimeOffsetHolder<Set::PositionType>
-                      , policies::StrideOne<Set::PositionType>
-                      , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
+        , policies::RuntimeOffsetHolder<Set::PositionType>
+        , policies::StrideOne<Set::PositionType>
+        , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
     struct RelationBuilder;
 
   public:
     StaticConstantRelation ( FromSetType* fromSet = EmptySetTraits<FromSetType>::emptySet()
-                           , ToSetType* toSet = EmptySetTraits<ToSetType>::emptySet() )
-          : StridePolicy(CorrespondingSizeType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet) {}
+        , ToSetType* toSet = EmptySetTraits<ToSetType>::emptySet() )
+        : StridePolicy(CorrespondingSizeType::DEFAULT_VALUE), m_fromSet(fromSet), m_toSet(toSet) {}
 
     StaticConstantRelation( const RelationBuilder & builder)
-           : StridePolicy(builder.m_stride)
-           , m_fromSet(builder.m_fromSet)
-           , m_toSet(builder.m_toSet)
-        {}
+        : StridePolicy(builder.m_stride)
+          , m_fromSet(builder.m_fromSet)
+          , m_toSet(builder.m_toSet)
+    {}
 
     ~StaticConstantRelation(){}
 
@@ -121,24 +121,24 @@ namespace slam    {
   public:
     struct RelationBuilder
     {
-        friend class StaticConstantRelation;
+      friend class StaticConstantRelation;
 
-        RelationBuilder()
-                : m_fromSet( EmptySetTraits<FromSetType>::emptySet() )
-                , m_toSet( EmptySetTraits<ToSetType>::emptySet() )
-                {}
+      RelationBuilder()
+          : m_fromSet( EmptySetTraits<FromSetType>::emptySet() )
+            , m_toSet( EmptySetTraits<ToSetType>::emptySet() )
+      {}
 
-        RelationBuilder& fromSet(FromSetType* pFromSet)  { m_fromSet = pFromSet; return *this;}
-        RelationBuilder& toSet(ToSetType* pToSet)        { m_toSet  = pToSet; return *this;}
-        RelationBuilder& stride(SetPosition str)         { m_stride = StridePolicyType(str); return *this;}
+      RelationBuilder&  fromSet(FromSetType* pFromSet)  { m_fromSet = pFromSet; return *this; }
+      RelationBuilder&  toSet(ToSetType* pToSet)        { m_toSet  = pToSet; return *this; }
+      RelationBuilder&  stride(SetPosition str)         { m_stride = StridePolicyType(str); return *this; }
 
-        // This needs to wait until relation data is set by a policy....
-        //RelationBuilder& offsets()   {  return *this;}
+      // This needs to wait until relation data is set by a policy....
+      //RelationBuilder& offsets()   {  return *this;}
 
     private:
-        FromSetType* m_fromSet;
-        ToSetType* m_toSet;
-        StridePolicyType m_stride;
+      FromSetType* m_fromSet;
+      ToSetType* m_toSet;
+      StridePolicyType m_stride;
     };
 
 
@@ -157,7 +157,7 @@ namespace slam    {
       std::copy(toOffsets.begin(), toOffsets.end(), std::back_inserter(m_toSetIndicesVec));
     }
 
-    RelationVecConstIterator  begin(SetPosition fromSetIndex)       const
+    RelationVecConstIterator begin(SetPosition fromSetIndex)       const
     {
       verifyPosition(fromSetIndex);
       return m_toSetIndicesVec.begin() + toSetBeginIndex(fromSetIndex);
@@ -185,12 +185,12 @@ namespace slam    {
      */
     const RelationSet operator[](SetPosition fromSetElt) const
     {
-        typedef typename RelationSet::SetBuilder SetBuilder;
-        return SetBuilder()
-                    .size(  elemSize(fromSetElt))
-                    .offset( toSetBeginIndex(fromSetElt) )
-                    .data( &m_toSetIndicesVec)
-                    ;
+      typedef typename RelationSet::SetBuilder SetBuilder;
+      return SetBuilder()
+             .size( elemSize(fromSetElt))
+             .offset( toSetBeginIndex(fromSetElt) )
+             .data( &m_toSetIndicesVec)
+      ;
     }
 #endif
 
@@ -199,7 +199,7 @@ namespace slam    {
      */
     SetPosition size(SetPosition fromSetIndex = 0)                  const
     {
-        return elemSize(fromSetIndex);
+      return elemSize(fromSetIndex);
     }
 
     /**
@@ -232,10 +232,10 @@ namespace slam    {
 
     /// \}
   private:
-    inline SetPosition elemSize(SetPosition fromSetIndex) const
+    inline SetPosition  elemSize(SetPosition fromSetIndex) const
     {
-        verifyPosition(fromSetIndex);
-        return stride();
+      verifyPosition(fromSetIndex);
+      return stride();
     }
     inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex < m_fromSet->size() ); }
     inline SetPosition  toSetBeginIndex(SetPosition fromSetIndex)   const { return stride() * (fromSetIndex); }

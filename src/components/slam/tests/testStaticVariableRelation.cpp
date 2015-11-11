@@ -296,17 +296,16 @@ TEST(gtest_slam_static_variable_relation,delayed_double_subscript_test)
   std::cout << "\n\tLooking at relation's stored values...";
   for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
   {
-      std::cout << "\n\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos <<").";
+    std::cout << "\n\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos << ").";
 
-      RelSet rSet = incrementingRel[fromPos];
-      for(PositionType toPos = 0; toPos < rSet.size(); ++toPos)
-      {
-          PositionType expectedVal =  toPos;
-          PositionType actualVal = rSet[toPos];
-          EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
-      }
+    RelSet rSet = incrementingRel[fromPos];
+    for(PositionType toPos = 0; toPos < rSet.size(); ++toPos)
+    {
+      PositionType expectedVal =  toPos;
+      PositionType actualVal = rSet[toPos];
+      EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
+    }
   }
 
   std::cout << "\n****** done." << std::endl;
 }
-

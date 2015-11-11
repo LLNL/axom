@@ -12,20 +12,20 @@ namespace policies {
   template<typename StridePolicyType, typename IntType, IntType VAL> struct StrideToSize;
 
   template<> struct StrideToSize< RuntimeStrideHolder< Set::PositionType >
-                                , Set::PositionType
-                                , RuntimeStrideHolder< Set::PositionType >::DEFAULT_VALUE >
+  , Set::PositionType
+  , RuntimeStrideHolder< Set::PositionType >::DEFAULT_VALUE >
   {
-      typedef RuntimeSizeHolder<typename Set::PositionType> SizeType;
+    typedef RuntimeSizeHolder<typename Set::PositionType> SizeType;
   };
 
   template<Set::PositionType VAL> struct StrideToSize< CompileTimeStrideHolder<Set::PositionType, VAL>, Set::PositionType, VAL >
   {
-      typedef CompileTimeSizeHolder<Set::PositionType, VAL> SizeType;
+    typedef CompileTimeSizeHolder<Set::PositionType, VAL> SizeType;
   };
 
   template<> struct StrideToSize< StrideOne<Set::PositionType>, Set::PositionType,  StrideOne<Set::PositionType>::DEFAULT_VALUE >
   {
-      typedef CompileTimeSizeHolder<Set::PositionType, StrideOne<Set::PositionType  >::DEFAULT_VALUE > SizeType;
+    typedef CompileTimeSizeHolder<Set::PositionType, StrideOne<Set::PositionType  >::DEFAULT_VALUE > SizeType;
   };
 
 

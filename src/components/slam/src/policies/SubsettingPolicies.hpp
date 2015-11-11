@@ -31,141 +31,141 @@ namespace asctoolkit {
 namespace slam {
 namespace policies {
 
+  /**
+   * \name OrderedSet_Subsetting_Policies
+   * \brief A few default policies for the subsetting of an OrderedSet
+   */
+
+  /// \{
+
+  struct NoSubset
+  {
+    static const NullSet s_nullSet;
+    typedef const Set ParentSetType;
+
+    NoSubset() {}
+    NoSubset(ParentSetType*) {}     // This empty .ctor is here to satisfy SubsettingPolicy API
+
     /**
-     * \name OrderedSet_Subsetting_Policies
-     * \brief A few default policies for the subsetting of an OrderedSet
+     * \brief Checks whether the set containing this policy class is a subset
      */
+    bool                  isSubset() const { return false; }
+    const ParentSetType*  parentSet() const { return ATK_NULLPTR; }
 
-    /// \{
+    template<typename OrderedSetIt>
+    bool                  isValid(OrderedSetIt, OrderedSetIt, bool) const { return true; }
+  };
 
-    struct NoSubset
+  struct VirtualParentSubset
+  {
+    static NullSet s_nullSet;
+
+    typedef Set ParentSetType;
+
+    VirtualParentSubset(ParentSetType* parSet = &s_nullSet) : m_parentSet(parSet) {}
+
+    /**
+     * \brief Checks whether the set containing this policy class is a subset
+     */
+    bool        isSubset() const { return *m_parentSet != s_nullSet; }
+    const Set*  parentSet() const { return m_parentSet; }
+    Set*&       parentSet()       { return m_parentSet; }
+
+    template<typename OrderedSetIt>
+    bool        isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
     {
-        static const NullSet s_nullSet;
-        typedef const Set ParentSetType;
+      // We allow parent sets to be null (i.e. the subset feature is deactivated)
+      if( !isSubset() || m_parentSet == ATK_NULLPTR)
+        return true;
 
-        NoSubset() {}
-        NoSubset(ParentSetType*) {} // This empty .ctor is here to satisfy SubsettingPolicy API
+      // Next, check if child is empty -- null set is a subset of all sets
+      bool childIsEmpty = (beg == end);
+      if( childIsEmpty )
+        return true;
 
-        /**
-         * \brief Checks whether the set containing this policy class is a subset
-         */
-        bool isSubset() const { return false; }
-        const ParentSetType* parentSet() const { return ATK_NULLPTR; }
+      // Next, since child has at least one element, the parent cannot be empty
+      bool bValid = ( m_parentSet->size() > 0);
+      SLIC_CHECK_MSG(verboseOutput && !bValid
+          , "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
 
-        template<typename OrderedSetIt>
-        bool isValid(OrderedSetIt, OrderedSetIt, bool) const { return true;}
-    };
-
-    struct VirtualParentSubset
-    {
-        static NullSet s_nullSet;
-
-        typedef Set ParentSetType;
-
-        VirtualParentSubset(ParentSetType* parSet = &s_nullSet) : m_parentSet(parSet) {}
-
-        /**
-         * \brief Checks whether the set containing this policy class is a subset
-         */
-        bool isSubset() const { return *m_parentSet != s_nullSet; }
-        const Set* parentSet() const { return m_parentSet; }
-              Set*& parentSet()       { return m_parentSet; }
-
-        template<typename OrderedSetIt>
-        bool isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
+      // At this point, parent and child are both non-null -- ensure that all elts of child are in parent
+      std::set<typename Set::ElementType> pSet;
+      for(typename Set::PositionType pos = 0; pos < m_parentSet->size(); ++pos)
+        pSet.insert( m_parentSet->at(pos));
+      for(; beg != end; ++beg)
+      {
+        if( pSet.find(*beg) == pSet.end())
         {
-            // We allow parent sets to be null (i.e. the subset feature is deactivated)
-            if( !isSubset() || m_parentSet == ATK_NULLPTR)
-                return true;
-
-            // Next, check if child is empty -- null set is a subset of all sets
-            bool childIsEmpty = (beg == end);
-            if( childIsEmpty )
-                return true;
-
-            // Next, since child has at least one element, the parent cannot be empty
-            bool bValid = ( m_parentSet->size() > 0);
-            SLIC_CHECK_MSG(verboseOutput && !bValid
-                         , "VirtualParentSubset -- if we are a subset and input set is non-empty, then parent set must be non-empty");
-
-            // At this point, parent and child are both non-null -- ensure that all elts of child are in parent
-            std::set<typename Set::ElementType> pSet;
-            for(typename Set::PositionType pos = 0; pos < m_parentSet->size(); ++pos)
-                pSet.insert( m_parentSet->at(pos));
-            for(; beg != end; ++beg)
-            {
-                if( pSet.find(*beg) == pSet.end())
-                {
-                    // For now, we only warn about the first failure '
-                    // Note: in the future, we might want to show all problems.
-                    SLIC_CHECK_MSG(verboseOutput
-                                 , "VirtualParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
-                    return false;
-                }
-            }
-            return true;
+          // For now, we only warn about the first failure '
+          // Note: in the future, we might want to show all problems.
+          SLIC_CHECK_MSG(verboseOutput
+              , "VirtualParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
+          return false;
         }
+      }
+      return true;
+    }
 
-    private:
-        Set* m_parentSet;
-    };
+  private:
+    Set* m_parentSet;
+  };
 
-    template<typename TheParentSetType>
-    struct ConcreteParentSubset
+  template<typename TheParentSetType>
+  struct ConcreteParentSubset
+  {
+    typedef TheParentSetType ParentSetType;
+
+    ConcreteParentSubset(ParentSetType* parSet = ATK_NULLPTR) : m_parentSet(parSet) {}
+
+    /**
+     * \brief Checks whether the set containing this policy class is a subset
+     */
+    bool                  isSubset() const { return m_parentSet != ATK_NULLPTR; }
+    const ParentSetType*  parentSet() const { return m_parentSet; }
+    ParentSetType*&       parentSet()       { return m_parentSet; }
+
+
+    template<typename OrderedSetIt>
+    bool                  isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
     {
-        typedef TheParentSetType ParentSetType;
+      // We allow parent sets to be null (i.e. the subset feature is deactivated)
+      if( !isSubset() )
+        return true;
 
-        ConcreteParentSubset(ParentSetType* parSet = ATK_NULLPTR) : m_parentSet(parSet) {}
+      // Next, check if child is empty -- null set is a subset of all sets
+      bool childIsEmpty = (beg == end);
+      if( childIsEmpty )
+        return true;
 
-        /**
-         * \brief Checks whether the set containing this policy class is a subset
-         */
-        bool isSubset() const { return m_parentSet != ATK_NULLPTR; }
-        const ParentSetType* parentSet() const { return m_parentSet; }
-              ParentSetType*& parentSet()       { return m_parentSet; }
+      // Next, since child has at least one element, the parent cannot be empty
+      bool bValid = (m_parentSet->size() > 0);
+      SLIC_CHECK_MSG(verboseOutput && !bValid
+          , "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
 
-
-        template<typename OrderedSetIt>
-        bool isValid(OrderedSetIt beg, OrderedSetIt end, bool verboseOutput = false) const
+      // At this point, parent and child are both non-null
+      std::set<typename Set::ElementType> pSet;
+      for(typename ParentSetType::PositionType pos = 0; pos < m_parentSet->size(); ++pos)
+        pSet.insert( (*m_parentSet)[pos] );
+      for(; beg != end; ++beg)
+      {
+        if( pSet.find(*beg) == pSet.end())
         {
-            // We allow parent sets to be null (i.e. the subset feature is deactivated)
-            if( !isSubset() )
-                return true;
-
-          // Next, check if child is empty -- null set is a subset of all sets
-          bool childIsEmpty = (beg == end);
-          if( childIsEmpty )
-              return true;
-
-          // Next, since child has at least one element, the parent cannot be empty
-          bool bValid = (m_parentSet->size() > 0);
-          SLIC_CHECK_MSG(verboseOutput && !bValid
-                       , "VirtualParentSubset -- if input set is non-empty, then parent set must be non-empty");
-
-          // At this point, parent and child are both non-null
-          std::set<typename Set::ElementType> pSet;
-          for(typename ParentSetType::PositionType pos = 0; pos < m_parentSet->size(); ++pos)
-              pSet.insert( (*m_parentSet)[pos] );
-          for(; beg != end; ++beg)
-          {
-              if( pSet.find(*beg) == pSet.end())
-              {
-                  // For now, we only warn about the first failure '
-                  // Note: in the future, we might want to show all problems.
-                  SLIC_CHECK_MSG(verboseOutput
-                               , "ConcreteParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
-                  return false;
-              }
-          }
-          return true;
+          // For now, we only warn about the first failure '
+          // Note: in the future, we might want to show all problems.
+          SLIC_CHECK_MSG(verboseOutput
+              , "ConcreteParentSubset :: parent set does not contain element " << *beg << " so child cannot be a subset of parent");
+          return false;
         }
+      }
+      return true;
+    }
 
-    private:
-        ParentSetType* m_parentSet;
-    };
+  private:
+    ParentSetType* m_parentSet;
+  };
 
 
-    /// \}
+  /// \}
 
 } // end namespace policies
 } // end namespace slam

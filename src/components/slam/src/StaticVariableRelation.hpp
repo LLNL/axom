@@ -73,9 +73,9 @@ namespace slam    {
     typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>  RelationVecConstIteratorPair;
 
     typedef OrderedSet< policies::RuntimeSizeHolder<Set::PositionType>      // TODO: change this to a compile time size if/when parent is compile time
-                      , policies::RuntimeOffsetHolder<Set::PositionType>
-                      , policies::StrideOne<Set::PositionType>
-                      , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
+        , policies::RuntimeOffsetHolder<Set::PositionType>
+        , policies::StrideOne<Set::PositionType>
+        , policies::STLVectorIndirection<Set::PositionType, Set::ElementType> > RelationSet;
 
   public:
     StaticVariableRelation (Set* fromSet = &s_nullSet, Set* toSet = &s_nullSet);
@@ -113,18 +113,18 @@ namespace slam    {
      */
     const RelationSet operator[](SetPosition fromSetElt) const
     {
-        typedef RelationSet::SetBuilder SetBuilder;
-        return SetBuilder()
-                    .size(  elemSize(fromSetElt))
-                    .offset( toSetBeginIndex(fromSetElt) )
-                    .data( &m_toSetIndicesVec)
-                    ;
+      typedef RelationSet::SetBuilder SetBuilder;
+      return SetBuilder()
+             .size( elemSize(fromSetElt))
+             .offset( toSetBeginIndex(fromSetElt) )
+             .data( &m_toSetIndicesVec)
+      ;
     }
 #endif
 
     SetPosition size(SetPosition fromSetIndex)                  const
     {
-        return elemSize(fromSetIndex);
+      return elemSize(fromSetIndex);
     }
 
     bool isValid(bool verboseOutput = false) const;
@@ -172,8 +172,8 @@ namespace slam    {
   private:
     inline SetPosition elemSize(SetPosition fromSetIndex) const
     {
-        verifyPosition(fromSetIndex);
-        return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
+      verifyPosition(fromSetIndex);
+      return toSetEndIndex(fromSetIndex) - toSetBeginIndex(fromSetIndex);
     }
 
     inline void         verifyPosition(SetPosition fromSetIndex)    const { SLIC_ASSERT( fromSetIndex <  m_fromSet->size()  ); }

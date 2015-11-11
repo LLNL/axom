@@ -130,7 +130,7 @@ TEST(gtest_slam_static_constant_relation,simple_relation)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-  typedef RangeSet::iterator                                SetIter;
+  typedef RangeSet::iterator                                  SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator  RelSetConstIter;
 
   std::cout << "\n\tLooking at relation's stored values...";
@@ -170,6 +170,7 @@ TEST(gtest_slam_static_constant_relation,initialized_rel_out_of_bounds)
 
   RangeSet fromSet(FROMSET_SIZE);
   RangeSet toSet(TOSET_SIZE);
+
   StaticConstantRelation<> incrementingRel(&fromSet, &toSet);
 
   typedef StaticConstantRelation<>::RelationVec IndexVec;
@@ -209,7 +210,7 @@ TEST(gtest_slam_static_constant_relation,test_iterator_range)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-  typedef RangeSet::iterator                                    SetIter;
+  typedef RangeSet::iterator                                      SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator      RelSetConstIter;
   typedef StaticConstantRelation<>::RelationVecConstIteratorPair  RelSetConstIterPair;
 
@@ -253,7 +254,7 @@ TEST(gtest_slam_static_constant_relation,double_subscript_test)
 
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-  typedef RangeSet::iterator                                SetIter;
+  typedef RangeSet::iterator                                  SetIter;
   typedef StaticConstantRelation<>::RelationVecConstIterator  RelSetConstIter;
 
   std::cout << "\n\tLooking at relation's stored values...";
@@ -295,15 +296,15 @@ TEST(gtest_slam_static_constant_relation,delayed_double_subscript_test)
   std::cout << "\n\tLooking at relation's stored values...";
   for(PositionType fromPos = 0; fromPos < fromSet.size(); ++fromPos)
   {
-      std::cout << "\n\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos <<").";
+    std::cout << "\n\tInspecting element " << fromSet[fromPos] << " of first set (in position " << fromPos << ").";
 
-      RelSet rSet = incrementingRel[fromPos];
-      for(PositionType toPos = 0; toPos < rSet.size(); ++toPos)
-      {
-          PositionType expectedVal =  (fromPos + toPos) % TOSET_SIZE;
-          PositionType actualVal = rSet[toPos];
-          EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
-      }
+    RelSet rSet = incrementingRel[fromPos];
+    for(PositionType toPos = 0; toPos < rSet.size(); ++toPos)
+    {
+      PositionType expectedVal =  (fromPos + toPos) % TOSET_SIZE;
+      PositionType actualVal = rSet[toPos];
+      EXPECT_EQ( expectedVal, actualVal) << "incrementing relation's value was incorrect";
+    }
   }
 
   std::cout << "\n****** done." << std::endl;
@@ -317,14 +318,15 @@ using asctoolkit::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
- int result = 0;
+  int result = 0;
 
- ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
- UnitTestLogger logger;   // create & initialize test logger,
- // finalized when exiting main scope
+  UnitTestLogger logger;  // create & initialize test logger,
 
- result = RUN_ALL_TESTS();
+  // finalized when exiting main scope
 
- return result;
+  result = RUN_ALL_TESTS();
+
+  return result;
 }

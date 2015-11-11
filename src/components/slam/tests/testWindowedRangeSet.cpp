@@ -23,17 +23,17 @@
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
 
-typedef asctoolkit::slam::Set::PositionType         SetPosition;
-typedef asctoolkit::slam::Set::ElementType          SetElement;
+typedef asctoolkit::slam::Set::PositionType                                                   SetPosition;
+typedef asctoolkit::slam::Set::ElementType                                                    SetElement;
 
-typedef asctoolkit::slam::policies::StrideOne<SetPosition> StrideOnePolicy;
-typedef asctoolkit::slam::policies::NoIndirection<SetPosition,SetElement> NoIndirectionPolicy;
-typedef asctoolkit::slam::policies::VirtualParentSubset SubsetPolicy;
+typedef asctoolkit::slam::policies::StrideOne<SetPosition>                                    StrideOnePolicy;
+typedef asctoolkit::slam::policies::NoIndirection<SetPosition,SetElement>                     NoIndirectionPolicy;
+typedef asctoolkit::slam::policies::VirtualParentSubset                                       SubsetPolicy;
 
 
 
 typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, SubsetPolicy> SetType;
-typedef SetType::iterator             SetIterator;
+typedef SetType::iterator                                                                     SetIterator;
 
 static const SetPosition MAX_SET_SIZE = 20;
 
@@ -108,6 +108,7 @@ TEST(gtest_slam_windowed_range_set,test_windowed_range_set_parents)
   std::cout << "\n-- Generating a parent set, one (windowed) subset and one non-windowed subset and checking validity" << std::endl;
   SetType parentSet(MAX_SET_SIZE);
   SetType childSet(lowerIndex, upperIndex);
+
   childSet.parentSet() = &parentSet;
 
   SetType nonChildSet(lowerIndex, upperIndex);
@@ -132,14 +133,15 @@ using asctoolkit::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])
 {
- int result = 0;
+  int result = 0;
 
- ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleTest(&argc, argv);
 
- UnitTestLogger logger;   // create & initialize test logger,
- // finalized when exiting main scope
+  UnitTestLogger logger;  // create & initialize test logger,
 
- result = RUN_ALL_TESTS();
+  // finalized when exiting main scope
 
- return result;
+  result = RUN_ALL_TESTS();
+
+  return result;
 }
