@@ -22,8 +22,6 @@
 #define DATABUFFER_HPP_
 
 // Standard C++ headers
-#include <map>
-#include <set>
 #include <vector>
 
 // Other toolkit component headers
