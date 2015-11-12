@@ -23,7 +23,6 @@
 
 #include <cstdlib>
 #include <cmath>
-#include <iostream>
 
 #include "lumberjack/MPIUtility.hpp"
 #include "lumberjack/Utility.hpp"
@@ -98,7 +97,7 @@ void BinaryTreeCommunicator::pushMessagesOnce(const char* packedMessagesToBeSent
     int childrenDoneCount = 0;
     const char* currPackedMessages;
     while(childrenDoneCount < m_childCount){
-        currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm, m_ranksLimit);
+        currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
         if (currPackedMessages != ATK_NULLPTR) {
             receivedPackedMessages.push_back(currPackedMessages);
         }
