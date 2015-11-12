@@ -66,14 +66,14 @@ int RootCommunicator::ranksLimit()
 }
 
 void RootCommunicator::pushMessagesOnce(const char* packedMessagesToBeSent,
-                                        std::vector<std::string>& receivedPackedMessages)
+                                        std::vector<const char*>& receivedPackedMessages)
 {
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank == 0){
-        char* currPackedMessages;
+        const char* currPackedMessages;
         int ranksDoneCount = 0;
         while(ranksDoneCount < (m_mpiCommSize-1)){
-            currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm, m_ranksLimit);
+            currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
             if (currPackedMessages != ATK_NULLPTR) {
                 receivedPackedMessages.push_back(currPackedMessages);
             }
@@ -87,9 +87,9 @@ void RootCommunicator::pushMessagesOnce(const char* packedMessagesToBeSent,
 }
 
 void RootCommunicator::pushMessagesFully(const char* packedMessagesToBeSent,
-                                         std::vector<std::string>& receivedPackedMessages)
+                                         std::vector<const char*>& receivedPackedMessages)
 {
-    pushMessagesOnce(packedMessagesToBeSent);
+    pushMessagesOnce(packedMessagesToBeSent, receivedPackedMessages);
 }
 
 } // end namespace lumberjack

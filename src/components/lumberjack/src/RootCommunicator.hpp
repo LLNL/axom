@@ -103,7 +103,7 @@ class RootCommunicator: public Communicator {
          *****************************************************************************
          */
         void pushMessagesOnce(const char* packedMessagesToBeSent,
-                              std::vector<std::string>& receivedPackedMessages);
+                              std::vector<const char*>& receivedPackedMessages);
 
         /*!
          *****************************************************************************
@@ -117,7 +117,7 @@ class RootCommunicator: public Communicator {
          *****************************************************************************
          */
         void pushMessagesFully(const char* packedMessagesToBeSent,
-                               std::vector<std::string>& receivedPackedMessages);
+                               std::vector<const char*>& receivedPackedMessages);
 
         /*!
          *****************************************************************************
