@@ -51,6 +51,7 @@ class Message {
          */
         Message()
         : m_text("")
+        , m_ranks()
         , m_ranksCount(0)
         , m_fileName("")
         , m_lineNumber(0) {}
@@ -69,12 +70,10 @@ class Message {
         Message(const std::string& text, int rank,
                     const std::string& fileName, int lineNumber)
         : m_text(text)
+        , m_ranks(1, rank)
         , m_ranksCount(1)
         , m_fileName(fileName)
-        , m_lineNumber(lineNumber)
-        {
-            m_ranks.push_back(rank);
-        }
+        , m_lineNumber(lineNumber) {}
 
         /*!
          *****************************************************************************
@@ -93,6 +92,7 @@ class Message {
                     int ranksCount, int ranksLimit,
                     const std::string& fileName, int lineNumber)
         : m_text(text)
+        , m_ranks()
         , m_ranksCount(0)
         , m_fileName(fileName)
         , m_lineNumber(lineNumber)
