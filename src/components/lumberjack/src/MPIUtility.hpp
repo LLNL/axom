@@ -36,7 +36,7 @@ namespace lumberjack {
 * \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
 *****************************************************************************
 */
-const char* mpiBlockingRecieveMessages(MPI_Comm comm, int ranksLimit);
+const char* mpiBlockingRecieveMessages(MPI_Comm comm);
 
 /*!
 *****************************************************************************

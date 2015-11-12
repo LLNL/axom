@@ -23,7 +23,6 @@
 
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 
 namespace asctoolkit {
 namespace lumberjack {
