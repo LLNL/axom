@@ -44,16 +44,18 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
             return m_ranksLimit;
         }
 
-        void pushMessagesOnce(std::vector<asctoolkit::lumberjack::Message*>& messages,
-                              std::vector<asctoolkit::lumberjack::Combiner*>& combiners)
+        void pushMessagesOnce(const char* packedMessagesToBeSent,
+                              std::vector<const char*>& receivedPackedMessages)
         {
-            asctoolkit::lumberjack::combineMessages(messages, combiners, m_ranksLimit);
+            packedMessagesToBeSent = packedMessagesToBeSent;
+            receivedPackedMessages = receivedPackedMessages;
         }
 
-        void pushMessagesFully(std::vector<asctoolkit::lumberjack::Message*>& messages,
-                               std::vector<asctoolkit::lumberjack::Combiner*>& combiners)
+        void pushMessagesFully(const char* packedMessagesToBeSent,
+                               std::vector<const char*>& receivedPackedMessages)
         {
-            pushMessagesOnce(messages, combiners);
+            packedMessagesToBeSent = packedMessagesToBeSent;
+            receivedPackedMessages = receivedPackedMessages;
         }
 
         bool shouldMessagesBeOutputted()
