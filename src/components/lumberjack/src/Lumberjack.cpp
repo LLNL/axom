@@ -97,6 +97,14 @@ int Lumberjack::ranksLimit()
     return m_ranksLimit;
 }
 
+void Lumberjack::clearMessages()
+{
+    for (int i=0; i<(int)m_messages.size(); ++i) {
+        delete m_messages[i];
+    }
+    m_messages.clear();
+}
+
 void Lumberjack::queueMessage(const std::string& text)
 {
     queueMessage(text, "", -1);
@@ -110,39 +118,43 @@ void Lumberjack::queueMessage(const std::string& text, const std::string& fileNa
 
 void Lumberjack::pushMessagesOnce()
 {
-    combineMessages();
-    const char* packedMessagesToBeSent = packMessages();
+    const char* packedMessagesToBeSent = "";
+    if (!m_communicator->shouldMessagesBeOutputted()) {
+        combineMessages();
+        packedMessagesToBeSent = packMessages();
+        clearMessages();
+    }
     std::vector<const char*> receivedPackedMessages;
+    
     m_communicator->pushMessagesOnce(packedMessagesToBeSent, receivedPackedMessages);
 
-    for (int i=0; i<(int)m_messages.size(); ++i) {
-        delete m_messages[i];
-    }
-    m_messages.clear();
     for (int i=0;i<(int)receivedPackedMessages.size(); ++i){
         unpackMessages(receivedPackedMessages[i]);
         delete receivedPackedMessages[i];
     }
     receivedPackedMessages.clear();
+
     combineMessages();
 }
 
 void Lumberjack::pushMessagesFully()
 {
-    combineMessages();
-    const char* packedMessagesToBeSent = packMessages();
+    const char* packedMessagesToBeSent = "";
+    if (!m_communicator->shouldMessagesBeOutputted()) {
+        combineMessages();
+        packedMessagesToBeSent = packMessages();
+        clearMessages();
+    }
     std::vector<const char*> receivedPackedMessages;
+
     m_communicator->pushMessagesFully(packedMessagesToBeSent, receivedPackedMessages);
 
-    for (int i=0; i<(int)m_messages.size(); ++i) {
-        delete m_messages[i];
-    }
-    m_messages.clear();
     for (int i=0; i<(int)receivedPackedMessages.size(); ++i){
         unpackMessages(receivedPackedMessages[i]);
         delete receivedPackedMessages[i];
     }
     receivedPackedMessages.clear();
+
     combineMessages();
 }
 
@@ -248,7 +260,7 @@ void Lumberjack::unpackMessages(const char* packedMessages)
             tempString += packedMessages[i];
         }
         memcpy(buffer, &packedMessages[i], messageSize*sizeof(char));
-        buffer[messageSize+1] = '\0';
+        buffer[messageSize] = '\0';
         message = new Message();
         message->unpack(std::string(buffer), m_ranksLimit);
         m_messages.push_back(message);

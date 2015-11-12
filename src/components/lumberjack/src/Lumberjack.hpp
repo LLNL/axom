@@ -146,6 +146,15 @@ class Lumberjack {
 
         /*!
          *****************************************************************************
+         * \brief Clears all Message classes from the Lumberjack.
+         *
+         * This removes and calls delete on all Messages classes held by the Lumberjack. 
+         *****************************************************************************
+         */
+        void clearMessages();
+
+        /*!
+         *****************************************************************************
          * \brief Queues a message to be sent and combined
          *
          * This creates a Message and queues it to be sent through the Communicator
