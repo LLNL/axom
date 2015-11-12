@@ -13,8 +13,9 @@
  * \file
  *
  * \brief A simple class to handle arithmetic on modular integers
- * \detail Modular integers encapsulates a
- *         We allow the max number to be set during compile time or at runtime
+ *
+ * Modular integers simplify cyclic indexing over a range.
+ * We allow the max number to be set during compile time or at runtime
  *
  */
 
@@ -31,8 +32,8 @@ namespace slam {
 
   /**
    * \class
-   * This class is a wrapper around an int and encapsulates modular arithmetic with a given modulus,
-   * and can be useful e.g. when we are iterating circularly through the elements in a relation (e.g. consecutive edges around a polygon)
+   * This class is a wrapper around an int and encapsulates modular arithmetic with a given modulus.
+   * It can be useful when we are iterating circularly through the elements in a relation (e.g. consecutive edges around a polygon)
    * The class invariant is that 0 <= val < modulus(), where val is the wrapped integer.
    * The modulus is controlled by a SizePolicy which allows it to be given at compile time or at runtime.
    */
@@ -56,7 +57,7 @@ namespace slam {
 
 
     /**
-     * Implicit cast to an int
+     * Implicit cast of a ModularInt to an int
      */
     operator int() const { return m_val; }
 
