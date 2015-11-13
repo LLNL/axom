@@ -12,6 +12,16 @@
 module sidre_mod
     use fstr_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
+    ! splicer begin module_use
+    ! splicer end module_use
+    ! splicer begin class.DataStore.module_use
+    ! splicer end class.DataStore.module_use
+    ! splicer begin class.DataGroup.module_use
+    ! splicer end class.DataGroup.module_use
+    ! splicer begin class.DataBuffer.module_use
+    ! splicer end class.DataBuffer.module_use
+    ! splicer begin class.DataView.module_use
+    ! splicer end class.DataView.module_use
     implicit none
     
     ! splicer begin module_top

@@ -52,6 +52,7 @@ class Wrapf(util.WrapperMixin):
 
     def _begin_output_file(self):
         """Start a new class for output"""
+        self.use_stmts = []
         self.f_type_decl = []
         self.c_interface = []
         self.generic_interface = []
@@ -240,6 +241,7 @@ class Wrapf(util.WrapperMixin):
 
         # wrap methods
         self._push_splicer(fmt_class.cpp_class)
+        self._create_splicer('module_use', self.use_stmts)
         self._push_splicer('method')
         for method in node['methods']:
             self.wrap_function(node, method)
@@ -733,10 +735,13 @@ class Wrapf(util.WrapperMixin):
                             mname, ', '.join(only)))
                 else:
                     output.append('use %s' % mname)
+            output.extend(self.use_stmts)
             output.append('implicit none')
             output.append('')
         else:
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
+            self._create_splicer('module_use', output)
+            output.extend(self.use_stmts)
             output.append('implicit none')
             output.append('')
             self._create_splicer('module_top', output)
