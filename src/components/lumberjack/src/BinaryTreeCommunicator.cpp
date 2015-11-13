@@ -63,14 +63,6 @@ void BinaryTreeCommunicator::finalize()
 
 }
 
-bool BinaryTreeCommunicator::shouldMessagesBeOutputted()
-{
-    if (m_mpiCommRank == 0){
-        return true;
-    }
-    return false;
-}
-
 int BinaryTreeCommunicator::rank()
 {
     return m_mpiCommRank;
@@ -86,8 +78,13 @@ int BinaryTreeCommunicator::ranksLimit()
     return m_ranksLimit;
 }
 
-void BinaryTreeCommunicator::pushMessagesOnce(const char* packedMessagesToBeSent,
-                                              std::vector<const char*>& receivedPackedMessages)
+int BinaryTreeCommunicator::numPushesToFlush()
+{
+    return m_treeHeight-1;
+}
+
+void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
+                                  std::vector<const char*>& receivedPackedMessages)
 {
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank != 0){
@@ -107,12 +104,12 @@ void BinaryTreeCommunicator::pushMessagesOnce(const char* packedMessagesToBeSent
     MPI_Barrier(m_mpiComm);
 }
 
-void BinaryTreeCommunicator::pushMessagesFully(const char* packedMessagesToBeSent,
-                                               std::vector<const char*>& receivedPackedMessages)
+bool BinaryTreeCommunicator::shouldMessagesBeOutputted()
 {
-    for (int i=0; i<(m_treeHeight-1); ++i){
-        pushMessagesOnce(packedMessagesToBeSent, receivedPackedMessages);
+    if (m_mpiCommRank == 0){
+        return true;
     }
+    return false;
 }
 
 } // end namespace lumberjack

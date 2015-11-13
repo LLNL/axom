@@ -40,6 +40,7 @@ void Lumberjack::finalize()
 {
     m_communicator = ATK_NULLPTR;
     clearCombiners();
+    clearMessages();
 }
 
 void Lumberjack::addCombiner(Combiner* combiner)
@@ -125,8 +126,8 @@ void Lumberjack::pushMessagesOnce()
         clearMessages();
     }
     std::vector<const char*> receivedPackedMessages;
-    
-    m_communicator->pushMessagesOnce(packedMessagesToBeSent, receivedPackedMessages);
+
+    m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
     for (int i=0;i<(int)receivedPackedMessages.size(); ++i){
         unpackMessages(receivedPackedMessages[i]);
@@ -140,20 +141,23 @@ void Lumberjack::pushMessagesOnce()
 void Lumberjack::pushMessagesFully()
 {
     const char* packedMessagesToBeSent = "";
-    if (!m_communicator->shouldMessagesBeOutputted()) {
-        combineMessages();
-        packedMessagesToBeSent = packMessages();
-        clearMessages();
-    }
     std::vector<const char*> receivedPackedMessages;
+    int numPushesToFlush = m_communicator->numPushesToFlush();
+    for (int i=0; i<numPushesToFlush; ++i){
+        if (!m_communicator->shouldMessagesBeOutputted()) {
+            combineMessages();
+            packedMessagesToBeSent = packMessages();
+            clearMessages();
+        }
 
-    m_communicator->pushMessagesFully(packedMessagesToBeSent, receivedPackedMessages);
+        m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
-    for (int i=0; i<(int)receivedPackedMessages.size(); ++i){
-        unpackMessages(receivedPackedMessages[i]);
-        delete receivedPackedMessages[i];
+        for (int i=0; i<(int)receivedPackedMessages.size(); ++i){
+            unpackMessages(receivedPackedMessages[i]);
+            delete receivedPackedMessages[i];
+        }
+        receivedPackedMessages.clear();
     }
-    receivedPackedMessages.clear();
 
     combineMessages();
 }
@@ -163,7 +167,7 @@ const char* Lumberjack::packMessages()
     //This function packs the messages into one long char array
     //  in the following format:
     //
-    // <packed message size><packed message><packed message size><packed message>...
+    // <message count><largest message size><packed message size><packed message><packed message size>...
  
     if (m_messages.size() == 0) {
         return "0";

@@ -34,6 +34,11 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
 
         }
 
+        int rank()
+        {
+            return rand() % (m_ranksLimit*4);
+        }
+
         void ranksLimit(int value)
         {
             m_ranksLimit = value;
@@ -44,15 +49,13 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
             return m_ranksLimit;
         }
 
-        void pushMessagesOnce(const char* packedMessagesToBeSent,
-                              std::vector<const char*>& receivedPackedMessages)
+        int numPushesToFlush()
         {
-            packedMessagesToBeSent = packedMessagesToBeSent;
-            receivedPackedMessages = receivedPackedMessages;
+            return 1;
         }
 
-        void pushMessagesFully(const char* packedMessagesToBeSent,
-                               std::vector<const char*>& receivedPackedMessages)
+        void push(const char* packedMessagesToBeSent,
+                  std::vector<const char*>& receivedPackedMessages)
         {
             packedMessagesToBeSent = packedMessagesToBeSent;
             receivedPackedMessages = receivedPackedMessages;
@@ -62,12 +65,6 @@ class TestCommunicator: public asctoolkit::lumberjack::Communicator {
         {
             return true;
         }
-
-        int rank()
-        {
-            return rand() % (m_ranksLimit*4);
-        }
-
     private:
         MPI_Comm m_mpiComm;
         int m_ranksLimit;

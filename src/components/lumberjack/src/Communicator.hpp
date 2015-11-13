@@ -75,6 +75,13 @@ class Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Returns the MPI rank of this node
+         *****************************************************************************
+         */
+        virtual int rank() = 0;
+
+        /*!
+         *****************************************************************************
          * \brief Sets the rank limit.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
@@ -99,47 +106,35 @@ class Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Function used by the Lumberjack class to indicate how many individual pushes
+         *  fully flush all currently held Message classes to the root node. The Communicator
+         *  class's tree structure dictates this.
+         *****************************************************************************
+         */
+        virtual int numPushesToFlush() = 0;
+
+        /*!
+         *****************************************************************************
          * \brief This pushes all messages once up the Communicator class's tree structure.
          *
          * All of the children push their Message classes to their parent node. This is
          * is helpful if you want to spread the work load of Lumberjack over a large
          * set of work.
          *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
+         * \param [in] packedMessagesToBeSent All of this rank's Message classes packed into a single buffer.
+         * \param [in,out] receivedPackedMessages Recieved packed message buffers from this nodes children.
          *****************************************************************************
          */
-        virtual void pushMessagesOnce(const char* packedMessagesToBeSent,
-                                      std::vector<const char*>& receivedPackedMessages) = 0;
+        virtual void push(const char* packedMessagesToBeSent,
+                          std::vector<const char*>& receivedPackedMessages) = 0;
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages fully up the Communicator class's tree structure.
-         *
-         * All Message classes are continually pushed until all Message classes
-         * are pushed to the root node.
-         *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
-         *****************************************************************************
-         */
-        virtual void pushMessagesFully(const char* packedMessagesToBeSent,
-                                       std::vector<const char*>& receivedPackedMessages) = 0;
-
-        /*!
-         *****************************************************************************
-         * \brief Function used by the Lumberjack to indicate whether this node should be
+         * \brief Function used by the Lumberjack class to indicate whether this node should be
          * outputting messages. The Communicator class's tree structure dictates this.
          *****************************************************************************
          */
         virtual bool shouldMessagesBeOutputted() = 0;
-
-        /*!
-         *****************************************************************************
-         * \brief Returns the MPI rank of this node
-         *****************************************************************************
-         */
-        virtual int rank() = 0;
 };
 
 } // end namespace lumberjack
