@@ -41,6 +41,7 @@
 #include "slam/Map.hpp"
 #include "slam/FieldRegistry.hpp"
 
+namespace slamLulesh {
 
 //**************************************************
 // Allow flexibility for arithmetic representations
@@ -700,3 +701,5 @@ void  CommMonoQ(Domain& domain);
 
 // lulesh-init
 void  InitMeshDecomp(Int_t numRanks, Int_t myRank, Int_t *col, Int_t *row, Int_t *plane, Int_t *side);
+
+} // end namespace slamLulesh

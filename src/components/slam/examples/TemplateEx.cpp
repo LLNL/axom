@@ -13,7 +13,7 @@
 //#include<iostream>
 #include <cstdlib>
 
-namespace TemplateEx {
+namespace slamTemplateEx {
 
   struct Set
   {
@@ -131,7 +131,7 @@ namespace TemplateEx {
     IndirectionSet(int n) : ParentType(n) {}
   };
 
-}
+} // end namespace slamTemplateEx
 
 //using namespace TemplateEx;
 /*
@@ -198,9 +198,9 @@ int main(int argc, char* argv[])
   if(numElts > 0)
     pVal[numElts - 1] = 12345;
 
-  TemplateEx::PositionSet pSet(numElts);
-  TemplateEx::RangeSet rSet(rangeBeginElt, numElts + rangeBeginElt);
-  TemplateEx::IndirectionSet iSet(numElts);
+  slamTemplateEx::PositionSet pSet(numElts);
+  slamTemplateEx::RangeSet rSet(rangeBeginElt, numElts + rangeBeginElt);
+  slamTemplateEx::IndirectionSet iSet(numElts);
   iSet.data() = pVal;
 
   // Test 1 -- iterate through each set and find the sum
@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
   copySet(iSet, buf + numElts * 2);
 
   // We will now compare the three individual sums
-  TemplateEx::IndirectionSet totIndSet(3 * numElts);
+  slamTemplateEx::IndirectionSet totIndSet(3 * numElts);
   totIndSet.data() = buf;
   bool test2 =  ( sumSet(totIndSet) == (sumP + sumR + sumI) );
 

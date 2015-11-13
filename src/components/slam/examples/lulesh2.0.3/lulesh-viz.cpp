@@ -28,6 +28,8 @@ extern "C" {
 }
 #endif
 
+namespace slamLulesh {
+
 // Function prototypes
 static void
 DumpDomainToVisit(DBfile *db, Domain& domain, int myRank);
@@ -456,8 +458,15 @@ LULESH_PMPIO_Close(void *file, void *udata)
 }
 # endif
 
+} // end namespace slamLulesh
+
+
 
 #else
+
+
+namespace slamLulesh {
+
 
 void DumpToVisit(Domain& /*domain*/, int /*numFiles*/, int myRank, int /*numRanks*/)
 {
@@ -466,5 +475,8 @@ void DumpToVisit(Domain& /*domain*/, int /*numFiles*/, int myRank, int /*numRank
     printf("Must enable -DVIZ_MESH at compile time to call DumpDomain\n");
   }
 }
+
+} // end namespace slamLulesh
+
 
 #endif

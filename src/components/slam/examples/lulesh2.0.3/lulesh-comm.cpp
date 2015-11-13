@@ -11,6 +11,9 @@
 
 #include "lulesh.hpp"
 
+namespace slamLulesh {
+
+
 // If no MPI, then this whole file is stubbed out
 #ifdef USE_MPI
 
@@ -2196,3 +2199,5 @@ void CommMonoQ(Domain& domain)
 }
 
 #endif
+
+} // end namespace slamLulesh

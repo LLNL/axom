@@ -52,10 +52,7 @@
 #endif
 
 
-namespace asctoolkit {
-namespace slam {
-namespace examples {
-namespace unstructured {
+namespace slamUnstructuredHex {
 
   typedef asctoolkit::slam::MeshIndexType IndexType;
   typedef double                          DataType;
@@ -425,15 +422,12 @@ namespace unstructured {
     return err;
   }
 
-}   // end namespace unstructured
-}   // end namespace examples
-}   // end namespace slam
-}   // end namespace asctoolkit
+}   // end namespace slamUnstructuredHex
 
 
 int main()
 {
-  using namespace asctoolkit::slam::examples::unstructured;
+  using namespace slamUnstructuredHex;
 
   asctoolkit::slic::UnitTestLogger logger;
 

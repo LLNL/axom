@@ -25,6 +25,8 @@
 #include "lulesh.hpp"
 
 
+namespace slamLulesh {
+
 /////////////////////////////////////////////////////////////////////
 Domain::Domain(Int_t numRanks, Index_t colLoc,
     Index_t rowLoc, Index_t planeLoc,
@@ -853,3 +855,5 @@ void InitMeshDecomp(Int_t numRanks, Int_t myRank,
 
   return;
 }
+
+} // end namespace slamLulesh

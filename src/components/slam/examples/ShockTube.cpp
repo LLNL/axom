@@ -58,10 +58,7 @@
 #include "slam/StaticConstantRelation.hpp"
 
 
-namespace asctoolkit {
-namespace slam {
-namespace examples {
-namespace shocktube {
+namespace slamShocktube {
 
   asctoolkit::slam::MeshIndexType const UPWIND   = 0;
   asctoolkit::slam::MeshIndexType const DOWNWIND = 1;
@@ -111,6 +108,7 @@ namespace shocktube {
     typedef asctoolkit::slam::policies::NoIndirection<PositionType,ElementType>                         NoIndirectionPolicy;
     typedef asctoolkit::slam::policies::ConcreteParentSubset<ElemSet>                                   TubeSubsetPolicy;
     typedef asctoolkit::slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>   ElemSubset;
+    typedef asctoolkit::slam::RangeSet                                                                  RangeSet;
 
     // types for relations
     enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
@@ -134,11 +132,13 @@ namespace shocktube {
 
 // Define the explicit instances of our local (key/value) datastore for int and double
 // TODO: Might need an additional uint version for mesh data
-  FieldRegistry<int>    intsRegistry;
-  FieldRegistry<double> realsRegistry;
+  typedef asctoolkit::slam::FieldRegistry<int>    IntsRegistry;
+  typedef asctoolkit::slam::FieldRegistry<double> RealsRegistry;
+  typedef IntsRegistry::MapType   IntField;
+  typedef RealsRegistry::MapType  RealField;
 
-  typedef FieldRegistry<int>::MapType     IntField;
-  typedef FieldRegistry<double>::MapType  RealField;
+  IntsRegistry intsRegistry;
+  RealsRegistry realsRegistry;
 
 
 /**************************************************************************
@@ -306,6 +306,7 @@ namespace shocktube {
   void InitializeShockTube(ShockTubeMesh const& mesh)
   {
     typedef ShockTubeMesh::IndexType IndexType;
+    typedef ShockTubeMesh::RangeSet RangeSet;
 
     // TODO: Define and use mesh API maps over sets for these
     // Note -- the extra code and allocations here will be unnecessary once maps on sets are defined
@@ -544,10 +545,7 @@ namespace shocktube {
 
   }
 
-} // end namespace shocktube
-} // end namespace examples
-} // end namespace slam
-} // end namespace asctoolkit
+} // end namespace slamShocktube
 
 
 /**************************************************************************
@@ -557,7 +555,7 @@ namespace shocktube {
 
 int main(void)
 {
-  using namespace asctoolkit::slam::examples::shocktube;
+  using namespace slamShocktube;
   asctoolkit::slic::UnitTestLogger logger;
 
   // We should be able to parallelize pretty easily by

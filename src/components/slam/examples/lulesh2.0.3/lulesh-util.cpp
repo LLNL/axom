@@ -23,6 +23,9 @@
 
 #include "common/Utilities.hpp"
 
+
+namespace slamLulesh {
+
 /* Helper function for converting strings to ints, with error checking */
 int StrToInt(const char *token, int *retVal)
 {
@@ -313,3 +316,5 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
 
   return;
 }
+
+} // end namespace slamLulesh

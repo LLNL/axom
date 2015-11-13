@@ -175,6 +175,8 @@
 
 #include "slic/UnitTestLogger.hpp"
 
+namespace slamLulesh {
+
 /*********************************/
 /* Data structure implementation */
 /*********************************/
@@ -2836,10 +2838,14 @@ void LagrangeLeapFrog(Domain& domain)
 }
 
 
+} // end namespace slamLulesh
+
+
 /******************************************/
 
 int main(int argc, char *argv[])
 {
+  using namespace slamLulesh;
   asctoolkit::slic::UnitTestLogger logger;
 
   Domain *locDom;
