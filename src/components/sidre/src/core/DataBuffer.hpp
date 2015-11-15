@@ -71,6 +71,34 @@ class DataView;
  */
 class DataBuffer
 {
+private:
+  class Value {
+      friend class DataBuffer;
+  public:
+      operator int *() const
+      {
+	  return static_cast<int *>(m_data);
+      }
+      operator long *() const
+      {
+	  return static_cast<long *>(m_data);
+      }
+      operator float *() const
+      {
+	  return static_cast<float *>(m_data);
+      }
+      operator double *() const
+      {
+	  return static_cast<double *>(m_data);
+      }
+  private:
+      Value(TypeID type, void * data) :
+	  m_type(type),
+	  m_data(data) {}
+      TypeID m_type;
+      void * m_data;
+  };
+
 public:
 
   //
@@ -115,6 +143,12 @@ public:
   void * getData()
   {
     return m_data;
+  }
+
+  // XXX
+  Value getValue()
+  {
+    return Value(m_type, m_data);
   }
 
   /*!
@@ -346,6 +380,7 @@ private:
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
+
 
 };
 
