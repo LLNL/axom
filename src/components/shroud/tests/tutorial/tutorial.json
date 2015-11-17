@@ -200,6 +200,47 @@
                         "intent": "in", 
                         "value": true
                     }, 
+                    "name": "len", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "dimension": true, 
+                        "intent": "in", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "name": "values", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int Sum(int len, int *values+dimension)", 
+            "fmt": {
+                "C_name": "TUT_sum", 
+                "F_C_name": "tut_sum", 
+                "F_name_generic": "sum", 
+                "F_name_impl": "sum", 
+                "F_name_method": "sum", 
+                "PY_name_impl": "PY_sum", 
+                "method_name": "Sum", 
+                "underscore_name": "sum"
+            }, 
+            "function_index": 5, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Sum", 
+                "type": "int"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
                     "name": "arg", 
                     "type": "bool"
                 }
@@ -216,7 +257,7 @@
                 "method_name": "Function3", 
                 "underscore_name": "function3"
             }, 
-            "function_index": 5, 
+            "function_index": 6, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -257,12 +298,12 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
-                "PTR_F_C_index": 15, 
+                "PTR_F_C_index": 16, 
                 "PY_name_impl": "PY_function4a", 
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
             }, 
-            "function_index": 6, 
+            "function_index": 7, 
             "options": {}, 
             "result": {
                 "attrs": {
@@ -307,7 +348,7 @@
                 "F_C_name": "tut_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 15, 
+            "function_index": 16, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -354,12 +395,12 @@
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 
                 "F_name_method": "function4b", 
-                "PTR_F_C_index": 16, 
+                "PTR_F_C_index": 17, 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
             }, 
-            "function_index": 7, 
+            "function_index": 8, 
             "options": {
                 "F_string_result_as_arg": "output"
             }, 
@@ -404,7 +445,7 @@
                 "F_C_name": "tut_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 16, 
+            "function_index": 17, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -453,7 +494,7 @@
                 "method_name": "Function5", 
                 "underscore_name": "function5"
             }, 
-            "function_index": 8, 
+            "function_index": 9, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -482,13 +523,13 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
-                "PTR_F_C_index": 17, 
+                "PTR_F_C_index": 18, 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_suffix": "_from_name", 
                 "method_name": "Function6", 
                 "underscore_name": "function6"
             }, 
-            "function_index": 9, 
+            "function_index": 10, 
             "function_suffix": "_from_name", 
             "options": {}, 
             "result": {
@@ -518,7 +559,7 @@
                 "F_C_name": "tut_function6_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 17, 
+            "function_index": 18, 
             "function_suffix": "_from_name", 
             "generated": "string_to_buffer_and_len", 
             "options": {
@@ -556,7 +597,7 @@
                 "method_name": "Function6", 
                 "underscore_name": "function6"
             }, 
-            "function_index": 10, 
+            "function_index": 11, 
             "function_suffix": "_from_index", 
             "options": {}, 
             "result": {
@@ -585,7 +626,7 @@
                 "method_name": "Function7", 
                 "underscore_name": "function7"
             }, 
-            "function_index": 11, 
+            "function_index": 12, 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
@@ -619,7 +660,7 @@
                 "F_name_method": "function7_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 18, 
+            "function_index": 19, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -654,7 +695,7 @@
                 "F_name_method": "function7_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 19, 
+            "function_index": 20, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -681,7 +722,7 @@
                 "method_name": "Function8", 
                 "underscore_name": "function8"
             }, 
-            "function_index": 12, 
+            "function_index": 13, 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
@@ -707,7 +748,7 @@
                 "F_name_method": "function8_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 20, 
+            "function_index": 21, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -734,7 +775,7 @@
                 "F_name_method": "function8_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 21, 
+            "function_index": 22, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -773,7 +814,7 @@
                     "double"
                 ]
             }, 
-            "function_index": 13, 
+            "function_index": 14, 
             "options": {
                 "wrap_fortran": false
             }, 
@@ -800,10 +841,10 @@
                 "F_name_generic": "function9", 
                 "F_name_impl": "function9_float", 
                 "F_name_method": "function9_float", 
-                "PTR_F_C_index": 13, 
+                "PTR_F_C_index": 14, 
                 "function_suffix": "_float"
             }, 
-            "function_index": 22, 
+            "function_index": 23, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -833,10 +874,10 @@
                 "F_name_generic": "function9", 
                 "F_name_impl": "function9_double", 
                 "F_name_method": "function9_double", 
-                "PTR_F_C_index": 13, 
+                "PTR_F_C_index": 14, 
                 "function_suffix": "_double"
             }, 
-            "function_index": 23, 
+            "function_index": 24, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -865,7 +906,7 @@
                 "method_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
             }, 
-            "function_index": 14, 
+            "function_index": 15, 
             "options": {}, 
             "result": {
                 "attrs": {

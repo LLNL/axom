@@ -23,6 +23,14 @@ return rv;
 // splicer end function.function2
 }
 
+int TUT_sum(int len, int * values)
+{
+// splicer begin function.sum
+int rv = Sum(len, values);
+return rv;
+// splicer end function.sum
+}
+
 bool TUT_function3(bool arg)
 {
 // splicer begin function.function3

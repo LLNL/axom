@@ -103,6 +103,9 @@ if __name__ == '__main__':
         "+d1=-12.0",
         "+d2=11.3e-10",
         "+d3=11e10",
+        "+dimension",
+#        "+dimension(*)",
+#        "+dimension(len)",
         ]:
         r = x(test).attr()
         print('attr: "{0}"'.format(test))

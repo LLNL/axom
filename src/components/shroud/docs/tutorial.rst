@@ -130,6 +130,14 @@ The Fortran wrapper calls the C interface directly::
 
 .. note :: add intent to wrapper
 
+Pointer arguments
+-----------------
+
+Pointers may represent an output scalar or an array.
+
+- decl: int Sum(int len, int *values+dimension)
+
+
 Logical
 ^^^^^^^
 

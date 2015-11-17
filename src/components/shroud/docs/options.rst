@@ -64,5 +64,10 @@ constructor
 
 pure
 
-   Fortran PURE
+   Sets the Fortran PURE attribute.
 
+dimension
+
+   Sets the Fortran DIMENSION attribute.
+   Pointer argument should be passed through since it is an
+   array.  *value* must be *False*

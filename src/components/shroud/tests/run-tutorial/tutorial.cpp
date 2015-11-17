@@ -99,6 +99,18 @@ void Function9(double arg)
     return;
 }
 
+
+int Sum(int len, int *values)
+{
+    last_function_called = "Sum";
+
+    int sum;
+    for (int i=0; i < len; i++) {
+	sum += values[i];
+    }
+    return sum;
+}
+
 //----------------------------------------------------------------------
 
 void Class1::Method1()

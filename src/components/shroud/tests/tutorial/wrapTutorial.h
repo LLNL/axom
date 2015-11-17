@@ -19,6 +19,8 @@ void TUT_function1();
 
 double TUT_function2(double arg1, int arg2);
 
+int TUT_sum(int len, int * values);
+
 bool TUT_function3(bool arg);
 
 const char * TUT_function4a(const char * arg1, const char * arg2);

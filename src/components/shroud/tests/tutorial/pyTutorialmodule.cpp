@@ -53,6 +53,32 @@ PY_function2(
 // splicer end function.function2
 }
 
+static char PY_sum__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_sum(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.sum
+    int len;
+    int * values;
+    const char *kwcpp = "len\0values";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:Sum", kw_list,
+        &len, &values))
+    {
+        return NULL;
+    }
+    int rv = Sum(len, values);
+    return Py_BuildValue("i", rv);
+// splicer end function.sum
+}
+
 static char PY_function3__doc__[] =
 "documentation"
 ;
@@ -251,6 +277,7 @@ PY_last_function_called(
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
+{"Sum", (PyCFunction)PY_sum, METH_VARARGS|METH_KEYWORDS, PY_sum__doc__},
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
