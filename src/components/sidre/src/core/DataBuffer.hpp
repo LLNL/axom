@@ -169,7 +169,7 @@ public:
    */
   size_t getNumberOfElements() const
   {
-    return m_nitems;
+    return m_numelems;
   }
 
   /*!
@@ -209,7 +209,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength len);
+  DataBuffer * declare(TypeID type, SidreLength numelems);
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -352,8 +352,8 @@ private:
   // Type of data pointed to by m_data
   TypeID m_type;
 
-  // Length of data pointed to by m_data
-  SidreLength m_nitems;
+  // Number of elements pointed to by m_data
+  SidreLength m_numelems;
 
   /// Pointer to the data owned by DataBuffer.
   void * m_data;

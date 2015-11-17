@@ -119,8 +119,8 @@ DataView * DataView::allocate()
   if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
   {
     TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-    SidreLength nitems = m_schema.dtype().number_of_elements();
-    m_data_buffer->allocate(type, nitems);
+    SidreLength numelems = m_schema.dtype().number_of_elements();
+    m_data_buffer->allocate(type, numelems);
     apply();
   }
   return this;
@@ -245,8 +245,8 @@ DataView * DataView::reallocate(const Schema& schema)
     if (type == view_type)
     {
       declare(schema);
-      SidreLength nitems = schema.dtype().number_of_elements();
-      m_data_buffer->reallocate(nitems);
+      SidreLength numelems = schema.dtype().number_of_elements();
+      m_data_buffer->reallocate(numelems);
       apply();
     }
   }
@@ -276,8 +276,8 @@ DataView * DataView::reallocate(const DataType& dtype)
     if (type == view_type)
     {
       declare(dtype);
-      SidreLength nitems = dtype.number_of_elements();
-      m_data_buffer->reallocate(nitems);
+      SidreLength numelems = dtype.number_of_elements();
+      m_data_buffer->reallocate(numelems);
       apply();
     }
   }

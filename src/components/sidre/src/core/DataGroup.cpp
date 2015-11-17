@@ -301,7 +301,7 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
  */
 DataView * DataGroup::createExternalView( const std::string& name,
                                           void * external_data,
-					  TypeID type, SidreLength nitems )
+					  TypeID type, SidreLength numelems )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
@@ -315,10 +315,10 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(nitems);
+    dtype.set_number_of_elements(numelems);
 
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(type, nitems);
+    buff->declare(type, numelems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -352,9 +352,9 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     TypeID type = static_cast<TypeID>(dtype.id());
-    SidreLength nitems = dtype.number_of_elements();
+    SidreLength numelems = dtype.number_of_elements();
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(type, nitems);
+    buff->declare(type, numelems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -388,9 +388,9 @@ DataView * DataGroup::createExternalView( const std::string& name,
   else
   {
     TypeID type = static_cast<TypeID>(schema.dtype().id());
-    SidreLength nitems = schema.dtype().number_of_elements();
+    SidreLength numelems = schema.dtype().number_of_elements();
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(type, nitems);
+    buff->declare(type, numelems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
@@ -1082,15 +1082,15 @@ DataView * DataGroup::createFortranAllocatableView( const std::string& name,
   {
 
     DataBuffer * buff = this->getDataStore()->createBuffer();
-    SidreLength nitems = SizeAllocatable(array, type, rank);
-    buff->declare(type, nitems);
+    SidreLength numelems = SizeAllocatable(array, type, rank);
+    buff->declare(type, numelems);
     buff->setFortranAllocatable(array, type, rank);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
 
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(nitems);
+    dtype.set_number_of_elements(numelems);
     view->apply(dtype);
 
     return attachView(view);
@@ -1219,8 +1219,8 @@ void DataGroup::copyFromNode(Node& n,
         // setup the new data store buffer
         Schema schema(n_buff["schema"].as_string());
 	TypeID type = static_cast<TypeID>(schema.dtype().id());
-	SidreLength nitems = schema.dtype().number_of_elements();
-        ds_buff->declare(type, nitems);
+	SidreLength numelems = schema.dtype().number_of_elements();
+        ds_buff->declare(type, numelems);
         if (n_buff.has_path("data"))
         {
           ds_buff->allocate();
