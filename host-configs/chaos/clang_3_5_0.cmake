@@ -22,6 +22,7 @@ set(CMAKE_C_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/
 
 # cpp compiler used by spack
 set(CMAKE_CXX_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/bin/clang++" CACHE PATH "")
+set(GCOV_PATH "/usr/bin/gcov" CACHE PATH "")
 
 # fortran compiler used by spack
 # no fortran compiler
