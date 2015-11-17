@@ -320,7 +320,7 @@ void DataBuffer::print(std::ostream& os) const
 DataBuffer::DataBuffer( IndexType index )
   : m_index(index),
   m_views(),
-  m_type(CONDUIT_EMPTY_T),
+  m_type(EMPTY_ID),
   m_numelems(0),
   m_data(ATK_NULLPTR),
   m_is_data_external(false),
@@ -339,7 +339,7 @@ DataBuffer::DataBuffer( IndexType index )
 DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
-  m_type(CONDUIT_EMPTY_T),
+  m_type(EMPTY_ID),
   m_numelems(0),
   m_data(source.m_data),
   m_is_data_external(source.m_is_data_external),

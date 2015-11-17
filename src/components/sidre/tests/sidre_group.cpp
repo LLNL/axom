@@ -255,13 +255,13 @@ TEST(sidre_group,create_destroy_has_viewbuffer)
 
   // try api call that specifies specific type and length
   // TODO - replace this when the conduit enum is wrapped by a sidre equivalent.
-  group->createViewAndBuffer( "viewWithLength1", CONDUIT_FLOAT64_T, 50 );
+  group->createViewAndBuffer( "viewWithLength1", asctoolkit::sidre::FLOAT_ID, 50 );
   // error condition check - try again with duplicate name, should be a no-op
-  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength1", CONDUIT_FLOAT64_T, 50 ) == ATK_NULLPTR );
+  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength1", asctoolkit::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
   group->destroyViewAndBuffer("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
-  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLengthBadLen", CONDUIT_FLOAT64_T, -1 ) == ATK_NULLPTR );
+  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLengthBadLen", asctoolkit::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
 
   // try api call that specifies data type in another way
   group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) );

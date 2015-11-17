@@ -15,6 +15,7 @@
 
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataBuffer;
+using asctoolkit::sidre::DataType;
 
 //------------------------------------------------------------------------------
 
@@ -42,10 +43,10 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  dbuff->allocate(asctoolkit::sidre::INT_ID, 10);
   dbuff->allocate();
 
-  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
@@ -70,9 +71,9 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  dbuff->allocate(asctoolkit::sidre::INT_ID, 10);
 
-  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
@@ -97,13 +98,13 @@ TEST(sidre_buffer,realloc_buffer)
   DataStore * ds = new DataStore();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(CONDUIT_NATIVE_LONG_DATATYPE_ID, 5);
+  dbuff->allocate(asctoolkit::sidre::INT_ID, 5);
 
-  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 5u);
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 5);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 5);
 
-  long * data_ptr = static_cast<long *>(dbuff->getData());
+  int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -114,12 +115,12 @@ TEST(sidre_buffer,realloc_buffer)
 
   dbuff->reallocate(10);
 
-  EXPECT_EQ(dbuff->getTypeID(), CONDUIT_NATIVE_LONG_DATATYPE_ID);
+  EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
   EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(long) * 10);
+  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   // data buffer changes
-  data_ptr = static_cast<long *>(dbuff->getData());
+  data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<5 ; i++)
   {

@@ -237,11 +237,11 @@ TEST(C_sidre_group,view_copy_move)
   ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(flds, "i0");
-  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, SIDRE_INT_ID, 1);
   ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(flds, "f0");
-  ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_allocate_from_type(f0_view, SIDRE_FLOAT_ID, 1);
   ATK_dataview * d0_view = ATK_datagroup_create_view_and_buffer_simple(flds, "d0");
-  ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_allocate_from_type(d0_view, SIDRE_DOUBLE_ID, 1);
 
   ATK_dataview_set_value_int(i0_view, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
@@ -301,11 +301,11 @@ TEST(C_sidre_group,groups_move_copy)
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, SIDRE_INT_ID, 1);
   ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(gb, "f0");
-  ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_allocate_from_type(f0_view, SIDRE_FLOAT_ID, 1);
   ATK_dataview * d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
-  ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_allocate_from_type(d0_view, SIDRE_DOUBLE_ID, 1);
 
   ATK_dataview_set_value_int(i0_view, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
@@ -386,11 +386,11 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   // use create + alloc convenience methods
   // this one is the DataType & method
   ATK_dataview * const view1 = ATK_datagroup_create_view_and_buffer_from_type
-                                 (grp, viewName1, ATK_C_INT_T, 10);
+                                 (grp, viewName1, SIDRE_INT_ID, 10);
 
   // this one is the Schema & method
   ATK_dataview * const view2 = ATK_datagroup_create_view_and_buffer_from_type
-                                 (grp, viewName2, ATK_C_DOUBLE_T, 10);
+                                 (grp, viewName2, SIDRE_DOUBLE_ID, 10);
 
   EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
   EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName1), view1 );
@@ -429,7 +429,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   // use create + alloc convenience methods
   // this one is the DataType & method
   ATK_dataview * base =  ATK_datagroup_create_view_and_buffer_from_type(root, "base",
-                                                                        ATK_C_INT_T, 10);
+                                                                        SIDRE_INT_ID, 10);
 #ifdef XXX
   int * base_vals = (int *) ATK_dataview_get_data(base);
   for(int i=0 ; i<10 ; i++)
@@ -448,7 +448,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   ATK_databuffer * base_buff = ATK_dataview_get_buffer(base);
   // create two views into this buffer
   // view for the first 5 values
-  ATK_datagroup_createView(root, "sub_a", base_buff, ATK_C_INT_T, 5);
+  ATK_datagroup_createView(root, "sub_a", base_buff, SIDRE_INT_ID, 5);
   // view for the second 5 values
   //  (schema call path case)
   Schema s(DataType::uint32(5, 5*sizeof(int)));
@@ -477,7 +477,7 @@ TEST(C_sidre_group,save_restore_simple)
   ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, SIDRE_INT_ID, 1);
   ATK_dataview_set_value_int(i0_view, 1);
 
   EXPECT_TRUE(ATK_datagroup_has_group(root, "fields"));
@@ -523,15 +523,15 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
 
   ATK_dataview * i0_view = ATK_datagroup_create_view_and_buffer_simple(ga, "i0");
-  ATK_dataview_allocate_from_type(i0_view, ATK_C_INT_T, 1);
+  ATK_dataview_allocate_from_type(i0_view, SIDRE_INT_ID, 1);
   ATK_dataview_set_value_int(i0_view, 1);
 
   ATK_dataview * f0_view = ATK_datagroup_create_view_and_buffer_simple(gb, "f0");
-  ATK_dataview_allocate_from_type(f0_view, ATK_C_FLOAT_T, 1);
+  ATK_dataview_allocate_from_type(f0_view, SIDRE_FLOAT_ID, 1);
   ATK_dataview_set_value_float(f0_view, 100.0);
 
   ATK_dataview * d0_view = ATK_datagroup_create_view_and_buffer_simple(gc, "d0");
-  ATK_dataview_allocate_from_type(d0_view, ATK_C_DOUBLE_T, 1);
+  ATK_dataview_allocate_from_type(d0_view, SIDRE_DOUBLE_ID, 1);
   ATK_dataview_set_value_double(d0_view, 3000.0);
 
   // check that all sub groups exist

@@ -49,7 +49,7 @@ TEST(sidre_view,int_buffer_from_view)
   DataView * dv = root->createViewAndBuffer("u0");
 
   dv->allocate(DataType::c_int(10));
-  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), asctoolkit::sidre::INT_ID);
   int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++)
@@ -94,7 +94,7 @@ TEST(sidre_view,int_array_multi_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->declare(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  dbuff->declare(asctoolkit::sidre::INT_ID, 10);
   dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
@@ -145,7 +145,7 @@ TEST(sidre_view,init_int_array_multi_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  dbuff->allocate(asctoolkit::sidre::INT_ID, 10);
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
   for(int i=0 ; i<10 ; i++)

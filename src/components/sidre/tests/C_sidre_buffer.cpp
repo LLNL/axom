@@ -40,10 +40,10 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
   ATK_databuffer_allocate_existing(dbuff);
 
-//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_INT_T);  // XXX NATIVE TYPE
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_INT_ID);  // XXX NATIVE TYPE
   EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
@@ -67,9 +67,9 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_allocate_from_type(dbuff, SIDRE_INT_ID, 10);
 
-//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_INT_T);  // XXX NATIVE TYPE
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_INT_ID);  // XXX NATIVE TYPE
   EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
@@ -93,10 +93,10 @@ TEST(C_sidre_buffer,realloc_buffer)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, ATK_C_LONG_T, 5);
+  ATK_databuffer_declare(dbuff, SIDRE_LONG_ID, 5);
   ATK_databuffer_allocate_existing(dbuff);
 
-//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_LONG_T);  // XXX NATIVE TYPE
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);  // XXX NATIVE TYPE
   EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 5u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
@@ -111,7 +111,7 @@ TEST(C_sidre_buffer,realloc_buffer)
 
   ATK_databuffer_reallocate(dbuff, 10);
 
-//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), ATK_C_LONG_T);  // XXX NATIVE TYPE
+//  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);  // XXX NATIVE TYPE
   EXPECT_EQ(ATK_databuffer_get_number_of_elements(dbuff), 10u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 

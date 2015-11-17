@@ -37,10 +37,10 @@ TEST(C_sidre_external, declare_external_buffer)
   ATK_databuffer * dbuff_1 = ATK_datastore_create_buffer(ds);
   ATK_databuffer * dbuff_2 = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff_0, ATK_C_DOUBLE_T, len);
-  ATK_databuffer_declare(dbuff_1, ATK_C_INT_T, len);
+  ATK_databuffer_allocate_from_type(dbuff_0, SIDRE_DOUBLE_ID, len);
+  ATK_databuffer_declare(dbuff_1, SIDRE_INT_ID, len);
   ATK_databuffer_set_external_data(dbuff_1, idata);
-  ATK_databuffer_declare(dbuff_2, ATK_C_DOUBLE_T, len);
+  ATK_databuffer_declare(dbuff_2, SIDRE_DOUBLE_ID, len);
   ATK_databuffer_set_external_data(dbuff_2, ddata);
 
   EXPECT_EQ(ATK_databuffer_is_external(dbuff_0), false);
@@ -77,8 +77,8 @@ TEST(C_sidre_external, create_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, ATK_C_INT_T, len);
-  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
+  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, SIDRE_INT_ID, len);
+  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, SIDRE_DOUBLE_ID, len);
   EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
 
   ATK_dataview_print(iview);
@@ -120,8 +120,8 @@ TEST(C_sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, ATK_C_INT_T, len);
-  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, ATK_C_DOUBLE_T, len);
+  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, SIDRE_INT_ID, len);
+  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, SIDRE_DOUBLE_ID, len);
   EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
   ATK_databuffer * tmpbuf;
   tmpbuf = ATK_dataview_get_buffer(iview);

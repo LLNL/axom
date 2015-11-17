@@ -40,8 +40,8 @@ TEST(C_sidre_view,int_buffer_from_view)
 
   ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
 
-  ATK_dataview_allocate_from_type(dv, ATK_C_INT_T, 10);
-  EXPECT_EQ(ATK_dataview_get_type_id(dv), ATK_INT32_T);  // XXX NATIVE TYPE
+  ATK_dataview_allocate_from_type(dv, SIDRE_INT_ID, 10);
+  EXPECT_EQ(ATK_dataview_get_type_id(dv), SIDRE_INT32_ID);  // XXX NATIVE TYPE
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -63,7 +63,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10);
+  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", SIDRE_INT_ID, 10);
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -86,7 +86,7 @@ TEST(C_sidre_view,int_array_multi_view)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
   ATK_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
@@ -142,7 +142,7 @@ TEST(C_sidre_view,init_int_array_multi_view)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_allocate_from_type(dbuff, SIDRE_INT_ID, 10);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
   for(int i=0 ; i<10 ; i++)
@@ -219,7 +219,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
   // alloc our buffer
   // we will create 4 sub views of this array
-  ATK_dataview_allocate_from_type(base_old, ATK_C_INT_T, 40);
+  ATK_dataview_allocate_from_type(base_old, SIDRE_INT_ID, 40);
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(base_old);
 
 
@@ -373,8 +373,8 @@ TEST(C_sidre_view,int_array_realloc)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
   // create a view to hold the base buffer
-  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", ATK_C_FLOAT_T, 5);
-  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", ATK_C_INT_T, 5);
+  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", SIDRE_FLOAT_ID, 5);
+  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", SIDRE_INT_ID, 5);
 
   float * a1_ptr = (float *) ATK_dataview_get_data_pointer(a1);
   int * a2_ptr = (int *)  ATK_dataview_get_data_pointer(a2);
