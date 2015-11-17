@@ -295,7 +295,8 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create external view with given data type and attach to group.
+ * Create external view with given data type and number of elements
+ * then attach to group.
  *
  *************************************************************************
  */

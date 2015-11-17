@@ -21,6 +21,8 @@ Useful links
   * `Jira <https://lc.llnl.gov/jira/secure/RapidBoard.jspa?rapidView=96&projectKey=ATK>`_
   * `Stash <https://lc.llnl.gov/stash/projects/ATK>`_
   * `Bamboo <https://lc.llnl.gov/bamboo/browse/ASC>`_
+  * `ASCTOOLKIT-USERS mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-USERS>`_
+  * `ASCTOOLKIT_DEV mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-DEV>`_
   * `Coding Guidelines <https://lc.llnl.gov/toolkit/docs/sphinx/coding_guidlines_docs/html/index.html>`_
 
 Components
