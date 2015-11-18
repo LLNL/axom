@@ -1350,19 +1350,19 @@
             "attrs": {}, 
             "decl": "void test_names(const std::string &name)", 
             "fmt": {
-                "C_name": "AA_test_names_empty", 
-                "F_C_name": "aa_test_names_empty", 
+                "C_name": "AA_test_names", 
+                "F_C_name": "aa_test_names", 
                 "F_name_generic": "test_names", 
-                "F_name_impl": "test_names_empty", 
-                "F_name_method": "test_names_empty", 
+                "F_name_impl": "test_names", 
+                "F_name_method": "test_names", 
                 "PTR_F_C_index": 39, 
-                "PY_name_impl": "PP_test_names_empty", 
-                "function_suffix": "_empty", 
+                "PY_name_impl": "PP_test_names", 
+                "function_suffix": "", 
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_index": 36, 
-            "function_suffix": "_empty", 
+            "function_suffix": "", 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -1387,12 +1387,12 @@
             "attrs": {}, 
             "decl": "void test_names(const std::string &name)", 
             "fmt": {
-                "C_name": "AA_test_names_empty_bufferify", 
-                "F_C_name": "aa_test_names_empty_bufferify", 
-                "function_suffix": "_empty_bufferify"
+                "C_name": "AA_test_names_bufferify", 
+                "F_C_name": "aa_test_names_bufferify", 
+                "function_suffix": "_bufferify"
             }, 
             "function_index": 39, 
-            "function_suffix": "_empty", 
+            "function_suffix": "", 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 

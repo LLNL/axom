@@ -32,20 +32,20 @@ return name != NULL;
 // splicer end function.is_name_valid_bufferify
 }
 
-void AA_test_names_empty(const char * name)
+void AA_test_names(const char * name)
 {
-// splicer begin function.test_names_empty
+// splicer begin function.test_names
 test_names(name);
 return;
-// splicer end function.test_names_empty
+// splicer end function.test_names
 }
 
-void AA_test_names_empty_bufferify(const char * name, int Lname)
+void AA_test_names_bufferify(const char * name, int Lname)
 {
-// splicer begin function.test_names_empty_bufferify
+// splicer begin function.test_names_bufferify
 test_names(std::string(name, Lname));
 return;
-// splicer end function.test_names_empty_bufferify
+// splicer end function.test_names_bufferify
 }
 
 void AA_test_names_flag(const char * name, int flag)

@@ -33,20 +33,20 @@ module userlibrary_mod
             logical(C_BOOL) :: rv
         end function aa_is_name_valid_bufferify
         
-        subroutine aa_test_names_empty(name) &
-                bind(C, name="AA_test_names_empty")
+        subroutine aa_test_names(name) &
+                bind(C, name="AA_test_names")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine aa_test_names_empty
+        end subroutine aa_test_names
         
-        subroutine aa_test_names_empty_bufferify(name, Lname) &
-                bind(C, name="AA_test_names_empty_bufferify")
+        subroutine aa_test_names_bufferify(name, Lname) &
+                bind(C, name="AA_test_names_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine aa_test_names_empty_bufferify
+        end subroutine aa_test_names_bufferify
         
         subroutine aa_test_names_flag(name, flag) &
                 bind(C, name="AA_test_names_flag")
@@ -70,7 +70,7 @@ module userlibrary_mod
     end interface
     
     interface test_names
-        module procedure test_names_empty
+        module procedure test_names
         module procedure test_names_flag
     end interface test_names
 
@@ -94,16 +94,16 @@ contains
         ! splicer end is_name_valid
     end function is_name_valid
     
-    subroutine test_names_empty(name)
+    subroutine test_names(name)
         use iso_c_binding
         implicit none
         character(*) :: name
-        ! splicer begin test_names_empty
-        call aa_test_names_empty_bufferify(  &
+        ! splicer begin test_names
+        call aa_test_names_bufferify(  &
             name,  &
             len_trim(name))
-        ! splicer end test_names_empty
-    end subroutine test_names_empty
+        ! splicer end test_names
+    end subroutine test_names
     
     subroutine test_names_flag(name, flag)
         use iso_c_binding

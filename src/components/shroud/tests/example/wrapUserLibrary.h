@@ -24,9 +24,9 @@ bool AA_is_name_valid(const char * name);
 
 bool AA_is_name_valid_bufferify(const char * name, int Lname);
 
-void AA_test_names_empty(const char * name);
+void AA_test_names(const char * name);
 
-void AA_test_names_empty_bufferify(const char * name, int Lname);
+void AA_test_names_bufferify(const char * name, int Lname);
 
 void AA_test_names_flag(const char * name, int flag);
 
