@@ -483,15 +483,15 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_simple
         
-        function atk_datagroup_create_view_and_buffer_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_and_buffer_bufferify")
+        function atk_datagroup_create_view_and_buffer_simple_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_and_buffer_simple_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_and_buffer_bufferify
+        end function atk_datagroup_create_view_and_buffer_simple_bufferify
         
         function atk_datagroup_create_view_and_buffer_from_type(self, name, type, len) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_and_buffer_from_type")
@@ -602,15 +602,15 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_get_view_from_name
         
-        function atk_datagroup_get_view_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_bufferify")
+        function atk_datagroup_get_view_from_name_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="ATK_datagroup_get_view_from_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
-        end function atk_datagroup_get_view_bufferify
+        end function atk_datagroup_get_view_from_name_bufferify
         
         function atk_datagroup_get_view_from_index(self, idx) result(rv) &
                 bind(C, name="ATK_datagroup_get_view_from_index")
@@ -1289,7 +1289,7 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_buffer_simple
-        rv%voidptr = atk_datagroup_create_view_and_buffer_bufferify(  &
+        rv%voidptr = atk_datagroup_create_view_and_buffer_simple_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1446,7 +1446,7 @@ contains
         character(*) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view_from_name
-        rv%voidptr = atk_datagroup_get_view_bufferify(  &
+        rv%voidptr = atk_datagroup_get_view_from_name_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
