@@ -139,14 +139,14 @@ include(ExternalProject)
 if (BUILD_TESTING)
 
   ## add google test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/gtest-1.7.0)
   set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR}
             CACHE INTERNAL "GoogleTest include directories" FORCE)
   set(GTEST_LIBS gtest_main gtest
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
 
   ## Add Fruit   FortRan UuIT test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/fruit-3.3.9)
 
   enable_testing()
 
