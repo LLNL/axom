@@ -33,12 +33,12 @@ module userlibrary_mod
             logical(C_BOOL) :: rv
         end function aa_is_name_valid_bufferify
         
-        subroutine aa_test_names_0(name) &
-                bind(C, name="AA_test_names_0")
+        subroutine aa_test_names_empty(name) &
+                bind(C, name="AA_test_names_empty")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine aa_test_names_0
+        end subroutine aa_test_names_empty
         
         subroutine aa_test_names_bufferify(name, Lname) &
                 bind(C, name="AA_test_names_bufferify")
@@ -48,13 +48,13 @@ module userlibrary_mod
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine aa_test_names_bufferify
         
-        subroutine aa_test_names_1(name, flag) &
-                bind(C, name="AA_test_names_1")
+        subroutine aa_test_names_flag(name, flag) &
+                bind(C, name="AA_test_names_flag")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: flag
-        end subroutine aa_test_names_1
+        end subroutine aa_test_names_flag
         
         subroutine aa_test_names_bufferify(name, Lname, flag) &
                 bind(C, name="AA_test_names_bufferify")
@@ -70,8 +70,8 @@ module userlibrary_mod
     end interface
     
     interface test_names
-        module procedure test_names_0
-        module procedure test_names_1
+        module procedure test_names_empty
+        module procedure test_names_flag
     end interface test_names
 
 contains
@@ -94,29 +94,29 @@ contains
         ! splicer end is_name_valid
     end function is_name_valid
     
-    subroutine test_names_0(name)
+    subroutine test_names_empty(name)
         use iso_c_binding
         implicit none
         character(*) :: name
-        ! splicer begin test_names_0
+        ! splicer begin test_names_empty
         call aa_test_names_bufferify(  &
             name,  &
             len_trim(name))
-        ! splicer end test_names_0
-    end subroutine test_names_0
+        ! splicer end test_names_empty
+    end subroutine test_names_empty
     
-    subroutine test_names_1(name, flag)
+    subroutine test_names_flag(name, flag)
         use iso_c_binding
         implicit none
         character(*) :: name
         integer(C_INT) :: flag
-        ! splicer begin test_names_1
+        ! splicer begin test_names_flag
         call aa_test_names_bufferify(  &
             name,  &
             len_trim(name),  &
             flag)
-        ! splicer end test_names_1
-    end subroutine test_names_1
+        ! splicer end test_names_flag
+    end subroutine test_names_flag
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

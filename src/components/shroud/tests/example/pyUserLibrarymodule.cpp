@@ -56,17 +56,17 @@ PP_is_name_valid(
 // splicer end function.is_name_valid
 }
 
-static char PP_test_names_0__doc__[] =
+static char PP_test_names_empty__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PP_test_names_0(
+PP_test_names_empty(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.test_names_0
+// splicer begin function.test_names_empty
     const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
@@ -78,20 +78,20 @@ PP_test_names_0(
     }
     test_names(name);
     Py_RETURN_NONE;
-// splicer end function.test_names_0
+// splicer end function.test_names_empty
 }
 
-static char PP_test_names_1__doc__[] =
+static char PP_test_names_flag__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PP_test_names_1(
+PP_test_names_flag(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.test_names_1
+// splicer begin function.test_names_flag
     const char * name;
     int flag;
     const char *kwcpp = "name\0flag";
@@ -104,13 +104,13 @@ PP_test_names_1(
     }
     test_names(name, flag);
     Py_RETURN_NONE;
-// splicer end function.test_names_1
+// splicer end function.test_names_flag
 }
 static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
-{"test_names_0", (PyCFunction)PP_test_names_0, METH_VARARGS|METH_KEYWORDS, PP_test_names_0__doc__},
-{"test_names_1", (PyCFunction)PP_test_names_1, METH_VARARGS|METH_KEYWORDS, PP_test_names_1__doc__},
+{"test_names_empty", (PyCFunction)PP_test_names_empty, METH_VARARGS|METH_KEYWORDS, PP_test_names_empty__doc__},
+{"test_names_flag", (PyCFunction)PP_test_names_flag, METH_VARARGS|METH_KEYWORDS, PP_test_names_flag__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
