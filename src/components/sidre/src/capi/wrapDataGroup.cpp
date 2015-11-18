@@ -90,13 +90,13 @@ return static_cast<ATK_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_and_buffer_simple
 }
 
-ATK_dataview * ATK_datagroup_create_view_and_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname)
+ATK_dataview * ATK_datagroup_create_view_and_buffer_simple_bufferify(ATK_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_view_and_buffer_bufferify
+// splicer begin class.DataGroup.method.create_view_and_buffer_simple_bufferify
 DataView * rv = selfobj->createViewAndBuffer(std::string(name, Lname));
 return static_cast<ATK_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_view_and_buffer_bufferify
+// splicer end class.DataGroup.method.create_view_and_buffer_simple_bufferify
 }
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength len)
@@ -198,13 +198,13 @@ return static_cast<ATK_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.get_view_from_name
 }
 
-ATK_dataview * ATK_datagroup_get_view_bufferify(ATK_datagroup * self, const char * name, int Lname)
+ATK_dataview * ATK_datagroup_get_view_from_name_bufferify(ATK_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.get_view_bufferify
+// splicer begin class.DataGroup.method.get_view_from_name_bufferify
 DataView * rv = selfobj->getView(std::string(name, Lname));
 return static_cast<ATK_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.get_view_bufferify
+// splicer end class.DataGroup.method.get_view_from_name_bufferify
 }
 
 ATK_dataview * ATK_datagroup_get_view_from_index(ATK_datagroup * self, const ATK_IndexType idx)

@@ -87,12 +87,12 @@ return;
 // splicer end function.function6_from_name
 }
 
-void TUT_function6_bufferify(const char * name, int Lname)
+void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
-// splicer begin function.function6_bufferify
+// splicer begin function.function6_from_name_bufferify
 Function6(std::string(name, Lname));
 return;
-// splicer end function.function6_bufferify
+// splicer end function.function6_from_name_bufferify
 }
 
 void TUT_function6_from_index(int indx)

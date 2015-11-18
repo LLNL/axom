@@ -40,13 +40,13 @@ module userlibrary_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine aa_test_names_empty
         
-        subroutine aa_test_names_bufferify(name, Lname) &
-                bind(C, name="AA_test_names_bufferify")
+        subroutine aa_test_names_empty_bufferify(name, Lname) &
+                bind(C, name="AA_test_names_empty_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine aa_test_names_bufferify
+        end subroutine aa_test_names_empty_bufferify
         
         subroutine aa_test_names_flag(name, flag) &
                 bind(C, name="AA_test_names_flag")
@@ -56,14 +56,14 @@ module userlibrary_mod
             integer(C_INT), value, intent(IN) :: flag
         end subroutine aa_test_names_flag
         
-        subroutine aa_test_names_bufferify(name, Lname, flag) &
-                bind(C, name="AA_test_names_bufferify")
+        subroutine aa_test_names_flag_bufferify(name, Lname, flag) &
+                bind(C, name="AA_test_names_flag_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             integer(C_INT), value, intent(IN) :: flag
-        end subroutine aa_test_names_bufferify
+        end subroutine aa_test_names_flag_bufferify
         
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
@@ -99,7 +99,7 @@ contains
         implicit none
         character(*) :: name
         ! splicer begin test_names_empty
-        call aa_test_names_bufferify(  &
+        call aa_test_names_empty_bufferify(  &
             name,  &
             len_trim(name))
         ! splicer end test_names_empty
@@ -111,7 +111,7 @@ contains
         character(*) :: name
         integer(C_INT) :: flag
         ! splicer begin test_names_flag
-        call aa_test_names_bufferify(  &
+        call aa_test_names_flag_bufferify(  &
             name,  &
             len_trim(name),  &
             flag)

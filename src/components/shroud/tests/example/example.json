@@ -1387,9 +1387,9 @@
             "attrs": {}, 
             "decl": "void test_names(const std::string &name)", 
             "fmt": {
-                "C_name": "AA_test_names_bufferify", 
-                "F_C_name": "aa_test_names_bufferify", 
-                "function_suffix": "_bufferify"
+                "C_name": "AA_test_names_empty_bufferify", 
+                "F_C_name": "aa_test_names_empty_bufferify", 
+                "function_suffix": "_empty_bufferify"
             }, 
             "function_index": 39, 
             "function_suffix": "_empty", 
@@ -1474,9 +1474,9 @@
             "attrs": {}, 
             "decl": "void test_names(const std::string &name, int flag)", 
             "fmt": {
-                "C_name": "AA_test_names_bufferify", 
-                "F_C_name": "aa_test_names_bufferify", 
-                "function_suffix": "_bufferify"
+                "C_name": "AA_test_names_flag_bufferify", 
+                "F_C_name": "aa_test_names_flag_bufferify", 
+                "function_suffix": "_flag_bufferify"
             }, 
             "function_index": 40, 
             "function_suffix": "_flag", 
