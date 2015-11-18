@@ -209,7 +209,7 @@ class Lumberjack {
          * \brief This packages all currently held Message classes into one const char buffer.
          *
          * The messages are packed into the following format:
-         *  <message count><largest message size><packed message size><packed message><packed message size>...
+         *  \<message count>*\<largest message size>*\<packed message size>*\<packed message>\<packed message size>...
          * This function does not delete messages.
          *****************************************************************************
          */
@@ -220,7 +220,7 @@ class Lumberjack {
          * \brief This unpackages the given const char buffer and creates Messages classes out of them.
          *
          * The messages are packed into the following format:
-         *  <message count><largest message size><packed message size><packed message><packed message size>...
+         *  \<message count>*\<largest message size>*\<packed message size>*\<packed message>\<packed message size>...
          * After creating the Message classes it adds them into Lumberjack.
          *
          * \param [in] packedMessages Packed messages to be unpacked

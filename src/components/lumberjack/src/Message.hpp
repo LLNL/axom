@@ -26,7 +26,17 @@
 namespace asctoolkit {
 namespace lumberjack {
 
+/*!
+ *****************************************************************************
+ * \brief Delimiter used for packing messages and separating their members.
+ *****************************************************************************
+ */
 const char memberDelimiter = '*';
+/*!
+ *****************************************************************************
+ * \brief Delimiter used for packing messages and separating their individual tracked ranks.
+ *****************************************************************************
+ */
 const char rankDelimiter = ',';
 
 /*!
@@ -44,7 +54,7 @@ const char rankDelimiter = ',';
 class Message {
     public:
         // Constructors
-          /*!
+        /*!
          *****************************************************************************
          * \brief Basic constructor where everything defaults to nothing.
          *****************************************************************************
@@ -203,7 +213,7 @@ class Message {
          * \brief Returns a string of all information about this Message packed into a string.
          *
          * The Message is packed into a string utilizing the following format:
-         *  <ranks delimited by ,>*<rank count>*<file name>*<line number>*<text>
+         *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
          *
          *****************************************************************************
          */
@@ -214,7 +224,7 @@ class Message {
          * \brief Overrides the information in this Message with the given packed string.
          *
          * The Message is unpacked from a string utilizing the following format:
-         *  <ranks delimited by ,>*<rank count>*<file name>*<line number>*<text>
+         *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
          *
          * \param [in] packedMessage Packed Message containing the new information.
          * \param [in] ranksLimit The delimiter used to separate the ranks in returned string.

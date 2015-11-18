@@ -33,7 +33,6 @@ namespace lumberjack {
 * message is sent.
 *
 * \param [in] comm The MPI Communicator.
-* \param [in] ranksLimit Limit on how many ranks are individually tracked per Message.
 *****************************************************************************
 */
 const char* mpiBlockingRecieveMessages(MPI_Comm comm);
@@ -46,7 +45,7 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm);
 *
 * \param [in] comm The MPI Communicator.
 * \param [in] destinationRank Where the Message classes is being sent.
-* \param [in,out] messages All of the Message classes to be sent.
+* \param [in,out] packedMessagesToBeSent All of the Message classes to be sent packed together.
 *****************************************************************************
 */
 void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank, const char* packedMessagesToBeSent);
