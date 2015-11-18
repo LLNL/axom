@@ -22,8 +22,6 @@
 #define DATABUFFER_HPP_
 
 // Standard C++ headers
-#include <map>
-#include <set>
 #include <vector>
 
 // Other toolkit component headers
@@ -73,6 +71,34 @@ class DataView;
  */
 class DataBuffer
 {
+private:
+  class Value {
+      friend class DataBuffer;
+  public:
+      operator int *() const
+      {
+	  return static_cast<int *>(m_data);
+      }
+      operator long *() const
+      {
+	  return static_cast<long *>(m_data);
+      }
+      operator float *() const
+      {
+	  return static_cast<float *>(m_data);
+      }
+      operator double *() const
+      {
+	  return static_cast<double *>(m_data);
+      }
+  private:
+      Value(TypeID type, void * data) :
+	  m_type(type),
+	  m_data(data) {}
+      TypeID m_type;
+      void * m_data;
+  };
+
 public:
 
   //
@@ -119,6 +145,12 @@ public:
     return m_data;
   }
 
+  // XXX
+  Value getValue()
+  {
+    return Value(m_type, m_data);
+  }
+
   /*!
    * \brief Return type of data for this DataBuffer object.
    */
@@ -137,7 +169,7 @@ public:
    */
   size_t getNumberOfElements() const
   {
-    return m_nitems;
+    return m_numelems;
   }
 
   /*!
@@ -177,7 +209,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength len);
+  DataBuffer * declare(TypeID type, SidreLength numelems);
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -320,8 +352,8 @@ private:
   // Type of data pointed to by m_data
   TypeID m_type;
 
-  // Length of data pointed to by m_data
-  SidreLength m_nitems;
+  // Number of elements pointed to by m_data
+  SidreLength m_numelems;
 
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
@@ -348,6 +380,7 @@ private:
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
+
 
 };
 

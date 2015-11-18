@@ -23,6 +23,14 @@ return rv;
 // splicer end function.function2
 }
 
+int TUT_sum(int len, int * values)
+{
+// splicer begin function.sum
+int rv = Sum(len, values);
+return rv;
+// splicer end function.sum
+}
+
 bool TUT_function3(bool arg)
 {
 // splicer begin function.function3
@@ -79,12 +87,12 @@ return;
 // splicer end function.function6_from_name
 }
 
-void TUT_function6_bufferify(const char * name, int Lname)
+void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
-// splicer begin function.function6_bufferify
+// splicer begin function.function6_from_name_bufferify
 Function6(std::string(name, Lname));
 return;
-// splicer end function.function6_bufferify
+// splicer end function.function6_from_name_bufferify
 }
 
 void TUT_function6_from_index(int indx)

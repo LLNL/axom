@@ -19,6 +19,8 @@ void TUT_function1();
 
 double TUT_function2(double arg1, int arg2);
 
+int TUT_sum(int len, int * values);
+
 bool TUT_function3(bool arg);
 
 const char * TUT_function4a(const char * arg1, const char * arg2);
@@ -33,7 +35,7 @@ double TUT_function5(double arg1, int arg2);
 
 void TUT_function6_from_name(const char * name);
 
-void TUT_function6_bufferify(const char * name, int Lname);
+void TUT_function6_from_name_bufferify(const char * name, int Lname);
 
 void TUT_function6_from_index(int indx);
 

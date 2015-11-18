@@ -3,9 +3,16 @@
 !
 
 module sidre_allocatable
+  use iso_c_binding
   use fruit
   use sidre_mod
   implicit none
+
+  ! Global variables to add to datastore.
+  ! If they were local to a subroutine, then Fortran will attempt to
+  ! free them before returning and we want the datastore to free them.
+  integer, allocatable :: iarray(:)
+  real(C_DOUBLE), allocatable :: darray(:)
 
 contains
 
@@ -15,7 +22,6 @@ contains
 !----------------------------------------------------------------------
 
   subroutine local_allocatable_int
-    integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
@@ -58,7 +64,6 @@ contains
 ! Check from Fortran with ALLOCATED and SIZE
 ! Check datastore metadata
   subroutine ds_allocatable_int
-    integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
@@ -154,9 +159,7 @@ contains
 !--- check other types
 
   subroutine local_allocatable_double
-    use iso_c_binding
-    real(C_DOUBLE), allocatable :: iarray(:)
-    real(C_DOUBLE), pointer :: ipointer(:)
+    real(C_DOUBLE), pointer :: dpointer(:)
 
     type(datastore) ds
     type(datagroup) root
@@ -168,9 +171,9 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    allocate(iarray(10))
+    allocate(darray(10))
 
-    view = root%create_allocatable_view("iarray", iarray)
+    view = root%create_allocatable_view("darray", darray)
 
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_DOUBLE_T)
@@ -179,12 +182,12 @@ contains
     call assert_equals(num_elements, 10)
 
     do i=1,10
-       iarray(i) = i + 0.5d0
+       darray(i) = i + 0.5d0
     enddo
 
     ! get array via a pointer
-    call view%get_value(ipointer)
-    call assert_true(all(abs(iarray-ipointer).lt..0005))
+    call view%get_value(dpointer)
+    call assert_true(all(abs(darray-dpointer).lt..0005))
 
     call ds%delete()
 
@@ -196,7 +199,6 @@ end module sidre_allocatable
 
 
 function fortran_test() bind(C,name="fortran_test")
-  use iso_c_binding
   use fruit
   use sidre_allocatable
   implicit none

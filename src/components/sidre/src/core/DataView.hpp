@@ -22,10 +22,7 @@
 #define DATAVIEW_HPP_
 
 // Standard C++ headers
-#include <map>
-#include <set>
 #include <string>
-#include <vector>
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"

@@ -28,6 +28,8 @@ RetType Function8();
 
 void Function9(double arg);
 
+int Sum(int len, int * values);
+
 const std::string& LastFunctionCalled();
 
 class Class1

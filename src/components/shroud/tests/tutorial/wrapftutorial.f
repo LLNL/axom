@@ -3,6 +3,10 @@
 module tutorial_mod
     use fstr_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
+    ! splicer begin module_use
+    ! splicer end module_use
+    ! splicer begin class.Class1.module_use
+    ! splicer end class.Class1.module_use
     implicit none
     
     ! splicer begin module_top
@@ -72,6 +76,15 @@ module tutorial_mod
             real(C_DOUBLE) :: rv
         end function tut_function2
         
+        function tut_sum(len, values) result(rv) &
+                bind(C, name="TUT_sum")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: len
+            integer(C_INT), intent(IN) :: values(*)
+            integer(C_INT) :: rv
+        end function tut_sum
+        
         function tut_function3(arg) result(rv) &
                 bind(C, name="TUT_function3")
             use iso_c_binding
@@ -136,13 +149,13 @@ module tutorial_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine tut_function6_from_name
         
-        subroutine tut_function6_bufferify(name, Lname) &
-                bind(C, name="TUT_function6_bufferify")
+        subroutine tut_function6_from_name_bufferify(name, Lname) &
+                bind(C, name="TUT_function6_from_name_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine tut_function6_bufferify
+        end subroutine tut_function6_from_name_bufferify
         
         subroutine tut_function6_from_index(indx) &
                 bind(C, name="TUT_function6_from_index")
@@ -270,6 +283,19 @@ contains
         ! splicer end function2
     end function function2
     
+    function sum(len, values) result(rv)
+        use iso_c_binding
+        implicit none
+        integer(C_INT) :: len
+        integer(C_INT) :: values(*)
+        integer(C_INT) :: rv
+        ! splicer begin sum
+        rv = tut_sum(  &
+            len,  &
+            values)
+        ! splicer end sum
+    end function sum
+    
     function function3(arg) result(rv)
         use iso_c_binding
         implicit none
@@ -344,7 +370,7 @@ contains
         implicit none
         character(*) :: name
         ! splicer begin function6_from_name
-        call tut_function6_bufferify(  &
+        call tut_function6_from_name_bufferify(  &
             name,  &
             len_trim(name))
         ! splicer end function6_from_name

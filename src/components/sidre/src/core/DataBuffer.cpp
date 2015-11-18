@@ -78,7 +78,7 @@ size_t DataBuffer::getBytesPerItem() const
  */
 size_t DataBuffer::getTotalBytes() const
 {
-  return getBytesPerItem() * m_nitems;
+  return getBytesPerItem() * m_numelems;
 }
 
 /*
@@ -110,14 +110,14 @@ DataView * DataBuffer::getView( IndexType idx )
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare(TypeID type, SidreLength len)
+DataBuffer * DataBuffer::declare(TypeID type, SidreLength numelems)
 {
-  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >=0");
 
-  if ( len >= 0 )
+  if ( numelems >= 0 )
   {
     m_type = type;
-    m_nitems = len;
+    m_numelems = numelems;
   }
   return this;
 }
@@ -139,7 +139,7 @@ DataBuffer * DataBuffer::allocate()
 #ifdef ATK_ENABLE_FORTRAN
     // cleanup old data
     cleanup();
-    m_data = AllocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank, m_nitems);
+    m_data = AllocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank, m_numelems);
 #else
     SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
@@ -162,15 +162,15 @@ DataBuffer * DataBuffer::allocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
+DataBuffer * DataBuffer::allocate(TypeID type, SidreLength numelems)
 {
-  SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if ( len >= 0 && !m_is_data_external )
+  if ( numelems >= 0 && !m_is_data_external )
   {
-    declare(type, len);
+    declare(type, numelems);
     allocate();
   }
 
@@ -184,9 +184,9 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength len)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::reallocate( SidreLength len)
+DataBuffer * DataBuffer::reallocate( SidreLength numelems)
 {
-  SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must re-allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to re-allocate buffer holding external data");
 
@@ -204,7 +204,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength len)
     SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
                    "Attempting to reallocate an unallocated buffer");
 
-    std::size_t realloc_size = len * getBytesPerItem();
+    std::size_t realloc_size = numelems * getBytesPerItem();
     void * realloc_data = allocateBytes(realloc_size);
 
     memcpy(realloc_data, m_data, std::min(getTotalBytes(), realloc_size));
@@ -214,7 +214,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength len)
 
     // let the buffer hold the new data
     m_data = realloc_data;
-    m_nitems = len;
+    m_numelems = numelems;
   }
 
   return this;
@@ -271,7 +271,7 @@ void DataBuffer::info(Node &n) const
 {
   // Create a conduit node
   DataType dtype = conduit::DataType::default_dtype(m_type);
-  dtype.set_number_of_elements(m_nitems);
+  dtype.set_number_of_elements(m_numelems);
   Schema schema(dtype);
   Node node;
   node.set_external(schema, m_data);
@@ -321,7 +321,7 @@ DataBuffer::DataBuffer( IndexType index )
   : m_index(index),
   m_views(),
   m_type(CONDUIT_EMPTY_T),
-  m_nitems(0),
+  m_numelems(0),
   m_data(ATK_NULLPTR),
   m_is_data_external(false),
   m_fortran_rank(0),
@@ -340,7 +340,7 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   : m_index(source.m_index),
   m_views(source.m_views),
   m_type(CONDUIT_EMPTY_T),
-  m_nitems(0),
+  m_numelems(0),
   m_data(source.m_data),
   m_is_data_external(source.m_is_data_external),
   m_fortran_rank(0),

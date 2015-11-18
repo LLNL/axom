@@ -56,6 +56,21 @@ void Function9(double arg)
 {
 }
 
+int Sum(int len, int *values)
+{
+    int sum;
+    for (int i=0; i < len; i++) {
+	sum += values[i];
+    }
+    return sum;
+}
+
+std::string global_string;
+const std::string& LastFunctionCalled()
+{
+    return global_string;
+}
+
 
 
 }  // namespace

@@ -7,6 +7,8 @@ module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2
     use iso_c_binding, only : C_INT, C_LONG
+    ! splicer begin class.ExClass1.module_use
+    ! splicer end class.ExClass1.module_use
     implicit none
     
     

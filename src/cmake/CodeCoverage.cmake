@@ -87,21 +87,21 @@ IF(NOT EXISTS ${GENHTML_PATH})
    ENDIF()
 ENDIF()
 
-#FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
-
-IF(NOT EXISTS ${GCOV_PATH})
-   FIND_PROGRAM( GCOV_PATH gcov )
-   IF(NOT EXISTS ${GCOV_PATH})
-      MESSAGE(STATUS "Code coverage: Unable to find gcov, report will be unavailable.")
+IF(NOT CMAKE_COMPILER_IS_GNUCXX)
+	# Clang version 3.0.0 and greater now supports gcov as well.  Go check for one in path.
+	IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      FIND_PROGRAM( GCOV_PATH gcov )
+   # If neither gcc or clang, code coverage is not supported with gcov.
+	ELSE()
+		MESSAGE(FATAL_ERROR "Compiler is not GNU gcc or Clang! Aborting...")
    ENDIF()
 ENDIF()
 
-IF(NOT CMAKE_COMPILER_IS_GNUCXX)
-	# Clang version 3.0.0 and greater now supports gcov as well.
-	IF(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		MESSAGE(FATAL_ERROR "Compiler is not GNU gcc or Clang! Aborting...")
-	ENDIF()
-ENDIF() # NOT CMAKE_COMPILER_IS_GNUCXX
+# Verify gcov path was provided in host config file (or found in path if using clang).
+# If gnu, do NOT use gcov from path, as you want to match the gcov and gcc versions.  Clang appears to be less picky.
+IF(NOT EXISTS ${GCOV_PATH})
+   MESSAGE( FATAL_ERROR "GCOV_PATH is not set in your host-config file (or was not found in your path if using clang).")
+ENDIF()
 
 SET(CMAKE_CXX_FLAGS_COVERAGE
     "-g -O0 -fprofile-arcs -ftest-coverage"

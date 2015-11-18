@@ -60,6 +60,10 @@ contains
     call assert_true(.true.)
     call function9(1.d0)
     call assert_true(.true.)
+
+    rv_integer = sum(5, [1,2,3,4,5])
+    call assert_true(rv_integer .eq. 15)
+
   end subroutine test_functions
 
   subroutine test_class1

@@ -52,6 +52,7 @@ class Wrapf(util.WrapperMixin):
 
     def _begin_output_file(self):
         """Start a new class for output"""
+        self.use_stmts = []
         self.f_type_decl = []
         self.c_interface = []
         self.generic_interface = []
@@ -70,33 +71,34 @@ class Wrapf(util.WrapperMixin):
         self.f_type_generic = {} # look for generic methods
         self.type_bound_part = []
 
-
     def _c_type(self, arg):
         """
-        Return the Fortran type, and array attribute
+        Return the Fortran type, and dimension
         pass-by-value default
 
         attributes:
         ptr - True = pass-by-reference
         reference - True = pass-by-reference
+        dimension - True = '(*)'
 
         """
         t = []
         typedef = self.typedef.get(arg['type'], None)
         if typedef is None:
             raise RuntimeError("No such type %s" % arg['type'])
-        is_ptr = (arg['attrs'].get('ptr', False) or
-                  arg['attrs'].get('reference', False))
-        intent = arg['attrs'].get('intent', None)
+        attrs = arg['attrs']
+        is_ptr = (attrs.get('ptr', False) or
+                  attrs.get('reference', False))
+        intent = attrs.get('intent', None)
         if intent:
             intent_str = ', intent(%s)' % intent.upper()
         else:
             intent_str = ''
-        is_value = arg['attrs'].get('value', False)
+        is_value = attrs.get('value', False)
 
         typ = typedef.c_fortran
         if typedef.base == 'string':
-            return (typ + intent_str, True)  # is array
+            return (typ + intent_str, '(*)')  # is array
         else:
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
@@ -104,7 +106,13 @@ class Wrapf(util.WrapperMixin):
             if is_value:
                 t.append(', value')
             t.append(intent_str)
-            return (''.join(t), arg['attrs'].get('array', False))
+            if attrs.get('array', False):
+                dimension = '(*)'
+            elif attrs.get('dimension', False):
+                dimension = '(*)'
+            else:
+                dimension = ''
+            return (''.join(t), dimension)
 
     def _c_decl(self, arg, name=None):
         """
@@ -113,10 +121,8 @@ class Wrapf(util.WrapperMixin):
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
-        typ, arr = self._c_type(arg)
-        rv = typ + ' :: ' + ( name or arg['name'] )
-        if arr:
-            rv += '(*)'
+        typ, dimension = self._c_type(arg)
+        rv = typ + ' :: ' + ( name or arg['name'] ) + dimension
         return rv
 
     def _f_type(self, arg, default=None):
@@ -136,19 +142,26 @@ class Wrapf(util.WrapperMixin):
 
         typ = typedef.f_type
         if typedef.base == 'string':
-            return (typ, False)  # not array
+            return (typ, '')  # not array
         else:
             #        if arg['attrs'].get('const', False):
             #            t.append('const')
+            attrs = arg['attrs']
             t.append(typ)
             if default is None:
-                default = arg['attrs'].get('default', '')
+                default = attrs.get('default', '')
             if default != '':
                 t.append('optional')
-#            if not (arg['attrs'].get('ptr', False) or
-#                    arg['attrs'].get('reference', False)):
+#            if not (attrs.get('ptr', False) or
+#                    attrs.get('reference', False)):
 #                t.append(', value')
-            return (', '.join(t), arg['attrs'].get('array', False))
+            if attrs.get('array', False):
+                dimension = '(*)'
+            elif attrs.get('dimension', False):
+                dimension = '(*)'
+            else:
+                dimension = ''
+            return (', '.join(t), dimension)
 
     def _f_decl(self, arg, name=None, default=None):
         """
@@ -157,10 +170,8 @@ class Wrapf(util.WrapperMixin):
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
-        typ, arr = self._f_type(arg, default=default)
-        rv = typ + ' :: ' + ( name or arg['name'] )
-        if arr:
-            rv += '(*)'
+        typ, dimension = self._f_type(arg, default=default)
+        rv = typ + ' :: ' + ( name or arg['name'] ) + dimension
         return rv
 
     def wrap_library(self):
@@ -240,6 +251,7 @@ class Wrapf(util.WrapperMixin):
 
         # wrap methods
         self._push_splicer(fmt_class.cpp_class)
+        self._create_splicer('module_use', self.use_stmts)
         self._push_splicer('method')
         for method in node['methods']:
             self.wrap_function(node, method)
@@ -425,7 +437,14 @@ class Wrapf(util.WrapperMixin):
             attrs = arg['attrs']
             if 'intent' not in attrs:
                 attrs['intent'] = 'in'
-            if 'value' not in attrs:
+            if 'dimension' in attrs:
+                # This argument must be dimensioned.
+                # This implies value=False and ptr=True
+                if attrs.get('value', False):
+                    raise RuntimeError("argument must not have value=True")
+                attrs['value'] = False
+                # XXX - make sure ptr is True
+            elif 'value' not in attrs:
                 attrs['value'] = True
 
             # argument names
@@ -733,10 +752,13 @@ class Wrapf(util.WrapperMixin):
                             mname, ', '.join(only)))
                 else:
                     output.append('use %s' % mname)
+            output.extend(self.use_stmts)
             output.append('implicit none')
             output.append('')
         else:
             output.append('use, intrinsic :: iso_c_binding, only : C_PTR')
+            self._create_splicer('module_use', output)
+            output.extend(self.use_stmts)
             output.append('implicit none')
             output.append('')
             self._create_splicer('module_top', output)
