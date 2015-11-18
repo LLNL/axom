@@ -10,7 +10,7 @@
 
 /*!
  *******************************************************************************
- * \file speedTest.cpp
+ * \file lumberjack_speedTest.cpp
  * \author Chris White (white238@llnl.gov)
  *******************************************************************************
  */
@@ -32,6 +32,32 @@
 //------------------------------------------------------------------------------
 int main(int argc, char** argv)
 {
+    //Process command line options
+    bool commandLineError = false;
+    if (argc != 4) {
+        std::cout << "Error: Wrong amount of command line arguements given. Usage:" << std::endl << 
+                     "   " << argv[0] << " <b|r depending on binary or root communicator> <num messages before push once> <file to be read>" << std::endl;
+        return 1;
+    }
+    std::string communicatorName = "";
+    int cycleLimit = asctoolkit::lumberjack::stringToInt(argv[2]);
+    char* fileName = argv[3];
+
+    if (std::string(argv[1]) == "b") {
+        communicatorName = "binary";
+    } else if (std::string(argv[1]) == "r") {
+        communicatorName = "root";
+    } else {
+        std::cout << "Error: First parameter must be either 'b' or 'r' for " << 
+                     "BinaryTreeCommunicator or RootCommunicator respectively." << 
+                     std::endl;
+        commandLineError = true;
+    }
+
+    if (commandLineError) {
+        return 1;
+    }
+
     // Initialize MPI and get rank and comm size
     MPI_Init(&argc, &argv);
 
@@ -45,9 +71,9 @@ int main(int argc, char** argv)
 
     // Initialize which lumberjack communicator we want
     asctoolkit::lumberjack::Communicator* communicator;
-    if (std::string(argv[1]) == "b") {
+    if (communicatorName == "binary") {
         communicator = new asctoolkit::lumberjack::BinaryTreeCommunicator;
-    } else if (std::string(argv[1]) == "r") {
+    } else if (communicatorName == "root") {
         communicator = new asctoolkit::lumberjack::RootCommunicator;
     }
     communicator->initialize(MPI_COMM_WORLD, ranksLimit);
@@ -59,7 +85,7 @@ int main(int argc, char** argv)
     // Read lines from file
     std::string currMessage;
     std::vector<std::string> lines;
-    std::ifstream file(argv[3]);
+    std::ifstream file(fileName);
     while(std::getline(file, currMessage)){
         currMessage += '\n';
         lines.push_back(currMessage);
@@ -71,7 +97,6 @@ int main(int argc, char** argv)
 
     // Queue messages into lumberjack
     int cycleCount = 0;
-    int cycleLimit = asctoolkit::lumberjack::stringToInt(argv[2]);
     int linesSize = (int)lines.size();
     for (int i = 0; i < linesSize; ++i){
         lj.queueMessage(lines[i]);
