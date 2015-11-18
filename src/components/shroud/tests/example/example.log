@@ -41,6 +41,10 @@ Close wrapExClass2.cpp
 C function void local_function1
 C function bool isNameValid(const std::string& name)
 C function bool isNameValid(const std::string& name)
+C function void test_names(const std::string &name)
+C function void test_names(const std::string &name)
+C function void test_names(const std::string &name, int flag)
+C function void test_names(const std::string &name, int flag)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
@@ -82,6 +86,10 @@ Close wrapfExClass2.f
 C-interface, Fortran function void local_function1
 C-interface, Fortran function bool isNameValid(const std::string& name)
 C-interface function bool isNameValid(const std::string& name)
+C-interface, Fortran function void test_names(const std::string &name)
+C-interface function void test_names(const std::string &name)
+C-interface, Fortran function void test_names(const std::string &name, int flag)
+C-interface function void test_names(const std::string &name, int flag)
 Close wrapfuserlibrary.f
 class ExClass1
 Python method ExClass1 *new ( const string *name ) +constructor
@@ -111,6 +119,8 @@ Python method void testoptional(int i = 1, long j=2)
 Close pyExClass2type.cpp
 Python function void local_function1
 Python function bool isNameValid(const std::string& name)
+Python function void test_names(const std::string &name)
+Python function void test_names(const std::string &name, int flag)
 Close pyUserLibrarymodule.hpp
 Close pyUserLibrarymodule.cpp
 Close pyUserLibraryhelper.cpp

@@ -35,7 +35,7 @@ double TUT_function5(double arg1, int arg2);
 
 void TUT_function6_from_name(const char * name);
 
-void TUT_function6_bufferify(const char * name, int Lname);
+void TUT_function6_from_name_bufferify(const char * name, int Lname);
 
 void TUT_function6_from_index(int indx);
 
