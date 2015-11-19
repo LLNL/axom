@@ -239,7 +239,26 @@ Fortran can deal with by assigning it to a ``type(C_PTR)``::
         return rv.c_str();
     }
 
-With the Fortran interface::
+In addition, a separate function is create which accepts the address
+and length of each string argument.  No trailing ``NULL`` is required.
+This avoids copying the string in Fortran which would be necessary to
+append the trailing ``C_NULL_CHAR``::
+
+    const char * TUT_function4a_bufferify(
+        const char * arg1, int Larg1,
+        const char * arg2, int Larg2)
+    {
+        const std::string & rv = Function4a(
+            std::string(arg1, Larg1),
+            std::string(arg2, Larg2));
+        return rv.c_str();
+    }
+
+.. note :: If the string is allocated by the C++ function,
+  Fortran will have to release the string at some point or 
+  memory will leak.
+
+The generated Fortran interface is::
 
         pure function tut_function4a(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function4a")
@@ -257,20 +276,26 @@ And the Fortran wrapper::
         implicit none
         character(*) :: arg1
         character(*) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr(tut_function4a(trim(arg1) // C_NULL_CHAR, trim(arg2) // C_NULL_CHAR))) :: rv
-        rv = fstr(tut_function4a(  &
-            trim(arg1) // C_NULL_CHAR,  &
-            trim(arg2) // C_NULL_CHAR))
+        character(kind=C_CHAR, len=strlen_ptr( &
+            tut_function4a_bufferify( &
+              arg1, len_trim(arg1), &
+              arg2, len_trim(arg2)))) :: rv
+        ! splicer begin function4a
+        rv = fstr(tut_function4a_bufferify(  &
+            arg1,  &
+            len_trim(arg1),  &
+            arg2,  &
+            len_trim(arg2)))
     end function function4a
 
-The input arguments are trimmed of trailing blanks then concatenated
-with a trailing ``NULL``.  The length of result variable ``rv`` is
-computed by calling the function.  Once the result is allocated,
-``tut_function4a`` is called which returns a ``type(C_PTR)``.  This
-result is dereferenced by ``fstr`` and copied into ``rv``.
-
-
-.. note :: create std::string from address and length?
+For each input character argument, two arguments are passed down
+to the C wrapper: the address of the string and the trimmed length.
+This allows the C wrapper to create the std::string directly from the
+argument.
+The length of result variable ``rv`` is computed by calling the
+function.  Once the result is declared, ``tut_function4a`` is called
+which returns a ``type(C_PTR)``.  This result is dereferenced by
+``fstr`` and copied into ``rv``.
 
 It is possible to avoid calling the C++ function twice by passing in
 another argument to hold the result.  It would be up to the caller to
@@ -278,7 +303,9 @@ ensure it is long enough.  This is done by setting the option
 **F_string_result_as_arg** to true.  Like all options, it may also be
 set in the global **options** and it will apply to all functions::
 
-    - decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+    - decl: const std::string& Function4b(
+        const std::string& arg1,
+        const std::string& arg2)
       options:
         F_string_result_as_arg: output
 
@@ -291,9 +318,11 @@ Only the generated wrapper is different::
         character(*) :: arg2
         character(*), intent(OUT) :: output
         type(C_PTR) :: rv
-        rv = tut_function4b(  &
-            trim(arg1) // C_NULL_CHAR,  &
-            trim(arg2) // C_NULL_CHAR)
+        rv = tut_function4b_bufferify(  &
+            arg1,  &
+            len_trim(arg1),  &
+            arg2,  &
+            len_trim(arg2))
         call FccCopyPtr(output, len(output), rv)
     end subroutine function4b
 
@@ -302,9 +331,9 @@ the character variable.
 
 The different styles are use as::
 
-  character(30) rv4, rv4b
+  character(30) rv4a, rv4b
 
-  rv4 = function4a("bird", "dog")
+  rv4a = function4a("bird", "dog")
   call function4b("bird", "dog", rv4b)
 
 
