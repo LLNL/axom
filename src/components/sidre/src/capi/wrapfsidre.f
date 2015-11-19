@@ -27,8 +27,9 @@ module sidre_mod
     ! splicer begin module_top
     !
     ! Type parameters
-    ! Must be kept in sync with SidreTypes.h
-    !
+    ! These must be kept in sync with the enum values in conduit's types.
+    ! Check conduit include/Bitwidth_Style_Types.h
+    ! These types must match the enum conduit_datatype_type_id values.
     integer, parameter :: ATK_INT8_T = 3
     integer, parameter :: ATK_INT16_T = 4
     integer, parameter :: ATK_INT32_T = 5
@@ -40,11 +41,19 @@ module sidre_mod
     integer, parameter :: ATK_FLOAT32_T = 11
     integer, parameter :: ATK_FLOAT64_T  = 12
     integer, parameter :: ATK_CHAR8_STR_T = 13
+ 
+    ! These are higher level types that map to the bitwidth types.
+    ! These must match the values for the conduit native data type #defines
+    ! (check Bitwidth_Style_Types.h)
     
-    integer, parameter :: ATK_C_INT_T = 14
-    integer, parameter :: ATK_C_LONG_T = 15
-    integer, parameter :: ATK_C_FLOAT_T = 16
-    integer, parameter :: ATK_C_DOUBLE_T = 17
+    ! conduit non-bitwidth int maps to conduit int32
+    integer, parameter :: ATK_C_INT_T = 5
+    ! conduit non-bitwidth long maps to conduit int64
+    integer, parameter :: ATK_C_LONG_T = 9
+    ! conduit non-bitwidth float maps to conduit float32
+    integer, parameter :: ATK_C_FLOAT_T = 11
+    ! conduit non-bitwidth double maps to conduit float64
+    integer, parameter :: ATK_C_DOUBLE_T = 12
     
     integer, parameter :: invalid_index = -1
     
