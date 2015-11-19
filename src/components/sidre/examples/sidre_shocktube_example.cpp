@@ -45,6 +45,7 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
+using asctoolkit::sidre::TypeID;
 
 using namespace conduit;
 
@@ -57,7 +58,7 @@ const double gammaaInverse = M_SQRT1_2;
 
 void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
 {
-  DataView * const view = grp->createViewAndAllocate(name, DataType::int32())->allocate();
+  DataView * const view = grp->createViewAndAllocate(name, DataType::int32());
   view->setValue(value);
 
 }
@@ -65,7 +66,7 @@ void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::strin
 
 void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp, const std::string& name, float64 const value )
 {
-  DataView * const view = grp->createViewAndAllocate(name, DataType::float64())->allocate();
+  DataView * const view = grp->createViewAndAllocate(name, DataType::float64());
   view->setValue(value);
 }
 
@@ -208,18 +209,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
   int32 numTubeElems = numElems - 2;
   DataGroup * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
-#if 0
-  DataBuffer * const mapToElemsBuffer = elem->getDataStore()->createBuffer()
-                                        ->declare(DataType::int32(numTubeElems))
-                                        ->allocate();
-
-
-  DataView * const mapToElemsView = tube->createView("mapToElems", mapToElemsBuffer)
-                                    ->apply(DataType::int32(numTubeElems));
-  int32 * const mapToElems = mapToElemsView->getValue();
-#else
   int32 * const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(numTubeElems))->getValue();
-#endif
 
 
   for ( int k = 0u ; k < numTubeElems ; ++k)
@@ -231,17 +221,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each face connects to two elements */
 
-#if 0
-  DataBuffer * const faceToElemBuffer = face->getDataStore()->createBuffer()
-                                        ->declare(DataType::int32(2*numFaces,0,8))
-                                        ->allocate();
-
-  int32 * const faceToElem = face->createView("faceToElem", faceToElemBuffer)
-                             ->apply(DataType::int32(2*numFaces,0,8))
-                             ->getValue();
-#else
   int32 * const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(2*numFaces))->getValue();
-#endif
 
   for (i = 0 ; i < numFaces ; ++i)
   {
@@ -251,18 +231,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
-#if 0
-  DataBuffer * const elemToFaceBuffer = tube->getDataStore()->createBuffer()
-                                        ->declare(DataType::int32(2*numElems,0,8))
-                                        ->allocate();
-
-
-  int32 * elemToFace = tube->createView("elemToFace", elemToFaceBuffer)
-                       ->apply(DataType::int32(2*numElems,0,8))
-                       ->getValue();
-#else
   int32 * elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(2*numElems))->getValue();
-#endif
 
   for (i = 0 ; i < numElems ; ++i)
   {
@@ -291,55 +260,14 @@ void InitializeShockTube(DataGroup * const prob)
   int32 const numElems = prob->getView("numElems")->getValue();
   int32 const numFaces = prob->getView("numFaces")->getValue();
 
-#if 0
-  buffer = elem->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numElems))
-           ->allocate();
-
-
-  float64 * const mass = elem->createView("mass", buffer)
-                         ->apply(DataType::float64(numElems))
-                         ->getValue();
-#else
   float64 * const mass = elem->createViewAndAllocate("mass", DataType::float64(numElems))->getValue();
-#endif
 
 
-#if 0
-  buffer = elem->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numElems))
-           ->allocate();
-
-  float64 * const momentum = elem->createView("momentum", buffer)
-                             ->apply(DataType::float64(numElems))
-                             ->getValue();
-#else
   float64 * const momentum = elem->createViewAndAllocate("momentum", DataType::float64(numElems))->getValue();
-#endif
 
-#if 0
-  buffer = elem->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numElems))
-           ->allocate();
-
-  float64 * const energy = elem->createView("energy", buffer)
-                           ->apply(DataType::float64(numElems))
-                           ->getValue();
-#else
   float64 * const energy = elem->createViewAndAllocate("energy", DataType::float64(numElems))->getValue();
-#endif
 
-#if 0
-  buffer = elem->getDataStore()->createBuffer()
-           ->declare(DataType::float64(numElems))
-           ->allocate();
-
-  float64 * const pressure = elem->createView("pressure", buffer)
-                             ->apply(DataType::float64(numElems))
-                             ->getValue();
-#else
   float64 * const pressure = elem->createViewAndAllocate("pressure", DataType::float64(numElems))->getValue();
-#endif
 
   /* Create face centered quantities */
 
@@ -592,13 +520,13 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     if( length <= 1 )
     {
-      if( view->getTypeID() == SIDRE_INT32_ID )
+      if( view->getTypeID() == asctoolkit::sidre::INT32_ID )
       {
         fprintf(fp, "# %s = %d\n",
                 name.c_str(),
                 view->getValue<int>());
       }
-      else if( view->getTypeID() == SIDRE_FLOAT64_ID )
+      else if( view->getTypeID() == asctoolkit::sidre::FLOAT64_ID )
       {
         fprintf(fp, "# %s = %f\n",
                 name.c_str(),
@@ -617,7 +545,7 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 
-    if( view->getTypeID() == SIDRE_INT32_ID )
+    if( view->getTypeID() == asctoolkit::sidre::INT32_ID )
     {
       int32 const * const data = view->getValue();
       for ( int j=0 ; j<length ; ++j)
@@ -626,7 +554,7 @@ void DumpUltra( DataGroup * const prob)
       }
       fprintf(fp, "\n");
     }
-    else if( view->getTypeID() == SIDRE_FLOAT64_ID )
+    else if( view->getTypeID() == asctoolkit::sidre::FLOAT64_ID )
     {
       float64 const * const data = view->getValue();
       for ( int j=0 ; j<length ; ++j)
