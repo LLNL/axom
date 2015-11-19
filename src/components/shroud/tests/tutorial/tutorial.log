@@ -10,10 +10,10 @@ C function void Function1()
 C function double Function2(double arg1, int arg2)
 C function int Sum(int len, int *values+dimension)
 C function bool Function3(bool arg)
-C function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
-C function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
-C function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
-C function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
+C function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
+C function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
+C function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
 C function double Function5(double arg1 = 3.13, int arg2 = 5)
 C function void Function6(const std::string& name)
 C function void Function6(const std::string& name)
@@ -34,10 +34,10 @@ C-interface, Fortran function void Function1()
 C-interface, Fortran function double Function2(double arg1, int arg2)
 C-interface, Fortran function int Sum(int len, int *values+dimension)
 C-interface, Fortran function bool Function3(bool arg)
-C-interface, Fortran function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
-C-interface function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
-C-interface, Fortran function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
-C-interface function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+C-interface, Fortran function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
+C-interface function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
+C-interface, Fortran function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
+C-interface function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
 C-interface, Fortran function double Function5(double arg1 = 3.13, int arg2 = 5)
 C-interface, Fortran function void Function6(const std::string& name)
 C-interface function void Function6(const std::string& name)
@@ -60,8 +60,8 @@ Python function void Function1()
 Python function double Function2(double arg1, int arg2)
 Python function int Sum(int len, int *values+dimension)
 Python function bool Function3(bool arg)
-Python function const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
-Python function const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+Python function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
+Python function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
 Python function double Function5(double arg1 = 3.13, int arg2 = 5)
 Python function void Function6(const std::string& name)
 Python function void Function6(int indx)

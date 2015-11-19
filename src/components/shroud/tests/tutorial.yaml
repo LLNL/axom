@@ -9,11 +9,15 @@ functions:
 - decl: double Function2(double arg1, int arg2)
 - decl: int Sum(int len, int *values+dimension)
 - decl: bool Function3(bool arg)
-- decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+- decl: const std::string& Function4a(
+    const std::string& arg1,
+    const std::string& arg2 ) +pure
 #  result:
 #    attrs:
 #      pure: true
-- decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
+- decl: const std::string& Function4b(
+    const std::string& arg1,
+    const std::string& arg2 )
   options:
     F_string_result_as_arg: output
 

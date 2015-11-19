@@ -211,7 +211,9 @@ C++ routine::
 YAML changes::
 
     functions
-    - decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
+    - decl: const std::string& Function4a(
+        const std::string& arg1,
+        const std::string& arg2 ) +pure
 
 This is the C++ prototype with the addition of a **+pure**.  This
 attribute marks the routine as Fortran ``pure`` meaning there are no
@@ -221,7 +223,9 @@ the result.
 
 Attributes also may be added by assign new fields in **attrs**::
 
-    - decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2)
+    - decl: const std::string& Function4a(
+        const std::string& arg1,
+        const std::string& arg2 )
       result:
         attrs:
           pure: true

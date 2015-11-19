@@ -291,7 +291,7 @@
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure", 
+            "decl": "const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure", 
             "fmt": {
                 "C_name": "TUT_function4a", 
                 "F_C_name": "tut_function4a", 
@@ -342,7 +342,7 @@
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure", 
+            "decl": "const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure", 
             "fmt": {
                 "C_name": "TUT_function4a_bufferify", 
                 "F_C_name": "tut_function4a_bufferify", 
@@ -388,7 +388,7 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b", 
                 "F_C_name": "tut_function4b", 
@@ -439,7 +439,7 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b_bufferify", 
                 "F_C_name": "tut_function4b_bufferify", 
