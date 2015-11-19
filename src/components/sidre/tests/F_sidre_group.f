@@ -275,16 +275,13 @@ contains
     root = ds%get_root()
     flds = root%create_group("fields")
 
-    i0_view = flds%create_view_empty("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1)
+    i0_view = flds%create_view_and_allocate("i0", ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
-    f0_view = flds%create_view_empty("f0")
-    call f0_view%allocate(ATK_C_FLOAT_T, 1)
+    f0_view = flds%create_view_and_allocate("f0", ATK_C_FLOAT_T, 1)
     call f0_view%set_value(100.0)
 
-    d0_view = flds%create_view_empty("d0")
-    call d0_view%allocate(ATK_C_DOUBLE_T, 1)
+    d0_view = flds%create_view_and_allocate("d0", ATK_C_DOUBLE_T, 1)
     call d0_view%set_value(3000.0d0)  ! XXX without d0, error in get_value_double
 
     call assert_true(flds%has_view("i0"))
@@ -332,16 +329,13 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    i0_view = ga%create_view_empty("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1_8)
+    i0_view = ga%create_view_and_allocate("i0", ATK_C_INT_T, 1_8)
     call i0_view%set_value(1)
 
-    f0_view = gb%create_view_empty("f0")
-    call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
+    f0_view = gb%create_view_and_allocate("f0", ATK_C_FLOAT_T, 1_8)
     call f0_view%set_value(100.0)
 
-    d0_view = gc%create_view_empty("d0")
-    call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
+    d0_view = gc%create_view_and_allocate("d0", ATK_C_DOUBLE_T, 1_8)
     call d0_view%set_value(3000.0d0)
 
     ! check that all sub groups exist
@@ -382,10 +376,8 @@ contains
     view_name1 = "viewBuffer1"
     view_name2 = "viewBuffer2"
 
-    view1 = grp%create_view_empty(view_name1)
-    call view1%allocate(ATK_C_INT_T, 1_8)
-    view2 = grp%create_view_empty(view_name2)
-    call view2%allocate(ATK_C_INT_T, 1_8)
+    view1 = grp%create_view_and_allocate(view_name1, ATK_C_INT_T, 1_8)
+    view2 = grp%create_view_and_allocate(view_name2, ATK_C_INT_T, 1_8)
 
     call assert_true(grp%has_view(view_name1))
     call assert_true(grp%get_view(view_name1) == view1)
@@ -430,8 +422,7 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    view1 = grp%create_view_empty(view_name1)
-    call view1%allocate(ATK_C_INT_T, 10)
+    view1 = grp%create_view_and_allocate(view_name1, ATK_C_INT_T, 10)
 
 !--    ! this one is the Schema & method
 !--    Schema s
@@ -479,8 +470,7 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    base =  root%create_view_empty("base")
-    call base%allocate(ATK_C_INT_T, 10)
+    base =  root%create_view_and_allocate("base", ATK_C_INT_T, 10)
     call base%get_value(base_vals)
 
     base_vals(1:5) = 10
@@ -518,8 +508,7 @@ contains
 
     ga = flds%create_group("a")
 
-    i0_view = ga%create_view_empty("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1)
+    i0_view = ga%create_view_and_allocate("i0", ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
     call assert_true(root%has_group("fields"))
@@ -565,16 +554,13 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    i0_view = ga%create_view_empty("i0")
-    call i0_view%allocate(ATK_C_INT_T, 1)
+    i0_view = ga%create_view_and_allocate("i0", ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
-    f0_view = gb%create_view_empty("f0")
-    call f0_view%allocate(ATK_C_FLOAT_T, 1)
+    f0_view = gb%create_view_and_allocate("f0", ATK_C_FLOAT_T, 1)
     call f0_view%set_value(100.0)
 
-    d0_view = gc%create_view_empty("d0")
-    call d0_view%allocate(ATK_C_DOUBLE_T, 1)
+    d0_view = gc%create_view_and_allocate("d0", ATK_C_DOUBLE_T, 1)
     call d0_view%set_value(3000.0d0)
 
     ! check that all sub groups exist

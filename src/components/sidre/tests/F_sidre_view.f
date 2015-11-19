@@ -26,10 +26,8 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    dv_0 = root%create_view_empty("field0")
-    call dv_0%allocate(ATK_C_INT_T, 1)
-    dv_1 = root%create_view_empty("field1")
-    call dv_1%allocate(ATK_C_INT_T, 1)
+    dv_0 = root%create_view_and_allocate("field0", ATK_C_INT_T, 1)
+    dv_1 = root%create_view_and_allocate("field1", ATK_C_INT_T, 1)
 
     db_0 = dv_0%get_buffer()
     db_1 = dv_1%get_buffer()
@@ -51,8 +49,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    dv = root%create_view_empty("u0")
-    call dv%allocate(ATK_C_INT_T, 10_8)
+    dv = root%create_view_and_allocate("u0", ATK_C_INT_T, 10_8)
     call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
     call dv%get_value(data)
 
@@ -79,8 +76,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    dv = root%create_view_empty("u0")
-    call dv%allocate(ATK_C_INT_T, 10_8)
+    dv = root%create_view_and_allocate("u0", ATK_C_INT_T, 10_8)
     call dv%get_value(data)
 
     do i = 1, 10
@@ -247,12 +243,11 @@ contains
 
     ! create a group to hold the "old" or data we want to copy
     r_old = root%create_group("r_old")
-    ! create a view to hold the base buffer
-    base_old = r_old%create_view_empty("base_data")
 
-    ! alloc our buffer
+    ! create a view to hold the base buffer and allocate
     ! we will create 4 sub views of this array
-    call base_old%allocate(ATK_C_INT_T, 40)
+    base_old = r_old%create_view_and_allocate("base_data", ATK_C_INT_T, 40)
+
     call base_old%get_value(data)
 
     ! init the buff with values that align with the
@@ -408,10 +403,8 @@ contains
     root = ds%get_root()
 
     ! create a view to hold the base buffer
-    a1 = root%create_view_empty("a1")
-    call a1%allocate(ATK_C_FLOAT_T, 5)
-    a2 = root%create_view_empty("a2")
-    call a2%allocate(ATK_C_FLOAT_T, 5)
+    a1 = root%create_view_and_allocate("a1", ATK_C_FLOAT_T, 5)
+    a2 = root%create_view_and_allocate("a2", ATK_C_FLOAT_T, 5)
 
     call a1%get_value(a1_data)
     call a2%get_value(a2_data)
