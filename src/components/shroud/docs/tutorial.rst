@@ -23,11 +23,11 @@ This is wrapped using a YAML file as::
 
 .. XXX support (void)?
 
-The **options** mapping allows the user to give information to guide the wrapping.
-**library** is used to name output files and name the Fortran module.
-**cpp_header** is the name of a C++ header file which contains the declarations
-for functions to be wrapped.
-**functions** is a sequence of mappings which describe the functions to wrap.
+The **options** mapping allows the user to give information to guide
+the wrapping.  **library** is used to name output files and name the
+Fortran module.  **cpp_header** is the name of a C++ header file which
+contains the declarations for functions to be wrapped.  **functions**
+is a sequence of mappings which describe the functions to wrap.
 
 The generated C function in file ``wrapTutorial.cpp`` is::
 
@@ -44,11 +44,12 @@ The generated C function in file ``wrapTutorial.cpp`` is::
     }  // namespace tutorial
     }  // extern "C"
 
-To help control the scope of C names, all externals default to adding a three letter prefix.
-It defaults to the first three letters of the **library** but may be changed by setting 
-the option **C_prefix**.
+To help control the scope of C names, all externals default to adding
+a three letter prefix.  It defaults to the first three letters of the
+**library** but may be changed by setting the option **C_prefix**.
 
-The Fortran wrapper consists of two parts.  First is an interface which allows Fortran to call the C routine::
+The Fortran wrapper consists of two parts.  First is an interface
+which allows Fortran to call the C routine::
 
     interface
         subroutine tut_function1() &
@@ -66,9 +67,10 @@ The other part is a Fortran wrapper::
         call tut_function1()
     end subroutine function1
 
-In this case the wrapper is trivial since Fortran can call the C routine directly.  However,
-it provides a place to customize the API to coerce arguments and return values as well as other
-features which will be demonstrated.
+In this case the wrapper is trivial since Fortran can call the C
+routine directly.  However, it provides a place to customize the API
+to coerce arguments and return values as well as other features which
+will be demonstrated.
 
 The C++ code to call the function::
 
@@ -92,8 +94,9 @@ Arguments
 Integer and Real
 ^^^^^^^^^^^^^^^^
 
-Integer and real types are handled using the ``iso_c_binding`` module which match them directly to 
-the corresponding types in C++. To wrap ``Function2``::
+Integer and real types are handled using the ``iso_c_binding`` module
+which match them directly to the corresponding types in C++. To wrap
+``Function2``::
 
     double Function2(double arg1, int arg2)
     {
@@ -105,8 +108,9 @@ Add the declaration to the YAML file::
     functions:
     - decl: double Function2(double arg1, int arg2)
 
-The arguments are added to the interface for the C routine using the ``value`` attribute.
-They use the ``intent(IN)`` attribute since they are pass-by-value and cannot return a value::
+The arguments are added to the interface for the C routine using the
+``value`` attribute.  They use the ``intent(IN)`` attribute since they
+are pass-by-value and cannot return a value::
 
         function tut_function2(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function2")
@@ -133,17 +137,18 @@ The Fortran wrapper calls the C interface directly::
 Pointer arguments
 -----------------
 
-Pointers may represent an output scalar or an array.
+Pointers may represent an output scalar or an array::
 
-- decl: int Sum(int len, int *values+dimension)
+  - decl: int Sum(int len, int *values+dimension)
 
 
 Logical
 ^^^^^^^
 
-Logical variable require a conversion since they are not directly compatible with C.
-In addition, how ``.true.`` and ``.false.`` are represented internally is compiler dependent.
-So compilers use 0 for ``.false.`` while other use -1.
+Logical variable require a conversion since they are not directly
+compatible with C.  In addition, how ``.true.`` and ``.false.`` are
+represented internally is compiler dependent.  So compilers use 0 for
+``.false.`` while other use -1.
 
 A simple C++ function which accepts and returns a boolean argument::
 
@@ -175,24 +180,29 @@ The Fortran interface and wrapper::
         rv = booltological(tut_function3(logicaltobool(arg)))
     end function function3
 
-The wrapper routine uses the library function ``logicaltobool`` and ``booltological`` to
-use the compiler to convert between the different kinds of logical types.
-This is the first example of the wrapper doing work to create a more idiomatic Fortran API.
-It is possible to call ``TUT_function3`` directly from Fortran, but the wrapper does the type
-conversion necessary to make it easier to work within an existing Fortran application.
+The wrapper routine uses the library function ``logicaltobool`` and
+``booltological`` to use the compiler to convert between the different
+kinds of logical types.  This is the first example of the wrapper
+doing work to create a more idiomatic Fortran API.  It is possible to
+call ``TUT_function3`` directly from Fortran, but the wrapper does the
+type conversion necessary to make it easier to work within an existing
+Fortran application.
 
 
 Character
 ^^^^^^^^^
 
-Character variables have significant differences between C and Fortran.
-The Fortran interoperabilty with C feature treat a ``character`` variable of default kind
-as an array of ``character(kind=C_CHAR,len=1)``.
-The wrapper then deals with the C convenrtion of ``NULL`` termination with Fortran's blank filled.
+Character variables have significant differences between C and
+Fortran.  The Fortran interoperabilty with C feature treat a
+``character`` variable of default kind as an array of
+``character(kind=C_CHAR,len=1)``.  The wrapper then deals with the C
+convention of ``NULL`` termination with Fortran's blank filled.
 
 C++ routine::
 
-    const std::string& Function4a(const std::string& arg1, const std::string& arg2)
+    const std::string& Function4a(
+        const std::string& arg1,
+        const std::string& arg2)
     {
         global_str = arg1 + arg2;
         return global_str;
@@ -203,9 +213,11 @@ YAML changes::
     functions
     - decl: const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure
 
-This is the C++ prototype with the addition of a **+pure**.  This attribute marks the routine
-as Fortran ``pure`` meaning there are no side effects.  This is necessary because the function
-will be called twice.  Once to compute the length of the result and once to return the result.
+This is the C++ prototype with the addition of a **+pure**.  This
+attribute marks the routine as Fortran ``pure`` meaning there are no
+side effects.  This is necessary because the function will be called
+twice.  Once to compute the length of the result and once to return
+the result.
 
 Attributes also may be added by assign new fields in **attrs**::
 
@@ -214,8 +226,8 @@ Attributes also may be added by assign new fields in **attrs**::
         attrs:
           pure: true
 
-The C wrapper converts the ``std::string`` into a ``char *`` which Fortran can deal with by assigning
-it to a ``type(C_PTR)``::
+The C wrapper converts the ``std::string`` into a ``char *`` which
+Fortran can deal with by assigning it to a ``type(C_PTR)``::
 
     const char * TUT_function4a(const char * arg1, const char * arg2)
     {
@@ -247,19 +259,20 @@ And the Fortran wrapper::
             trim(arg2) // C_NULL_CHAR))
     end function function4a
 
-The input arguments are trimmed of trailing blanks then concatenated with a trailing ``NULL``.
-The length of result variable ``rv`` is computed by calling the function.  Once the result is
-allocated, ``tut_function4a`` is called which returns a ``type(C_PTR)``.  This result is
-dereferenced by ``fstr`` and copied into ``rv``.
+The input arguments are trimmed of trailing blanks then concatenated
+with a trailing ``NULL``.  The length of result variable ``rv`` is
+computed by calling the function.  Once the result is allocated,
+``tut_function4a`` is called which returns a ``type(C_PTR)``.  This
+result is dereferenced by ``fstr`` and copied into ``rv``.
 
 
 .. note :: create std::string from address and length?
 
-It is possible to avoid calling the C++ function twice by passing in another argument
-to hold the result.  It would be up to the caller to ensure it is long enough.
-This is done by setting the option **F_string_result_as_arg** to true.
-Like all options, it may also be set in the global **options** and it will apply to 
-all functions::
+It is possible to avoid calling the C++ function twice by passing in
+another argument to hold the result.  It would be up to the caller to
+ensure it is long enough.  This is done by setting the option
+**F_string_result_as_arg** to true.  Like all options, it may also be
+set in the global **options** and it will apply to all functions::
 
     - decl: const std::string& Function4b(const std::string& arg1, const std::string& arg2)
       options:
@@ -280,7 +293,8 @@ Only the generated wrapper is different::
         call FccCopyPtr(output, len(output), rv)
     end subroutine function4b
 
-``FccCopyPtr`` is a library routine to copy the ``type(C_PTR)`` into the character variable.
+``FccCopyPtr`` is a library routine to copy the ``type(C_PTR)`` into
+the character variable.
 
 The different styles are use as::
 
@@ -294,7 +308,8 @@ The different styles are use as::
 Optional Arguments
 ------------------
 
-Functions with default arguments are handled by the Fortran **optional** attribute.::
+Functions with default arguments are handled by the Fortran
+**optional** attribute.::
 
     functions:
     - decl: double Function5(double arg1 = 3.13, int arg2 = 5)
@@ -338,17 +353,18 @@ Fortran usage::
 Overloaded Functions
 --------------------
 
-C++ allows function names to be overloaded.  Fortran supports this using a ``generic`` interface.
-The C and Fortran wrappers will generated a wrapper for each C++ function but must mangle the name
-to distinguish the names.
+C++ allows function names to be overloaded.  Fortran supports this
+using a ``generic`` interface.  The C and Fortran wrappers will
+generated a wrapper for each C++ function but must mangle the name to
+distinguish the names.
 
 C++::
 
     void Function6(const std::string &name);
     void Function6(int indx);
 
-By default the names are mangled by adding an index to the end. This can be controlled by
-setting **function_suffix** in the YAML file::
+By default the names are mangled by adding an index to the end. This
+can be controlled by setting **function_suffix** in the YAML file::
 
   functions:
   - decl: void Function6(const std::string& name)
@@ -370,8 +386,9 @@ The generated C wrappers uses the mangled name::
         return;
     }
 
-The generated Fortran creates routines with the same mangled name but also
-creates a generic interface block to allow them to be called by the overloaded name::
+The generated Fortran creates routines with the same mangled name but
+also creates a generic interface block to allow them to be called by
+the overloaded name::
 
     interface function6
         module procedure function6_from_name
@@ -390,8 +407,9 @@ They can be used as::
 Templates
 ---------
 
-C++ template are handled by creating a wrapper for each type that may be used with the template.
-The C and Fortran names are mangled by adding a type suffix to the function name.
+C++ template are handled by creating a wrapper for each type that may
+be used with the template.  The C and Fortran names are mangled by
+adding a type suffix to the function name.
 
 C++::
 
@@ -431,8 +449,8 @@ The Fortran wrapper will also generate an interface block::
     end interface function7
 
 
-Likewise, the return type can be templated but in this case 
-no interface block will be generated since generic function cannot vary
+Likewise, the return type can be templated but in this case no
+interface block will be generated since generic function cannot vary
 only by return type.
 
 
@@ -469,7 +487,8 @@ C wrapper::
 Generic Functions
 -----------------
 
-C and C++ provide a type promotion feature when calling functions which Fortran does not support::
+C and C++ provide a type promotion feature when calling functions
+which Fortran does not support::
 
     void Function9(double arg);
 
@@ -503,8 +522,8 @@ This will generate only one C wrapper which accepts a double::
       return;
   }
 
-But it will generate two Fortran wrappers and a generic interface block.
-Each wrapper will coerce the argument to the correct type::
+But it will generate two Fortran wrappers and a generic interface
+block.  Each wrapper will coerce the argument to the correct type::
 
     interface function9
         module procedure function9_float
@@ -539,10 +558,10 @@ Types
 Classes
 -------
 
-Each class is wrapped in a Fortran derived type which holds a ``type(C_PTR)`` pointer
-to an C++ instance of the class.
-Class methods are wrapped using Fortran's type-bound procedures.
-This makes Fortran usage very similar to C++.
+Each class is wrapped in a Fortran derived type which holds a
+``type(C_PTR)`` pointer to an C++ instance of the class.  Class
+methods are wrapped using Fortran's type-bound procedures.  This makes
+Fortran usage very similar to C++.
 
 Now we'll add a simple class to the library::
 
@@ -561,12 +580,14 @@ To wrap the class add the lines to the YAML file::
       - decl: void delete()  +destructor
       - decl: void Method1()
 
-The method ``new`` has the attribute **+constructor** to mark it as a constructor.
-It must be after the argument list to make the attribute apply to the function as a whole
-instead of just the result.  Likewise, ``delete`` is marked as a destructor.
+The method ``new`` has the attribute **+constructor** to mark it as a
+constructor.  It must be after the argument list to make the attribute
+apply to the function as a whole instead of just the result.
+Likewise, ``delete`` is marked as a destructor.
 
-The file ``wrapClass1.h`` will have an opaque struct for the class.  This is to allows some
-measure of type safety over using ``void`` pointers for every instance::
+The file ``wrapClass1.h`` will have an opaque struct for the class.
+This is to allows some measure of type safety over using ``void``
+pointers for every instance::
 
     struct s_TUT_class1;
     typedef struct s_TUT_class1 TUT_class1;
