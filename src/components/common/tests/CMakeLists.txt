@@ -13,5 +13,5 @@ foreach(test ${test_common_tests})
 endforeach()
 
 if(ENABLE_OMP)
-    make_executable( EXECUTABLE_NAME openmpTester EXECUTABLE_SOURCE testOpenMP.cpp WITH_OPENMP)
+    make_executable( EXECUTABLE_NAME openmpTester EXECUTABLE_SOURCE testOpenMP.cpp WITH_OPENMP ADD_CTEST)
 endif()

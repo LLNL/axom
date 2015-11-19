@@ -20,6 +20,9 @@
 
 #include "slic/slic.hpp"
 
+#include "common/Utilities.hpp"   // for utilities::processAbort()
+
+#include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
 #include <execinfo.h> // for backtrace()
 

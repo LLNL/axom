@@ -11,14 +11,28 @@ set(common_headers
 # Specify all sources
 #
 set(common_sources
+	Utilities.cpp
     )
 
 #
 # make the library
 #
-#make_library(common "${common_sources}" "${common_headers}")
-#add_dependencies(common copy_headers_common)
-#install(TARGETS common DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
+if (ENABLE_MPI)
+    make_library( LIBRARY_NAME
+                      common
+                  LIBRARY_SOURCES
+                      "${common_sources}"
+                      "${common_headers}"
+                  WITH_MPI )
+else()
+    make_library( LIBRARY_NAME
+                      common
+                  LIBRARY_SOURCES
+                      "${common_sources}"
+                      "${common_headers}" )
+endif()
+
+add_dependencies(common copy_headers_common)
 
 #
 # custom target to copy header files in the "include" folder of the build tree.

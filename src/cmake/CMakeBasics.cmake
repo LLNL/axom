@@ -365,7 +365,7 @@ endmacro(make_library)
 
 ##------------------------------------------------------------------------------
 ## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
-##                  [WITH_MPI] [WITH_OPENMP])
+##                  [WITH_MPI] [WITH_OPENMP] [ADD_CTEST])
 ##
 ## Adds an executable to the project.
 ##
@@ -384,10 +384,14 @@ endmacro(make_library)
 ## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
+##
+## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
+## is supplied, the executable is added as a ctest with no command line options.
+## If you need command line options for your ctest, add it manually with ADD_TEST().
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options WITH_MPI WITH_OPENMP)
+   set(options WITH_MPI WITH_OPENMP ADD_CTEST)
    set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE)
    set(multiValueArgs DEPENDS_ON)
 
@@ -453,10 +457,12 @@ macro(make_executable)
 
    endif()
 
-   add_test( NAME ${exe_name}
-             COMMAND ${exe_name}
-             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
-             )
+   if ( ${arg_ADD_CTEST} )
+     add_test( NAME ${exe_name}
+               COMMAND ${exe_name}
+               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+               )
+   endif()
 
    if(IS_ABSOLUTE)
        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")

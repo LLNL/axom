@@ -22,15 +22,6 @@
 #ifndef UTILITIES_HPP_
 #define UTILITIES_HPP_
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <cstdlib>
-
-#ifdef USE_MPI
-#include <mpi.h>
-#endif
-
 namespace asctoolkit
 {
 namespace utilities
@@ -39,24 +30,7 @@ namespace utilities
    /*!
     * \brief Gracefully aborts the application
     */
-   inline void processAbort()
-   {
-#ifndef USE_MPI
-     exit( -1 );
-#else
-     int mpi = 0;
-     MPI_Initialized( &mpi );
-     if ( mpi ) {
-
-       MPI_Abort( MPI_COMM_WORLD, -1 );
-
-     } else {
-
-       exit( -1 );
-
-     }
-#endif
-   }
+   inline void processAbort();
 
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace
