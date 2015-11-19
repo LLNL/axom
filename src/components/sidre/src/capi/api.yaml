@@ -89,35 +89,14 @@ classes:
 
     methods:
     -  decl: const std::string& getName() const
+#    -  decl: DataGroup* getParent()
     -  decl: const DataGroup* getParent() const
+#    -  decl: DataStore* getDataStore() const
     -  decl: const DataStore* getDataStore() const
     -  decl: size_t getNumViews() const
     -  decl: size_t getNumGroups() const
     -  decl: bool hasView( const string& name )
 #    -  decl: bool hasView( IndexType idx ) const
-    -  decl: DataView *createViewAndBuffer( const string& name )
-       function_suffix: _simple
-    -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
-       function_suffix: _from_type
-       fortran_generic:
-         len:
-         -  int
-         -  long
-    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
-#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, TypeID type, SidreLength len )
-#    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength len )
-       fortran_generic:
-         len:
-         -  int
-         -  long
-    -  decl: DataView *moveView(DataView *view)
-    -  decl: DataView *copyView(DataView *view)
-    -  decl: void destroyViewAndBuffer(const std::string &name)
-#    -  decl: void destroyViewAndBuffer(IndexType idx)
-#    -  decl: void destroyView(const std::string &name)
-#    -  decl: void destroyView(IndexType idx)
     -  decl: DataView *getView( const std::string& name )
        function_suffix: _from_name
 #    -  decl: DataView const * getView( const std::string& name ) const
@@ -131,27 +110,62 @@ classes:
 
 #    -  decl: IndexType getFirstValidViewIndex() const
 #    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
+    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength numelems)
+       function_suffix: _from_type
+       fortran_generic:
+         numelems:
+         -  int
+         -  long
+
+#    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
+#    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
+    -  decl: DataView *createView( const string& name )
+       function_suffix: _empty
+    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
+       function_suffix: _into_buffer
+#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, const DataType& dtype )
+#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, const Schema& schema )
+
+    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
+    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength numelems )
+       fortran_generic:
+         numelems:
+         -  int
+         -  long
+
+#    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, const DataType& dtype )
+#    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, const Schema& schema )
+
+    -  decl: void destroyView( const std::string &name )
+#    -  decl: void destroyView( IndexType idx )
 #    -  decl: void destroyViews()
-#    -  decl: void destroyViewsAndBuffers()
+    -  decl: void destroyViewAndData(const std::string &name)
+#    -  decl: void destroyViewAndData(IndexType idx)
+#    -  decl: void destroyViewsAndData()
+    -  decl: DataView *moveView(DataView *view)
+    -  decl: DataView *copyView(DataView *view)
+
     -  decl: bool hasGroup( const string& name )
-#    -  decl: DataGroup* createGroup( const std::string& name )
-    -  decl: DataGroup *createGroup( const string& name )
-    -  decl: DataGroup *moveGroup(DataGroup *grp)
-#    -  decl: DataGroup *copyGroup(DataGroup *grp)
-    -  decl: void destroyGroup(const std::string &name)
-#    -  decl: void destroyGroup(IndexType idx)
-#    -  decl: DataGroup const * getGroup( const std::string& name ) const
+#    -  decl: bool hasGroup( IndexType idx )
     -  decl: DataGroup * getGroup( const std::string& name )
        PY_error_pattern: PY_null_to_none
-#    -  decl: DataGroup const * getGroup(IndexType idx) const
+#    -  decl: DataGroup const * getGroup( const std::string& name ) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
+#    -  decl: DataGroup const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
-
     -  decl: const std::string& getGroupName(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
+#    -  decl: IndexType getFirstValidGroupIndex() const
+#    -  decl: IndexType getNextValidGroupIndex(IndexType idx) const
 
+    -  decl: DataGroup *createGroup( const string& name )
+    -  decl: void destroyGroup(const std::string &name)
+#    -  decl: void destroyGroup(IndexType idx)
 #    -  decl: void destroyGroups()
+    -  decl: DataGroup *moveGroup(DataGroup *grp)
+#    -  decl: DataGroup *copyGroup(DataGroup *grp)
+
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
 #    -  decl: void printTree( const int level ) const

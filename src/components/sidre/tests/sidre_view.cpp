@@ -27,8 +27,10 @@ TEST(sidre_view,create_views)
   DataStore * ds   = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv_0 = root->createViewAndBuffer("field0");
-  DataView * dv_1 = root->createViewAndBuffer("field1");
+  DataView * dv_0 = root->createViewAndAllocate("field0",
+                                                asctoolkit::sidre::INT_ID, 1);
+  DataView * dv_1 = root->createViewAndAllocate("field1",
+                                                asctoolkit::sidre::INT_ID, 1);
 
 
   DataBuffer * db_0 = dv_0->getBuffer();
@@ -46,9 +48,8 @@ TEST(sidre_view,int_buffer_from_view)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv = root->createViewAndBuffer("u0");
+  DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
 
-  dv->allocate(DataType::c_int(10));
   EXPECT_EQ(dv->getTypeID(), asctoolkit::sidre::INT_ID);
   int * data_ptr = dv->getValue();
 
@@ -71,7 +72,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(10));
+  DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
   int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++)
@@ -213,12 +214,11 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   // create a group to hold the "old" or data we want to copy
   DataGroup * r_old = root->createGroup("r_old");
-  // create a view to hold the base buffer
-  DataView * base_old = r_old->createViewAndBuffer("base_data");
+  // create a view to hold the base buffer and allocate
+  DataView * base_old = r_old->createViewAndAllocate("base_data", 
+                                                     DataType::c_int(40));
 
-  // alloc our buffer
   // we will create 4 sub views of this array
-  base_old->allocate(DataType::c_int(40));
   int * data_ptr = base_old->getValue();
 
 
@@ -284,12 +284,10 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   // create a group to hold the "old" or data we want to copy into
   DataGroup * r_new = root->createGroup("r_new");
-  // create a view to hold the base buffer
-  DataView * base_new = r_new->createViewAndBuffer("base_data");
+  // create a view to hold the base buffer and allocate
+  DataView * base_new = r_new->createViewAndAllocate("base_data",
+                                                     DataType::c_int(4 * 12));
 
-  // alloc our buffer
-  // create a buffer to hold larger subarrays
-  base_new->allocate(DataType::c_int(4 * 12));
   int * base_new_data = base_new->getValue();
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {
@@ -373,8 +371,8 @@ TEST(sidre_view,int_array_realloc)
   DataGroup * root = ds->getRoot();
 
   // create a view to hold the base buffer
-  DataView * a1 = root->createViewAndBuffer("a1",DataType::c_float(5));
-  DataView * a2 = root->createViewAndBuffer("a2",DataType::c_int(5));
+  DataView * a1 = root->createViewAndAllocate("a1",DataType::c_float(5));
+  DataView * a2 = root->createViewAndAllocate("a2",DataType::c_int(5));
 
   float * a1_ptr = a1->getValue();
   int * a2_ptr = a2->getValue();

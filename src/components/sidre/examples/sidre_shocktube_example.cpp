@@ -57,7 +57,7 @@ const double gammaaInverse = M_SQRT1_2;
 
 void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
 {
-  DataView * const view = grp->createViewAndBuffer(name, DataType::int32())->allocate();
+  DataView * const view = grp->createViewAndAllocate(name, DataType::int32())->allocate();
   view->setValue(value);
 
 }
@@ -65,7 +65,7 @@ void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::strin
 
 void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp, const std::string& name, float64 const value )
 {
-  DataView * const view = grp->createViewAndBuffer(name, DataType::float64())->allocate();
+  DataView * const view = grp->createViewAndAllocate(name, DataType::float64())->allocate();
   view->setValue(value);
 }
 
@@ -218,9 +218,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
                                     ->apply(DataType::int32(numTubeElems));
   int32 * const mapToElems = mapToElemsView->getValue();
 #else
-  int32 * const mapToElems = tube->createViewAndBuffer("mapToElems", DataType::int32(numTubeElems))
-                             ->allocate()
-                             ->getValue();
+  int32 * const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(numTubeElems))->getValue();
 #endif
 
 
@@ -242,9 +240,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
                              ->apply(DataType::int32(2*numFaces,0,8))
                              ->getValue();
 #else
-  int32 * const faceToElem = face->createViewAndBuffer("faceToElem", DataType::int32(2*numFaces))
-                             ->allocate()
-                             ->getValue();
+  int32 * const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(2*numFaces))->getValue();
 #endif
 
   for (i = 0 ; i < numFaces ; ++i)
@@ -265,9 +261,7 @@ void CreateShockTubeMesh(DataGroup * const prob)
                        ->apply(DataType::int32(2*numElems,0,8))
                        ->getValue();
 #else
-  int32 * elemToFace = tube->createViewAndBuffer("elemToFace", DataType::int32(2*numElems))
-                       ->allocate()
-                       ->getValue();
+  int32 * elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(2*numElems))->getValue();
 #endif
 
   for (i = 0 ; i < numElems ; ++i)
@@ -307,9 +301,7 @@ void InitializeShockTube(DataGroup * const prob)
                          ->apply(DataType::float64(numElems))
                          ->getValue();
 #else
-  float64 * const mass = elem->createViewAndBuffer("mass", DataType::float64(numElems))
-                         ->allocate()
-                         ->getValue();
+  float64 * const mass = elem->createViewAndAllocate("mass", DataType::float64(numElems))->getValue();
 #endif
 
 
@@ -322,9 +314,7 @@ void InitializeShockTube(DataGroup * const prob)
                              ->apply(DataType::float64(numElems))
                              ->getValue();
 #else
-  float64 * const momentum = elem->createViewAndBuffer("momentum", DataType::float64(numElems))
-                             ->allocate()
-                             ->getValue();
+  float64 * const momentum = elem->createViewAndAllocate("momentum", DataType::float64(numElems))->getValue();
 #endif
 
 #if 0
@@ -336,9 +326,7 @@ void InitializeShockTube(DataGroup * const prob)
                            ->apply(DataType::float64(numElems))
                            ->getValue();
 #else
-  float64 * const energy = elem->createViewAndBuffer("energy", DataType::float64(numElems))
-                           ->allocate()
-                           ->getValue();
+  float64 * const energy = elem->createViewAndAllocate("energy", DataType::float64(numElems))->getValue();
 #endif
 
 #if 0
@@ -350,16 +338,14 @@ void InitializeShockTube(DataGroup * const prob)
                              ->apply(DataType::float64(numElems))
                              ->getValue();
 #else
-  float64 * const pressure = elem->createViewAndBuffer("pressure", DataType::float64(numElems))
-                             ->allocate()
-                             ->getValue();
+  float64 * const pressure = elem->createViewAndAllocate("pressure", DataType::float64(numElems))->getValue();
 #endif
 
   /* Create face centered quantities */
 
-  face->createViewAndBuffer("F0", DataType::float64(numFaces))->allocate();
-  face->createViewAndBuffer("F1", DataType::float64(numFaces))->allocate();
-  face->createViewAndBuffer("F2", DataType::float64(numFaces))->allocate();
+  face->createViewAndAllocate("F0", DataType::float64(numFaces));
+  face->createViewAndAllocate("F1", DataType::float64(numFaces));
+  face->createViewAndAllocate("F2", DataType::float64(numFaces));
 
 //  face->fieldCreateReal("F", 3); /* mv, mv^2+P, and v(E+P) */
 
@@ -606,13 +592,13 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     if( length <= 1 )
     {
-      if( view->getTypeID() == CONDUIT_INT32_T )
+      if( view->getTypeID() == SIDRE_INT32_ID )
       {
         fprintf(fp, "# %s = %d\n",
                 name.c_str(),
                 view->getValue<int>());
       }
-      else if( view->getTypeID() == CONDUIT_FLOAT64_T )
+      else if( view->getTypeID() == SIDRE_FLOAT64_ID )
       {
         fprintf(fp, "# %s = %f\n",
                 name.c_str(),
@@ -631,7 +617,7 @@ void DumpUltra( DataGroup * const prob)
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 
-    if( view->getTypeID() == CONDUIT_INT32_T )
+    if( view->getTypeID() == SIDRE_INT32_ID )
     {
       int32 const * const data = view->getValue();
       for ( int j=0 ; j<length ; ++j)
@@ -640,7 +626,7 @@ void DumpUltra( DataGroup * const prob)
       }
       fprintf(fp, "\n");
     }
-    else if( view->getTypeID() == CONDUIT_FLOAT64_T )
+    else if( view->getTypeID() == SIDRE_FLOAT64_ID )
     {
       float64 const * const data = view->getValue();
       for ( int j=0 ; j<length ; ++j)

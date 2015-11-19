@@ -41,38 +41,60 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(LIST_ID, CONDUIT_LIST_ID);
 #endif
 
-  EXPECT_EQ(getTypeID<SIDRE_INT8_ID>(), CONDUIT_INT8_T);
-  EXPECT_EQ(getTypeID(SIDRE_INT8_ID), CONDUIT_INT8_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT8_ID>()), 
+            static_cast<int>(CONDUIT_INT8_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT8_ID)), 
+            static_cast<int>(CONDUIT_INT8_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_INT16_ID>(), CONDUIT_INT16_T);
-  EXPECT_EQ(getTypeID(SIDRE_INT16_ID), CONDUIT_INT16_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT16_ID>()), 
+            static_cast<int>(CONDUIT_INT16_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT16_ID)), 
+            static_cast<int>(CONDUIT_INT16_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_INT32_ID>(), CONDUIT_INT32_T);
-  EXPECT_EQ(getTypeID(SIDRE_INT32_ID), CONDUIT_INT32_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT32_ID>()), 
+            static_cast<int>(CONDUIT_INT32_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT32_ID)), 
+            static_cast<int>(CONDUIT_INT32_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_INT64_ID>(), CONDUIT_INT64_T);
-  EXPECT_EQ(getTypeID(SIDRE_INT64_ID), CONDUIT_INT64_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT64_ID>()), 
+            static_cast<int>(CONDUIT_INT64_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT64_ID)), 
+            static_cast<int>(CONDUIT_INT64_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_UINT8_ID>(), CONDUIT_UINT8_T);
-  EXPECT_EQ(getTypeID(SIDRE_UINT8_ID), CONDUIT_UINT8_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT8_ID>()), 
+            static_cast<int>(CONDUIT_UINT8_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT8_ID)), 
+            static_cast<int>(CONDUIT_UINT8_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_UINT16_ID>(), CONDUIT_UINT16_T);
-  EXPECT_EQ(getTypeID(SIDRE_UINT16_ID), CONDUIT_UINT16_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT16_ID>()), 
+            static_cast<int>(CONDUIT_UINT16_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT16_ID)), 
+            static_cast<int>(CONDUIT_UINT16_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_UINT32_ID>(), CONDUIT_UINT32_T);
-  EXPECT_EQ(getTypeID(SIDRE_UINT32_ID), CONDUIT_UINT32_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT32_ID>()), 
+            static_cast<int>(CONDUIT_UINT32_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT32_ID)), 
+            static_cast<int>(CONDUIT_UINT32_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_UINT64_ID>(), CONDUIT_UINT64_T);
-  EXPECT_EQ(getTypeID(SIDRE_UINT64_ID), CONDUIT_UINT64_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT64_ID>()), 
+            static_cast<int>(CONDUIT_UINT64_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT64_ID)), 
+            static_cast<int>(CONDUIT_UINT64_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_FLOAT32_ID>(), CONDUIT_FLOAT32_T);
-  EXPECT_EQ(getTypeID(SIDRE_FLOAT32_ID), CONDUIT_FLOAT32_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_FLOAT32_ID>()), 
+            static_cast<int>(CONDUIT_FLOAT32_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_FLOAT32_ID)), 
+            static_cast<int>(CONDUIT_FLOAT32_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_FLOAT64_ID>(), CONDUIT_FLOAT64_T);
-  EXPECT_EQ(getTypeID(SIDRE_FLOAT64_ID), CONDUIT_FLOAT64_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_FLOAT64_ID>()), 
+            static_cast<int>(CONDUIT_FLOAT64_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_FLOAT64_ID)), 
+            static_cast<int>(CONDUIT_FLOAT64_T));
 
-  EXPECT_EQ(getTypeID<SIDRE_CHAR8_STR_ID>(), CONDUIT_CHAR8_STR_T);
-  EXPECT_EQ(getTypeID(SIDRE_CHAR8_STR_ID), CONDUIT_CHAR8_STR_T);
+  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_CHAR8_STR_ID>()), 
+            static_cast<int>(CONDUIT_CHAR8_STR_T));
+  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_CHAR8_STR_ID)), 
+            static_cast<int>(CONDUIT_CHAR8_STR_T));
 
 
 }

@@ -104,7 +104,7 @@ contains
     root = ds%get_root()
 
     parent = root%create_group("parent")
-    view = parent%create_view_and_buffer("view")
+    view = parent%create_view_empty("view")
 
     call assert_true( view%get_owning_group() == parent )
 
@@ -128,8 +128,8 @@ contains
     root = ds%get_root()
 
     parent = root%create_group("parent")
-    view1 = parent%create_view_and_buffer("view1")
-    view2 = parent%create_view_and_buffer("view2")
+    view1 = parent%create_view_empty("view1")
+    view2 = parent%create_view_empty("view2")
 
     call assert_true(parent%get_num_views() == 2)
 
@@ -201,11 +201,11 @@ contains
   end subroutine get_group_name_index
 
   !------------------------------------------------------------------------------
-  ! create_view_and_buffer()
-  ! destroy_view_and_buffer()
+  ! create_view_empty()
+  ! destroy_view()
   ! has_view()
   !------------------------------------------------------------------------------
-  subroutine create_destroy_has_viewbuffer
+  subroutine create_destroy_has_view
     type(datastore) ds
     type(datagroup) root,group
     type(dataview) view
@@ -214,18 +214,18 @@ contains
     root = ds%get_root()
     group = root%create_group("parent")
 
-    view = group%create_view_and_buffer("view")
+    view = group%create_view_empty("view")
     call assert_true( group%get_parent() == root )
-    call assert_true( view%has_buffer() )
+    call assert_false( view%has_buffer() )
 
     call assert_true( group%has_view("view") )
 
-    call group%destroy_view_and_buffer("view")
+    call group%destroy_view("view")
 
     call assert_false( group%has_view("view") )
 
     call ds%delete()
-  end subroutine create_destroy_has_viewbuffer
+  end subroutine create_destroy_has_view
 
   !------------------------------------------------------------------------------
   ! create_group()
@@ -258,7 +258,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")
-    view = flds%create_view_and_buffer("a")
+    view = flds%create_view_empty("a")
 
     call assert_true(flds%has_view("a"))
 
@@ -275,15 +275,15 @@ contains
     root = ds%get_root()
     flds = root%create_group("fields")
 
-    i0_view = flds%create_view_and_buffer("i0")
+    i0_view = flds%create_view_empty("i0")
     call i0_view%allocate(ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
-    f0_view = flds%create_view_and_buffer("f0")
+    f0_view = flds%create_view_empty("f0")
     call f0_view%allocate(ATK_C_FLOAT_T, 1)
     call f0_view%set_value(100.0)
 
-    d0_view = flds%create_view_and_buffer("d0")
+    d0_view = flds%create_view_empty("d0")
     call d0_view%allocate(ATK_C_DOUBLE_T, 1)
     call d0_view%set_value(3000.0d0)  ! XXX without d0, error in get_value_double
 
@@ -332,15 +332,15 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    i0_view = ga%create_view_and_buffer("i0")
+    i0_view = ga%create_view_empty("i0")
     call i0_view%allocate(ATK_C_INT_T, 1_8)
     call i0_view%set_value(1)
 
-    f0_view = gb%create_view_and_buffer("f0")
+    f0_view = gb%create_view_empty("f0")
     call f0_view%allocate(ATK_C_FLOAT_T, 1_8)
     call f0_view%set_value(100.0)
 
-    d0_view = gc%create_view_and_buffer("d0")
+    d0_view = gc%create_view_empty("d0")
     call d0_view%allocate(ATK_C_DOUBLE_T, 1_8)
     call d0_view%set_value(3000.0d0)
 
@@ -365,7 +365,7 @@ contains
   end subroutine groups_move_copy
 
   !------------------------------------------------------------------------------
-  subroutine create_destroy_view_and_buffer
+  subroutine create_destroy_view_and_data
     type(datastore) ds
     type(datagroup) root, grp
     type(dataview) view1, view2
@@ -382,8 +382,10 @@ contains
     view_name1 = "viewBuffer1"
     view_name2 = "viewBuffer2"
 
-    view1 = grp%create_view_and_buffer(view_name1)
-    view2 = grp%create_view_and_buffer(view_name2)
+    view1 = grp%create_view_empty(view_name1)
+    call view1%allocate(ATK_C_INT_T, 1_8)
+    view2 = grp%create_view_empty(view_name2)
+    call view2%allocate(ATK_C_INT_T, 1_8)
 
     call assert_true(grp%has_view(view_name1))
     call assert_true(grp%get_view(view_name1) == view1)
@@ -394,7 +396,7 @@ contains
     tmpbuf = view1%get_buffer()
     bufferid1 = tmpbuf%get_index()
 
-    call grp%destroy_view_and_buffer(view_name1)
+    call grp%destroy_view_and_data(view_name1)
 
 
     call assert_false(grp%has_view(view_name1))
@@ -406,11 +408,11 @@ contains
 !XX    call assert_false(buffValid)
 
     call ds%delete()
-  end subroutine create_destroy_view_and_buffer
+  end subroutine create_destroy_view_and_data
 
 
   !------------------------------------------------------------------------------
-  subroutine create_destroy_alloc_view_and_buffer
+  subroutine create_destroy_alloc_view_and_data
     type(datastore) ds
     type(datagroup) root, grp
     type(dataview) view1
@@ -428,7 +430,8 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    view1 = grp%create_view_and_buffer(view_name1, ATK_C_INT_T, 10)
+    view1 = grp%create_view_empty(view_name1)
+    call view1%allocate(ATK_C_INT_T, 10)
 
 !--    ! this one is the Schema & method
 !--    Schema s
@@ -455,11 +458,11 @@ contains
 !--    call assert_equals(view1%get_total_bytes(), 10 * sizeof(int))
 !--    call assert_equals(view2%get_total_bytes(), 10 * sizeof(double))
 
-    call grp%destroy_view_and_buffer(view_name1)
+    call grp%destroy_view_and_data(view_name1)
 !--    call grp%destroy_view_and_buffer(view_name2)
 
     call ds%delete()
-  end subroutine create_destroy_alloc_view_and_buffer
+  end subroutine create_destroy_alloc_view_and_data
 
   !------------------------------------------------------------------------------
   subroutine create_view_of_buffer_with_schema
@@ -476,7 +479,8 @@ contains
 
     ! use create + alloc convenience methods
     ! this one is the DataType & method
-    base =  root%create_view_and_buffer("base", ATK_C_INT_T, 10)
+    base =  root%create_view_empty("base")
+    call base%allocate(ATK_C_INT_T, 10)
     call base%get_value(base_vals)
 
     base_vals(1:5) = 10
@@ -514,7 +518,7 @@ contains
 
     ga = flds%create_group("a")
 
-    i0_view = ga%create_view_and_buffer("i0")
+    i0_view = ga%create_view_empty("i0")
     call i0_view%allocate(ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
@@ -561,15 +565,15 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    i0_view = ga%create_view_and_buffer("i0")
+    i0_view = ga%create_view_empty("i0")
     call i0_view%allocate(ATK_C_INT_T, 1)
     call i0_view%set_value(1)
 
-    f0_view = gb%create_view_and_buffer("f0")
+    f0_view = gb%create_view_empty("f0")
     call f0_view%allocate(ATK_C_FLOAT_T, 1)
     call f0_view%set_value(100.0)
 
-    d0_view = gc%create_view_and_buffer("d0")
+    d0_view = gc%create_view_empty("d0")
     call d0_view%allocate(ATK_C_DOUBLE_T, 1)
     call d0_view%set_value(3000.0d0)
 
@@ -631,13 +635,13 @@ function fortran_test() bind(C,name="fortran_test")
   call has_view
   call get_view_name_index
   call get_group_name_index
-  call create_destroy_has_viewbuffer
+  call create_destroy_has_view
   call create_destroy_has_group
   call group_name_collisions
   call view_copy_move
   call groups_move_copy
-  call create_destroy_view_and_buffer
-  call create_destroy_alloc_view_and_buffer
+  call create_destroy_view_and_data
+  call create_destroy_alloc_view_and_data
   call create_view_of_buffer_with_schema
   call save_restore_simple
   call save_restore_complex

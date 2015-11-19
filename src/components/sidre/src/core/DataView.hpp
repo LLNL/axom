@@ -31,7 +31,6 @@
 #include "sidre/SidreTypes.hpp"
 
 
-
 namespace asctoolkit
 {
 namespace sidre
@@ -159,21 +158,6 @@ public:
   DataView * allocate( TypeID type, SidreLength len);
 
   /*!
-   * \brief Declare a data view as a Conduit schema then allocate the data.
-   *
-   * This is equivalent to calling declare(Schema), then allocate(),
-   * and then calling apply() on this DataView object.
-   *
-   * NOTE: Allocation from a view only makes sense if this is the only
-   *       view associated with its buffer. If this is not the case, the
-   *       method does nothing.
-   *       If view has previously been declared opaque, the method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * allocate(const Schema& schema);
-
-  /*!
    * \brief Declare a data view as a Conduit pre-defined data type
    *        then allocate the data.
    *
@@ -188,6 +172,21 @@ public:
    * \return pointer to this DataView object.
    */
   DataView * allocate(const DataType& dtype);
+
+  /*!
+   * \brief Declare a data view as a Conduit schema then allocate the data.
+   *
+   * This is equivalent to calling declare(Schema), then allocate(),
+   * and then calling apply() on this DataView object.
+   *
+   * NOTE: Allocation from a view only makes sense if this is the only
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.
+   *       If view has previously been declared opaque, the method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * allocate(const Schema& schema);
 
   /*!
    * \brief  Reallocate the view's underlying buffer using a length.
@@ -207,20 +206,6 @@ public:
 
   /*!
    * \brief  Reallocate the view's underlying buffer using a Conduit
-   *         schema.
-   *
-   * NOTE: schema's type id must match the current type.
-   * NOTE: Re-allocation from a view only makes sense if this is the only
-   *       view associated with its buffer. If this is not the case, the
-   *       method does nothing.  Also, if this is an opaque view, this
-   *       method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * reallocate(const Schema& schema);
-
-  /*!
-   * \brief  Reallocate the view's underlying buffer using a Conduit
    *         data type.
    *
    * NOTE: dtype's type id must match the current type.
@@ -232,6 +217,20 @@ public:
    * \return pointer to this DataView object.
    */
   DataView * reallocate(const DataType& dtype);
+
+  /*!
+   * \brief  Reallocate the view's underlying buffer using a Conduit
+   *         schema.
+   *
+   * NOTE: schema's type id must match the current type.
+   * NOTE: Re-allocation from a view only makes sense if this is the only
+   *       view associated with its buffer. If this is not the case, the
+   *       method does nothing.  Also, if this is an opaque view, this
+   *       method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * reallocate(const Schema& schema);
 
   /*!
    * \brief Apply a previously declared data view to data held in
@@ -472,6 +471,13 @@ private:
 
   /*!
    *  \brief Private ctor that creates a DataView with given name
+   *         in given parent group and which has no data associated with it.
+   */
+  DataView( const std::string& name,
+            DataGroup * const owning_group );
+
+  /*!
+   *  \brief Private ctor that creates a DataView with given name
    *         in given parent group and which is associated with given
    *         DataBuffer object.
    */
@@ -496,6 +502,12 @@ private:
    * \brief Private dtor.
    */
   ~DataView();
+
+  /*!
+   *  \brief Private method returns true if data allocation on view is a
+   *         valid operation; else false
+   */
+  bool allocationIsValid() const; 
 
 
   /// Name of this DataView object.

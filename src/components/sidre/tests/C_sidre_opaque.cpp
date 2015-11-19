@@ -181,12 +181,13 @@ TEST(C_sidre_opaque,meshvar)
     ATK_datagroup_create_opaque_view(dom_gp, "ext", dom_ext);
 
     AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
-    ATK_dataview * dom_zone_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "zone_data");
-    ATK_dataview_allocate_from_type(dom_zone_view, SIDRE_INT_ID, AA_get_num_vals(zonemv, dom_ext));
+    (void) ATK_datagroup_create_view_and_allocate_from_type(dom_gp, "zone_data",
+                                                            SIDRE_INT_ID, 
+                                                            AA_get_num_vals(zonemv, dom_ext));
 
     AA_meshvar * nodemv = (AA_meshvar *)  ATK_dataview_get_opaque(node_mv_view);
-    ATK_dataview * dom_node_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "node_data");
-    ATK_dataview_allocate_from_type(dom_node_view, SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
+    (void) ATK_datagroup_create_view_and_allocate_from_type(dom_gp, "node_data",
+                                                            SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
 
   }
 

@@ -106,7 +106,7 @@ TEST(sidre_group,get_view)
   DataGroup * root = ds->getRoot();
 
   DataGroup * parent = root->createGroup("parent");
-  DataView * view = parent->createViewAndBuffer("view");
+  DataView * view = parent->createView("view");
 
   EXPECT_TRUE( parent->getView("view") == view );
 
@@ -124,8 +124,8 @@ TEST(sidre_group,get_view_names_and_indicies)
   DataGroup * root = ds->getRoot();
 
   DataGroup * parent = root->createGroup("parent");
-  DataView * view1 = parent->createViewAndBuffer("view1");
-  DataView * view2 = parent->createViewAndBuffer("view2");
+  DataView * view1 = parent->createView("view1");
+  DataView * view2 = parent->createView("view2");
 
   EXPECT_EQ(parent->getNumViews(), 2u);
 
@@ -161,8 +161,8 @@ TEST(sidre_group,get_first_and_next_view_index)
   DataGroup * root = ds->getRoot();
 
   DataGroup * parent = root->createGroup("parent");
-  DataView * view1 = parent->createViewAndBuffer("view1");
-  DataView * view2 = parent->createViewAndBuffer("view2");
+  DataView * view1 = parent->createView("view1");
+  DataView * view2 = parent->createView("view2");
 
   DataGroup * emptyGroup = root->createGroup("emptyGroup");
 
@@ -227,11 +227,13 @@ TEST(sidre_group,get_group_name_index)
 }
 
 //------------------------------------------------------------------------------
-// createViewAndBuffer()
-// destroyViewAndBuffer()
+// createView()
+// createViewAndAllocate()
+// destroyView()
+// destroyViewAndData()
 // hasView()
 //------------------------------------------------------------------------------
-TEST(sidre_group,create_destroy_has_viewbuffer)
+TEST(sidre_group,create_destroy_has_view)
 {
   setAbortOnAssert(false);
 
@@ -239,35 +241,38 @@ TEST(sidre_group,create_destroy_has_viewbuffer)
   DataGroup * root = ds->getRoot();
   DataGroup * group = root->createGroup("parent");
 
-  DataView * view = group->createViewAndBuffer("view");
+  DataView * view = group->createView("view");
   EXPECT_TRUE( group->getParent() == root );
-  EXPECT_TRUE( view->hasBuffer() );
+  EXPECT_FALSE( view->hasBuffer() );
 
   EXPECT_TRUE( group->hasView("view") );
   // try creating view again, should be a no-op.
-  EXPECT_TRUE( group->createViewAndBuffer("view") == ATK_NULLPTR );
+  EXPECT_TRUE( group->createView("view") == ATK_NULLPTR );
 
-  group->destroyViewAndBuffer("view");
+  group->destroyView("view");
   //destroy already destroyed group.  Should be a no-op, not a failure
-  group->destroyViewAndBuffer("view");
+  group->destroyView("view");
 
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
-  // TODO - replace this when the conduit enum is wrapped by a sidre equivalent.
-  group->createViewAndBuffer( "viewWithLength1", asctoolkit::sidre::FLOAT_ID, 50 );
+  group->createViewAndAllocate( "viewWithLength1", 
+                                asctoolkit::sidre::FLOAT_ID, 50 );
+
   // error condition check - try again with duplicate name, should be a no-op
-  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength1", asctoolkit::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
-  group->destroyViewAndBuffer("viewWithLength1");
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", 
+                           asctoolkit::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
+  group->destroyViewAndData("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
-  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLengthBadLen", asctoolkit::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", 
+                           asctoolkit::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
 
   // try api call that specifies data type in another way
-  group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) );
-  EXPECT_TRUE( group->createViewAndBuffer( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
+  group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) );
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
   // destroy this view using index
-  group->destroyViewAndBuffer( group->getFirstValidViewIndex() );
+  group->destroyViewAndData( group->getFirstValidViewIndex() );
 
   delete ds;
 }
@@ -305,7 +310,7 @@ TEST(sidre_group,group_name_collisions)
 {
   DataStore * ds = new DataStore();
   DataGroup * flds = ds->getRoot()->createGroup("fields");
-  flds->createViewAndBuffer("a");
+  flds->createView("a");
 
   EXPECT_TRUE(flds->hasView("a"));
 
@@ -317,7 +322,7 @@ TEST(sidre_group,group_name_collisions)
 
   //check error condition
   // attempt to create duplicate view name.
-  EXPECT_TRUE(flds->createViewAndBuffer("a") == ATK_NULLPTR);
+  EXPECT_TRUE(flds->createView("a") == ATK_NULLPTR);
 
   delete ds;
 }
@@ -327,9 +332,9 @@ TEST(sidre_group,view_copy_move)
   DataStore * ds = new DataStore();
   DataGroup * flds = ds->getRoot()->createGroup("fields");
 
-  flds->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  flds->createViewAndBuffer("f0")->allocate(DataType::c_float());
-  flds->createViewAndBuffer("d0")->allocate(DataType::c_double());
+  flds->createViewAndAllocate("i0", DataType::c_int());
+  flds->createViewAndAllocate("f0", DataType::c_float());
+  flds->createViewAndAllocate("d0", DataType::c_double());
 
   flds->getView("i0")->setValue(1);
   flds->getView("f0")->setValue(100.0);
@@ -347,9 +352,7 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
 
   // check the data value
-  double * d0_data =  flds->getGroup("sub")
-                     ->getView("d0")
-                     ->getValue();
+  double * d0_data =  flds->getGroup("sub")->getView("d0")->getValue();
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds to sub
@@ -377,9 +380,9 @@ TEST(sidre_group,groups_move_copy)
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
 
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
-  gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
+  ga->createViewAndAllocate("i0", DataType::c_int());
+  gb->createViewAndAllocate("f0", DataType::c_float());
+  gc->createViewAndAllocate("d0", DataType::c_double());
 
   ga->getView("i0")->setValue(1);
   gb->getView("f0")->setValue(100.0);
@@ -410,11 +413,13 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   DataStore * const ds = new DataStore();
   DataGroup * const grp = ds->getRoot()->createGroup("grp");
 
-  std::string const viewName1 = "viewBuffer1";
-  std::string const viewName2 = "viewBuffer2";
+  std::string viewName1("viewBuffer1");
+  std::string viewName2("viewBuffer2");
 
-  DataView const * const view1 = grp->createViewAndBuffer(viewName1);
-  DataView const * const view2 = grp->createViewAndBuffer(viewName2);
+  DataView * view1 = grp->createViewAndAllocate(viewName1, 
+                                                asctoolkit::sidre::INT_ID, 1);
+  DataView * view2 = grp->createViewAndAllocate(viewName2,
+                                                asctoolkit::sidre::INT_ID, 1);
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -424,7 +429,7 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
 
   IndexType const bufferId1 = view1->getBuffer()->getIndex();
 
-  grp->destroyViewAndBuffer(viewName1);
+  grp->destroyViewAndData(viewName1);
 
   EXPECT_FALSE(grp->hasView(viewName1));
   EXPECT_EQ(ds->getNumBuffers(), 1u);
@@ -432,10 +437,10 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   DataBuffer const * const buffer1 = ds->getBuffer(bufferId1);
   EXPECT_TRUE( buffer1 == ATK_NULLPTR );
 
-  DataView const * const view3 = grp->createViewAndBuffer("viewBuffer3");
-  grp->destroyViewsAndBuffers();
+  DataView const * const view3 = grp->createView("viewBuffer3");
+  grp->destroyViewsAndData();
   // should be no-op
-  grp->destroyViewsAndBuffers();
+  grp->destroyViewsAndData();
   //shut up compiler about unused variable
   (void)view3;
 
@@ -454,13 +459,12 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * const view1 = grp->createViewAndBuffer(viewName1,
+  DataView * const view1 = grp->createViewAndAllocate(viewName1,
                                                     DataType::c_int(10));
   // this one is the Schema & method
   conduit::Schema s;
   s.set(DataType::c_double(10));
-  DataView * const view2 = grp->createViewAndBuffer(viewName2,
-                                                    s);
+  DataView * const view2 = grp->createViewAndAllocate(viewName2, s);
 
   EXPECT_TRUE(grp->hasView(viewName1));
   EXPECT_EQ( grp->getView(viewName1), view1 );
@@ -484,8 +488,8 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   EXPECT_EQ(view1->getTotalBytes(), 10 * sizeof(int));
   EXPECT_EQ(view2->getTotalBytes(), 10 * sizeof(double));
 
-  grp->destroyViewAndBuffer(viewName1);
-  grp->destroyViewAndBuffer(viewName2);
+  grp->destroyViewAndData(viewName1);
+  grp->destroyViewAndData(viewName2);
 
   delete ds;
 }
@@ -497,8 +501,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   DataGroup * root = ds->getRoot();
   // use create + alloc convenience methods
   // this one is the DataType & method
-  DataView * base =  root->createViewAndBuffer("base",
-                                               DataType::c_int(10));
+  DataView * base =  root->createViewAndAllocate("base", DataType::c_int(10));
   int * base_vals = base->getValue();
   for(int i=0 ; i<10 ; i++)
   {
@@ -544,7 +547,7 @@ TEST(sidre_group,save_restore_simple)
 
   DataGroup * ga = flds->createGroup("a");
 
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
+  ga->createView("i0")->allocate(DataType::c_int());
 
   ga->getView("i0")->setValue(1);
 
@@ -586,9 +589,9 @@ TEST(sidre_group,save_restore_complex)
   DataGroup * gb = flds->createGroup("b");
   DataGroup * gc = flds->createGroup("c");
 
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  gb->createViewAndBuffer("f0")->allocate(DataType::c_float());
-  gc->createViewAndBuffer("d0")->allocate(DataType::c_double());
+  ga->createViewAndAllocate("i0", DataType::c_int());
+  gb->createViewAndAllocate("f0", DataType::c_float());
+  gc->createViewAndAllocate("d0", DataType::c_double());
 
   ga->getView("i0")->setValue(1);
   // Be careful on floats.  If you just hand it 100.0, the compiler will assume you want a double.
