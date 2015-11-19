@@ -444,7 +444,7 @@ public:
   /*!
    * \brief Return total number of elements allocated by this DataView object.
    */
-  size_t getNumberOfElements() const
+  size_t getNumElements() const
   {
     return m_node.dtype().number_of_elements();
   }

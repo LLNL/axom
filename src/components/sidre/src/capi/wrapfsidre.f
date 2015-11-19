@@ -238,7 +238,7 @@ module sidre_mod
         procedure :: is_external => databuffer_is_external
         procedure :: get_data => databuffer_get_data
         procedure :: get_type_id => databuffer_get_type_id
-        procedure :: get_number_of_elements => databuffer_get_number_of_elements
+        procedure :: get_num_elements => databuffer_get_num_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
         procedure :: print => databuffer_print
         generic :: allocate => &
@@ -293,7 +293,7 @@ module sidre_mod
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
-        procedure :: get_number_of_elements => dataview_get_number_of_elements
+        procedure :: get_num_elements => dataview_get_num_elements
         procedure :: print => dataview_print
         generic :: allocate => &
             ! splicer begin class.DataView.generic.allocate
@@ -914,13 +914,13 @@ module sidre_mod
             integer(C_INT) :: rv
         end function atk_databuffer_get_type_id
         
-        pure function atk_databuffer_get_number_of_elements(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_number_of_elements")
+        pure function atk_databuffer_get_num_elements(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_num_elements")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_databuffer_get_number_of_elements
+        end function atk_databuffer_get_num_elements
         
         pure function atk_databuffer_get_total_bytes(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_total_bytes")
@@ -1109,13 +1109,13 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function atk_dataview_get_total_bytes
         
-        pure function atk_dataview_get_number_of_elements(self) result(rv) &
-                bind(C, name="ATK_dataview_get_number_of_elements")
+        pure function atk_dataview_get_num_elements(self) result(rv) &
+                bind(C, name="ATK_dataview_get_num_elements")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_dataview_get_number_of_elements
+        end function atk_dataview_get_num_elements
         
         subroutine atk_dataview_print(self) &
                 bind(C, name="ATK_dataview_print")
@@ -2239,15 +2239,15 @@ contains
         ! splicer end class.DataBuffer.method.get_type_id
     end function databuffer_get_type_id
     
-    function databuffer_get_number_of_elements(obj) result(rv)
+    function databuffer_get_num_elements(obj) result(rv)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin class.DataBuffer.method.get_number_of_elements
-        rv = atk_databuffer_get_number_of_elements(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_number_of_elements
-    end function databuffer_get_number_of_elements
+        ! splicer begin class.DataBuffer.method.get_num_elements
+        rv = atk_databuffer_get_num_elements(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_num_elements
+    end function databuffer_get_num_elements
     
     function databuffer_get_total_bytes(obj) result(rv)
         use iso_c_binding
@@ -2540,15 +2540,15 @@ contains
         ! splicer end class.DataView.method.get_total_bytes
     end function dataview_get_total_bytes
     
-    function dataview_get_number_of_elements(obj) result(rv)
+    function dataview_get_num_elements(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
-        ! splicer begin class.DataView.method.get_number_of_elements
-        rv = atk_dataview_get_number_of_elements(obj%voidptr)
-        ! splicer end class.DataView.method.get_number_of_elements
-    end function dataview_get_number_of_elements
+        ! splicer begin class.DataView.method.get_num_elements
+        rv = atk_dataview_get_num_elements(obj%voidptr)
+        ! splicer end class.DataView.method.get_num_elements
+    end function dataview_get_num_elements
     
     subroutine dataview_print(obj)
         use iso_c_binding
@@ -2583,7 +2583,7 @@ contains
         integer(C_SIZE_T) nelems
     
         cptr = view%get_data_pointer()
-        nelems = view%get_number_of_elements()
+        nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_value_int_1d_ptr
     
@@ -2609,7 +2609,7 @@ contains
         integer(C_SIZE_T) nelems
     
         cptr = view%get_data_pointer()
-        nelems = view%get_number_of_elements()
+        nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_value_long_1d_ptr
     
@@ -2635,7 +2635,7 @@ contains
         integer(C_SIZE_T) nelems
     
         cptr = view%get_data_pointer()
-        nelems = view%get_number_of_elements()
+        nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_value_float_1d_ptr
     
@@ -2661,7 +2661,7 @@ contains
         integer(C_SIZE_T) nelems
     
         cptr = view%get_data_pointer()
-        nelems = view%get_number_of_elements()
+        nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_value_double_1d_ptr
     ! splicer end class.DataView.additional_functions

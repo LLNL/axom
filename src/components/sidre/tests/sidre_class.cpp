@@ -49,7 +49,7 @@ public:
   void copyFromGroup(DataGroup * gp)
   {
     DataView * iview = gp->getView("idata");
-    size_t ilen = iview->getNumberOfElements();
+    size_t ilen = iview->getNumElements();
     m_idata = std::vector<int>(ilen);
 
     int * g_idata = iview->getValue();
@@ -131,7 +131,7 @@ public:
     }
 
     DataView * dview = gp->getView("ddata");
-    size_t dlen = dview->getNumberOfElements();
+    size_t dlen = dview->getNumElements();
     m_ddata = std::vector<double>(dlen);
 
     double * g_ddata = dview->getValue();

@@ -53,7 +53,7 @@ contains
     call dbuff%allocate()
 
 !    call assert_equals(dbuff%get_type_id(), ATK_C_INT_T) ! XXX NATIVE TYPE
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
     data_ptr = dbuff%get_data()
@@ -84,7 +84,7 @@ contains
     call dbuff%allocate(ATK_C_INT_T, 10_8)
 
 !    call assert_equals(dbuff%get_type_id(), ATK_C_INT_T) ! XXX NATIVE TYPE
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
     data_ptr = dbuff%get_data()
@@ -116,7 +116,7 @@ contains
     call dbuff%allocate(ATK_C_LONG_T, 5_8)
 
 !    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
-    call assert_true(dbuff%get_number_of_elements() == 5)
+    call assert_true(dbuff%get_num_elements() == 5)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     data_ptr = dbuff%get_data()
@@ -129,7 +129,7 @@ contains
     call dbuff%reallocate(10)
 
 !    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     ! data buffer changes

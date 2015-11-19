@@ -47,7 +47,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   dbuff->allocate();
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
+  EXPECT_EQ(dbuff->getNumElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   //  int * data_ptr = static_cast<int *>(dbuff->getData());
@@ -74,7 +74,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
   dbuff->allocate(asctoolkit::sidre::INT_ID, 10);
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
+  EXPECT_EQ(dbuff->getNumElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   int * data_ptr = static_cast<int *>(dbuff->getData());
@@ -101,7 +101,7 @@ TEST(sidre_buffer,realloc_buffer)
   dbuff->allocate(asctoolkit::sidre::INT_ID, 5);
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 5u);
+  EXPECT_EQ(dbuff->getNumElements(), 5u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 5);
 
   int * data_ptr = static_cast<int *>(dbuff->getData());
@@ -116,7 +116,7 @@ TEST(sidre_buffer,realloc_buffer)
   dbuff->reallocate(10);
 
   EXPECT_EQ(dbuff->getTypeID(), asctoolkit::sidre::INT_ID);
-  EXPECT_EQ(dbuff->getNumberOfElements(), 10u);
+  EXPECT_EQ(dbuff->getNumElements(), 10u);
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   // data buffer changes

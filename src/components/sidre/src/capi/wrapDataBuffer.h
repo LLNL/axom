@@ -49,7 +49,7 @@ void * ATK_databuffer_get_data(ATK_databuffer * self);
 
 int ATK_databuffer_get_type_id(ATK_databuffer * self);
 
-size_t ATK_databuffer_get_number_of_elements(ATK_databuffer * self);
+size_t ATK_databuffer_get_num_elements(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
 

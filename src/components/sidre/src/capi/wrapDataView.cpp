@@ -207,13 +207,13 @@ return rv;
 // splicer end class.DataView.method.get_total_bytes
 }
 
-size_t ATK_dataview_get_number_of_elements(ATK_dataview * self)
+size_t ATK_dataview_get_num_elements(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_number_of_elements
-size_t rv = selfobj->getNumberOfElements();
+// splicer begin class.DataView.method.get_num_elements
+size_t rv = selfobj->getNumElements();
 return rv;
-// splicer end class.DataView.method.get_number_of_elements
+// splicer end class.DataView.method.get_num_elements
 }
 
 void ATK_dataview_print(ATK_dataview * self)

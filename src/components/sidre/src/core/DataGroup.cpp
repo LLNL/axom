@@ -1121,7 +1121,7 @@ void DataGroup::copyToNode(Node& n) const
     DataBuffer * ds_buff =  m_datastore->getBuffer(buffer_id);
     buff["id"].set(buffer_id);
     DataType dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
-    dtype.set_number_of_elements(ds_buff->getNumberOfElements());
+    dtype.set_number_of_elements(ds_buff->getNumElements());
     buff["schema"].set(dtype.to_json());
 
     // only set our data if the buffer was initialized

@@ -211,7 +211,7 @@ classes:
       - decl: bool isExternal() const
       - decl: void* getData()
       - decl: TypeID getTypeID() const
-      - decl: size_t getNumberOfElements() const
+      - decl: size_t getNumElements() const
       - decl: size_t getTotalBytes() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
@@ -295,7 +295,7 @@ classes:
 #    - decl: DataGroup const* getOwningGroup() const
     - decl: TypeID getTypeID() const
     - decl: size_t getTotalBytes() const
-    - decl: size_t getNumberOfElements() const
+    - decl: size_t getNumElements() const
 #    - decl: void info(Node& n) const
     - decl: void print() const
 

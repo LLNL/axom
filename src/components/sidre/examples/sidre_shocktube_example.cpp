@@ -421,7 +421,7 @@ void ComputeFaceInfo(DataGroup * const prob)
   float64 * const F0 = face->getView("F0")->getValue();
   float64 * const F1 = face->getView("F1")->getValue();
   float64 * const F2 = face->getView("F2")->getValue();
-  int numFaces = face->getView("F0")->getNumberOfElements();
+  int numFaces = face->getView("F0")->getNumElements();
 
   DataGroup * const elem = prob->getGroup("elem");
   float64 * const mass = elem->getView("mass")->getValue();
@@ -517,7 +517,7 @@ void UpdateElemInfo(DataGroup * const prob)
   int32 * const elemToFace = tube->getView("elemToFace")->getValue();
 
 //  Relation &elemToFace = *tube->relation("elemToFace");
-  int numTubeElems = tube->getView("mapToElems")->getNumberOfElements();
+  int numTubeElems = tube->getView("mapToElems")->getNumElements();
 
 //  int *is = tube->map();
   int32 * const is = tube->getView("mapToElems")->getValue();
@@ -588,7 +588,7 @@ void DumpUltra( DataGroup * const prob)
   for(size_t i=0 ; i<prob->getNumViews() ; i++)
   {
     DataView * const view = prob->getView(i);
-    const int length = view->getNumberOfElements();
+    const int length = view->getNumElements();
     const std::string& name = view->getName();
     if( length <= 1 )
     {
@@ -613,7 +613,7 @@ void DumpUltra( DataGroup * const prob)
   for(size_t i=0 ; i<elem->getNumViews() ; i++)
   {
     DataView * const view = elem->getView(i);
-    const int length = view->getNumberOfElements();
+    const int length = view->getNumElements();
     const std::string& name = view->getName();
     fprintf(fp, "# %s\n", name.c_str() );
 

@@ -108,13 +108,13 @@ return rv;
 // splicer end class.DataBuffer.method.get_type_id
 }
 
-size_t ATK_databuffer_get_number_of_elements(ATK_databuffer * self)
+size_t ATK_databuffer_get_num_elements(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.get_number_of_elements
-size_t rv = selfobj->getNumberOfElements();
+// splicer begin class.DataBuffer.method.get_num_elements
+size_t rv = selfobj->getNumElements();
 return rv;
-// splicer end class.DataBuffer.method.get_number_of_elements
+// splicer end class.DataBuffer.method.get_num_elements
 }
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self)

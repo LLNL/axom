@@ -211,12 +211,12 @@ TEST(C_sidre_opaque,meshvar)
 
     int num_zone_vals = AA_get_num_vals(zonemv, dom_ext);
     ATK_dataview * dom_zone_data_view = ATK_datagroup_get_view_from_name(dom_gp, "zone_data");
-    int test_num_zone_vals = ATK_dataview_get_number_of_elements(dom_zone_data_view);
+    int test_num_zone_vals = ATK_dataview_get_num_elements(dom_zone_data_view);
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = AA_get_num_vals(nodemv, dom_ext);
     ATK_dataview * dom_node_data_view = ATK_datagroup_get_view_from_name(dom_gp, "node_data");
-    int test_num_node_vals = ATK_dataview_get_number_of_elements(dom_node_data_view);
+    int test_num_node_vals = ATK_dataview_get_num_elements(dom_node_data_view);
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }

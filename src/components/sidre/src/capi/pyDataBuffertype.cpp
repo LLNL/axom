@@ -258,20 +258,20 @@ PY_databuffer_get_type_id(
 // splicer end class.DataBuffer.method.get_type_id
 }
 
-static char PY_databuffer_get_number_of_elements__doc__[] =
+static char PY_databuffer_get_num_elements__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_databuffer_get_number_of_elements(
+PY_databuffer_get_num_elements(
   PY_DataBuffer *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.get_number_of_elements
-    size_t rv = self->BBB->getNumberOfElements();
+// splicer begin class.DataBuffer.method.get_num_elements
+    size_t rv = self->BBB->getNumElements();
     return PyInt_FromLong(rv);
-// splicer end class.DataBuffer.method.get_number_of_elements
+// splicer end class.DataBuffer.method.get_num_elements
 }
 
 static char PY_databuffer_get_total_bytes__doc__[] =
@@ -356,7 +356,7 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"isExternal", (PyCFunction)PY_databuffer_is_external, METH_NOARGS, PY_databuffer_is_external__doc__},
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
 {"getTypeID", (PyCFunction)PY_databuffer_get_type_id, METH_NOARGS, PY_databuffer_get_type_id__doc__},
-{"getNumberOfElements", (PyCFunction)PY_databuffer_get_number_of_elements, METH_NOARGS, PY_databuffer_get_number_of_elements__doc__},
+{"getNumElements", (PyCFunction)PY_databuffer_get_num_elements, METH_NOARGS, PY_databuffer_get_num_elements__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
 {"allocate", (PyCFunction)PY_databuffer_allocate, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate__doc__},

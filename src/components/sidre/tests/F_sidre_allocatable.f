@@ -42,7 +42,7 @@ contains
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     do i=1,10
@@ -82,7 +82,7 @@ contains
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 0)
 
     ! Allocate array via datastore
@@ -99,7 +99,7 @@ contains
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
@@ -144,7 +144,7 @@ contains
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_INT_T)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
@@ -178,7 +178,7 @@ contains
     type = view%get_type_id()
 !XXX    call assert_equals(type, ATK_C_DOUBLE_T)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     do i=1,10

@@ -453,8 +453,8 @@ contains
 !--       v2_vals(i) = i * 3.1415
     enddo
 
-    call assert_true(view1%get_number_of_elements() == 10)
-!--    call assert_equals(view2%get_number_of_elements(), 10)
+    call assert_true(view1%get_num_elements() == 10)
+!--    call assert_equals(view2%get_num_elements(), 10)
 !--    call assert_equals(view1%get_total_bytes(), 10 * sizeof(int))
 !--    call assert_equals(view2%get_total_bytes(), 10 * sizeof(double))
 

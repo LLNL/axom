@@ -242,12 +242,12 @@ contains
 
        num_zone_vals = zonemv%getNumVals(dom_ext)
        tmpview = dom_gp%get_view("zone_data")
-       test_num_zone_vals = tmpview%get_number_of_elements()
+       test_num_zone_vals = tmpview%get_num_elements()
        call assert_equals(num_zone_vals, test_num_zone_vals)
 
        num_node_vals = nodemv%getNumVals(dom_ext)
        tmpview = dom_gp%get_view("node_data")
-       test_num_node_vals = tmpview%get_number_of_elements()
+       test_num_node_vals = tmpview%get_num_elements()
        call assert_equals(num_node_vals, test_num_node_vals)
     enddo
 

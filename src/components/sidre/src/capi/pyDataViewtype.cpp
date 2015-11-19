@@ -301,20 +301,20 @@ PY_dataview_get_total_bytes(
 // splicer end class.DataView.method.get_total_bytes
 }
 
-static char PY_dataview_get_number_of_elements__doc__[] =
+static char PY_dataview_get_num_elements__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_dataview_get_number_of_elements(
+PY_dataview_get_num_elements(
   PY_DataView *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.get_number_of_elements
-    size_t rv = self->BBB->getNumberOfElements();
+// splicer begin class.DataView.method.get_num_elements
+    size_t rv = self->BBB->getNumElements();
     return PyInt_FromLong(rv);
-// splicer end class.DataView.method.get_number_of_elements
+// splicer end class.DataView.method.get_num_elements
 }
 
 static char PY_dataview_print__doc__[] =
@@ -386,7 +386,7 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getOwningGroup", (PyCFunction)PY_dataview_get_owning_group, METH_NOARGS, PY_dataview_get_owning_group__doc__},
 {"getTypeID", (PyCFunction)PY_dataview_get_type_id, METH_NOARGS, PY_dataview_get_type_id__doc__},
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},
-{"getNumberOfElements", (PyCFunction)PY_dataview_get_number_of_elements, METH_NOARGS, PY_dataview_get_number_of_elements__doc__},
+{"getNumElements", (PyCFunction)PY_dataview_get_num_elements, METH_NOARGS, PY_dataview_get_num_elements__doc__},
 {"print", (PyCFunction)PY_dataview_print, METH_NOARGS, PY_dataview_print__doc__},
 {"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
 // splicer begin class.DataView.PyMethodDef

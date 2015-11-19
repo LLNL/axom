@@ -443,7 +443,7 @@ subroutine ComputeFaceInfo(prob)
   tmpview = face%get_view("F2")
   call tmpview%get_value(F2)
 
-  numFaces = tmpview%get_number_of_elements()
+  numFaces = tmpview%get_num_elements()
 
   elem = prob%get_group("elem")
   tmpview = elem%get_view("mass")
@@ -575,7 +575,7 @@ subroutine UpdateElemInfo(prob)
 !--//  int *is = tube%map()
   tmpview = tube%get_view("mapToElems")
   call tmpview%get_value(is)
-  numTubeElems = tmpview%get_number_of_elements()
+  numTubeElems = tmpview%get_num_elements()
 
 
   ! The element update is calculated as the flux between faces
@@ -643,7 +643,7 @@ subroutine DumpUltra( prob )
 
   do i=1, prob%get_num_views()
      view = prob%get_view(i-1)
-     length = view%get_number_of_elements()
+     length = view%get_num_elements()
      call view%get_name(name)
      if ( length <= 1 ) then
         select case (view%get_type_id())
@@ -659,7 +659,7 @@ subroutine DumpUltra( prob )
 
   do i=1, elem%get_num_views()
      view = elem%get_view(i-1)
-     length = view%get_number_of_elements()
+     length = view%get_num_elements()
      call view%get_name(name)
      write(fp, '("# ", a)') trim(name)
 

@@ -219,11 +219,11 @@ TEST(sidre_opaque,meshvar)
     MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
-    int test_num_zone_vals = dom_gp->getView("zone_data")->getNumberOfElements();
+    int test_num_zone_vals = dom_gp->getView("zone_data")->getNumElements();
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = nodemv->getNumVals(dom_ext);
-    int test_num_node_vals = dom_gp->getView("node_data")->getNumberOfElements();
+    int test_num_node_vals = dom_gp->getView("node_data")->getNumElements();
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }
