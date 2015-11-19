@@ -111,18 +111,25 @@ DataView * DataView::declare(const DataType& dtype)
  */
 DataView * DataView::allocate()
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call allocate on an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT( allocationIsValid() );
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocationIsValid() ) 
   {
-    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-    SidreLength numelems = m_schema.dtype().number_of_elements();
-    m_data_buffer->allocate(type, numelems);
-    apply();
-  }
+    if ( m_data_buffer == ATK_NULLPTR ) 
+    {
+       m_data_buffer = m_owning_group->getDataStore()->createBuffer();
+       m_data_buffer->attachView(this);
+    }
+
+    if ( m_data_buffer->getNumViews() == 1 )
+    {
+      TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+      SidreLength numelems = m_schema.dtype().number_of_elements();
+      m_data_buffer->allocate(type, numelems);
+      apply();  
+    }
+  } 
+
   return this;
 }
 
@@ -135,38 +142,12 @@ DataView * DataView::allocate()
  */
 DataView * DataView::allocate( TypeID type, SidreLength len)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an opaque view");
+  SLIC_ASSERT( allocationIsValid() ); 
   SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 ) 
+  if ( allocationIsValid() && len >= 0 )
   {
     declare(type, len);
-    allocate();
-    apply();
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare a data view as a Conduit schema and allocate the data.
- *
- *************************************************************************
- */
-DataView * DataView::allocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
-
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
-  {
-    declare(schema);
     allocate();
     apply();
   }
@@ -182,14 +163,31 @@ DataView * DataView::allocate(const Schema& schema)
  */
 DataView * DataView::allocate(const DataType& dtype)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT( allocationIsValid() );
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocationIsValid() )
   {
     declare(dtype);
+    allocate();
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Declare a data view as a Conduit schema and allocate the data.
+ *
+ *************************************************************************
+ */
+DataView * DataView::allocate(const Schema& schema)
+{
+  SLIC_ASSERT( allocationIsValid() ); 
+
+  if ( allocationIsValid() )
+  {
+    declare(schema);
     allocate();
     apply();
   }
@@ -205,13 +203,10 @@ DataView * DataView::allocate(const DataType& dtype)
  */
 DataView * DataView::reallocate(SidreLength len)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an opaque view");
+  SLIC_ASSERT( allocationIsValid() ); 
   SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements in view >=0");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data reallocation on a view allowed only if it's the only view associated with its buffer");
 
-  if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 )
+  if ( allocationIsValid() && len >= 0 )
   {
     // preserve current type
     TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
@@ -225,27 +220,24 @@ DataView * DataView::reallocate(SidreLength len)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit schema.
+ * Reallocate the data view's buffer according to a Conduit data type.
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(const Schema& schema)
+DataView * DataView::reallocate(const DataType& dtype)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data reallocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT( allocationIsValid() ); 
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocationIsValid() )
   {
-    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    TypeID type = static_cast<TypeID>(dtype.id());
     TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
     SLIC_ASSERT_MSG( type == view_type,
 		     "Attempting to reallocate with a different type");
     if (type == view_type)
     {
-      declare(schema);
-      SidreLength numelems = schema.dtype().number_of_elements();
+      declare(dtype);
+      SidreLength numelems = dtype.number_of_elements();
       m_data_buffer->reallocate(numelems);
       apply();
     }
@@ -256,27 +248,24 @@ DataView * DataView::reallocate(const Schema& schema)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit data type.
+ * Reallocate the data view's buffer according to a Conduit schema.
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(const DataType& dtype)
+DataView * DataView::reallocate(const Schema& schema)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data reallocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT( allocationIsValid() ); 
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocationIsValid() )
   {
-    TypeID type = static_cast<TypeID>(dtype.id());
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
     TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
     SLIC_ASSERT_MSG( type == view_type,
 		     "Attempting to reallocate with a different type");
     if (type == view_type)
     {
-      declare(dtype);
-      SidreLength numelems = dtype.number_of_elements();
+      declare(schema);
+      SidreLength numelems = schema.dtype().number_of_elements();
       m_data_buffer->reallocate(numelems);
       apply();
     }
@@ -426,6 +415,24 @@ void DataView::print(std::ostream& os) const
 /*
  *************************************************************************
  *
+ * PRIVATE ctor for DataView not associated with any data. 
+ *
+ *************************************************************************
+ */
+DataView::DataView( const std::string& name,
+                    DataGroup * const owning_group)
+  :   m_name(name),
+  m_owning_group(owning_group),
+  m_data_buffer(ATK_NULLPTR),
+  m_schema(),
+  m_node(),
+  m_is_opaque(false),
+  m_is_applied(false)
+{}
+
+/*
+ *************************************************************************
+ *
  * PRIVATE ctor for DataView associated with DataBuffer.
  *
  *************************************************************************
@@ -478,6 +485,19 @@ DataView::~DataView()
   {
     m_data_buffer->detachView(this);
   }
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to check whether allocation on view is a valid operation.
+ *
+ *************************************************************************
+ */
+bool DataView::allocationIsValid() const
+{
+   return ( !isOpaque() && (m_data_buffer == ATK_NULLPTR || 
+                            m_data_buffer->getNumViews() == 1) );
 }
 
 

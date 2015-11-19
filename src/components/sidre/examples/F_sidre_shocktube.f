@@ -101,8 +101,7 @@ contains
     integer(C_INT) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_buffer(name, ATK_C_INT_T, 1)
-    call tmpview%allocate()
+    tmpview = grp%create_view_and_allocate(name, ATK_C_INT_T, 1)
     call tmpview%set_value(value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
@@ -113,8 +112,7 @@ contains
     real(C_DOUBLE) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_buffer(name, ATK_C_DOUBLE_T, 1)
-    call tmpview%allocate()
+    tmpview = grp%create_view_and_allocate(name, ATK_C_DOUBLE_T, 1)
     call tmpview%set_value(value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
 
@@ -262,11 +260,9 @@ subroutine CreateShockTubeMesh(prob)
   numTubeElems = numElems - 2
   tube = elem%create_group("tube")
 
-  mapToElemsView = tube%create_view_and_buffer("mapToElems", ATK_C_INT_T, numTubeElems)
-  call mapToElemsView%allocate()
+  mapToElemsView = tube%create_view_and_allocate("mapToElems", ATK_C_INT_T, numTubeElems)
 
   call mapToElemsView%get_value(mapToElems)
-!--  allocate(mapToElem(nuMTubeElems))
 
   do k=1, numTubeElems
     mapToElems(k) = k  ! XXX + 1
@@ -276,11 +272,9 @@ subroutine CreateShockTubeMesh(prob)
 
   ! Each face connects to two elements
 
-  faceToElemView = face%create_view_and_buffer("faceToElem", ATK_C_INT_T, 2*numFaces)
-  call faceToElemView%allocate()
+  faceToElemView = face%create_view_and_allocate("faceToElem", ATK_C_INT_T, 2*numFaces)
 
   call faceToElemView%get_value(faceToElem)
-!--  allocate(faceToElem(2, numFaces))
 
   do i=1, numFaces
     faceToElem((i-1) * 2 + IUPWIND) = i - 1 ! XXX
@@ -290,10 +284,8 @@ subroutine CreateShockTubeMesh(prob)
   ! Each element connects to two faces
 !--//  Relation &elemToFace = *tube%relationCreate("elemToFace", 2)
 !  dims(0) = numElems
-  elemToFaceView = tube%create_view_and_buffer("elemToFace", ATK_C_INT_T, 2*numElems);
-  call elemToFaceView%allocate()
+  elemToFaceView = tube%create_view_and_allocate("elemToFace", ATK_C_INT_T, 2*numElems);
   call elemToFaceView%get_value(elemToFace)
-!!  allocate(elemToFace(2, numElems))
 
   do i=1, numElems
     elemToFace((i-1) * 2 + IUPWIND) = i  - 1! XXX ! same map as above by coincidence
@@ -338,20 +330,16 @@ subroutine InitializeShockTube(prob)
 
   ! Create element centered quantities
 
-  tmpview = elem%create_view_and_buffer("mass")
-  call tmpview%allocate(ATK_C_DOUBLE_T, numElems)
+  tmpview = elem%create_view_and_allocate("mass", ATK_C_DOUBLE_T, numElems)
   call tmpview%get_value(mass)
 
-  tmpview = elem%create_view_and_buffer("momentum", ATK_C_DOUBLE_T, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_allocate("momentum", ATK_C_DOUBLE_T, numElems)
   call tmpview%get_value(momentum)
 
-  tmpview = elem%create_view_and_buffer("energy", ATK_C_DOUBLE_T, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_allocate("energy", ATK_C_DOUBLE_T, numElems)
   call tmpview%get_value(energy)
 
-  tmpview = elem%create_view_and_buffer("pressure", ATK_C_DOUBLE_T, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_allocate("pressure", ATK_C_DOUBLE_T, numElems)
   call tmpview%get_value(pressure)
 !!  allocate(mass(numElems))
 !!  allocate(momentum(numElems))
@@ -359,12 +347,9 @@ subroutine InitializeShockTube(prob)
 !!  allocate(pressure(numElems))
 
   ! Create face centered quantities
-  tmpview = face%create_view_and_buffer("F0", ATK_C_DOUBLE_T, numFaces)
-  call tmpview%allocate()
-  tmpview = face%create_view_and_buffer("F1", ATK_C_DOUBLE_T, numFaces)
-  call tmpview%allocate()
-  tmpview = face%create_view_and_buffer("F2", ATK_C_DOUBLE_T, numFaces)
-  call tmpview%allocate()
+  tmpview = face%create_view_and_allocate("F0", ATK_C_DOUBLE_T, numFaces)
+  tmpview = face%create_view_and_allocate("F1", ATK_C_DOUBLE_T, numFaces)
+  tmpview = face%create_view_and_allocate("F2", ATK_C_DOUBLE_T, numFaces)
 !!  allocate(F0(numFaces))
 !!  allocate(F1(numFaces))
 !!  allocate(F2(numFaces))

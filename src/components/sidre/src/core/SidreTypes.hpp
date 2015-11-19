@@ -64,7 +64,7 @@ inline bool isNameValid(const std::string& name)
  * \brief Enum that holds the numeric data type id options for sidre types.
  */
 
-typedef enum DataTypeId
+enum DataTypeId
 {    
     EMPTY_ID = SIDRE_EMPTY_ID,
     INT8_ID  = SIDRE_INT8_ID,
@@ -87,7 +87,7 @@ typedef enum DataTypeId
     ULONG_ID = SIDRE_ULONG_ID,
     FLOAT_ID = SIDRE_FLOAT_ID,
     DOUBLE_ID = SIDRE_DOUBLE_ID
-} DataTypeId;
+};
 
 
 /*!

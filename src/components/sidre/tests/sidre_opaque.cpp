@@ -190,11 +190,11 @@ TEST(sidre_opaque,meshvar)
     dom_gp->createOpaqueView("ext", dom_ext);
 
     MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
-    DataView * dom_zone_view = dom_gp->createViewAndBuffer("zone_data");
+    DataView * dom_zone_view = dom_gp->createView("zone_data");
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
     MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
-    DataView * dom_node_view = dom_gp->createViewAndBuffer("node_data");
+    DataView * dom_node_view = dom_gp->createView("node_data");
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
   }

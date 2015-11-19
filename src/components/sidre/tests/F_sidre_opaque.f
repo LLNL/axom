@@ -208,13 +208,13 @@ contains
        zonemv_ptr = zone_mv_view%get_opaque()
        call c_f_pointer(zonemv_ptr, zonemv)
 
-       dom_zone_view = dom_gp%create_view_and_buffer("zone_data")
+       dom_zone_view = dom_gp%create_view_empty("zone_data")
        call dom_zone_view%allocate(ATK_C_INT_T, zone_mv%getNumVals(dom_ext))
 
        nodemv_ptr = node_mv_view%get_opaque()
        call c_f_pointer(nodemv_ptr, nodemv)
 
-       dom_node_view = dom_gp%create_view_and_buffer("node_data")
+       dom_node_view = dom_gp%create_view_empty("node_data")
        call dom_node_view%allocate(ATK_C_DOUBLE_T, nodemv%getNumVals(dom_ext))
     enddo
 
