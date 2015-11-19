@@ -76,14 +76,14 @@ module tutorial_mod
             real(C_DOUBLE) :: rv
         end function tut_function2
         
-        function tut_sum(len, values) result(rv) &
+        subroutine tut_sum(len, values, result) &
                 bind(C, name="TUT_sum")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: len
             integer(C_INT), intent(IN) :: values(*)
-            integer(C_INT) :: rv
-        end function tut_sum
+            integer(C_INT), value, intent(IN) :: result
+        end subroutine tut_sum
         
         function tut_function3(arg) result(rv) &
                 bind(C, name="TUT_function3")
@@ -283,18 +283,19 @@ contains
         ! splicer end function2
     end function function2
     
-    function sum(len, values) result(rv)
+    subroutine sum(len, values, result)
         use iso_c_binding
         implicit none
         integer(C_INT) :: len
         integer(C_INT) :: values(*)
-        integer(C_INT) :: rv
+        integer(C_INT) :: result
         ! splicer begin sum
-        rv = tut_sum(  &
+        call tut_sum(  &
             len,  &
-            values)
+            values,  &
+            result)
         ! splicer end sum
-    end function sum
+    end subroutine sum
     
     function function3(arg) result(rv)
         use iso_c_binding

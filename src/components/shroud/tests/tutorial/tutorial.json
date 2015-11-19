@@ -212,10 +212,19 @@
                     }, 
                     "name": "values", 
                     "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "ptr": true, 
+                        "value": true
+                    }, 
+                    "name": "result", 
+                    "type": "int"
                 }
             ], 
             "attrs": {}, 
-            "decl": "int Sum(int len, int *values+dimension)", 
+            "decl": "void Sum(int len, int *values+dimension, int *result)", 
             "fmt": {
                 "C_name": "TUT_sum", 
                 "F_C_name": "tut_sum", 
@@ -231,7 +240,7 @@
             "result": {
                 "attrs": {}, 
                 "name": "Sum", 
-                "type": "int"
+                "type": "void"
             }
         }, 
         {

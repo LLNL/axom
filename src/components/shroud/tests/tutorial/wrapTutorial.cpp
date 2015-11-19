@@ -23,11 +23,11 @@ return rv;
 // splicer end function.function2
 }
 
-int TUT_sum(int len, int * values)
+void TUT_sum(int len, int * values, int * result)
 {
 // splicer begin function.sum
-int rv = Sum(len, values);
-return rv;
+Sum(len, values, result);
+return;
 // splicer end function.sum
 }
 

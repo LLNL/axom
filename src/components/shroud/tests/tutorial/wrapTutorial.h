@@ -19,7 +19,7 @@ void TUT_function1();
 
 double TUT_function2(double arg1, int arg2);
 
-int TUT_sum(int len, int * values);
+void TUT_sum(int len, int * values, int * result);
 
 bool TUT_function3(bool arg);
 
