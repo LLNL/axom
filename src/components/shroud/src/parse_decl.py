@@ -25,9 +25,6 @@ name = < (letter | '_') (letter | digit | '_' | ':')* >
 #type = name:t ?( t in types ) ^(C-type) -> t
 type = name:t
 
-string = (('"' | "'"):q <(~exactly(q) anything)*>:xs exactly(q))
-                     -> xs
-
 digits = <digit*>
 floatPart :sign :ds = <('.' digits exponent?) | exponent>:tail
                      -> float(sign + ds + tail)
@@ -36,9 +33,14 @@ exponent = ('e' | 'E') ('+' | '-')? digits
 number = spaces ('-' | -> ''):sign (digits:ds (floatPart(sign ds)
                                                | -> int(sign + ds)))
 
+string = (('"' | "'"):q <(~exactly(q) anything)*>:xs exactly(q))
+                     -> xs
+
+parens = <'('  (~')' anything)* ')'>
+
 value = name | string | number
 
-attr = '+' ws name:n ( '=' value | -> True ):v
+attr = '+' ws name:n ( ('=' value) | parens | -> True ):v
         -> (n,v)
 
 qualifier = 'const' -> [('const', True)]
@@ -103,9 +105,11 @@ if __name__ == '__main__':
         "+d1=-12.0",
         "+d2=11.3e-10",
         "+d3=11e10",
+        "+intent()",
+        "+intent(in)",
         "+dimension",
-#        "+dimension(*)",
-#        "+dimension(len)",
+        "+dimension(*)",
+        "+dimension(len)",
         ]:
         r = x(test).attr()
         print('attr: "{0}"'.format(test))
