@@ -49,7 +49,7 @@ module sidre_mod
     ! conduit non-bitwidth int maps to conduit int32
     integer, parameter :: ATK_C_INT_T = 5
     ! conduit non-bitwidth long maps to conduit int64
-    integer, parameter :: ATK_C_LONG_T = 9
+    integer, parameter :: ATK_C_LONG_T = 6
     ! conduit non-bitwidth float maps to conduit float32
     integer, parameter :: ATK_C_FLOAT_T = 11
     ! conduit non-bitwidth double maps to conduit float64
