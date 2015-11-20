@@ -224,7 +224,7 @@
                 }
             ], 
             "attrs": {}, 
-            "decl": "void Sum(int len, int *values+dimension, int *result+intent(out))", 
+            "decl": "void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))", 
             "fmt": {
                 "C_name": "TUT_sum", 
                 "F_C_name": "tut_sum", 
@@ -331,7 +331,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -342,7 +342,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -430,7 +430,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -441,7 +441,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -555,7 +555,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "name", 
                     "type": "std::string"

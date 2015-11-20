@@ -88,7 +88,7 @@
                                 "intent": "in", 
                                 "len_trim": true, 
                                 "ptr": true, 
-                                "value": true
+                                "value": false
                             }, 
                             "name": "name", 
                             "type": "string"
@@ -556,7 +556,7 @@
                                 "intent": "in", 
                                 "len_trim": true, 
                                 "ptr": true, 
-                                "value": true
+                                "value": false
                             }, 
                             "name": "name", 
                             "type": "string"
@@ -669,6 +669,7 @@
                     "args": [
                         {
                             "attrs": {
+                                "const": true, 
                                 "intent": "in", 
                                 "ptr": true, 
                                 "value": true
@@ -678,7 +679,7 @@
                         }
                     ], 
                     "attrs": {}, 
-                    "decl": "ExClass1 *get_class1(ExClass1 *in)", 
+                    "decl": "ExClass1 *get_class1(const ExClass1 *in)", 
                     "fmt": {
                         "C_name": "AA_exclass2_get_class1", 
                         "F_C_name": "aa_exclass2_get_class1", 
@@ -1308,7 +1309,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "name", 
                     "type": "std::string"

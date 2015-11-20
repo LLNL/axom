@@ -34,7 +34,7 @@ const char * AA_exclass2_get_name(const AA_exclass2 * self);
 
 int AA_exclass2_get_name_length(AA_exclass2 * self);
 
-AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in);
+AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, const AA_exclass1 * in);
 
 void AA_exclass2_declare(AA_exclass2 * self, int type, ATK_SidreLength len);
 

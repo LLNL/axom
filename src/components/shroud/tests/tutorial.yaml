@@ -7,7 +7,7 @@ options:
 functions:
 - decl: void Function1()
 - decl: double Function2(double arg1, int arg2)
-- decl: void Sum(int len, int *values+dimension,
+- decl: void Sum(int len, int *values+dimension+intent(in),
                  int *result+intent(out))
 - decl: bool Function3(bool arg)
 - decl: const std::string& Function4a(

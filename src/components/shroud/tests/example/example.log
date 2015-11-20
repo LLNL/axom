@@ -25,7 +25,7 @@ C method ExClass2 *ExClass2 (const string *name) +constructor
 C method void delete() +destructor
 C method const string& getName const
 C method GetNameLength
-C method ExClass1 *get_class1(ExClass1 *in)
+C method ExClass1 *get_class1(const ExClass1 *in)
 C method void* declare(TypeID type, SidreLength len = 1)
 C method void destroyall()
 C method TypeID getTypeID() const
@@ -65,7 +65,7 @@ C-interface method ExClass2 *ExClass2 (const string *name) +constructor
 C-interface, Fortran method void delete() +destructor
 C-interface, Fortran method const string& getName const
 C-interface, Fortran method GetNameLength
-C-interface, Fortran method ExClass1 *get_class1(ExClass1 *in)
+C-interface, Fortran method ExClass1 *get_class1(const ExClass1 *in)
 C-interface method void* declare(TypeID type, SidreLength len = 1)
 Fortran method void* declare(TypeID type, SidreLength len = 1)
 Fortran method void* declare(TypeID type, SidreLength len = 1)
@@ -103,7 +103,7 @@ Python method ExClass2 *ExClass2 (const string *name) +constructor
 Python method void delete() +destructor
 Python method const string& getName const
 Python method GetNameLength
-Python method ExClass1 *get_class1(ExClass1 *in)
+Python method ExClass1 *get_class1(const ExClass1 *in)
 Python method void* declare(TypeID type, SidreLength len = 1)
 Python method void destroyall()
 Python method TypeID getTypeID() const

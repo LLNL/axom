@@ -143,7 +143,7 @@ classes:
           C_code: return selfobj->getName().length();
 
     # test forward declarations
-    - decl: ExClass1 *get_class1(ExClass1 *in)
+    - decl: ExClass1 *get_class1(const ExClass1 *in)
 
     # typedefs that require modules
     - decl: void* declare(TypeID type, SidreLength len = 1)

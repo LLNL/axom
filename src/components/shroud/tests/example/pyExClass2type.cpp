@@ -202,7 +202,7 @@ PP_exclass2_get_class1(
 {
 // splicer begin class.ExClass2.method.get_class1
     PP_ExClass1 * in;
-    ExClass1 * in_ptr;
+    const ExClass1 * in_ptr;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     

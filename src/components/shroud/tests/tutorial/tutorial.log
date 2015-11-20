@@ -8,7 +8,7 @@ Close wrapClass1.h
 Close wrapClass1.cpp
 C function void Function1()
 C function double Function2(double arg1, int arg2)
-C function void Sum(int len, int *values+dimension, int *result+intent(out))
+C function void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))
 C function bool Function3(bool arg)
 C function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
 C function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
@@ -32,7 +32,7 @@ C-interface, Fortran method void delete()  +destructor
 C-interface, Fortran method void Method1()
 C-interface, Fortran function void Function1()
 C-interface, Fortran function double Function2(double arg1, int arg2)
-C-interface, Fortran function void Sum(int len, int *values+dimension, int *result+intent(out))
+C-interface, Fortran function void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))
 C-interface, Fortran function bool Function3(bool arg)
 C-interface, Fortran function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
 C-interface function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
@@ -58,7 +58,7 @@ Python method void Method1()
 Close pyClass1type.cpp
 Python function void Function1()
 Python function double Function2(double arg1, int arg2)
-Python function void Sum(int len, int *values+dimension, int *result+intent(out))
+Python function void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))
 Python function bool Function3(bool arg)
 Python function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
 Python function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )

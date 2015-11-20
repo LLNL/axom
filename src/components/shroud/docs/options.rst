@@ -80,6 +80,7 @@ value
 intent
 
    IN, OUT, INOUT
+   If the argument is ``const``, the default is IN.
 
 ptr
 

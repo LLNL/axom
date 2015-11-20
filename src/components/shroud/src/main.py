@@ -663,7 +663,7 @@ class VerifyAttrs(object):
                else True (pass-by-value).
         """
         options = node['options']
-        if not options.wrap_fortran:
+        if not options.wrap_fortran and not options.wrap_c:
             return
 
         for arg in node['args']:
@@ -677,7 +677,15 @@ class VerifyAttrs(object):
 
             # intent
             intent = attrs.get('intent', None)
-            if intent is not None:
+            if intent is None:
+                if not is_ptr:
+                    attrs['intent'] = 'in'
+                elif attrs.get('const', False):
+                    attrs['intent'] = 'in'
+                else:
+                    attrs['intent'] = 'inout'  # Fortran default
+                    attrs['intent'] = 'in' # must coordinate with VALUE
+            else:
                 intent = intent.lower()
                 if intent[0] == '(' and intent[-1] == ')':
                     intent = intent[1:-1]
@@ -686,6 +694,7 @@ class VerifyAttrs(object):
                 else:
                     raise RuntimeError(
                         "Bad value for intent: " + attrs['intent'])
+
             # value
             value = attrs.get('value', None)
             if value is None:

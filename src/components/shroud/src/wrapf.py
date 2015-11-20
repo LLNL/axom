@@ -447,8 +447,6 @@ class Wrapf(util.WrapperMixin):
                     raise RuntimeError("dimension attribute can only be used on pointer and references")
             elif 'value' not in attrs:
                 attrs['value'] = True
-            if 'intent' not in attrs:
-                attrs['intent'] = 'in'
 
             # argument names
             if arg_typedef.f_c_args:
@@ -581,8 +579,6 @@ class Wrapf(util.WrapperMixin):
             # default argument's intent
             # XXX look at const, ptr
             attrs = arg['attrs']
-            if 'intent' not in attrs:
-                attrs['intent'] = 'in'
             if 'value' not in attrs:
                 attrs['value'] = True
 
