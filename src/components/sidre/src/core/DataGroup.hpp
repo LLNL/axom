@@ -301,7 +301,7 @@ public:
 
 
 //@{
-//!  @name DataView manipulation methods (create, destroy, copy, move, etc.)
+//!  @name DataView creation and data allocation methods.
 
   /*!
    * \brief Create DataView object with given name, data type, and 
@@ -349,6 +349,12 @@ public:
   DataView * createViewAndAllocate( const std::string& name,
                                     const Schema& schema);
 
+//@}
+
+
+//@{
+//!  @name DataView creation and define view of data methods (no allocation). 
+
   /*!
    * \brief Create an uninitialized DataView object with given name and 
    *        attach new view to this group object.
@@ -369,6 +375,12 @@ public:
   // RDH TODO -- add createView(name, dtype) method 
 
   // RDH TODO -- add createView(namem schema) method 
+
+//@}
+
+
+//@{
+//!  @name DataView creation and attach to buffer methods. 
 
   /*!
    * \brief Create DataView object (for view into given buffer) with
@@ -421,6 +433,12 @@ public:
   DataView * createView( const std::string& name,
                          DataBuffer * buff,
                          const Schema& schema);
+
+//@}
+
+
+//@{
+//!  @name DataView creation methods for views into opaque and external data.
 
   /*!
    * \brief Create opaque DataView with given name to hold data
@@ -495,6 +513,12 @@ public:
                                  void * external_data,
                                  const Schema& schema );
 
+//@}
+
+
+//@{
+//!  @name DataView destruction methods.
+
   /*!
    * \brief Destroy view in this DataGroup with given name and leave its
    *        associated DataBuffer intact, if it has a buffer.
@@ -530,6 +554,12 @@ public:
    *        associated DataBuffer objects.
    */
   void destroyViewsAndData();
+
+//@}
+
+
+//@{
+//!  @name DataView move and copy methods.
 
   /*!
    * \brief Remove DataView object from its owning group and attach
@@ -677,7 +707,7 @@ public:
 
 
 //@{
-//!  @name DataGroup manipulation methods (create, destroy, copy, move, etc.)
+//!  @name (child) DataGroup create and destroy methods.
 
   /*!
    * \brief Create a DataGroup object with given name and attach as a
@@ -708,6 +738,12 @@ public:
    * child groups in this DataGroup.
    */
   void destroyGroups();
+
+//@}
+
+
+//@{
+//!  @name (child) DataGroup move and copy methods.
 
   /*!
    * \brief Remove DataGroup object from its parent group and attach
@@ -741,10 +777,8 @@ public:
 //@}
 
 
-  /*!
-   * \brief Copy data group description to given Conduit node.
-   */
-  void info(Node& n) const;
+//@{
+//!  @name DataGroup print methods.
 
   /*!
    * \brief Print JSON description of data group to stdout.
@@ -769,6 +803,11 @@ public:
    */
   void printTree( const int nlevels, std::ostream& os ) const;
 
+//@}
+
+
+//@{
+//!  @name DataGroup save and load methods (basic file I/O).
 
   /*!
    * \brief Save this DataGroup object (including data views and child
@@ -788,7 +827,18 @@ public:
   void load(const std::string& obase,
             const std::string& protocol);
 
+//@}
+
+  /*!
+   * \brief Copy data group description to given Conduit node.
+   */
+  void info(Node& n) const;
+
 private:
+
+//@{
+//!  @name Private DataGroup ctors and dtors 
+//!        (callable only by DataStore and DataGroup methods).
 
   /*!
    *  \brief Private ctor that creates a Group with given name
@@ -821,6 +871,12 @@ private:
    */
   ~DataGroup();
 
+//@}
+
+
+//@{
+//!  @name Private DataGroup view and buffer manipulation methods.
+
   /*!
    * \brief Private method to create DataView and DataBuffer and 
    *        attach view to buffer.
@@ -835,15 +891,6 @@ private:
   DataView * detachView(const std::string& name);
   ///
   DataView * detachView(IndexType idx);
-
-  /*!
-   * \brief Private methods to attach/detach DataGroup object to DataGroup.
-   */
-  DataGroup * attachGroup(DataGroup * group);
-  ///
-  DataGroup * detachGroup(const std::string& name);
-  ///
-  DataGroup * detachGroup(IndexType idx);
 
 #ifdef ATK_ENABLE_FORTRAN
   /*!
@@ -866,6 +913,27 @@ private:
                                                     char * name, int lname,
                                                     void * array, int type, int rank);
 #endif
+
+//@}
+
+
+//@{
+//!  @name DataGroup (child) group manipulation methods.
+
+  /*!
+   * \brief Private methods to attach/detach DataGroup object to DataGroup.
+   */
+  DataGroup * attachGroup(DataGroup * group);
+  ///
+  DataGroup * detachGroup(const std::string& name);
+  ///
+  DataGroup * detachGroup(IndexType idx);
+
+//@}
+
+
+//@{
+//!  @name Private DataGroup methods for interacting with Conduit Nodes.
 
   /*!
    * \brief Private methods to copy DataGroup to/from Conduit Node.
@@ -892,6 +960,7 @@ private:
   void copyFromNode(Node& n,
                     std::map<IndexType, IndexType>& id_map);
 
+//@}
 
 
   /// Name of this DataGroup object.

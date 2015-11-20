@@ -88,7 +88,7 @@ public:
 //!  @name DataView declaration methods
 
 // RDH TODO -- Remove declaration methods from the public interface, since 
-//             we prefer to go through the datagroup interface?  
+//             we prefer to go through the datagroup interface?
 //
 // RDH TODO -- Add offset, stride args to first method with defaults.
 //
@@ -235,7 +235,7 @@ public:
 
 
 //@{
-//!  @name DataView (data description) apply methods
+//!  @name DataView apply (data description) methods
 
   /*!
    * \brief Apply data description of a previously declared to data view.
@@ -347,6 +347,22 @@ public:
     return m_is_applied;
   }
 
+  /*!
+   * \brief Return total number of bytes allocated by this DataView object.
+   */
+  size_t getTotalBytes() const
+  {
+    return m_schema.total_bytes();
+  }
+
+  /*!
+   * \brief Return total number of elements allocated by this DataView object.
+   */
+  size_t getNumElements() const
+  {
+    return m_node.dtype().number_of_elements();
+  }
+
 //@}
 
 
@@ -362,10 +378,28 @@ public:
   }
 
   /*!
-   * \brief Return void* pointer to opaque data in view, else ATK_NULLPTR
-   *        if view has not been declared opaque.
+   * \brief Return pointer to non-const DataGroup that owns DataView object.
    */
-  void * getOpaque() const;
+  DataGroup * getOwningGroup()
+  {
+    return m_owning_group;
+  }
+
+  /*!
+   * \brief Return pointer to const DataGroup that owns DataView object.
+   */
+  const DataGroup * getOwningGroup() const
+  {
+    return m_owning_group;
+  }
+
+  /*!
+   * \brief Return type of data for this DataView object.
+   */
+  TypeID getTypeID() const
+  {
+    return static_cast<TypeID>(m_node.dtype().id());
+  }
 
   /*!
    * \brief Return pointer to non-const DataBuffer associated with DataView.
@@ -384,12 +418,26 @@ public:
   }
 
   /*!
+   * \brief Return void* pointer to opaque data in view, else ATK_NULLPTR
+   *        if view has not been declared opaque.
+   */
+  void * getOpaque() const;
+
+  /*!
    * \brief Return void-pointer to data associated with DataView.
    *
    * This will return the data pointer for all DataViews, including opaque
    * and external.
    */
   void * getDataPointer() const;
+
+  /*!
+   * \brief Return const reference to Conduit schema describing data.
+   */
+  const Schema& getSchema() const
+  {
+    return m_schema;
+  }
 
   /*!
    * \brief Return non-const reference to Conduit node holding data.
@@ -406,6 +454,12 @@ public:
   {
     return m_node;
   }
+
+//@}
+
+
+//@{
+//!  @name DataView getValue/setValue methods.
 
   /*!
    * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
@@ -446,61 +500,11 @@ public:
     m_node.set(value);
   }
 
-  /*!
-   * \brief Return const reference to Conduit schema describing data.
-   */
-  const Schema& getSchema() const
-  {
-    return m_schema;
-  }
-
-  /*!
-   * \brief Return pointer to non-const DataGroup that owns DataView object.
-   */
-  DataGroup * getOwningGroup()
-  {
-    return m_owning_group;
-  }
-
-  /*!
-   * \brief Return pointer to const DataGroup that owns DataView object.
-   */
-  const DataGroup * getOwningGroup() const
-  {
-    return m_owning_group;
-  }
-
-  /*!
-   * \brief Return type of data for this DataView object.
-   */
-  TypeID getTypeID() const
-  {
-    return static_cast<TypeID>(m_node.dtype().id());
-  }
-
-  /*!
-   * \brief Return total number of bytes allocated by this DataView object.
-   */
-  size_t getTotalBytes() const
-  {
-    return m_schema.total_bytes();
-  }
-
-  /*!
-   * \brief Return total number of elements allocated by this DataView object.
-   */
-  size_t getNumElements() const
-  {
-    return m_node.dtype().number_of_elements();
-  }
-
 //@}
 
 
-  /*!
-   * \brief Copy data view description to given Conduit node.
-   */
-  void info(Node& n) const;
+//@{
+//!  @name DataView print methods.
 
   /*!
    * \brief Print JSON description of data view to stdout.
@@ -512,7 +516,18 @@ public:
    */
   void print(std::ostream& os) const;
 
+//@}
+
+  /*!
+   * \brief Copy data view description to given Conduit node.
+   */
+  void info(Node& n) const;
+
 private:
+
+//@{
+//!  @name Private DataView ctors and dtors 
+//!        (callable only by DataGroup and DataView methods).
 
   /*!
    *  \brief Private ctor that creates a DataView with given name
@@ -547,6 +562,9 @@ private:
    * \brief Private dtor.
    */
   ~DataView();
+
+//@}
+
 
   /*!
    *  \brief Private method returns true if data allocation on view is a
