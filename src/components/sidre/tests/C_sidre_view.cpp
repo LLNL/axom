@@ -130,6 +130,32 @@ TEST(C_sidre_view,int_array_multi_view)
     EXPECT_EQ(dv_o_ptr[2*i], 2*i+1);
   }
 
+  // Run similar test to above with different view apply method
+  ATK_dataview * dv_e1 =
+     ATK_datagroup_create_view_into_buffer(root, "even1", dbuff);
+  ATK_dataview * dv_o1 =
+     ATK_datagroup_create_view_into_buffer(root, "odd1", dbuff);
+  EXPECT_TRUE(dv_e1 != NULL);
+  EXPECT_TRUE(dv_o1 != NULL);
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
+
+  ATK_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID, 5, 0, 2);
+  ATK_dataview_apply_type_nelems_offset_stride(dv_o1, SIDRE_INT_ID, 5, 1, 2);
+
+  ATK_dataview_print(dv_e1);
+  ATK_dataview_print(dv_o1);
+
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+  int* dv_e1_ptr = (int *) ATK_dataview_get_data_pointer(dv_e1);
+  int* dv_o1_ptr = (int *) ATK_dataview_get_data_pointer(dv_o1); dv_o1_ptr++;
+  for(int i=0 ; i<5 ; i++)
+  {
+    EXPECT_EQ(dv_e1_ptr[2*i], 2*i);
+    EXPECT_EQ(dv_o1_ptr[2*i], 2*i+1);
+  }
+
+
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
@@ -165,7 +191,7 @@ TEST(C_sidre_view,int_array_depth_view)
   for (int id = 0; id < 4; ++id)
   {
      views[id] = ATK_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
-     ATK_dataview_apply_nelems_offset_stride(views[id], depth_nelems, id*depth_nelems, 1);
+     ATK_dataview_apply_nelems_offset(views[id], depth_nelems, id*depth_nelems);
   }
   EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
 

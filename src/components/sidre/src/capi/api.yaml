@@ -259,10 +259,18 @@ classes:
 #    - decl: DataView* reallocate(const Schema& schema)
     - decl: DataView* apply()
       function_suffix: _simple
+    - decl: DataView* apply(SidreLength numelems)
+      function_suffix: _nelems
+    - decl: DataView* apply(SidreLength numelems, SidreLength offset)
+      function_suffix: _nelems_offset
     - decl: DataView* apply(SidreLength numelems, SidreLength offset, SidreLength stride)
       function_suffix: _nelems_offset_stride
-#    - decl: DataView* apply(TypeID type, SidreLength numelems, SidreLength offset, SidreLength stride)
-#      function_suffix: _type_nelems_offset_stride
+    - decl: DataView* apply(TypeID type, SidreLength numelems)
+      function_suffix: _type_nelems
+    - decl: DataView* apply(TypeID type, SidreLength numelems, SidreLength offset)
+      function_suffix: _type_nelems_offset
+    - decl: DataView* apply(TypeID type, SidreLength numelems, SidreLength offset, SidreLength stride)
+      function_suffix: _type_nelems_offset_stride
 #    - decl: DataView* apply(const DataType& dtype)
 #    - decl: DataView* apply(const Schema& schema)
     - decl: bool  hasBuffer() const
