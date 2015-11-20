@@ -1,0 +1,17 @@
+# test template options
+
+options:
+  none: foo
+
+classes:
+  - name: Names
+    options:
+      none: foo
+
+    methods:
+    -  decl: void method1
+    -  decl: void method2
+
+
+functions:
+  - decl: void function1

@@ -1,0 +1,23 @@
+Read yaml names.yaml
+class Names
+C method void method1
+C method void method2
+Close wrapNames.h
+Close wrapNames.cpp
+C function void function1
+Close wrapdefault_library.h
+Close wrapdefault_library.cpp
+class Names
+C-interface, Fortran method void method1
+C-interface, Fortran method void method2
+Close wrapfNames.f
+C-interface, Fortran function void function1
+Close wrapfdefault_library.f
+class Names
+Python method void method1
+Python method void method2
+Close pyNamestype.cpp
+Python function void function1
+Close pydefault_librarymodule.hpp
+Close pydefault_librarymodule.cpp
+Close pydefault_libraryhelper.cpp
