@@ -60,7 +60,7 @@ Annotations
 
 constructor
 
-   Mark function as a constructor
+   Mark function as a constructor.
 
 pure
 
@@ -79,8 +79,8 @@ value
 
 intent
 
-   IN, OUT, INOUT
-   If the argument is ``const``, the default is IN.
+   Valid valid values are ``in``, ``out``, ``inout``.
+   If the argument is ``const``, the default is ``in``.
 
 ptr
 
@@ -92,4 +92,4 @@ reference
 
 default
 
-   XXX
+   If set the ``optional`` keyword is added to the Fortran interface.

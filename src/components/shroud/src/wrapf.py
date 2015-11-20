@@ -100,8 +100,6 @@ class Wrapf(util.WrapperMixin):
         if typedef.base == 'string':
             return (typ + intent_str, '(*)')  # is array
         else:
-            #        if arg['attrs'].get('const', False):
-            #            t.append('const')
             t.append(typ)
             if is_value:
                 t.append(', value')
@@ -139,17 +137,12 @@ class Wrapf(util.WrapperMixin):
         if typedef.base == 'string':
             return (typ, '')  # not array
         else:
-            #        if arg['attrs'].get('const', False):
-            #            t.append('const')
             attrs = arg['attrs']
             t.append(typ)
             if default is None:
                 default = attrs.get('default', '')
             if default != '':
                 t.append('optional')
-#            if not (attrs.get('ptr', False) or
-#                    attrs.get('reference', False)):
-#                t.append(', value')
             dimension = attrs.get('dimension', '')
             return (', '.join(t), dimension)
 
