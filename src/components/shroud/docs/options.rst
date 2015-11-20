@@ -199,8 +199,21 @@ F_impl_filename_class_template
 
     'wrapf{cpp_class}.f'
 
+F_name_impl_method_template
 
+    '{lower_class}_{underscore_name}{function_suffix}'
 
+F_name_impl_function_template
+
+    '{underscore_name}{function_suffix}'
+
+F_name_method
+
+    '{underscore_name}{function_suffix}'
+
+F_name_generic
+
+    '{underscore_name}'
 
 
 

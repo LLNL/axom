@@ -100,6 +100,12 @@ class Schema(object):
             C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
             C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
 
+            F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
+            F_name_impl_function_template ='{underscore_name}{function_suffix}',
+
+            F_name_method_template = '{underscore_name}{function_suffix}',
+            F_name_generic_template = '{underscore_name}',
+
             F_module_name_library_template = '{lower_library}_mod',
             F_impl_filename_library_template = 'wrapf{lower_library}.f',
 
@@ -810,15 +816,13 @@ class Namify(object):
 
         if cls:
             util.eval_template(options, fmt_func,
-                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
+                               'F_name_impl', tname='_method')
         else:
             util.eval_template(options, fmt_func,
-                               'F_name_impl', '{underscore_name}{function_suffix}')
+                               'F_name_impl', tname='_function')
 
-        util.eval_template(options, fmt_func,
-                           'F_name_method', '{underscore_name}{function_suffix}')
-        util.eval_template(options, fmt_func,
-                           'F_name_generic', '{underscore_name}')
+        util.eval_template(options, fmt_func, 'F_name_method')
+        util.eval_template(options, fmt_func, 'F_name_generic')
 
         if 'F_this' in options:
             fmt_func.F_this = options.F_this
