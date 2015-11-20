@@ -32,15 +32,18 @@ def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
     lst.append(fmt.vformat(template, None, dct))
 
-def eval_template(options, fmt, name, default=None):
+def eval_template(options, fmt, name, default=None, tname=None):
     """ If a tname exists in options, use it; else use default.
     fmt[name] = option[name + '_template']
     """
     if hasattr(options, name):
         setattr(fmt, name, getattr(options, name))
     else:
-        dflt = default or default_template[name]
-        tname = name + '_template'
+        dflt = default# or default_template[name]
+        if tname is None:
+            tname = name + '_template'
+        else:
+            tname = tname + '_template'
         setattr(fmt, name, wformat(options.get(tname, dflt), fmt))
 
 

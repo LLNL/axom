@@ -7,11 +7,11 @@ module default_library_mod
     
     interface
         
-        subroutine def_function1() &
-                bind(C, name="DEF_function1")
+        subroutine yyy_def_function1() &
+                bind(C, name="YYY_DEF_function1")
             use iso_c_binding
             implicit none
-        end subroutine def_function1
+        end subroutine yyy_def_function1
         
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
@@ -23,7 +23,7 @@ contains
         use iso_c_binding
         implicit none
         ! splicer begin function1
-        call def_function1()
+        call yyy_def_function1()
         ! splicer end function1
     end subroutine function1
     

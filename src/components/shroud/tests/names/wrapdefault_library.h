@@ -15,7 +15,7 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-void DEF_function1();
+void YYY_DEF_function1();
 
 #ifdef __cplusplus
 }

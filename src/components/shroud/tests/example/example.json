@@ -1337,6 +1337,8 @@
         }
     ], 
     "options": {
+        "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
+        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "C_prefix": "AA_", 
         "F_module_per_class": true, 
         "F_string_len_trim": true, 

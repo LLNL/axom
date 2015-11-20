@@ -90,6 +90,10 @@ class Schema(object):
             wrap_c       = True,
             wrap_fortran = True,
             wrap_python  = True,
+
+            C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
+            C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
+
             )
         if 'options' in node:
             def_options.update(node['options'])
@@ -771,10 +775,10 @@ class Namify(object):
         
         if cls:
             util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{lower_class}_{underscore_name}{function_suffix}')
+                               tname='C_name_method')
         else:
             util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{underscore_name}{function_suffix}')
+                               tname='C_name_function')
 
         if 'F_C_name' in options:
             fmt_func.F_C_name = options.F_C_name

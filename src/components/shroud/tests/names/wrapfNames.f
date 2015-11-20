@@ -32,19 +32,19 @@ module names_mod
     
     interface
         
-        subroutine def_names_method1(self) &
-                bind(C, name="DEF_names_method1")
+        subroutine xxx_def_names_method1(self) &
+                bind(C, name="XXX_DEF_names_method1")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine def_names_method1
+        end subroutine xxx_def_names_method1
         
-        subroutine def_names_method2(self) &
-                bind(C, name="DEF_names_method2")
+        subroutine xxx_def_names_method2(self) &
+                bind(C, name="XXX_DEF_names_method2")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine def_names_method2
+        end subroutine xxx_def_names_method2
         
         ! splicer begin class.Names.additional_interfaces
         ! splicer end class.Names.additional_interfaces
@@ -57,7 +57,7 @@ contains
         implicit none
         class(names) :: obj
         ! splicer begin class.Names.method.method1
-        call def_names_method1(obj%voidptr)
+        call xxx_def_names_method1(obj%voidptr)
         ! splicer end class.Names.method.method1
     end subroutine names_method1
     
@@ -66,7 +66,7 @@ contains
         implicit none
         class(names) :: obj
         ! splicer begin class.Names.method.method2
-        call def_names_method2(obj%voidptr)
+        call xxx_def_names_method2(obj%voidptr)
         ! splicer end class.Names.method.method2
     end subroutine names_method2
     

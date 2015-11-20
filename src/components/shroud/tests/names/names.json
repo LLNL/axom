@@ -26,8 +26,8 @@
                     "attrs": {}, 
                     "decl": "void method1", 
                     "fmt": {
-                        "C_name": "DEF_names_method1", 
-                        "F_C_name": "def_names_method1", 
+                        "C_name": "XXX_DEF_names_method1", 
+                        "F_C_name": "xxx_def_names_method1", 
                         "F_name_generic": "method1", 
                         "F_name_impl": "names_method1", 
                         "F_name_method": "method1", 
@@ -48,8 +48,8 @@
                     "attrs": {}, 
                     "decl": "void method2", 
                     "fmt": {
-                        "C_name": "DEF_names_method2", 
-                        "F_C_name": "def_names_method2", 
+                        "C_name": "XXX_DEF_names_method2", 
+                        "F_C_name": "xxx_def_names_method2", 
                         "F_name_generic": "method2", 
                         "F_name_impl": "names_method2", 
                         "F_name_method": "method2", 
@@ -107,8 +107,8 @@
             "attrs": {}, 
             "decl": "void function1", 
             "fmt": {
-                "C_name": "DEF_function1", 
-                "F_C_name": "def_function1", 
+                "C_name": "YYY_DEF_function1", 
+                "F_C_name": "yyy_def_function1", 
                 "F_name_generic": "function1", 
                 "F_name_impl": "function1", 
                 "F_name_method": "function1", 
@@ -126,6 +126,8 @@
         }
     ], 
     "options": {
+        "C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
+        "C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "F_module_per_class": true, 
         "F_string_len_trim": true, 
         "cpp_header": "", 

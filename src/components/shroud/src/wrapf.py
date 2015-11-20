@@ -4,28 +4,28 @@ Generate Fortran bindings for C++ code.
 
 module {F_module_name}
 
-type {F_derived_name}
-  type(C_PTR) {F_derived_member}
+  type {F_derived_name}
+    type(C_PTR) {F_derived_member}
+  contains
+    procedure :: {F_name_method} => {F_name_impl}
+    generic :: {F_name_generic} => {F_name_method}, ...
+  end type {F_derived_name}
 
-constains
-  procedure :: {F_name_method} => {F_name_impl}
-  generic :: {F_name_generic} => {F_name_method}, ...
-end type
+  interface
+    {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
+        bind(C, name="{C_name}")
+      {arg_c_decl}
+    end {F_C_subprogram} {F_C_name}
 
-interface
-  {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
-      bind(C, name="{C_name}")
-    {arg_c_decl}
-  end {F_C_subprogram} {F_C_name}
-
-end interface
+  end interface
 
 contains
 
- {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
-     {F_C_name}({F_arg_c_call_tab})
- end {F_subprogram} {F_name_impl}
+  {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
+      {F_C_name}({F_arg_c_call_tab})
+  end {F_subprogram} {F_name_impl}
 
+end module {F_module_name}
 ----------
 TODO:
   intent is kludged for now.  They're all intent(IN) because ifort

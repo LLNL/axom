@@ -17,9 +17,9 @@ typedef struct s_DEF_names DEF_names;
 // splicer begin class.Names.C_definition
 // splicer end class.Names.C_definition
 
-void DEF_names_method1(DEF_names * self);
+void XXX_DEF_names_method1(DEF_names * self);
 
-void DEF_names_method2(DEF_names * self);
+void XXX_DEF_names_method2(DEF_names * self);
 
 #ifdef __cplusplus
 }

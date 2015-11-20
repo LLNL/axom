@@ -5,7 +5,7 @@
 
 extern "C" {
 
-void DEF_function1()
+void YYY_DEF_function1()
 {
 // splicer begin function.function1
 function1();
