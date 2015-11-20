@@ -16,7 +16,6 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataType;
 
 using namespace conduit;
 
@@ -173,54 +172,56 @@ TEST(sidre_view,int_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,init_int_array_multi_view)
+TEST(sidre_view,int_array_depth_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(asctoolkit::sidre::INT_ID, 10);
+  const size_t depth_nelems = 10; 
+
+  // Allocate buffer to hold 4 "depth" views
+  dbuff->declare(asctoolkit::sidre::INT_ID, 4 * depth_nelems );
+  dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
-  for(int i=0 ; i<10 ; i++)
+  for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
   {
-    data_ptr[i] = i;
+    data_ptr[i] = i / depth_nelems;
   }
 
   dbuff->print();
 
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
+  EXPECT_EQ(dbuff->getNumElements(), 4 * depth_nelems);
 
-
-  DataView * dv_e = root->createView("even",dbuff);
-  DataView * dv_o = root->createView("odd",dbuff);
-
-  // c_int(num_elems, offset [in bytes], stride [in bytes])
-  dv_e->apply(DataType::c_int(5,0,8));
-
-  // c_int(num_elems, offset [in bytes], stride [in bytes])
-  dv_o->apply(DataType::c_int(5,4,8));
-
-  dv_e->print();
-  dv_o->print();
-
-  int_array dv_e_ptr = dv_e->getValue();
-  int_array dv_o_ptr = dv_o->getValue();
-  for(int i=0 ; i<5 ; i++)
+  // create 4 "depth" views and apply offsets into buffer
+  DataView* views[4];
+  std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  
+  for (int id = 0; id < 4; ++id) 
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1);
+     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, id*depth_nelems);
   }
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     views[id]->print();
+  } 
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     int_array dv_ptr = views[id]->getValue();
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
+
   ds->print();
   delete ds;
-
 }
 
 //------------------------------------------------------------------------------
