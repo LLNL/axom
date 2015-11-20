@@ -708,6 +708,17 @@ class VerifyAttrs(object):
                 else:
                     attrs['value'] = True
 
+            # dimension
+            dimension = attrs.get('dimension', None)
+            if dimension:
+                if attrs.get('value', False):
+                    raise RuntimeError("argument must not have value=True")
+                if not is_ptr:
+                    raise RuntimeError("dimension attribute can only be used on pointer and references")
+                if dimension is True:
+                    # No value was provided, provide default
+                    attrs['dimension'] = '(*)'
+
 #        if typedef.base == 'string':
 
 

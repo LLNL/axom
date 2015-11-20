@@ -71,7 +71,7 @@ dimension
    Sets the Fortran DIMENSION attribute.
    Pointer argument should be passed through since it is an
    array.  *value* must be *False*
-
+   If set without a value, it defaults to ``(*)``.
 
 value
 
@@ -89,3 +89,7 @@ ptr
 reference
 
    Argument is a reference
+
+default
+
+   XXX

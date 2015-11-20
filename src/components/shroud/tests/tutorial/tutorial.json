@@ -205,7 +205,7 @@
                 }, 
                 {
                     "attrs": {
-                        "dimension": true, 
+                        "dimension": "(*)", 
                         "intent": "in", 
                         "ptr": true, 
                         "value": false

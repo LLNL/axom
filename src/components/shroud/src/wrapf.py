@@ -106,12 +106,7 @@ class Wrapf(util.WrapperMixin):
             if is_value:
                 t.append(', value')
             t.append(intent_str)
-            if attrs.get('array', False):
-                dimension = '(*)'
-            elif attrs.get('dimension', False):
-                dimension = '(*)'
-            else:
-                dimension = ''
+            dimension = attrs.get('dimension', '')
             return (''.join(t), dimension)
 
     def _c_decl(self, arg, name=None):
@@ -155,12 +150,7 @@ class Wrapf(util.WrapperMixin):
 #            if not (attrs.get('ptr', False) or
 #                    attrs.get('reference', False)):
 #                t.append(', value')
-            if attrs.get('array', False):
-                dimension = '(*)'
-            elif attrs.get('dimension', False):
-                dimension = '(*)'
-            else:
-                dimension = ''
+            dimension = attrs.get('dimension', '')
             return (', '.join(t), dimension)
 
     def _f_decl(self, arg, name=None, default=None):
@@ -435,18 +425,6 @@ class Wrapf(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
             attrs = arg['attrs']
-            is_ptr = (attrs.get('ptr', False) or
-                      attrs.get('reference', False))
-            if 'dimension' in attrs:
-                # This argument must be dimensioned.
-                # This implies value=False and ptr=True
-                if attrs.get('value', False):
-                    raise RuntimeError("argument must not have value=True")
-                attrs['value'] = False
-                if not is_ptr:
-                    raise RuntimeError("dimension attribute can only be used on pointer and references")
-            elif 'value' not in attrs:
-                attrs['value'] = True
 
             # argument names
             if arg_typedef.f_c_args:
@@ -579,8 +557,6 @@ class Wrapf(util.WrapperMixin):
             # default argument's intent
             # XXX look at const, ptr
             attrs = arg['attrs']
-            if 'value' not in attrs:
-                attrs['value'] = True
 
             fmt.var = arg['name']
             fmt.tmp_var = 'tmp_' + fmt.var
