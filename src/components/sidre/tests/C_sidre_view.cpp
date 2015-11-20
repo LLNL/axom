@@ -160,7 +160,7 @@ TEST(C_sidre_view,int_array_depth_view)
 
   // create 4 "depth" views and apply offsets into buffer
   ATK_dataview* views[4];
-  char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  const char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
 
   for (int id = 0; id < 4; ++id)
   {
