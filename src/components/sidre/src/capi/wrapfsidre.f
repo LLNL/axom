@@ -849,13 +849,13 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function atk_databuffer_get_num_views
         
-        subroutine atk_databuffer_declare(self, type, len) &
+        subroutine atk_databuffer_declare(self, type, numelems) &
                 bind(C, name="ATK_databuffer_declare")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
+            integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_databuffer_declare
         
         subroutine atk_databuffer_allocate_existing(self) &
@@ -865,21 +865,21 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine atk_databuffer_allocate_existing
         
-        subroutine atk_databuffer_allocate_from_type(self, type, len) &
+        subroutine atk_databuffer_allocate_from_type(self, type, numelems) &
                 bind(C, name="ATK_databuffer_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
+            integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_databuffer_allocate_from_type
         
-        subroutine atk_databuffer_reallocate(self, len) &
+        subroutine atk_databuffer_reallocate(self, numelems) &
                 bind(C, name="ATK_databuffer_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_LONG), value, intent(IN) :: len
+            integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_databuffer_reallocate
         
         subroutine atk_databuffer_set_external_data(self, external_data) &
@@ -940,13 +940,13 @@ module sidre_mod
         ! splicer begin class.DataBuffer.additional_interfaces
         ! splicer end class.DataBuffer.additional_interfaces
         
-        subroutine atk_dataview_declare(self, type, len) &
+        subroutine atk_dataview_declare(self, type, numelems) &
                 bind(C, name="ATK_dataview_declare")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
+            integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_dataview_declare
         
         subroutine atk_dataview_allocate_simple(self) &
@@ -956,21 +956,21 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine atk_dataview_allocate_simple
         
-        subroutine atk_dataview_allocate_from_type(self, type, len) &
+        subroutine atk_dataview_allocate_from_type(self, type, numelems) &
                 bind(C, name="ATK_dataview_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: len
+            integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_dataview_allocate_from_type
         
-        subroutine atk_dataview_reallocate(self, len) &
+        subroutine atk_dataview_reallocate(self, numelems) &
                 bind(C, name="ATK_dataview_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_LONG), value, intent(IN) :: len
+            integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_dataview_reallocate
         
         pure function atk_dataview_has_buffer(self) result(rv) &
@@ -2108,31 +2108,31 @@ contains
         ! splicer end class.DataBuffer.method.get_num_views
     end function databuffer_get_num_views
     
-    subroutine databuffer_declare_int(obj, type, len)
+    subroutine databuffer_declare_int(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: type
-        integer(C_INT) :: len
+        integer(C_INT) :: numelems
         ! splicer begin class.DataBuffer.method.declare_int
         call atk_databuffer_declare(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataBuffer.method.declare_int
     end subroutine databuffer_declare_int
     
-    subroutine databuffer_declare_long(obj, type, len)
+    subroutine databuffer_declare_long(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: type
-        integer(C_LONG) :: len
+        integer(C_LONG) :: numelems
         ! splicer begin class.DataBuffer.method.declare_long
         call atk_databuffer_declare(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataBuffer.method.declare_long
     end subroutine databuffer_declare_long
     
@@ -2145,55 +2145,55 @@ contains
         ! splicer end class.DataBuffer.method.allocate_existing
     end subroutine databuffer_allocate_existing
     
-    subroutine databuffer_allocate_int(obj, type, len)
+    subroutine databuffer_allocate_int(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: type
-        integer(C_INT) :: len
+        integer(C_INT) :: numelems
         ! splicer begin class.DataBuffer.method.allocate_int
         call atk_databuffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataBuffer.method.allocate_int
     end subroutine databuffer_allocate_int
     
-    subroutine databuffer_allocate_long(obj, type, len)
+    subroutine databuffer_allocate_long(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         integer(C_INT) :: type
-        integer(C_LONG) :: len
+        integer(C_LONG) :: numelems
         ! splicer begin class.DataBuffer.method.allocate_long
         call atk_databuffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataBuffer.method.allocate_long
     end subroutine databuffer_allocate_long
     
-    subroutine databuffer_reallocate_int(obj, len)
+    subroutine databuffer_reallocate_int(obj, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: len
+        integer(C_INT) :: numelems
         ! splicer begin class.DataBuffer.method.reallocate_int
         call atk_databuffer_reallocate(  &
             obj%voidptr,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_int
     end subroutine databuffer_reallocate_int
     
-    subroutine databuffer_reallocate_long(obj, len)
+    subroutine databuffer_reallocate_long(obj, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_LONG) :: len
+        integer(C_LONG) :: numelems
         ! splicer begin class.DataBuffer.method.reallocate_long
         call atk_databuffer_reallocate(  &
             obj%voidptr,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_long
     end subroutine databuffer_reallocate_long
     
@@ -2271,31 +2271,31 @@ contains
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
     
-    subroutine dataview_declare_int(obj, type, len)
+    subroutine dataview_declare_int(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
-        integer(C_INT) :: len
+        integer(C_INT) :: numelems
         ! splicer begin class.DataView.method.declare_int
         call atk_dataview_declare(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataView.method.declare_int
     end subroutine dataview_declare_int
     
-    subroutine dataview_declare_long(obj, type, len)
+    subroutine dataview_declare_long(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
-        integer(C_LONG) :: len
+        integer(C_LONG) :: numelems
         ! splicer begin class.DataView.method.declare_long
         call atk_dataview_declare(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataView.method.declare_long
     end subroutine dataview_declare_long
     
@@ -2308,55 +2308,55 @@ contains
         ! splicer end class.DataView.method.allocate_simple
     end subroutine dataview_allocate_simple
     
-    subroutine dataview_allocate_int(obj, type, len)
+    subroutine dataview_allocate_int(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
-        integer(C_INT) :: len
+        integer(C_INT) :: numelems
         ! splicer begin class.DataView.method.allocate_int
         call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataView.method.allocate_int
     end subroutine dataview_allocate_int
     
-    subroutine dataview_allocate_long(obj, type, len)
+    subroutine dataview_allocate_long(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: type
-        integer(C_LONG) :: len
+        integer(C_LONG) :: numelems
         ! splicer begin class.DataView.method.allocate_long
         call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataView.method.allocate_long
     end subroutine dataview_allocate_long
     
-    subroutine dataview_reallocate_int(obj, len)
+    subroutine dataview_reallocate_int(obj, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: len
+        integer(C_INT) :: numelems
         ! splicer begin class.DataView.method.reallocate_int
         call atk_dataview_reallocate(  &
             obj%voidptr,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataView.method.reallocate_int
     end subroutine dataview_reallocate_int
     
-    subroutine dataview_reallocate_long(obj, len)
+    subroutine dataview_reallocate_long(obj, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_LONG) :: len
+        integer(C_LONG) :: numelems
         ! splicer begin class.DataView.method.reallocate_long
         call atk_dataview_reallocate(  &
             obj%voidptr,  &
-            int(len, C_LONG))
+            int(numelems, C_LONG))
         ! splicer end class.DataView.method.reallocate_long
     end subroutine dataview_reallocate_long
     

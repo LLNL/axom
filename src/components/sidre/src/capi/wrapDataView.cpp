@@ -18,11 +18,11 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength numelems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.declare
-selfobj->declare(getTypeID(type), len);
+selfobj->declare(getTypeID(type), numelems);
 return;
 // splicer end class.DataView.method.declare
 }
@@ -36,20 +36,20 @@ return;
 // splicer end class.DataView.method.allocate_simple
 }
 
-void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength numelems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.allocate_from_type
-selfobj->allocate(getTypeID(type), len);
+selfobj->allocate(getTypeID(type), numelems);
 return;
 // splicer end class.DataView.method.allocate_from_type
 }
 
-void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength len)
+void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength numelems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.reallocate
-selfobj->reallocate(len);
+selfobj->reallocate(numelems);
 return;
 // splicer end class.DataView.method.reallocate
 }

@@ -182,10 +182,10 @@ classes:
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeID type, SidreLength len)
+      - decl: DataBuffer* declare(TypeID type, SidreLength numelems)
         return_this: True
         fortran_generic:
-          len:
+          numelems:
           -  int
           -  long
 #      - decl: DataBuffer* declare(const Schema& schema)
@@ -193,17 +193,17 @@ classes:
       - decl: DataBuffer* allocate()
         function_suffix: _existing
         return_this: True
-      - decl: DataBuffer* allocate(TypeID type, SidreLength len)
+      - decl: DataBuffer* allocate(TypeID type, SidreLength numelems)
         function_suffix: _from_type
         return_this: True
         fortran_generic:
-          len:
+          numelems:
           -  int
           -  long
-      - decl: DataBuffer * reallocate(SidreLength len)
+      - decl: DataBuffer * reallocate(SidreLength numelems)
         return_this: True
         fortran_generic:
-          len:
+          numelems:
           -  int
           -  long
       - decl: DataBuffer * setExternalData( void* external_data)
@@ -229,37 +229,37 @@ classes:
       cpp_header: sidre/DataView.hpp
 
     methods:
-    - decl: DataView* declare(TypeID type, SidreLength len)
+    - decl: DataView* declare(TypeID type, SidreLength numelems)
       return_this: True
       fortran_generic:
-        len:
+        numelems:
         -  int
         -  long
-#    - decl: DataView* declare(const Schema& schema)  
 #    - decl: DataView* declare(const DataType& dtype)
+#    - decl: DataView* declare(const Schema& schema)  
     - decl: DataView* allocate()
       function_suffix: _simple
       return_this: True
-    - decl: DataView* allocate(TypeID type, SidreLength len)
+    - decl: DataView* allocate(TypeID type, SidreLength numelems)
       function_suffix: _from_type
       return_this: True
       fortran_generic:
-        len:
+        numelems:
         -  int
         -  long
-#    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
-    - decl: DataView * reallocate(SidreLength len)
+#    - decl: DataView* allocate(const Schema& schema)
+    - decl: DataView * reallocate(SidreLength numelems)
       return_this: True
       fortran_generic:
-        len:
+        numelems:
         -  int
         -  long
-#    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* reallocate(const DataType& dtype)
+#    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* apply()
-#    - decl: DataView* apply(const Schema& schema)
 #    - decl: DataView* apply(const DataType& dtype)
+#    - decl: DataView* apply(const Schema& schema)
     - decl: bool  hasBuffer() const
     - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const

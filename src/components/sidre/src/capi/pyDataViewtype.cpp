@@ -72,16 +72,16 @@ PY_dataview_declare(
 {
 // splicer begin class.DataView.method.declare
     int type;
-    ATK_SidreLength len;
-    const char *kwcpp = "type\0len";
+    ATK_SidreLength numelems;
+    const char *kwcpp = "type\0numelems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
-        &type, &len))
+        &type, &numelems))
     {
         return NULL;
     }
-    self->BBB->declare(getTypeID(type), len);
+    self->BBB->declare(getTypeID(type), numelems);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.declare
 }
@@ -114,16 +114,16 @@ PY_dataview_allocate_from_type(
 {
 // splicer begin class.DataView.method.allocate_from_type
     int type;
-    ATK_SidreLength len;
-    const char *kwcpp = "type\0len";
+    ATK_SidreLength numelems;
+    const char *kwcpp = "type\0numelems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
-        &type, &len))
+        &type, &numelems))
     {
         return NULL;
     }
-    self->BBB->allocate(getTypeID(type), len);
+    self->BBB->allocate(getTypeID(type), numelems);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.allocate_from_type
 }
@@ -139,16 +139,16 @@ PY_dataview_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.reallocate
-    ATK_SidreLength len;
-    const char *kwcpp = "len";
+    ATK_SidreLength numelems;
+    const char *kwcpp = "numelems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:reallocate", kw_list,
-        &len))
+        &numelems))
     {
         return NULL;
     }
-    self->BBB->reallocate(len);
+    self->BBB->reallocate(numelems);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.reallocate
 }
