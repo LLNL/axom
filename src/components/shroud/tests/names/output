@@ -1,10 +1,10 @@
 Wrote wrapNames.h
 Wrote wrapNames.cpp
-Wrote wrapdefault_library.h
-Wrote wrapdefault_library.cpp
+Wrote wraptestnames.h
+Wrote wraptestnames.cpp
 Wrote wrapfNames.f
-Wrote wrapfdefault_library.f
+Wrote wrapftestnames.f
 Wrote pyNamestype.cpp
-Wrote pydefault_librarymodule.hpp
-Wrote pydefault_librarymodule.cpp
-Wrote pydefault_libraryhelper.cpp
+Wrote pytestnamesmodule.hpp
+Wrote pytestnamesmodule.cpp
+Wrote pytestnameshelper.cpp

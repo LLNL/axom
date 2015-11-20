@@ -5,7 +5,7 @@
 
 extern "C" {
 
-void XXX_DEF_names_method1(DEF_names * self)
+void XXX_TES_names_method1(TES_names * self)
 {
 Names *selfobj = static_cast<Names *>(static_cast<void *>(self));
 // splicer begin class.Names.method.method1
@@ -14,7 +14,7 @@ return;
 // splicer end class.Names.method.method1
 }
 
-void XXX_DEF_names_method2(DEF_names * self)
+void XXX_TES_names_method2(TES_names * self)
 {
 Names *selfobj = static_cast<Names *>(static_cast<void *>(self));
 // splicer begin class.Names.method.method2

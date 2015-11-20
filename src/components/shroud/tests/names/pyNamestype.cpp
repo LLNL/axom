@@ -1,6 +1,6 @@
 // pyNamestype.cpp
 // This is generated code, do not edit
-#include "pydefault_librarymodule.hpp"
+#include "pytestnamesmodule.hpp"
 // splicer begin class.Names.impl.include
 // splicer end class.Names.impl.include
 // splicer begin class.Names.impl.C_definition
@@ -56,7 +56,7 @@ static char Names__doc__[] =
 /* static */
 PyTypeObject PY_Names_Type = {
         PyVarObject_HEAD_INIT(NULL, 0)
-        "default_library.Names",                       /* tp_name */
+        "testnames.Names",                       /* tp_name */
         sizeof(PY_Names),         /* tp_basicsize */
         0,                              /* tp_itemsize */
         /* Methods to implement standard operations */
