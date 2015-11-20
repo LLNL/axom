@@ -318,7 +318,7 @@ classes:
 ######################################################################
 
 functions:
-  -  decl: bool isNameValid(const std::string& name)
+  -  decl: bool nameIsValid(const std::string& name)
      # The concept of a valid name is different for C++, C and Fortran
      options:
        C_code:  return name != NULL;
@@ -329,17 +329,17 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: >
-        if (! isNameValid({var})) {{
+        if (! nameIsValid({var})) {{
             return ATK_InvalidName;
         }}
     PY_invalid_name: >
-        if (! isNameValid({var})) {{
+        if (! nameIsValid({var})) {{
             PyErr_SetString(PyExc_KeyError, "{var}");
             return NULL;
         }}
     # report the invalid index, assume local variable idx
     PY_invalid_name_idx: >
-        if (! isNameValid({var})) {{
+        if (! nameIsValid({var})) {{
             Py_RETURN_NONE;
         }}
 #            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));

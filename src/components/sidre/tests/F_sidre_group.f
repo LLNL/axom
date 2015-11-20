@@ -152,7 +152,7 @@ contains
 
     call parent%get_view_name(idx3, name3)
     call assert_true(name3 == " ")
-    call assert_false(is_name_valid(name3))
+    call assert_false(name_is_valid(name3))
 
     call ds%delete()
   end subroutine get_view_name_index
@@ -195,7 +195,7 @@ contains
 
     call parent%get_group_name(idx3, name3)
     call assert_true(name3 == " ")
-    call assert_false(is_name_valid(name3))
+    call assert_false(name_is_valid(name3))
 
     call ds%delete()
   end subroutine get_group_name_index

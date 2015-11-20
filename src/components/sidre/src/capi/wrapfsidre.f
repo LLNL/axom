@@ -1215,13 +1215,13 @@ module sidre_mod
         ! splicer begin class.DataView.additional_interfaces
         ! splicer end class.DataView.additional_interfaces
         
-        function atk_is_name_valid(name) result(rv) &
-                bind(C, name="ATK_is_name_valid")
+        function atk_name_is_valid(name) result(rv) &
+                bind(C, name="ATK_name_is_valid")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
-        end function atk_is_name_valid
+        end function atk_name_is_valid
         
         ! splicer begin additional_interfaces
         function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
@@ -2860,15 +2860,15 @@ contains
     end subroutine dataview_get_value_double_1d_ptr
     ! splicer end class.DataView.additional_functions
     
-    function is_name_valid(name) result(rv)
+    function name_is_valid(name) result(rv)
         use iso_c_binding
         implicit none
         character(*) :: name
         logical :: rv
-        ! splicer begin is_name_valid
+        ! splicer begin name_is_valid
         rv = name .ne. " "
-        ! splicer end is_name_valid
-    end function is_name_valid
+        ! splicer end name_is_valid
+    end function name_is_valid
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

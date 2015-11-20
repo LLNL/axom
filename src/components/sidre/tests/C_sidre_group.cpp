@@ -130,7 +130,7 @@ TEST(C_sidre_group,get_view_name_index)
 
   const char * name3 = ATK_datagroup_get_view_name(parent, idx3);
   EXPECT_TRUE(name3 == NULL);
-  EXPECT_FALSE(ATK_is_name_valid(name3));
+  EXPECT_FALSE(ATK_name_is_valid(name3));
 
   ATK_datastore_delete(ds);
 }
@@ -166,7 +166,7 @@ TEST(C_sidre_group,get_group_name_index)
 
   const char * name3 = ATK_datagroup_get_group_name(parent, idx3);
   EXPECT_TRUE(name3 == NULL);
-  EXPECT_TRUE(ATK_is_name_valid(name3) == 0);
+  EXPECT_TRUE(ATK_name_is_valid(name3) == 0);
 
   ATK_datastore_delete(ds);
 }

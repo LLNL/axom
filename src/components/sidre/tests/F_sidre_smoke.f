@@ -39,7 +39,7 @@ contains
     call assert_true(idx /= invalid_index)
 
     name = "foo"
-    call assert_true(is_name_valid(name))
+    call assert_true(name_is_valid(name))
 
     root = ds%get_root()
 

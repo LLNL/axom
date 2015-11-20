@@ -71,8 +71,7 @@ class DataStore;
  *          there is no associated DataBuffer.
  *    - When a Dataview object is associated with a DataBuffer, the DataView
  *      object holds a pointer to the DataBuffer object. The data description
- *      of the view is represented as a Conduit schema or a Conduit
- *      pre-defined data type.
+ *      of the view may described by calling one of the apply() methods.  
  *
  */
 class DataView
@@ -88,8 +87,15 @@ public:
 //@{
 //!  @name DataView declaration methods
 
+// RDH TODO -- Remove declaration methods from the public interface, since 
+//             we prefer to go through the datagroup interface?  
+//
+// RDH TODO -- Add offset, stride args to first method with defaults.
+//
+
   /*!
-   * \brief Declare a data view with given type and number of elements.
+   * \brief Declare a data view with given type and number of elements, and
+   *        
    *
    * IMPORTANT: If view has been previously declared, this operation will
    *            re-declare the view. To have the new declaration take effect,
@@ -241,7 +247,7 @@ public:
   DataView * apply();
 
   /*!
-   * \brief Apply data desscription defined by number of elements, and
+   * \brief Apply data description defined by number of elements, and
    *        optionally offset and stride to data view (type remains the same).
    *
    * NOTE: The units for offset and stride are in number of elements, which
@@ -264,7 +270,7 @@ public:
                     SidreLength stride = 1);
 
   /*!
-   * \brief Apply data desscription defined by type and number of elements, and 
+   * \brief Apply data description defined by type and number of elements, and 
    *        optionally offset and stride to data view.
    *
    * NOTE: The units for offset and stride are in number of elements, which

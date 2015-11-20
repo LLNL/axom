@@ -131,7 +131,7 @@ const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexTy
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_view_name
 const std::string & rv = selfobj->getViewName(idx);
-if (! isNameValid(rv)) {
+if (! nameIsValid(rv)) {
     return ATK_InvalidName;
 }
 
@@ -324,7 +324,7 @@ const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexT
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_group_name
 const std::string & rv = selfobj->getGroupName(idx);
-if (! isNameValid(rv)) {
+if (! nameIsValid(rv)) {
     return ATK_InvalidName;
 }
 

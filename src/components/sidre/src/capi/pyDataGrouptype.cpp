@@ -283,7 +283,7 @@ PY_datagroup_get_view_name(
         return NULL;
     }
     const std::string & rv = self->BBB->getViewName(idx);
-    if (! isNameValid(rv)) {
+    if (! nameIsValid(rv)) {
         Py_RETURN_NONE;
     }
     
@@ -645,7 +645,7 @@ PY_datagroup_get_group_name(
         return NULL;
     }
     const std::string & rv = self->BBB->getGroupName(idx);
-    if (! isNameValid(rv)) {
+    if (! nameIsValid(rv)) {
         Py_RETURN_NONE;
     }
     

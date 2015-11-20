@@ -55,7 +55,7 @@ inline bool indexIsValid(IndexType idx)
  */
 const std::string InvalidName;
 ///
-inline bool isNameValid(const std::string& name)
+inline bool nameIsValid(const std::string& name)
 {
   return name != InvalidName;
 }
