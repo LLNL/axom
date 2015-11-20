@@ -153,6 +153,53 @@ PY_dataview_reallocate(
 // splicer end class.DataView.method.reallocate
 }
 
+static char PY_dataview_apply_simple__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_apply_simple(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.apply_simple
+    DataView * rv = self->BBB->apply();
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataView.method.apply_simple
+}
+
+static char PY_dataview_apply_nelems_offset_stride__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_apply_nelems_offset_stride(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.apply_nelems_offset_stride
+    ATK_SidreLength numelems;
+    ATK_SidreLength offset;
+    ATK_SidreLength stride;
+    const char *kwcpp = "numelems\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "lll:apply", kw_list,
+        &numelems, &offset, &stride))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->apply(numelems, offset, stride);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataView.method.apply_nelems_offset_stride
+}
+
 static char PY_dataview_has_buffer__doc__[] =
 "documentation"
 ;
@@ -370,6 +417,44 @@ PY_dataview_allocate(
     return NULL;
 // splicer end class.DataView.allocate
 }
+
+static char PY_dataview_apply__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_apply(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.apply
+    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
+    int numArgs = PyTuple_GET_SIZE(args);
+    int totArgs = numArgs + numNamedArgs;
+    PyObject *rvobj;
+    {
+        rvobj = PY_dataview_apply_simple(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_dataview_apply_nelems_offset_stride(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end class.DataView.apply
+}
 // splicer begin class.DataView.impl.after_methods
 // splicer end class.DataView.impl.after_methods
 static PyMethodDef PY_DataView_methods[] = {
@@ -377,6 +462,8 @@ static PyMethodDef PY_DataView_methods[] = {
 {"allocate_simple", (PyCFunction)PY_dataview_allocate_simple, METH_NOARGS, PY_dataview_allocate_simple__doc__},
 {"allocate_from_type", (PyCFunction)PY_dataview_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_dataview_reallocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_reallocate__doc__},
+{"apply_simple", (PyCFunction)PY_dataview_apply_simple, METH_NOARGS, PY_dataview_apply_simple__doc__},
+{"apply_nelems_offset_stride", (PyCFunction)PY_dataview_apply_nelems_offset_stride, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems_offset_stride__doc__},
 {"hasBuffer", (PyCFunction)PY_dataview_has_buffer, METH_NOARGS, PY_dataview_has_buffer__doc__},
 {"isOpaque", (PyCFunction)PY_dataview_is_opaque, METH_NOARGS, PY_dataview_is_opaque__doc__},
 {"getName", (PyCFunction)PY_dataview_get_name, METH_NOARGS, PY_dataview_get_name__doc__},
@@ -389,6 +476,7 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getNumElements", (PyCFunction)PY_dataview_get_num_elements, METH_NOARGS, PY_dataview_get_num_elements__doc__},
 {"print", (PyCFunction)PY_dataview_print, METH_NOARGS, PY_dataview_print__doc__},
 {"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
+{"apply", (PyCFunction)PY_dataview_apply, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply__doc__},
 // splicer begin class.DataView.PyMethodDef
 // splicer end class.DataView.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */

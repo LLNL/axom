@@ -276,6 +276,8 @@ module sidre_mod
         procedure :: allocate_long => dataview_allocate_long
         procedure :: reallocate_int => dataview_reallocate_int
         procedure :: reallocate_long => dataview_reallocate_long
+        procedure :: apply_simple => dataview_apply_simple
+        procedure :: apply_nelems_offset_stride => dataview_apply_nelems_offset_stride
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
@@ -301,6 +303,11 @@ module sidre_mod
             allocate_simple,  &
             allocate_int,  &
             allocate_long
+        generic :: apply => &
+            ! splicer begin class.DataView.generic.apply
+            ! splicer end class.DataView.generic.apply
+            apply_simple,  &
+            apply_nelems_offset_stride
         generic :: declare => &
             ! splicer begin class.DataView.generic.declare
             ! splicer end class.DataView.generic.declare
@@ -972,6 +979,25 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: numelems
         end subroutine atk_dataview_reallocate
+        
+        function atk_dataview_apply_simple(self) result(rv) &
+                bind(C, name="ATK_dataview_apply_simple")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR) :: rv
+        end function atk_dataview_apply_simple
+        
+        function atk_dataview_apply_nelems_offset_stride(self, numelems, offset, stride) result(rv) &
+                bind(C, name="ATK_dataview_apply_nelems_offset_stride")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_LONG), value, intent(IN) :: numelems
+            integer(C_LONG), value, intent(IN) :: offset
+            integer(C_LONG), value, intent(IN) :: stride
+            type(C_PTR) :: rv
+        end function atk_dataview_apply_nelems_offset_stride
         
         pure function atk_dataview_has_buffer(self) result(rv) &
                 bind(C, name="ATK_dataview_has_buffer")
@@ -2359,6 +2385,33 @@ contains
             int(numelems, C_LONG))
         ! splicer end class.DataView.method.reallocate_long
     end subroutine dataview_reallocate_long
+    
+    function dataview_apply_simple(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        type(dataview) :: rv
+        ! splicer begin class.DataView.method.apply_simple
+        rv%voidptr = atk_dataview_apply_simple(obj%voidptr)
+        ! splicer end class.DataView.method.apply_simple
+    end function dataview_apply_simple
+    
+    function dataview_apply_nelems_offset_stride(obj, numelems, offset, stride) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_LONG) :: numelems
+        integer(C_LONG) :: offset
+        integer(C_LONG) :: stride
+        type(dataview) :: rv
+        ! splicer begin class.DataView.method.apply_nelems_offset_stride
+        rv%voidptr = atk_dataview_apply_nelems_offset_stride(  &
+            obj%voidptr,  &
+            numelems,  &
+            offset,  &
+            stride)
+        ! splicer end class.DataView.method.apply_nelems_offset_stride
+    end function dataview_apply_nelems_offset_stride
     
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding

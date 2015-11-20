@@ -114,29 +114,22 @@ TEST(C_sidre_view,int_array_multi_view)
   EXPECT_TRUE(dv_o != NULL);
   EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 2u);
 
-#ifdef XXX
-  dv_e->apply(DataType::uint32(5,0,8));
-
-  dv_o->apply(DataType::uint32(5,4,8));
+  ATK_dataview_apply_nelems_offset_stride(dv_e, 5, 0, 2);
+  ATK_dataview_apply_nelems_offset_stride(dv_o, 5, 1, 2);
 
   ATK_dataview_print(dv_e);
   ATK_dataview_print(dv_o);
 
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+  int* dv_e_ptr = (int *) ATK_dataview_get_data_pointer(dv_e);
+  int* dv_o_ptr = (int *) ATK_dataview_get_data_pointer(dv_o); dv_o_ptr++;
   for(int i=0 ; i<5 ; i++)
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+    EXPECT_EQ(dv_e_ptr[2*i], 2*i);
+    EXPECT_EQ(dv_o_ptr[2*i], 2*i+1);
   }
-#endif
+
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
@@ -144,58 +137,56 @@ TEST(C_sidre_view,int_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,init_int_array_multi_view)
+TEST(C_sidre_view,int_array_depth_view)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff, SIDRE_INT_ID, 10);
+  const size_t depth_nelems = 10;
+
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+  ATK_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
-  for(int i=0 ; i<10 ; i++)
+  for(size_t i=0 ; i < 4 * depth_nelems ; i++)
   {
-    data_ptr[i] = i;
+    data_ptr[i] = i / depth_nelems;
   }
 
   ATK_databuffer_print(dbuff);
 
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
 
+  // create 4 "depth" views and apply offsets into buffer
+  ATK_dataview* views[4];
+  char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
 
-  ATK_dataview * dv_e = 
-     ATK_datagroup_create_view_into_buffer(root, "even", dbuff);
-  ATK_dataview * dv_o = 
-     ATK_datagroup_create_view_into_buffer(root, "odd", dbuff);
-  EXPECT_TRUE(dv_e != NULL);
-  EXPECT_TRUE(dv_o != NULL);
-
-#ifdef XXX
-  // uint32(num_elems, offset, stride)
-  dv_e->apply(DataType::uint32(5,0,8));
-
-
-  // uint32(num_elems, offset, stride)
-  dv_o->apply(DataType::uint32(5,4,8));
-
-  ATK_dataview_print(dv_e);
-  ATK_dataview_print(dv_o);
-
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
-  for(int i=0 ; i<5 ; i++)
+  for (int id = 0; id < 4; ++id)
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+     views[id] = ATK_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
+     ATK_dataview_apply_nelems_offset_stride(views[id], depth_nelems, id*depth_nelems, 1);
   }
-#endif
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     ATK_dataview_print(views[id]);
+  }
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+     int* dv_ptr = (int *) ATK_dataview_get_data_pointer(views[id]); 
+          dv_ptr += id * depth_nelems; 
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);

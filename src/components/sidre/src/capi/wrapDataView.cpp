@@ -54,6 +54,24 @@ return;
 // splicer end class.DataView.method.reallocate
 }
 
+ATK_dataview * ATK_dataview_apply_simple(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_simple
+DataView * rv = selfobj->apply();
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_simple
+}
+
+ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_nelems_offset_stride
+DataView * rv = selfobj->apply(numelems, offset, stride);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_nelems_offset_stride
+}
+
 bool ATK_dataview_has_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));

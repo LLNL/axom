@@ -41,6 +41,10 @@ void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLen
 
 void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength numelems);
 
+ATK_dataview * ATK_dataview_apply_simple(ATK_dataview * self);
+
+ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride);
+
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 
 bool ATK_dataview_is_opaque(ATK_dataview * self);
