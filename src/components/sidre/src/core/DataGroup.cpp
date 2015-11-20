@@ -51,20 +51,21 @@ namespace sidre
  *************************************************************************
  */
 DataView * DataGroup::createViewAndAllocate( const std::string& name,
-                                             TypeID type, SidreLength len )
+                                             TypeID type, 
+                                             SidreLength numelems )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG(len >= 0, "Must declare view with length >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must declare view with number of elems >=0 ");
 
-  if ( name.empty() || hasView(name) || len < 0 ) 
+  if ( name.empty() || hasView(name) || numelems < 0 ) 
   {
     return ATK_NULLPTR;
   }
   else 
   {
     DataView * const view = createViewAndBuffer(name);
-    view->allocate(type, len);
+    view->allocate(type, numelems);
     return view;
   }
 }

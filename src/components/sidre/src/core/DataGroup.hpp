@@ -308,10 +308,10 @@ public:
    *        number of elements, allocate the data, and attach new 
    *        view to this group object.
    *
-   * This is equivalent to calling createView(name)->allocate(type, len);
+   * This is equivalent to calling: createView(name)->allocate(type, numelems);
    *
    * If name is an empty string, or group already has a view with given
-   * name, or given length is < 0 method does nothing.
+   * name, or given number of elements is < 0 method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
@@ -323,10 +323,10 @@ public:
    * \brief Create DataView object with given name and Conduit DataType,
    *        allocate the data, and attach new view to this group object.
    *
-   * This is equivalent to calling createView(name)->allocate(dtype);
+   * This is equivalent to calling: createView(name)->allocate(dtype);
    *
    * If name is an empty string, or group already has a view with given
-   * name, or given length is < 0 method does nothing.
+   * name, or given number of elements is < 0 method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
@@ -338,10 +338,10 @@ public:
    * \brief Create DataView object with given name and Conduit Schema,
    *        allocate the data, and attach new view to this group object.
    *
-   * This is equivalent to calling createView(name)->allocate(schema);
+   * This is equivalent to calling: createView(name)->allocate(schema);
    *
    * If name is an empty string, or group already has a view with given
-   * name, or given length is < 0 method does nothing.
+   * name, or given number of elements is < 0 method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created. 
@@ -393,7 +393,7 @@ public:
    *        given name and use Conduit DataType to initialize the
    *        view into buffer. Attach new view to this group object.
    *
-   * This is equivalent to calling createView(name, buff)->apply(dtype);
+   * This is equivalent to calling: createView(name, buff)->apply(dtype);
    *
    * If name is an empty string, or group already has a view with given
    * name, or given buffer pointer is null, method does nothing.
@@ -410,7 +410,7 @@ public:
    *        given name and use Conduit Schema to initialize the
    *        view into this buffer. Attach new view to this group object.
    *
-   * This is equivalent to calling createView(name, buff)->apply(schema);
+   * This is equivalent to calling: createView(name, buff)->apply(schema);
    *
    * If name is an empty string, or group already has a view with given
    * name, or given buffer pointer is null, method does nothing.

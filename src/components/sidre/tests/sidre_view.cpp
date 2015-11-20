@@ -112,8 +112,10 @@ TEST(sidre_view,int_array_multi_view)
   DataView * dv_o = root->createView("odd",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 2u);
 
+  // c_int(num_elems, offset, stride)
   dv_e->apply(DataType::c_int(5,0,8));
 
+  // c_int(num_elems, offset, stride)
   dv_o->apply(DataType::c_int(5,4,8));
 
   dv_e->print();

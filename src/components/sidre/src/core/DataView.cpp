@@ -41,20 +41,20 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Declare a data view from sidre type and length.
+ * Declare data view with type and number of elements.
  *
  *************************************************************************
  */
-DataView * DataView::declare(TypeID type, SidreLength len)
+DataView * DataView::declare(TypeID type, SidreLength numelems)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call declare on an opaque view");
-  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements in view >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
 
-  if ( !isOpaque() && len >= 0 ) 
+  if ( !isOpaque() && numelems >= 0 ) 
   {
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
+    dtype.set_number_of_elements(numelems);
 
     m_schema.set(dtype);
     m_is_applied = false;
@@ -65,27 +65,7 @@ DataView * DataView::declare(TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Declare a data view as a Conduit schema.
- *
- *************************************************************************
- */
-DataView * DataView::declare(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-
-  if ( !isOpaque() ) 
-  {
-    m_schema.set(schema);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare a data view as a pre-defined Conduit data type.
+ * Declare data view with a Conduit data type object.
  *
  *************************************************************************
  */
@@ -105,7 +85,27 @@ DataView * DataView::declare(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Allocate data for a DataView, previously declared.
+ * Declare data view with a Conduit schema object.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(const Schema& schema)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+
+  if ( !isOpaque() ) 
+  {
+    m_schema.set(schema);
+    m_is_applied = false;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Allocate data for view, previously declared.
  *
  *************************************************************************
  */
@@ -136,18 +136,18 @@ DataView * DataView::allocate()
 /*
  *************************************************************************
  *
- * Declare a data view using sidre type and length.
+ * Allocate data for view with type and number of elements.
  *
  *************************************************************************
  */
-DataView * DataView::allocate( TypeID type, SidreLength len)
+DataView * DataView::allocate( TypeID type, SidreLength numelems)
 {
   SLIC_ASSERT( allocationIsValid() ); 
-  SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must allocate number of elements >= 0");
 
-  if ( allocationIsValid() && len >= 0 )
+  if ( allocationIsValid() && numelems >= 0 )
   {
-    declare(type, len);
+    declare(type, numelems);
     allocate();
     apply();
   }
@@ -157,7 +157,7 @@ DataView * DataView::allocate( TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Declare a data view as a Conduit pre-defined data type and allocate the data.
+ * Allocate data for view described by a Conduit data type object.
  *
  *************************************************************************
  */
@@ -177,7 +177,7 @@ DataView * DataView::allocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Declare a data view as a Conduit schema and allocate the data.
+ * Allocate data for view described by a Conduit schema object.
  *
  *************************************************************************
  */
@@ -197,21 +197,21 @@ DataView * DataView::allocate(const Schema& schema)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a length.
+ * Reallocate data for view to given number of elements.
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(SidreLength len)
+DataView * DataView::reallocate(SidreLength numelems)
 {
   SLIC_ASSERT( allocationIsValid() ); 
-  SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements in view >=0");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must re-allocate number of elements >= 0");
 
-  if ( allocationIsValid() && len >= 0 )
+  if ( allocationIsValid() && numelems >= 0 )
   {
     // preserve current type
     TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
-    declare(vtype, len);
-    m_data_buffer->reallocate(len);
+    declare(vtype, numelems);
+    m_data_buffer->reallocate(numelems);
     apply();
   }
   return this;
@@ -220,7 +220,7 @@ DataView * DataView::reallocate(SidreLength len)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit data type.
+ * Reallocate data for view using a Conduit data type object.
  *
  *************************************************************************
  */
@@ -248,7 +248,7 @@ DataView * DataView::reallocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit schema.
+ * Reallocate data for view using a Conduit schema object.
  *
  *************************************************************************
  */
@@ -296,6 +296,26 @@ DataView * DataView::apply()
 /*
  *************************************************************************
  *
+ * Apply a Consuit data type description to data held in the buffer.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(const DataType &dtype)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call apply() on an opaque view");
+
+  if ( !isOpaque() )
+  {
+    declare(dtype);
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Apply a Conduit Schema to data held in the buffer.
  *
  *************************************************************************
@@ -308,26 +328,6 @@ DataView * DataView::apply(const Schema& schema)
   if ( !isOpaque() )
   { 
     declare(schema);
-    apply();
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Apply a Conduit pre-defined data type description to data held in the buffer.
- *
- *************************************************************************
- */
-DataView * DataView::apply(const DataType &dtype)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call apply() on an opaque view");
- 
-  if ( !isOpaque() )
-  { 
-    declare(dtype);
     apply();
   }
   return this;
