@@ -47,9 +47,9 @@ namespace sidre
  *
  *************************************************************************
  */
-size_t DataBuffer::getBytesPerItem() const
+size_t DataBuffer::getBytesPerElement() const
 {
-  static size_t bytes_per_item[] = {
+  static size_t bytes_per_element[] = {
     0, // CONDUIT_EMPTY_T
     0, // CONDUIT_OBJECT_T
     0, // CONDUIT_LIST_T
@@ -66,7 +66,7 @@ size_t DataBuffer::getBytesPerItem() const
     1, // CONDUIT_CHAR8_STR_T
   };
 
-  return bytes_per_item[m_type];
+  return bytes_per_element[m_type];
 }
 
 /*
@@ -78,7 +78,7 @@ size_t DataBuffer::getBytesPerItem() const
  */
 size_t DataBuffer::getTotalBytes() const
 {
-  return getBytesPerItem() * m_numelems;
+  return getBytesPerElement() * m_numelems;
 }
 
 /*
@@ -204,7 +204,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength numelems)
     SLIC_ASSERT_MSG(m_data != ATK_NULLPTR,
                    "Attempting to reallocate an unallocated buffer");
 
-    std::size_t realloc_size = numelems * getBytesPerItem();
+    std::size_t realloc_size = numelems * getBytesPerElement();
     void * realloc_data = allocateBytes(realloc_size);
 
     memcpy(realloc_data, m_data, std::min(getTotalBytes(), realloc_size));

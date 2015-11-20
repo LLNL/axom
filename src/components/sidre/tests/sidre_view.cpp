@@ -112,10 +112,10 @@ TEST(sidre_view,int_array_multi_view)
   DataView * dv_o = root->createView("odd",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 2u);
 
-  // c_int(num_elems, offset, stride)
+  // c_int(num_elems, offset [in bytes], stride [in bytes])
   dv_e->apply(DataType::c_int(5,0,8));
 
-  // c_int(num_elems, offset, stride)
+  // c_int(num_elems, offset [in bytes], stride [in bytes])
   dv_o->apply(DataType::c_int(5,4,8));
 
   dv_e->print();
@@ -135,6 +135,37 @@ TEST(sidre_view,int_array_multi_view)
     EXPECT_EQ(dv_e_ptr[i] % 2, 0);
     EXPECT_EQ(dv_o_ptr[i] % 2, 1);
   }
+
+  // Run similar test to above with different view apply method
+  DataView * dv_e1 = root->createView("even1",dbuff);
+  DataView * dv_o1 = root->createView("odd1",dbuff);
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // (num_elems, offset [in # elems], stride [in # elems])
+  dv_e1->apply(asctoolkit::sidre::INT_ID, 5,0,2);
+
+  // (num_elems, offset [in # elems], stride [in # elems])
+  dv_o1->apply(asctoolkit::sidre::INT_ID, 5,1,2);
+
+  dv_e1->print();
+  dv_o1->print();
+
+  int_array dv_e1_ptr = dv_e1->getValue();
+  int_array dv_o1_ptr = dv_o1->getValue();
+  for(int i=0 ; i<5 ; i++)
+  {
+    std::cout << "idx:" <<  i
+              << " e1:" << dv_e1_ptr[i]
+              << " o1:" << dv_o1_ptr[i]
+              << " em1:" << dv_e1_ptr[i]  % 2
+              << " om1:" << dv_o1_ptr[i]  % 2
+              << std::endl;
+
+    EXPECT_EQ(dv_e1_ptr[i], dv_e_ptr[i]);
+    EXPECT_EQ(dv_o1_ptr[i], dv_o_ptr[i]);
+  }
+
+
   ds->print();
   delete ds;
 
@@ -164,13 +195,11 @@ TEST(sidre_view,init_int_array_multi_view)
   DataView * dv_e = root->createView("even",dbuff);
   DataView * dv_o = root->createView("odd",dbuff);
 
-  // c_int(num_elems, offset, stride)
+  // c_int(num_elems, offset [in bytes], stride [in bytes])
   dv_e->apply(DataType::c_int(5,0,8));
 
-
-  // c_int(num_elems, offset, stride)
+  // c_int(num_elems, offset [in bytes], stride [in bytes])
   dv_o->apply(DataType::c_int(5,4,8));
-
 
   dv_e->print();
   dv_o->print();

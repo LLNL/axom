@@ -51,7 +51,7 @@ DataView * DataView::declare(TypeID type, SidreLength numelems)
                   "Cannot call declare on an opaque view");
   SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
 
-  if ( !isOpaque() && numelems >= 0 ) 
+  if ( !isOpaque() && numelems >= 0) 
   {
     DataType dtype = conduit::DataType::default_dtype(type);
     dtype.set_number_of_elements(numelems);
@@ -276,7 +276,7 @@ DataView * DataView::reallocate(const Schema& schema)
 /*
  *************************************************************************
  *
- * Apply a previously declared data view to data held in the buffer.
+ * Apply a previously declared data description to data held in the buffer.
  *
  *************************************************************************
  */
@@ -284,11 +284,18 @@ DataView * DataView::apply()
 {
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call apply() on an opaque view");
- 
+
   if ( !isOpaque() )
-  { 
-    m_node.set_external(m_schema, m_data_buffer->getData());
-    m_is_applied = true;
+  {
+    if ( m_data_buffer == ATK_NULLPTR ) 
+    {
+       m_is_applied = false;
+    }
+    else 
+    {
+       m_node.set_external(m_schema, m_data_buffer->getData());
+       m_is_applied = true;
+    }
   }
   return this;
 }
@@ -296,7 +303,72 @@ DataView * DataView::apply()
 /*
  *************************************************************************
  *
- * Apply a Consuit data type description to data held in the buffer.
+ * Apply given # elems, offset, stride desscription to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(SidreLength numelems,
+                           SidreLength offset,
+                           SidreLength stride)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+  SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
+  SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
+
+  if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && 
+       numelems >= 0 && offset >= 0)
+  {
+    size_t bytes_per_elem = m_data_buffer->getBytesPerElement();
+
+    DataType dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
+    dtype.set_number_of_elements(numelems);
+    dtype.set_offset(offset * bytes_per_elem);
+    dtype.set_stride(stride * bytes_per_elem);
+
+    declare(dtype);
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Apply given type, # elems, offset, stride desscription to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(TypeID type, SidreLength numelems,
+                                        SidreLength offset,
+                                        SidreLength stride)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
+  SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
+
+  if ( !isOpaque() && numelems >= 0 && offset >= 0)
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+
+    size_t bytes_per_elem = dtype.element_bytes();
+
+    dtype.set_number_of_elements(numelems);
+    dtype.set_offset(offset * bytes_per_elem);
+    dtype.set_stride(stride * bytes_per_elem);
+
+    declare(dtype);
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Apply a Consuit data type description to data view.
  *
  *************************************************************************
  */
@@ -316,7 +388,7 @@ DataView * DataView::apply(const DataType &dtype)
 /*
  *************************************************************************
  *
- * Apply a Conduit Schema to data held in the buffer.
+ * Apply a Conduit Schema to data view.
  *
  *************************************************************************
  */

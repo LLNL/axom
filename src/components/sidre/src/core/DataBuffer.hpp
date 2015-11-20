@@ -160,9 +160,10 @@ public:
   }
 
   /*!
-   * \brief Return number of bytes associated with a single item of DataBuffer's type.
+   * \brief Return number of bytes associated with one element of 
+   *        DataBuffer data type.
    */
-  size_t getBytesPerItem() const;
+  size_t getBytesPerElement() const;
 
   /*!
    * \brief Return total number of elements allocated by this DataBuffer object.

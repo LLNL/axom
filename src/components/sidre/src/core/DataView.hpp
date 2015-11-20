@@ -88,7 +88,6 @@ public:
 //@{
 //!  @name DataView declaration methods
 
-  // RDH TODO -- add offset and stride args (with defaults)
   /*!
    * \brief Declare a data view with given type and number of elements.
    *
@@ -96,7 +95,7 @@ public:
    *            re-declare the view. To have the new declaration take effect,
    *            the apply() method must be called.
    *
-   * If given number of elements < 0 or view is opaque, the method does nothing.
+   * If given number of elements < 0, or view is opaque, method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -242,8 +241,50 @@ public:
   DataView * apply();
 
   /*!
+   * \brief Apply data desscription defined by number of elements, and
+   *        optionally offset and stride to data view (type remains the same).
+   *
+   * NOTE: The units for offset and stride are in number of elements, which
+   *       is different than the DataType usage below where offset and stride
+   *       are in number of bytes.
+   *
+   * IMPORTANT: If view has been previously declared (or applied), this 
+   *            operation will apply the new data description to the view.
+   *
+   * IMPORTANT: If view has no data buffer object attached, this method 
+   *            does nothing because it doesn't know type information.
+   *
+   * If given number of elements < 0, offset < 0, or view is opaque, the
+   * method also does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * apply( SidreLength numelems,
+                    SidreLength offset = 0,
+                    SidreLength stride = 1);
+
+  /*!
+   * \brief Apply data desscription defined by type and number of elements, and 
+   *        optionally offset and stride to data view.
+   *
+   * NOTE: The units for offset and stride are in number of elements, which
+   *       is different than the DataType usage below where offset and stride
+   *       are in number of bytes.
+   *
+   * IMPORTANT: If view has been previously declared (or applied), this 
+   *            operation will apply the new data description to the view.
+   *
+   * If given number of elements < 0, offset < 0, or view is opaque, the
+   * method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * apply( TypeID type, SidreLength numelems,
+                                 SidreLength offset = 0,
+                                 SidreLength stride = 1);
+
+  /*!
    * \brief Apply data description of given Conduit data type to data view.
-   *        this DataView object
    *
    * This is equivalent to calling: declare(dtype)->apply().
    *
