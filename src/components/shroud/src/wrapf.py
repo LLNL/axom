@@ -435,17 +435,20 @@ class Wrapf(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
             attrs = arg['attrs']
-            if 'intent' not in attrs:
-                attrs['intent'] = 'in'
+            is_ptr = (attrs.get('ptr', False) or
+                      attrs.get('reference', False))
             if 'dimension' in attrs:
                 # This argument must be dimensioned.
                 # This implies value=False and ptr=True
                 if attrs.get('value', False):
                     raise RuntimeError("argument must not have value=True")
                 attrs['value'] = False
-                # XXX - make sure ptr is True
+                if not is_ptr:
+                    raise RuntimeError("dimension attribute can only be used on pointer and references")
             elif 'value' not in attrs:
                 attrs['value'] = True
+            if 'intent' not in attrs:
+                attrs['intent'] = 'in'
 
             # argument names
             if arg_typedef.f_c_args:

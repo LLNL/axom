@@ -82,7 +82,7 @@ module tutorial_mod
             implicit none
             integer(C_INT), value, intent(IN) :: len
             integer(C_INT), intent(IN) :: values(*)
-            integer(C_INT), value, intent(IN) :: result
+            integer(C_INT), intent(OUT) :: result
         end subroutine tut_sum
         
         function tut_function3(arg) result(rv) &

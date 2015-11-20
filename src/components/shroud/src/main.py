@@ -290,7 +290,7 @@ class Schema(object):
 
     def check_class(self, node):
         if 'name' not in node:
-            raise RuntimeError('Expeced name for class')
+            raise RuntimeError('Expected name for class')
         name = node['name']
 
         options = self.push_options(node)
@@ -636,6 +636,71 @@ class GenFunctions(object):
             else:
                 raise RuntimeError("%s not defined" % argtype)
 
+class VerifyAttrs(object):
+    """
+    This must be called after GenFunctions has generated typedefs
+    for classes.
+    """
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+
+    def verify_attrs(self):
+        tree = self.tree
+        self.typedef = tree['types']
+
+        for cls in tree['classes']:
+            for func in cls['methods']:
+                self.check_arg_attrs(func)
+
+        for func in tree['functions']:
+            self.check_arg_attrs(func)
+
+    def check_arg_attrs(self, node):
+        """Regularize attributes
+        intent: lower case, no parens, must be in, out, or inout
+        value: if pointer, default to False (pass-by-reference;
+               else True (pass-by-value).
+        """
+        options = node['options']
+        if not options.wrap_fortran:
+            return
+
+        for arg in node['args']:
+            typedef = self.typedef.get(arg['type'], None)
+            if typedef is None:
+                raise RuntimeError("No such type %s" % arg['type'])
+
+            attrs = arg['attrs']
+            is_ptr = (attrs.get('ptr', False) or
+                      attrs.get('reference', False))
+
+            # intent
+            intent = attrs.get('intent', None)
+            if intent is not None:
+                intent = intent.lower()
+                if intent[0] == '(' and intent[-1] == ')':
+                    intent = intent[1:-1]
+                if intent in ['in', 'out', 'inout']:
+                    attrs['intent'] = intent
+                else:
+                    raise RuntimeError(
+                        "Bad value for intent: " + attrs['intent'])
+            # value
+            value = attrs.get('value', None)
+            if value is None:
+                if is_ptr:
+                    if typedef.c_fortran == 'type(C_PTR)':
+                        # This causes Fortran to dereference the C_PTR
+                        # Otherwise a void * argument becomes void **
+                        attrs['value'] = True
+                    else:
+                        attrs['value'] = False
+                else:
+                    attrs['value'] = True
+
+#        if typedef.base == 'string':
+
 
 class Namify(object):
     """Compute names of functions in library.
@@ -792,6 +857,7 @@ if __name__ == '__main__':
 
     Schema(all).check_schema()
     GenFunctions(all, config).gen_library()
+    VerifyAttrs(all, config).verify_attrs()
     Namify(all, config).name_library()
 
     if 'splicer' in all:
