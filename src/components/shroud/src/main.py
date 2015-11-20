@@ -80,7 +80,7 @@ class Schema(object):
         def_options = util.Options(
             parent=None,
 
-#            library='default_library',
+            library='default_library',
             namespace='',
             cpp_header='',
 
@@ -91,8 +91,20 @@ class Schema(object):
             wrap_fortran = True,
             wrap_python  = True,
 
+            C_header_filename_library_template = 'wrap{library}.h',
+            C_impl_filename_library_template = 'wrap{library}.cpp',
+
+            C_header_filename_class_template = 'wrap{cpp_class}.h',
+            C_impl_filename_class_template = 'wrap{cpp_class}.cpp',
+
             C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
             C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
+
+            F_module_name_library_template = '{lower_library}_mod',
+            F_impl_filename_library_template = 'wrapf{lower_library}.f',
+
+            F_module_name_class_template = '{lower_class}_mod',
+            F_impl_filename_class_template = 'wrapf{cpp_class}.f',
 
             )
         if 'options' in node:
@@ -100,7 +112,7 @@ class Schema(object):
         self.options_stack = [ def_options ]
 
         fmt_library = node['fmt'] = util.Options(None)
-        fmt_library.library       = def_options.get('library', 'default_library')
+        fmt_library.library       = def_options['library']
         fmt_library.lower_library = fmt_library.library.lower()
         fmt_library.upper_library = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
@@ -108,17 +120,17 @@ class Schema(object):
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
         util.eval_template(def_options, fmt_library,
-                           'C_header_filename', 'wrap{library}.h')
+                           'C_header_filename', tname='_library')
         util.eval_template(def_options, fmt_library,
-                           'C_impl_filename', 'wrap{library}.cpp')
+                           'C_impl_filename', tname='_library')
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
         # All class/methods and functions may go into this file or just functions.
         util.eval_template(def_options, fmt_library,
-                           'F_module_name', '{lower_library}_mod')
+                           'F_module_name', tname='_library')
         util.eval_template(def_options, fmt_library,
-                           'F_impl_filename', 'wrapf{lower_library}.f')
+                           'F_impl_filename', tname='_library')
 
         node['options'] = def_options
 
@@ -307,15 +319,15 @@ class Schema(object):
 
         if options.F_module_per_class:
             util.eval_template(options, fmt_class,
-                               'F_module_name', '{lower_class}_mod')
+                               'F_module_name', tname='_class')
             util.eval_template(options, fmt_class,
-                               'F_impl_filename', 'wrapf{cpp_class}.f')   # XXX lower_class
+                               'F_impl_filename', tname='_class')   # XXX lower_class
 
         # Only one file per class for C.
         util.eval_template(options, fmt_class,
-                           'C_header_filename', 'wrap{cpp_class}.h')
+                           'C_header_filename', tname='_class')
         util.eval_template(options, fmt_class,
-                           'C_impl_filename', 'wrap{cpp_class}.cpp')
+                           'C_impl_filename', tname='_class')
 
         methods = node.setdefault('methods', [])
         for method in methods:
@@ -775,10 +787,10 @@ class Namify(object):
         
         if cls:
             util.eval_template(options, fmt_func, 'C_name',
-                               tname='C_name_method')
+                               tname='_method')
         else:
             util.eval_template(options, fmt_func, 'C_name',
-                               tname='C_name_function')
+                               tname='_function')
 
         if 'F_C_name' in options:
             fmt_func.F_C_name = options.F_C_name

@@ -166,6 +166,42 @@ PY_name_impl
 
 
 
+C_header_filename_library_template
+
+   'wrap{library}.h'
+
+C_impl_filename_library_template
+
+    'wrap{library}.cpp'
+
+C_header_filename_class_template
+
+    'wrap{cpp_class}.h'
+
+C_impl_filename_class_template
+
+    'wrap{cpp_class}.cpp'
+
+
+F_module_name_library_template
+
+    '{lower_library}_mod'
+
+F_impl_filename_library_template
+
+    'wrapf{lower_library}.f'
+
+F_module_name_class_template
+
+    '{lower_class}_mod'
+
+F_impl_filename_class_template
+
+    'wrapf{cpp_class}.f'
+
+
+
+
 
 
 

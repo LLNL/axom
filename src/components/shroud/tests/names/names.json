@@ -126,6 +126,10 @@
         }
     ], 
     "options": {
+        "C_header_filename_class_template": "wrap{cpp_class}.h", 
+        "C_header_filename_library_template": "wrap{library}.h", 
+        "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
+        "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "F_module_per_class": true, 
