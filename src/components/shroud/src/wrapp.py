@@ -11,6 +11,20 @@ from __future__ import print_function
 import util
 from util import wformat, append_format
 
+def add_templates(options):
+    options.update(dict(
+        PY_module_filename_template = 'py{library}module.cpp',
+        PY_header_filename_template = 'py{library}module.hpp',
+        PY_helper_filename_template = 'py{library}helper.cpp',
+        PY_PyTypeObject_template    = '{PY_prefix}{cpp_class}_Type',
+        PY_PyObject_template        = '{PY_prefix}{cpp_class}',
+        PY_type_filename_template   = 'py{cpp_class}type.cpp',
+
+        PY_name_impl_method_template   = '{PY_prefix}{lower_class}_{underscore_name}{function_suffix}',
+        PY_name_impl_function_template = '{PY_prefix}{underscore_name}{function_suffix}',
+        ))
+
+
 class Wrapp(util.WrapperMixin):
     """Generate Python bindings.
     """
@@ -49,9 +63,9 @@ class Wrapp(util.WrapperMixin):
 
         fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
         fmt_library.PY_module_name     = fmt_library.lower_library
-        util.eval_template(options, fmt_library, 'PY_module_filename', 'py{library}module.cpp')
-        util.eval_template(options, fmt_library, 'PY_header_filename', 'py{library}module.hpp')
-        util.eval_template(options, fmt_library, 'PY_helper_filename', 'py{library}helper.cpp')
+        util.eval_template(options, fmt_library, 'PY_module_filename')
+        util.eval_template(options, fmt_library, 'PY_header_filename')
+        util.eval_template(options, fmt_library, 'PY_helper_filename')
         fmt_library.BBB = 'BBB'   # name of cpp class pointer in PyObject
         self.py_type_object_creation = []
         self.py_type_extern = []
@@ -68,13 +82,11 @@ class Wrapp(util.WrapperMixin):
             typedef.PY_format = 'O'
 
             # PyTypeObject for class
-            util.eval_template(options, fmt,
-                               'PY_PyTypeObject', '{PY_prefix}{cpp_class}_Type')
+            util.eval_template(options, fmt, 'PY_PyTypeObject')
             typedef.PY_PyTypeObject = fmt.PY_PyTypeObject
 
             # PyObject for class
-            util.eval_template(options, fmt,
-                               'PY_PyObject', '{PY_prefix}{cpp_class}')
+            util.eval_template(options, fmt, 'PY_PyObject')
             typedef.PY_PyObject = fmt.PY_PyObject
 
             fmt.PY_to_object_func = typedef.PY_to_object = wformat('PP_{cpp_class}_to_Object', fmt)
@@ -111,8 +123,7 @@ class Wrapp(util.WrapperMixin):
         options = node['options']
         fmt_class = node['fmt']
 
-        util.eval_template(options, fmt_class,
-                           'PY_type_filename', 'py{cpp_class}type.cpp')
+        util.eval_template(options, fmt_class, 'PY_type_filename')
 
         self.create_class_helper_functions(node)
 
@@ -396,11 +407,9 @@ return 1;""", fmt)
         PY_impl = [1] + PY_decl + PY_code + [-1]
 
         if cls:
-            util.eval_template(options, fmt_func,
-                               'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}{function_suffix}')
+            util.eval_template(options, fmt_func, 'PY_name_impl', tname='_method')
         else:
-            util.eval_template(options, fmt_func,
-                               'PY_name_impl', '{PY_prefix}{underscore_name}{function_suffix}')
+            util.eval_template(options, fmt_func, 'PY_name_impl', tname='_function')
 
         self.create_method(cls, fmt, PY_impl)
 
@@ -556,11 +565,9 @@ static PyObject *
             body.append(-1)
 
             if cls:
-                util.eval_template(options, fmt,
-                                   'PY_name_impl', '{PY_prefix}{lower_class}_{underscore_name}')
+                util.eval_template(options, fmt, 'PY_name_impl', tname='_method')
             else:
-                util.eval_template(options, fmt,
-                                   'PY_name_impl', '{PY_prefix}{underscore_name}')
+                util.eval_template(options, fmt, 'PY_name_impl', tname='_function')
 
             self.create_method(cls, fmt, body)
 

@@ -113,6 +113,8 @@ class Schema(object):
             F_impl_filename_class_template = 'wrapf{cpp_class}.f',
 
             )
+        wrapp.add_templates(def_options)
+
         if 'options' in node:
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
