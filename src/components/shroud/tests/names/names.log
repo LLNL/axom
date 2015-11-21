@@ -5,6 +5,7 @@ C method void method2
 Close wrapNames.h
 Close wrapNames.cpp
 C function void function1
+C function void function2
 Close wraptestnames.h
 Close wraptestnames.cpp
 class Names
@@ -12,12 +13,14 @@ C-interface, Fortran method void method1
 C-interface, Fortran method void method2
 Close wrapfNames.f
 C-interface, Fortran function void function1
+C-interface, Fortran function void function2
 Close wrapftestnames.f
 class Names
 Python method void method1
 Python method void method2
 Close pyNamestype.cpp
 Python function void function1
+Python function void function2
 Close pytestnamesmodule.hpp
 Close pytestnamesmodule.cpp
 Close pytestnameshelper.cpp

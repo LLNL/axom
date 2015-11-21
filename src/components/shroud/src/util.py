@@ -41,6 +41,16 @@ def eval_template(options, fmt, name, tname=''):
         tname = name + tname + '_template'
         setattr(fmt, name, wformat(options[tname], fmt))
 
+def eval_template2(node, name, tname=''):
+    """fmt[name] = node[name] or option[name + tname + '_template']
+    """
+    fmt = node['fmt']
+    if name in node:
+        setattr(fmt, name, node[name])
+    else:
+        tname = name + tname + '_template'
+        setattr(fmt, name, wformat(node['options'][tname], fmt))
+
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case
 def un_camel(text):

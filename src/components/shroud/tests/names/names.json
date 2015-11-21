@@ -123,6 +123,31 @@
                 "name": "function1", 
                 "type": "void"
             }
+        }, 
+        {
+            "C_name": "c_name_special", 
+            "F_C_name": "f_c_name_special", 
+            "F_name_impl": "f_name_special", 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "void function2", 
+            "fmt": {
+                "C_name": "c_name_special", 
+                "F_C_name": "f_c_name_special", 
+                "F_name_generic": "function2", 
+                "F_name_impl": "f_name_special", 
+                "F_name_method": "function2", 
+                "PY_name_impl": "PY_function2", 
+                "method_name": "function2", 
+                "underscore_name": "function2"
+            }, 
+            "function_index": 3, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "function2", 
+                "type": "void"
+            }
         }
     ], 
     "options": {

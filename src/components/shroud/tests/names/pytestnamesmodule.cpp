@@ -25,8 +25,25 @@ PY_function1(
     Py_RETURN_NONE;
 // splicer end function.function1
 }
+
+static char PY_function2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function2(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function2
+    function2();
+    Py_RETURN_NONE;
+// splicer end function.function2
+}
 static PyMethodDef PY_methods[] = {
 {"function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
+{"function2", (PyCFunction)PY_function2, METH_NOARGS, PY_function2__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

@@ -786,12 +786,12 @@ class Namify(object):
         fmt_func = node['fmt']
         
         if cls:
-            util.eval_template(options, fmt_func, 'C_name', '_method')
+            util.eval_template2(node, 'C_name', '_method')
         else:
-            util.eval_template(options, fmt_func, 'C_name', '_function')
+            util.eval_template2(node, 'C_name', '_function')
 
-        if 'F_C_name' in options:
-            fmt_func.F_C_name = options.F_C_name
+        if 'F_C_name' in node:
+            fmt_func.F_C_name = node['F_C_name']
         else:
             fmt_func.F_C_name = fmt_func.C_name.lower()
 
@@ -807,9 +807,9 @@ class Namify(object):
         fmt_func = node['fmt']
 
         if cls:
-            util.eval_template(options, fmt_func, 'F_name_impl', '_method')
+            util.eval_template2(node, 'F_name_impl', '_method')
         else:
-            util.eval_template(options, fmt_func, 'F_name_impl', '_function')
+            util.eval_template2(node, 'F_name_impl', '_function')
 
         util.eval_template(options, fmt_func, 'F_name_method')
         util.eval_template(options, fmt_func, 'F_name_generic')

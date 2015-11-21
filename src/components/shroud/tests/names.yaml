@@ -17,3 +17,8 @@ classes:
 
 functions:
   - decl: void function1
+  - decl: void function2
+    C_name: c_name_special
+    F_C_name: f_c_name_special
+    F_name_impl: f_name_special
+

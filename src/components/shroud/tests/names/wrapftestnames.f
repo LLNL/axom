@@ -13,6 +13,12 @@ module testnames_mod
             implicit none
         end subroutine yyy_tes_function1
         
+        subroutine f_c_name_special() &
+                bind(C, name="c_name_special")
+            use iso_c_binding
+            implicit none
+        end subroutine f_c_name_special
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -26,6 +32,14 @@ contains
         call yyy_tes_function1()
         ! splicer end function1
     end subroutine function1
+    
+    subroutine f_name_special()
+        use iso_c_binding
+        implicit none
+        ! splicer begin function2
+        call f_c_name_special()
+        ! splicer end function2
+    end subroutine f_name_special
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

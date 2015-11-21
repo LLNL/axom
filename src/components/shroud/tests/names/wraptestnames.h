@@ -17,6 +17,8 @@ extern "C" {
 
 void YYY_TES_function1();
 
+void c_name_special();
+
 #ifdef __cplusplus
 }
 #endif

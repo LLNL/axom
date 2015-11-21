@@ -4,6 +4,45 @@ Reference
 Code
 ----
 
+The C wrapper code::
+
+    struct s_{C_type_name};
+    typedef struct s_{C_type_name} {C_type_name};
+
+    AA_exclass1 * AA_exclass1_new(const char * name);
+
+C implementation::
+
+    {C_return_type} {C_name}({C_prototype})
+    AA_exclass1 * AA_exclass1_new(const char * name)
+    {
+        {C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});
+        ExClass1 *selfobj = new ExClass1(name);
+        return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
+    }
+
+    void AA_exclass1_delete(AA_exclass1 * self)
+    {
+        ExClass1 *selfobj = static_cast<ExClass1 *>(
+            static_cast<void *>(self));
+        delete selfobj;
+    }
+
+    int AA_exclass1_increment_count(AA_exclass1 * self, int incr)
+    {
+        {C_const}{cpp_class} *{C_this}obj =
+            static_cast<{C_const}{cpp_class} *>(
+                static_cast<{C_const}void *>({C_this}));
+        ExClass1 *selfobj = static_cast<ExClass1 *>(
+            static_cast<void *>(self));
+
+        {rv_decl} = {CPP_this_call}{method_name}{CPP_template}
+            ({C_call_list});
+        int rv = selfobj->incrementCount(incr);
+        return rv;
+    }
+
+
 The template for Fortran code showing names which may 
 be controlled directly by the input file::
 
@@ -98,21 +137,9 @@ function_suffix
 
     Function field 'function_suffix'.
 
-C_name
-
-    Name of C wrapper function.
-
-F_C_name
-
-    tut_class1_method1", 
-
 F_name_generic
 
     method1
-
-F_name_impl
-
-    class1_method1
 
 F_name_method
 
@@ -134,7 +161,7 @@ C_name_method_template
 
     {C_prefix}{lower_class}_{underscore_name}{function_suffix}
 
-C_name_function_tempate
+C_name_function_template
 
     {C_prefix}{underscore_name}{function_suffix}
 
@@ -260,13 +287,45 @@ function_suffix
 
    Suffix to append to the end of generated name.
 
+return_this
+
+   The method returns a reference to ``this``.  This ideom can be used
+   to chain calls in C++.  This does not translate to C and Fortran.
+   Instead make the return type ``void``.
+
+
+
+C_name
+
+    Name of the C wrapper function.
+    Defaults to option *C_name_method_template* or
+    *C_name_function_template*.
+
+F_C_name
+
+    Name of the Fortran ``BIND(C)`` interface for a C function.
+    Defaults to the lower case version of *C_name*.
+..    tut_class1_method1
+
+F_name_impl
+
+    Name of the Fortran implementation function.
+    Defaults to option *F_name_impl_method_template* or
+    *F_name_impl_function_template*.
+..    class1_method1
+
+
 
 Annotations
 -----------
 
 constructor
 
-   Mark function as a constructor.
+   Mark method as a constructor.
+
+destructor
+
+   Mark method as a destructor.
 
 pure
 
@@ -299,3 +358,8 @@ reference
 default
 
    If set the ``optional`` keyword is added to the Fortran interface.
+
+len_trim
+
+   For a string argument, pass the string address and the result of
+   len_trim.
