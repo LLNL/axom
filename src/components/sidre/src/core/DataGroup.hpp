@@ -398,7 +398,55 @@ public:
   DataView * createView( const std::string& name,
                          DataBuffer * buff );
 
-  // RDH TODO -- add createView(name, buff, numelems, offset, stride=1) method 
+// RDH TODO -- Should we eliminate the rest of the createView() methods
+//             here and simply use the DataView::apply methods? 
+
+  /*!
+   * \brief Create DataView object (for view into given buffer) with
+   *        given name, and defined by number of elements, and
+   *        optionally offset and stride to data view. 
+   *
+   * Data type of view is the same as buffer.
+   *
+   * This is equivalent to calling: 
+   *    createView(name, buff)->apply(numelems, offset, stride);
+   *
+   * If name is an empty string, group already has a view with given
+   * name, given buffer pointer is null, given number of elements < 0, or 
+   * offset < 0, the method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         DataBuffer * buff,
+                         SidreLength numelems,
+                         SidreLength offset = 0,
+                         SidreLength stride = 1);
+
+  /*!
+   * \brief Create DataView object (for view into given buffer) with
+   *        given name and type, and defined by number of elements, and
+   *        optionally offset and stride to data view.
+   *
+   * Data type of view is the same as buffer.
+   *
+   * This is equivalent to calling:
+   *    createView(name, buff)->apply(type, numelems, offset, stride);
+   *
+   * If name is an empty string, group already has a view with given
+   * name, given buffer pointer is null, given number of elements < 0, or
+   * offset < 0, the method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         DataBuffer * buff,
+                         TypeID type,
+                         SidreLength numelems,
+                         SidreLength offset = 0,
+                         SidreLength stride = 1);
 
   /*!
    * \brief Create DataView object (for view into given buffer) with

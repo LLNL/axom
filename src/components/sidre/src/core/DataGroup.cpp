@@ -177,6 +177,69 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
+ * Create view into given buffer, apply num elems, offset, and stride, 
+ * and attach view to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  DataBuffer * buff,
+                                  SidreLength numelems,
+                                  SidreLength offset,
+                                  SidreLength stride)
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
+                   "Cannot create view with null buffer pointer" );
+
+  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataView * const view = createView( name, buff );
+    view->apply(numelems, offset, stride);
+    return view;
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view into given buffer, apply type, num elems, offset, stride,
+ * and attach view to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  DataBuffer * buff,
+                                  TypeID type,
+                                  SidreLength numelems,
+                                  SidreLength offset,
+                                  SidreLength stride)
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
+                   "Cannot create view with null buffer pointer" );
+
+  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataView * const view = createView( name, buff );
+    view->apply(type, numelems, offset, stride);
+    return view;
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Create view into given buffer, apply data type, and attach view to group.
  *
  *************************************************************************
@@ -201,7 +264,6 @@ DataView * DataGroup::createView( const std::string& name,
     return view;
   }
 }
-
 
 /*
  *************************************************************************

@@ -377,6 +377,37 @@ PY_datagroup_create_view_into_buffer(
 // splicer end class.DataGroup.method.create_view_into_buffer
 }
 
+static char PY_datagroup_create_view_into_buffer_nelems__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_datagroup_create_view_into_buffer_nelems(
+  PY_DataGroup *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataGroup.method.create_view_into_buffer_nelems
+    const char * name;
+    PY_DataBuffer * buff;
+    DataBuffer * buff_ptr;
+    ATK_SidreLength numelems;
+    const char *kwcpp = "name\0buff\0numelems";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO!l:createView", kw_list,
+        &name, &PY_DataBuffer_Type, &buff, &numelems))
+    {
+        return NULL;
+    }
+    buff_ptr = (buff ? buff->BBB : NULL);
+    DataView * rv = self->BBB->createView(name, buff_ptr, numelems);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataGroup.method.create_view_into_buffer_nelems
+}
+
 static char PY_datagroup_create_opaque_view__doc__[] =
 "documentation"
 ;
@@ -873,6 +904,15 @@ PY_datagroup_create_view(
         }
         PyErr_Clear();
     }
+    {
+        rvobj = PY_datagroup_create_view_into_buffer_nelems(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
     PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
     return NULL;
 // splicer end class.DataGroup.create_view
@@ -893,6 +933,7 @@ static PyMethodDef PY_DataGroup_methods[] = {
 {"createViewAndAllocate_from_type", (PyCFunction)PY_datagroup_create_view_and_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_and_allocate_from_type__doc__},
 {"createView_empty", (PyCFunction)PY_datagroup_create_view_empty, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_empty__doc__},
 {"createView_into_buffer", (PyCFunction)PY_datagroup_create_view_into_buffer, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_into_buffer__doc__},
+{"createView_into_buffer_nelems", (PyCFunction)PY_datagroup_create_view_into_buffer_nelems, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_view_into_buffer_nelems__doc__},
 {"createOpaqueView", (PyCFunction)PY_datagroup_create_opaque_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_opaque_view__doc__},
 {"createExternalView", (PyCFunction)PY_datagroup_create_external_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_create_external_view__doc__},
 {"destroyView", (PyCFunction)PY_datagroup_destroy_view, METH_VARARGS|METH_KEYWORDS, PY_datagroup_destroy_view__doc__},

@@ -226,6 +226,68 @@ TEST(sidre_view,int_array_depth_view)
 
 //------------------------------------------------------------------------------
 
+// Similar to previous test, using other view creation methods
+TEST(sidre_view,int_array_depth_view_2)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataBuffer * dbuff = ds->createBuffer();
+
+  const size_t depth_nelems = 10; 
+
+  // Allocate buffer to hold 4 "depth" views
+  dbuff->declare(asctoolkit::sidre::INT_ID, 4 * depth_nelems );
+  dbuff->allocate();
+  int * data_ptr = static_cast<int *>(dbuff->getData());
+
+  for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
+  {
+    data_ptr[i] = i / depth_nelems;
+  }
+
+  dbuff->print();
+
+  EXPECT_EQ(dbuff->getNumElements(), 4 * depth_nelems);
+
+  // create 4 "depth" views and apply offsets into buffer
+  DataView* views[4];
+  std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  
+  for (int id = 0; id < 2; ++id) 
+  {
+     views[id] = root->createView(view_names[id], dbuff, 
+                                  depth_nelems, id*depth_nelems);
+  }
+  for (int id = 2; id < 4; ++id)
+  {
+     views[id] = root->createView(view_names[id], dbuff, 
+                                  asctoolkit::sidre::INT_ID, 
+                                  depth_nelems, id*depth_nelems);
+  }
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     views[id]->print();
+  } 
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     int_array dv_ptr = views[id]->getValue();
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
+
+  ds->print();
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+
 TEST(sidre_view,int_array_multi_view_resize)
 {
   ///

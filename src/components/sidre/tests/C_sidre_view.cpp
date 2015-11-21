@@ -221,6 +221,74 @@ TEST(C_sidre_view,int_array_depth_view)
 
 //------------------------------------------------------------------------------
 
+#if 0
+// Similar to previous test, using other view creation methods
+TEST(C_sidre_view,int_array_depth_view_2)
+{
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+
+  const size_t depth_nelems = 10;
+
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+  ATK_databuffer_allocate_existing(dbuff);
+  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+
+  for(size_t i=0 ; i < 4 * depth_nelems ; i++)
+  {
+    data_ptr[i] = i / depth_nelems;
+  }
+
+  ATK_databuffer_print(dbuff);
+
+  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
+
+  // create 4 "depth" views and apply offsets into buffer
+  ATK_dataview* views[4];
+  const char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+
+  for (int id = 0; id < 2; ++id)
+  {
+     views[id] = 
+        ATK_datagroup_create_view_into_buffer_nelems_offset(root, 
+           view_names[id], dbuff, depth_nelems, id*depth_nelems);
+  }
+  for (int id = 2; id < 4; ++id)
+  {
+     views[id] = 
+        ATK_datagroup_create_view_into_buffer_type_nelems_offset(root, 
+           view_names[id], dbuff, SIDRE_INT_ID, depth_nelems, id*depth_nelems);
+  }
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     ATK_dataview_print(views[id]);
+  }
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+     int* dv_ptr = (int *) ATK_dataview_get_data_pointer(views[id]); 
+          dv_ptr += id * depth_nelems; 
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
+
+  ATK_datastore_print(ds);
+  ATK_datastore_delete(ds);
+
+}
+#endif
+
+//------------------------------------------------------------------------------
+
 TEST(C_sidre_view,int_array_multi_view_resize)
 {
   ///
