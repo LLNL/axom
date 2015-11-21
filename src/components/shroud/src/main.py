@@ -127,18 +127,14 @@ class Schema(object):
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
-        util.eval_template(def_options, fmt_library,
-                           'C_header_filename', tname='_library')
-        util.eval_template(def_options, fmt_library,
-                           'C_impl_filename', tname='_library')
+        util.eval_template(def_options, fmt_library, 'C_header_filename', '_library')
+        util.eval_template(def_options, fmt_library, 'C_impl_filename', '_library')
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
         # All class/methods and functions may go into this file or just functions.
-        util.eval_template(def_options, fmt_library,
-                           'F_module_name', tname='_library')
-        util.eval_template(def_options, fmt_library,
-                           'F_impl_filename', tname='_library')
+        util.eval_template(def_options, fmt_library, 'F_module_name', '_library')
+        util.eval_template(def_options, fmt_library, 'F_impl_filename', '_library')
 
         node['options'] = def_options
 
@@ -326,16 +322,12 @@ class Schema(object):
             fmt_class.C_prefix = options.C_prefix
 
         if options.F_module_per_class:
-            util.eval_template(options, fmt_class,
-                               'F_module_name', tname='_class')
-            util.eval_template(options, fmt_class,
-                               'F_impl_filename', tname='_class')   # XXX lower_class
+            util.eval_template(options, fmt_class, 'F_module_name', '_class')
+            util.eval_template(options, fmt_class, 'F_impl_filename', '_class')
 
         # Only one file per class for C.
-        util.eval_template(options, fmt_class,
-                           'C_header_filename', tname='_class')
-        util.eval_template(options, fmt_class,
-                           'C_impl_filename', tname='_class')
+        util.eval_template(options, fmt_class, 'C_header_filename', '_class')
+        util.eval_template(options, fmt_class, 'C_impl_filename', '_class')
 
         methods = node.setdefault('methods', [])
         for method in methods:
@@ -794,11 +786,9 @@ class Namify(object):
         fmt_func = node['fmt']
         
         if cls:
-            util.eval_template(options, fmt_func, 'C_name',
-                               tname='_method')
+            util.eval_template(options, fmt_func, 'C_name', '_method')
         else:
-            util.eval_template(options, fmt_func, 'C_name',
-                               tname='_function')
+            util.eval_template(options, fmt_func, 'C_name', '_function')
 
         if 'F_C_name' in options:
             fmt_func.F_C_name = options.F_C_name
@@ -817,11 +807,9 @@ class Namify(object):
         fmt_func = node['fmt']
 
         if cls:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', tname='_method')
+            util.eval_template(options, fmt_func, 'F_name_impl', '_method')
         else:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', tname='_function')
+            util.eval_template(options, fmt_func, 'F_name_impl', '_function')
 
         util.eval_template(options, fmt_func, 'F_name_method')
         util.eval_template(options, fmt_func, 'F_name_generic')

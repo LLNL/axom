@@ -407,9 +407,9 @@ return 1;""", fmt)
         PY_impl = [1] + PY_decl + PY_code + [-1]
 
         if cls:
-            util.eval_template(options, fmt_func, 'PY_name_impl', tname='_method')
+            util.eval_template(options, fmt_func, 'PY_name_impl', '_method')
         else:
-            util.eval_template(options, fmt_func, 'PY_name_impl', tname='_function')
+            util.eval_template(options, fmt_func, 'PY_name_impl', '_function')
 
         self.create_method(cls, fmt, PY_impl)
 
@@ -565,9 +565,9 @@ static PyObject *
             body.append(-1)
 
             if cls:
-                util.eval_template(options, fmt, 'PY_name_impl', tname='_method')
+                util.eval_template(options, fmt, 'PY_name_impl', '_method')
             else:
-                util.eval_template(options, fmt, 'PY_name_impl', tname='_function')
+                util.eval_template(options, fmt, 'PY_name_impl', '_function')
 
             self.create_method(cls, fmt, body)
 
