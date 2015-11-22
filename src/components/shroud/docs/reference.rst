@@ -286,6 +286,17 @@ C_impl_filename
    Output file name for implementation of wrapper routines.
    Defaults to option *C_impl_filename_class_template*.
 
+F_module_name
+
+   Name of Fortran module for this class.
+   Defaults to option *F_module_name_class*.
+   Only used if option *F_module_per_class* is True.
+
+F_impl_filename
+
+   Name of Fortran file for this class.
+   Defaults to option *F_impl_name_class*.
+   Only used if option *F_module_per_class* is True.
 
 
 Functions

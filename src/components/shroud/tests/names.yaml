@@ -9,6 +9,8 @@ classes:
   - name: Names
     C_header_filename: foo.h
     C_impl_filename: foo.cpp
+    F_module_name: name_module
+    F_impl_filename: foo.f
     options:
       none: foo
 

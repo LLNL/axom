@@ -4,14 +4,16 @@
         {
             "C_header_filename": "foo.h", 
             "C_impl_filename": "foo.cpp", 
+            "F_impl_filename": "foo.f", 
             "F_module_dependencies": [], 
+            "F_module_name": "name_module", 
             "fmt": {
                 "C_header_filename": "foo.h", 
                 "C_impl_filename": "foo.cpp", 
                 "C_type_name": "TES_names", 
                 "F_derived_name": "names", 
-                "F_impl_filename": "wrapfNames.f", 
-                "F_module_name": "names_mod", 
+                "F_impl_filename": "foo.f", 
+                "F_module_name": "name_module", 
                 "PY_PyObject": "PY_Names", 
                 "PY_PyTypeObject": "PY_Names_Type", 
                 "PY_capsule_name": "PY_Names_capsule_name", 
@@ -266,7 +268,7 @@
             "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "Names", 
             "f_module": {
-                "names_mod": [
+                "name_module": [
                     "names"
                 ]
             }, 

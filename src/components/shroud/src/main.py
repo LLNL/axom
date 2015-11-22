@@ -322,8 +322,8 @@ class Schema(object):
             fmt_class.C_prefix = options.C_prefix
 
         if options.F_module_per_class:
-            util.eval_template(options, fmt_class, 'F_module_name', '_class')
-            util.eval_template(options, fmt_class, 'F_impl_filename', '_class')
+            util.eval_template2(node, 'F_module_name', '_class')
+            util.eval_template2(node, 'F_impl_filename', '_class')
 
         # Only one file per class for C.
         util.eval_template2(node, 'C_header_filename', '_class')

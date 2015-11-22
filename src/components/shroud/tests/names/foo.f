@@ -1,6 +1,6 @@
-! wrapfNames.f
+! foo.f
 ! This is generated code, do not edit
-module names_mod
+module name_module
     use fstr_mod
     ! splicer begin class.Names.module_use
     ! splicer end class.Names.module_use
@@ -97,4 +97,4 @@ contains
         endif
     end function names_ne
 
-end module names_mod
+end module name_module

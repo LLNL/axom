@@ -2,7 +2,7 @@ Wrote foo.h
 Wrote foo.cpp
 Wrote wraptestnames.h
 Wrote wraptestnames.cpp
-Wrote wrapfNames.f
+Wrote foo.f
 Wrote wrapftestnames.f
 Wrote pyNamestype.cpp
 Wrote pytestnamesmodule.hpp
