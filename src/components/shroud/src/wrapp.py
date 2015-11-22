@@ -64,9 +64,9 @@ class Wrapp(util.WrapperMixin):
 
         fmt_library.PY_prefix          = options.get('PY_prefix', 'PY_')
         fmt_library.PY_module_name     = fmt_library.lower_library
-        util.eval_template2(top, 'PY_module_filename')
-        util.eval_template2(top, 'PY_header_filename')
-        util.eval_template2(top, 'PY_helper_filename')
+        util.eval_template(top, 'PY_module_filename')
+        util.eval_template(top, 'PY_header_filename')
+        util.eval_template(top, 'PY_helper_filename')
         fmt_library.BBB = 'BBB'   # name of cpp class pointer in PyObject
         self.py_type_object_creation = []
         self.py_type_extern = []
@@ -83,11 +83,11 @@ class Wrapp(util.WrapperMixin):
             typedef.PY_format = 'O'
 
             # PyTypeObject for class
-            util.eval_template2(node, 'PY_PyTypeObject')
+            util.eval_template(node, 'PY_PyTypeObject')
             typedef.PY_PyTypeObject = fmt.PY_PyTypeObject
 
             # PyObject for class
-            util.eval_template2(node, 'PY_PyObject')
+            util.eval_template(node, 'PY_PyObject')
             typedef.PY_PyObject = fmt.PY_PyObject
 
             fmt.PY_to_object_func = typedef.PY_to_object = wformat('PP_{cpp_class}_to_Object', fmt)
@@ -124,7 +124,7 @@ class Wrapp(util.WrapperMixin):
         options = node['options']
         fmt_class = node['fmt']
 
-        util.eval_template2(node, 'PY_type_filename')
+        util.eval_template(node, 'PY_type_filename')
 
         self.create_class_helper_functions(node)
 
@@ -408,9 +408,9 @@ return 1;""", fmt)
         PY_impl = [1] + PY_decl + PY_code + [-1]
 
         if cls:
-            util.eval_template2(node, 'PY_name_impl', '_method')
+            util.eval_template(node, 'PY_name_impl', '_method')
         else:
-            util.eval_template2(node, 'PY_name_impl', '_function')
+            util.eval_template(node, 'PY_name_impl', '_function')
 
         self.create_method(cls, fmt, PY_impl)
 
@@ -566,9 +566,9 @@ static PyObject *
             body.append(-1)
 
             if cls:
-                util.eval_template2(methods[0], 'PY_name_impl', '_method', fmt)
+                util.eval_template(methods[0], 'PY_name_impl', '_method', fmt)
             else:
-                util.eval_template2(methods[0], 'PY_name_impl', '_function', fmt)
+                util.eval_template(methods[0], 'PY_name_impl', '_function', fmt)
 
             self.create_method(cls, fmt, body)
 

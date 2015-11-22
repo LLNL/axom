@@ -128,14 +128,14 @@ class Schema(object):
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
-        util.eval_template2(node, 'C_header_filename', '_library')
-        util.eval_template2(node, 'C_impl_filename', '_library')
+        util.eval_template(node, 'C_header_filename', '_library')
+        util.eval_template(node, 'C_impl_filename', '_library')
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
         # All class/methods and functions may go into this file or just functions.
-        util.eval_template2(node, 'F_module_name', '_library')
-        util.eval_template2(node, 'F_impl_filename', '_library')
+        util.eval_template(node, 'F_module_name', '_library')
+        util.eval_template(node, 'F_impl_filename', '_library')
 
         def_types = dict(
             void    = util.Typedef('void',
@@ -321,12 +321,12 @@ class Schema(object):
             fmt_class.C_prefix = options.C_prefix
 
         if options.F_module_per_class:
-            util.eval_template2(node, 'F_module_name', '_class')
-            util.eval_template2(node, 'F_impl_filename', '_class')
+            util.eval_template(node, 'F_module_name', '_class')
+            util.eval_template(node, 'F_impl_filename', '_class')
 
         # Only one file per class for C.
-        util.eval_template2(node, 'C_header_filename', '_class')
-        util.eval_template2(node, 'C_impl_filename', '_class')
+        util.eval_template(node, 'C_header_filename', '_class')
+        util.eval_template(node, 'C_impl_filename', '_class')
 
         methods = node.setdefault('methods', [])
         for method in methods:
@@ -785,9 +785,9 @@ class Namify(object):
         fmt_func = node['fmt']
         
         if cls:
-            util.eval_template2(node, 'C_name', '_method')
+            util.eval_template(node, 'C_name', '_method')
         else:
-            util.eval_template2(node, 'C_name', '_function')
+            util.eval_template(node, 'C_name', '_function')
 
         if 'F_C_name' in node:
             fmt_func.F_C_name = node['F_C_name']
@@ -806,12 +806,12 @@ class Namify(object):
         fmt_func = node['fmt']
 
         if cls:
-            util.eval_template2(node, 'F_name_impl', '_method')
+            util.eval_template(node, 'F_name_impl', '_method')
         else:
-            util.eval_template2(node, 'F_name_impl', '_function')
+            util.eval_template(node, 'F_name_impl', '_function')
 
-        util.eval_template2(node, 'F_name_method')
-        util.eval_template2(node, 'F_name_generic')
+        util.eval_template(node, 'F_name_method')
+        util.eval_template(node, 'F_name_generic')
 
         if 'F_this' in options:
             fmt_func.F_this = options.F_this

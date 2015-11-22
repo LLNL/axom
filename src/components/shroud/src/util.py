@@ -32,16 +32,7 @@ def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
     lst.append(fmt.vformat(template, None, dct))
 
-def XXeval_template(options, fmt, name, tname=''):
-    """fmt[name] = option[name + tname + '_template']
-    """
-    if hasattr(options, name):
-        setattr(fmt, name, getattr(options, name))
-    else:
-        tname = name + tname + '_template'
-        setattr(fmt, name, wformat(options[tname], fmt))
-
-def eval_template2(node, name, tname='', fmt=None):
+def eval_template(node, name, tname='', fmt=None):
     """fmt[name] = node[name] or option[name + tname + '_template']
     """
     if fmt is None:
