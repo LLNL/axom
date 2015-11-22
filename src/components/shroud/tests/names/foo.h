@@ -1,10 +1,10 @@
-// wrapNames.h
+// foo.h
 // This is generated code, do not edit
-// wrapNames.h
+// foo.h
 // For C users and C++ implementation
 
-#ifndef WRAPNAMES_H
-#define WRAPNAMES_H
+#ifndef FOO_H
+#define FOO_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,4 +25,4 @@ void XXX_TES_names_method2(TES_names * self);
 }
 #endif
 
-#endif  // WRAPNAMES_H
+#endif  // FOO_H

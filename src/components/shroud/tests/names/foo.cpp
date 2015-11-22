@@ -1,7 +1,7 @@
-// wrapNames.cpp
+// foo.cpp
 // This is generated code, do not edit
-// wrapNames.cpp
-#include "wrapNames.h"
+// foo.cpp
+#include "foo.h"
 
 extern "C" {
 

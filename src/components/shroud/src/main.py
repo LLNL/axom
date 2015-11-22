@@ -326,8 +326,8 @@ class Schema(object):
             util.eval_template(options, fmt_class, 'F_impl_filename', '_class')
 
         # Only one file per class for C.
-        util.eval_template(options, fmt_class, 'C_header_filename', '_class')
-        util.eval_template(options, fmt_class, 'C_impl_filename', '_class')
+        util.eval_template2(node, 'C_header_filename', '_class')
+        util.eval_template2(node, 'C_impl_filename', '_class')
 
         methods = node.setdefault('methods', [])
         for method in methods:

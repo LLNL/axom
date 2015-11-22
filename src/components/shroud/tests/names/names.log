@@ -2,8 +2,8 @@ Read yaml names.yaml
 class Names
 C method void method1
 C method void method2
-Close wrapNames.h
-Close wrapNames.cpp
+Close foo.h
+Close foo.cpp
 C function void function1
 C function void function2
 C function void function3a(int i)

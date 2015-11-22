@@ -268,10 +268,23 @@ F_derived_member
     pass
 
 
+Top Level
+---------
 
 
 
+Classes
+-------
 
+C_header_filename
+
+   Output file name for header for  wrapper routines.
+   Defaults to option *C_header_filename_class_template*.
+
+C_impl_filename
+
+   Output file name for implementation of wrapper routines.
+   Defaults to option *C_impl_filename_class_template*.
 
 
 

@@ -37,10 +37,10 @@ module testnames_mod
         ! splicer end additional_interfaces
     end interface
     
-    interface function3a
+    interface generic3
         module procedure F_name_function3a_int
         module procedure F_name_function3a_long
-    end interface function3a
+    end interface generic3
 
 contains
     

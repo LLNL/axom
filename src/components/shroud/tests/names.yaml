@@ -7,7 +7,8 @@ options:
 
 classes:
   - name: Names
-#    C_header_filename: foo.h
+    C_header_filename: foo.h
+    C_impl_filename: foo.cpp
     options:
       none: foo
 

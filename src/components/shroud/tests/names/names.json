@@ -2,10 +2,12 @@
     "F_module_dependencies": [], 
     "classes": [
         {
+            "C_header_filename": "foo.h", 
+            "C_impl_filename": "foo.cpp", 
             "F_module_dependencies": [], 
             "fmt": {
-                "C_header_filename": "wrapNames.h", 
-                "C_impl_filename": "wrapNames.cpp", 
+                "C_header_filename": "foo.h", 
+                "C_impl_filename": "foo.cpp", 
                 "C_type_name": "TES_names", 
                 "F_derived_name": "names", 
                 "F_impl_filename": "wrapfNames.f", 
@@ -150,6 +152,7 @@
             }
         }, 
         {
+            "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
             "args": [
                 {
@@ -166,7 +169,7 @@
             "fmt": {
                 "C_name": "YYY_TES_function3a_0", 
                 "F_C_name": "yyy_tes_function3a_0", 
-                "F_name_generic": "function3a", 
+                "F_name_generic": "generic3", 
                 "F_name_impl": "F_name_function3a_int", 
                 "F_name_method": "function3a_0", 
                 "PY_name_impl": "PY_function3a_0", 
@@ -183,6 +186,7 @@
             }
         }, 
         {
+            "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
             "args": [
                 {
@@ -199,7 +203,7 @@
             "fmt": {
                 "C_name": "YYY_TES_function3a_1", 
                 "F_C_name": "yyy_tes_function3a_1", 
-                "F_name_generic": "function3a", 
+                "F_name_generic": "generic3", 
                 "F_name_impl": "F_name_function3a_long", 
                 "F_name_method": "function3a_1", 
                 "PY_name_impl": "PY_function3a_1", 
