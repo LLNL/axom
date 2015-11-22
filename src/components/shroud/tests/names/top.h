@@ -1,6 +1,5 @@
 // top.h
 // This is generated code, do not edit
-// top.h
 // For C users and C++ implementation
 
 #ifndef TOP_H

@@ -1,6 +1,5 @@
 // wrapTutorial.h
 // This is generated code, do not edit
-// wrapTutorial.h
 // For C users and C++ implementation
 
 #ifndef WRAPTUTORIAL_H

@@ -262,6 +262,22 @@ F_derived_member
 Top Level
 ---------
 
+copyright
+
+   A list of lines to add to the top of each generate file.
+
+splicers
+
+   A dictionary mapping file suffix to a list of splicer files
+   to read.
+
+types
+
+   A dictionary of user define types.
+   Each type is a dictionary for members describing how to
+   map a type between languages.
+
+
 C_header_filename
 
    Output file name for header for  wrapper routines.
@@ -281,6 +297,19 @@ F_impl_filename
 
    Name of Fortran file for functions.
    Defaults to option *F_impl_name_library_template*.
+
+Types
+-----
+
+typedef
+c_header
+cpp_header
+c_type
+cpp_type
+c_to_cpp
+c_fortran
+f_type
+f_module
 
 
 Classes
@@ -344,6 +373,7 @@ F_C_name
 
     Name of the Fortran ``BIND(C)`` interface for a C function.
     Defaults to the lower case version of *C_name*.
+
 ..    tut_class1_method1
 
 F_name_impl
@@ -351,6 +381,7 @@ F_name_impl
     Name of the Fortran implementation function.
     Defaults to option *F_name_impl_method_template* or
     *F_name_impl_function_template*.
+
 ..    class1_method1
 
 F_name_method
@@ -413,3 +444,10 @@ len_trim
 
    For a string argument, pass the string address and the result of
    len_trim.
+
+
+Splicers
+--------
+
+Describe splicers.
+

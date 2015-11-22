@@ -3,7 +3,6 @@
 // blah blah
 // yada yada
 //
-// wrapExClass1.h
 // For C users and C++ implementation
 
 #ifndef WRAPEXCLASS1_H

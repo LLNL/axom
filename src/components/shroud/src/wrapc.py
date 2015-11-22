@@ -109,7 +109,6 @@ class Wrapc(util.WrapperMixin):
 
         output = []
         output.extend([
-                '// %s' % fname,
                 '// For C users and C++ implementation',
                 '',
                 '#ifndef %s' % guard,

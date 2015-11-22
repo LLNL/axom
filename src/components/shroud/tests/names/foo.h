@@ -1,6 +1,5 @@
 // foo.h
 // This is generated code, do not edit
-// foo.h
 // For C users and C++ implementation
 
 #ifndef FOO_H
