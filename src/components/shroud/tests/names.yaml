@@ -7,6 +7,7 @@ options:
 
 classes:
   - name: Names
+#    C_header_filename: foo.h
     options:
       none: foo
 
@@ -24,7 +25,8 @@ functions:
 
   # test generic/overloaded functions
   - decl: void function3a(int i)
+    F_name_generic: generic3
     F_name_impl: F_name_function3a_int
   - decl: void function3a(long i)
+    F_name_generic: generic3
     F_name_impl: F_name_function3a_long
-
