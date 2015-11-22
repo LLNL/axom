@@ -30,6 +30,7 @@
             }, 
             "methods": [
                 {
+                    "F_name_method": "type_method1", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method1", 
@@ -38,7 +39,7 @@
                         "F_C_name": "xxx_tes_names_method1", 
                         "F_name_generic": "method1", 
                         "F_name_impl": "names_method1", 
-                        "F_name_method": "method1", 
+                        "F_name_method": "type_method1", 
                         "PY_name_impl": "PY_names_method1", 
                         "method_name": "method1", 
                         "underscore_name": "method1"

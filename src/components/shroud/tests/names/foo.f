@@ -15,7 +15,7 @@ module name_module
         ! splicer begin class.Names.component_part
         ! splicer end class.Names.component_part
     contains
-        procedure :: method1 => names_method1
+        procedure :: type_method1 => names_method1
         procedure :: method2 => names_method2
         ! splicer begin class.Names.type_bound_procedure_part
         ! splicer end class.Names.type_bound_procedure_part
@@ -56,9 +56,9 @@ contains
         use iso_c_binding
         implicit none
         class(names) :: obj
-        ! splicer begin class.Names.method.method1
+        ! splicer begin class.Names.method.type_method1
         call xxx_tes_names_method1(obj%voidptr)
-        ! splicer end class.Names.method.method1
+        ! splicer end class.Names.method.type_method1
     end subroutine names_method1
     
     subroutine names_method2(obj)

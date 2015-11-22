@@ -649,7 +649,9 @@ class Wrapf(util.WrapperMixin):
                     fmt.F_name_method, fmt.F_name_impl))
 
         # body of function
-        splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)
+#XXX        sname = fmt_func.F_name_impl
+        sname = fmt_func.F_name_method
+        splicer_code = self.splicer_stack[-1].get(sname, None)
         if 'F_code' in options:
             F_code = [   wformat(options.F_code, fmt) ]
         elif splicer_code:
@@ -683,7 +685,7 @@ class Wrapf(util.WrapperMixin):
         impl.append('implicit none')
         impl.extend(arg_f_decl)
         impl.extend(optional)
-        self._create_splicer(fmt.F_name_method, impl, F_code)
+        self._create_splicer(sname, impl, F_code)
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt))
 

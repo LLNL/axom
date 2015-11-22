@@ -810,7 +810,7 @@ class Namify(object):
         else:
             util.eval_template2(node, 'F_name_impl', '_function')
 
-        util.eval_template(options, fmt_func, 'F_name_method')
+        util.eval_template2(node, 'F_name_method')
         util.eval_template2(node, 'F_name_generic')
 
         if 'F_this' in options:

@@ -141,15 +141,6 @@ function_suffix
 
     Function field 'function_suffix'.
 
-F_name_generic
-
-    method1
-
-F_name_method
-
-    The name of the *F_name_impl* subprogram when used as a
-    type procedure.
-
 PY_name_impl
 
     PY_class1_method1
@@ -174,11 +165,11 @@ C_name_function_template
 
 F_C_name
 
-    defaults to C_name.lower() - tut_class1_method1
+    Defaults to C_name.lower() - tut_class1_method1
 
 F_name_generic_template
 
-    defaults to '{underscore_name'} - method1
+    Defaults to '{underscore_name'} - method1
 
 F_name_impl
 
@@ -361,6 +352,17 @@ F_name_impl
     Defaults to option *F_name_impl_method_template* or
     *F_name_impl_function_template*.
 ..    class1_method1
+
+F_name_method
+
+    The name of the *F_name_impl* subprogram when used as a
+    type procedure.
+    Defaults to option *F_name_method_template*.
+
+F_name_generic
+
+..    method1
+    Defaults to option *F_name_generic_template*.
 
 
 
