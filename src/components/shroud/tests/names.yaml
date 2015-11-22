@@ -22,3 +22,9 @@ functions:
     F_C_name: f_c_name_special
     F_name_impl: f_name_special
 
+  # test generic/overloaded functions
+  - decl: void function3a(int i)
+    F_name_impl: F_name_function3a_int
+  - decl: void function3a(long i)
+    F_name_impl: F_name_function3a_long
+

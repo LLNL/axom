@@ -61,6 +61,10 @@ be controlled directly by the input file::
         end subroutine {F_C_name}
       end interface
 
+      interface {F_name_generic}
+        module procedure {F_name_impl}
+      end interface {F_name_generic}
+
     contains
 
       subroutine {F_name_impl}
@@ -143,7 +147,8 @@ F_name_generic
 
 F_name_method
 
-    method1
+    The name of the *F_name_impl* subprogram when used as a
+    type procedure.
 
 PY_name_impl
 

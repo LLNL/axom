@@ -41,9 +41,61 @@ PY_function2(
     Py_RETURN_NONE;
 // splicer end function.function2
 }
+
+static char PY_function3a_0__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function3a_0(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function3a_0
+    int i;
+    const char *kwcpp = "i";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:function3a", kw_list,
+        &i))
+    {
+        return NULL;
+    }
+    function3a(i);
+    Py_RETURN_NONE;
+// splicer end function.function3a_0
+}
+
+static char PY_function3a_1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function3a_1(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function3a_1
+    long i;
+    const char *kwcpp = "i";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:function3a", kw_list,
+        &i))
+    {
+        return NULL;
+    }
+    function3a(i);
+    Py_RETURN_NONE;
+// splicer end function.function3a_1
+}
 static PyMethodDef PY_methods[] = {
 {"function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"function2", (PyCFunction)PY_function2, METH_NOARGS, PY_function2__doc__},
+{"function3a_0", (PyCFunction)PY_function3a_0, METH_VARARGS|METH_KEYWORDS, PY_function3a_0__doc__},
+{"function3a_1", (PyCFunction)PY_function3a_1, METH_VARARGS|METH_KEYWORDS, PY_function3a_1__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

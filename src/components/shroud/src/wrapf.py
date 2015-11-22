@@ -11,13 +11,17 @@ module {F_module_name}
     generic :: {F_name_generic} => {F_name_method}, ...
   end type {F_derived_name}
 
+  ! interface for C functions
   interface
     {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
         bind(C, name="{C_name}")
       {arg_c_decl}
     end {F_C_subprogram} {F_C_name}
-
   end interface
+
+  interface {F_name_generic}
+    module procedure {F_name_impl}
+  end interface {F_name_generic}
 
 contains
 
@@ -632,14 +636,17 @@ class Wrapf(util.WrapperMixin):
 
         if not is_ctor:
             # Add method to derived type
-            F_name_method = fmt.F_name_method
 #            if not fmt.get('CPP_template', None):
             if not fmt.get('CPP_return_templated', False):
                 # if return type is templated in C++, then do not set up generic
                 # since only the return type may be different (ex. getValue<T>())
-                self.f_type_generic.setdefault(fmt.F_name_generic,[]).append(F_name_method)
+                if cls:
+                    gname = fmt.F_name_method
+                else:
+                    gname = fmt.F_name_impl
+                self.f_type_generic.setdefault(fmt.F_name_generic,[]).append(gname)
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    F_name_method, fmt.F_name_impl))
+                    fmt.F_name_method, fmt.F_name_impl))
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)

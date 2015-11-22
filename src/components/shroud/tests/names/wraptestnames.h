@@ -19,6 +19,10 @@ void YYY_TES_function1();
 
 void c_name_special();
 
+void YYY_TES_function3a_0(int i);
+
+void YYY_TES_function3a_1(long i);
+
 #ifdef __cplusplus
 }
 #endif

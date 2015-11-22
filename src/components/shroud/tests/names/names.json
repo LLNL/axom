@@ -148,6 +148,72 @@
                 "name": "function2", 
                 "type": "void"
             }
+        }, 
+        {
+            "F_name_impl": "F_name_function3a_int", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "i", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void function3a(int i)", 
+            "fmt": {
+                "C_name": "YYY_TES_function3a_0", 
+                "F_C_name": "yyy_tes_function3a_0", 
+                "F_name_generic": "function3a", 
+                "F_name_impl": "F_name_function3a_int", 
+                "F_name_method": "function3a_0", 
+                "PY_name_impl": "PY_function3a_0", 
+                "function_suffix": "_0", 
+                "method_name": "function3a", 
+                "underscore_name": "function3a"
+            }, 
+            "function_index": 4, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "function3a", 
+                "type": "void"
+            }
+        }, 
+        {
+            "F_name_impl": "F_name_function3a_long", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "i", 
+                    "type": "long"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void function3a(long i)", 
+            "fmt": {
+                "C_name": "YYY_TES_function3a_1", 
+                "F_C_name": "yyy_tes_function3a_1", 
+                "F_name_generic": "function3a", 
+                "F_name_impl": "F_name_function3a_long", 
+                "F_name_method": "function3a_1", 
+                "PY_name_impl": "PY_function3a_1", 
+                "function_suffix": "_1", 
+                "method_name": "function3a", 
+                "underscore_name": "function3a"
+            }, 
+            "function_index": 5, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "function3a", 
+                "type": "void"
+            }
         }
     ], 
     "options": {
