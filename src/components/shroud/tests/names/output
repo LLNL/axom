@@ -1,9 +1,9 @@
 Wrote foo.h
 Wrote foo.cpp
-Wrote wraptestnames.h
-Wrote wraptestnames.cpp
+Wrote top.h
+Wrote top.cpp
 Wrote foo.f
-Wrote wrapftestnames.f
+Wrote top.f
 Wrote pyNamestype.cpp
 Wrote pytestnamesmodule.hpp
 Wrote pytestnamesmodule.cpp

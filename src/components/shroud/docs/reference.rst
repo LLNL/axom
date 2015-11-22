@@ -271,6 +271,25 @@ F_derived_member
 Top Level
 ---------
 
+C_header_filename
+
+   Output file name for header for  wrapper routines.
+   Defaults to option *C_header_filename_library_template*.
+
+C_impl_filename
+
+   Output file name for implementation of wrapper routines.
+   Defaults to option *C_impl_filename_library_template*.
+
+F_module_name
+
+   Name of Fortran module for this class.
+   Defaults to option *F_module_name_library_template*.
+
+F_impl_filename
+
+   Name of Fortran file for functions.
+   Defaults to option *F_impl_name_library_template*.
 
 
 Classes
@@ -289,13 +308,13 @@ C_impl_filename
 F_module_name
 
    Name of Fortran module for this class.
-   Defaults to option *F_module_name_class*.
+   Defaults to option *F_module_name_class_template*.
    Only used if option *F_module_per_class* is True.
 
 F_impl_filename
 
    Name of Fortran file for this class.
-   Defaults to option *F_impl_name_class*.
+   Defaults to option *F_impl_name_class_template*.
    Only used if option *F_module_per_class* is True.
 
 

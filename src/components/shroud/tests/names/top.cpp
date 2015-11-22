@@ -1,7 +1,7 @@
-// wraptestnames.cpp
+// top.cpp
 // This is generated code, do not edit
-// wraptestnames.cpp
-#include "wraptestnames.h"
+// top.cpp
+#include "top.h"
 
 extern "C" {
 

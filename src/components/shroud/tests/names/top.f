@@ -1,6 +1,6 @@
-! wrapftestnames.f
+! top.f
 ! This is generated code, do not edit
-module testnames_mod
+module top_module
     use fstr_mod
     implicit none
     
@@ -81,4 +81,4 @@ contains
     ! splicer begin additional_functions
     ! splicer end additional_functions
 
-end module testnames_mod
+end module top_module

@@ -1,10 +1,10 @@
-// wraptestnames.h
+// top.h
 // This is generated code, do not edit
-// wraptestnames.h
+// top.h
 // For C users and C++ implementation
 
-#ifndef WRAPTESTNAMES_H
-#define WRAPTESTNAMES_H
+#ifndef TOP_H
+#define TOP_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,4 +27,4 @@ void YYY_TES_function3a_1(long i);
 }
 #endif
 
-#endif  // WRAPTESTNAMES_H
+#endif  // TOP_H

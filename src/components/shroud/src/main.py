@@ -118,6 +118,7 @@ class Schema(object):
         if 'options' in node:
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
+        node['options'] = def_options
 
         fmt_library = node['fmt'] = util.Options(None)
         fmt_library.library       = def_options['library']
@@ -127,16 +128,14 @@ class Schema(object):
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
-        util.eval_template(def_options, fmt_library, 'C_header_filename', '_library')
-        util.eval_template(def_options, fmt_library, 'C_impl_filename', '_library')
+        util.eval_template2(node, 'C_header_filename', '_library')
+        util.eval_template2(node, 'C_impl_filename', '_library')
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
         # All class/methods and functions may go into this file or just functions.
-        util.eval_template(def_options, fmt_library, 'F_module_name', '_library')
-        util.eval_template(def_options, fmt_library, 'F_impl_filename', '_library')
-
-        node['options'] = def_options
+        util.eval_template2(node, 'F_module_name', '_library')
+        util.eval_template2(node, 'F_impl_filename', '_library')
 
         def_types = dict(
             void    = util.Typedef('void',

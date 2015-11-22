@@ -5,6 +5,11 @@ options:
   C_name_method_template: XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}
   C_name_function_template: YYY_{C_prefix}{underscore_name}{function_suffix}
 
+C_header_filename: top.h
+C_impl_filename: top.cpp
+F_module_name: top_module
+F_impl_filename: top.f
+
 classes:
   - name: Names
     C_header_filename: foo.h
