@@ -44,13 +44,13 @@ module top_module
 
 contains
     
-    subroutine function1()
+    subroutine testnames_function1()
         use iso_c_binding
         implicit none
         ! splicer begin function1
         call yyy_tes_function1()
         ! splicer end function1
-    end subroutine function1
+    end subroutine testnames_function1
     
     subroutine f_name_special()
         use iso_c_binding

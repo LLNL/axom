@@ -14,6 +14,7 @@ Contents:
    introduction
    tutorial
    reference
+   faq
    previouswork
    futurework
 

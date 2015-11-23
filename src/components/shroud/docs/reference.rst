@@ -153,13 +153,13 @@ templates
 Templates are set in options then expanded to assign to the format 
 dictionary.
 
-C_name_method_template
-
-    {C_prefix}{lower_class}_{underscore_name}{function_suffix}
-
 C_name_function_template
 
     {C_prefix}{underscore_name}{function_suffix}
+
+C_name_method_template
+
+    {C_prefix}{lower_class}_{underscore_name}{function_suffix}
 
 
 
@@ -171,13 +171,15 @@ F_name_generic_template
 
     Defaults to '{underscore_name'} - method1
 
-F_name_impl
+F_name_impl_method_template
 
-    class - {lower_class}_{underscore_name}{function_suffix}
-    function - '{underscore_name}{function_suffix}'
-    class1_method1
+    {lower_class}_{underscore_name}{function_suffix}
 
-F_name_method
+F_name_impl_function_template
+
+    {underscore_name}{function_suffix}
+
+F_name_method_template
 
     {underscore_name}{function_suffix}
     method1
