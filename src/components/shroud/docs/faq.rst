@@ -5,7 +5,7 @@ How do I control the names of generated functions?
 --------------------------------------------------
 
 Each C++ function may create several additional names.  Each name has a
-default value describe by a option template which is inherited by
+default value described by a option template which is inherited by
 nested option blocks.  This value can be overridden for a single
 function using an explicit value.
 
@@ -30,7 +30,7 @@ For *C_name* and *F_name_impl*, the template is dependent on if the function is
 defined as a method of a class or not.
 
 For example, a library has an ``initialize`` function which is
-in a namespace.  In C++ it is call as::
+in a namespace.  In C++ it is called as::
 
   #include "library.hpp"
 
