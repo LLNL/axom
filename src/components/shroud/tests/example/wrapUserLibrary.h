@@ -3,7 +3,6 @@
 // blah blah
 // yada yada
 //
-// wrapUserLibrary.h
 // For C users and C++ implementation
 
 #ifndef WRAPUSERLIBRARY_H

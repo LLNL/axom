@@ -32,16 +32,16 @@ def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
     lst.append(fmt.vformat(template, None, dct))
 
-def eval_template(options, fmt, name, default=None):
-    """ If a tname exists in options, use it; else use default.
-    fmt[name] = option[name + '_template']
+def eval_template(node, name, tname='', fmt=None):
+    """fmt[name] = node[name] or option[name + tname + '_template']
     """
-    if hasattr(options, name):
-        setattr(fmt, name, getattr(options, name))
+    if fmt is None:
+        fmt = node['fmt']
+    if name in node:
+        setattr(fmt, name, node[name])
     else:
-        dflt = default or default_template[name]
-        tname = name + '_template'
-        setattr(fmt, name, wformat(options.get(tname, dflt), fmt))
+        tname = name + tname + '_template'
+        setattr(fmt, name, wformat(node['options'][tname], fmt))
 
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case

@@ -9,7 +9,6 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
-// wrapDataView.h
 // For C users and C++ implementation
 
 #ifndef WRAPDATAVIEW_H

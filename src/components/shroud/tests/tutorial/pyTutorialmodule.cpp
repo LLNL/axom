@@ -66,16 +66,17 @@ PY_sum(
 // splicer begin function.sum
     int len;
     int * values;
-    const char *kwcpp = "len\0values";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4, NULL };
+    int * result;
+    const char *kwcpp = "len\0values\0result";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:Sum", kw_list,
-        &len, &values))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iii:Sum", kw_list,
+        &len, &values, &result))
     {
         return NULL;
     }
-    int rv = Sum(len, values);
-    return Py_BuildValue("i", rv);
+    Sum(len, values, result);
+    Py_RETURN_NONE;
 // splicer end function.sum
 }
 

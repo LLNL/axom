@@ -205,17 +205,26 @@
                 }, 
                 {
                     "attrs": {
-                        "dimension": true, 
+                        "dimension": "(*)", 
                         "intent": "in", 
                         "ptr": true, 
                         "value": false
                     }, 
                     "name": "values", 
                     "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "out", 
+                        "ptr": true, 
+                        "value": false
+                    }, 
+                    "name": "result", 
+                    "type": "int"
                 }
             ], 
             "attrs": {}, 
-            "decl": "int Sum(int len, int *values+dimension)", 
+            "decl": "void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))", 
             "fmt": {
                 "C_name": "TUT_sum", 
                 "F_C_name": "tut_sum", 
@@ -231,7 +240,7 @@
             "result": {
                 "attrs": {}, 
                 "name": "Sum", 
-                "type": "int"
+                "type": "void"
             }
         }, 
         {
@@ -272,7 +281,7 @@
                         "const": true, 
                         "intent": "in", 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -282,7 +291,7 @@
                         "const": true, 
                         "intent": "in", 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -291,7 +300,7 @@
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure", 
+            "decl": "const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure", 
             "fmt": {
                 "C_name": "TUT_function4a", 
                 "F_C_name": "tut_function4a", 
@@ -322,7 +331,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -333,7 +342,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
@@ -342,7 +351,7 @@
             "attrs": {
                 "pure": true
             }, 
-            "decl": "const std::string& Function4a(const std::string& arg1, const std::string& arg2) +pure", 
+            "decl": "const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure", 
             "fmt": {
                 "C_name": "TUT_function4a_bufferify", 
                 "F_C_name": "tut_function4a_bufferify", 
@@ -371,7 +380,7 @@
                         "const": true, 
                         "intent": "in", 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -381,14 +390,14 @@
                         "const": true, 
                         "intent": "in", 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b", 
                 "F_C_name": "tut_function4b", 
@@ -421,7 +430,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg1", 
                     "type": "std::string"
@@ -432,14 +441,14 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "arg2", 
                     "type": "std::string"
                 }
             ], 
             "attrs": {}, 
-            "decl": "const std::string& Function4b(const std::string& arg1, const std::string& arg2)", 
+            "decl": "const std::string& Function4b( const std::string& arg1, const std::string& arg2 )", 
             "fmt": {
                 "C_name": "TUT_function4b_bufferify", 
                 "F_C_name": "tut_function4b_bufferify", 
@@ -509,7 +518,7 @@
                         "const": true, 
                         "intent": "in", 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "name", 
                     "type": "std::string"
@@ -546,7 +555,7 @@
                         "intent": "in", 
                         "len_trim": true, 
                         "reference": true, 
-                        "value": true
+                        "value": false
                     }, 
                     "name": "name", 
                     "type": "std::string"
@@ -919,8 +928,30 @@
         }
     ], 
     "options": {
+        "C_header_filename_class_template": "wrap{cpp_class}.h", 
+        "C_header_filename_library_template": "wrap{library}.h", 
+        "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
+        "C_impl_filename_library_template": "wrap{library}.cpp", 
+        "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
+        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
+        "F_impl_filename_library_template": "wrapf{lower_library}.f", 
+        "F_module_name_class_template": "{lower_class}_mod", 
+        "F_module_name_library_template": "{lower_library}_mod", 
         "F_module_per_class": false, 
+        "F_name_generic_template": "{underscore_name}", 
+        "F_name_impl_function_template": "{underscore_name}{function_suffix}", 
+        "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_method_template": "{underscore_name}{function_suffix}", 
         "F_string_len_trim": true, 
+        "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
+        "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
+        "PY_header_filename_template": "py{library}module.hpp", 
+        "PY_helper_filename_template": "py{library}helper.cpp", 
+        "PY_module_filename_template": "py{library}module.cpp", 
+        "PY_name_impl_function_template": "{PY_prefix}{underscore_name}{function_suffix}", 
+        "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "tutorial.hpp", 
         "library": "Tutorial", 
         "namespace": "tutorial", 

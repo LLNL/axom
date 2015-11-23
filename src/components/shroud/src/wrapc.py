@@ -2,14 +2,6 @@
 """
 Generate C bindings for C++ classes
 
-#ifdef __cplusplus
-typedef void {C_type_name}
-#else
-struct s_{C_type_name};
-typedef struct s_{C_type_name} {C_type_name};
-#endif
-
-
 """
 from __future__ import print_function
 
@@ -117,7 +109,6 @@ class Wrapc(util.WrapperMixin):
 
         output = []
         output.extend([
-                '// %s' % fname,
                 '// For C users and C++ implementation',
                 '',
                 '#ifndef %s' % guard,

@@ -28,7 +28,7 @@ RetType Function8();
 
 void Function9(double arg);
 
-int Sum(int len, int * values);
+void Sum(int len, int * values, int *result);
 
 const std::string& LastFunctionCalled();
 
