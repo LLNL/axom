@@ -78,7 +78,8 @@ size_t DataBuffer::getBytesPerElement() const
  */
 size_t DataBuffer::getTotalBytes() const
 {
-  return getBytesPerElement() * m_numelems;
+  return m_schema.total_bytes();
+  //return getBytesPerElement() * m_numelems;
 }
 
 /*
@@ -118,6 +119,10 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength numelems)
   {
     m_type = type;
     m_numelems = numelems;
+
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(numelems);
+    m_schema.set(dtype);
   }
   return this;
 }
@@ -150,6 +155,7 @@ DataBuffer * DataBuffer::allocate()
     cleanup();
     std::size_t alloc_size = getTotalBytes();
     m_data = allocateBytes(alloc_size);
+    m_node.set_external(m_schema, m_data);
   }
 
   return this;
@@ -215,7 +221,15 @@ DataBuffer * DataBuffer::reallocate( SidreLength numelems)
     // let the buffer hold the new data
     m_data = realloc_data;
     m_numelems = numelems;
+
+    // update the buffer's Conduit Node
+    DataType dtype = conduit::DataType::default_dtype(m_type);
+    dtype.set_number_of_elements(m_numelems);
+    m_schema.set(dtype);
+    m_node.set_external(m_schema, m_data);
+
   }
+  //TODO - should be an error if this is called on an external data item.
 
   return this;
 }
@@ -255,6 +269,7 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
   if ( external_data != ATK_NULLPTR )
   {
     m_data = external_data;
+    m_node.set_external(m_schema, m_data);
     m_is_data_external = true;
   }
   return this;
@@ -270,16 +285,18 @@ DataBuffer * DataBuffer::setExternalData(void * external_data)
 void DataBuffer::info(Node &n) const
 {
   // Create a conduit node
-  DataType dtype = conduit::DataType::default_dtype(m_type);
-  dtype.set_number_of_elements(m_numelems);
-  Schema schema(dtype);
-  Node node;
-  node.set_external(schema, m_data);
+  //DataType dtype = conduit::DataType::default_dtype(m_type);
+  //dtype.set_number_of_elements(m_numelems);
+  //Schema schema(dtype);
+  //Node node;
+  //node.set_external(schema, m_data);
 
   n["index"].set(m_index);
   n["is_data_external"].set(m_is_data_external);
-  n["schema"].set(schema.to_json());
-  n["node"].set(node.to_json());
+  n["schema"].set(m_schema.to_json());
+  n["node"].set(m_node.to_json());
+  //n["schema"].set(schema.to_json());
+  //n["node"].set(node.to_json());
 }
 
 /*
@@ -323,6 +340,8 @@ DataBuffer::DataBuffer( IndexType index )
   m_type(EMPTY_ID),
   m_numelems(0),
   m_data(ATK_NULLPTR),
+  m_node(),
+  m_schema(),
   m_is_data_external(false),
   m_fortran_rank(0),
   m_fortran_allocatable(ATK_NULLPTR)
@@ -342,6 +361,8 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_type(EMPTY_ID),
   m_numelems(0),
   m_data(source.m_data),
+  m_node(source.m_node),
+  m_schema(source.m_schema),
   m_is_data_external(source.m_is_data_external),
   m_fortran_rank(0),
   m_fortran_allocatable(ATK_NULLPTR)
@@ -476,6 +497,7 @@ DataBuffer * DataBuffer::setFortranAllocatable(void * array, TypeID type, int ra
   return this;
 }
 #endif
+
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */
