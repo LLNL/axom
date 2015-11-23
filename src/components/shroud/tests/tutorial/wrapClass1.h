@@ -1,6 +1,5 @@
 // wrapClass1.h
 // This is generated code, do not edit
-// wrapClass1.h
 // For C users and C++ implementation
 
 #ifndef WRAPCLASS1_H

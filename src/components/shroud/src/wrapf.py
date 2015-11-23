@@ -4,28 +4,32 @@ Generate Fortran bindings for C++ code.
 
 module {F_module_name}
 
-type {F_derived_name}
-  type(C_PTR) {F_derived_member}
+  type {F_derived_name}
+    type(C_PTR) {F_derived_member}
+  contains
+    procedure :: {F_name_method} => {F_name_impl}
+    generic :: {F_name_generic} => {F_name_method}, ...
+  end type {F_derived_name}
 
-constains
-  procedure :: {F_name_method} => {F_name_impl}
-  generic :: {F_name_generic} => {F_name_method}, ...
-end type
+  ! interface for C functions
+  interface
+    {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
+        bind(C, name="{C_name}")
+      {arg_c_decl}
+    end {F_C_subprogram} {F_C_name}
+  end interface
 
-interface
-  {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
-      bind(C, name="{C_name}")
-    {arg_c_decl}
-  end {F_C_subprogram} {F_C_name}
-
-end interface
+  interface {F_name_generic}
+    module procedure {F_name_impl}
+  end interface {F_name_generic}
 
 contains
 
- {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
-     {F_C_name}({F_arg_c_call_tab})
- end {F_subprogram} {F_name_impl}
+  {F_pure_clause} {F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}
+      {F_C_name}({F_arg_c_call_tab})
+  end {F_subprogram} {F_name_impl}
 
+end module {F_module_name}
 ----------
 TODO:
   intent is kludged for now.  They're all intent(IN) because ifort
@@ -100,18 +104,11 @@ class Wrapf(util.WrapperMixin):
         if typedef.base == 'string':
             return (typ + intent_str, '(*)')  # is array
         else:
-            #        if arg['attrs'].get('const', False):
-            #            t.append('const')
             t.append(typ)
             if is_value:
                 t.append(', value')
             t.append(intent_str)
-            if attrs.get('array', False):
-                dimension = '(*)'
-            elif attrs.get('dimension', False):
-                dimension = '(*)'
-            else:
-                dimension = ''
+            dimension = attrs.get('dimension', '')
             return (''.join(t), dimension)
 
     def _c_decl(self, arg, name=None):
@@ -144,23 +141,13 @@ class Wrapf(util.WrapperMixin):
         if typedef.base == 'string':
             return (typ, '')  # not array
         else:
-            #        if arg['attrs'].get('const', False):
-            #            t.append('const')
             attrs = arg['attrs']
             t.append(typ)
             if default is None:
                 default = attrs.get('default', '')
             if default != '':
                 t.append('optional')
-#            if not (attrs.get('ptr', False) or
-#                    attrs.get('reference', False)):
-#                t.append(', value')
-            if attrs.get('array', False):
-                dimension = '(*)'
-            elif attrs.get('dimension', False):
-                dimension = '(*)'
-            else:
-                dimension = ''
+            dimension = attrs.get('dimension', '')
             return (', '.join(t), dimension)
 
     def _f_decl(self, arg, name=None, default=None):
@@ -435,17 +422,6 @@ class Wrapf(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
             attrs = arg['attrs']
-            if 'intent' not in attrs:
-                attrs['intent'] = 'in'
-            if 'dimension' in attrs:
-                # This argument must be dimensioned.
-                # This implies value=False and ptr=True
-                if attrs.get('value', False):
-                    raise RuntimeError("argument must not have value=True")
-                attrs['value'] = False
-                # XXX - make sure ptr is True
-            elif 'value' not in attrs:
-                attrs['value'] = True
 
             # argument names
             if arg_typedef.f_c_args:
@@ -578,10 +554,6 @@ class Wrapf(util.WrapperMixin):
             # default argument's intent
             # XXX look at const, ptr
             attrs = arg['attrs']
-            if 'intent' not in attrs:
-                attrs['intent'] = 'in'
-            if 'value' not in attrs:
-                attrs['value'] = True
 
             fmt.var = arg['name']
             fmt.tmp_var = 'tmp_' + fmt.var
@@ -664,17 +636,22 @@ class Wrapf(util.WrapperMixin):
 
         if not is_ctor:
             # Add method to derived type
-            F_name_method = fmt.F_name_method
 #            if not fmt.get('CPP_template', None):
             if not fmt.get('CPP_return_templated', False):
                 # if return type is templated in C++, then do not set up generic
                 # since only the return type may be different (ex. getValue<T>())
-                self.f_type_generic.setdefault(fmt.F_name_generic,[]).append(F_name_method)
+                if cls:
+                    gname = fmt.F_name_method
+                else:
+                    gname = fmt.F_name_impl
+                self.f_type_generic.setdefault(fmt.F_name_generic,[]).append(gname)
             self.type_bound_part.append('procedure :: %s => %s' % (
-                    F_name_method, fmt.F_name_impl))
+                    fmt.F_name_method, fmt.F_name_impl))
 
         # body of function
-        splicer_code = self.splicer_stack[-1].get(fmt_func.F_name_method, None)
+#XXX        sname = fmt_func.F_name_impl
+        sname = fmt_func.F_name_method
+        splicer_code = self.splicer_stack[-1].get(sname, None)
         if 'F_code' in options:
             F_code = [   wformat(options.F_code, fmt) ]
         elif splicer_code:
@@ -708,7 +685,7 @@ class Wrapf(util.WrapperMixin):
         impl.append('implicit none')
         impl.extend(arg_f_decl)
         impl.extend(optional)
-        self._create_splicer(fmt.F_name_method, impl, F_code)
+        self._create_splicer(sname, impl, F_code)
         impl.append(-1)
         impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt))
 
