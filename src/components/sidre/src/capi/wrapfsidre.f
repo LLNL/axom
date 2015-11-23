@@ -13,6 +13,26 @@ module sidre_mod
     use fstr_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
     ! splicer begin module_use
+    ! map conduit type names to sidre type names
+    use conduit, only : &
+        SIDRE_EMPTY_ID      => CONDUIT_EMPTY_T, &
+        SIDRE_INT8_ID       => CONDUIT_INT8_T, &
+        SIDRE_INT16_ID      => CONDUIT_INT16_T, &
+        SIDRE_INT32_ID      => CONDUIT_INT32_T, &
+        SIDRE_INT64_ID      => CONDUIT_INT64_T, &
+        SIDRE_UINT8_ID      => CONDUIT_UINT8_T, &
+        SIDRE_UINT16_ID     => CONDUIT_UINT16_T, &
+        SIDRE_UINT32_ID     => CONDUIT_UINT32_T, &
+        SIDRE_UINT64_ID     => CONDUIT_UINT64_T, &
+        SIDRE_FLOAT32_ID    => CONDUIT_FLOAT32_T, &
+        SIDRE_FLOAT64_ID    => CONDUIT_FLOAT64_T, &
+        SIDRE_CHAR8_STR_ID  => CONDUIT_CHAR8_STR_T, &
+        SIDRE_INT_ID        => CONDUIT_INT_T, &
+        SIDRE_UINT_ID       => CONDUIT_UINT_T, &
+        SIDRE_LONG_ID       => CONDUIT_LONG_T, &
+        SIDRE_ULONG_ID      => CONDUIT_ULONG_T, &
+        SIDRE_FLOAT_ID      => CONDUIT_FLOAT_T, &
+        SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_T
     ! splicer end module_use
     ! splicer begin class.DataStore.module_use
     ! splicer end class.DataStore.module_use
@@ -25,29 +45,7 @@ module sidre_mod
     implicit none
     
     ! splicer begin module_top
-    !
-    ! Type parameters
-    ! Must be kept in sync with SidreTypes.h
-    !
-    integer, parameter :: ATK_INT8_T = 3
-    integer, parameter :: ATK_INT16_T = 4
-    integer, parameter :: ATK_INT32_T = 5
-    integer, parameter :: ATK_INT64_T = 6
-    integer, parameter :: ATK_UINT8_T = 7
-    integer, parameter :: ATK_UINT16_T = 8
-    integer, parameter :: ATK_UINT32_T = 9
-    integer, parameter :: ATK_UINT64_T = 10
-    integer, parameter :: ATK_FLOAT32_T = 11
-    integer, parameter :: ATK_FLOAT64_T  = 12
-    integer, parameter :: ATK_CHAR8_STR_T = 13
-    
-    integer, parameter :: ATK_C_INT_T = 14
-    integer, parameter :: ATK_C_LONG_T = 15
-    integer, parameter :: ATK_C_FLOAT_T = 16
-    integer, parameter :: ATK_C_DOUBLE_T = 17
-    
     integer, parameter :: invalid_index = -1
-    
     ! splicer end module_top
     
     ! splicer begin class.DataStore.module_top
@@ -1646,7 +1644,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = ATK_C_INT_T
+        integer(C_INT), parameter :: itype = SIDRE_INT_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1664,7 +1662,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = ATK_C_INT_T
+        integer(C_INT), parameter :: itype = SIDRE_INT_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1682,7 +1680,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = ATK_C_LONG_T
+        integer(C_INT), parameter :: itype = SIDRE_LONG_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1700,7 +1698,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = ATK_C_LONG_T
+        integer(C_INT), parameter :: itype = SIDRE_LONG_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1718,7 +1716,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = ATK_C_FLOAT_T
+        integer(C_INT), parameter :: itype = SIDRE_FLOAT_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1736,7 +1734,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = ATK_C_FLOAT_T
+        integer(C_INT), parameter :: itype = SIDRE_FLOAT_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1754,7 +1752,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = ATK_C_DOUBLE_T
+        integer(C_INT), parameter :: itype = SIDRE_DOUBLE_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1772,7 +1770,7 @@ contains
         type(dataview) :: rv
         type(C_PTR) :: addr
         integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = ATK_C_DOUBLE_T
+        integer(C_INT), parameter :: itype = SIDRE_DOUBLE_ID
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
@@ -1804,7 +1802,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_INT_T
+        integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -1838,7 +1836,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_INT_T
+        integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -1872,7 +1870,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_LONG_T
+        integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -1906,7 +1904,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_LONG_T
+        integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -1940,7 +1938,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_FLOAT_T
+        integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -1974,7 +1972,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_FLOAT_T
+        integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -2008,7 +2006,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_DOUBLE_T
+        integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
@@ -2042,7 +2040,7 @@ contains
         integer(C_INT) :: lname
         type(dataview) :: rv
         integer(C_LONG) :: nitems
-        integer(C_INT), parameter :: type = ATK_C_DOUBLE_T
+        integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
