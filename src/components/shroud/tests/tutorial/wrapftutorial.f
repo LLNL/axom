@@ -273,8 +273,8 @@ contains
     function function2(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE) :: arg1
-        integer(C_INT) :: arg2
+        real(C_DOUBLE), value, intent(IN) :: arg1
+        integer(C_INT), value, intent(IN) :: arg2
         real(C_DOUBLE) :: rv
         ! splicer begin function2
         rv = tut_function2(  &
@@ -286,9 +286,9 @@ contains
     subroutine sum(len, values, result)
         use iso_c_binding
         implicit none
-        integer(C_INT) :: len
-        integer(C_INT) :: values(*)
-        integer(C_INT) :: result
+        integer(C_INT), value, intent(IN) :: len
+        integer(C_INT), intent(IN) :: values(*)
+        integer(C_INT), intent(OUT) :: result
         ! splicer begin sum
         call tut_sum(  &
             len,  &
@@ -300,7 +300,7 @@ contains
     function function3(arg) result(rv)
         use iso_c_binding
         implicit none
-        logical :: arg
+        logical, value, intent(IN) :: arg
         logical :: rv
         logical(C_BOOL) tmp_arg
         tmp_arg = arg  ! coerce to C_BOOL
@@ -312,8 +312,8 @@ contains
     function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
-        character(*) :: arg1
-        character(*) :: arg2
+        character(*), intent(IN) :: arg1
+        character(*), intent(IN) :: arg2
         character(kind=C_CHAR, len=strlen_ptr(tut_function4a_bufferify(arg1, len_trim(arg1), arg2, len_trim(arg2)))) :: rv
         ! splicer begin function4a
         rv = fstr(tut_function4a_bufferify(  &
@@ -327,8 +327,8 @@ contains
     subroutine function4b(arg1, arg2, output)
         use iso_c_binding
         implicit none
-        character(*) :: arg1
-        character(*) :: arg2
+        character(*), intent(IN) :: arg1
+        character(*), intent(IN) :: arg2
         character(*), intent(OUT) :: output
         type(C_PTR) :: rv
         ! splicer begin function4b
@@ -344,9 +344,9 @@ contains
     function function5(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE), optional :: arg1
+        real(C_DOUBLE), value, intent(IN), optional :: arg1
         real(C_DOUBLE) :: tmp_arg1
-        integer(C_INT), optional :: arg2
+        integer(C_INT), value, intent(IN), optional :: arg2
         integer(C_INT) :: tmp_arg2
         real(C_DOUBLE) :: rv
         if (present(arg1)) then
@@ -369,7 +369,7 @@ contains
     subroutine function6_from_name(name)
         use iso_c_binding
         implicit none
-        character(*) :: name
+        character(*), intent(IN) :: name
         ! splicer begin function6_from_name
         call tut_function6_from_name_bufferify(  &
             name,  &
@@ -380,7 +380,7 @@ contains
     subroutine function6_from_index(indx)
         use iso_c_binding
         implicit none
-        integer(C_INT) :: indx
+        integer(C_INT), value, intent(IN) :: indx
         ! splicer begin function6_from_index
         call tut_function6_from_index(indx)
         ! splicer end function6_from_index
@@ -389,7 +389,7 @@ contains
     subroutine function7_int(arg)
         use iso_c_binding
         implicit none
-        integer(C_INT) :: arg
+        integer(C_INT), value, intent(IN) :: arg
         ! splicer begin function7_int
         call tut_function7_int(arg)
         ! splicer end function7_int
@@ -398,7 +398,7 @@ contains
     subroutine function7_double(arg)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE) :: arg
+        real(C_DOUBLE), value, intent(IN) :: arg
         ! splicer begin function7_double
         call tut_function7_double(arg)
         ! splicer end function7_double
@@ -425,7 +425,7 @@ contains
     subroutine function9_float(arg)
         use iso_c_binding
         implicit none
-        real(C_FLOAT) :: arg
+        real(C_FLOAT), value, intent(IN) :: arg
         ! splicer begin function9_float
         call tut_function9(real(arg, C_DOUBLE))
         ! splicer end function9_float
@@ -434,7 +434,7 @@ contains
     subroutine function9_double(arg)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE) :: arg
+        real(C_DOUBLE), value, intent(IN) :: arg
         ! splicer begin function9_double
         call tut_function9(arg)
         ! splicer end function9_double

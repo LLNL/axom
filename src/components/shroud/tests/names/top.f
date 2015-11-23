@@ -63,7 +63,7 @@ contains
     subroutine F_name_function3a_int(i)
         use iso_c_binding
         implicit none
-        integer(C_INT) :: i
+        integer(C_INT), value, intent(IN) :: i
         ! splicer begin function3a_0
         call yyy_tes_function3a_0(i)
         ! splicer end function3a_0
@@ -72,7 +72,7 @@ contains
     subroutine F_name_function3a_long(i)
         use iso_c_binding
         implicit none
-        integer(C_LONG) :: i
+        integer(C_LONG), value, intent(IN) :: i
         ! splicer begin function3a_1
         call yyy_tes_function3a_1(i)
         ! splicer end function3a_1

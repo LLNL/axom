@@ -180,7 +180,7 @@ contains
     function exclass1_new(name) result(rv)
         use iso_c_binding
         implicit none
-        character(*) :: name
+        character(*), intent(IN) :: name
         type(exclass1) :: rv
         ! splicer begin class.ExClass1.method.new
         rv%voidptr = aa_exclass1_new_bufferify(  &
@@ -203,7 +203,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        integer(C_INT) :: incr
+        integer(C_INT), value, intent(IN) :: incr
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.increment_count
         rv = aa_exclass1_increment_count(  &
@@ -268,7 +268,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        integer(C_INT) :: value
+        integer(C_INT), value, intent(IN) :: value
         integer(C_INT) :: rv
         ! splicer begin class.ExClass1.method.get_value_from_int
         rv = aa_exclass1_get_value_from_int(  &
@@ -281,7 +281,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        integer(C_LONG) :: value
+        integer(C_LONG), value, intent(IN) :: value
         integer(C_LONG) :: rv
         ! splicer begin class.ExClass1.method.get_value_1
         rv = aa_exclass1_get_value_1(  &
@@ -304,7 +304,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
-        logical :: in
+        logical, value, intent(IN) :: in
         logical :: rv
         logical(C_BOOL) tmp_in
         tmp_in = in  ! coerce to C_BOOL

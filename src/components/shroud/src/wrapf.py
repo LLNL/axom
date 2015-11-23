@@ -90,22 +90,19 @@ class Wrapf(util.WrapperMixin):
         typedef = self.typedef[arg['type']]
         attrs = arg['attrs']
         intent = attrs.get('intent', None)
-        if intent:
-            intent_str = ', intent(%s)' % intent.upper()
-        else:
-            intent_str = ''
-        is_value = attrs.get('value', False)
 
         typ = typedef.c_fortran
         t.append(typ)
-        if is_value:
-            t.append(', value')
-        t.append(intent_str)
+        if attrs.get('value', False):
+            t.append('value')
+        if intent:
+            t.append('intent(%s)' % intent.upper())
         if typedef.base == 'string':
             dimension = '(*)'  # is array
         else:
+            # XXX should C always have dimensions of '(*)'?
             dimension = attrs.get('dimension', '')
-        return (''.join(t), dimension)
+        return (', '.join(t), dimension)
 
     def _c_decl(self, arg, name=None):
         """
@@ -118,7 +115,7 @@ class Wrapf(util.WrapperMixin):
         rv = typ + ' :: ' + ( name or arg['name'] ) + dimension
         return rv
 
-    def _f_type(self, arg, default=None):
+    def _f_type(self, arg, default=None, local=False):
         """
         Return the Fortran type, and array attribute
         pass-by-value default
@@ -127,36 +124,36 @@ class Wrapf(util.WrapperMixin):
         ptr - True = pass-by-reference
         reference - True = pass-by-reference
 
+        If local==True, this is a local variable, skip attributes
+          OPTIONAL, VALUE, and INTENT
         """
         t = []
         typedef = self.typedef[arg['type']]
         attrs = arg['attrs']
         intent = attrs.get('intent', None)
-        if intent:
-            intent_str = ', intent(%s)' % intent.upper()
-        else:
-            intent_str = ''
 
         typ = typedef.f_type
         t.append(typ)
-        if default is None:
-            default = attrs.get('default', '')
-        if default != '':
-            t.append('optional')
-        if typedef.base == 'string':
-            dimension = ''  # not array
-        else:
-            dimension = attrs.get('dimension', '')
+        if not local:  # must be dummy argument
+            if attrs.get('value', False):
+                t.append('value')
+            if intent:
+                t.append('intent(%s)' % intent.upper())
+            if default is None:
+                default = attrs.get('default', '')
+            if default != '':
+                t.append('optional')
+        dimension = attrs.get('dimension', '')
         return (', '.join(t), dimension)
 
-    def _f_decl(self, arg, name=None, default=None):
+    def _f_decl(self, arg, name=None, default=None, local=False):
         """
         Return the Fortran declaration.
 
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
-        typ, dimension = self._f_type(arg, default=default)
+        typ, dimension = self._f_type(arg, default=default, local=local)
         rv = typ + ' :: ' + ( name or arg['name'] ) + dimension
         return rv
 
@@ -560,7 +557,7 @@ class Wrapf(util.WrapperMixin):
             arg_f_decl.append(self._f_decl(arg))
 
             if 'default' in attrs:
-                arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default=''))
+                arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default='', local=True))
                 fmt.default_value = attrs['default']
                 optional.extend([
                         wformat('if (present({var})) then', fmt),

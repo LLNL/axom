@@ -87,7 +87,7 @@ contains
     function is_name_valid(name) result(rv)
         use iso_c_binding
         implicit none
-        character(*) :: name
+        character(*), intent(IN) :: name
         logical :: rv
         ! splicer begin is_name_valid
         rv = name .ne. " "
@@ -97,7 +97,7 @@ contains
     subroutine test_names(name)
         use iso_c_binding
         implicit none
-        character(*) :: name
+        character(*), intent(IN) :: name
         ! splicer begin test_names
         call aa_test_names_bufferify(  &
             name,  &
@@ -108,8 +108,8 @@ contains
     subroutine test_names_flag(name, flag)
         use iso_c_binding
         implicit none
-        character(*) :: name
-        integer(C_INT) :: flag
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: flag
         ! splicer begin test_names_flag
         call aa_test_names_flag_bufferify(  &
             name,  &

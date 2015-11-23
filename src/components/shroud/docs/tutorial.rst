@@ -126,10 +126,12 @@ The Fortran wrapper calls the C interface directly::
     function function2(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE) :: arg1
-        integer(C_INT) :: arg2
+        real(C_DOUBLE), value, intent(IN) :: arg1
+        integer(C_INT), value, intent(IN) :: arg2
         real(C_DOUBLE) :: rv
-        rv = tut_function2(arg1, arg2)
+        rv = tut_function2(  &
+            arg1,  &
+            arg2)
     end function function2
 
 .. note :: add intent to wrapper
@@ -137,12 +139,62 @@ The Fortran wrapper calls the C interface directly::
 Pointer arguments
 -----------------
 
-When a pointer represents an array it must be given the *dimension*
-attribute.  This will then use pass-by-reference instead of
-pass-by-value::
+When a C++ routine accepts a pointer argument it may mean
+several things
 
-  - decl: int Sum(int len, int *values+dimension)
+ * output scalar
+ * input or output array
+ * pass-by-reference for a struct or class.
 
+In this example, ``len`` and ``values`` are an input array and
+``result`` is an output scalar::
+
+    void Sum(int len, int *values, int *result)
+    {
+        int sum;
+        for (int i=0; i < len; i++) {
+          sum += values[i];
+        }
+        *result = sum;
+        return;
+    }
+
+When this function is wrapped it is necessary to give some annotations
+in the YAML file to describe how the variables should be mapped to
+Fortran::
+
+  - decl: void Sum(int len, int *values+dimension+intent(in),
+                   int *result+intent(out))
+
+In the ``BIND(C)`` interface only *len* uses the ``value`` attribute.
+Without the attribute Fortran defaults to pass-by-reference i.e.
+passes a pointer::
+
+        subroutine tut_sum(len, values, result) &
+                bind(C, name="TUT_sum")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: len
+            integer(C_INT), intent(IN) :: values(*)
+            integer(C_INT), intent(OUT) :: result
+        end subroutine tut_sum
+
+The Fortran routine just calls the interface::
+
+    subroutine sum(len, values, result)
+        use iso_c_binding
+        implicit none
+        integer(C_INT), value, intent(IN) :: len
+        integer(C_INT), intent(IN) :: values(*)
+        integer(C_INT), intent(OUT) :: result
+        call tut_sum(  &
+            len,  &
+            values,  &
+            result)
+    end subroutine sum
+
+.. note:: Multiply pointered arguments ( ``char **`` ) do not 
+          map to Fortran directly and require ``type(C_PTR)``.
 
 Logical
 ^^^^^^^
@@ -177,9 +229,11 @@ The Fortran interface and wrapper::
     function function3(arg) result(rv)
         use iso_c_binding
         implicit none
-        logical :: arg
+        logical, value, intent(IN) :: arg
         logical :: rv
-        rv = booltological(tut_function3(logicaltobool(arg)))
+        logical(C_BOOL) tmp_arg
+        tmp_arg = arg  ! coerce to C_BOOL
+        rv = tut_function3(tmp_arg)
     end function function3
 
 The wrapper routine uses the library function ``logicaltobool`` and
@@ -276,13 +330,12 @@ And the Fortran wrapper::
     function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
-        character(*) :: arg1
-        character(*) :: arg2
+        character(*), intent(IN) :: arg1
+        character(*), intent(IN) :: arg2
         character(kind=C_CHAR, len=strlen_ptr( &
             tut_function4a_bufferify( &
               arg1, len_trim(arg1), &
               arg2, len_trim(arg2)))) :: rv
-        ! splicer begin function4a
         rv = fstr(tut_function4a_bufferify(  &
             arg1,  &
             len_trim(arg1),  &
@@ -316,8 +369,8 @@ Only the generated wrapper is different::
     subroutine function4b(arg1, arg2, output)
         use iso_c_binding
         implicit none
-        character(*) :: arg1
-        character(*) :: arg2
+        character(*), intent(IN) :: arg1
+        character(*), intent(IN) :: arg2
         character(*), intent(OUT) :: output
         type(C_PTR) :: rv
         rv = tut_function4b_bufferify(  &
@@ -358,9 +411,9 @@ Fortra wrapper::
     function function5(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE), optional :: arg1
+        real(C_DOUBLE), value, intent(IN), optional :: arg1
         real(C_DOUBLE) :: tmp_arg1
-        integer(C_INT), optional :: arg2
+        integer(C_INT), value, intent(IN), optional :: arg2
         integer(C_INT) :: tmp_arg2
         real(C_DOUBLE) :: rv
         if (present(arg1)) then
@@ -373,9 +426,10 @@ Fortra wrapper::
         else
             tmp_arg2 = 5
         endif
-        rv = tut_function5(tmp_arg1, tmp_arg2)
+        rv = tut_function5(  &
+            tmp_arg1,  &
+            tmp_arg2)
     end function function5
-
 
 Fortran usage::
 
@@ -568,14 +622,14 @@ block.  Each wrapper will coerce the argument to the correct type::
     subroutine function9_float(arg)
         use iso_c_binding
         implicit none
-        real(C_FLOAT) :: arg
+        real(C_FLOAT), value, intent(IN) :: arg
         call tut_function9(real(arg, C_DOUBLE))
     end subroutine function9_float
     
     subroutine function9_double(arg)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE) :: arg
+        real(C_DOUBLE), value, intent(IN) :: arg
         call tut_function9(arg)
     end subroutine function9_double
 

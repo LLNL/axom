@@ -202,7 +202,7 @@ contains
     function exclass2_ex_class2(name) result(rv)
         use iso_c_binding
         implicit none
-        character(*) :: name
+        character(*), intent(IN) :: name
         type(exclass2) :: rv
         ! splicer begin class.ExClass2.method.ex_class2
         rv%voidptr = aa_exclass2_ex_class2_bufferify(  &
@@ -245,7 +245,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        type(exclass1) :: in
+        type(exclass1), value, intent(IN) :: in
         type(exclass1) :: rv
         ! splicer begin class.ExClass2.method.get_class1
         rv%voidptr = aa_exclass2_get_class1(  &
@@ -258,8 +258,8 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        integer(C_INT) :: type
-        integer(C_INT), optional :: len
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN), optional :: len
         integer(C_INT) :: tmp_len
         if (present(len)) then
             tmp_len = len
@@ -278,8 +278,8 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG), optional :: len
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN), optional :: len
         integer(C_LONG) :: tmp_len
         if (present(len)) then
             tmp_len = len
@@ -317,7 +317,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        integer(C_INT) :: value
+        integer(C_INT), value, intent(IN) :: value
         ! splicer begin class.ExClass2.method.set_value_int
         call aa_exclass2_set_value_int(  &
             obj%voidptr,  &
@@ -329,7 +329,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        integer(C_LONG) :: value
+        integer(C_LONG), value, intent(IN) :: value
         ! splicer begin class.ExClass2.method.set_value_long
         call aa_exclass2_set_value_long(  &
             obj%voidptr,  &
@@ -341,7 +341,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        real(C_FLOAT) :: value
+        real(C_FLOAT), value, intent(IN) :: value
         ! splicer begin class.ExClass2.method.set_value_float
         call aa_exclass2_set_value_float(  &
             obj%voidptr,  &
@@ -353,7 +353,7 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        real(C_DOUBLE) :: value
+        real(C_DOUBLE), value, intent(IN) :: value
         ! splicer begin class.ExClass2.method.set_value_double
         call aa_exclass2_set_value_double(  &
             obj%voidptr,  &
@@ -385,9 +385,9 @@ contains
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
-        integer(C_INT), optional :: i
+        integer(C_INT), value, intent(IN), optional :: i
         integer(C_INT) :: tmp_i
-        integer(C_LONG), optional :: j
+        integer(C_LONG), value, intent(IN), optional :: j
         integer(C_LONG) :: tmp_j
         if (present(i)) then
             tmp_i = i
