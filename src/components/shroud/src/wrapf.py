@@ -87,12 +87,8 @@ class Wrapf(util.WrapperMixin):
 
         """
         t = []
-        typedef = self.typedef.get(arg['type'], None)
-        if typedef is None:
-            raise RuntimeError("No such type %s" % arg['type'])
+        typedef = self.typedef[arg['type']]
         attrs = arg['attrs']
-        is_ptr = (attrs.get('ptr', False) or
-                  attrs.get('reference', False))
         intent = attrs.get('intent', None)
         if intent:
             intent_str = ', intent(%s)' % intent.upper()
@@ -101,15 +97,15 @@ class Wrapf(util.WrapperMixin):
         is_value = attrs.get('value', False)
 
         typ = typedef.c_fortran
+        t.append(typ)
+        if is_value:
+            t.append(', value')
+        t.append(intent_str)
         if typedef.base == 'string':
-            return (typ + intent_str, '(*)')  # is array
+            dimension = '(*)'  # is array
         else:
-            t.append(typ)
-            if is_value:
-                t.append(', value')
-            t.append(intent_str)
             dimension = attrs.get('dimension', '')
-            return (''.join(t), dimension)
+        return (''.join(t), dimension)
 
     def _c_decl(self, arg, name=None):
         """
@@ -133,22 +129,25 @@ class Wrapf(util.WrapperMixin):
 
         """
         t = []
-        typedef = self.typedef.get(arg['type'], None)
-        if typedef is None:
-            raise RuntimeError("No such type %s" % arg['type'])
+        typedef = self.typedef[arg['type']]
+        attrs = arg['attrs']
+        intent = attrs.get('intent', None)
+        if intent:
+            intent_str = ', intent(%s)' % intent.upper()
+        else:
+            intent_str = ''
 
         typ = typedef.f_type
+        t.append(typ)
+        if default is None:
+            default = attrs.get('default', '')
+        if default != '':
+            t.append('optional')
         if typedef.base == 'string':
-            return (typ, '')  # not array
+            dimension = ''  # not array
         else:
-            attrs = arg['attrs']
-            t.append(typ)
-            if default is None:
-                default = attrs.get('default', '')
-            if default != '':
-                t.append('optional')
             dimension = attrs.get('dimension', '')
-            return (', '.join(t), dimension)
+        return (', '.join(t), dimension)
 
     def _f_decl(self, arg, name=None, default=None):
         """

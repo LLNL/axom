@@ -139,7 +139,7 @@ Pointer arguments
 
 When a pointer represents an array it must be given the *dimension*
 attribute.  This will then use pass-by-reference instead of
-pass-by-value.
+pass-by-value::
 
   - decl: int Sum(int len, int *values+dimension)
 
