@@ -149,13 +149,13 @@ module tutorial_mod
             character(kind=C_CHAR), intent(IN) :: name(*)
         end subroutine tut_function6_from_name
         
-        subroutine tut_function6_bufferify(name, Lname) &
-                bind(C, name="TUT_function6_bufferify")
+        subroutine tut_function6_from_name_bufferify(name, Lname) &
+                bind(C, name="TUT_function6_from_name_bufferify")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine tut_function6_bufferify
+        end subroutine tut_function6_from_name_bufferify
         
         subroutine tut_function6_from_index(indx) &
                 bind(C, name="TUT_function6_from_index")
@@ -371,7 +371,7 @@ contains
         implicit none
         character(*) :: name
         ! splicer begin function6_from_name
-        call tut_function6_bufferify(  &
+        call tut_function6_from_name_bufferify(  &
             name,  &
             len_trim(name))
         ! splicer end function6_from_name

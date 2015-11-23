@@ -564,9 +564,9 @@
             "attrs": {}, 
             "decl": "void Function6(const std::string& name)", 
             "fmt": {
-                "C_name": "TUT_function6_bufferify", 
-                "F_C_name": "tut_function6_bufferify", 
-                "function_suffix": "_bufferify"
+                "C_name": "TUT_function6_from_name_bufferify", 
+                "F_C_name": "tut_function6_from_name_bufferify", 
+                "function_suffix": "_from_name_bufferify"
             }, 
             "function_index": 18, 
             "function_suffix": "_from_name", 

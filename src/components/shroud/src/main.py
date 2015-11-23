@@ -587,7 +587,7 @@ class GenFunctions(object):
 
         new['generated'] = 'string_to_buffer_and_len'
         fmt = new['fmt']
-        fmt.function_suffix = '_bufferify'
+        fmt.function_suffix = fmt.function_suffix + '_bufferify'
 
         options = new['options']
         options.wrap_c = True

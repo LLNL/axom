@@ -1285,7 +1285,7 @@
                 "F_name_generic": "is_name_valid", 
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
-                "PTR_F_C_index": 36, 
+                "PTR_F_C_index": 38, 
                 "PY_name_impl": "PP_is_name_valid", 
                 "method_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
@@ -1322,7 +1322,7 @@
                 "F_C_name": "aa_is_name_valid_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 36, 
+            "function_index": 38, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -1333,6 +1333,164 @@
                 "attrs": {}, 
                 "name": "isNameValid", 
                 "type": "bool"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void test_names(const std::string &name)", 
+            "fmt": {
+                "C_name": "AA_test_names", 
+                "F_C_name": "aa_test_names", 
+                "F_name_generic": "test_names", 
+                "F_name_impl": "test_names", 
+                "F_name_method": "test_names", 
+                "PTR_F_C_index": 39, 
+                "PY_name_impl": "PP_test_names", 
+                "function_suffix": "", 
+                "method_name": "test_names", 
+                "underscore_name": "test_names"
+            }, 
+            "function_index": 36, 
+            "function_suffix": "", 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "test_names", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void test_names(const std::string &name)", 
+            "fmt": {
+                "C_name": "AA_test_names_bufferify", 
+                "F_C_name": "aa_test_names_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "function_index": 39, 
+            "function_suffix": "", 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "test_names", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "flag", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void test_names(const std::string &name, int flag)", 
+            "fmt": {
+                "C_name": "AA_test_names_flag", 
+                "F_C_name": "aa_test_names_flag", 
+                "F_name_generic": "test_names", 
+                "F_name_impl": "test_names_flag", 
+                "F_name_method": "test_names_flag", 
+                "PTR_F_C_index": 40, 
+                "PY_name_impl": "PP_test_names_flag", 
+                "function_suffix": "_flag", 
+                "method_name": "test_names", 
+                "underscore_name": "test_names"
+            }, 
+            "function_index": 37, 
+            "function_suffix": "_flag", 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "test_names", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": true
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "flag", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void test_names(const std::string &name, int flag)", 
+            "fmt": {
+                "C_name": "AA_test_names_flag_bufferify", 
+                "F_C_name": "aa_test_names_flag_bufferify", 
+                "function_suffix": "_flag_bufferify"
+            }, 
+            "function_index": 40, 
+            "function_suffix": "_flag", 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "test_names", 
+                "type": "void"
             }
         }
     ], 

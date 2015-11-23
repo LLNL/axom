@@ -193,6 +193,15 @@ functions:
        F_code:  rv = name .ne. " "
 
 
+  # overrides which each accept a string.
+  # Test the name of generated 'bufferify' functions
+  -  decl: void test_names(const std::string &name)
+     # explicitly set suffix, otherwise it defaults to _0
+     function_suffix:
+  -  decl: void test_names(const std::string &name, int flag)
+     function_suffix: _flag
+
+
 
 ######################################################################
 patterns:
