@@ -516,13 +516,16 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   }
 
   DataBuffer * base_buff = base->getBuffer();
+
   // create two views into this buffer
+  // 
   // view for the first 5 values
-  root->createView("sub_a", base_buff, DataType::c_int(5));
+  root->createView("sub_a", base_buff)->apply(DataType::c_int(5));
+  //
   // view for the second 5 values
   //  (schema call path case)
   conduit::Schema s(DataType::c_int(5,5*sizeof(int)));
-  root->createView("sub_b",base_buff,s);
+  root->createView("sub_b",base_buff)->apply(s);
 
   int * sub_a_vals = root->getView("sub_a")->getValue();
   int * sub_b_vals = root->getView("sub_b")->getValue();

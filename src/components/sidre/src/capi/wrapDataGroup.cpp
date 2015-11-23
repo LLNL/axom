@@ -184,24 +184,6 @@ return static_cast<ATK_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_into_buffer_bufferify
 }
 
-ATK_dataview * ATK_datagroup_create_view_into_buffer_nelems(ATK_datagroup * self, const char * name, ATK_databuffer * buff, ATK_SidreLength numelems)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_view_into_buffer_nelems
-DataView * rv = selfobj->createView(name, static_cast<DataBuffer *>(static_cast<void *>(buff)), numelems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_view_into_buffer_nelems
-}
-
-ATK_dataview * ATK_datagroup_create_view_into_buffer_nelems_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff, ATK_SidreLength numelems)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_view_into_buffer_nelems_bufferify
-DataView * rv = selfobj->createView(std::string(name, Lname), static_cast<DataBuffer *>(static_cast<void *>(buff)), numelems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_view_into_buffer_nelems_bufferify
-}
-
 ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));

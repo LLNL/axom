@@ -142,7 +142,6 @@ module sidre_mod
         procedure :: create_view_and_allocate_long => datagroup_create_view_and_allocate_long
         procedure :: create_view_empty => datagroup_create_view_empty
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
-        procedure :: create_view_into_buffer_nelems => datagroup_create_view_into_buffer_nelems
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_external_view_int => datagroup_create_external_view_int
         procedure :: create_external_view_long => datagroup_create_external_view_long
@@ -169,8 +168,7 @@ module sidre_mod
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
             create_view_empty,  &
-            create_view_into_buffer,  &
-            create_view_into_buffer_nelems
+            create_view_into_buffer
         generic :: create_view_and_allocate => &
             ! splicer begin class.DataGroup.generic.create_view_and_allocate
             ! splicer end class.DataGroup.generic.create_view_and_allocate
@@ -605,29 +603,6 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: buff
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_into_buffer_bufferify
-        
-        function atk_datagroup_create_view_into_buffer_nelems(self, name, buff, numelems) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_into_buffer_nelems")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            type(C_PTR), value, intent(IN) :: buff
-            integer(C_LONG), value, intent(IN) :: numelems
-            type(C_PTR) :: rv
-        end function atk_datagroup_create_view_into_buffer_nelems
-        
-        function atk_datagroup_create_view_into_buffer_nelems_bufferify(self, name, Lname, buff, numelems) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_into_buffer_nelems_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
-            type(C_PTR), value, intent(IN) :: buff
-            integer(C_LONG), value, intent(IN) :: numelems
-            type(C_PTR) :: rv
-        end function atk_datagroup_create_view_into_buffer_nelems_bufferify
         
         function atk_datagroup_create_opaque_view(self, name, opaque_ptr) result(rv) &
                 bind(C, name="ATK_datagroup_create_opaque_view")
@@ -1537,24 +1512,6 @@ contains
             buff%voidptr)
         ! splicer end class.DataGroup.method.create_view_into_buffer
     end function datagroup_create_view_into_buffer
-    
-    function datagroup_create_view_into_buffer_nelems(obj, name, buff, numelems) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*) :: name
-        type(databuffer) :: buff
-        integer(C_LONG) :: numelems
-        type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_into_buffer_nelems
-        rv%voidptr = atk_datagroup_create_view_into_buffer_nelems_bufferify(  &
-            obj%voidptr,  &
-            name,  &
-            len_trim(name),  &
-            buff%voidptr,  &
-            numelems)
-        ! splicer end class.DataGroup.method.create_view_into_buffer_nelems
-    end function datagroup_create_view_into_buffer_nelems
     
     function datagroup_create_opaque_view(obj, name, opaque_ptr) result(rv)
         use iso_c_binding

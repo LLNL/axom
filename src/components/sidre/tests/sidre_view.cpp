@@ -255,14 +255,16 @@ TEST(sidre_view,int_array_depth_view_2)
   
   for (int id = 0; id < 2; ++id) 
   {
-     views[id] = root->createView(view_names[id], dbuff, 
-                                  depth_nelems, id*depth_nelems);
+     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, 
+                                                                id*depth_nelems);
   }
+  // 
+  // call path including type
   for (int id = 2; id < 4; ++id)
   {
-     views[id] = root->createView(view_names[id], dbuff, 
-                                  asctoolkit::sidre::INT_ID, 
-                                  depth_nelems, id*depth_nelems);
+     views[id] = root->createView(view_names[id], dbuff)->apply(asctoolkit::sidre::INT_ID, 
+                                                                depth_nelems, 
+                                                                id*depth_nelems);
   }
   EXPECT_EQ(dbuff->getNumViews(), 4u);
 

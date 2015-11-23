@@ -123,20 +123,6 @@ classes:
        function_suffix: _empty
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
        function_suffix: _into_buffer
-    -  decl: DataView *createView( const std::string& name, DataBuffer *buff, SidreLength numelems)
-       function_suffix: _into_buffer_nelems
-#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff, SidreLength numelems, SidreLength offset)
-#       function_suffix: _into_buffer_nelems_offset
-#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff, SidreLength numelems, SidreLength offset, SidreLength stride)
-#       function_suffix: _into_buffer_nelems_offset_stride
-#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff, TypeID type, SidreLength numelems)
-#       function_suffix: _into_buffer_type_nelems
-#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff, TypeID type, SidreLength numelems, SidreLength offset)
-#       function_suffix: _into_buffer_type_nelems_offset
-#    -  decl: DataView *createView( const std::string& name, DataBuffer *buff, TypeID type, SidreLength numelems, SidreLength offset, SidreLength stride)
-#       function_suffix: _into_buffer_type_nelems_offset_stride
-#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, const DataType& dtype )
-#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, const Schema& schema )
 
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength numelems )

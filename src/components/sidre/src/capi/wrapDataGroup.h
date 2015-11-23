@@ -70,10 +70,6 @@ ATK_dataview * ATK_datagroup_create_view_into_buffer(ATK_datagroup * self, const
 
 ATK_dataview * ATK_datagroup_create_view_into_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff);
 
-ATK_dataview * ATK_datagroup_create_view_into_buffer_nelems(ATK_datagroup * self, const char * name, ATK_databuffer * buff, ATK_SidreLength numelems);
-
-ATK_dataview * ATK_datagroup_create_view_into_buffer_nelems_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff, ATK_SidreLength numelems);
-
 ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr);
 
 ATK_dataview * ATK_datagroup_create_opaque_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * opaque_ptr);

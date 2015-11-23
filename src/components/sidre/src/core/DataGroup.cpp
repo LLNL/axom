@@ -177,126 +177,6 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create view into given buffer, apply num elems, offset, and stride, 
- * and attach view to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  DataBuffer * buff,
-                                  SidreLength numelems,
-                                  SidreLength offset,
-                                  SidreLength stride)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
-                   "Cannot create view with null buffer pointer" );
-
-  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createView( name, buff );
-    view->apply(numelems, offset, stride);
-    return view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create view into given buffer, apply type, num elems, offset, stride,
- * and attach view to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  DataBuffer * buff,
-                                  TypeID type,
-                                  SidreLength numelems,
-                                  SidreLength offset,
-                                  SidreLength stride)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
-                   "Cannot create view with null buffer pointer" );
-
-  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createView( name, buff );
-    view->apply(type, numelems, offset, stride);
-    return view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create view into given buffer, apply data type, and attach view to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  DataBuffer * buff,
-                                  const DataType& dtype)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
-                   "Cannot create view with null buffer pointer" );
-
-  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createView( name, buff );
-    view->apply(dtype);
-    return view;
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create view into given buffer, apply schema, and attach view to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createView( const std::string& name,
-                                  DataBuffer * buff,
-                                  const Schema& schema)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( buff != ATK_NULLPTR ,
-                   "Cannot create view with null buffer pointer" );
-
-  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataView * const view = createView( name, buff );
-    view->apply(schema);
-    return view;
-  }
-}
-
-
-/*
- *************************************************************************
- *
  * Create opaque view and attach to group.
  *
  *************************************************************************
@@ -331,7 +211,10 @@ DataView * DataGroup::createOpaqueView( const std::string& name,
  */
 DataView * DataGroup::createExternalView( const std::string& name,
                                           void * external_data,
-					  TypeID type, SidreLength numelems )
+					  TypeID type, 
+                                          SidreLength numelems,
+                                          SidreLength offset,
+                                          SidreLength stride )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
@@ -344,16 +227,13 @@ DataView * DataGroup::createExternalView( const std::string& name,
   }
   else
   {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(numelems);
-
     DataBuffer * buff = this->getDataStore()->createBuffer();
     buff->declare(type, numelems);
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
     buff->attachView(view);
-    view->apply(dtype);
+    view->apply(type, numelems, offset, stride);
 
     return attachView(view);
   }
