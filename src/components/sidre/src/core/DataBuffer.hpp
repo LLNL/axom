@@ -71,33 +71,6 @@ class DataView;
  */
 class DataBuffer
 {
-private:
-  class Value {
-      friend class DataBuffer;
-  public:
-      operator int *() const
-      {
-	  return static_cast<int *>(m_data);
-      }
-      operator long *() const
-      {
-	  return static_cast<long *>(m_data);
-      }
-      operator float *() const
-      {
-	  return static_cast<float *>(m_data);
-      }
-      operator double *() const
-      {
-	  return static_cast<double *>(m_data);
-      }
-  private:
-      Value(TypeID type, void * data) :
-	  m_type(type),
-	  m_data(data) {}
-      TypeID m_type;
-      void * m_data;
-  };
 
 public:
 
@@ -145,10 +118,44 @@ public:
     return m_data;
   }
 
-  // XXX
-  Value getValue()
+  /*!
+  * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
+  * version does require enough type information for the compiler to know what to cast the Value class to.
+  * Example:
+  * int* myptr = getValue();
+  * int myint = getValue();
+  */
+  Node::Value getValue()
   {
-    return Value(m_type, m_data);
+    return m_node.value();
+  }
+
+  /*!
+  * \brief Set value in conduit node.
+  */
+  template<typename ValueType>
+  void setValue(ValueType value)
+  {
+    m_node.set(value);
+  }
+
+
+  /*!
+  * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
+  * were not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
+  * function template type must be explicitly provided on call.
+  *
+  * Example:
+  * // will not work, compiler does not know what type to cast to for above getValue function.
+  * assert( getValue() == 10 );
+  * // use the templated version instead
+  * assert (getValue<int>() == 10);
+  */
+  template<typename ValueType>
+  ValueType getValue()
+  {
+    ValueType valueptr = m_node.value();
+    return valueptr;
   }
 
   /*!
@@ -156,21 +163,15 @@ public:
    */
   TypeID getTypeID() const
   {
-    return m_type;
+    return static_cast<TypeID>(m_schema.dtype().id());
   }
-
-  /*!
-   * \brief Return number of bytes associated with one element of 
-   *        DataBuffer data type.
-   */
-  size_t getBytesPerElement() const;
 
   /*!
    * \brief Return total number of elements allocated by this DataBuffer object.
    */
   size_t getNumElements() const
   {
-    return m_numelems;
+	  return m_schema.dtype().number_of_elements();
   }
 
   /*!
@@ -178,7 +179,7 @@ public:
    */
   size_t getTotalBytes() const;
 
-  /*!
+  /*
    * \brief Return true if DataBuffer has an associated DataView with given
    *        index; else false.
    */
@@ -321,9 +322,6 @@ private:
   ///
   void detachView( DataView * dataView );
 
-
-
-
   /*!
    * \brief Private methods allocate and deallocate data owned by buffer.
    */
@@ -353,11 +351,14 @@ private:
   // Type of data pointed to by m_data
   TypeID m_type;
 
-  // Number of elements pointed to by m_data
-  SidreLength m_numelems;
-
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
+
+  /// Conduit Node that holds buffer data.
+  Node m_node;
+
+  /// Conduit Schema that describes buffer data.
+  Schema m_schema;
 
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
@@ -381,6 +382,8 @@ private:
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
+
+
 
 
 };
