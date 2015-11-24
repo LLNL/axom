@@ -141,6 +141,8 @@ module sidre_mod
         procedure :: create_view_and_allocate_int => datagroup_create_view_and_allocate_int
         procedure :: create_view_and_allocate_long => datagroup_create_view_and_allocate_long
         procedure :: create_view_empty => datagroup_create_view_empty
+        procedure :: create_view_int => datagroup_create_view_int
+        procedure :: create_view_long => datagroup_create_view_long
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_external_view_int => datagroup_create_external_view_int
@@ -168,6 +170,8 @@ module sidre_mod
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
             create_view_empty,  &
+            create_view_int,  &
+            create_view_long,  &
             create_view_into_buffer
         generic :: create_view_and_allocate => &
             ! splicer begin class.DataGroup.generic.create_view_and_allocate
@@ -575,6 +579,17 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_empty_bufferify
+        
+        function atk_datagroup_create_view_from_type(self, name, type, numelems) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_from_type")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: numelems
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_from_type
         
         function atk_datagroup_create_view_into_buffer(self, name, buff) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_into_buffer")
@@ -1480,6 +1495,40 @@ contains
             len_trim(name))
         ! splicer end class.DataGroup.method.create_view_empty
     end function datagroup_create_view_empty
+    
+    function datagroup_create_view_int(obj, name, type, numelems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        integer(C_INT) :: type
+        integer(C_INT) :: numelems
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_int
+        rv%voidptr = atk_datagroup_create_view_from_type(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            type,  &
+            int(numelems, C_LONG))
+        ! splicer end class.DataGroup.method.create_view_int
+    end function datagroup_create_view_int
+    
+    function datagroup_create_view_long(obj, name, type, numelems) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*) :: name
+        integer(C_INT) :: type
+        integer(C_LONG) :: numelems
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_view_long
+        rv%voidptr = atk_datagroup_create_view_from_type(  &
+            obj%voidptr,  &
+            trim(name) // C_NULL_CHAR,  &
+            type,  &
+            int(numelems, C_LONG))
+        ! splicer end class.DataGroup.method.create_view_long
+    end function datagroup_create_view_long
     
     function datagroup_create_view_into_buffer(obj, name, buff) result(rv)
         use iso_c_binding

@@ -326,7 +326,7 @@ public:
    * This is equivalent to calling: createView(name)->allocate(dtype);
    *
    * If name is an empty string, or group already has a view with given
-   * name, or given number of elements is < 0 method does nothing.
+   * name, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
@@ -341,7 +341,7 @@ public:
    * This is equivalent to calling: createView(name)->allocate(schema);
    *
    * If name is an empty string, or group already has a view with given
-   * name, or given number of elements is < 0 method does nothing.
+   * name, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created. 
@@ -353,16 +353,17 @@ public:
 
 
 //@{
-//!  @name DataView creation and define view into data methods (no allocation). 
+//!  @name Methods to create a DataView and possibly define it without 
+//         data allocation.
 
   /*!
    * \brief Create an uninitialized DataView object with given name and 
    *        attach new view to this group object.
    *
-   * To do anything useful with the view, it has to be declared, 
-   * allocated, etc.
+   * To do anything useful with the view, it has to be attached to a buffer
+   * and have a data description applied, for example.
    *
-   * If name is an empty string, or group already has a view with given
+   * If name is an empty string, group already has a view with given
    * name, or given buffer pointer is null, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
@@ -370,11 +371,50 @@ public:
    */
   DataView * createView( const std::string& name ); 
 
-  // RDH TODO -- add createView(name, type, numelems) method 
+  /*!
+   * \brief Create DataView object with given name, data type, and
+   *        number of elements, and attach new view to this group object.
+   *
+   * This method does not allocate data or attach the view to a data buffer.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given number of elements is < 0 method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type, SidreLength numelems );
 
-  // RDH TODO -- add createView(name, dtype) method 
+  /*!
+   * \brief Create DataView object with given name and Conduit DataType,
+   *        and attach new view to this group object.
+   *
+   * This method does not allocate data or attach the view to a data buffer.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         const DataType& dtype);
 
-  // RDH TODO -- add createView(name, schema) method 
+  /*!
+   * \brief Create DataView object with given name and Conduit Schema,
+   *        allocate the data, and attach new view to this group object.
+   *
+   * This method does not allocate data or attach the view to a data buffer.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         const Schema& schema);
 
 //@}
 
@@ -384,11 +424,11 @@ public:
 //!        (data buffer, opaque data, or external data).
 
   /*!
-   * \brief Create DataView object (for view into given buffer) with
-   *        given name, and attach new view to this group object.
+   * \brief Create DataView object with given name, attach it to given buffer,
+   *        and attach new view to this group object.
    *
    * Note that view cannot be used to access data in buffer until it
-   * is initialized by calling a DataView::apply() method. 
+   * is described by calling a DataView::apply() method. 
    *
    * If name is an empty string, or group already has a view with given
    * name, or given buffer pointer is null, method does nothing.
@@ -404,7 +444,7 @@ public:
    *        referenced with given pointer. Attach new view to this group
    *        object.
    *
-   * Note the view will have no knowledge of the data.
+   * Note that the view is "opaque"; i.e., it has no knowledge of the data.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
@@ -414,8 +454,6 @@ public:
    */
   DataView * createOpaqueView( const std::string& name,
                                void * opaque_ptr);
-
-  // RDH TODO -- add offseet and stride args with defaults to next method.
 
   /*!
    * \brief Create DataView with given name to hold external data referenced 

@@ -56,7 +56,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG(numelems >= 0, "Must declare view with number of elems >=0 ");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must define view with number of elems >=0 ");
 
   if ( name.empty() || hasView(name) || numelems < 0 ) 
   {
@@ -146,6 +146,84 @@ DataView * DataGroup::createView( const std::string& name )
     return attachView(view);
   }
 }
+
+/*
+ *************************************************************************
+ *
+ * Create view with declaration and attach it to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  TypeID type,
+                                  SidreLength numelems )
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG(numelems >= 0, "Must define view with number of elems >=0 ");
+
+  if ( name.empty() || hasView(name) || numelems < 0 )
+  {
+    return ATK_NULLPTR;
+  } 
+  else
+  {
+    DataView * const view = new DataView( name, this);
+    view->declare(type, numelems);
+    return attachView(view);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with declaration and attach it to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  const DataType& dtype )
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+
+  if ( name.empty() || hasView(name) )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataView * const view = new DataView( name, this);
+    view->declare(dtype);
+    return attachView(view);
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Create view with declaration and attach it to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createView( const std::string& name,
+                                  const Schema& schema )
+{
+  SLIC_ASSERT( !name.empty() );   
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  
+  if ( name.empty() || hasView(name) )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    DataView * const view = new DataView( name, this);
+    view->declare(schema);
+    return attachView(view);
+  }
+}
+
 
 /*
  *************************************************************************

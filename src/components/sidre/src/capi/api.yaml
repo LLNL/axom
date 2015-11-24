@@ -119,8 +119,19 @@ classes:
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
+
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
+    -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength numelems)
+       function_suffix: _from_type
+       fortran_generic:
+         numelems:
+         -  int
+         -  long
+
+#    -  decl: DataView *createView( const std::string& name, const DataType& dtype)
+#    -  decl: DataView *createView( const std::string& name, const Schema& schema)
+
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
        function_suffix: _into_buffer
 

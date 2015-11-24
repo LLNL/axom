@@ -66,6 +66,8 @@ ATK_dataview * ATK_datagroup_create_view_empty(ATK_datagroup * self, const char 
 
 ATK_dataview * ATK_datagroup_create_view_empty_bufferify(ATK_datagroup * self, const char * name, int Lname);
 
+ATK_dataview * ATK_datagroup_create_view_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength numelems);
+
 ATK_dataview * ATK_datagroup_create_view_into_buffer(ATK_datagroup * self, const char * name, ATK_databuffer * buff);
 
 ATK_dataview * ATK_datagroup_create_view_into_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff);
