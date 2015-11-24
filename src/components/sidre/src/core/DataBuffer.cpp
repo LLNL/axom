@@ -112,13 +112,10 @@ DataBuffer * DataBuffer::allocate()
   {
 #ifdef ATK_ENABLE_FORTRAN
     // cleanup old data
-	std::cerr << "cleanup before allocate start" << std::endl;
     cleanup();
-	std::cerr << "cleanup before allocate end" << std::endl;
-
     m_data = AllocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank, getNumElements() );
 
-    #else
+#else
     SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
   }
@@ -180,7 +177,6 @@ DataBuffer * DataBuffer::reallocate( SidreLength numelems)
   else
   {
 	std::size_t old_size = getTotalBytes();
-    std::cerr << "old size:" << old_size << std::endl;
     // update the buffer's Conduit Node
     DataType dtype = conduit::DataType::default_dtype(m_type);
     dtype.set_number_of_elements( numelems );
@@ -400,11 +396,9 @@ void DataBuffer::cleanup()
     if (m_fortran_allocatable != ATK_NULLPTR)
     {
 #ifdef ATK_ENABLE_FORTRAN
-        std::cerr << "DeAllocateAllocatable start" << std::endl;
     	DeallocateAllocatable(m_fortran_allocatable, m_type, m_fortran_rank);
-        std::cerr << "DeAllocateAllocatable end" << std::endl;
 
-    	#else
+#else
       SLIC_ERROR("Fortran support is not compiled into this version of Sidre");
 #endif
     }

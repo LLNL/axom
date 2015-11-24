@@ -163,7 +163,7 @@ public:
    */
   TypeID getTypeID() const
   {
-    return static_cast<TypeID>(m_node.dtype().id());
+    return static_cast<TypeID>(m_schema.dtype().id());
   }
 
   /*!
@@ -171,7 +171,7 @@ public:
    */
   size_t getNumElements() const
   {
-	  return m_node.dtype().number_of_elements();
+	  return m_schema.dtype().number_of_elements();
   }
 
   /*!
