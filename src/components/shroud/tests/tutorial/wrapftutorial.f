@@ -61,29 +61,29 @@ module tutorial_mod
         ! splicer begin class.Class1.additional_interfaces
         ! splicer end class.Class1.additional_interfaces
         
-        subroutine tut_function1() &
+        subroutine function1() &
                 bind(C, name="TUT_function1")
             use iso_c_binding
             implicit none
-        end subroutine tut_function1
+        end subroutine function1
         
-        function tut_function2(arg1, arg2) result(rv) &
+        function function2(arg1, arg2) result(rv) &
                 bind(C, name="TUT_function2")
             use iso_c_binding
             implicit none
             real(C_DOUBLE), value, intent(IN) :: arg1
             integer(C_INT), value, intent(IN) :: arg2
             real(C_DOUBLE) :: rv
-        end function tut_function2
+        end function function2
         
-        subroutine tut_sum(len, values, result) &
+        subroutine sum(len, values, result) &
                 bind(C, name="TUT_sum")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: len
             integer(C_INT), intent(IN) :: values(*)
             integer(C_INT), intent(OUT) :: result
-        end subroutine tut_sum
+        end subroutine sum
         
         function tut_function3(arg) result(rv) &
                 bind(C, name="TUT_function3")
@@ -287,41 +287,6 @@ contains
     
     ! splicer begin class.Class1.additional_functions
     ! splicer end class.Class1.additional_functions
-    
-    subroutine function1()
-        use iso_c_binding
-        implicit none
-        ! splicer begin function1
-        call tut_function1()
-        ! splicer end function1
-    end subroutine function1
-    
-    function function2(arg1, arg2) result(rv)
-        use iso_c_binding
-        implicit none
-        real(C_DOUBLE), value, intent(IN) :: arg1
-        integer(C_INT), value, intent(IN) :: arg2
-        real(C_DOUBLE) :: rv
-        ! splicer begin function2
-        rv = tut_function2(  &
-            arg1,  &
-            arg2)
-        ! splicer end function2
-    end function function2
-    
-    subroutine sum(len, values, result)
-        use iso_c_binding
-        implicit none
-        integer(C_INT), value, intent(IN) :: len
-        integer(C_INT), intent(IN) :: values(*)
-        integer(C_INT), intent(OUT) :: result
-        ! splicer begin sum
-        call tut_sum(  &
-            len,  &
-            values,  &
-            result)
-        ! splicer end sum
-    end subroutine sum
     
     function function3(arg) result(rv)
         use iso_c_binding

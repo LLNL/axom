@@ -161,6 +161,7 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -195,6 +196,7 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -234,6 +236,7 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_force_wrapper": true, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 
         "F_module_name_class_template": "{lower_class}_mod", 

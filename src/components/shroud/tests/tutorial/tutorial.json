@@ -138,7 +138,7 @@
             "decl": "void Function1()", 
             "fmt": {
                 "C_name": "TUT_function1", 
-                "F_C_name": "tut_function1", 
+                "F_C_name": "function1", 
                 "F_name_generic": "function1", 
                 "F_name_impl": "function1", 
                 "F_name_method": "function1", 
@@ -177,7 +177,7 @@
             "decl": "double Function2(double arg1, int arg2)", 
             "fmt": {
                 "C_name": "TUT_function2", 
-                "F_C_name": "tut_function2", 
+                "F_C_name": "function2", 
                 "F_name_generic": "function2", 
                 "F_name_impl": "function2", 
                 "F_name_method": "function2", 
@@ -227,7 +227,7 @@
             "decl": "void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))", 
             "fmt": {
                 "C_name": "TUT_sum", 
-                "F_C_name": "tut_sum", 
+                "F_C_name": "sum", 
                 "F_name_generic": "sum", 
                 "F_name_impl": "sum", 
                 "F_name_method": "sum", 
@@ -512,6 +512,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -548,6 +549,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -583,6 +585,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -616,6 +619,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {}, 
@@ -648,6 +652,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -683,6 +688,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -718,6 +724,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
             "cpp_template": {
@@ -744,6 +751,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
             "decl": "RetType Function8()", 
@@ -771,6 +779,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
             "decl": "RetType Function8()", 
@@ -798,6 +807,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -834,6 +844,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -867,6 +878,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -900,6 +912,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -950,6 +963,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -1042,6 +1056,7 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 
         "F_module_name_class_template": "{lower_class}_mod", 

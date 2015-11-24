@@ -86,6 +86,7 @@ class Schema(object):
 
             F_module_per_class=True,
             F_string_len_trim=True,
+            F_force_wrapper=False,
 
             wrap_c       = True,
             wrap_fortran = True,
@@ -469,7 +470,7 @@ class GenFunctions(object):
         for mname, overloads in overloaded_functions.items():
             if len(overloads) > 1:
                 for i, function in enumerate(overloads):
-#                    method['fmt'].overloaded = True
+                    function['_overloaded'] = True
                     if 'function_suffix' not in function:
                         function['fmt'].function_suffix =  '_%d' % i
 
@@ -478,8 +479,10 @@ class GenFunctions(object):
         for method in functions:
             ordered_functions.append(method)
             if 'cpp_template' in method:
+                method['_overloaded'] = True
                 self.template_function(method, ordered_functions)
             if 'fortran_generic' in method:
+                method['_overloaded'] = True
                 self.generic_function(method, ordered_functions)
             self.string_to_buffer_and_len(method, ordered_functions)
         return ordered_functions

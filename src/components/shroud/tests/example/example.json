@@ -314,6 +314,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -347,6 +348,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -701,6 +703,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -749,6 +752,7 @@
                     "return_this": true
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -794,6 +798,7 @@
                     "return_this": true
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -885,6 +890,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {}, 
@@ -919,6 +925,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -954,6 +961,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -989,6 +997,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -1024,6 +1033,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [
                         {
                             "attrs": {
@@ -1059,6 +1069,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
                     "cpp_template": {
@@ -1085,6 +1096,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "ValueType getValue()", 
@@ -1112,6 +1124,7 @@
                     }
                 }, 
                 {
+                    "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "ValueType getValue()", 
@@ -1248,7 +1261,7 @@
             "docs": "yada yada yada", 
             "fmt": {
                 "C_name": "AA_local_function1", 
-                "F_C_name": "aa_local_function1", 
+                "F_C_name": "local_function1", 
                 "F_name_generic": "local_function1", 
                 "F_name_impl": "local_function1", 
                 "F_name_method": "local_function1", 
@@ -1336,6 +1349,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -1372,6 +1386,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -1407,6 +1422,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -1451,6 +1467,7 @@
             }
         }, 
         {
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -1502,6 +1519,7 @@
         "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "C_prefix": "AA_", 
+        "F_force_wrapper": false, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 
         "F_module_name_class_template": "{lower_class}_mod", 

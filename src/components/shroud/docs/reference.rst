@@ -110,6 +110,16 @@ F_string_len_trim
   creating a ``NULL`` terminated string using ``trim``.  This avoids
   copying the string in the Fortran wrapper.
 
+F_force_wrapper
+
+  If *true*, always create an explicit Fortran wrapper.
+  If *false*, only create the wrapper when there is work for it to do.
+  Otherwise, call the C function directly.
+  For example, a function which only deals with native
+  numeric types does not need a wrapper since it can be called
+  directly by defining the correct interface.
+  The default is *false*.
+
 namespace
 
   Blank delimited list of namespaces for **cpp_header**.
@@ -442,6 +452,13 @@ default
 
    If set the ``optional`` keyword is added to the Fortran interface.
 
+len
+
+   An expression for the length of string result variable.
+   If not set then the function will be called to compute the string
+   result and len will be computed using ``strlen``.
+   The function is then called again to fill in the result variable.
+ 
 len_trim
 
    For a string argument, pass the string address and the result of

@@ -6,6 +6,8 @@ options:
   C_name_function_template: YYY_{C_prefix}{underscore_name}{function_suffix}
   F_name_impl_function_template:
     "{library}_{underscore_name}{function_suffix}"
+  # always create wrappers to demonstrate name generation
+  F_force_wrapper: True
 
 C_header_filename: top.h
 C_impl_filename: top.cpp

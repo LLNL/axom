@@ -358,10 +358,12 @@ class Wrapf(util.WrapperMixin):
         else:
             self.log.write(" {0} {1[result][name]}\n".format(cls_function, node))
 
-        if options.wrap_c:
-            self.wrap_function_interface(cls, node)
+        # Create fortran wrappers first.
+        # If no real work to do, call the C function directly.
         if options.wrap_fortran:
             self.wrap_function_impl(cls, node)
+        if options.wrap_c:
+            self.wrap_function_interface(cls, node)
 
     def wrap_function_interface(self, cls, node):
         """
@@ -476,6 +478,10 @@ class Wrapf(util.WrapperMixin):
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
 
+        # Assume that the C function can be called directly.
+        # If the wrapper does any work, then set need_wraper to True
+        need_wrapper = options['F_force_wrapper']
+
         # look for C routine to wrap
         # usually the same node unless it is a generic function
         if 'PTR_F_C_index' in fmt_func:
@@ -504,6 +510,7 @@ class Wrapf(util.WrapperMixin):
         # Special case some string handling
         if result_typedef.base == 'string' and \
                 options.get('F_string_result_as_arg', False):
+            need_wrapper = True
             # convert function into subroutine with argument for result
             result_string = True
 
@@ -535,6 +542,7 @@ class Wrapf(util.WrapperMixin):
         fmt.F_subprogram    = subprogram
 
         if cls:
+            need_wrapper = True
             # Add 'this' argument
             if not is_ctor:
                 arg_c_call.append(fmt.F_instance_ptr)
@@ -557,6 +565,7 @@ class Wrapf(util.WrapperMixin):
             arg_f_decl.append(self._f_decl(arg))
 
             if 'default' in attrs:
+                need_wrapper = True
                 arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default='', local=True))
                 fmt.default_value = attrs['default']
                 optional.extend([
@@ -574,8 +583,10 @@ class Wrapf(util.WrapperMixin):
             arg_typedef = self.typedef[arg['type']]
 
             if arg_typedef.f_pre_decl:
+                need_wrapper = True
                 append_format(optional, arg_typedef.f_pre_decl, fmt)
             if arg_typedef.f_pre_call:
+                need_wrapper = True
                 append_format(optional, arg_typedef.f_pre_call, fmt)
             if arg_typedef.f_use_tmp:
                 fmt.var = fmt.tmp_var
@@ -590,6 +601,7 @@ class Wrapf(util.WrapperMixin):
             # Attributes   None=skip, True=use default, else use value
             len_trim = c_arg['attrs'].get('len_trim', None)
             if len_trim:
+                need_wrapper = True
 #                fmt.len_trim_var = 'L' + arg['name']
                 if len_trim is True:
                     len_trim = 'len_trim({var})'
@@ -597,6 +609,7 @@ class Wrapf(util.WrapperMixin):
                 append_format(arg_c_call, len_trim, fmt)
 # XXX need both, cast then fortran_to_c
             elif c_arg['type'] != arg['type']:
+                need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
                 append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
@@ -604,8 +617,10 @@ class Wrapf(util.WrapperMixin):
         if result_string:
             arg_f_names.append(fmt.result_arg)
             if result_typedef.f_rv_decl:
+                need_wrapper = True
                 append_format(arg_f_decl, result_typedef.f_rv_decl, fmt)
             if result_typedef.f_pre_decl:
+                need_wrapper = True
                 append_format(arg_f_decl, result_typedef.f_pre_decl, fmt)
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
@@ -633,6 +648,8 @@ class Wrapf(util.WrapperMixin):
         if not is_ctor:
             # Add method to derived type
 #            if not fmt.get('CPP_template', None):
+            if '_overloaded' in node:
+                need_wrapper = True
             if not fmt.get('CPP_return_templated', False):
                 # if return type is templated in C++, then do not set up generic
                 # since only the return type may be different (ex. getValue<T>())
@@ -649,8 +666,10 @@ class Wrapf(util.WrapperMixin):
         sname = fmt_func.F_name_method
         splicer_code = self.splicer_stack[-1].get(sname, None)
         if 'F_code' in options:
+            need_wrapper = True
             F_code = [   wformat(options.F_code, fmt) ]
         elif splicer_code:
+            need_wrapper = True
             F_code = splicer_code
         else:
             F_code = []
@@ -658,32 +677,42 @@ class Wrapf(util.WrapperMixin):
                 line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
             elif result_string:
+                need_wrapper = True
                 line1 = wformat(result_typedef.f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
             elif subprogram == 'function':
-                line1 = wformat(result_typedef.f_return_code, fmt)
+                f_return_code = result_typedef.f_return_code
+                if f_return_code is None:
+                    f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})'
+                else:
+                    need_wrapper = True
+                line1 = wformat(f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
             else:
                 line1 = wformat('call {F_C_name}({F_arg_c_call_tab})', fmt)
                 self.append_method_arguments(F_code, line1)
 
             if result_typedef.f_post_call:
+                need_wrapper = True
                 # adjust return value or cleanup
                 append_format(F_code, result_typedef.f_post_call, fmt)
             if is_dtor:
                 F_code.append(wformat('{F_this}%{F_derived_member} = C_NULL_PTR', fmt))
 
-        impl = self.impl
-        impl.append('')
-        impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
-        impl.append(1)
-        impl.extend(arg_f_use)
-        impl.append('implicit none')
-        impl.extend(arg_f_decl)
-        impl.extend(optional)
-        self._create_splicer(sname, impl, F_code)
-        impl.append(-1)
-        impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt))
+        if need_wrapper:
+            impl = self.impl
+            impl.append('')
+            impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
+            impl.append(1)
+            impl.extend(arg_f_use)
+            impl.append('implicit none')
+            impl.extend(arg_f_decl)
+            impl.extend(optional)
+            self._create_splicer(sname, impl, F_code)
+            impl.append(-1)
+            impl.append(wformat('end {F_subprogram} {F_name_impl}', fmt))
+        else:
+            fmt_func.F_C_name = fmt_func.F_name_impl
 
     def append_method_arguments(self, F_code, line1):
         """Append each argment in arg_c_call as a line in the function.

@@ -248,6 +248,8 @@ Fortran application.
 Character
 ^^^^^^^^^
 
+.. XXX document len annotation
+
 Character variables have significant differences between C and
 Fortran.  The Fortran interoperabilty with C feature treat a
 ``character`` variable of default kind as an array of
