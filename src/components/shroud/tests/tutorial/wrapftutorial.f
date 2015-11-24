@@ -199,6 +199,27 @@ module tutorial_mod
             real(C_DOUBLE), value, intent(IN) :: arg
         end subroutine tut_function9
         
+        function tut_overload1_0(num, offset, stride) result(rv) &
+                bind(C, name="TUT_overload1_0")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: num
+            integer(C_INT), value, intent(IN) :: offset
+            integer(C_INT), value, intent(IN) :: stride
+            integer(C_INT) :: rv
+        end function tut_overload1_0
+        
+        function tut_overload1_1(type, num, offset, stride) result(rv) &
+                bind(C, name="TUT_overload1_1")
+            use iso_c_binding
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: num
+            integer(C_INT), value, intent(IN) :: offset
+            integer(C_INT), value, intent(IN) :: stride
+            integer(C_INT) :: rv
+        end function tut_overload1_1
+        
         pure function tut_last_function_called() result(rv) &
                 bind(C, name="TUT_last_function_called")
             use iso_c_binding
@@ -228,6 +249,11 @@ module tutorial_mod
         module procedure function9_float
         module procedure function9_double
     end interface function9
+    
+    interface overload1
+        module procedure overload1_0
+        module procedure overload1_1
+    end interface overload1
 
 contains
     
@@ -439,6 +465,62 @@ contains
         call tut_function9(arg)
         ! splicer end function9_double
     end subroutine function9_double
+    
+    function overload1_0(num, offset, stride) result(rv)
+        use iso_c_binding
+        implicit none
+        integer(C_INT), value, intent(IN) :: num
+        integer(C_INT), value, intent(IN), optional :: offset
+        integer(C_INT) :: tmp_offset
+        integer(C_INT), value, intent(IN), optional :: stride
+        integer(C_INT) :: tmp_stride
+        integer(C_INT) :: rv
+        if (present(offset)) then
+            tmp_offset = offset
+        else
+            tmp_offset = 0
+        endif
+        if (present(stride)) then
+            tmp_stride = stride
+        else
+            tmp_stride = 1
+        endif
+        ! splicer begin overload1_0
+        rv = tut_overload1_0(  &
+            num,  &
+            tmp_offset,  &
+            tmp_stride)
+        ! splicer end overload1_0
+    end function overload1_0
+    
+    function overload1_1(type, num, offset, stride) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: num
+        integer(C_INT), value, intent(IN), optional :: offset
+        integer(C_INT) :: tmp_offset
+        integer(C_INT), value, intent(IN), optional :: stride
+        integer(C_INT) :: tmp_stride
+        integer(C_INT) :: rv
+        if (present(offset)) then
+            tmp_offset = offset
+        else
+            tmp_offset = 0
+        endif
+        if (present(stride)) then
+            tmp_stride = stride
+        else
+            tmp_stride = 1
+        endif
+        ! splicer begin overload1_1
+        rv = tut_overload1_1(  &
+            type,  &
+            num,  &
+            tmp_offset,  &
+            tmp_stride)
+        ! splicer end overload1_1
+    end function overload1_1
     
     function last_function_called() result(rv)
         use iso_c_binding

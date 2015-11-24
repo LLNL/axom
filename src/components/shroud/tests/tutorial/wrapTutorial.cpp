@@ -143,6 +143,22 @@ return;
 // splicer end function.function9
 }
 
+int TUT_overload1_0(int num, int offset, int stride)
+{
+// splicer begin function.overload1_0
+int rv = overload1(num, offset, stride);
+return rv;
+// splicer end function.overload1_0
+}
+
+int TUT_overload1_1(double type, int num, int offset, int stride)
+{
+// splicer begin function.overload1_1
+int rv = overload1(type, num, offset, stride);
+return rv;
+// splicer end function.overload1_1
+}
+
 const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called

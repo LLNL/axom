@@ -475,7 +475,7 @@ The generated C wrappers uses the mangled name::
         return;
     }
 
-The generated Fortran creates routines with the same mangled name but
+The generated Fortran creates routines with the same mangled names but
 also creates a generic interface block to allow them to be called by
 the overloaded name::
 
@@ -491,7 +491,23 @@ They can be used as::
   call function6("name")
   call function6(1)
 
+Optional arguments and overloaded functions
+-------------------------------------------
 
+Overloaded function that have optional arguments can also be wrapped::
+
+  - decl: int overload1(int num,
+            int offset = 0, int stride = 1)
+  - decl: int overload1(double type, int num,
+            int offset = 0, int stride = 1)
+
+These routines can then be called as::
+
+    rv = overload1(10)
+    rv = overload1(1d0, 10)
+
+    rv = overload1(10, 11, 12)
+    rv = overload1(1d0, 10, 11, 12)
 
 Templates
 ---------
@@ -670,9 +686,10 @@ To wrap the class add the lines to the YAML file::
       - decl: void Method1()
 
 The method ``new`` has the attribute **+constructor** to mark it as a
-constructor.  It must be after the argument list to make the attribute
-apply to the function as a whole instead of just the result.
-Likewise, ``delete`` is marked as a destructor.
+constructor.  In this example the empty paren expression is required
+to apply the annotation to the function instead of the result.
+Likewise, ``delete`` is marked as a destructor.  These annotations
+will create wrappers over the ``new`` and ``delete`` keywords.
 
 The file ``wrapClass1.h`` will have an opaque struct for the class.
 This is to allows some measure of type safety over using ``void``

@@ -30,6 +30,10 @@ void Function9(double arg);
 
 void Sum(int len, int * values, int *result);
 
+int overload1(int num, int offset = 0, int stride = 1);
+int overload1(double type, int num, int offset = 0, int stride = 1);
+
+
 const std::string& LastFunctionCalled();
 
 class Class1

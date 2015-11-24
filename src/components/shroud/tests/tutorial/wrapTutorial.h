@@ -48,6 +48,10 @@ double TUT_function8_double();
 
 void TUT_function9(double arg);
 
+int TUT_overload1_0(int num, int offset, int stride);
+
+int TUT_overload1_1(double type, int num, int offset, int stride);
+
 const char * TUT_last_function_called();
 
 #ifdef __cplusplus

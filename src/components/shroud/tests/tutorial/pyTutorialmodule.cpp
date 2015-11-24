@@ -260,6 +260,65 @@ PY_function9(
 // splicer end function.function9
 }
 
+static char PY_overload1_0__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_overload1_0(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.overload1_0
+    int num;
+    int offset;
+    int stride;
+    const char *kwcpp = "num\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
+    
+    offset = 0;
+    stride = 1;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", kw_list,
+        &num, &offset, &stride))
+    {
+        return NULL;
+    }
+    int rv = overload1(num, offset, stride);
+    return Py_BuildValue("i", rv);
+// splicer end function.overload1_0
+}
+
+static char PY_overload1_1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_overload1_1(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.overload1_1
+    double type;
+    int num;
+    int offset;
+    int stride;
+    const char *kwcpp = "type\0num\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
+    
+    offset = 0;
+    stride = 1;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", kw_list,
+        &type, &num, &offset, &stride))
+    {
+        return NULL;
+    }
+    int rv = overload1(type, num, offset, stride);
+    return Py_BuildValue("i", rv);
+// splicer end function.overload1_1
+}
+
 static char PY_last_function_called__doc__[] =
 "documentation"
 ;
@@ -286,6 +345,8 @@ static PyMethodDef PY_methods[] = {
 {"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
 {"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
+{"overload1_0", (PyCFunction)PY_overload1_0, METH_VARARGS|METH_KEYWORDS, PY_overload1_0__doc__},
+{"overload1_1", (PyCFunction)PY_overload1_1, METH_VARARGS|METH_KEYWORDS, PY_overload1_1__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

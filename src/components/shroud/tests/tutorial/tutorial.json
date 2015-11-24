@@ -307,7 +307,7 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
-                "PTR_F_C_index": 16, 
+                "PTR_F_C_index": 18, 
                 "PY_name_impl": "PY_function4a", 
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
@@ -357,7 +357,7 @@
                 "F_C_name": "tut_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 16, 
+            "function_index": 18, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -404,7 +404,7 @@
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 
                 "F_name_method": "function4b", 
-                "PTR_F_C_index": 17, 
+                "PTR_F_C_index": 19, 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
@@ -454,7 +454,7 @@
                 "F_C_name": "tut_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 17, 
+            "function_index": 19, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -532,7 +532,7 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
-                "PTR_F_C_index": 18, 
+                "PTR_F_C_index": 20, 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_suffix": "_from_name", 
                 "method_name": "Function6", 
@@ -568,7 +568,7 @@
                 "F_C_name": "tut_function6_from_name_bufferify", 
                 "function_suffix": "_from_name_bufferify"
             }, 
-            "function_index": 18, 
+            "function_index": 20, 
             "function_suffix": "_from_name", 
             "generated": "string_to_buffer_and_len", 
             "options": {
@@ -669,7 +669,7 @@
                 "F_name_method": "function7_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 19, 
+            "function_index": 21, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -704,7 +704,7 @@
                 "F_name_method": "function7_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 20, 
+            "function_index": 22, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -757,7 +757,7 @@
                 "F_name_method": "function8_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 21, 
+            "function_index": 23, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -784,7 +784,7 @@
                 "F_name_method": "function8_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 22, 
+            "function_index": 24, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -853,7 +853,7 @@
                 "PTR_F_C_index": 14, 
                 "function_suffix": "_float"
             }, 
-            "function_index": 23, 
+            "function_index": 25, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -886,7 +886,7 @@
                 "PTR_F_C_index": 14, 
                 "function_suffix": "_double"
             }, 
-            "function_index": 24, 
+            "function_index": 26, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -897,6 +897,114 @@
                 "attrs": {}, 
                 "name": "Function9", 
                 "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 1, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "stride", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_0", 
+                "F_C_name": "tut_overload1_0", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_0", 
+                "F_name_method": "overload1_0", 
+                "PY_name_impl": "PY_overload1_0", 
+                "function_suffix": "_0", 
+                "method_name": "overload1", 
+                "underscore_name": "overload1"
+            }, 
+            "function_index": 15, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "type", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 1, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "stride", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_1", 
+                "F_C_name": "tut_overload1_1", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_1", 
+                "F_name_method": "overload1_1", 
+                "PY_name_impl": "PY_overload1_1", 
+                "function_suffix": "_1", 
+                "method_name": "overload1", 
+                "underscore_name": "overload1"
+            }, 
+            "function_index": 16, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
             }
         }, 
         {
@@ -915,7 +1023,7 @@
                 "method_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
             }, 
-            "function_index": 15, 
+            "function_index": 17, 
             "options": {}, 
             "result": {
                 "attrs": {

@@ -65,6 +65,16 @@ contains
     call sum(5, [1,2,3,4,5], rv_int)
     call assert_true(rv_int .eq. 15)
 
+    rv_int = overload1(10)
+    call assert_true(rv_int .eq. 10)
+    rv_int = overload1(1d0, 10)
+    call assert_true(rv_int .eq. 10)
+
+    rv_int = overload1(10, 11, 12)
+    call assert_true(rv_int .eq. 142)
+    rv_int = overload1(1d0, 10, 11, 12)
+    call assert_true(rv_int .eq. 142)
+
   end subroutine test_functions
 
   subroutine test_class1

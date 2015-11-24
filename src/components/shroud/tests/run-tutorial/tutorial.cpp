@@ -112,6 +112,21 @@ void Sum(int len, int *values, int *result)
     return;
 }
 
+int overload1(int num, int offset, int stride)
+{
+    last_function_called = "overload1_0";
+    return num + offset * stride;
+    
+}
+
+int overload1(double type, int num, int offset, int stride)
+{
+    last_function_called = "overload1_1";
+    global_double = type;
+    return num + offset * stride;
+}
+
+
 //----------------------------------------------------------------------
 
 void Class1::Method1()
