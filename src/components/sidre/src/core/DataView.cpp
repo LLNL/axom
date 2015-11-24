@@ -303,7 +303,7 @@ DataView * DataView::apply()
 /*
  *************************************************************************
  *
- * Apply given # elems, offset, stride desscription to data view.
+ * Apply given # elems, offset, stride description to data view.
  *
  *************************************************************************
  */
@@ -311,21 +311,17 @@ DataView * DataView::apply(SidreLength numelems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
+  SLIC_ASSERT_MSG( !isOpaque(), "Cannot call declare on an opaque view");
   SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
   SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
 
-  if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && 
-       numelems >= 0 && offset >= 0)
+  if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && numelems >= 0 && offset >= 0)
   {
-    size_t bytes_per_elem = m_data_buffer->getBytesPerElement();
-
     DataType dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
     dtype.set_number_of_elements(numelems);
-    dtype.set_offset(offset * bytes_per_elem);
-    dtype.set_stride(stride * bytes_per_elem);
+    dtype.set_offset(offset * dtype.element_bytes() );
+    dtype.set_stride(stride * dtype.element_bytes() );
 
     declare(dtype);
     apply();

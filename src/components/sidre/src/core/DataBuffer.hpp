@@ -71,34 +71,6 @@ class DataView;
  */
 class DataBuffer
 {
-private:
-  class Value {
-      friend class DataBuffer;
-  public:
-      operator int *() const
-      {
-	  return static_cast<int *>(m_data);
-      }
-      operator long *() const
-      {
-	  return static_cast<long *>(m_data);
-      }
-      operator float *() const
-      {
-	  return static_cast<float *>(m_data);
-      }
-      operator double *() const
-      {
-	  return static_cast<double *>(m_data);
-      }
-
-  private:
-      Value(TypeID type, void * data) :
-	  m_type(type),
-	  m_data(data) {}
-      TypeID m_type;
-      void * m_data;
-  };
 
 public:
 
@@ -186,33 +158,20 @@ public:
     return valueptr;
   }
 
-  /*
-  // XXX
-  Value getValue()
-  {
-    return Value(m_type, m_data);
-  }
-*/
   /*!
    * \brief Return type of data for this DataBuffer object.
    */
   TypeID getTypeID() const
   {
-    return m_type;
+    return static_cast<TypeID>(m_node.dtype().id());
   }
-
-  /*!
-   * \brief Return number of bytes associated with one element of 
-   *        DataBuffer data type.
-   */
-  size_t getBytesPerElement() const;
 
   /*!
    * \brief Return total number of elements allocated by this DataBuffer object.
    */
   size_t getNumElements() const
   {
-    return m_numelems;
+	  return m_node.dtype().number_of_elements();
   }
 
   /*!
@@ -363,9 +322,6 @@ private:
   ///
   void detachView( DataView * dataView );
 
-
-
-
   /*!
    * \brief Private methods allocate and deallocate data owned by buffer.
    */
@@ -394,9 +350,6 @@ private:
 
   // Type of data pointed to by m_data
   TypeID m_type;
-
-  // Number of elements pointed to by m_data
-  SidreLength m_numelems;
 
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
