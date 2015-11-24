@@ -59,19 +59,21 @@ class DataStore;
  *      that owns it.
  *    - A DataView holds a pointer to the DataGroup that created it and which
  *      owns it.
- *    - A DataView object can refer to data in one of three ways:
- *        # It can decribe a view into data owned by a pre-existing DataBuffer.
- *          In this case, there can be multiple views into a single buffer.
- *        # It can be used to declare and allocate data, using semantics
- *          similar to DataBuffer data declaration and allocation. When
- *          data is declared via a DataView object, there is a one-to-one
- *          relationship between the view and the buffer and the view owns
- *          the buffer. DataViews cannot share data in this case.
+ *    - A DataView object can refer to data in one of four ways:
+ *        # It can decribe a view into data owned by a DataBuffer.
+ *        # A view can be created to describe and allocate data, using 
+ *          semantics similar to DataBuffer data declaration and allocation. 
+ *          In this case, no other view is allowed to allocate, reallocate,
+ *          or deallocate the buffer.
+ *        # It can hold a pointer to an "external" data object. In this case,
+ *          the view can describe the data as though it owns it and view
+ *          operations are essentially the same as the previous two cases.
  *        # It can hold a pointer to an "opaque" data object. In this case,
- *          there is no associated DataBuffer.
- *    - When a Dataview object is associated with a DataBuffer, the DataView
- *      object holds a pointer to the DataBuffer object. The data description
- *      of the view may described by calling one of the apply() methods.  
+ *          the view knows nothing about the structure of the data; the view
+ *          is essentially a handle to the data.
+ *    - For any DataView object that is "external" or associated with a 
+ *      DataBuffer, the data description of the view may be specified, or
+ *      changed, by calling one of the apply() methods.  
  *
  */
 class DataView
@@ -84,67 +86,16 @@ public:
   //
   friend class DataGroup;
 
-//@{
-//!  @name DataView declaration methods
-
-// RDH TODO -- Remove declaration methods from the public interface, since 
-//             we prefer to go through the datagroup interface?
-//
-// RDH TODO -- Add offset, stride args to first method with defaults.
-//
-
-  /*!
-   * \brief Declare a data view with given type and number of elements, and
-   *        
-   *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
-   *            the apply() method must be called.
-   *
-   * If given number of elements < 0, or view is opaque, method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * declare( TypeID type, SidreLength numelems);
-
-  /*!
-   * \brief Declare a data view with a Conduit data type object.
-   *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
-   *            the apply() method must be called.
-   *
-   * If view is opaque, the method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * declare(const DataType& dtype);
-
-  /*!
-   * \brief Declare a data view with a Conduit schema object.
-   *
-   * IMPORTANT: If view has been previously declared, this operation will
-   *            re-declare the view. To have the new declaration take effect,
-   *            the apply() method must be called.
-   *
-   * If view is opaque, the method does nothing.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView * declare(const Schema& schema);
-
-//@}
-
 
 //@{
 //!  @name DataView allocation methods
 
   /*!
-   * \brief Allocate data for a view, previously declared.
+   * \brief Allocate data for a view, previously defined.
    *
    * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -153,12 +104,10 @@ public:
   /*!
    * \brief Allocate data for view with given type and number of elements.
    *
-   * This is equivalent to calling: declare(type, numelems)->allocate();
-   *
    * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, or given number of elements is < 0,
-   *       this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, or given number of 
+   *       elements is < 0, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -167,11 +116,9 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
    *
-   * This is equivalent to calling: declare(dtype)->allocate().
-   *
    * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -180,11 +127,9 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit schema object.
    *
-   * This is equivalent to calling: declare(schema)->allocate().
-   *
    * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -195,9 +140,9 @@ public:
    *         stays the same).
    *
    * NOTE: Reallocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, or given number of elements is < 0,
-   *       this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, or given number of 
+   *       elements is < 0, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -207,8 +152,8 @@ public:
    * \brief  Reallocate data for view as specified by Conduit data type object.
    *
    * NOTE: Reallocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, this method does nothing.
    *
    * NOTE: The current type of the view data must match that of the given 
    *       data type object. If not, the method does nothing.
@@ -221,8 +166,8 @@ public:
    * \brief  Reallocate data for view as specified by Conduit schema object.
    *
    * NOTE: Reallocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque.
-   *       If either condition is true, this method does nothing.
+   *       view associated with its buffer, or if it is not opaque or
+   *       external. If either condition is true, this method does nothing.
    *
    * NOTE: The current type of the view data must match that of the given 
    *       schema object. If not, the method does nothing.
@@ -292,8 +237,6 @@ public:
   /*!
    * \brief Apply data description of given Conduit data type to data view.
    *
-   * This is equivalent to calling: declare(dtype)->apply().
-   *
    * If view is opaque, the method does nothing.
    *
    * \return pointer to this DataView object.
@@ -303,8 +246,6 @@ public:
   /*!
    * \brief Apply data description of given Conduit schema to data view.
    *        this DataView object
-   *
-   * This is equivalent to calling: declare(dtype)->apply().
    *
    * If view is opaque, the method does nothing.
    *
@@ -571,6 +512,52 @@ private:
    *         valid operation; else false
    */
   bool allocationIsValid() const; 
+
+//@{
+//!  @name Private DataView declaration methods.
+//!        (callable only by DataGroup and DataView methods).
+
+  /*!
+   * \brief Declare a data view with given type and number of elements, and
+   *        
+   *
+   * IMPORTANT: If view has been previously declared, this operation will
+   *            re-declare the view. To have the new declaration take effect,
+   *            the apply() method must be called.
+   *
+   * If given number of elements < 0, or view is opaque, method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * declare( TypeID type, SidreLength numelems);
+
+  /*!
+   * \brief Declare a data view with a Conduit data type object.
+   *
+   * IMPORTANT: If view has been previously declared, this operation will
+   *            re-declare the view. To have the new declaration take effect,
+   *            the apply() method must be called.
+   *
+   * If view is opaque, the method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * declare(const DataType& dtype);
+
+  /*!
+   * \brief Declare a data view with a Conduit schema object.
+   *
+   * IMPORTANT: If view has been previously declared, this operation will
+   *            re-declare the view. To have the new declaration take effect,
+   *            the apply() method must be called.
+   *
+   * If view is opaque, the method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * declare(const Schema& schema);
+
+//@}
 
 
   /// Name of this DataView object.

@@ -60,32 +60,6 @@ return rv;
 // splicer end class.DataView.type.richcompare
 }
 
-static char PY_dataview_declare__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_dataview_declare(
-  PY_DataView *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.DataView.method.declare
-    int type;
-    ATK_SidreLength numelems;
-    const char *kwcpp = "type\0numelems";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
-        &type, &numelems))
-    {
-        return NULL;
-    }
-    self->BBB->declare(getTypeID(type), numelems);
-    Py_RETURN_NONE;
-// splicer end class.DataView.method.declare
-}
-
 static char PY_dataview_allocate_simple__doc__[] =
 "documentation"
 ;
@@ -645,7 +619,6 @@ PY_dataview_apply(
 // splicer begin class.DataView.impl.after_methods
 // splicer end class.DataView.impl.after_methods
 static PyMethodDef PY_DataView_methods[] = {
-{"declare", (PyCFunction)PY_dataview_declare, METH_VARARGS|METH_KEYWORDS, PY_dataview_declare__doc__},
 {"allocate_simple", (PyCFunction)PY_dataview_allocate_simple, METH_NOARGS, PY_dataview_allocate_simple__doc__},
 {"allocate_from_type", (PyCFunction)PY_dataview_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_dataview_reallocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_reallocate__doc__},

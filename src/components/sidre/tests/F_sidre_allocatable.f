@@ -86,8 +86,10 @@ contains
     call assert_equals(num_elements, 0)
 
     ! Allocate array via datastore
-    call view%declare(ATK_C_INT_T, 10)
-    call view%allocate()
+! To be consistent with actual Fortran code, the method that creates 
+! an allocatable view should take the type and the allocate method
+! should take only shape, length, etc.
+    call view%allocate(ATK_C_INT_T, 10)
     
     ! Check from Fortran with ALLOCATED and SIZE
     call assert_true(allocated(iarray))

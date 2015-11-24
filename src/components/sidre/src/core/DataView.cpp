@@ -41,70 +41,6 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Declare data view with type and number of elements.
- *
- *************************************************************************
- */
-DataView * DataView::declare(TypeID type, SidreLength numelems)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
-
-  if ( !isOpaque() && numelems >= 0) 
-  {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(numelems);
-
-    m_schema.set(dtype);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare data view with a Conduit data type object.
- *
- *************************************************************************
- */
-DataView * DataView::declare(const DataType& dtype)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-
-  if ( !isOpaque() ) 
-  {
-    m_schema.set(dtype);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare data view with a Conduit schema object.
- *
- *************************************************************************
- */
-DataView * DataView::declare(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-
-  if ( !isOpaque() ) 
-  {
-    m_schema.set(schema);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
  * Allocate data for view, previously declared.
  *
  *************************************************************************
@@ -569,9 +505,73 @@ DataView::~DataView()
 bool DataView::allocationIsValid() const
 {
    return ( !isOpaque() && (m_data_buffer == ATK_NULLPTR || 
-                            m_data_buffer->getNumViews() == 1) );
+                             (!m_data_buffer->isExternal() && 
+                               m_data_buffer->getNumViews() == 1) ) );
 }
 
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with type and number of elements.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(TypeID type, SidreLength numelems)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
+
+  if ( !isOpaque() && numelems >= 0) 
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(numelems);
+
+    m_schema.set(dtype);
+    m_is_applied = false;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with a Conduit data type object.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(const DataType& dtype)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+
+  if ( !isOpaque() ) 
+  {
+    m_schema.set(dtype);
+    m_is_applied = false;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with a Conduit schema object.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(const Schema& schema)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot call declare on an opaque view");
+
+  if ( !isOpaque() ) 
+  {
+    m_schema.set(schema);
+    m_is_applied = false;
+  }
+  return this;
+}
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

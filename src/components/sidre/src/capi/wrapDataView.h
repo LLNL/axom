@@ -32,8 +32,6 @@ typedef struct s_ATK_dataview ATK_dataview;
 // splicer begin class.DataView.C_definition
 // splicer end class.DataView.C_definition
 
-void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength numelems);
-
 void ATK_dataview_allocate_simple(ATK_dataview * self);
 
 void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength numelems);

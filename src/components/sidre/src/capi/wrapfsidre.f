@@ -269,8 +269,6 @@ module sidre_mod
         ! splicer begin class.DataView.component_part
         ! splicer end class.DataView.component_part
     contains
-        procedure :: declare_int => dataview_declare_int
-        procedure :: declare_long => dataview_declare_long
         procedure :: allocate_simple => dataview_allocate_simple
         procedure :: allocate_int => dataview_allocate_int
         procedure :: allocate_long => dataview_allocate_long
@@ -318,11 +316,6 @@ module sidre_mod
             apply_type_nelems,  &
             apply_type_nelems_offset,  &
             apply_type_nelems_offset_stride
-        generic :: declare => &
-            ! splicer begin class.DataView.generic.declare
-            ! splicer end class.DataView.generic.declare
-            declare_int,  &
-            declare_long
         generic :: reallocate => &
             ! splicer begin class.DataView.generic.reallocate
             ! splicer end class.DataView.generic.reallocate
@@ -956,15 +949,6 @@ module sidre_mod
         
         ! splicer begin class.DataBuffer.additional_interfaces
         ! splicer end class.DataBuffer.additional_interfaces
-        
-        subroutine atk_dataview_declare(self, type, numelems) &
-                bind(C, name="ATK_dataview_declare")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: numelems
-        end subroutine atk_dataview_declare
         
         subroutine atk_dataview_allocate_simple(self) &
                 bind(C, name="ATK_dataview_allocate_simple")
@@ -2358,34 +2342,6 @@ contains
     
     ! splicer begin class.DataBuffer.additional_functions
     ! splicer end class.DataBuffer.additional_functions
-    
-    subroutine dataview_declare_int(obj, type, numelems)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
-        ! splicer begin class.DataView.method.declare_int
-        call atk_dataview_declare(  &
-            obj%voidptr,  &
-            type,  &
-            int(numelems, C_LONG))
-        ! splicer end class.DataView.method.declare_int
-    end subroutine dataview_declare_int
-    
-    subroutine dataview_declare_long(obj, type, numelems)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
-        ! splicer begin class.DataView.method.declare_long
-        call atk_dataview_declare(  &
-            obj%voidptr,  &
-            type,  &
-            int(numelems, C_LONG))
-        ! splicer end class.DataView.method.declare_long
-    end subroutine dataview_declare_long
     
     subroutine dataview_allocate_simple(obj)
         use iso_c_binding

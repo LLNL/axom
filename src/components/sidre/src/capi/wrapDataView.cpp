@@ -18,15 +18,6 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength numelems)
-{
-DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.declare
-selfobj->declare(getTypeID(type), numelems);
-return;
-// splicer end class.DataView.method.declare
-}
-
 void ATK_dataview_allocate_simple(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));

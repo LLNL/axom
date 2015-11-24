@@ -227,14 +227,6 @@ classes:
       cpp_header: sidre/DataView.hpp
 
     methods:
-    - decl: DataView* declare(TypeID type, SidreLength numelems)
-      return_this: True
-      fortran_generic:
-        numelems:
-        -  int
-        -  long
-#    - decl: DataView* declare(const DataType& dtype)
-#    - decl: DataView* declare(const Schema& schema)  
     - decl: DataView* allocate()
       function_suffix: _simple
       return_this: True
