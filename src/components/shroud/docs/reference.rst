@@ -99,7 +99,7 @@ cpp_header
 
 F_string_result_as_arg
 
-  Function with return a ``char *`` will instead by converted to
+  Function which return a ``char *`` will instead by converted to a
   subroutine which require an additional argument for the result.
 
 F_string_len_trim
@@ -113,8 +113,8 @@ F_string_len_trim
 F_force_wrapper
 
   If *true*, always create an explicit Fortran wrapper.
-  If *false*, only create the wrapper when there is work for it to do.
-  Otherwise, call the C function directly.
+  If *false*, only create the wrapper when there is work for it to do;
+  otherwise, call the C function directly.
   For example, a function which only deals with native
   numeric types does not need a wrapper since it can be called
   directly by defining the correct interface.
@@ -313,15 +313,232 @@ F_impl_filename
 Types
 -----
 
+Types describe how to handle arguments from Fortran to C to C++.  Then
+how to convert return values from C++ to C to Fortran.
+
+Since Fortran 2003 (ISO/IEC 1539-1:2004(E)) there is a standardized
+way to generate procedure and derived-type declarations and global
+variables which are interoperable with C (ISO/IEC 9899:1999). The
+bind(C) attribute has been added to inform the compiler that a symbol
+shall be interoperable with C; also, some constraints are added. Note,
+however, that not all C features have a Fortran equivalent or vice
+versa. For instance, neither C's unsigned integers nor C's functions
+with variable number of arguments have an equivalent in
+Fortran. [#f1]_
+
+
+.. list from util.py class Typedef
+
+base
+
+    Base type.
+    For example, string and string_from_buffer both have a 
+    base time of *string*.
+    Defaults to *unknown*
+
+forward
+
+    Forward declaration.
+    Defaults to *None*.
+
 typedef
-c_header
-cpp_header
-c_type
+
+    Initialize from existing type
+    Defaults to *None*.
+
 cpp_type
+
+    Name of type in C++.
+    Defaults to *None*.
+
+cpp_to_c
+
+    Expression to convert from C++ to C.
+    Defaults to *{var}*.
+
+cpp_header
+
+    Name of C++ header file required for implementation.
+    For example, if cpp_to_c was a function.
+    Defaults to *None*.
+
+c_type
+
+    name of type in C.
+    Defaults to *None*.
+
+c_header
+
+    Name of C header file required for type.
+    Defaults to *None*.
+
 c_to_cpp
+
+    Expression to convert from C to C++.
+    Defaults to *{var}*.
+
 c_fortran
+
+    Expression to convert from C to Fortran.
+    Defaults to *None*.
+
+c_argdecl
+
+    List of argument declarations for C wrapper, *None*=match declaration.
+    Used with string_from_buffer .
+    Defaults to *None*.
+
+f_c_args
+
+    List of argument names to F_C routine.
+    Defaults to *None*.
+
+f_c_argdecl
+
+    List of declarations to F_C routine.
+    Defaults to *None*.
+
 f_type
+
+    Name of type in Fortran.
+    Defaults to *None*.
+
+fortran_derived
+
+    Fortran derived type name.
+    Defaults to *None*.
+
+fortran_to_c
+
+    Expression to convert Fortran to C.
+    Defaults to *{var}*.
+
 f_module
+
+    Fortran modules needed for type  (dictionary).
+    Defaults to *None*.
+
+f_return_code
+
+    Defaults to *None*.
+
+f_kind
+
+    Fortran kind of type.
+    Defaults to *None*.
+
+f_cast
+
+    Expression to convert to type.
+    e.g. intrinsics such as int and real.
+    Defaults to *{var}*.
+
+f_use_tmp
+
+    If *true*, pass {tmp_var} to C routine instead of {var}.
+    This can be used with *f_pre_call* to convert Fortran values
+    to values.  For example, to cast or map values.
+    Defaults to *False*.
+
+f_pre_decl
+
+    Declarations needed by f_pre_call
+    Defaults to *None*.
+
+f_pre_call
+
+    Statement to execute before call, often to coerce types
+    Defaults to *None*.
+
+f_post_call
+
+    Statement to execute after call - cleanup, coerce result.
+    Defaults to *None*.
+
+f_rv_decl
+
+    How to declare return variable - when C and Fortran return different types
+    Defaults to *None*.
+
+..  XXX - maybe later.  For not in wrapping routines
+..         f_attr_len_trim = None,
+..         f_attr_len = None,
+..         f_attr_size = None,
+
+result_as_arg
+
+    Override fields when result should be treated as an argument.
+    Defaults to *None*.
+
+PY_format
+
+    'format unit' for PyArg_Parse.
+    Defaults to *O*
+
+PY_PyTypeObject
+
+    Variable name of PyTypeObject instance.
+    Defaults to *None*.
+
+PY_PyObject
+
+    Typedef name of PyObject instance.
+    Defaults to *None*.
+
+PY_ctor
+
+    Expression to create object.
+    ex. PyBool_FromLong({rv})
+    Defaults to *None*.
+
+PY_to_object
+
+    PyBuild - object = converter(address).
+    Defaults to *None*.
+
+PY_from_object
+
+    PyArg_Parse - status = converter(object, address).
+    Defaults to *None*.
+
+
+Format dictionary for Type fields
+
+  * var - name of variable, defaults to argument name.
+  * tmp_var - temporary variable.  defaults to *tmp_{var}*.
+  * result_arg - name of result variable.
+
+
+arg_f_decl._f_decl(arg)
+
+Example for each type::
+
+   subroutine name({var})
+       ! Declare _f_decl(arg)
+
+       ! argument
+       {f_rv_decl}
+       {f_pre_decl}
+
+       ! arguments
+
+       {f_pre_call}
+       {f_return_code}     ! call C code with F_cast expanded
+       {f_post_call}
+
+
+
+Predefined types
+
+  * void
+  * int
+  * long
+  * size_t
+  * float
+  * double
+  * bool
+  * string
+  * string_from_buffer
 
 
 Classes
@@ -469,4 +686,10 @@ Splicers
 --------
 
 Describe splicers.
+
+
+
+.. rubric:: Footnotes
+
+.. [#f1] https://gcc.gnu.org/onlinedocs/gfortran/Interoperability-with-C.html
 

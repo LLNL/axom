@@ -216,38 +216,38 @@ class Typedef(object):
     """
     # valid fields
     defaults = dict(
-        base='unknown',       # base type: 'string'
-        forward=None,         # forward declaration
+        base='unknown',       # Base type: 'string'
+        forward=None,         # Forward declaration
         typedef=None,         # Initialize from existing type
 
-        cpp_type=None,        # name of type in C++
-        cpp_to_c='{var}',     # expression to convert from C++ to C
+        cpp_type=None,        # Name of type in C++
+        cpp_to_c='{var}',     # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
 
-        c_type=None,          # name of type in C
+        c_type=None,          # Name of type in C
         c_header=None,        # Name of C header file required for type
-        c_to_cpp='{var}',     # expression to convert from C to C++
-        c_fortran=None,       # expression to convert from C to Fortran
-        c_argdecl=None,       # list of argument declarations for C wrapper, None=match declaration
+        c_to_cpp='{var}',     # Expression to convert from C to C++
+        c_fortran=None,       # Expression to convert from C to Fortran
+        c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer 
 
-        f_c_args=None,        # list of argument names to F_C routine
-        f_c_argdecl=None,     # list of declarations to F_C routine
+        f_c_args=None,        # List of argument names to F_C routine
+        f_c_argdecl=None,     # List of declarations to F_C routine
 
-        f_type=None,         # name of type in Fortran
+        f_type=None,         # Name of type in Fortran
         fortran_derived=None,    # Fortran derived type name
-        fortran_to_c='{var}', # expression to convert Fortran to C
+        fortran_to_c='{var}', # Expression to convert Fortran to C
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code=None,
         f_kind = None,        # Fortran kind of type
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
-        f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
-        f_pre_decl = None,    # declarations needed by f_pre_call
-        f_pre_call = None,    # statement to execute before call, often to coerce types
-        f_post_call = None,   # statement to execute before call - cleanup, coerce result
-        f_rv_decl = None,     # how to declare return variable - when C and Fortran return different types
+        f_use_tmp = False,    # Pass {tmp_var} to C routine instead of {var}
+        f_pre_decl = None,    # Declarations needed by f_pre_call
+        f_pre_call = None,    # Statement to execute before call, often to coerce types
+        f_post_call = None,   # Statement to execute after call - cleanup, coerce result
+        f_rv_decl = None,     # How to declare return variable - when C and Fortran return different types
 
 # XXX - maybe later.  For not in wrapping routines
 #        f_attr_len_trim = None,

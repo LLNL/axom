@@ -408,7 +408,7 @@ The C wrapper accepts all arguments and passes them to C++.
 It is the Fortran wrapper which provides the default values, not C++.
 But the end result is the same.
 
-Fortra wrapper::
+Fortran wrapper::
 
     function function5(arg1, arg2) result(rv)
         use iso_c_binding
@@ -661,6 +661,8 @@ It may now be used with single or double precision arguments::
 
 Types
 -----
+
+Shroud predefines all of the native types.
 
 Classes
 -------
