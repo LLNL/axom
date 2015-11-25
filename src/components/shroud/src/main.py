@@ -207,7 +207,7 @@ class Schema(object):
 
                 f_type    = 'logical',
                 f_use_tmp  = True,
-                f_pre_decl = 'logical(C_BOOL) {tmp_var}',
+                f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
                 f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
 
                 PY_ctor   = 'PyBool_FromLong({rv})',
@@ -259,8 +259,9 @@ class Schema(object):
         # result_as_arg
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
-                f_rv_decl     = 'character(*), intent(OUT) :: {result_arg}',
-                f_pre_decl    = 'type(C_PTR) :: {F_result}',
+                f_argsdecl    = [
+                    'character(*), intent(OUT) :: {result_arg}',
+                    'type(C_PTR) :: {F_result}'],
                 f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
                 f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
                 ))

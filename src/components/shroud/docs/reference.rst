@@ -430,6 +430,12 @@ f_args
     ``trim({var}) // C_NULL_CHAR``.
     Defaults to *None*  i.e. pass argument unchanged.
 
+f_argsdecl
+
+    A list of declarations needed by *f_args*, *f_pre_call* or
+    *f_post_call*.
+    Defaults to *None* i.e. no additional declarations.
+
 f_module
 
     Fortran modules needed for type  (dictionary).
@@ -462,11 +468,6 @@ f_use_tmp
     to values.  For example, to cast or map values.
     Defaults to *False*.
 
-f_pre_decl
-
-    Declarations needed by f_pre_call
-    Defaults to *None*.
-
 f_pre_call
 
     Statement to execute before call, often to coerce types
@@ -479,11 +480,6 @@ f_post_call
     Statement to execute after call.
     Can be use to cleanup after *f_pre_call*
     or to coerce the return value.
-    Defaults to *None*.
-
-f_rv_decl
-
-    How to declare return variable - when C and Fortran return different types
     Defaults to *None*.
 
 ..  XXX - maybe later.  For not in wrapping routines
@@ -545,15 +541,11 @@ arg_f_decl._f_decl(arg)
 Example for each type::
 
    subroutine name({var})
-       ! Declare _f_decl(arg)
-
-       ! argument
-       {f_rv_decl}
-       {f_pre_decl}
+       {f_argsdecl}
 
        ! arguments
        foreach argument:
-          F_arg_c_call += fortran_to_c or f_cast or '{var}'
+          F_arg_c_call += f_args or f_cast or '{var}'
 
        {f_pre_call}
        {f_return_code}     ! call C code

@@ -244,10 +244,9 @@ class Typedef(object):
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
         f_use_tmp = False,    # Pass {tmp_var} to C routine instead of {var}
-        f_pre_decl = None,    # Declarations needed by f_pre_call
+        f_argsdecl = None,    # List of declarations need by argument.
         f_pre_call = None,    # Statement to execute before call, often to coerce types
         f_post_call = None,   # Statement to execute after call - cleanup, coerce result
-        f_rv_decl = None,     # How to declare return variable - when C and Fortran return different types
 
 # XXX - maybe later.  For not in wrapping routines
 #        f_attr_len_trim = None,
