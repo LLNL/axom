@@ -1101,6 +1101,7 @@
             "cpp_to_c": "static_cast<{C_const}TUT_class1 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "Class1", 
             "f_args": "{var}%{F_derived_member}", 
+            "f_derived_type": "class1", 
             "f_module": {
                 "tutorial_mod": [
                     "class1"
@@ -1108,7 +1109,6 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(class1)", 
-            "fortran_derived": "class1", 
             "forward": "Class1"
         }, 
         "bool": {

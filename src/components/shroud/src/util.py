@@ -236,7 +236,7 @@ class Typedef(object):
         f_c_argdecl=None,     # List of declarations to F_C routine
 
         f_type=None,          # Name of type in Fortran
-        fortran_derived=None, # Fortran derived type name
+        f_derived_type=None,  # Fortran derived type name
         f_args=None,          # Argument in Fortran wrapper to call C.
         f_module=None,        # Fortran modules needed for type  (dictionary)
         f_return_code=None,

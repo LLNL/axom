@@ -1574,6 +1574,7 @@
             "cpp_to_c": "static_cast<{C_const}AA_exclass1 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "ExClass1", 
             "f_args": "{var}%{F_derived_member}", 
+            "f_derived_type": "exclass1", 
             "f_module": {
                 "exclass1_mod": [
                     "exclass1"
@@ -1581,7 +1582,6 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(exclass1)", 
-            "fortran_derived": "exclass1", 
             "forward": "ExClass1"
         }, 
         "ExClass2": {
@@ -1596,6 +1596,7 @@
             "cpp_to_c": "static_cast<{C_const}AA_exclass2 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "ExClass2", 
             "f_args": "{var}%{F_derived_member}", 
+            "f_derived_type": "exclass2", 
             "f_module": {
                 "exclass2_mod": [
                     "exclass2"
@@ -1603,7 +1604,6 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(exclass2)", 
-            "fortran_derived": "exclass2", 
             "forward": "ExClass2"
         }, 
         "SidreLength": {

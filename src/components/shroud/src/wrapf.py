@@ -230,7 +230,7 @@ class Wrapf(util.WrapperMixin):
 
         fmt_class = node['fmt']
 
-        fmt_class.F_derived_name = typedef.fortran_derived
+        fmt_class.F_derived_name = typedef.f_derived_type
 
         # wrap methods
         self._push_splicer(fmt_class.cpp_class)

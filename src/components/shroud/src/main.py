@@ -433,7 +433,7 @@ class GenFunctions(object):
                 c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
-                fortran_derived = unname,
+                f_derived_type = unname,
                 f_args = '{var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module = {fmt_class.F_module_name:[unname]},

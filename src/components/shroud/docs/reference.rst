@@ -416,10 +416,10 @@ f_type
     Name of type in Fortran.
     Defaults to *None*.
 
-fortran_derived
+f_derived_type
 
     Fortran derived type name.
-    Defaults to *None*.
+    Defaults to *None* i.e. use C++ class name.
 
 f_args
 
