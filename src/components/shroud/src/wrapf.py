@@ -607,12 +607,14 @@ class Wrapf(util.WrapperMixin):
                     len_trim = 'len_trim({var})'
                 append_format(arg_c_call, '{var}', fmt)
                 append_format(arg_c_call, len_trim, fmt)
-# XXX need both, cast then fortran_to_c
+            elif arg_typedef.fortran_to_c:
+                need_wrapper = True
+                append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
             elif c_arg['type'] != arg['type']:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
-                append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
+                append_format(arg_c_call, '{var}', fmt)
 
         if result_string:
             arg_f_names.append(fmt.result_arg)

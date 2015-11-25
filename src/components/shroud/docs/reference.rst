@@ -99,6 +99,7 @@ cpp_header
 
 F_string_result_as_arg
 
+  The name of the output argument.
   Function which return a ``char *`` will instead by converted to a
   subroutine which require an additional argument for the result.
 
@@ -260,15 +261,23 @@ C_this
 
 F_this
 
-    Name of the Fortran object argument.  Defaults to ``obj``.
+   Name of the Fortran argument which is the derived type
+   which represents a C++ class.
+   It must not be the same as any of the routines arguments.
+   Defaults to ``obj``.
 
 F_result
 
-    pass
+    The name of the Fortran wrapper's result variable.
+    It must not be the same as any of the routines arguments.
+    It defaults to *rv*  (return value).
 
 F_derived_member
 
-    pass
+    The name of the member of the Fortran derived type which
+    wraps a C++ class.  It will contain a ``type(C_PTR)`` which
+    points to the C++ instance.
+    Defaults to *voidptr*.
 
 
 Top Level
@@ -396,6 +405,7 @@ f_c_args
 f_c_argdecl
 
     List of declarations to F_C routine.
+    By default, only a single argument is passed for each dummy argument.
     Defaults to *None*.
 
 f_type
@@ -410,8 +420,11 @@ fortran_derived
 
 fortran_to_c
 
-    Expression to convert Fortran to C.
-    Defaults to *{var}*.
+    Expression to conovert Fortran arguments to C arguments.
+    For example, a Fortran character variable can be converted
+    to a ``NULL`` terminated string with
+    ``trim({var}) // C_NULL_CHAR``.
+    Defaults to *None*.
 
 f_module
 
@@ -420,18 +433,23 @@ f_module
 
 f_return_code
 
+    Fortran code used to call function and assign the return value.
     Defaults to *None*.
 
-f_kind
+.. f_kind
 
-    Fortran kind of type.
-    Defaults to *None*.
+..    Fortran kind of type.
+..    Defaults to *None*.
 
 f_cast
 
-    Expression to convert to type.
-    e.g. intrinsics such as int and real.
-    Defaults to *{var}*.
+    Expression to convert Fortran type to C type.
+    This is used when creating a Fortran generic functions which
+    accept several type but call a single C function which expects
+    a specific type.
+    For example, type ``int`` is defined as ``int({var}, C_INT)``.
+    This expression converts *var* to a ``integer(C_INT)``.
+    Defaults to *{var}*  i.e. no conversion.
 
 f_use_tmp
 
@@ -448,11 +466,15 @@ f_pre_decl
 f_pre_call
 
     Statement to execute before call, often to coerce types
+    when *f_cast* cannot be used.  If this involves the temporary
+    variable then *f_use_tmp* should be set to *True*.
     Defaults to *None*.
 
 f_post_call
 
-    Statement to execute after call - cleanup, coerce result.
+    Statement to execute after call.
+    Can be use to cleanup after *f_pre_call*
+    or to coerce the return value.
     Defaults to *None*.
 
 f_rv_decl
@@ -506,7 +528,12 @@ Format dictionary for Type fields
 
   * var - name of variable, defaults to argument name.
   * tmp_var - temporary variable.  defaults to *tmp_{var}*.
-  * result_arg - name of result variable.
+  * result_arg - name of result variable from *F_string_result_as_arg*.
+  * F_result - name of result variable
+  * F_C_name - name of BIND(C) interface
+  * F_arg_c_call
+  * F_arg_c_call_tab
+  * F_arguments
 
 
 arg_f_decl._f_decl(arg)
@@ -521,9 +548,11 @@ Example for each type::
        {f_pre_decl}
 
        ! arguments
+       foreach argument:
+          F_arg_c_call += fortran_to_c or f_cast or '{var}'
 
        {f_pre_call}
-       {f_return_code}     ! call C code with F_cast expanded
+       {f_return_code}     ! call C code
        {f_post_call}
 
 
