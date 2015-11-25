@@ -134,7 +134,7 @@ DataBuffer * DataBuffer::allocate()
 /*
  *************************************************************************
  *
- * Declare and allocate data described using type and length.
+ * Declare and allocate data described by type and num elements.
  *
  *************************************************************************
  */
@@ -156,7 +156,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength numelems)
 /*
  *************************************************************************
  *
- * Reallocate data using a length.
+ * Reallocate data to given number of elements.
  *
  *************************************************************************
  */

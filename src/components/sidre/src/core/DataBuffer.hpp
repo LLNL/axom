@@ -207,7 +207,7 @@ public:
    * To use the buffer, the data must be allocated by calling allocate()
    * or set to external data by calling setExternalData().
    *
-   * If given length is < 0, method does nothing.
+   * If given number of elements is < 0, method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
@@ -229,9 +229,9 @@ public:
   DataBuffer * allocate();
 
   /*!
-   * \brief Declare and allocate data described with type and length.
+   * \brief Declare and allocate data described by type and number of elements.
    *
-   * This is equivalent to calling declare(type, len), then allocate().
+   * This is equivalent to calling declare(type, numelems), then allocate().
    * on this DataBuffer object.
    *
    * If buffer is already set to externally-owned data, this method
@@ -239,19 +239,19 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(TypeID type, SidreLength len);
+  DataBuffer * allocate(TypeID type, SidreLength numelems);
 
   /*!
-   * \brief Reallocate data to len items.
+   * \brief Reallocate data to given number of elements.
    *
    *        Equivalent to calling declare(type), then allocate().
    *
-   * If buffer is already set to externally-owned data or given length < 0,
-   * this method does nothing.
+   * If buffer is already set to externally-owned data or given 
+   * number of elements < 0, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(SidreLength len);
+  DataBuffer * reallocate(SidreLength numelems);
 
   /*!
    * \brief Update contents of buffer memory.
