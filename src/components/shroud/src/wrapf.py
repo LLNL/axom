@@ -211,7 +211,9 @@ class Wrapf(util.WrapperMixin):
             self._pop_splicer('generic')
 
             if options.F_module_per_class:
+                # library module
                 self._end_output_file()
+                self._create_splicer('module_use', self.use_stmts)
                 self.write_module(self.tree)
 
         if not options.F_module_per_class:
