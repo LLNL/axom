@@ -19,8 +19,8 @@ int main()
 {
   int result = 0;
 
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
+  // create & initialize test logger, finalized when exiting main scope
+  UnitTestLogger logger;
 
   result = fortran_test();
 

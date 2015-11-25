@@ -58,22 +58,3 @@ TEST(sidre_smoke,conduit_in_sidre_smoke)
   n["field"] = 100;
   EXPECT_EQ(n["field"].to_index_t(),100u);
 }
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
-}

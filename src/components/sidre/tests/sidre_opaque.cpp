@@ -111,25 +111,19 @@ TEST(sidre_opaque,inout)
   Extent * ext = new Extent(0, ihi_val);
 
   DataView * ext_view = problem_gp->createOpaqueView("ext", ext);
-#if 1
-//  problem_gp->CreateViewAndBuffer("ext");
-//  problem_gp->CreateOpaqueView("ext", ext);
-//  problem_gp->CreateView("ext", 0);
-//  problem_gp->MoveView(0);
-//  problem_gp->MoveView(problem_gp->GetView("ext"));
-//  problem_gp->CopyView(0);
-//  problem_gp->CopyView(problem_gp->GetView("ext"));
-//  problem_gp->AttachView(0);
-//  problem_gp->CopyView(problem_gp->GetView("ext"));
-//  Can't do following: method is private...
-//  DataView* v = problem_gp->DetachView("ext");
-//  std::cout << "view name = " << v->GetName() << std::endl;
-//  problem_gp->DestroyView("foo");
-//  root->MoveGroup(problem_gp);
-//  root->CopyGroup(problem_gp);
-//  Can't do following: method is private...
-//  root->DetachGroup("bar");
-//  root->DestroyGroup("bar");
+#if 1 // Some random tests to check error macro behavior, 
+      // should be moved to group unit tests
+//  problem_gp->createView("ext");
+//  problem_gp->createOpaqueView("ext", ext);
+//  problem_gp->createView("ext", ATK_NULLPTR);
+//  problem_gp->moveView(ATK_NULLPTR);
+//  problem_gp->moveView(problem_gp->getView("ext"));
+//  problem_gp->copyView(ATK_NULLPTR);
+//  problem_gp->copyView(problem_gp->getView("ext"));
+//  problem_gp->copyView(problem_gp->getView("ext"));
+//  problem_gp->destroyView("foo");
+//  root->moveGroup(problem_gp);
+//  root->copyGroup(problem_gp);
 //  problem_gp->getView(2);
 #endif
 
@@ -237,23 +231,4 @@ TEST(sidre_opaque,meshvar)
       problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaque() );
   }
   delete ds;
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }
