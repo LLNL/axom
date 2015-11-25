@@ -298,6 +298,9 @@ types
    Each type is a dictionary for members describing how to
    map a type between languages.
 
+patterns:
+
+   Code blocks to insert into generated code.
 
 C_header_filename
 

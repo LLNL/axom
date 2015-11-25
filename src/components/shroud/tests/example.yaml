@@ -201,6 +201,7 @@ functions:
   -  decl: void test_names(const std::string &name, int flag)
      function_suffix: _flag
 
+  # test   and optional arguments
 
 
 ######################################################################

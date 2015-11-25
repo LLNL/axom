@@ -291,9 +291,11 @@
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
+            "f_argsdecl": [
+                "logical(C_BOOL) {tmp_var}"
+            ], 
             "f_kind": "C_BOOL", 
             "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
-            "f_pre_decl": "logical(C_BOOL) {tmp_var}", 
             "f_type": "logical", 
             "f_use_tmp": true
         }, 
@@ -489,13 +491,15 @@
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 
+            "f_argsdecl": [
+                "character(*), intent(OUT) :: {result_arg}", 
+                "type(C_PTR) :: {F_result}"
+            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
-            "f_pre_decl": "type(C_PTR) :: {F_result}", 
             "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
-            "f_rv_decl": "character(*), intent(OUT) :: {result_arg}", 
             "f_type": "character(*)"
         }, 
         "void": {
