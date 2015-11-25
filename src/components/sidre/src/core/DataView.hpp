@@ -178,6 +178,19 @@ public:
 
 //@}
 
+  /*!
+   * \brief Attach DataBuffer object to data view.
+   *
+   * Note that view cannot be used to access data in buffer until it
+   * is described by calling an apply() method.
+   *
+   * If data view is opaque, already associated with a buffer, or given 
+   * buffer pointer is null, method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView * attachBuffer( DataBuffer * buff );
+
 
 //@{
 //!  @name DataView apply (data description) methods
@@ -289,7 +302,10 @@ public:
   }
 
   /*!
-   * \brief Return total number of bytes allocated by this DataView object.
+   * \brief Return total number of bytes associated with this DataView object.
+   *
+   * IMPORTANT: This is the total bytes described by the view; they may not 
+   *            yet be allocated.
    */
   size_t getTotalBytes() const
   {
@@ -297,11 +313,14 @@ public:
   }
 
   /*!
-   * \brief Return total number of elements allocated by this DataView object.
+   * \brief Return total number of elements described by this DataView object.
+   *
+   * IMPORTANT: This is the number of elements described by the view; 
+   *            they may not yet be allocated.
    */
   size_t getNumElements() const
   {
-    return m_node.dtype().number_of_elements();
+    return m_schema.dtype().number_of_elements();
   }
 
 //@}

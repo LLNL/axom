@@ -237,17 +237,24 @@ DataView * DataGroup::createView( const std::string& name,
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( buff != ATK_NULLPTR , 
-                   "Cannot create view with null buffer pointer" );
+  SLIC_CHECK( buff != ATK_NULLPTR );
 
-  if ( name.empty() || hasView(name) || buff == ATK_NULLPTR ) 
+  if ( name.empty() || hasView(name) )
   {
     return ATK_NULLPTR;
   }
   else 
   {
-    DataView * const view = new DataView( name, this, buff );
-    buff->attachView(view);
+    DataView * view = ATK_NULLPTR;
+    if ( buff == ATK_NULLPTR ) 
+    {
+       view = new DataView( name, this);
+    }
+    else 
+    {
+       view = new DataView( name, this, buff );
+       buff->attachView(view);
+    } 
     return attachView(view);
   }
 }

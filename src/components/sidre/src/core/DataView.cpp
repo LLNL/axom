@@ -212,6 +212,30 @@ DataView * DataView::reallocate(const Schema& schema)
 /*
  *************************************************************************
  *
+ * Attach buffer to view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::attachBuffer(DataBuffer * buff)
+{
+  SLIC_ASSERT_MSG( !isOpaque(),
+                  "Cannot attach a buffer to an opaque view");
+  SLIC_ASSERT_MSG( m_data_buffer == ATK_NULLPTR,
+                  "Cannot attach buffer to view that already has a buffer");
+  SLIC_CHECK( buff != ATK_NULLPTR );
+
+  if ( !isOpaque() && m_data_buffer == ATK_NULLPTR && buff != ATK_NULLPTR )
+  {
+    m_data_buffer = buff;
+    m_data_buffer->attachView(this);
+    m_is_applied = false;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Apply a previously declared data description to data held in the buffer.
  *
  *************************************************************************
