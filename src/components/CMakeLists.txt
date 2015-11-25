@@ -12,4 +12,5 @@ add_component(COMPONENT_NAME sidre DEFAULT_STATE ON)
 
 if(ENABLE_MPI)
 	add_component(COMPONENT_NAME lumberjack DEFAULT_STATE ON)
+	add_component(COMPONENT_NAME ioparallel DEFAULT_STATE ON)
 endif(ENABLE_MPI)
