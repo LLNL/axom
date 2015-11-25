@@ -35,7 +35,6 @@ C method void setValue(ValueType value)
 C method void setValue(ValueType value)
 C method ValueType getValue()
 C method ValueType getValue()
-C method void testoptional(int i = 1, long j=2)
 Close wrapExClass2.h
 Close wrapExClass2.cpp
 C function void local_function1
@@ -45,6 +44,7 @@ C function void test_names(const std::string &name)
 C function void test_names(const std::string &name)
 C function void test_names(const std::string &name, int flag)
 C function void test_names(const std::string &name, int flag)
+C function void testoptional(int i = 1, long j=2)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
@@ -81,7 +81,6 @@ C-interface, Fortran method void setValue(ValueType value)
 C-interface, Fortran method void setValue(ValueType value)
 C-interface, Fortran method ValueType getValue()
 C-interface, Fortran method ValueType getValue()
-C-interface, Fortran method void testoptional(int i = 1, long j=2)
 Close wrapfExClass2.f
 C-interface, Fortran function void local_function1
 C-interface, Fortran function bool isNameValid(const std::string& name)
@@ -90,6 +89,7 @@ C-interface, Fortran function void test_names(const std::string &name)
 C-interface function void test_names(const std::string &name)
 C-interface, Fortran function void test_names(const std::string &name, int flag)
 C-interface function void test_names(const std::string &name, int flag)
+C-interface, Fortran function void testoptional(int i = 1, long j=2)
 Close wrapfuserlibrary.f
 class ExClass1
 Python method ExClass1 *new ( const string *name ) +constructor
@@ -115,12 +115,12 @@ Python method ExClass1 *get_class1(const ExClass1 *in)
 Python method void* declare(TypeID type, SidreLength len = 1)
 Python method void destroyall()
 Python method TypeID getTypeID() const
-Python method void testoptional(int i = 1, long j=2)
 Close pyExClass2type.cpp
 Python function void local_function1
 Python function bool isNameValid(const std::string& name)
 Python function void test_names(const std::string &name)
 Python function void test_names(const std::string &name, int flag)
+Python function void testoptional(int i = 1, long j=2)
 Close pyUserLibrarymodule.hpp
 Close pyUserLibrarymodule.cpp
 Close pyUserLibraryhelper.cpp

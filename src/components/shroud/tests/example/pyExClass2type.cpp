@@ -277,34 +277,6 @@ PP_exclass2_get_type_id(
     return Py_BuildValue("O", rv);
 // splicer end class.ExClass2.method.get_type_id
 }
-
-static char PP_exclass2_testoptional__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PP_exclass2_testoptional(
-  PP_ExClass2 *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.ExClass2.method.testoptional
-    int i;
-    long j;
-    const char *kwcpp = "i\0j";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
-    
-    i = 1;
-    j = 2;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", kw_list,
-        &i, &j))
-    {
-        return NULL;
-    }
-    self->BBB->testoptional(i, j);
-    Py_RETURN_NONE;
-// splicer end class.ExClass2.method.testoptional
-}
 // splicer begin class.ExClass2.impl.after_methods
 // splicer end class.ExClass2.impl.after_methods
 static PyMethodDef PP_ExClass2_methods[] = {
@@ -315,7 +287,6 @@ static PyMethodDef PP_ExClass2_methods[] = {
 {"declare", (PyCFunction)PP_exclass2_declare, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare__doc__},
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
 {"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
-{"testoptional", (PyCFunction)PP_exclass2_testoptional, METH_VARARGS|METH_KEYWORDS, PP_exclass2_testoptional__doc__},
 // splicer begin class.ExClass2.PyMethodDef
 // splicer end class.ExClass2.PyMethodDef
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */

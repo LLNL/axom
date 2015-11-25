@@ -65,6 +65,14 @@ module userlibrary_mod
             integer(C_INT), value, intent(IN) :: flag
         end subroutine aa_test_names_flag_bufferify
         
+        subroutine aa_testoptional(i, j) &
+                bind(C, name="AA_testoptional")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: i
+            integer(C_LONG), value, intent(IN) :: j
+        end subroutine aa_testoptional
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -109,6 +117,30 @@ contains
             flag)
         ! splicer end test_names_flag
     end subroutine test_names_flag
+    
+    subroutine testoptional(i, j)
+        use iso_c_binding
+        implicit none
+        integer(C_INT), value, intent(IN), optional :: i
+        integer(C_INT) :: tmp_i
+        integer(C_LONG), value, intent(IN), optional :: j
+        integer(C_LONG) :: tmp_j
+        if (present(i)) then
+            tmp_i = i
+        else
+            tmp_i = 1
+        endif
+        if (present(j)) then
+            tmp_j = j
+        else
+            tmp_j = 2
+        endif
+        ! splicer begin testoptional
+        call aa_testoptional(  &
+            tmp_i,  &
+            tmp_j)
+        ! splicer end testoptional
+    end subroutine testoptional
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

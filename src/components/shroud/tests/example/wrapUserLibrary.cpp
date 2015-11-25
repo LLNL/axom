@@ -64,6 +64,14 @@ return;
 // splicer end function.test_names_flag_bufferify
 }
 
+void AA_testoptional(int i, long j)
+{
+// splicer begin function.testoptional
+testoptional(i, j);
+return;
+// splicer end function.testoptional
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 

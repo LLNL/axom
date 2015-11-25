@@ -179,8 +179,6 @@ classes:
 #        - float
         - double
 
-    - decl: void testoptional(int i = 1, long j=2)
-
 
 functions:
   - decl: void local_function1
@@ -201,8 +199,7 @@ functions:
   -  decl: void test_names(const std::string &name, int flag)
      function_suffix: _flag
 
-  # test   and optional arguments
-
+  - decl: void testoptional(int i = 1, long j=2)
 
 ######################################################################
 patterns:

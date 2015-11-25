@@ -53,6 +53,12 @@ functions:
 - decl: int overload1(double type, int num,
           int offset = 0, int stride = 1)
 
+# test F_string_result_as_arg and optional arguments
+#- decl: const string& overload2(int flag = 0, bool flag2 = true) const
+#  options:
+#    F_string_result_as_arg: output
+
+
 ##################################################
 
 # Used with testing

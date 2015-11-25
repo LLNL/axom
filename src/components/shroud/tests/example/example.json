@@ -536,7 +536,7 @@
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
-                        "PTR_F_C_index": 25, 
+                        "PTR_F_C_index": 24, 
                         "method_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
@@ -573,7 +573,7 @@
                         "F_C_name": "aa_exclass2_ex_class2_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
-                    "function_index": 25, 
+                    "function_index": 24, 
                     "generated": "string_to_buffer_and_len", 
                     "options": {
                         "wrap_c": true, 
@@ -781,7 +781,7 @@
                         "PTR_F_C_index": 19, 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 26, 
+                    "function_index": 25, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -827,7 +827,7 @@
                         "PTR_F_C_index": 19, 
                         "function_suffix": "_long"
                     }, 
-                    "function_index": 27, 
+                    "function_index": 26, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -947,7 +947,7 @@
                         "F_name_method": "set_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 28, 
+                    "function_index": 27, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -983,7 +983,7 @@
                         "F_name_method": "set_value_long", 
                         "function_suffix": "_long"
                     }, 
-                    "function_index": 29, 
+                    "function_index": 28, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1019,7 +1019,7 @@
                         "F_name_method": "set_value_float", 
                         "function_suffix": "_float"
                     }, 
-                    "function_index": 30, 
+                    "function_index": 29, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1055,7 +1055,7 @@
                         "F_name_method": "set_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "function_index": 31, 
+                    "function_index": 30, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1110,7 +1110,7 @@
                         "F_name_method": "get_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 32, 
+                    "function_index": 31, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1138,7 +1138,7 @@
                         "F_name_method": "get_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "function_index": 33, 
+                    "function_index": 32, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1149,47 +1149,6 @@
                         "attrs": {}, 
                         "name": "getValue", 
                         "type": "double"
-                    }
-                }, 
-                {
-                    "args": [
-                        {
-                            "attrs": {
-                                "default": 1, 
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "i", 
-                            "type": "int"
-                        }, 
-                        {
-                            "attrs": {
-                                "default": 2, 
-                                "intent": "in", 
-                                "value": true
-                            }, 
-                            "name": "j", 
-                            "type": "long"
-                        }
-                    ], 
-                    "attrs": {}, 
-                    "decl": "void testoptional(int i = 1, long j=2)", 
-                    "fmt": {
-                        "C_name": "AA_exclass2_testoptional", 
-                        "F_C_name": "aa_exclass2_testoptional", 
-                        "F_name_generic": "testoptional", 
-                        "F_name_impl": "exclass2_testoptional", 
-                        "F_name_method": "testoptional", 
-                        "PY_name_impl": "PP_exclass2_testoptional", 
-                        "method_name": "testoptional", 
-                        "underscore_name": "testoptional"
-                    }, 
-                    "function_index": 24, 
-                    "options": {}, 
-                    "result": {
-                        "attrs": {}, 
-                        "name": "testoptional", 
-                        "type": "void"
                     }
                 }
             ], 
@@ -1269,7 +1228,7 @@
                 "method_name": "local_function1", 
                 "underscore_name": "local_function1"
             }, 
-            "function_index": 34, 
+            "function_index": 33, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -1303,7 +1262,7 @@
                 "method_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
-            "function_index": 35, 
+            "function_index": 34, 
             "options": {
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
@@ -1376,7 +1335,7 @@
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
-            "function_index": 36, 
+            "function_index": 35, 
             "function_suffix": "", 
             "options": {}, 
             "result": {
@@ -1457,7 +1416,7 @@
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
-            "function_index": 37, 
+            "function_index": 36, 
             "function_suffix": "_flag", 
             "options": {}, 
             "result": {
@@ -1507,6 +1466,47 @@
             "result": {
                 "attrs": {}, 
                 "name": "test_names", 
+                "type": "void"
+            }
+        }, 
+        {
+            "args": [
+                {
+                    "attrs": {
+                        "default": 1, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "i", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 2, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "j", 
+                    "type": "long"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void testoptional(int i = 1, long j=2)", 
+            "fmt": {
+                "C_name": "AA_testoptional", 
+                "F_C_name": "aa_testoptional", 
+                "F_name_generic": "testoptional", 
+                "F_name_impl": "testoptional", 
+                "F_name_method": "testoptional", 
+                "PY_name_impl": "PP_testoptional", 
+                "method_name": "testoptional", 
+                "underscore_name": "testoptional"
+            }, 
+            "function_index": 37, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "testoptional", 
                 "type": "void"
             }
         }

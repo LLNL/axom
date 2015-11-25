@@ -585,7 +585,7 @@ class Wrapf(util.WrapperMixin):
             if arg_typedef.f_argsdecl:
                 need_wrapper = True
                 for argdecl in arg_typedef.f_argsdecl:
-                    append_format(optional, argdecl, fmt)
+                    append_format(arg_f_decl, argdecl, fmt)
             if arg_typedef.f_pre_call:
                 need_wrapper = True
                 append_format(optional, arg_typedef.f_pre_call, fmt)
@@ -623,12 +623,6 @@ class Wrapf(util.WrapperMixin):
                 need_wrapper = True
                 for argdecl in result_typedef.f_argsdecl:
                     append_format(arg_f_decl, argdecl, fmt)
-#            if result_typedef.f_rv_decl:
-#                need_wrapper = True
-#                append_format(arg_f_decl, result_typedef.f_rv_decl, fmt)
-#            if result_typedef.f_pre_decl:
-#                need_wrapper = True
-#                append_format(arg_f_decl, result_typedef.f_pre_decl, fmt)
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
         fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations

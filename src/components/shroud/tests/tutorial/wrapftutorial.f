@@ -292,8 +292,8 @@ contains
         use iso_c_binding
         implicit none
         logical, value, intent(IN) :: arg
-        logical :: rv
         logical(C_BOOL) tmp_arg
+        logical :: rv
         tmp_arg = arg  ! coerce to C_BOOL
         ! splicer begin function3
         rv = tut_function3(tmp_arg)

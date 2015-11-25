@@ -35,7 +35,6 @@ module exclass2_mod
         procedure :: set_value_double => exclass2_set_value_double
         procedure :: get_value_int => exclass2_get_value_int
         procedure :: get_value_double => exclass2_get_value_double
-        procedure :: testoptional => exclass2_testoptional
         generic :: declare => &
             ! splicer begin class.ExClass2.generic.declare
             ! splicer end class.ExClass2.generic.declare
@@ -183,15 +182,6 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE) :: rv
         end function aa_exclass2_get_value_double
-        
-        subroutine aa_exclass2_testoptional(self, i, j) &
-                bind(C, name="AA_exclass2_testoptional")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: i
-            integer(C_LONG), value, intent(IN) :: j
-        end subroutine aa_exclass2_testoptional
         
         ! splicer begin class.ExClass2.additional_interfaces
         ! splicer end class.ExClass2.additional_interfaces
@@ -380,32 +370,6 @@ contains
         rv = aa_exclass2_get_value_double(obj%voidptr)
         ! splicer end class.ExClass2.method.get_value_double
     end function exclass2_get_value_double
-    
-    subroutine exclass2_testoptional(obj, i, j)
-        use iso_c_binding
-        implicit none
-        class(exclass2) :: obj
-        integer(C_INT), value, intent(IN), optional :: i
-        integer(C_INT) :: tmp_i
-        integer(C_LONG), value, intent(IN), optional :: j
-        integer(C_LONG) :: tmp_j
-        if (present(i)) then
-            tmp_i = i
-        else
-            tmp_i = 1
-        endif
-        if (present(j)) then
-            tmp_j = j
-        else
-            tmp_j = 2
-        endif
-        ! splicer begin class.ExClass2.method.testoptional
-        call aa_exclass2_testoptional(  &
-            obj%voidptr,  &
-            tmp_i,  &
-            tmp_j)
-        ! splicer end class.ExClass2.method.testoptional
-    end subroutine exclass2_testoptional
     
     ! splicer begin class.ExClass2.additional_functions
     ! splicer end class.ExClass2.additional_functions

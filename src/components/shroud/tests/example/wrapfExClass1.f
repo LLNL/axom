@@ -305,8 +305,8 @@ contains
         implicit none
         class(exclass1) :: obj
         logical, value, intent(IN) :: in
-        logical :: rv
         logical(C_BOOL) tmp_in
+        logical :: rv
         tmp_in = in  ! coerce to C_BOOL
         ! splicer begin class.ExClass1.method.has_addr
         rv = aa_exclass1_has_addr(  &

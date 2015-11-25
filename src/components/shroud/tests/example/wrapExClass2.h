@@ -53,8 +53,6 @@ int AA_exclass2_get_value_int(AA_exclass2 * self);
 
 double AA_exclass2_get_value_double(AA_exclass2 * self);
 
-void AA_exclass2_testoptional(AA_exclass2 * self, int i, long j);
-
 #ifdef __cplusplus
 }
 #endif
