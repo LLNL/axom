@@ -418,13 +418,17 @@ fortran_derived
     Fortran derived type name.
     Defaults to *None*.
 
-fortran_to_c
+f_args
 
-    Expression to conovert Fortran arguments to C arguments.
+    Arguments in the Fortran wrapper to pass to the C function.
+    This can pass multiple arguments to C for a single
+    argument to the wrapper; for example, an address and length
+    for a ``character(*)`` argument.
+    Or it may be intermediate values.
     For example, a Fortran character variable can be converted
     to a ``NULL`` terminated string with
     ``trim({var}) // C_NULL_CHAR``.
-    Defaults to *None*.
+    Defaults to *None*  i.e. pass argument unchanged.
 
 f_module
 

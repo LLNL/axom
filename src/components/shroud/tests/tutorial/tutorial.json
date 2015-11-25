@@ -1100,6 +1100,7 @@
             "c_type": "TUT_class1", 
             "cpp_to_c": "static_cast<{C_const}TUT_class1 *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "Class1", 
+            "f_args": "{var}%{F_derived_member}", 
             "f_module": {
                 "tutorial_mod": [
                     "class1"
@@ -1108,7 +1109,6 @@
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(class1)", 
             "fortran_derived": "class1", 
-            "fortran_to_c": "{var}%{F_derived_member}", 
             "forward": "Class1"
         }, 
         "bool": {
@@ -1257,12 +1257,12 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "f_type": "character(*)"
         }, 
         "string": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -1272,12 +1272,12 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "f_type": "character(*)"
         }, 
         "string_from_buffer": {
             "base": "string", 
@@ -1290,6 +1290,7 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "{var}, len_trim({var})", 
             "f_c_argdecl": [
                 "type(C_PTR), intent(IN), value :: {var}", 
                 "integer(C_INT), intent(IN), value :: len_{var}"
@@ -1302,8 +1303,7 @@
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "{var}, len_trim({var})"
+            "f_type": "character(*)"
         }, 
         "string_result_as_arg": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -1313,6 +1313,7 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -1320,8 +1321,7 @@
             "f_pre_decl": "type(C_PTR) :: {F_result}", 
             "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
             "f_rv_decl": "character(*), intent(OUT) :: {result_arg}", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "f_type": "character(*)"
         }, 
         "void": {
             "c_fortran": "type(C_PTR)", 

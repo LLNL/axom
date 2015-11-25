@@ -607,9 +607,9 @@ class Wrapf(util.WrapperMixin):
                     len_trim = 'len_trim({var})'
                 append_format(arg_c_call, '{var}', fmt)
                 append_format(arg_c_call, len_trim, fmt)
-            elif arg_typedef.fortran_to_c:
+            elif arg_typedef.f_args:
                 need_wrapper = True
-                append_format(arg_c_call, arg_typedef.fortran_to_c, fmt)
+                append_format(arg_c_call, arg_typedef.f_args, fmt)
             elif c_arg['type'] != arg['type']:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)

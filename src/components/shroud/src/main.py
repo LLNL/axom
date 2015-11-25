@@ -221,7 +221,7 @@ class Schema(object):
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
-                fortran_to_c = 'trim({var}) // C_NULL_CHAR',
+                f_args = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
@@ -241,7 +241,7 @@ class Schema(object):
                 f_c_argdecl = [ 'type(C_PTR), intent(IN), value :: {var}',
                                 'integer(C_INT), intent(IN), value :: len_{var}' ],
                 f_type     = 'character(*)',
-                fortran_to_c = '{var}, len_trim({var})',
+                f_args = '{var}, len_trim({var})',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
@@ -433,7 +433,7 @@ class GenFunctions(object):
                 c_fortran = 'type(C_PTR)',
                 f_type = 'type(%s)' % unname,
                 fortran_derived = unname,
-                fortran_to_c = '{var}%{F_derived_member}',
+                f_args = '{var}%{F_derived_member}',
                 # XXX module name may not conflict with type name
                 f_module = {fmt_class.F_module_name:[unname]},
 
