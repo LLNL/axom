@@ -15,6 +15,10 @@ set(gtest_thirdparty_tests
     conduit_smoke.cpp
     )
 
+set(gbenchmark_thirdparty_tests
+    benchmark_smoke.cpp
+    )
+
 ################
 # Fortran Tests
 ################
@@ -29,6 +33,11 @@ set(gtest_thirdparty_fortran_tests
 foreach(test ${gtest_thirdparty_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON conduit)
 endforeach()
+
+foreach(test ${gbenchmark_thirdparty_tests})
+    add_benchmark( TEST_SOURCE ${test} )
+endforeach()
+
 
 
 ################
