@@ -405,50 +405,11 @@ class GenFunctions(object):
         tree['function_index'] = self.function_index = []
 
         for cls in tree['classes']:
-            self.create_class_typedef(cls)
-
-        for cls in tree['classes']:
             cls['methods'] = self.define_function_suffix(cls['methods'])
         tree['functions'] = self.define_function_suffix(tree['functions'])
 
         for cls in tree['classes']:
             self.check_class_dependencies(cls)
-
-    def create_class_typedef(self, cls):
-        # create typedef for each class before generating code
-        # this allows classes to reference each other
-        name = cls['name']
-        fmt_class = cls['fmt']
-
-        if name not in self.typedef:
-#            unname = util.un_camel(name)
-            unname = name.lower()
-            cname = fmt_class.C_prefix + unname
-            self.typedef[name] = util.Typedef(
-                name,
-                cpp_type = name,
-                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
-                c_type = cname,
-                # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
-                c_fortran = 'type(C_PTR)',
-                f_type = 'type(%s)' % unname,
-                f_derived_type = unname,
-                f_args = '{var}%{F_derived_member}',
-                # XXX module name may not conflict with type name
-                f_module = {fmt_class.F_module_name:[unname]},
-
-                # return from C function
-#                f_c_return_decl = 'type(CPTR)' % unname,
-                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
-
-                # allow forward declarations to avoid recursive headers
-                forward = name,
-                base = 'wrapped',
-                )
-
-        typedef = self.typedef[name]
-        fmt_class.C_type_name = typedef.c_type
 
     def append_function_index(self, node):
         """append to function_index, set index into node.
@@ -663,10 +624,13 @@ class VerifyAttrs(object):
     def __init__(self, tree, config):
         self.tree = tree    # json tree
         self.config = config
+        self.typedef = tree['types']
 
     def verify_attrs(self):
         tree = self.tree
-        self.typedef = tree['types']
+
+        for cls in tree['classes']:
+            self.create_class_typedef(cls)
 
         for cls in tree['classes']:
             for func in cls['methods']:
@@ -674,6 +638,42 @@ class VerifyAttrs(object):
 
         for func in tree['functions']:
             self.check_arg_attrs(func)
+
+    def create_class_typedef(self, cls):
+        # create typedef for each class before generating code
+        # this allows classes to reference each other
+        name = cls['name']
+        fmt_class = cls['fmt']
+
+        if name not in self.typedef:
+#            unname = util.un_camel(name)
+            unname = name.lower()
+            cname = fmt_class.C_prefix + unname
+            self.typedef[name] = util.Typedef(
+                name,
+                cpp_type = name,
+                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
+                c_type = cname,
+                # opaque pointer -> void pointer -> class instance pointer
+                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
+                c_fortran = 'type(C_PTR)',
+                f_type = 'type(%s)' % unname,
+                f_derived_type = unname,
+                f_args = '{var}%{F_derived_member}',
+                # XXX module name may not conflict with type name
+                f_module = {fmt_class.F_module_name:[unname]},
+
+                # return from C function
+#                f_c_return_decl = 'type(CPTR)' % unname,
+                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
+
+                # allow forward declarations to avoid recursive headers
+                forward = name,
+                base = 'wrapped',
+                )
+
+        typedef = self.typedef[name]
+        fmt_class.C_type_name = typedef.c_type
 
     def check_arg_attrs(self, node):
         """Regularize attributes
@@ -686,9 +686,12 @@ class VerifyAttrs(object):
             return
 
         for arg in node['args']:
-            typedef = self.typedef.get(arg['type'], None)
+            typename = arg['type']
+            typedef = self.typedef.get(typename, None)
             if typedef is None:
-                raise RuntimeError("No such type %s" % arg['type'])
+                cpp_template = node.get('cpp_template', {})
+                if typename not in cpp_template:
+                    raise RuntimeError("No such type %s" % arg['type'])
 
             attrs = arg['attrs']
             is_ptr = (attrs.get('ptr', False) or
@@ -889,8 +892,8 @@ if __name__ == '__main__':
 
 
     Schema(all).check_schema()
-    GenFunctions(all, config).gen_library()
     VerifyAttrs(all, config).verify_attrs()
+    GenFunctions(all, config).gen_library()
     Namify(all, config).name_library()
 
     if 'splicer' in all:

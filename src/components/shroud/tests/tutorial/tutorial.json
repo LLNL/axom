@@ -622,7 +622,10 @@
             "_overloaded": true, 
             "args": [
                 {
-                    "attrs": {}, 
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
                     "name": "arg", 
                     "type": "ArgType"
                 }
