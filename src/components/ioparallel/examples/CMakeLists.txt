@@ -3,6 +3,7 @@
 # List of single source file examples
 #
 set(example_sources
+    IORead.cpp
     IOWrite.cpp
 )
 

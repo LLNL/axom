@@ -20,7 +20,6 @@
 
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
-using asctoolkit::sidre::DataType;
 using asctoolkit::ioparallel::IOParallel;
 
 /**************************************************************************
@@ -32,6 +31,8 @@ int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
 
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
 
   size_t num_files = 0;
   std::string file_base;
@@ -42,19 +43,11 @@ int main(int argc, char * argv[])
     return 0;
   }
 
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataGroup * flds = root->createGroup("fields");
-
-  DataGroup * ga = flds->createGroup("a");
-  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
-  ga->getView("i0")->setValue(1);
-
   std::vector<DataGroup *> groups;
   groups.push_back(root);
 
-  IOParallel writer(MPI_COMM_WORLD, groups, num_files);
-  writer.write(file_base, 0, "conduit");
+  IOParallel reader(MPI_COMM_WORLD, groups, num_files);
+  reader.read(file_base, 0, "conduit");
 
   delete ds;
 

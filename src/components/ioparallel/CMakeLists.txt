@@ -9,6 +9,11 @@ project(ioparallel)
 include_directories(${CONDUIT_INCLUDE_DIRS})
 
 ################################
+# Add the boost headers include
+################################
+include_directories( ${Boost_INCLUDE_DIRS} )
+
+################################
 # Add the sources
 ################################
 add_subdirectory(src)
