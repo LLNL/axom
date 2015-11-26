@@ -416,7 +416,7 @@ class GenFunctions(object):
         """append to function_index, set index into node.
         """
         ilist = self.function_index
-        node['function_index'] = len(ilist)
+        node['_function_index'] = len(ilist)
 #        node['fmt'].function_index = str(len(ilist)) # debugging
         ilist.append(node)
 
@@ -503,9 +503,9 @@ class GenFunctions(object):
                 self.append_function_index(new)
 
                 new['generated'] = 'fortran_generic'
+                new['_PTR_F_C_index'] = node['_function_index']
                 fmt = new['fmt']
                 fmt.function_suffix = '_' + type
-                fmt.PTR_F_C_index = node['function_index']
                 del new['fortran_generic']
                 options = new['options']
                 options.wrap_c = False
@@ -610,7 +610,7 @@ class GenFunctions(object):
         options = node['options']
         #        options.wrap_fortran = False
 #        # Current Fortran function should use this new C function
-        node['fmt'].PTR_F_C_index = new['function_index']
+        node['_PTR_F_C_index'] = new['_function_index']
 
         newargs = []
         for arg in new['args']:
@@ -803,7 +803,8 @@ class Namify(object):
     """Compute names of functions in library.
     Need to compute F_name and C_F_name since they interact.
     Compute all C names first, then Fortran.
-    A Fortran function may call a generated C function via PTR_F_C_index
+    A Fortran function may call a generated C function via
+    _PTR_F_C_index
     Also compute number which may be controlled by options.    
 
     C_name - Name of C function

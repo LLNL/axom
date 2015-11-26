@@ -486,8 +486,8 @@ class Wrapf(util.WrapperMixin):
 
         # look for C routine to wrap
         # usually the same node unless it is a generic function
-        if 'PTR_F_C_index' in fmt_func:
-            C_node = self.tree['function_index'][fmt_func.PTR_F_C_index]
+        if '_PTR_F_C_index' in node:
+            C_node = self.tree['function_index'][node['_PTR_F_C_index']]
             if len(node['args']) != len(C_node['args']):
                 raise RuntimeError("Argument mismatch between Fortran and C functions")
         else:

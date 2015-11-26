@@ -43,6 +43,8 @@
             }, 
             "methods": [
                 {
+                    "_PTR_F_C_index": 13, 
+                    "_function_index": 0, 
                     "args": [
                         {
                             "attrs": {
@@ -66,11 +68,9 @@
                         "F_name_generic": "new", 
                         "F_name_impl": "exclass1_new", 
                         "F_name_method": "new", 
-                        "PTR_F_C_index": 13, 
                         "method_name": "new", 
                         "underscore_name": "new"
                     }, 
-                    "function_index": 0, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -81,6 +81,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 13, 
                     "args": [
                         {
                             "attrs": {
@@ -104,7 +105,6 @@
                         "F_C_name": "aa_exclass1_new_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
-                    "function_index": 13, 
                     "generated": "string_to_buffer_and_len", 
                     "options": {
                         "wrap_c": true, 
@@ -120,6 +120,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 1, 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -135,7 +136,6 @@
                         "method_name": "delete", 
                         "underscore_name": "delete"
                     }, 
-                    "function_index": 1, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -144,6 +144,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 2, 
                     "args": [
                         {
                             "attrs": {
@@ -167,7 +168,6 @@
                         "method_name": "incrementCount", 
                         "underscore_name": "increment_count"
                     }, 
-                    "function_index": 2, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -178,6 +178,7 @@
                 {
                     "C_error_pattern": "C_invalid_name", 
                     "PY_error_pattern": "PY_invalid_name", 
+                    "_function_index": 3, 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -193,7 +194,6 @@
                         "method_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
-                    "function_index": 3, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -206,6 +206,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 4, 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -222,7 +223,6 @@
                         "method_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "function_index": 4, 
                     "helper": true, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
@@ -234,6 +234,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 5, 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -249,7 +250,6 @@
                         "method_name": "getNameErrorCheck", 
                         "underscore_name": "get_name_error_check"
                     }, 
-                    "function_index": 5, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -261,6 +261,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 6, 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -276,7 +277,6 @@
                         "method_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
                     }, 
-                    "function_index": 6, 
                     "options": {
                         "F_string_result_as_arg": "name"
                     }, 
@@ -290,6 +290,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 7, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "ExClass2 *getRoot()", 
@@ -303,7 +304,6 @@
                         "method_name": "getRoot", 
                         "underscore_name": "get_root"
                     }, 
-                    "function_index": 7, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -314,6 +314,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 8, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -338,7 +339,6 @@
                         "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
-                    "function_index": 8, 
                     "function_suffix": "_from_int", 
                     "options": {}, 
                     "result": {
@@ -348,6 +348,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 9, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -372,7 +373,6 @@
                         "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
-                    "function_index": 9, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -381,6 +381,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 10, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void *getAddr()", 
@@ -394,7 +395,6 @@
                         "method_name": "getAddr", 
                         "underscore_name": "get_addr"
                     }, 
-                    "function_index": 10, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -405,6 +405,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 11, 
                     "args": [
                         {
                             "attrs": {
@@ -427,7 +428,6 @@
                         "method_name": "hasAddr", 
                         "underscore_name": "has_addr"
                     }, 
-                    "function_index": 11, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -436,6 +436,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 12, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void SplicerSpecial", 
@@ -449,7 +450,6 @@
                         "method_name": "SplicerSpecial", 
                         "underscore_name": "splicer_special"
                     }, 
-                    "function_index": 12, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -514,6 +514,8 @@
             }, 
             "methods": [
                 {
+                    "_PTR_F_C_index": 24, 
+                    "_function_index": 14, 
                     "args": [
                         {
                             "attrs": {
@@ -536,11 +538,9 @@
                         "F_name_generic": "ex_class2", 
                         "F_name_impl": "exclass2_ex_class2", 
                         "F_name_method": "ex_class2", 
-                        "PTR_F_C_index": 24, 
                         "method_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
-                    "function_index": 14, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -551,6 +551,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 24, 
                     "args": [
                         {
                             "attrs": {
@@ -573,7 +574,6 @@
                         "F_C_name": "aa_exclass2_ex_class2_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
-                    "function_index": 24, 
                     "generated": "string_to_buffer_and_len", 
                     "options": {
                         "wrap_c": true, 
@@ -589,6 +589,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 15, 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -604,7 +605,6 @@
                         "method_name": "delete", 
                         "underscore_name": "delete"
                     }, 
-                    "function_index": 15, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -613,6 +613,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 16, 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -628,7 +629,6 @@
                         "method_name": "getName", 
                         "underscore_name": "get_name"
                     }, 
-                    "function_index": 16, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -641,6 +641,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 17, 
                     "args": [], 
                     "attrs": {}, 
                     "docs": "helper function for Fortran", 
@@ -654,7 +655,6 @@
                         "method_name": "GetNameLength", 
                         "underscore_name": "get_name_length"
                     }, 
-                    "function_index": 17, 
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
@@ -668,6 +668,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 18, 
                     "args": [
                         {
                             "attrs": {
@@ -692,7 +693,6 @@
                         "method_name": "get_class1", 
                         "underscore_name": "get_class1"
                     }, 
-                    "function_index": 18, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -703,6 +703,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 19, 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -739,7 +740,6 @@
                             "long"
                         ]
                     }, 
-                    "function_index": 19, 
                     "options": {
                         "wrap_fortran": false
                     }, 
@@ -753,6 +753,8 @@
                     "return_this": true
                 }, 
                 {
+                    "_PTR_F_C_index": 19, 
+                    "_function_index": 25, 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -780,10 +782,8 @@
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare_int", 
                         "F_name_method": "declare_int", 
-                        "PTR_F_C_index": 19, 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 25, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -800,6 +800,8 @@
                     "return_this": true
                 }, 
                 {
+                    "_PTR_F_C_index": 19, 
+                    "_function_index": 26, 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -827,10 +829,8 @@
                         "F_name_generic": "declare", 
                         "F_name_impl": "exclass2_declare_long", 
                         "F_name_method": "declare_long", 
-                        "PTR_F_C_index": 19, 
                         "function_suffix": "_long"
                     }, 
-                    "function_index": 26, 
                     "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
@@ -847,6 +847,7 @@
                     "return_this": true
                 }, 
                 {
+                    "_function_index": 20, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void destroyall()", 
@@ -860,7 +861,6 @@
                         "method_name": "destroyall", 
                         "underscore_name": "destroyall"
                     }, 
-                    "function_index": 20, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -869,6 +869,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 21, 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -884,7 +885,6 @@
                         "method_name": "getTypeID", 
                         "underscore_name": "get_type_id"
                     }, 
-                    "function_index": 21, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -893,6 +893,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 22, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -918,7 +919,6 @@
                         "method_name": "setValue", 
                         "underscore_name": "set_value"
                     }, 
-                    "function_index": 22, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
@@ -931,6 +931,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 27, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -953,7 +954,6 @@
                         "F_name_method": "set_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 27, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -967,6 +967,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 28, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -989,7 +990,6 @@
                         "F_name_method": "set_value_long", 
                         "function_suffix": "_long"
                     }, 
-                    "function_index": 28, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1003,6 +1003,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 29, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1025,7 +1026,6 @@
                         "F_name_method": "set_value_float", 
                         "function_suffix": "_float"
                     }, 
-                    "function_index": 29, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1039,6 +1039,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 30, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1061,7 +1062,6 @@
                         "F_name_method": "set_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "function_index": 30, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1075,6 +1075,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 23, 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
@@ -1089,7 +1090,6 @@
                         "method_name": "getValue", 
                         "underscore_name": "get_value"
                     }, 
-                    "function_index": 23, 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": false, 
@@ -1102,6 +1102,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 31, 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
@@ -1116,7 +1117,6 @@
                         "F_name_method": "get_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "function_index": 31, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1130,6 +1130,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 32, 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
@@ -1144,7 +1145,6 @@
                         "F_name_method": "get_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "function_index": 32, 
                     "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
@@ -1220,6 +1220,7 @@
     }, 
     "functions": [
         {
+            "_function_index": 33, 
             "args": [], 
             "attrs": {}, 
             "decl": "void local_function1", 
@@ -1234,7 +1235,6 @@
                 "method_name": "local_function1", 
                 "underscore_name": "local_function1"
             }, 
-            "function_index": 33, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -1243,6 +1243,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 38, 
+            "_function_index": 34, 
             "args": [
                 {
                     "attrs": {
@@ -1263,12 +1265,10 @@
                 "F_name_generic": "is_name_valid", 
                 "F_name_impl": "is_name_valid", 
                 "F_name_method": "is_name_valid", 
-                "PTR_F_C_index": 38, 
                 "PY_name_impl": "PP_is_name_valid", 
                 "method_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
-            "function_index": 34, 
             "options": {
                 "C_code": "return name != NULL;", 
                 "F_code": "rv = name .ne. \" \""
@@ -1280,6 +1280,7 @@
             }
         }, 
         {
+            "_function_index": 38, 
             "args": [
                 {
                     "attrs": {
@@ -1300,7 +1301,6 @@
                 "F_C_name": "aa_is_name_valid_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 38, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -1314,6 +1314,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 39, 
+            "_function_index": 35, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1335,13 +1337,11 @@
                 "F_name_generic": "test_names", 
                 "F_name_impl": "test_names", 
                 "F_name_method": "test_names", 
-                "PTR_F_C_index": 39, 
                 "PY_name_impl": "PP_test_names", 
                 "function_suffix": "", 
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
-            "function_index": 35, 
             "function_suffix": "", 
             "options": {}, 
             "result": {
@@ -1351,6 +1351,7 @@
             }
         }, 
         {
+            "_function_index": 39, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1372,7 +1373,6 @@
                 "F_C_name": "aa_test_names_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 39, 
             "function_suffix": "", 
             "generated": "string_to_buffer_and_len", 
             "options": {
@@ -1387,6 +1387,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 40, 
+            "_function_index": 36, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1416,13 +1418,11 @@
                 "F_name_generic": "test_names", 
                 "F_name_impl": "test_names_flag", 
                 "F_name_method": "test_names_flag", 
-                "PTR_F_C_index": 40, 
                 "PY_name_impl": "PP_test_names_flag", 
                 "function_suffix": "_flag", 
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
-            "function_index": 36, 
             "function_suffix": "_flag", 
             "options": {}, 
             "result": {
@@ -1432,6 +1432,7 @@
             }
         }, 
         {
+            "_function_index": 40, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1461,7 +1462,6 @@
                 "F_C_name": "aa_test_names_flag_bufferify", 
                 "function_suffix": "_flag_bufferify"
             }, 
-            "function_index": 40, 
             "function_suffix": "_flag", 
             "generated": "string_to_buffer_and_len", 
             "options": {
@@ -1476,6 +1476,7 @@
             }
         }, 
         {
+            "_function_index": 37, 
             "_has_default_arg": true, 
             "args": [
                 {
@@ -1509,7 +1510,6 @@
                 "method_name": "testoptional", 
                 "underscore_name": "testoptional"
             }, 
-            "function_index": 37, 
             "options": {}, 
             "result": {
                 "attrs": {}, 

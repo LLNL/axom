@@ -31,6 +31,7 @@
             "methods": [
                 {
                     "F_name_method": "type_method1", 
+                    "_function_index": 0, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method1", 
@@ -44,7 +45,6 @@
                         "method_name": "method1", 
                         "underscore_name": "method1"
                     }, 
-                    "function_index": 0, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -53,6 +53,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 1, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method2", 
@@ -66,7 +67,6 @@
                         "method_name": "method2", 
                         "underscore_name": "method2"
                     }, 
-                    "function_index": 1, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -112,6 +112,7 @@
     }, 
     "functions": [
         {
+            "_function_index": 2, 
             "args": [], 
             "attrs": {}, 
             "decl": "void function1", 
@@ -125,7 +126,6 @@
                 "method_name": "function1", 
                 "underscore_name": "function1"
             }, 
-            "function_index": 2, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -137,6 +137,7 @@
             "C_name": "c_name_special", 
             "F_C_name": "f_c_name_special", 
             "F_name_impl": "f_name_special", 
+            "_function_index": 3, 
             "args": [], 
             "attrs": {}, 
             "decl": "void function2", 
@@ -150,7 +151,6 @@
                 "method_name": "function2", 
                 "underscore_name": "function2"
             }, 
-            "function_index": 3, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -161,6 +161,7 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
+            "_function_index": 4, 
             "_overloaded": true, 
             "args": [
                 {
@@ -185,7 +186,6 @@
                 "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
-            "function_index": 4, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -196,6 +196,7 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
+            "_function_index": 5, 
             "_overloaded": true, 
             "args": [
                 {
@@ -220,7 +221,6 @@
                 "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
-            "function_index": 5, 
             "options": {}, 
             "result": {
                 "attrs": {}, 

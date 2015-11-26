@@ -32,20 +32,31 @@ functions:
 - decl: void Function7(ArgType arg)
   cpp_template:
     ArgType:
-      - int
-      - double
+    - int
+    - double
 
 - decl: RetType Function8()
   cpp_template:
     RetType:
-      - int
-      - double
+    - int
+    - double
 
 - decl: void Function9(double arg)
   fortran_generic:
      arg:
      -  float
      -  double
+
+# test cpp_template and fortran_generic
+#- decl: void Function10(ArgType arg1, double arg2)
+#  cpp_template:
+#    ArgType:
+#    - int
+#    - double
+#  fortran_generic:
+#     arg2:
+#     -  float
+#     -  double
 
 # overload with optional
 - decl: int overload1(int num,

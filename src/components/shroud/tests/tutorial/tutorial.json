@@ -27,6 +27,7 @@
             }, 
             "methods": [
                 {
+                    "_function_index": 0, 
                     "args": [], 
                     "attrs": {
                         "constructor": true
@@ -41,7 +42,6 @@
                         "method_name": "new", 
                         "underscore_name": "new"
                     }, 
-                    "function_index": 0, 
                     "options": {}, 
                     "result": {
                         "attrs": {
@@ -52,6 +52,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 1, 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -67,7 +68,6 @@
                         "method_name": "delete", 
                         "underscore_name": "delete"
                     }, 
-                    "function_index": 1, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -76,6 +76,7 @@
                     }
                 }, 
                 {
+                    "_function_index": 2, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void Method1()", 
@@ -89,7 +90,6 @@
                         "method_name": "Method1", 
                         "underscore_name": "method1"
                     }, 
-                    "function_index": 2, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -133,6 +133,7 @@
     }, 
     "functions": [
         {
+            "_function_index": 3, 
             "args": [], 
             "attrs": {}, 
             "decl": "void Function1()", 
@@ -146,7 +147,6 @@
                 "method_name": "Function1", 
                 "underscore_name": "function1"
             }, 
-            "function_index": 3, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -155,6 +155,7 @@
             }
         }, 
         {
+            "_function_index": 4, 
             "args": [
                 {
                     "attrs": {
@@ -185,7 +186,6 @@
                 "method_name": "Function2", 
                 "underscore_name": "function2"
             }, 
-            "function_index": 4, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -194,6 +194,7 @@
             }
         }, 
         {
+            "_function_index": 5, 
             "args": [
                 {
                     "attrs": {
@@ -235,7 +236,6 @@
                 "method_name": "Sum", 
                 "underscore_name": "sum"
             }, 
-            "function_index": 5, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -244,6 +244,7 @@
             }
         }, 
         {
+            "_function_index": 6, 
             "args": [
                 {
                     "attrs": {
@@ -266,7 +267,6 @@
                 "method_name": "Function3", 
                 "underscore_name": "function3"
             }, 
-            "function_index": 6, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -275,6 +275,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 18, 
+            "_function_index": 7, 
             "args": [
                 {
                     "attrs": {
@@ -307,12 +309,10 @@
                 "F_name_generic": "function4a", 
                 "F_name_impl": "function4a", 
                 "F_name_method": "function4a", 
-                "PTR_F_C_index": 18, 
                 "PY_name_impl": "PY_function4a", 
                 "method_name": "Function4a", 
                 "underscore_name": "function4a"
             }, 
-            "function_index": 7, 
             "options": {}, 
             "result": {
                 "attrs": {
@@ -324,6 +324,7 @@
             }
         }, 
         {
+            "_function_index": 18, 
             "args": [
                 {
                     "attrs": {
@@ -357,7 +358,6 @@
                 "F_C_name": "tut_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 18, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -374,6 +374,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 19, 
+            "_function_index": 8, 
             "args": [
                 {
                     "attrs": {
@@ -404,12 +406,10 @@
                 "F_name_generic": "function4b", 
                 "F_name_impl": "function4b", 
                 "F_name_method": "function4b", 
-                "PTR_F_C_index": 19, 
                 "PY_name_impl": "PY_function4b", 
                 "method_name": "Function4b", 
                 "underscore_name": "function4b"
             }, 
-            "function_index": 8, 
             "options": {
                 "F_string_result_as_arg": "output"
             }, 
@@ -423,6 +423,7 @@
             }
         }, 
         {
+            "_function_index": 19, 
             "args": [
                 {
                     "attrs": {
@@ -454,7 +455,6 @@
                 "F_C_name": "tut_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "function_index": 19, 
             "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
@@ -471,6 +471,7 @@
             }
         }, 
         {
+            "_function_index": 9, 
             "_has_default_arg": true, 
             "args": [
                 {
@@ -504,7 +505,6 @@
                 "method_name": "Function5", 
                 "underscore_name": "function5"
             }, 
-            "function_index": 9, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -513,6 +513,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 20, 
+            "_function_index": 10, 
             "_overloaded": true, 
             "args": [
                 {
@@ -534,13 +536,11 @@
                 "F_name_generic": "function6", 
                 "F_name_impl": "function6_from_name", 
                 "F_name_method": "function6_from_name", 
-                "PTR_F_C_index": 20, 
                 "PY_name_impl": "PY_function6_from_name", 
                 "function_suffix": "_from_name", 
                 "method_name": "Function6", 
                 "underscore_name": "function6"
             }, 
-            "function_index": 10, 
             "function_suffix": "_from_name", 
             "options": {}, 
             "result": {
@@ -550,6 +550,7 @@
             }
         }, 
         {
+            "_function_index": 20, 
             "_overloaded": true, 
             "args": [
                 {
@@ -571,7 +572,6 @@
                 "F_C_name": "tut_function6_from_name_bufferify", 
                 "function_suffix": "_from_name_bufferify"
             }, 
-            "function_index": 20, 
             "function_suffix": "_from_name", 
             "generated": "string_to_buffer_and_len", 
             "options": {
@@ -586,6 +586,7 @@
             }
         }, 
         {
+            "_function_index": 11, 
             "_overloaded": true, 
             "args": [
                 {
@@ -610,7 +611,6 @@
                 "method_name": "Function6", 
                 "underscore_name": "function6"
             }, 
-            "function_index": 11, 
             "function_suffix": "_from_index", 
             "options": {}, 
             "result": {
@@ -620,6 +620,7 @@
             }
         }, 
         {
+            "_function_index": 12, 
             "_overloaded": true, 
             "args": [
                 {
@@ -643,7 +644,6 @@
                 "method_name": "Function7", 
                 "underscore_name": "function7"
             }, 
-            "function_index": 12, 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
@@ -656,6 +656,7 @@
             }
         }, 
         {
+            "_function_index": 21, 
             "_overloaded": true, 
             "args": [
                 {
@@ -678,7 +679,6 @@
                 "F_name_method": "function7_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 21, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -692,6 +692,7 @@
             }
         }, 
         {
+            "_function_index": 22, 
             "_overloaded": true, 
             "args": [
                 {
@@ -714,7 +715,6 @@
                 "F_name_method": "function7_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 22, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -728,6 +728,7 @@
             }
         }, 
         {
+            "_function_index": 13, 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -742,7 +743,6 @@
                 "method_name": "Function8", 
                 "underscore_name": "function8"
             }, 
-            "function_index": 13, 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": false, 
@@ -755,6 +755,7 @@
             }
         }, 
         {
+            "_function_index": 23, 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -769,7 +770,6 @@
                 "F_name_method": "function8_int", 
                 "function_suffix": "_int"
             }, 
-            "function_index": 23, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -783,6 +783,7 @@
             }
         }, 
         {
+            "_function_index": 24, 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -797,7 +798,6 @@
                 "F_name_method": "function8_double", 
                 "function_suffix": "_double"
             }, 
-            "function_index": 24, 
             "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
@@ -811,6 +811,7 @@
             }
         }, 
         {
+            "_function_index": 14, 
             "_overloaded": true, 
             "args": [
                 {
@@ -837,7 +838,6 @@
                     "double"
                 ]
             }, 
-            "function_index": 14, 
             "options": {
                 "wrap_fortran": false
             }, 
@@ -848,6 +848,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 14, 
+            "_function_index": 25, 
             "_overloaded": true, 
             "args": [
                 {
@@ -865,10 +867,8 @@
                 "F_name_generic": "function9", 
                 "F_name_impl": "function9_float", 
                 "F_name_method": "function9_float", 
-                "PTR_F_C_index": 14, 
                 "function_suffix": "_float"
             }, 
-            "function_index": 25, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -882,6 +882,8 @@
             }
         }, 
         {
+            "_PTR_F_C_index": 14, 
+            "_function_index": 26, 
             "_overloaded": true, 
             "args": [
                 {
@@ -899,10 +901,8 @@
                 "F_name_generic": "function9", 
                 "F_name_impl": "function9_double", 
                 "F_name_method": "function9_double", 
-                "PTR_F_C_index": 14, 
                 "function_suffix": "_double"
             }, 
-            "function_index": 26, 
             "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
@@ -916,6 +916,7 @@
             }
         }, 
         {
+            "_function_index": 15, 
             "_has_default_arg": true, 
             "_overloaded": true, 
             "args": [
@@ -959,7 +960,6 @@
                 "method_name": "overload1", 
                 "underscore_name": "overload1"
             }, 
-            "function_index": 15, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -968,6 +968,7 @@
             }
         }, 
         {
+            "_function_index": 16, 
             "_has_default_arg": true, 
             "_overloaded": true, 
             "args": [
@@ -1019,7 +1020,6 @@
                 "method_name": "overload1", 
                 "underscore_name": "overload1"
             }, 
-            "function_index": 16, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -1028,6 +1028,7 @@
             }
         }, 
         {
+            "_function_index": 17, 
             "args": [], 
             "attrs": {
                 "pure": true
@@ -1043,7 +1044,6 @@
                 "method_name": "LastFunctionCalled", 
                 "underscore_name": "last_function_called"
             }, 
-            "function_index": 17, 
             "options": {}, 
             "result": {
                 "attrs": {
