@@ -44,19 +44,22 @@ functions:
 - decl: void Function9(double arg)
   fortran_generic:
      arg:
-     -  float
-     -  double
+     - float
+     - double
 
-# test cpp_template and fortran_generic
-#- decl: void Function10(ArgType arg1, double arg2)
+# test cpp_template, fortran_generic, overload
+#- decl: void Function10()
+#- decl: void Function10(ArgType arg1, std::string &name, double arg2 = 0)
+#  options:
+#    F_string_len_trim: True
 #  cpp_template:
 #    ArgType:
 #    - int
 #    - double
 #  fortran_generic:
 #     arg2:
-#     -  float
-#     -  double
+#     - float
+#     - double
 
 # overload with optional
 - decl: int overload1(int num,

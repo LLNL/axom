@@ -201,6 +201,21 @@ functions:
 
   - decl: void testoptional(int i = 1, long j=2)
 
+# test cpp_template, fortran_generic, overload
+#  - decl: void Function10()
+#  - decl: void Function10(ArgType arg1, std::string &name, double arg2 = 0)
+#    options:
+#      F_string_len_trim: True
+#    cpp_template:
+#      ArgType:
+#      - int
+#      - double
+#    fortran_generic:
+#       arg2:
+#       - float
+#       - double
+
+
 ######################################################################
 patterns:
     C_invalid_name: >

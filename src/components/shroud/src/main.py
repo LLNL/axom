@@ -403,6 +403,9 @@ class GenFunctions(object):
 
     def gen_library(self):
         tree = self.tree
+
+        # Order of creating.
+        # Each is given a _function_index when created.
         tree['function_index'] = self.function_index = []
 
         for cls in tree['classes']:
@@ -424,9 +427,11 @@ class GenFunctions(object):
         """ Look for functions with the same name.
         Return a new list with overloaded function inserted.
         """
-        overloaded_functions = {}
         for function in functions:
             self.append_function_index(function)
+
+        overloaded_functions = {}
+        for function in functions:
             overloaded_functions.setdefault(function['result']['name'], []).append(function)
 
         # look for function overload and compute function_suffix
@@ -453,7 +458,7 @@ class GenFunctions(object):
         return ordered_functions
 
     def template_function(self, node, ordered_functions):
-        """ Create overloaded functions for each templated method.
+        """ Create overloaded functions for each templated argument.
         """
         if len(node['cpp_template']) != 1:
             # In the future it may be useful to have multiple templates
@@ -505,6 +510,7 @@ class GenFunctions(object):
                 new['generated'] = 'fortran_generic'
                 new['_PTR_F_C_index'] = node['_function_index']
                 fmt = new['fmt']
+                # XXX append to existing suffix
                 fmt.function_suffix = '_' + type
                 del new['fortran_generic']
                 options = new['options']
