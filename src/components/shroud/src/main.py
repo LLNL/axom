@@ -5,11 +5,12 @@ generate language bindings
 """
 from __future__ import print_function
 
-import os
-import json
 import argparse
-import yaml
+import copy
+import json
+import os
 import sys
+import yaml
 
 import util
 import parse_decl
@@ -420,8 +421,8 @@ class GenFunctions(object):
         ilist.append(node)
 
     def define_function_suffix(self, functions):
-        """ look for functions with the same name
-        Return a new list if overloaded function inserted.
+        """ Look for functions with the same name.
+        Return a new list with overloaded function inserted.
         """
         overloaded_functions = {}
         for function in functions:
@@ -446,6 +447,8 @@ class GenFunctions(object):
             if 'fortran_generic' in method:
                 method['_overloaded'] = True
                 self.generic_function(method, ordered_functions)
+#            if '_has_default_arg' in function:
+#                self.has_default_args(method, ordered_functions)
             self.string_to_buffer_and_len(method, ordered_functions)
         return ordered_functions
 
@@ -525,6 +528,51 @@ class GenFunctions(object):
 #        options.wrap_c = False
         options.wrap_fortran = False
 #        options.wrap_python = False
+
+    def _copy_function_for_default(self, node):
+        """Create a new function from existing
+        and insert in place.
+        """
+        new = util.copy_function_node(node)
+        new['generated'] = 'has_default_arg'
+        try:
+            del new['_has_default_arg']
+        except:
+            pass
+        self.append_function_index(new)
+        options = new['options']
+        options.wrap_c = True
+        options.wrap_fortran = True
+        options.wrap_python = False
+        return new
+
+    def has_default_args(self, node, ordered_functions):
+        """
+        For each function which has a default argument, generate
+        a version for each possible call.
+          void func(int i = 0, int j = 0)
+        generates
+          void func()
+          void func(int i)
+          void func(int i, int j)
+        """
+#        print("XXXXXXXX", node['result']['name'])
+
+        work_args = []
+        for arg in node['args']:
+            attrs = arg['attrs']
+            if 'default' in attrs:
+                new = self._copy_function_for_default(node)
+                new['args'] = copy.deepcopy(work_args)
+                ordered_functions.append(new)
+            work_args.append(copy.deepcopy(arg))
+
+        # With final arg
+        new = self._copy_function_for_default(node)
+        new['args'] = copy.deepcopy(work_args)
+        ordered_functions.append(new)
+        
+
 
     def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.
@@ -685,7 +733,9 @@ class VerifyAttrs(object):
         if not options.wrap_fortran and not options.wrap_c:
             return
 
+        found_default = False
         for arg in node['args']:
+            argname = arg['name']
             typename = arg['type']
             typedef = self.typedef.get(typename, None)
             if typedef is None:
@@ -741,6 +791,11 @@ class VerifyAttrs(object):
                     # No value was provided, provide default
                     attrs['dimension'] = '(*)'
 
+            if 'default' in attrs:
+                found_default = True
+                node['_has_default_arg'] = True
+            elif found_default is True:
+                raise RuntimeError("Expected default value for %s" % argname)
 #        if typedef.base == 'string':
 
 

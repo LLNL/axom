@@ -391,23 +391,17 @@ class Options(object):
 def copy_function_node(node):
     """Create a copy of a function node to use with C++ template.
     """
-    known = {}   # known fields
-    new = {}
+    # Shallow copy everything
+    new = node.copy()
 
     # Deep copy dictionaries
     for field in [ 'args', 'attrs', 'result' ]:
         new[field] = copy.deepcopy(node[field])
-        known[field] = True
 
     # Add new Options in chain
     for field in [ 'fmt', 'options' ]:
         new[field] = Options(node[field])
-        known[field] = True
 
-    # Shallow copy any unknown fields
-    for key, value in node.items():
-        if key not in known:
-            new[key] = value
     return new
 
 class XXXClassNode(object):
