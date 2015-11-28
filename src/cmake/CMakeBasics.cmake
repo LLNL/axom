@@ -539,12 +539,13 @@ macro(add_fortran_test)
 
        get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
        set(test_name ${test_name_base}_ftest)
-       add_executable( ${test_name} fortran_driver.cpp ${arg_TEST_SOURCE} )
+       add_executable( ${test_name} ${arg_TEST_SOURCE} )
 
        target_include_directories( ${test_name} PUBLIC ${CMAKE_Fortran_MODULE_DIRECTORY} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-        set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")
+       set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE Fortran)
+       set_target_properties(${test_name} PROPERTIES Fortran_FORMAT "FREE")
 
         add_test( NAME ${test_name}
                   COMMAND ${test_name}

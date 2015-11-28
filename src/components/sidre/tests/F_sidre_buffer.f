@@ -154,11 +154,10 @@ contains
 end module sidre_buffer
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_buffer
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -172,9 +171,7 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
