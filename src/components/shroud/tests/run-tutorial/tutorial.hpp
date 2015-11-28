@@ -28,6 +28,9 @@ RetType Function8();
 
 void Function9(double arg);
 
+void Function10();
+void Function10(const std::string &name, double arg2);
+
 void Sum(int len, int * values, int *result);
 
 int overload1(int num, int offset = 0, int stride = 1);

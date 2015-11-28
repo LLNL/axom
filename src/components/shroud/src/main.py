@@ -374,8 +374,6 @@ class Schema(object):
 
         fmt_func.method_name =     result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
-        if 'function_suffix' in node:
-            fmt_func.function_suffix = node['function_suffix']
 
         # docs
         self.pop_fmt()
@@ -394,6 +392,7 @@ class GenFunctions(object):
     """
     Generate types from class.
     Generate functions based on overload/template/generic/attributes
+    Computes fmt.function_suffix.
     """
 
     def __init__(self, tree, config):
@@ -428,19 +427,9 @@ class GenFunctions(object):
         Return a new list with overloaded function inserted.
         """
         for function in functions:
+            if 'function_suffix' in function:
+                function['fmt'].function_suffix = function['function_suffix']
             self.append_function_index(function)
-
-        overloaded_functions = {}
-        for function in functions:
-            overloaded_functions.setdefault(function['result']['name'], []).append(function)
-
-        # look for function overload and compute function_suffix
-        for mname, overloads in overloaded_functions.items():
-            if len(overloads) > 1:
-                for i, function in enumerate(overloads):
-                    function['_overloaded'] = True
-                    if 'function_suffix' not in function:
-                        function['fmt'].function_suffix =  '_%d' % i
 
         # Create additional functions needed for wrapping
         ordered_functions = []
@@ -449,13 +438,43 @@ class GenFunctions(object):
             if 'cpp_template' in method:
                 method['_overloaded'] = True
                 self.template_function(method, ordered_functions)
+#            if '_has_default_arg' in method:
+#                self.has_default_args(method, ordered_functions)
+
+        # Look for overloaded functions
+        overloaded_functions = {}
+        for function in ordered_functions:
+            if 'cpp_template' in function:
+                continue
+            overloaded_functions.setdefault(
+                function['result']['name'], []).append(function)
+
+        # look for function overload and compute function_suffix
+        for mname, overloads in overloaded_functions.items():
+            if len(overloads) > 1:
+                for i, function in enumerate(overloads):
+                    function['_overloaded'] = True
+                    if not function['fmt'].inlocal('function_suffix'):
+                        function['fmt'].function_suffix =  '_%d' % i
+
+        # Create additional C bufferify functions.
+        ordered3 = []
+        for method in ordered_functions:
+            ordered3.append(method)
+            self.string_to_buffer_and_len(method, ordered3)
+
+        # Create multiple generic Fortran wrappers to call a
+        # single C functions
+        ordered4 = []
+        for method in ordered3:
+            ordered4.append(method)
+            if not method['options'].wrap_fortran:
+                continue
             if 'fortran_generic' in method:
                 method['_overloaded'] = True
-                self.generic_function(method, ordered_functions)
-#            if '_has_default_arg' in function:
-#                self.has_default_args(method, ordered_functions)
-            self.string_to_buffer_and_len(method, ordered_functions)
-        return ordered_functions
+                self.generic_function(method, ordered4)
+
+        return ordered4
 
     def template_function(self, node, ordered_functions):
         """ Create overloaded functions for each templated argument.
@@ -577,8 +596,6 @@ class GenFunctions(object):
         new = self._copy_function_for_default(node)
         new['args'] = copy.deepcopy(work_args)
         ordered_functions.append(new)
-        
-
 
     def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.

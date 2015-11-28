@@ -61,6 +61,21 @@ functions:
 #     - float
 #     - double
 
+
+# test fortran_generic, overload
+- decl: void Function10()
+- decl: void Function10(const std::string &name, double arg2)
+  options:
+    F_string_len_trim: True
+#  cpp_template:
+#    ArgType:
+#    - int
+#    - double
+  fortran_generic:
+     arg2:
+     - float
+     - double
+
 # overload with optional
 - decl: int overload1(int num,
           int offset = 0, int stride = 1)

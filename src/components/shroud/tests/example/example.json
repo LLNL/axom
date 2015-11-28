@@ -514,7 +514,7 @@
             }, 
             "methods": [
                 {
-                    "_PTR_F_C_index": 24, 
+                    "_PTR_F_C_index": 30, 
                     "_function_index": 14, 
                     "args": [
                         {
@@ -551,7 +551,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 24, 
+                    "_function_index": 30, 
                     "args": [
                         {
                             "attrs": {
@@ -754,7 +754,7 @@
                 }, 
                 {
                     "_PTR_F_C_index": 19, 
-                    "_function_index": 25, 
+                    "_function_index": 31, 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -801,7 +801,7 @@
                 }, 
                 {
                     "_PTR_F_C_index": 19, 
-                    "_function_index": 26, 
+                    "_function_index": 32, 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -931,7 +931,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 27, 
+                    "_function_index": 24, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -967,7 +967,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 28, 
+                    "_function_index": 25, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1003,7 +1003,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 29, 
+                    "_function_index": 26, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1039,7 +1039,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 30, 
+                    "_function_index": 27, 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1102,7 +1102,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 31, 
+                    "_function_index": 28, 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
@@ -1130,7 +1130,7 @@
                     }
                 }, 
                 {
-                    "_function_index": 32, 
+                    "_function_index": 29, 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 

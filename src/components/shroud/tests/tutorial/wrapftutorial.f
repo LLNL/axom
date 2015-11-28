@@ -199,6 +199,29 @@ module tutorial_mod
             real(C_DOUBLE), value, intent(IN) :: arg
         end subroutine tut_function9
         
+        subroutine tut_function10_0() &
+                bind(C, name="TUT_function10_0")
+            use iso_c_binding
+            implicit none
+        end subroutine tut_function10_0
+        
+        subroutine tut_function10_1(name, arg2) &
+                bind(C, name="TUT_function10_1")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            real(C_DOUBLE), value, intent(IN) :: arg2
+        end subroutine tut_function10_1
+        
+        subroutine tut_function10_1_bufferify(name, Lname, arg2) &
+                bind(C, name="TUT_function10_1_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            real(C_DOUBLE), value, intent(IN) :: arg2
+        end subroutine tut_function10_1_bufferify
+        
         function tut_overload1_0(num, offset, stride) result(rv) &
                 bind(C, name="TUT_overload1_0")
             use iso_c_binding
@@ -234,6 +257,12 @@ module tutorial_mod
         end subroutine all_test1
         ! splicer end additional_interfaces
     end interface
+    
+    interface function10
+        module procedure function10_0
+        module procedure function10_float
+        module procedure function10_double
+    end interface function10
     
     interface function6
         module procedure function6_from_name
@@ -430,6 +459,40 @@ contains
         call tut_function9(arg)
         ! splicer end function9_double
     end subroutine function9_double
+    
+    subroutine function10_0()
+        use iso_c_binding
+        implicit none
+        ! splicer begin function10_0
+        call tut_function10_0()
+        ! splicer end function10_0
+    end subroutine function10_0
+    
+    subroutine function10_float(name, arg2)
+        use iso_c_binding
+        implicit none
+        character(*), intent(IN) :: name
+        real(C_FLOAT), value, intent(IN) :: arg2
+        ! splicer begin function10_float
+        call tut_function10_1_bufferify(  &
+            name,  &
+            len_trim(name),  &
+            real(arg2, C_DOUBLE))
+        ! splicer end function10_float
+    end subroutine function10_float
+    
+    subroutine function10_double(name, arg2)
+        use iso_c_binding
+        implicit none
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), value, intent(IN) :: arg2
+        ! splicer begin function10_double
+        call tut_function10_1_bufferify(  &
+            name,  &
+            len_trim(name),  &
+            arg2)
+        ! splicer end function10_double
+    end subroutine function10_double
     
     function overload1_0(num, offset, stride) result(rv)
         use iso_c_binding

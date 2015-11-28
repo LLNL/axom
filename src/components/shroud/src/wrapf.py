@@ -41,6 +41,8 @@ from __future__ import print_function
 import util
 from util import wformat, append_format
 
+debug = False
+
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
     """
@@ -486,12 +488,12 @@ class Wrapf(util.WrapperMixin):
 
         # look for C routine to wrap
         # usually the same node unless it is a generic function
-        if '_PTR_F_C_index' in node:
-            C_node = self.tree['function_index'][node['_PTR_F_C_index']]
-            if len(node['args']) != len(C_node['args']):
-                raise RuntimeError("Argument mismatch between Fortran and C functions")
-        else:
-            C_node = node
+        C_node = node
+        while '_PTR_F_C_index' in C_node:
+            C_node = self.tree['function_index'][C_node['_PTR_F_C_index']]
+        if len(node['args']) != len(C_node['args']):
+            raise RuntimeError("Argument mismatch between Fortran and C functions")
+
         fmt.F_C_name = C_node['fmt'].F_C_name
 
         func_is_const = node['attrs'].get('const', False)
@@ -705,6 +707,8 @@ class Wrapf(util.WrapperMixin):
         if need_wrapper:
             impl = self.impl
             impl.append('')
+            if debug:
+                impl.append('!  function_index %d' % node['_function_index'])
             impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
             impl.append(1)
             impl.extend(arg_f_use)

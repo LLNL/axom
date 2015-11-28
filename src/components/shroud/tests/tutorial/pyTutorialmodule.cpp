@@ -260,6 +260,48 @@ PY_function9(
 // splicer end function.function9
 }
 
+static char PY_function10_0__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function10_0(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function10_0
+    Function10();
+    Py_RETURN_NONE;
+// splicer end function.function10_0
+}
+
+static char PY_function10_1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function10_1(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function10_1
+    const char * name;
+    double arg2;
+    const char *kwcpp = "name\0arg2";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sd:Function10", kw_list,
+        &name, &arg2))
+    {
+        return NULL;
+    }
+    Function10(name, arg2);
+    Py_RETURN_NONE;
+// splicer end function.function10_1
+}
+
 static char PY_overload1_0__doc__[] =
 "documentation"
 ;
@@ -345,6 +387,8 @@ static PyMethodDef PY_methods[] = {
 {"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
 {"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
+{"Function10_0", (PyCFunction)PY_function10_0, METH_NOARGS, PY_function10_0__doc__},
+{"Function10_1", (PyCFunction)PY_function10_1, METH_VARARGS|METH_KEYWORDS, PY_function10_1__doc__},
 {"overload1_0", (PyCFunction)PY_overload1_0, METH_VARARGS|METH_KEYWORDS, PY_overload1_0__doc__},
 {"overload1_1", (PyCFunction)PY_overload1_1, METH_VARARGS|METH_KEYWORDS, PY_overload1_1__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},

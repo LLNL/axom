@@ -143,6 +143,30 @@ return;
 // splicer end function.function9
 }
 
+void TUT_function10_0()
+{
+// splicer begin function.function10_0
+Function10();
+return;
+// splicer end function.function10_0
+}
+
+void TUT_function10_1(const char * name, double arg2)
+{
+// splicer begin function.function10_1
+Function10(name, arg2);
+return;
+// splicer end function.function10_1
+}
+
+void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
+{
+// splicer begin function.function10_1_bufferify
+Function10(std::string(name, Lname), arg2);
+return;
+// splicer end function.function10_1_bufferify
+}
+
 int TUT_overload1_0(int num, int offset, int stride)
 {
 // splicer begin function.overload1_0

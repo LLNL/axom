@@ -54,6 +54,8 @@ ATK_dataview * ATK_datagroup_create_view_and_buffer_simple_bufferify(ATK_datagro
 
 ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength len);
 
+ATK_dataview * ATK_datagroup_create_view_and_buffer_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength len);
+
 ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr);
 
 ATK_dataview * ATK_datagroup_create_opaque_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * opaque_ptr);
@@ -63,6 +65,8 @@ ATK_dataview * ATK_datagroup_create_view(ATK_datagroup * self, const char * name
 ATK_dataview * ATK_datagroup_create_view_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff);
 
 ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength len);
+
+ATK_dataview * ATK_datagroup_create_external_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * external_data, int type, ATK_SidreLength len);
 
 ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view);
 

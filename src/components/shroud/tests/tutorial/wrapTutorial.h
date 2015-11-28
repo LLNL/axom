@@ -48,6 +48,12 @@ double TUT_function8_double();
 
 void TUT_function9(double arg);
 
+void TUT_function10_0();
+
+void TUT_function10_1(const char * name, double arg2);
+
+void TUT_function10_1_bufferify(const char * name, int Lname, double arg2);
+
 int TUT_overload1_0(int num, int offset, int stride);
 
 int TUT_overload1_1(double type, int num, int offset, int stride);

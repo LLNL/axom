@@ -370,6 +370,12 @@ class Options(object):
             elif not hasattr(self, key):
                 setattr(self, key, value)
 
+    def inlocal(self, key):
+        """ Return true if key is defined locally
+        i.e. does not check parent.
+        """
+        return key in self.__dict__
+
     def _to_dict(self):
         d = {}
         skip = '_' + self.__class__.__name__ + '__'   # __name is skipped

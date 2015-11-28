@@ -99,6 +99,17 @@ void Function9(double arg)
     return;
 }
 
+void Function10()
+{
+    last_function_called = "Function10_0";
+}
+
+void Function10(const std::string &name, double arg2)
+{
+    last_function_called = "Function10_1";
+    global_str = name;
+    global_double = arg2;
+}
 
 void Sum(int len, int *values, int *result)
 {

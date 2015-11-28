@@ -62,6 +62,13 @@ contains
     call function9(1.d0)
     call assert_true(.true.)
 
+    call function10()
+    call assert_true(.true.)
+    call function10("foo", 1.0e0)
+    call assert_true(.true.)
+    call function10("bar", 2.0d0)
+    call assert_true(.true.)
+
     call sum(5, [1,2,3,4,5], rv_int)
     call assert_true(rv_int .eq. 15)
 

@@ -504,6 +504,18 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_buffer_from_type
         
+        function atk_datagroup_create_view_and_buffer_from_type_bufferify(self, name, Lname, type, len) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_and_buffer_from_type_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_and_buffer_from_type_bufferify
+        
         function atk_datagroup_create_opaque_view(self, name, opaque_ptr) result(rv) &
                 bind(C, name="ATK_datagroup_create_opaque_view")
             use iso_c_binding
@@ -557,6 +569,19 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: len
             type(C_PTR) :: rv
         end function atk_datagroup_create_external_view
+        
+        function atk_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, len) result(rv) &
+                bind(C, name="ATK_datagroup_create_external_view_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR), value, intent(IN) :: external_data
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: len
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_external_view_bufferify
         
         function atk_datagroup_move_view(self, view) result(rv) &
                 bind(C, name="ATK_datagroup_move_view")
@@ -1305,9 +1330,10 @@ contains
         integer(C_INT), value, intent(IN) :: len
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_buffer_int
-        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(  &
+        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             type,  &
             int(len, C_LONG))
         ! splicer end class.DataGroup.method.create_view_and_buffer_int
@@ -1322,9 +1348,10 @@ contains
         integer(C_LONG), value, intent(IN) :: len
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_buffer_long
-        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type(  &
+        rv%voidptr = atk_datagroup_create_view_and_buffer_from_type_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             type,  &
             int(len, C_LONG))
         ! splicer end class.DataGroup.method.create_view_and_buffer_long
@@ -1372,9 +1399,10 @@ contains
         integer(C_INT), value, intent(IN) :: len
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view_int
-        rv%voidptr = atk_datagroup_create_external_view(  &
+        rv%voidptr = atk_datagroup_create_external_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             external_data,  &
             type,  &
             int(len, C_LONG))
@@ -1391,9 +1419,10 @@ contains
         integer(C_LONG), value, intent(IN) :: len
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view_long
-        rv%voidptr = atk_datagroup_create_external_view(  &
+        rv%voidptr = atk_datagroup_create_external_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             external_data,  &
             type,  &
             int(len, C_LONG))

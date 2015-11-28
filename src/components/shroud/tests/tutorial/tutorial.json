@@ -275,7 +275,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 18, 
+            "_PTR_F_C_index": 24, 
             "_function_index": 7, 
             "args": [
                 {
@@ -324,7 +324,7 @@
             }
         }, 
         {
-            "_function_index": 18, 
+            "_function_index": 24, 
             "args": [
                 {
                     "attrs": {
@@ -374,7 +374,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 19, 
+            "_PTR_F_C_index": 25, 
             "_function_index": 8, 
             "args": [
                 {
@@ -423,7 +423,7 @@
             }
         }, 
         {
-            "_function_index": 19, 
+            "_function_index": 25, 
             "args": [
                 {
                     "attrs": {
@@ -513,7 +513,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 20, 
+            "_PTR_F_C_index": 26, 
             "_function_index": 10, 
             "_overloaded": true, 
             "args": [
@@ -550,7 +550,7 @@
             }
         }, 
         {
-            "_function_index": 20, 
+            "_function_index": 26, 
             "_overloaded": true, 
             "args": [
                 {
@@ -656,7 +656,7 @@
             }
         }, 
         {
-            "_function_index": 21, 
+            "_function_index": 20, 
             "_overloaded": true, 
             "args": [
                 {
@@ -692,7 +692,7 @@
             }
         }, 
         {
-            "_function_index": 22, 
+            "_function_index": 21, 
             "_overloaded": true, 
             "args": [
                 {
@@ -755,7 +755,7 @@
             }
         }, 
         {
-            "_function_index": 23, 
+            "_function_index": 22, 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -783,7 +783,7 @@
             }
         }, 
         {
-            "_function_index": 24, 
+            "_function_index": 23, 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -849,7 +849,7 @@
         }, 
         {
             "_PTR_F_C_index": 14, 
-            "_function_index": 25, 
+            "_function_index": 28, 
             "_overloaded": true, 
             "args": [
                 {
@@ -883,7 +883,7 @@
         }, 
         {
             "_PTR_F_C_index": 14, 
-            "_function_index": 26, 
+            "_function_index": 29, 
             "_overloaded": true, 
             "args": [
                 {
@@ -917,6 +917,217 @@
         }, 
         {
             "_function_index": 15, 
+            "_overloaded": true, 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "void Function10()", 
+            "fmt": {
+                "C_name": "TUT_function10_0", 
+                "F_C_name": "tut_function10_0", 
+                "F_name_generic": "function10", 
+                "F_name_impl": "function10_0", 
+                "F_name_method": "function10_0", 
+                "PY_name_impl": "PY_function10_0", 
+                "function_suffix": "_0", 
+                "method_name": "Function10", 
+                "underscore_name": "function10"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 27, 
+            "_function_index": 16, 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "C_name": "TUT_function10_1", 
+                "F_C_name": "tut_function10_1", 
+                "PY_name_impl": "PY_function10_1", 
+                "function_suffix": "_1", 
+                "method_name": "Function10", 
+                "underscore_name": "function10"
+            }, 
+            "fortran_generic": {
+                "arg2": [
+                    "float", 
+                    "double"
+                ]
+            }, 
+            "options": {
+                "F_string_len_trim": true, 
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 16, 
+            "_function_index": 30, 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "float"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "F_name_generic": "function10", 
+                "F_name_impl": "function10_float", 
+                "F_name_method": "function10_float", 
+                "function_suffix": "_float"
+            }, 
+            "generated": "fortran_generic", 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 16, 
+            "_function_index": 31, 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "F_name_generic": "function10", 
+                "F_name_impl": "function10_double", 
+                "F_name_method": "function10_double", 
+                "function_suffix": "_double"
+            }, 
+            "generated": "fortran_generic", 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_function_index": 27, 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": true, 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg2", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void Function10(const std::string &name, double arg2)", 
+            "fmt": {
+                "C_name": "TUT_function10_1_bufferify", 
+                "F_C_name": "tut_function10_1_bufferify", 
+                "function_suffix": "_1_bufferify"
+            }, 
+            "fortran_generic": {
+                "arg2": [
+                    "float", 
+                    "double"
+                ]
+            }, 
+            "generated": "string_to_buffer_and_len", 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function10", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_function_index": 17, 
             "_has_default_arg": true, 
             "_overloaded": true, 
             "args": [
@@ -968,7 +1179,7 @@
             }
         }, 
         {
-            "_function_index": 16, 
+            "_function_index": 18, 
             "_has_default_arg": true, 
             "_overloaded": true, 
             "args": [
@@ -1028,7 +1239,7 @@
             }
         }, 
         {
-            "_function_index": 17, 
+            "_function_index": 19, 
             "args": [], 
             "attrs": {
                 "pure": true
