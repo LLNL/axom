@@ -364,6 +364,10 @@ class Wrapc(util.WrapperMixin):
 
         impl = self.impl
         impl.append('')
+        if options.debug:
+            if 'decl' in node:
+                impl.append('// %s' % node['decl'])
+            impl.append('// function_index=%d' % node['_function_index'])
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls:

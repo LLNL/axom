@@ -1,4 +1,5 @@
 options:
+  debug: True
   library: Tutorial
   cpp_header: tutorial.hpp
   namespace: tutorial

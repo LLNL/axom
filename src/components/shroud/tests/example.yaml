@@ -13,6 +13,7 @@ splicer:
 
 options:
 #  module_name: exclass1_mod
+  debug: True
   library: UserLibrary
   C_prefix: AA_
   namespace: example nested

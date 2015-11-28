@@ -80,6 +80,7 @@ class Schema(object):
         # default options
         def_options = util.Options(
             parent=None,
+            debug=False,   # print additional debug info
 
             library='default_library',
             namespace='',
@@ -489,7 +490,7 @@ class GenFunctions(object):
                 ordered_functions.append(new)
                 self.append_function_index(new)
 
-                new['generated'] = 'cpp_template'
+                new['_generated'] = 'cpp_template'
                 fmt = new['fmt']
                 fmt.function_suffix = '_' + type
                 del new['cpp_template']
@@ -526,7 +527,7 @@ class GenFunctions(object):
                 ordered_functions.append(new)
                 self.append_function_index(new)
 
-                new['generated'] = 'fortran_generic'
+                new['_generated'] = 'fortran_generic'
                 new['_PTR_F_C_index'] = node['_function_index']
                 fmt = new['fmt']
                 # XXX append to existing suffix
@@ -559,7 +560,7 @@ class GenFunctions(object):
         and insert in place.
         """
         new = util.copy_function_node(node)
-        new['generated'] = 'has_default_arg'
+        new['_generated'] = 'has_default_arg'
         try:
             del new['_has_default_arg']
         except:
@@ -621,7 +622,7 @@ class GenFunctions(object):
         ordered_functions.append(new)
         self.append_function_index(new)
 
-        new['generated'] = 'string_to_buffer_and_len'
+        new['_generated'] = 'string_to_buffer_and_len'
         fmt = new['fmt']
         fmt.function_suffix = fmt.function_suffix + '_bufferify'
 

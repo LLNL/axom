@@ -189,6 +189,9 @@ module exclass2_mod
 
 contains
     
+    ! ExClass2 *ExClass2 (const string *name) +constructor
+    ! string_to_buffer_and_len
+    ! function_index=14
     function exclass2_ex_class2(name) result(rv)
         use iso_c_binding
         implicit none
@@ -201,6 +204,8 @@ contains
         ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     
+    ! void delete() +destructor
+    ! function_index=15
     subroutine exclass2_delete(obj)
         use iso_c_binding
         implicit none
@@ -211,6 +216,8 @@ contains
         ! splicer end class.ExClass2.method.delete
     end subroutine exclass2_delete
     
+    ! const string& getName const
+    ! function_index=16
     function exclass2_get_name(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -221,6 +228,7 @@ contains
         ! splicer end class.ExClass2.method.get_name
     end function exclass2_get_name
     
+    ! function_index=17
     function exclass2_get_name_length(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -231,6 +239,8 @@ contains
         ! splicer end class.ExClass2.method.get_name_length
     end function exclass2_get_name_length
     
+    ! ExClass1 *get_class1(const ExClass1 *in)
+    ! function_index=18
     function exclass2_get_class1(obj, in) result(rv)
         use iso_c_binding
         implicit none
@@ -244,6 +254,9 @@ contains
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
+    ! void* declare(TypeID type, SidreLength len = 1)
+    ! fortran_generic
+    ! function_index=31
     subroutine exclass2_declare_int(obj, type, len)
         use iso_c_binding
         implicit none
@@ -264,6 +277,9 @@ contains
         ! splicer end class.ExClass2.method.declare_int
     end subroutine exclass2_declare_int
     
+    ! void* declare(TypeID type, SidreLength len = 1)
+    ! fortran_generic
+    ! function_index=32
     subroutine exclass2_declare_long(obj, type, len)
         use iso_c_binding
         implicit none
@@ -284,6 +300,8 @@ contains
         ! splicer end class.ExClass2.method.declare_long
     end subroutine exclass2_declare_long
     
+    ! void destroyall()
+    ! function_index=20
     subroutine exclass2_destroyall(obj)
         use iso_c_binding
         implicit none
@@ -293,6 +311,8 @@ contains
         ! splicer end class.ExClass2.method.destroyall
     end subroutine exclass2_destroyall
     
+    ! TypeID getTypeID() const
+    ! function_index=21
     function exclass2_get_type_id(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -303,6 +323,9 @@ contains
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
     
+    ! void setValue(ValueType value)
+    ! cpp_template
+    ! function_index=24
     subroutine exclass2_set_value_int(obj, value)
         use iso_c_binding
         implicit none
@@ -315,6 +338,9 @@ contains
         ! splicer end class.ExClass2.method.set_value_int
     end subroutine exclass2_set_value_int
     
+    ! void setValue(ValueType value)
+    ! cpp_template
+    ! function_index=25
     subroutine exclass2_set_value_long(obj, value)
         use iso_c_binding
         implicit none
@@ -327,6 +353,9 @@ contains
         ! splicer end class.ExClass2.method.set_value_long
     end subroutine exclass2_set_value_long
     
+    ! void setValue(ValueType value)
+    ! cpp_template
+    ! function_index=26
     subroutine exclass2_set_value_float(obj, value)
         use iso_c_binding
         implicit none
@@ -339,6 +368,9 @@ contains
         ! splicer end class.ExClass2.method.set_value_float
     end subroutine exclass2_set_value_float
     
+    ! void setValue(ValueType value)
+    ! cpp_template
+    ! function_index=27
     subroutine exclass2_set_value_double(obj, value)
         use iso_c_binding
         implicit none
@@ -351,6 +383,9 @@ contains
         ! splicer end class.ExClass2.method.set_value_double
     end subroutine exclass2_set_value_double
     
+    ! ValueType getValue()
+    ! cpp_template
+    ! function_index=28
     function exclass2_get_value_int(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -361,6 +396,9 @@ contains
         ! splicer end class.ExClass2.method.get_value_int
     end function exclass2_get_value_int
     
+    ! ValueType getValue()
+    ! cpp_template
+    ! function_index=29
     function exclass2_get_value_double(obj) result(rv)
         use iso_c_binding
         implicit none

@@ -82,6 +82,7 @@
                 }, 
                 {
                     "_function_index": 13, 
+                    "_generated": "string_to_buffer_and_len", 
                     "args": [
                         {
                             "attrs": {
@@ -105,7 +106,6 @@
                         "F_C_name": "aa_exclass1_new_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
-                    "generated": "string_to_buffer_and_len", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": false, 
@@ -552,6 +552,7 @@
                 }, 
                 {
                     "_function_index": 30, 
+                    "_generated": "string_to_buffer_and_len", 
                     "args": [
                         {
                             "attrs": {
@@ -574,7 +575,6 @@
                         "F_C_name": "aa_exclass2_ex_class2_bufferify", 
                         "function_suffix": "_bufferify"
                     }, 
-                    "generated": "string_to_buffer_and_len", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": false, 
@@ -755,6 +755,7 @@
                 {
                     "_PTR_F_C_index": 19, 
                     "_function_index": 31, 
+                    "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -784,7 +785,6 @@
                         "F_name_method": "declare_int", 
                         "function_suffix": "_int"
                     }, 
-                    "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": true, 
@@ -802,6 +802,7 @@
                 {
                     "_PTR_F_C_index": 19, 
                     "_function_index": 32, 
+                    "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
                     "args": [
@@ -831,7 +832,6 @@
                         "F_name_method": "declare_long", 
                         "function_suffix": "_long"
                     }, 
-                    "generated": "fortran_generic", 
                     "options": {
                         "wrap_c": false, 
                         "wrap_fortran": true, 
@@ -932,6 +932,7 @@
                 }, 
                 {
                     "_function_index": 24, 
+                    "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -954,7 +955,6 @@
                         "F_name_method": "set_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -968,6 +968,7 @@
                 }, 
                 {
                     "_function_index": 25, 
+                    "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -990,7 +991,6 @@
                         "F_name_method": "set_value_long", 
                         "function_suffix": "_long"
                     }, 
-                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1004,6 +1004,7 @@
                 }, 
                 {
                     "_function_index": 26, 
+                    "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1026,7 +1027,6 @@
                         "F_name_method": "set_value_float", 
                         "function_suffix": "_float"
                     }, 
-                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1040,6 +1040,7 @@
                 }, 
                 {
                     "_function_index": 27, 
+                    "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1062,7 +1063,6 @@
                         "F_name_method": "set_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1103,6 +1103,7 @@
                 }, 
                 {
                     "_function_index": 28, 
+                    "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
@@ -1117,7 +1118,6 @@
                         "F_name_method": "get_value_int", 
                         "function_suffix": "_int"
                     }, 
-                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1131,6 +1131,7 @@
                 }, 
                 {
                     "_function_index": 29, 
+                    "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [], 
                     "attrs": {}, 
@@ -1145,7 +1146,6 @@
                         "F_name_method": "get_value_double", 
                         "function_suffix": "_double"
                     }, 
-                    "generated": "cpp_template", 
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": true, 
@@ -1281,6 +1281,7 @@
         }, 
         {
             "_function_index": 38, 
+            "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
                     "attrs": {
@@ -1301,7 +1302,6 @@
                 "F_C_name": "aa_is_name_valid_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -1352,6 +1352,7 @@
         }, 
         {
             "_function_index": 39, 
+            "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
                 {
@@ -1374,7 +1375,6 @@
                 "function_suffix": "_bufferify"
             }, 
             "function_suffix": "", 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -1433,6 +1433,7 @@
         }, 
         {
             "_function_index": 40, 
+            "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
                 {
@@ -1463,7 +1464,6 @@
                 "function_suffix": "_flag_bufferify"
             }, 
             "function_suffix": "_flag", 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -1547,6 +1547,7 @@
         "PY_prefix": "PP_", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
+        "debug": true, 
         "library": "UserLibrary", 
         "namespace": "example nested", 
         "wrap_c": true, 

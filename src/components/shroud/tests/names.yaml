@@ -1,6 +1,7 @@
 # test template options
 
 options:
+  debug: True
   library: testnames
   C_name_method_template: XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}
   C_name_function_template: YYY_{C_prefix}{underscore_name}{function_suffix}

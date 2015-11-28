@@ -81,6 +81,10 @@ Options control the behavior of shroud.  They are nested so that
 options applied at the outer most level apply to inner groups.
 Options set on a class apply to all methods in that class.
 
+debug
+
+  Print additional comments in generated files that may 
+  be useful for debugging.
 
 library
 

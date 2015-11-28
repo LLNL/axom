@@ -5,6 +5,8 @@
 
 extern "C" {
 
+// void method1
+// function_index=0
 void XXX_TES_names_method1(TES_names * self)
 {
 Names *selfobj = static_cast<Names *>(static_cast<void *>(self));
@@ -14,6 +16,8 @@ return;
 // splicer end class.Names.method.method1
 }
 
+// void method2
+// function_index=1
 void XXX_TES_names_method2(TES_names * self)
 {
 Names *selfobj = static_cast<Names *>(static_cast<void *>(self));

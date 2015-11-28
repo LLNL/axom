@@ -325,6 +325,7 @@
         }, 
         {
             "_function_index": 24, 
+            "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
                     "attrs": {
@@ -358,7 +359,6 @@
                 "F_C_name": "tut_function4a_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -424,6 +424,7 @@
         }, 
         {
             "_function_index": 25, 
+            "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
                     "attrs": {
@@ -455,7 +456,6 @@
                 "F_C_name": "tut_function4b_bufferify", 
                 "function_suffix": "_bufferify"
             }, 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -551,6 +551,7 @@
         }, 
         {
             "_function_index": 26, 
+            "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
                 {
@@ -573,7 +574,6 @@
                 "function_suffix": "_from_name_bufferify"
             }, 
             "function_suffix": "_from_name", 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -657,6 +657,7 @@
         }, 
         {
             "_function_index": 20, 
+            "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [
                 {
@@ -679,7 +680,6 @@
                 "F_name_method": "function7_int", 
                 "function_suffix": "_int"
             }, 
-            "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
@@ -693,6 +693,7 @@
         }, 
         {
             "_function_index": 21, 
+            "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [
                 {
@@ -715,7 +716,6 @@
                 "F_name_method": "function7_double", 
                 "function_suffix": "_double"
             }, 
-            "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
@@ -756,6 +756,7 @@
         }, 
         {
             "_function_index": 22, 
+            "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -770,7 +771,6 @@
                 "F_name_method": "function8_int", 
                 "function_suffix": "_int"
             }, 
-            "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
@@ -784,6 +784,7 @@
         }, 
         {
             "_function_index": 23, 
+            "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [], 
             "attrs": {}, 
@@ -798,7 +799,6 @@
                 "F_name_method": "function8_double", 
                 "function_suffix": "_double"
             }, 
-            "generated": "cpp_template", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": true, 
@@ -850,6 +850,7 @@
         {
             "_PTR_F_C_index": 14, 
             "_function_index": 28, 
+            "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
                 {
@@ -869,7 +870,6 @@
                 "F_name_method": "function9_float", 
                 "function_suffix": "_float"
             }, 
-            "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
@@ -884,6 +884,7 @@
         {
             "_PTR_F_C_index": 14, 
             "_function_index": 29, 
+            "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
                 {
@@ -903,7 +904,6 @@
                 "F_name_method": "function9_double", 
                 "function_suffix": "_double"
             }, 
-            "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
@@ -992,6 +992,7 @@
         {
             "_PTR_F_C_index": 16, 
             "_function_index": 30, 
+            "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
                 {
@@ -1021,7 +1022,6 @@
                 "F_name_method": "function10_float", 
                 "function_suffix": "_float"
             }, 
-            "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
@@ -1036,6 +1036,7 @@
         {
             "_PTR_F_C_index": 16, 
             "_function_index": 31, 
+            "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
                 {
@@ -1065,7 +1066,6 @@
                 "F_name_method": "function10_double", 
                 "function_suffix": "_double"
             }, 
-            "generated": "fortran_generic", 
             "options": {
                 "wrap_c": false, 
                 "wrap_fortran": true, 
@@ -1079,6 +1079,7 @@
         }, 
         {
             "_function_index": 27, 
+            "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
                 {
@@ -1114,7 +1115,6 @@
                     "double"
                 ]
             }, 
-            "generated": "string_to_buffer_and_len", 
             "options": {
                 "wrap_c": true, 
                 "wrap_fortran": false, 
@@ -1293,6 +1293,7 @@
         "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "tutorial.hpp", 
+        "debug": true, 
         "library": "Tutorial", 
         "namespace": "tutorial", 
         "wrap_c": true, 
