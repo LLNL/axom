@@ -53,11 +53,11 @@ return rv.c_str();
 // splicer end class.ExClass2.method.get_name
 }
 
-// int GetNameLength()
+// const int GetNameLength()
 // function_index=17
-int AA_exclass2_get_name_length(AA_exclass2 * self)
+const int AA_exclass2_get_name_length(const AA_exclass2 * self)
 {
-ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
+const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass2.method.get_name_length
 return selfobj->getName().length();
 // splicer end class.ExClass2.method.get_name_length

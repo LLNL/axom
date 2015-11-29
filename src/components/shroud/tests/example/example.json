@@ -659,7 +659,7 @@
                     }
                 }, 
                 {
-                    "_decl": "int GetNameLength()", 
+                    "_decl": "const int GetNameLength()", 
                     "_function_index": 17, 
                     "args": [], 
                     "attrs": {}, 
@@ -677,11 +677,10 @@
                     "options": {
                         "C_code": "return selfobj->getName().length();"
                     }, 
-                    "qualifiers": {
-                        "const": true
-                    }, 
                     "result": {
-                        "attrs": {}, 
+                        "attrs": {
+                            "const": true
+                        }, 
                         "name": "GetNameLength", 
                         "type": "int"
                     }

@@ -138,8 +138,8 @@ classes:
       result:
          name: GetNameLength
          type: int
-      qualifiers:
-         const: true
+         attrs:
+           const: true
       options:
           C_code: return selfobj->getName().length();
 

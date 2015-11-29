@@ -228,7 +228,7 @@ contains
         ! splicer end class.ExClass2.method.get_name
     end function exclass2_get_name
     
-    ! int GetNameLength()
+    ! const int GetNameLength()
     ! function_index=17
     function exclass2_get_name_length(obj) result(rv)
         use iso_c_binding
