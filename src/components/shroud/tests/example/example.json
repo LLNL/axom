@@ -783,9 +783,9 @@
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_name_generic": "declare", 
-                        "F_name_impl": "exclass2_declare_int", 
-                        "F_name_method": "declare_int", 
-                        "function_suffix": "_int"
+                        "F_name_impl": "exclass2_declare_0_int", 
+                        "F_name_method": "declare_0_int", 
+                        "function_suffix": "_0_int"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -821,9 +821,9 @@
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_name_generic": "declare", 
-                        "F_name_impl": "exclass2_declare_long", 
-                        "F_name_method": "declare_long", 
-                        "function_suffix": "_long"
+                        "F_name_impl": "exclass2_declare_0_long", 
+                        "F_name_method": "declare_0_long", 
+                        "function_suffix": "_0_long"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -927,9 +927,9 @@
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_name_generic": "declare", 
-                        "F_name_impl": "exclass2_declare_int", 
-                        "F_name_method": "declare_int", 
-                        "function_suffix": "_int"
+                        "F_name_impl": "exclass2_declare_1_int", 
+                        "F_name_method": "declare_1_int", 
+                        "function_suffix": "_1_int"
                     }, 
                     "options": {
                         "wrap_c": false, 
@@ -978,9 +978,9 @@
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
                         "F_name_generic": "declare", 
-                        "F_name_impl": "exclass2_declare_long", 
-                        "F_name_method": "declare_long", 
-                        "function_suffix": "_long"
+                        "F_name_impl": "exclass2_declare_1_long", 
+                        "F_name_method": "declare_1_long", 
+                        "function_suffix": "_1_long"
                     }, 
                     "options": {
                         "wrap_c": false, 

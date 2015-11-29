@@ -25,10 +25,10 @@ module exclass2_mod
         procedure :: get_name => exclass2_get_name
         procedure :: get_name_length => exclass2_get_name_length
         procedure :: get_class1 => exclass2_get_class1
-        procedure :: declare_int => exclass2_declare_int
-        procedure :: declare_long => exclass2_declare_long
-        procedure :: declare_int => exclass2_declare_int
-        procedure :: declare_long => exclass2_declare_long
+        procedure :: declare_0_int => exclass2_declare_0_int
+        procedure :: declare_0_long => exclass2_declare_0_long
+        procedure :: declare_1_int => exclass2_declare_1_int
+        procedure :: declare_1_long => exclass2_declare_1_long
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
         procedure :: set_value_int => exclass2_set_value_int
@@ -40,10 +40,10 @@ module exclass2_mod
         generic :: declare => &
             ! splicer begin class.ExClass2.generic.declare
             ! splicer end class.ExClass2.generic.declare
-            declare_int,  &
-            declare_long,  &
-            declare_int,  &
-            declare_long
+            declare_0_int,  &
+            declare_0_long,  &
+            declare_1_int,  &
+            declare_1_long
         generic :: set_value => &
             ! splicer begin class.ExClass2.generic.set_value
             ! splicer end class.ExClass2.generic.set_value
@@ -270,66 +270,66 @@ contains
     ! void * declare(TypeID type+intent(in)+value)
     ! fortran_generic - has_default_arg
     ! function_index=32
-    subroutine exclass2_declare_int(obj, type)
+    subroutine exclass2_declare_0_int(obj, type)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT), value, intent(IN) :: type
-        ! splicer begin class.ExClass2.method.declare_int
+        ! splicer begin class.ExClass2.method.declare_0_int
         call aa_exclass2_declare_0(  &
             obj%voidptr,  &
             type)
-        ! splicer end class.ExClass2.method.declare_int
-    end subroutine exclass2_declare_int
+        ! splicer end class.ExClass2.method.declare_0_int
+    end subroutine exclass2_declare_0_int
     
     ! void * declare(TypeID type+intent(in)+value)
     ! fortran_generic - has_default_arg
     ! function_index=33
-    subroutine exclass2_declare_long(obj, type)
+    subroutine exclass2_declare_0_long(obj, type)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT), value, intent(IN) :: type
-        ! splicer begin class.ExClass2.method.declare_long
+        ! splicer begin class.ExClass2.method.declare_0_long
         call aa_exclass2_declare_0(  &
             obj%voidptr,  &
             type)
-        ! splicer end class.ExClass2.method.declare_long
-    end subroutine exclass2_declare_long
+        ! splicer end class.ExClass2.method.declare_0_long
+    end subroutine exclass2_declare_0_long
     
     ! void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)
     ! fortran_generic
     ! function_index=34
-    subroutine exclass2_declare_int(obj, type, len)
+    subroutine exclass2_declare_1_int(obj, type, len)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: len
-        ! splicer begin class.ExClass2.method.declare_int
+        ! splicer begin class.ExClass2.method.declare_1_int
         call aa_exclass2_declare_1(  &
             obj%voidptr,  &
             type,  &
             int(len, C_LONG))
-        ! splicer end class.ExClass2.method.declare_int
-    end subroutine exclass2_declare_int
+        ! splicer end class.ExClass2.method.declare_1_int
+    end subroutine exclass2_declare_1_int
     
     ! void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)
     ! fortran_generic
     ! function_index=35
-    subroutine exclass2_declare_long(obj, type, len)
+    subroutine exclass2_declare_1_long(obj, type, len)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: len
-        ! splicer begin class.ExClass2.method.declare_long
+        ! splicer begin class.ExClass2.method.declare_1_long
         call aa_exclass2_declare_1(  &
             obj%voidptr,  &
             type,  &
             int(len, C_LONG))
-        ! splicer end class.ExClass2.method.declare_long
-    end subroutine exclass2_declare_long
+        ! splicer end class.ExClass2.method.declare_1_long
+    end subroutine exclass2_declare_1_long
     
     ! void destroyall()
     ! function_index=20

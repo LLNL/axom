@@ -311,8 +311,8 @@ module tutorial_mod
     
     interface function10
         module procedure function10_0
-        module procedure function10_float
-        module procedure function10_double
+        module procedure function10_1_float
+        module procedure function10_1_double
     end interface function10
     
     interface function5
@@ -588,34 +588,34 @@ contains
     ! void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
     ! function_index=36
-    subroutine function10_float(name, arg2)
+    subroutine function10_1_float(name, arg2)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: name
         real(C_FLOAT), value, intent(IN) :: arg2
-        ! splicer begin function10_float
+        ! splicer begin function10_1_float
         call tut_function10_1_bufferify(  &
             name,  &
             len_trim(name),  &
             real(arg2, C_DOUBLE))
-        ! splicer end function10_float
-    end subroutine function10_float
+        ! splicer end function10_1_float
+    end subroutine function10_1_float
     
     ! void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
     ! function_index=37
-    subroutine function10_double(name, arg2)
+    subroutine function10_1_double(name, arg2)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: name
         real(C_DOUBLE), value, intent(IN) :: arg2
-        ! splicer begin function10_double
+        ! splicer begin function10_1_double
         call tut_function10_1_bufferify(  &
             name,  &
             len_trim(name),  &
             arg2)
-        ! splicer end function10_double
-    end subroutine function10_double
+        ! splicer end function10_1_double
+    end subroutine function10_1_double
     
     ! int overload1(int num+intent(in)+value)
     ! has_default_arg

@@ -1115,9 +1115,9 @@
             "decl": "void Function10(const std::string &name, double arg2)", 
             "fmt": {
                 "F_name_generic": "function10", 
-                "F_name_impl": "function10_float", 
-                "F_name_method": "function10_float", 
-                "function_suffix": "_float"
+                "F_name_impl": "function10_1_float", 
+                "F_name_method": "function10_1_float", 
+                "function_suffix": "_1_float"
             }, 
             "options": {
                 "wrap_c": false, 
@@ -1160,9 +1160,9 @@
             "decl": "void Function10(const std::string &name, double arg2)", 
             "fmt": {
                 "F_name_generic": "function10", 
-                "F_name_impl": "function10_double", 
-                "F_name_method": "function10_double", 
-                "function_suffix": "_double"
+                "F_name_impl": "function10_1_double", 
+                "F_name_method": "function10_1_double", 
+                "function_suffix": "_1_double"
             }, 
             "options": {
                 "wrap_c": false, 

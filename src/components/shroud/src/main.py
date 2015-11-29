@@ -496,7 +496,7 @@ class GenFunctions(object):
 
                 new['_generated'] = 'cpp_template'
                 fmt = new['fmt']
-                fmt.function_suffix = '_' + type
+                fmt.function_suffix = fmt.function_suffix + '_' + type
                 del new['cpp_template']
                 options = new['options']
                 options.wrap_c = True
@@ -535,7 +535,7 @@ class GenFunctions(object):
                 new['_PTR_F_C_index'] = node['_function_index']
                 fmt = new['fmt']
                 # XXX append to existing suffix
-                fmt.function_suffix = '_' + type
+                fmt.function_suffix = fmt.function_suffix + '_' + type
                 del new['fortran_generic']
                 options = new['options']
                 options.wrap_c = False
