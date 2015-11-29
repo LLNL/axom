@@ -7,7 +7,7 @@
 extern "C" {
 namespace tutorial {
 
-// Class1 *new()  +constructor
+// Class1 * new()+constructor
 // function_index=0
 TUT_class1 * TUT_class1_new()
 {
@@ -17,7 +17,7 @@ return static_cast<TUT_class1 *>(static_cast<void *>(selfobj));
 // splicer end class.Class1.method.new
 }
 
-// void delete()  +destructor
+// void delete()+destructor
 // function_index=1
 void TUT_class1_delete(TUT_class1 * self)
 {

@@ -286,7 +286,7 @@ module tutorial_mod
 
 contains
     
-    ! Class1 *new()  +constructor
+    ! Class1 * new()+constructor
     ! function_index=0
     function class1_new() result(rv)
         use iso_c_binding
@@ -297,7 +297,7 @@ contains
         ! splicer end class.Class1.method.new
     end function class1_new
     
-    ! void delete()  +destructor
+    ! void delete()+destructor
     ! function_index=1
     subroutine class1_delete(obj)
         use iso_c_binding
@@ -323,7 +323,7 @@ contains
     ! splicer begin class.Class1.additional_functions
     ! splicer end class.Class1.additional_functions
     
-    ! bool Function3(bool arg)
+    ! bool Function3(bool arg+intent(in)+value)
     ! function_index=6
     function function3(arg) result(rv)
         use iso_c_binding
@@ -337,7 +337,7 @@ contains
         ! splicer end function3
     end function function3
     
-    ! const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
+    ! const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
     ! string_to_buffer_and_len
     ! function_index=7
     function function4a(arg1, arg2) result(rv)
@@ -355,7 +355,7 @@ contains
         ! splicer end function4a
     end function function4a
     
-    ! const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
+    ! const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
     ! string_to_buffer_and_len
     ! function_index=8
     subroutine function4b(arg1, arg2, output)
@@ -375,7 +375,7 @@ contains
         ! splicer end function4b
     end subroutine function4b
     
-    ! double Function5(double arg1 = 3.13, int arg2 = 5)
+    ! double Function5(double arg1+default(3.13)+intent(in)+value, int arg2+default(5)+intent(in)+value)
     ! function_index=9
     function function5(arg1, arg2) result(rv)
         use iso_c_binding
@@ -402,7 +402,7 @@ contains
         ! splicer end function5
     end function function5
     
-    ! void Function6(const std::string& name)
+    ! void Function6(const std::string & name+intent(in))
     ! string_to_buffer_and_len
     ! function_index=10
     subroutine function6_from_name(name)
@@ -416,7 +416,7 @@ contains
         ! splicer end function6_from_name
     end subroutine function6_from_name
     
-    ! void Function6(int indx)
+    ! void Function6(int indx+intent(in)+value)
     ! function_index=11
     subroutine function6_from_index(indx)
         use iso_c_binding
@@ -427,7 +427,7 @@ contains
         ! splicer end function6_from_index
     end subroutine function6_from_index
     
-    ! void Function7(ArgType arg)
+    ! void Function7(int arg+intent(in)+value)
     ! cpp_template
     ! function_index=20
     subroutine function7_int(arg)
@@ -439,7 +439,7 @@ contains
         ! splicer end function7_int
     end subroutine function7_int
     
-    ! void Function7(ArgType arg)
+    ! void Function7(double arg+intent(in)+value)
     ! cpp_template
     ! function_index=21
     subroutine function7_double(arg)
@@ -451,7 +451,7 @@ contains
         ! splicer end function7_double
     end subroutine function7_double
     
-    ! RetType Function8()
+    ! int Function8()
     ! cpp_template
     ! function_index=22
     function function8_int() result(rv)
@@ -463,7 +463,7 @@ contains
         ! splicer end function8_int
     end function function8_int
     
-    ! RetType Function8()
+    ! double Function8()
     ! cpp_template
     ! function_index=23
     function function8_double() result(rv)
@@ -475,7 +475,7 @@ contains
         ! splicer end function8_double
     end function function8_double
     
-    ! void Function9(double arg)
+    ! void Function9(float arg+intent(in)+value)
     ! fortran_generic
     ! function_index=28
     subroutine function9_float(arg)
@@ -487,7 +487,7 @@ contains
         ! splicer end function9_float
     end subroutine function9_float
     
-    ! void Function9(double arg)
+    ! void Function9(double arg+intent(in)+value)
     ! fortran_generic
     ! function_index=29
     subroutine function9_double(arg)
@@ -509,7 +509,7 @@ contains
         ! splicer end function10_0
     end subroutine function10_0
     
-    ! void Function10(const std::string &name, double arg2)
+    ! void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
     ! function_index=30
     subroutine function10_float(name, arg2)
@@ -525,7 +525,7 @@ contains
         ! splicer end function10_float
     end subroutine function10_float
     
-    ! void Function10(const std::string &name, double arg2)
+    ! void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
     ! function_index=31
     subroutine function10_double(name, arg2)
@@ -541,7 +541,7 @@ contains
         ! splicer end function10_double
     end subroutine function10_double
     
-    ! int overload1(int num, int offset = 0, int stride = 1)
+    ! int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
     ! function_index=17
     function overload1_0(num, offset, stride) result(rv)
         use iso_c_binding
@@ -570,7 +570,7 @@ contains
         ! splicer end overload1_0
     end function overload1_0
     
-    ! int overload1(double type, int num, int offset = 0, int stride = 1)
+    ! int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
     ! function_index=18
     function overload1_1(type, num, offset, stride) result(rv)
         use iso_c_binding
@@ -601,7 +601,7 @@ contains
         ! splicer end overload1_1
     end function overload1_1
     
-    ! const std::string& LastFunctionCalled() +pure
+    ! const std::string & LastFunctionCalled()+pure
     ! function_index=19
     function last_function_called() result(rv)
         use iso_c_binding

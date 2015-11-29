@@ -189,7 +189,7 @@ module exclass2_mod
 
 contains
     
-    ! ExClass2 *ExClass2 (const string *name) +constructor
+    ! ExClass2 * ExClass2(const string * name+intent(in))+constructor
     ! string_to_buffer_and_len
     ! function_index=14
     function exclass2_ex_class2(name) result(rv)
@@ -204,7 +204,7 @@ contains
         ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     
-    ! void delete() +destructor
+    ! void delete()+destructor
     ! function_index=15
     subroutine exclass2_delete(obj)
         use iso_c_binding
@@ -216,7 +216,7 @@ contains
         ! splicer end class.ExClass2.method.delete
     end subroutine exclass2_delete
     
-    ! const string& getName const
+    ! const string & getName() const
     ! function_index=16
     function exclass2_get_name(obj) result(rv)
         use iso_c_binding
@@ -228,6 +228,7 @@ contains
         ! splicer end class.ExClass2.method.get_name
     end function exclass2_get_name
     
+    ! int GetNameLength()
     ! function_index=17
     function exclass2_get_name_length(obj) result(rv)
         use iso_c_binding
@@ -239,7 +240,7 @@ contains
         ! splicer end class.ExClass2.method.get_name_length
     end function exclass2_get_name_length
     
-    ! ExClass1 *get_class1(const ExClass1 *in)
+    ! ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
     ! function_index=18
     function exclass2_get_class1(obj, in) result(rv)
         use iso_c_binding
@@ -254,7 +255,7 @@ contains
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
-    ! void* declare(TypeID type, SidreLength len = 1)
+    ! void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)
     ! fortran_generic
     ! function_index=31
     subroutine exclass2_declare_int(obj, type, len)
@@ -277,7 +278,7 @@ contains
         ! splicer end class.ExClass2.method.declare_int
     end subroutine exclass2_declare_int
     
-    ! void* declare(TypeID type, SidreLength len = 1)
+    ! void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)
     ! fortran_generic
     ! function_index=32
     subroutine exclass2_declare_long(obj, type, len)
@@ -323,7 +324,7 @@ contains
         ! splicer end class.ExClass2.method.get_type_id
     end function exclass2_get_type_id
     
-    ! void setValue(ValueType value)
+    ! void setValue(int value+intent(in)+value)
     ! cpp_template
     ! function_index=24
     subroutine exclass2_set_value_int(obj, value)
@@ -338,7 +339,7 @@ contains
         ! splicer end class.ExClass2.method.set_value_int
     end subroutine exclass2_set_value_int
     
-    ! void setValue(ValueType value)
+    ! void setValue(long value+intent(in)+value)
     ! cpp_template
     ! function_index=25
     subroutine exclass2_set_value_long(obj, value)
@@ -353,7 +354,7 @@ contains
         ! splicer end class.ExClass2.method.set_value_long
     end subroutine exclass2_set_value_long
     
-    ! void setValue(ValueType value)
+    ! void setValue(float value+intent(in)+value)
     ! cpp_template
     ! function_index=26
     subroutine exclass2_set_value_float(obj, value)
@@ -368,7 +369,7 @@ contains
         ! splicer end class.ExClass2.method.set_value_float
     end subroutine exclass2_set_value_float
     
-    ! void setValue(ValueType value)
+    ! void setValue(double value+intent(in)+value)
     ! cpp_template
     ! function_index=27
     subroutine exclass2_set_value_double(obj, value)
@@ -383,7 +384,7 @@ contains
         ! splicer end class.ExClass2.method.set_value_double
     end subroutine exclass2_set_value_double
     
-    ! ValueType getValue()
+    ! int getValue()
     ! cpp_template
     ! function_index=28
     function exclass2_get_value_int(obj) result(rv)
@@ -396,7 +397,7 @@ contains
         ! splicer end class.ExClass2.method.get_value_int
     end function exclass2_get_value_int
     
-    ! ValueType getValue()
+    ! double getValue()
     ! cpp_template
     ! function_index=29
     function exclass2_get_value_double(obj) result(rv)

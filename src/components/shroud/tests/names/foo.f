@@ -52,7 +52,7 @@ module name_module
 
 contains
     
-    ! void method1
+    ! void method1()
     ! function_index=0
     subroutine names_method1(obj)
         use iso_c_binding
@@ -63,7 +63,7 @@ contains
         ! splicer end class.Names.method.type_method1
     end subroutine names_method1
     
-    ! void method2
+    ! void method2()
     ! function_index=1
     subroutine names_method2(obj)
         use iso_c_binding

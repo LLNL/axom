@@ -177,7 +177,7 @@ module exclass1_mod
 
 contains
     
-    ! ExClass1 *new ( const string *name ) +constructor
+    ! ExClass1 * new(const string * name+intent(in))+constructor
     ! string_to_buffer_and_len
     ! function_index=0
     function exclass1_new(name) result(rv)
@@ -192,7 +192,7 @@ contains
         ! splicer end class.ExClass1.method.new
     end function exclass1_new
     
-    ! void delete() +destructor
+    ! void delete()+destructor
     ! function_index=1
     subroutine exclass1_delete(obj)
         use iso_c_binding
@@ -204,7 +204,7 @@ contains
         ! splicer end class.ExClass1.method.delete
     end subroutine exclass1_delete
     
-    ! int incrementCount(int incr)
+    ! int incrementCount(int incr+intent(in)+value)
     ! function_index=2
     function exclass1_increment_count(obj, incr) result(rv)
         use iso_c_binding
@@ -219,7 +219,7 @@ contains
         ! splicer end class.ExClass1.method.increment_count
     end function exclass1_increment_count
     
-    ! const string& getName() const
+    ! const string & getName() const
     ! function_index=3
     function exclass1_get_name(obj) result(rv)
         use iso_c_binding
@@ -243,7 +243,7 @@ contains
         ! splicer end class.ExClass1.method.get_name_length
     end function exclass1_get_name_length
     
-    ! const string& getNameErrorCheck() const
+    ! const string & getNameErrorCheck() const
     ! function_index=5
     function exclass1_get_name_error_check(obj) result(rv)
         use iso_c_binding
@@ -255,7 +255,7 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    ! const string& getNameArg() const
+    ! const string & getNameArg() const
     ! function_index=6
     subroutine exclass1_get_name_arg(obj, name)
         use iso_c_binding
@@ -269,7 +269,7 @@ contains
         ! splicer end class.ExClass1.method.get_name_arg
     end subroutine exclass1_get_name_arg
     
-    ! ExClass2 *getRoot()
+    ! ExClass2 * getRoot()
     ! function_index=7
     function exclass1_get_root(obj) result(rv)
         use iso_c_binding
@@ -281,7 +281,7 @@ contains
         ! splicer end class.ExClass1.method.get_root
     end function exclass1_get_root
     
-    ! int  getValue(int value)
+    ! int getValue(int value+intent(in)+value)
     ! function_index=8
     function exclass1_get_value_from_int(obj, value) result(rv)
         use iso_c_binding
@@ -296,7 +296,7 @@ contains
         ! splicer end class.ExClass1.method.get_value_from_int
     end function exclass1_get_value_from_int
     
-    ! long getValue(long value)
+    ! long getValue(long value+intent(in)+value)
     ! function_index=9
     function exclass1_get_value_1(obj, value) result(rv)
         use iso_c_binding
@@ -311,7 +311,7 @@ contains
         ! splicer end class.ExClass1.method.get_value_1
     end function exclass1_get_value_1
     
-    ! void *getAddr()
+    ! void * getAddr()
     ! function_index=10
     function exclass1_get_addr(obj) result(rv)
         use iso_c_binding
@@ -323,7 +323,7 @@ contains
         ! splicer end class.ExClass1.method.get_addr
     end function exclass1_get_addr
     
-    ! bool hasAddr(bool in)
+    ! bool hasAddr(bool in+intent(in)+value)
     ! function_index=11
     function exclass1_has_addr(obj, in) result(rv)
         use iso_c_binding
@@ -340,7 +340,7 @@ contains
         ! splicer end class.ExClass1.method.has_addr
     end function exclass1_has_addr
     
-    ! void SplicerSpecial
+    ! void SplicerSpecial()
     ! function_index=12
     subroutine exclass1_splicer_special(obj)
         use iso_c_binding

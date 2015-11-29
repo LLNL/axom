@@ -445,6 +445,8 @@ class GenFunctions(object):
         # Look for overloaded functions
         overloaded_functions = {}
         for function in ordered_functions:
+#            if not function['options'].wrap_c:
+#                continue
             if 'cpp_template' in function:
                 continue
             overloaded_functions.setdefault(
@@ -474,6 +476,8 @@ class GenFunctions(object):
             if 'fortran_generic' in method:
                 method['_overloaded'] = True
                 self.generic_function(method, ordered4)
+
+        self.gen_functions_decl(ordered4)
 
         return ordered4
 
@@ -687,6 +691,60 @@ class GenFunctions(object):
                 used_types[arg['type']] = self.typedef[argtype]
             else:
                 raise RuntimeError("%s not defined" % argtype)
+
+    _skip_annotations = [ 'const', 'ptr', 'reference' ]
+    def gen_annotations_decl(self, attrs, decl):
+        """Append annotations from attrs onto decl.
+        Skip some that are already handled.
+        """
+        for key, value in attrs.items():
+            if key in self._skip_annotations:
+                continue
+            if value is True:
+                decl.append('+' + key)
+            elif value is False:
+                pass
+#                decl.append('-' + key)
+            else:
+                decl.append('+%s(%s)' % (key, value) )
+
+    def gen_arg_decl(self, arg, decl):
+        """ Generate declaration for a single arg (or result)
+        """
+        attrs = arg['attrs']
+        if attrs.get('const', False):
+            decl.append('const ')
+        decl.append(arg['type'] + ' ')
+        if attrs.get('ptr', False):
+            decl.append('* ')
+        if attrs.get('reference', False):
+            decl.append('& ')
+        decl.append(arg['name'])
+
+    def gen_functions_decl(self, functions):
+        """ Generate _decl for generated all functions.
+        """
+        for node in functions:
+            decl = [ ]
+            self.gen_arg_decl(node['result'], decl)
+
+            if node['args']:
+                decl.append('(')
+                for arg in node['args']:
+                    self.gen_arg_decl(arg, decl)
+                    self.gen_annotations_decl(arg['attrs'], decl)
+                    decl.append(', ')
+                decl[-1] = ')'
+            else:
+                decl.append('()')
+
+            attrs = node['attrs']
+            if attrs.get('const', False):
+                decl.append(' const')
+            self.gen_annotations_decl(attrs, decl)
+
+            node['_decl'] = ''.join(decl)
+
 
 class VerifyAttrs(object):
     """

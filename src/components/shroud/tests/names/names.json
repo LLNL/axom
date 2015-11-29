@@ -31,6 +31,7 @@
             "methods": [
                 {
                     "F_name_method": "type_method1", 
+                    "_decl": "void method1()", 
                     "_function_index": 0, 
                     "args": [], 
                     "attrs": {}, 
@@ -53,6 +54,7 @@
                     }
                 }, 
                 {
+                    "_decl": "void method2()", 
                     "_function_index": 1, 
                     "args": [], 
                     "attrs": {}, 
@@ -112,6 +114,7 @@
     }, 
     "functions": [
         {
+            "_decl": "void function1()", 
             "_function_index": 2, 
             "args": [], 
             "attrs": {}, 
@@ -137,6 +140,7 @@
             "C_name": "c_name_special", 
             "F_C_name": "f_c_name_special", 
             "F_name_impl": "f_name_special", 
+            "_decl": "void function2()", 
             "_function_index": 3, 
             "args": [], 
             "attrs": {}, 
@@ -161,6 +165,7 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
+            "_decl": "void function3a(int i+intent(in)+value)", 
             "_function_index": 4, 
             "_overloaded": true, 
             "args": [
@@ -196,6 +201,7 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
+            "_decl": "void function3a(long i+intent(in)+value)", 
             "_function_index": 5, 
             "_overloaded": true, 
             "args": [

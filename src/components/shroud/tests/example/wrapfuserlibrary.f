@@ -86,7 +86,7 @@ module userlibrary_mod
 
 contains
     
-    ! bool isNameValid(const std::string& name)
+    ! bool isNameValid(const std::string & name+intent(in))
     ! string_to_buffer_and_len
     ! function_index=34
     function is_name_valid(name) result(rv)
@@ -99,7 +99,7 @@ contains
         ! splicer end is_name_valid
     end function is_name_valid
     
-    ! void test_names(const std::string &name)
+    ! void test_names(const std::string & name+intent(in))
     ! string_to_buffer_and_len
     ! function_index=35
     subroutine test_names(name)
@@ -113,7 +113,7 @@ contains
         ! splicer end test_names
     end subroutine test_names
     
-    ! void test_names(const std::string &name, int flag)
+    ! void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
     ! string_to_buffer_and_len
     ! function_index=36
     subroutine test_names_flag(name, flag)
@@ -129,7 +129,7 @@ contains
         ! splicer end test_names_flag
     end subroutine test_names_flag
     
-    ! void testoptional(int i = 1, long j=2)
+    ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
     ! function_index=37
     subroutine testoptional(i, j)
         use iso_c_binding

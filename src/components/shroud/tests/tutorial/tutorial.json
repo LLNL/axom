@@ -27,6 +27,7 @@
             }, 
             "methods": [
                 {
+                    "_decl": "Class1 * new()+constructor", 
                     "_function_index": 0, 
                     "args": [], 
                     "attrs": {
@@ -52,6 +53,7 @@
                     }
                 }, 
                 {
+                    "_decl": "void delete()+destructor", 
                     "_function_index": 1, 
                     "args": [], 
                     "attrs": {
@@ -76,6 +78,7 @@
                     }
                 }, 
                 {
+                    "_decl": "void Method1()", 
                     "_function_index": 2, 
                     "args": [], 
                     "attrs": {}, 
@@ -133,6 +136,7 @@
     }, 
     "functions": [
         {
+            "_decl": "void Function1()", 
             "_function_index": 3, 
             "args": [], 
             "attrs": {}, 
@@ -155,6 +159,7 @@
             }
         }, 
         {
+            "_decl": "double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)", 
             "_function_index": 4, 
             "args": [
                 {
@@ -194,6 +199,7 @@
             }
         }, 
         {
+            "_decl": "void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))", 
             "_function_index": 5, 
             "args": [
                 {
@@ -244,6 +250,7 @@
             }
         }, 
         {
+            "_decl": "bool Function3(bool arg+intent(in)+value)", 
             "_function_index": 6, 
             "args": [
                 {
@@ -276,6 +283,7 @@
         }, 
         {
             "_PTR_F_C_index": 24, 
+            "_decl": "const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure", 
             "_function_index": 7, 
             "args": [
                 {
@@ -324,6 +332,7 @@
             }
         }, 
         {
+            "_decl": "const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure", 
             "_function_index": 24, 
             "_generated": "string_to_buffer_and_len", 
             "args": [
@@ -375,6 +384,7 @@
         }, 
         {
             "_PTR_F_C_index": 25, 
+            "_decl": "const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 8, 
             "args": [
                 {
@@ -423,6 +433,7 @@
             }
         }, 
         {
+            "_decl": "const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)", 
             "_function_index": 25, 
             "_generated": "string_to_buffer_and_len", 
             "args": [
@@ -471,6 +482,7 @@
             }
         }, 
         {
+            "_decl": "double Function5(double arg1+default(3.13)+intent(in)+value, int arg2+default(5)+intent(in)+value)", 
             "_function_index": 9, 
             "_has_default_arg": true, 
             "args": [
@@ -514,6 +526,7 @@
         }, 
         {
             "_PTR_F_C_index": 26, 
+            "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
             "args": [
@@ -550,6 +563,7 @@
             }
         }, 
         {
+            "_decl": "void Function6(const std::string & name+intent(in)+len_trim)", 
             "_function_index": 26, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -586,6 +600,7 @@
             }
         }, 
         {
+            "_decl": "void Function6(int indx+intent(in)+value)", 
             "_function_index": 11, 
             "_overloaded": true, 
             "args": [
@@ -620,6 +635,7 @@
             }
         }, 
         {
+            "_decl": "void Function7(ArgType arg+intent(in)+value)", 
             "_function_index": 12, 
             "_overloaded": true, 
             "args": [
@@ -656,6 +672,7 @@
             }
         }, 
         {
+            "_decl": "void Function7(int arg+intent(in)+value)", 
             "_function_index": 20, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
@@ -692,6 +709,7 @@
             }
         }, 
         {
+            "_decl": "void Function7(double arg+intent(in)+value)", 
             "_function_index": 21, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
@@ -728,6 +746,7 @@
             }
         }, 
         {
+            "_decl": "RetType Function8()", 
             "_function_index": 13, 
             "_overloaded": true, 
             "args": [], 
@@ -755,6 +774,7 @@
             }
         }, 
         {
+            "_decl": "int Function8()", 
             "_function_index": 22, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
@@ -783,6 +803,7 @@
             }
         }, 
         {
+            "_decl": "double Function8()", 
             "_function_index": 23, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
@@ -811,6 +832,7 @@
             }
         }, 
         {
+            "_decl": "void Function9(double arg+intent(in)+value)", 
             "_function_index": 14, 
             "_overloaded": true, 
             "args": [
@@ -849,6 +871,7 @@
         }, 
         {
             "_PTR_F_C_index": 14, 
+            "_decl": "void Function9(float arg+intent(in)+value)", 
             "_function_index": 28, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
@@ -883,6 +906,7 @@
         }, 
         {
             "_PTR_F_C_index": 14, 
+            "_decl": "void Function9(double arg+intent(in)+value)", 
             "_function_index": 29, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
@@ -916,6 +940,7 @@
             }
         }, 
         {
+            "_decl": "void Function10()", 
             "_function_index": 15, 
             "_overloaded": true, 
             "args": [], 
@@ -941,6 +966,7 @@
         }, 
         {
             "_PTR_F_C_index": 27, 
+            "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
             "args": [
@@ -991,6 +1017,7 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
             "_function_index": 30, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
@@ -1035,6 +1062,7 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 31, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
@@ -1078,6 +1106,7 @@
             }
         }, 
         {
+            "_decl": "void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)", 
             "_function_index": 27, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -1127,6 +1156,7 @@
             }
         }, 
         {
+            "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_function_index": 17, 
             "_has_default_arg": true, 
             "_overloaded": true, 
@@ -1179,6 +1209,7 @@
             }
         }, 
         {
+            "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_function_index": 18, 
             "_has_default_arg": true, 
             "_overloaded": true, 
@@ -1239,6 +1270,7 @@
             }
         }, 
         {
+            "_decl": "const std::string & LastFunctionCalled()+pure", 
             "_function_index": 19, 
             "args": [], 
             "attrs": {

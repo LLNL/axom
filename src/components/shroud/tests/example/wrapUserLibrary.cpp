@@ -10,7 +10,7 @@ extern "C" {
 namespace example {
 namespace nested {
 
-// void local_function1
+// void local_function1()
 // function_index=33
 void AA_local_function1()
 {
@@ -20,7 +20,7 @@ return;
 // splicer end function.local_function1
 }
 
-// bool isNameValid(const std::string& name)
+// bool isNameValid(const std::string & name+intent(in))
 // function_index=34
 bool AA_is_name_valid(const char * name)
 {
@@ -29,7 +29,7 @@ return name != NULL;
 // splicer end function.is_name_valid
 }
 
-// bool isNameValid(const std::string& name)
+// bool isNameValid(const std::string & name+intent(in)+len_trim)
 // function_index=38
 bool AA_is_name_valid_bufferify(const char * name, int Lname)
 {
@@ -38,7 +38,7 @@ return name != NULL;
 // splicer end function.is_name_valid_bufferify
 }
 
-// void test_names(const std::string &name)
+// void test_names(const std::string & name+intent(in))
 // function_index=35
 void AA_test_names(const char * name)
 {
@@ -48,7 +48,7 @@ return;
 // splicer end function.test_names
 }
 
-// void test_names(const std::string &name)
+// void test_names(const std::string & name+intent(in)+len_trim)
 // function_index=39
 void AA_test_names_bufferify(const char * name, int Lname)
 {
@@ -58,7 +58,7 @@ return;
 // splicer end function.test_names_bufferify
 }
 
-// void test_names(const std::string &name, int flag)
+// void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
 // function_index=36
 void AA_test_names_flag(const char * name, int flag)
 {
@@ -68,7 +68,7 @@ return;
 // splicer end function.test_names_flag
 }
 
-// void test_names(const std::string &name, int flag)
+// void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)
 // function_index=40
 void AA_test_names_flag_bufferify(const char * name, int Lname, int flag)
 {
@@ -78,7 +78,7 @@ return;
 // splicer end function.test_names_flag_bufferify
 }
 
-// void testoptional(int i = 1, long j=2)
+// void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 // function_index=37
 void AA_testoptional(int i, long j)
 {

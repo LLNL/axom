@@ -711,8 +711,7 @@ class Wrapf(util.WrapperMixin):
             impl = self.impl
             impl.append('')
             if options.debug:
-                if 'decl' in node:
-                    impl.append('! %s' % node['decl'])
+                impl.append('! %s' % node['_decl'])
                 if generated:
                     impl.append('! %s' % ' - '.join(generated))
                 impl.append('! function_index=%d' % node['_function_index'])

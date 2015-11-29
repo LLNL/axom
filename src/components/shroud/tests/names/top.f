@@ -46,7 +46,7 @@ module top_module
 
 contains
     
-    ! void function1
+    ! void function1()
     ! function_index=2
     subroutine testnames_function1()
         use iso_c_binding
@@ -56,7 +56,7 @@ contains
         ! splicer end function1
     end subroutine testnames_function1
     
-    ! void function2
+    ! void function2()
     ! function_index=3
     subroutine f_name_special()
         use iso_c_binding
@@ -66,7 +66,7 @@ contains
         ! splicer end function2
     end subroutine f_name_special
     
-    ! void function3a(int i)
+    ! void function3a(int i+intent(in)+value)
     ! function_index=4
     subroutine F_name_function3a_int(i)
         use iso_c_binding
@@ -77,7 +77,7 @@ contains
         ! splicer end function3a_0
     end subroutine F_name_function3a_int
     
-    ! void function3a(long i)
+    ! void function3a(long i+intent(in)+value)
     ! function_index=5
     subroutine F_name_function3a_long(i)
         use iso_c_binding
