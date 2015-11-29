@@ -45,10 +45,14 @@ const std::string& Function4b(const std::string& arg1, const std::string& arg2)
     return global_str;
 }
 
-double Function5(double arg1, int arg2)
+double Function5(double arg1, bool arg2)
 {
     last_function_called = "Function5";
-    return arg1 + arg2;
+    if (arg2) {
+	return arg1 + 10.0;
+    } else {
+	return arg1;
+    }
 }
 
 void Function6(const std::string& name)

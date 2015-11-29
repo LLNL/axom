@@ -435,12 +435,12 @@ class GenFunctions(object):
         # Create additional functions needed for wrapping
         ordered_functions = []
         for method in functions:
+            if '_has_default_arg' in method:
+                self.has_default_args(method, ordered_functions)
             ordered_functions.append(method)
             if 'cpp_template' in method:
                 method['_overloaded'] = True
                 self.template_function(method, ordered_functions)
-#            if '_has_default_arg' in method:
-#                self.has_default_args(method, ordered_functions)
 
         # Look for overloaded functions
         overloaded_functions = {}
@@ -559,23 +559,6 @@ class GenFunctions(object):
         options.wrap_fortran = False
 #        options.wrap_python = False
 
-    def _copy_function_for_default(self, node):
-        """Create a new function from existing
-        and insert in place.
-        """
-        new = util.copy_function_node(node)
-        new['_generated'] = 'has_default_arg'
-        try:
-            del new['_has_default_arg']
-        except:
-            pass
-        self.append_function_index(new)
-        options = new['options']
-        options.wrap_c = True
-        options.wrap_fortran = True
-        options.wrap_python = False
-        return new
-
     def has_default_args(self, node, ordered_functions):
         """
         For each function which has a default argument, generate
@@ -586,21 +569,29 @@ class GenFunctions(object):
           void func(int i)
           void func(int i, int j)
         """
-#        print("XXXXXXXX", node['result']['name'])
+        default_funcs = []
+        for i, arg in enumerate(node['args']):
+            if 'default' not in arg['attrs']:
+                continue
+            new = util.copy_function_node(node)
+            new['_generated'] = 'has_default_arg'
+            del new['args'][i:]  # remove trailing arguments
+#            try:
+            del new['_has_default_arg']
+#            except:
+#                pass
+            self.append_function_index(new)
+            options = new['options']
+            options.wrap_c = True
+            options.wrap_fortran = True
+            options.wrap_python = False
+            fmt = new['fmt']
+#            fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+            default_funcs.append(new['_function_index'])
+            ordered_functions.append(new)
 
-        work_args = []
-        for arg in node['args']:
-            attrs = arg['attrs']
-            if 'default' in attrs:
-                new = self._copy_function_for_default(node)
-                new['args'] = copy.deepcopy(work_args)
-                ordered_functions.append(new)
-            work_args.append(copy.deepcopy(arg))
-
-        # With final arg
-        new = self._copy_function_for_default(node)
-        new['args'] = copy.deepcopy(work_args)
-        ordered_functions.append(new)
+        # keep track of generated default value functions
+        node['_default_funcs'] = default_funcs
 
     def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.

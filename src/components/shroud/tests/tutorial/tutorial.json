@@ -282,7 +282,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 24, 
+            "_PTR_F_C_index": 30, 
             "_decl": "const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure", 
             "_function_index": 7, 
             "args": [
@@ -333,7 +333,7 @@
         }, 
         {
             "_decl": "const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure", 
-            "_function_index": 24, 
+            "_function_index": 30, 
             "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
@@ -383,7 +383,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 25, 
+            "_PTR_F_C_index": 31, 
             "_decl": "const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 8, 
             "args": [
@@ -434,7 +434,7 @@
         }, 
         {
             "_decl": "const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)", 
-            "_function_index": 25, 
+            "_function_index": 31, 
             "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
@@ -482,13 +482,82 @@
             }
         }, 
         {
-            "_decl": "double Function5(double arg1+default(3.13)+intent(in)+value, int arg2+default(5)+intent(in)+value)", 
-            "_function_index": 9, 
-            "_has_default_arg": true, 
+            "_decl": "double Function5()", 
+            "_function_index": 20, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "fmt": {
+                "C_name": "TUT_function5_0", 
+                "F_C_name": "tut_function5_0", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5_0", 
+                "F_name_method": "function5_0", 
+                "function_suffix": "_0"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_decl": "double Function5(double arg1+default(3.1415)+intent(in)+value)", 
+            "_function_index": 21, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
-                        "default": 3.13, 
+                        "default": 3.1415, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "arg1", 
+                    "type": "double"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "fmt": {
+                "C_name": "TUT_function5_1", 
+                "F_C_name": "tut_function5_1", 
+                "F_name_generic": "function5", 
+                "F_name_impl": "function5_1", 
+                "F_name_method": "function5_1", 
+                "function_suffix": "_1"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "Function5", 
+                "type": "double"
+            }
+        }, 
+        {
+            "_decl": "double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)", 
+            "_default_funcs": [
+                20, 
+                21
+            ], 
+            "_function_index": 9, 
+            "_has_default_arg": true, 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "default": 3.1415, 
                         "intent": "in", 
                         "value": true
                     }, 
@@ -497,23 +566,24 @@
                 }, 
                 {
                     "attrs": {
-                        "default": 5, 
+                        "default": "true", 
                         "intent": "in", 
                         "value": true
                     }, 
                     "name": "arg2", 
-                    "type": "int"
+                    "type": "bool"
                 }
             ], 
             "attrs": {}, 
-            "decl": "double Function5(double arg1 = 3.13, int arg2 = 5)", 
+            "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
             "fmt": {
-                "C_name": "TUT_function5", 
-                "F_C_name": "tut_function5", 
+                "C_name": "TUT_function5_2", 
+                "F_C_name": "tut_function5_2", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5", 
-                "F_name_method": "function5", 
-                "PY_name_impl": "PY_function5", 
+                "F_name_impl": "function5_2", 
+                "F_name_method": "function5_2", 
+                "PY_name_impl": "PY_function5_2", 
+                "function_suffix": "_2", 
                 "method_name": "Function5", 
                 "underscore_name": "function5"
             }, 
@@ -525,7 +595,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 26, 
+            "_PTR_F_C_index": 32, 
             "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
@@ -564,7 +634,7 @@
         }, 
         {
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim)", 
-            "_function_index": 26, 
+            "_function_index": 32, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
@@ -673,7 +743,7 @@
         }, 
         {
             "_decl": "void Function7(int arg+intent(in)+value)", 
-            "_function_index": 20, 
+            "_function_index": 22, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [
@@ -710,7 +780,7 @@
         }, 
         {
             "_decl": "void Function7(double arg+intent(in)+value)", 
-            "_function_index": 21, 
+            "_function_index": 23, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [
@@ -775,7 +845,7 @@
         }, 
         {
             "_decl": "int Function8()", 
-            "_function_index": 22, 
+            "_function_index": 24, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [], 
@@ -804,7 +874,7 @@
         }, 
         {
             "_decl": "double Function8()", 
-            "_function_index": 23, 
+            "_function_index": 25, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
             "args": [], 
@@ -872,7 +942,7 @@
         {
             "_PTR_F_C_index": 14, 
             "_decl": "void Function9(float arg+intent(in)+value)", 
-            "_function_index": 28, 
+            "_function_index": 34, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
@@ -907,7 +977,7 @@
         {
             "_PTR_F_C_index": 14, 
             "_decl": "void Function9(double arg+intent(in)+value)", 
-            "_function_index": 29, 
+            "_function_index": 35, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
@@ -965,7 +1035,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 27, 
+            "_PTR_F_C_index": 33, 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
@@ -1018,7 +1088,7 @@
         {
             "_PTR_F_C_index": 16, 
             "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
-            "_function_index": 30, 
+            "_function_index": 36, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
@@ -1063,7 +1133,7 @@
         {
             "_PTR_F_C_index": 16, 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
-            "_function_index": 31, 
+            "_function_index": 37, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
             "args": [
@@ -1107,7 +1177,7 @@
         }, 
         {
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)", 
-            "_function_index": 27, 
+            "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
@@ -1156,7 +1226,92 @@
             }
         }, 
         {
+            "_decl": "int overload1(int num+intent(in)+value)", 
+            "_function_index": 26, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_0", 
+                "F_C_name": "tut_overload1_0", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_0", 
+                "F_name_method": "overload1_0", 
+                "function_suffix": "_0"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
+            "_function_index": 27, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_1", 
+                "F_C_name": "tut_overload1_1", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_1", 
+                "F_name_method": "overload1_1", 
+                "function_suffix": "_1"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
+            "_default_funcs": [
+                26, 
+                27
+            ], 
             "_function_index": 17, 
             "_has_default_arg": true, 
             "_overloaded": true, 
@@ -1191,13 +1346,13 @@
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
             "fmt": {
-                "C_name": "TUT_overload1_0", 
-                "F_C_name": "tut_overload1_0", 
+                "C_name": "TUT_overload1_2", 
+                "F_C_name": "tut_overload1_2", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_0", 
-                "F_name_method": "overload1_0", 
-                "PY_name_impl": "PY_overload1_0", 
-                "function_suffix": "_0", 
+                "F_name_impl": "overload1_2", 
+                "F_name_method": "overload1_2", 
+                "PY_name_impl": "PY_overload1_2", 
+                "function_suffix": "_2", 
                 "method_name": "overload1", 
                 "underscore_name": "overload1"
             }, 
@@ -1209,7 +1364,108 @@
             }
         }, 
         {
+            "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value)", 
+            "_function_index": 28, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "type", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_3", 
+                "F_C_name": "tut_overload1_3", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_3", 
+                "F_name_method": "overload1_3", 
+                "function_suffix": "_3"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
+            "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
+            "_function_index": 29, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "type", 
+                    "type": "double"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "num", 
+                    "type": "int"
+                }, 
+                {
+                    "attrs": {
+                        "default": 0, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "offset", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
+            "fmt": {
+                "C_name": "TUT_overload1_4", 
+                "F_C_name": "tut_overload1_4", 
+                "F_name_generic": "overload1", 
+                "F_name_impl": "overload1_4", 
+                "F_name_method": "overload1_4", 
+                "function_suffix": "_4"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "overload1", 
+                "type": "int"
+            }
+        }, 
+        {
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
+            "_default_funcs": [
+                28, 
+                29
+            ], 
             "_function_index": 18, 
             "_has_default_arg": true, 
             "_overloaded": true, 
@@ -1252,13 +1508,13 @@
             "attrs": {}, 
             "decl": "int overload1(double type, int num, int offset = 0, int stride = 1)", 
             "fmt": {
-                "C_name": "TUT_overload1_1", 
-                "F_C_name": "tut_overload1_1", 
+                "C_name": "TUT_overload1_5", 
+                "F_C_name": "tut_overload1_5", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_1", 
-                "F_name_method": "overload1_1", 
-                "PY_name_impl": "PY_overload1_1", 
-                "function_suffix": "_1", 
+                "F_name_impl": "overload1_5", 
+                "F_name_method": "overload1_5", 
+                "PY_name_impl": "PY_overload1_5", 
+                "function_suffix": "_5", 
                 "method_name": "overload1", 
                 "underscore_name": "overload1"
             }, 

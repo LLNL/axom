@@ -528,7 +528,7 @@
             }, 
             "methods": [
                 {
-                    "_PTR_F_C_index": 30, 
+                    "_PTR_F_C_index": 31, 
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in))+constructor", 
                     "_function_index": 14, 
                     "args": [
@@ -567,7 +567,7 @@
                 }, 
                 {
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in)+len_trim)+constructor", 
-                    "_function_index": 30, 
+                    "_function_index": 31, 
                     "_generated": "string_to_buffer_and_len", 
                     "args": [
                         {
@@ -722,7 +722,128 @@
                     }
                 }, 
                 {
+                    "_decl": "void * declare(TypeID type+intent(in)+value)", 
+                    "_function_index": 24, 
+                    "_generated": "has_default_arg", 
+                    "_overloaded": true, 
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
+                    "fmt": {
+                        "C_name": "AA_exclass2_declare_0", 
+                        "F_C_name": "aa_exclass2_declare_0", 
+                        "function_suffix": "_0"
+                    }, 
+                    "fortran_generic": {
+                        "len": [
+                            "int", 
+                            "long"
+                        ]
+                    }, 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }, 
+                    "return_this": true
+                }, 
+                {
+                    "_PTR_F_C_index": 24, 
+                    "_decl": "void * declare(TypeID type+intent(in)+value)", 
+                    "_function_index": 32, 
+                    "_generated": "fortran_generic", 
+                    "_overloaded": true, 
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
+                    "fmt": {
+                        "F_name_generic": "declare", 
+                        "F_name_impl": "exclass2_declare_int", 
+                        "F_name_method": "declare_int", 
+                        "function_suffix": "_int"
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }, 
+                    "return_this": true
+                }, 
+                {
+                    "_PTR_F_C_index": 24, 
+                    "_decl": "void * declare(TypeID type+intent(in)+value)", 
+                    "_function_index": 33, 
+                    "_generated": "fortran_generic", 
+                    "_overloaded": true, 
+                    "args": [
+                        {
+                            "attrs": {
+                                "intent": "in", 
+                                "value": true
+                            }, 
+                            "name": "type", 
+                            "type": "TypeID"
+                        }
+                    ], 
+                    "attrs": {}, 
+                    "decl": "void* declare(TypeID type, SidreLength len = 1)", 
+                    "fmt": {
+                        "F_name_generic": "declare", 
+                        "F_name_impl": "exclass2_declare_long", 
+                        "F_name_method": "declare_long", 
+                        "function_suffix": "_long"
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "declare", 
+                        "type": "void"
+                    }, 
+                    "return_this": true
+                }, 
+                {
                     "_decl": "void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)", 
+                    "_default_funcs": [
+                        24
+                    ], 
                     "_function_index": 19, 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
@@ -748,9 +869,10 @@
                     "attrs": {}, 
                     "decl": "void* declare(TypeID type, SidreLength len = 1)", 
                     "fmt": {
-                        "C_name": "AA_exclass2_declare", 
-                        "F_C_name": "aa_exclass2_declare", 
-                        "PY_name_impl": "PP_exclass2_declare", 
+                        "C_name": "AA_exclass2_declare_1", 
+                        "F_C_name": "aa_exclass2_declare_1", 
+                        "PY_name_impl": "PP_exclass2_declare_1", 
+                        "function_suffix": "_1", 
                         "method_name": "declare", 
                         "underscore_name": "declare"
                     }, 
@@ -775,7 +897,10 @@
                 {
                     "_PTR_F_C_index": 19, 
                     "_decl": "void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)", 
-                    "_function_index": 31, 
+                    "_default_funcs": [
+                        24
+                    ], 
+                    "_function_index": 34, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
@@ -823,7 +948,10 @@
                 {
                     "_PTR_F_C_index": 19, 
                     "_decl": "void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)", 
-                    "_function_index": 32, 
+                    "_default_funcs": [
+                        24
+                    ], 
+                    "_function_index": 35, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
                     "_overloaded": true, 
@@ -957,7 +1085,7 @@
                 }, 
                 {
                     "_decl": "void setValue(int value+intent(in)+value)", 
-                    "_function_index": 24, 
+                    "_function_index": 25, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
@@ -994,7 +1122,7 @@
                 }, 
                 {
                     "_decl": "void setValue(long value+intent(in)+value)", 
-                    "_function_index": 25, 
+                    "_function_index": 26, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
@@ -1031,7 +1159,7 @@
                 }, 
                 {
                     "_decl": "void setValue(float value+intent(in)+value)", 
-                    "_function_index": 26, 
+                    "_function_index": 27, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
@@ -1068,7 +1196,7 @@
                 }, 
                 {
                     "_decl": "void setValue(double value+intent(in)+value)", 
-                    "_function_index": 27, 
+                    "_function_index": 28, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [
@@ -1133,7 +1261,7 @@
                 }, 
                 {
                     "_decl": "int getValue()", 
-                    "_function_index": 28, 
+                    "_function_index": 29, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [], 
@@ -1162,7 +1290,7 @@
                 }, 
                 {
                     "_decl": "double getValue()", 
-                    "_function_index": 29, 
+                    "_function_index": 30, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "args": [], 
@@ -1253,7 +1381,7 @@
     "functions": [
         {
             "_decl": "void local_function1()", 
-            "_function_index": 33, 
+            "_function_index": 36, 
             "args": [], 
             "attrs": {}, 
             "decl": "void local_function1", 
@@ -1276,9 +1404,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 38, 
+            "_PTR_F_C_index": 43, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
-            "_function_index": 34, 
+            "_function_index": 37, 
             "args": [
                 {
                     "attrs": {
@@ -1315,7 +1443,7 @@
         }, 
         {
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim)", 
-            "_function_index": 38, 
+            "_function_index": 43, 
             "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
@@ -1349,9 +1477,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 39, 
+            "_PTR_F_C_index": 44, 
             "_decl": "void test_names(const std::string & name+intent(in))", 
-            "_function_index": 35, 
+            "_function_index": 38, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1388,7 +1516,7 @@
         }, 
         {
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim)", 
-            "_function_index": 39, 
+            "_function_index": 44, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
@@ -1424,9 +1552,9 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 40, 
+            "_PTR_F_C_index": 45, 
             "_decl": "void test_names(const std::string & name+intent(in), int flag+intent(in)+value)", 
-            "_function_index": 36, 
+            "_function_index": 39, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1471,7 +1599,7 @@
         }, 
         {
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)", 
-            "_function_index": 40, 
+            "_function_index": 45, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
@@ -1515,9 +1643,78 @@
             }
         }, 
         {
+            "_decl": "void testoptional()", 
+            "_function_index": 41, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "void testoptional(int i = 1, long j=2)", 
+            "fmt": {
+                "C_name": "AA_testoptional_0", 
+                "F_C_name": "aa_testoptional_0", 
+                "F_name_generic": "testoptional", 
+                "F_name_impl": "testoptional_0", 
+                "F_name_method": "testoptional_0", 
+                "function_suffix": "_0"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "testoptional", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void testoptional(int i+default(1)+intent(in)+value)", 
+            "_function_index": 42, 
+            "_generated": "has_default_arg", 
+            "_overloaded": true, 
+            "args": [
+                {
+                    "attrs": {
+                        "default": 1, 
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "i", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void testoptional(int i = 1, long j=2)", 
+            "fmt": {
+                "C_name": "AA_testoptional_1", 
+                "F_C_name": "aa_testoptional_1", 
+                "F_name_generic": "testoptional", 
+                "F_name_impl": "testoptional_1", 
+                "F_name_method": "testoptional_1", 
+                "function_suffix": "_1"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "testoptional", 
+                "type": "void"
+            }
+        }, 
+        {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)", 
-            "_function_index": 37, 
+            "_default_funcs": [
+                41, 
+                42
+            ], 
+            "_function_index": 40, 
             "_has_default_arg": true, 
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -1541,12 +1738,13 @@
             "attrs": {}, 
             "decl": "void testoptional(int i = 1, long j=2)", 
             "fmt": {
-                "C_name": "AA_testoptional", 
-                "F_C_name": "aa_testoptional", 
+                "C_name": "AA_testoptional_2", 
+                "F_C_name": "aa_testoptional_2", 
                 "F_name_generic": "testoptional", 
-                "F_name_impl": "testoptional", 
-                "F_name_method": "testoptional", 
-                "PY_name_impl": "PP_testoptional", 
+                "F_name_impl": "testoptional_2", 
+                "F_name_method": "testoptional_2", 
+                "PY_name_impl": "PP_testoptional_2", 
+                "function_suffix": "_2", 
                 "method_name": "testoptional", 
                 "underscore_name": "testoptional"
             }, 

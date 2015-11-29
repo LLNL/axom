@@ -31,7 +31,11 @@ void AA_test_names_flag(const char * name, int flag);
 
 void AA_test_names_flag_bufferify(const char * name, int Lname, int flag);
 
-void AA_testoptional(int i, long j);
+void AA_testoptional_0();
+
+void AA_testoptional_1(int i);
+
+void AA_testoptional_2(int i, long j);
 
 #ifdef __cplusplus
 }

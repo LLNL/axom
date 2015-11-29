@@ -398,48 +398,91 @@ The different styles are use as::
 Optional Arguments
 ------------------
 
-Functions with default arguments are handled by the Fortran
-**optional** attribute.::
+Each function with default arguments will create a C and Fortran 
+wrapper for each possible prototype.  For Fortran, these functions
+are then wrapped in a generic statement which allows them to be
+called by the original name.
+Creating a wrapper for each possible way of calling the C++ function
+allows C++ to provide the default values::
 
     functions:
-    - decl: double Function5(double arg1 = 3.13, int arg2 = 5)
+    - decl: double Function5(double arg1 = 3.1415, bool arg2 = true)
 
-The C wrapper accepts all arguments and passes them to C++.
-It is the Fortran wrapper which provides the default values, not C++.
-But the end result is the same.
+C wrappers::
+
+    double TUT_function5_0()
+    {
+      double rv = Function5();
+      return rv;
+    }
+    
+    double TUT_function5_1(double arg1)
+    {
+      double rv = Function5(arg1);
+      return rv;
+    }
+    
+    double TUT_function5_2(double arg1, bool arg2)
+    {
+      double rv = Function5(arg1, arg2);
+      return rv;
+    }
+
 
 Fortran wrapper::
 
-    function function5(arg1, arg2) result(rv)
+    interface function5
+        module procedure function5_0
+        module procedure function5_1
+        module procedure function5_2
+    end interface function5
+
+    contains
+
+    function function5_0() result(rv)
         use iso_c_binding
         implicit none
-        real(C_DOUBLE), value, intent(IN), optional :: arg1
-        real(C_DOUBLE) :: tmp_arg1
-        integer(C_INT), value, intent(IN), optional :: arg2
-        integer(C_INT) :: tmp_arg2
         real(C_DOUBLE) :: rv
-        if (present(arg1)) then
-            tmp_arg1 = arg1
-        else
-            tmp_arg1 = 3.13
-        endif
-        if (present(arg2)) then
-            tmp_arg2 = arg2
-        else
-            tmp_arg2 = 5
-        endif
-        rv = tut_function5(  &
-            tmp_arg1,  &
-            tmp_arg2)
-    end function function5
+        rv = tut_function5_0()
+    end function function5_0
+    
+    function function5_1(arg1) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE), value, intent(IN) :: arg1
+        real(C_DOUBLE) :: rv
+        rv = tut_function5_1(arg1)
+    end function function5_1
+    
+    function function5_2(arg1, arg2) result(rv)
+        use iso_c_binding
+        implicit none
+        real(C_DOUBLE), value, intent(IN) :: arg1
+        logical, value, intent(IN) :: arg2
+        logical(C_BOOL) tmp_arg2
+        real(C_DOUBLE) :: rv
+        tmp_arg2 = arg2  ! coerce to C_BOOL
+        rv = tut_function5_2(arg1, tmp_arg2)
+    end function function5_2
 
 Fortran usage::
 
-  print *, "function5", function5()
-  print *, "function5", function5(0.0d0)
-  print *, "function5", function5(arg2=0)
-  print *, "function5", function5(2.0d0, 2)
+  print *, function5()
+  print *, function5(1.d0)
+  print *, function5(1.d0, .false.)
 
+.. note :: Fortran's ``OPTIONAL`` attribute provides similar but
+           different semantics.
+           Creating wrappers for each set of arguments allows
+           C++ to supply the default value.  This is important
+           when the default value does not map directly to Fortran.
+           For example, ``bool`` type or when the default value
+           is created by calling a C++ function.
+
+           Using the ``OPTIONAL`` keyword creates the possiblity to
+           call the C++ function in a way which is not supported by
+           the C++ compilers.
+           For example, ``function5(arg2=.false.)``
 
 Overloaded Functions
 --------------------

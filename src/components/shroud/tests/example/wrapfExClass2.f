@@ -27,6 +27,8 @@ module exclass2_mod
         procedure :: get_class1 => exclass2_get_class1
         procedure :: declare_int => exclass2_declare_int
         procedure :: declare_long => exclass2_declare_long
+        procedure :: declare_int => exclass2_declare_int
+        procedure :: declare_long => exclass2_declare_long
         procedure :: destroyall => exclass2_destroyall
         procedure :: get_type_id => exclass2_get_type_id
         procedure :: set_value_int => exclass2_set_value_int
@@ -38,6 +40,8 @@ module exclass2_mod
         generic :: declare => &
             ! splicer begin class.ExClass2.generic.declare
             ! splicer end class.ExClass2.generic.declare
+            declare_int,  &
+            declare_long,  &
             declare_int,  &
             declare_long
         generic :: set_value => &
@@ -111,14 +115,22 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_get_class1
         
-        subroutine aa_exclass2_declare(self, type, len) &
-                bind(C, name="AA_exclass2_declare")
+        subroutine aa_exclass2_declare_0(self, type) &
+                bind(C, name="AA_exclass2_declare_0")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+        end subroutine aa_exclass2_declare_0
+        
+        subroutine aa_exclass2_declare_1(self, type, len) &
+                bind(C, name="AA_exclass2_declare_1")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: len
-        end subroutine aa_exclass2_declare
+        end subroutine aa_exclass2_declare_1
         
         subroutine aa_exclass2_destroyall(self) &
                 bind(C, name="AA_exclass2_destroyall")
@@ -255,49 +267,67 @@ contains
         ! splicer end class.ExClass2.method.get_class1
     end function exclass2_get_class1
     
+    ! void * declare(TypeID type+intent(in)+value)
+    ! fortran_generic - has_default_arg
+    ! function_index=32
+    subroutine exclass2_declare_int(obj, type)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        ! splicer begin class.ExClass2.method.declare_int
+        call aa_exclass2_declare_0(  &
+            obj%voidptr,  &
+            type)
+        ! splicer end class.ExClass2.method.declare_int
+    end subroutine exclass2_declare_int
+    
+    ! void * declare(TypeID type+intent(in)+value)
+    ! fortran_generic - has_default_arg
+    ! function_index=33
+    subroutine exclass2_declare_long(obj, type)
+        use iso_c_binding
+        implicit none
+        class(exclass2) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        ! splicer begin class.ExClass2.method.declare_long
+        call aa_exclass2_declare_0(  &
+            obj%voidptr,  &
+            type)
+        ! splicer end class.ExClass2.method.declare_long
+    end subroutine exclass2_declare_long
+    
     ! void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)
     ! fortran_generic
-    ! function_index=31
+    ! function_index=34
     subroutine exclass2_declare_int(obj, type, len)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT), value, intent(IN) :: type
-        integer(C_INT), value, intent(IN), optional :: len
-        integer(C_INT) :: tmp_len
-        if (present(len)) then
-            tmp_len = len
-        else
-            tmp_len = 1
-        endif
+        integer(C_INT), value, intent(IN) :: len
         ! splicer begin class.ExClass2.method.declare_int
-        call aa_exclass2_declare(  &
+        call aa_exclass2_declare_1(  &
             obj%voidptr,  &
             type,  &
-            int(tmp_len, C_LONG))
+            int(len, C_LONG))
         ! splicer end class.ExClass2.method.declare_int
     end subroutine exclass2_declare_int
     
     ! void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)
     ! fortran_generic
-    ! function_index=32
+    ! function_index=35
     subroutine exclass2_declare_long(obj, type, len)
         use iso_c_binding
         implicit none
         class(exclass2) :: obj
         integer(C_INT), value, intent(IN) :: type
-        integer(C_LONG), value, intent(IN), optional :: len
-        integer(C_LONG) :: tmp_len
-        if (present(len)) then
-            tmp_len = len
-        else
-            tmp_len = 1
-        endif
+        integer(C_LONG), value, intent(IN) :: len
         ! splicer begin class.ExClass2.method.declare_long
-        call aa_exclass2_declare(  &
+        call aa_exclass2_declare_1(  &
             obj%voidptr,  &
             type,  &
-            int(tmp_len, C_LONG))
+            int(len, C_LONG))
         ! splicer end class.ExClass2.method.declare_long
     end subroutine exclass2_declare_long
     
@@ -326,7 +356,7 @@ contains
     
     ! void setValue(int value+intent(in)+value)
     ! cpp_template
-    ! function_index=24
+    ! function_index=25
     subroutine exclass2_set_value_int(obj, value)
         use iso_c_binding
         implicit none
@@ -341,7 +371,7 @@ contains
     
     ! void setValue(long value+intent(in)+value)
     ! cpp_template
-    ! function_index=25
+    ! function_index=26
     subroutine exclass2_set_value_long(obj, value)
         use iso_c_binding
         implicit none
@@ -356,7 +386,7 @@ contains
     
     ! void setValue(float value+intent(in)+value)
     ! cpp_template
-    ! function_index=26
+    ! function_index=27
     subroutine exclass2_set_value_float(obj, value)
         use iso_c_binding
         implicit none
@@ -371,7 +401,7 @@ contains
     
     ! void setValue(double value+intent(in)+value)
     ! cpp_template
-    ! function_index=27
+    ! function_index=28
     subroutine exclass2_set_value_double(obj, value)
         use iso_c_binding
         implicit none
@@ -386,7 +416,7 @@ contains
     
     ! int getValue()
     ! cpp_template
-    ! function_index=28
+    ! function_index=29
     function exclass2_get_value_int(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -399,7 +429,7 @@ contains
     
     ! double getValue()
     ! cpp_template
-    ! function_index=29
+    ! function_index=30
     function exclass2_get_value_double(obj) result(rv)
         use iso_c_binding
         implicit none

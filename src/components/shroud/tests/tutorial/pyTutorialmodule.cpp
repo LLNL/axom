@@ -157,32 +157,32 @@ PY_function4b(
 // splicer end function.function4b
 }
 
-static char PY_function5__doc__[] =
+static char PY_function5_2__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_function5(
+PY_function5_2(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.function5
+// splicer begin function.function5_2
     double arg1;
-    int arg2;
+    bool arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    arg1 = 3.13;
-    arg2 = 5;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|di:Function5", kw_list,
+    arg1 = 3.1415;
+    arg2 = true;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO:Function5", kw_list,
         &arg1, &arg2))
     {
         return NULL;
     }
     double rv = Function5(arg1, arg2);
     return Py_BuildValue("d", rv);
-// splicer end function.function5
+// splicer end function.function5_2
 }
 
 static char PY_function6_from_name__doc__[] =
@@ -302,17 +302,17 @@ PY_function10_1(
 // splicer end function.function10_1
 }
 
-static char PY_overload1_0__doc__[] =
+static char PY_overload1_2__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_overload1_0(
+PY_overload1_2(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.overload1_0
+// splicer begin function.overload1_2
     int num;
     int offset;
     int stride;
@@ -328,20 +328,20 @@ PY_overload1_0(
     }
     int rv = overload1(num, offset, stride);
     return Py_BuildValue("i", rv);
-// splicer end function.overload1_0
+// splicer end function.overload1_2
 }
 
-static char PY_overload1_1__doc__[] =
+static char PY_overload1_5__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_overload1_1(
+PY_overload1_5(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.overload1_1
+// splicer begin function.overload1_5
     double type;
     int num;
     int offset;
@@ -358,7 +358,7 @@ PY_overload1_1(
     }
     int rv = overload1(type, num, offset, stride);
     return Py_BuildValue("i", rv);
-// splicer end function.overload1_1
+// splicer end function.overload1_5
 }
 
 static char PY_last_function_called__doc__[] =
@@ -383,14 +383,14 @@ static PyMethodDef PY_methods[] = {
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
-{"Function5", (PyCFunction)PY_function5, METH_VARARGS|METH_KEYWORDS, PY_function5__doc__},
+{"Function5_2", (PyCFunction)PY_function5_2, METH_VARARGS|METH_KEYWORDS, PY_function5_2__doc__},
 {"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
 {"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
 {"Function10_0", (PyCFunction)PY_function10_0, METH_NOARGS, PY_function10_0__doc__},
 {"Function10_1", (PyCFunction)PY_function10_1, METH_VARARGS|METH_KEYWORDS, PY_function10_1__doc__},
-{"overload1_0", (PyCFunction)PY_overload1_0, METH_VARARGS|METH_KEYWORDS, PY_overload1_0__doc__},
-{"overload1_1", (PyCFunction)PY_overload1_1, METH_VARARGS|METH_KEYWORDS, PY_overload1_1__doc__},
+{"overload1_2", (PyCFunction)PY_overload1_2, METH_VARARGS|METH_KEYWORDS, PY_overload1_2__doc__},
+{"overload1_5", (PyCFunction)PY_overload1_5, METH_VARARGS|METH_KEYWORDS, PY_overload1_5__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

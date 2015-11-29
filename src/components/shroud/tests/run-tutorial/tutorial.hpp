@@ -13,7 +13,7 @@ bool Function3(bool arg);
 const std::string& Function4a(const std::string& arg1, const std::string& arg2);
 const std::string& Function4b(const std::string& arg1, const std::string& arg2);
 
-double Function5(double arg1 = 3.13, int arg2 = 5);
+double Function5(double arg1 = 3.1415, bool arg2 = true);
 
 void Function6(const std::string& name);
 void Function6(int indx);

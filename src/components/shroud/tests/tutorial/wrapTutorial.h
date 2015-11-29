@@ -30,7 +30,11 @@ const char * TUT_function4b(const char * arg1, const char * arg2);
 
 const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2);
 
-double TUT_function5(double arg1, int arg2);
+double TUT_function5_0();
+
+double TUT_function5_1(double arg1);
+
+double TUT_function5_2(double arg1, bool arg2);
 
 void TUT_function6_from_name(const char * name);
 
@@ -54,9 +58,17 @@ void TUT_function10_1(const char * name, double arg2);
 
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2);
 
-int TUT_overload1_0(int num, int offset, int stride);
+int TUT_overload1_0(int num);
 
-int TUT_overload1_1(double type, int num, int offset, int stride);
+int TUT_overload1_1(int num, int offset);
+
+int TUT_overload1_2(int num, int offset, int stride);
+
+int TUT_overload1_3(double type, int num);
+
+int TUT_overload1_4(double type, int num, int offset);
+
+int TUT_overload1_5(double type, int num, int offset, int stride);
 
 const char * TUT_last_function_called();
 

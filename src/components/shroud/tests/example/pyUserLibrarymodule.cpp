@@ -107,17 +107,17 @@ PP_test_names_flag(
 // splicer end function.test_names_flag
 }
 
-static char PP_testoptional__doc__[] =
+static char PP_testoptional_2__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PP_testoptional(
+PP_testoptional_2(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.testoptional
+// splicer begin function.testoptional_2
     int i;
     long j;
     const char *kwcpp = "i\0j";
@@ -132,14 +132,14 @@ PP_testoptional(
     }
     testoptional(i, j);
     Py_RETURN_NONE;
-// splicer end function.testoptional
+// splicer end function.testoptional_2
 }
 static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
 {"test_names_flag", (PyCFunction)PP_test_names_flag, METH_VARARGS|METH_KEYWORDS, PP_test_names_flag__doc__},
-{"testoptional", (PyCFunction)PP_testoptional, METH_VARARGS|METH_KEYWORDS, PP_testoptional__doc__},
+{"testoptional_2", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

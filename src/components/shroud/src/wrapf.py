@@ -139,10 +139,10 @@ class Wrapf(util.WrapperMixin):
                 t.append('value')
             if intent:
                 t.append('intent(%s)' % intent.upper())
-            if default is None:
-                default = attrs.get('default', '')
-            if default != '':
-                t.append('optional')
+#--            if default is None:
+#--                default = attrs.get('default', '')
+#--            if default != '':
+#--                t.append('optional')
         dimension = attrs.get('dimension', '')
         return (', '.join(t), dimension)
 
@@ -568,21 +568,21 @@ class Wrapf(util.WrapperMixin):
             arg_f_names.append(fmt.var)
             arg_f_decl.append(self._f_decl(arg))
 
-            if 'default' in attrs:
-                need_wrapper = True
-                arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default='', local=True))
-                fmt.default_value = attrs['default']
-                optional.extend([
-                        wformat('if (present({var})) then', fmt),
-                        1,
-                        wformat('{tmp_var} = {var}', fmt),
-                        -1,
-                        'else',
-                        1,
-                        wformat('{tmp_var} = {default_value}', fmt),
-                        -1,
-                        'endif'])
-                fmt.var = fmt.tmp_var  # pass tmp to C function
+#--            if 'default' in attrs:
+#--                need_wrapper = True
+#--                arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default='', local=True))
+#--                fmt.default_value = attrs['default']
+#--                optional.extend([
+#--                        wformat('if (present({var})) then', fmt),
+#--                        1,
+#--                        wformat('{tmp_var} = {var}', fmt),
+#--                        -1,
+#--                        'else',
+#--                        1,
+#--                        wformat('{tmp_var} = {default_value}', fmt),
+#--                        -1,
+#--                        'endif'])
+#--                fmt.var = fmt.tmp_var  # pass tmp to C function
 
             arg_typedef = self.typedef[arg['type']]
 

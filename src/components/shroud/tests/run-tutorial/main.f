@@ -37,9 +37,9 @@ contains
     call function4b("dog", "cat", rv_char)
     call assert_true( rv_char == "dogcat")
 
-    call assert_real(function5(), 8.13d0)
-    call assert_real(function5(1.d0, 2), 3.d0)
-    call assert_real(function5(arg2=6), 9.13d0)
+    call assert_real(function5(), 13.1415d0)
+    call assert_real(function5(1.d0), 11.d0)
+    call assert_real(function5(1.d0, .false.), 1.d0)
 
     call function6("name")
     call assert_true(last_function_called() == "Function6(string)")

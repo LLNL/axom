@@ -219,17 +219,17 @@ PP_exclass2_get_class1(
 // splicer end class.ExClass2.method.get_class1
 }
 
-static char PP_exclass2_declare__doc__[] =
+static char PP_exclass2_declare_1__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PP_exclass2_declare(
+PP_exclass2_declare_1(
   PP_ExClass2 *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.declare
+// splicer begin class.ExClass2.method.declare_1
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
@@ -243,7 +243,7 @@ PP_exclass2_declare(
     }
     self->BBB->declare(getTypeID(type), len);
     Py_RETURN_NONE;
-// splicer end class.ExClass2.method.declare
+// splicer end class.ExClass2.method.declare_1
 }
 
 static char PP_exclass2_destroyall__doc__[] =
@@ -284,7 +284,7 @@ static PyMethodDef PP_ExClass2_methods[] = {
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
-{"declare", (PyCFunction)PP_exclass2_declare, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare__doc__},
+{"declare_1", (PyCFunction)PP_exclass2_declare_1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare_1__doc__},
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
 {"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
 // splicer begin class.ExClass2.PyMethodDef

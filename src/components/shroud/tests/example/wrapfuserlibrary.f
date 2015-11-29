@@ -67,13 +67,26 @@ module userlibrary_mod
             integer(C_INT), value, intent(IN) :: flag
         end subroutine aa_test_names_flag_bufferify
         
-        subroutine aa_testoptional(i, j) &
-                bind(C, name="AA_testoptional")
+        subroutine aa_testoptional_0() &
+                bind(C, name="AA_testoptional_0")
+            use iso_c_binding
+            implicit none
+        end subroutine aa_testoptional_0
+        
+        subroutine aa_testoptional_1(i) &
+                bind(C, name="AA_testoptional_1")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: i
+        end subroutine aa_testoptional_1
+        
+        subroutine aa_testoptional_2(i, j) &
+                bind(C, name="AA_testoptional_2")
             use iso_c_binding
             implicit none
             integer(C_INT), value, intent(IN) :: i
             integer(C_LONG), value, intent(IN) :: j
-        end subroutine aa_testoptional
+        end subroutine aa_testoptional_2
         
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
@@ -83,12 +96,18 @@ module userlibrary_mod
         module procedure test_names
         module procedure test_names_flag
     end interface test_names
+    
+    interface testoptional
+        module procedure testoptional_0
+        module procedure testoptional_1
+        module procedure testoptional_2
+    end interface testoptional
 
 contains
     
     ! bool isNameValid(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=34
+    ! function_index=37
     function is_name_valid(name) result(rv)
         use iso_c_binding
         implicit none
@@ -101,7 +120,7 @@ contains
     
     ! void test_names(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=35
+    ! function_index=38
     subroutine test_names(name)
         use iso_c_binding
         implicit none
@@ -115,7 +134,7 @@ contains
     
     ! void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
     ! string_to_buffer_and_len
-    ! function_index=36
+    ! function_index=39
     subroutine test_names_flag(name, flag)
         use iso_c_binding
         implicit none
@@ -129,31 +148,42 @@ contains
         ! splicer end test_names_flag
     end subroutine test_names_flag
     
-    ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
-    ! function_index=37
-    subroutine testoptional(i, j)
+    ! void testoptional()
+    ! has_default_arg
+    ! function_index=41
+    subroutine testoptional_0()
         use iso_c_binding
         implicit none
-        integer(C_INT), value, intent(IN), optional :: i
-        integer(C_INT) :: tmp_i
-        integer(C_LONG), value, intent(IN), optional :: j
-        integer(C_LONG) :: tmp_j
-        if (present(i)) then
-            tmp_i = i
-        else
-            tmp_i = 1
-        endif
-        if (present(j)) then
-            tmp_j = j
-        else
-            tmp_j = 2
-        endif
-        ! splicer begin testoptional
-        call aa_testoptional(  &
-            tmp_i,  &
-            tmp_j)
-        ! splicer end testoptional
-    end subroutine testoptional
+        ! splicer begin testoptional_0
+        call aa_testoptional_0()
+        ! splicer end testoptional_0
+    end subroutine testoptional_0
+    
+    ! void testoptional(int i+default(1)+intent(in)+value)
+    ! has_default_arg
+    ! function_index=42
+    subroutine testoptional_1(i)
+        use iso_c_binding
+        implicit none
+        integer(C_INT), value, intent(IN) :: i
+        ! splicer begin testoptional_1
+        call aa_testoptional_1(i)
+        ! splicer end testoptional_1
+    end subroutine testoptional_1
+    
+    ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
+    ! function_index=40
+    subroutine testoptional_2(i, j)
+        use iso_c_binding
+        implicit none
+        integer(C_INT), value, intent(IN) :: i
+        integer(C_LONG), value, intent(IN) :: j
+        ! splicer begin testoptional_2
+        call aa_testoptional_2(  &
+            i,  &
+            j)
+        ! splicer end testoptional_2
+    end subroutine testoptional_2
     
     ! splicer begin additional_functions
     ! splicer end additional_functions
