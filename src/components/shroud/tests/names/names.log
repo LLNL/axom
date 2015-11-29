@@ -1,23 +1,23 @@
 Read yaml names.yaml
 class Names
-C method void method1
-C method void method2
+C method void method1()
+C method void method2()
 Close foo.h
 Close foo.cpp
-C function void function1
-C function void function2
-C function void function3a(int i)
-C function void function3a(long i)
+C function void function1()
+C function void function2()
+C function void function3a(int i+intent(in)+value)
+C function void function3a(long i+intent(in)+value)
 Close top.h
 Close top.cpp
 class Names
-C-interface, Fortran method void method1
-C-interface, Fortran method void method2
+C-interface, Fortran method void method1()
+C-interface, Fortran method void method2()
 Close foo.f
-C-interface, Fortran function void function1
-C-interface, Fortran function void function2
-C-interface, Fortran function void function3a(int i)
-C-interface, Fortran function void function3a(long i)
+C-interface, Fortran function void function1()
+C-interface, Fortran function void function2()
+C-interface, Fortran function void function3a(int i+intent(in)+value)
+C-interface, Fortran function void function3a(long i+intent(in)+value)
 Close top.f
 class Names
 Python method void method1

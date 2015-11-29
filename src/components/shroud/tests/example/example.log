@@ -3,93 +3,93 @@ Read splicer csplicer.c
 Read splicer pysplicer.c
 Read splicer fsplicer.f
 class ExClass1
-C method ExClass1 *new ( const string *name ) +constructor
-C method ExClass1 *new ( const string *name ) +constructor
-C method void delete() +destructor
-C method int incrementCount(int incr)
-C method const string& getName() const
+C method ExClass1 * new(const string * name+intent(in))+constructor
+C method ExClass1 * new(const string * name+intent(in)+len_trim)+constructor
+C method void delete()+destructor
+C method int incrementCount(int incr+intent(in)+value)
+C method const string & getName() const
 C method int GetNameLength() const
-C method const string& getNameErrorCheck() const
-C method const string& getNameArg() const
-C method ExClass2 *getRoot()
-C method int  getValue(int value)
-C method long getValue(long value)
-C method void *getAddr()
-C method bool hasAddr(bool in)
-C method void SplicerSpecial
+C method const string & getNameErrorCheck() const
+C method const string & getNameArg() const
+C method ExClass2 * getRoot()
+C method int getValue(int value+intent(in)+value)
+C method long getValue(long value+intent(in)+value)
+C method void * getAddr()
+C method bool hasAddr(bool in+intent(in)+value)
+C method void SplicerSpecial()
 Close wrapExClass1.h
 Close wrapExClass1.cpp
 class ExClass2
-C method ExClass2 *ExClass2 (const string *name) +constructor
-C method ExClass2 *ExClass2 (const string *name) +constructor
-C method void delete() +destructor
-C method const string& getName const
-C method GetNameLength
-C method ExClass1 *get_class1(const ExClass1 *in)
-C method void* declare(TypeID type, SidreLength len = 1)
+C method ExClass2 * ExClass2(const string * name+intent(in))+constructor
+C method ExClass2 * ExClass2(const string * name+intent(in)+len_trim)+constructor
+C method void delete()+destructor
+C method const string & getName() const
+C method const int GetNameLength()
+C method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
+C method void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)
 C method void destroyall()
 C method TypeID getTypeID() const
-C method void setValue(ValueType value)
-C method void setValue(ValueType value)
-C method void setValue(ValueType value)
-C method void setValue(ValueType value)
-C method ValueType getValue()
-C method ValueType getValue()
+C method void setValue(int value+intent(in)+value)
+C method void setValue(long value+intent(in)+value)
+C method void setValue(float value+intent(in)+value)
+C method void setValue(double value+intent(in)+value)
+C method int getValue()
+C method double getValue()
 Close wrapExClass2.h
 Close wrapExClass2.cpp
-C function void local_function1
-C function bool isNameValid(const std::string& name)
-C function bool isNameValid(const std::string& name)
-C function void test_names(const std::string &name)
-C function void test_names(const std::string &name)
-C function void test_names(const std::string &name, int flag)
-C function void test_names(const std::string &name, int flag)
-C function void testoptional(int i = 1, long j=2)
+C function void local_function1()
+C function bool isNameValid(const std::string & name+intent(in))
+C function bool isNameValid(const std::string & name+intent(in)+len_trim)
+C function void test_names(const std::string & name+intent(in))
+C function void test_names(const std::string & name+intent(in)+len_trim)
+C function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
+C function void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)
+C function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
 class ExClass1
-C-interface, Fortran method ExClass1 *new ( const string *name ) +constructor
-C-interface method ExClass1 *new ( const string *name ) +constructor
-C-interface, Fortran method void delete() +destructor
-C-interface, Fortran method int incrementCount(int incr)
-C-interface, Fortran method const string& getName() const
+C-interface, Fortran method ExClass1 * new(const string * name+intent(in))+constructor
+C-interface method ExClass1 * new(const string * name+intent(in)+len_trim)+constructor
+C-interface, Fortran method void delete()+destructor
+C-interface, Fortran method int incrementCount(int incr+intent(in)+value)
+C-interface, Fortran method const string & getName() const
 C-interface, Fortran method int GetNameLength() const
-C-interface, Fortran method const string& getNameErrorCheck() const
-C-interface, Fortran method const string& getNameArg() const
-C-interface, Fortran method ExClass2 *getRoot()
-C-interface, Fortran method int  getValue(int value)
-C-interface, Fortran method long getValue(long value)
-C-interface, Fortran method void *getAddr()
-C-interface, Fortran method bool hasAddr(bool in)
-C-interface, Fortran method void SplicerSpecial
+C-interface, Fortran method const string & getNameErrorCheck() const
+C-interface, Fortran method const string & getNameArg() const
+C-interface, Fortran method ExClass2 * getRoot()
+C-interface, Fortran method int getValue(int value+intent(in)+value)
+C-interface, Fortran method long getValue(long value+intent(in)+value)
+C-interface, Fortran method void * getAddr()
+C-interface, Fortran method bool hasAddr(bool in+intent(in)+value)
+C-interface, Fortran method void SplicerSpecial()
 Close wrapfExClass1.f
 class ExClass2
-C-interface, Fortran method ExClass2 *ExClass2 (const string *name) +constructor
-C-interface method ExClass2 *ExClass2 (const string *name) +constructor
-C-interface, Fortran method void delete() +destructor
-C-interface, Fortran method const string& getName const
-C-interface, Fortran method GetNameLength
-C-interface, Fortran method ExClass1 *get_class1(const ExClass1 *in)
-C-interface method void* declare(TypeID type, SidreLength len = 1)
-Fortran method void* declare(TypeID type, SidreLength len = 1)
-Fortran method void* declare(TypeID type, SidreLength len = 1)
+C-interface, Fortran method ExClass2 * ExClass2(const string * name+intent(in))+constructor
+C-interface method ExClass2 * ExClass2(const string * name+intent(in)+len_trim)+constructor
+C-interface, Fortran method void delete()+destructor
+C-interface, Fortran method const string & getName() const
+C-interface, Fortran method const int GetNameLength()
+C-interface, Fortran method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
+C-interface method void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)
+Fortran method void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)
+Fortran method void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)
 C-interface, Fortran method void destroyall()
 C-interface, Fortran method TypeID getTypeID() const
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method void setValue(ValueType value)
-C-interface, Fortran method ValueType getValue()
-C-interface, Fortran method ValueType getValue()
+C-interface, Fortran method void setValue(int value+intent(in)+value)
+C-interface, Fortran method void setValue(long value+intent(in)+value)
+C-interface, Fortran method void setValue(float value+intent(in)+value)
+C-interface, Fortran method void setValue(double value+intent(in)+value)
+C-interface, Fortran method int getValue()
+C-interface, Fortran method double getValue()
 Close wrapfExClass2.f
-C-interface, Fortran function void local_function1
-C-interface, Fortran function bool isNameValid(const std::string& name)
-C-interface function bool isNameValid(const std::string& name)
-C-interface, Fortran function void test_names(const std::string &name)
-C-interface function void test_names(const std::string &name)
-C-interface, Fortran function void test_names(const std::string &name, int flag)
-C-interface function void test_names(const std::string &name, int flag)
-C-interface, Fortran function void testoptional(int i = 1, long j=2)
+C-interface, Fortran function void local_function1()
+C-interface, Fortran function bool isNameValid(const std::string & name+intent(in))
+C-interface function bool isNameValid(const std::string & name+intent(in)+len_trim)
+C-interface, Fortran function void test_names(const std::string & name+intent(in))
+C-interface function void test_names(const std::string & name+intent(in)+len_trim)
+C-interface, Fortran function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
+C-interface function void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)
+C-interface, Fortran function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 Close wrapfuserlibrary.f
 class ExClass1
 Python method ExClass1 *new ( const string *name ) +constructor

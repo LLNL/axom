@@ -355,10 +355,7 @@ class Wrapf(util.WrapperMixin):
             return
 
         self.log.write(', '.join(wrap))
-        if 'decl' in node:
-            self.log.write(" {0} {1[decl]}\n".format(cls_function, node))
-        else:
-            self.log.write(" {0} {1[result][name]}\n".format(cls_function, node))
+        self.log.write(" {0} {1[_decl]}\n".format(cls_function, node))
 
         # Create fortran wrappers first.
         # If no real work to do, call the C function directly.

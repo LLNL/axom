@@ -1,67 +1,67 @@
 Read yaml tutorial.yaml
 Read splicer ftutorialsplicer.f
 class Class1
-C method Class1 *new()  +constructor
-C method void delete()  +destructor
+C method Class1 * new()+constructor
+C method void delete()+destructor
 C method void Method1()
 Close wrapClass1.h
 Close wrapClass1.cpp
 C function void Function1()
-C function double Function2(double arg1, int arg2)
-C function void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))
-C function bool Function3(bool arg)
-C function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
-C function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
-C function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
-C function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
-C function double Function5(double arg1 = 3.13, int arg2 = 5)
-C function void Function6(const std::string& name)
-C function void Function6(const std::string& name)
-C function void Function6(int indx)
-C function void Function7(ArgType arg)
-C function void Function7(ArgType arg)
-C function RetType Function8()
-C function RetType Function8()
-C function void Function9(double arg)
+C function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
+C function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
+C function bool Function3(bool arg+intent(in)+value)
+C function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
+C function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure
+C function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+C function const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)
+C function double Function5(double arg1+default(3.13)+intent(in)+value, int arg2+default(5)+intent(in)+value)
+C function void Function6(const std::string & name+intent(in))
+C function void Function6(const std::string & name+intent(in)+len_trim)
+C function void Function6(int indx+intent(in)+value)
+C function void Function7(int arg+intent(in)+value)
+C function void Function7(double arg+intent(in)+value)
+C function int Function8()
+C function double Function8()
+C function void Function9(double arg+intent(in)+value)
 C function void Function10()
-C function void Function10(const std::string &name, double arg2)
-C function void Function10(const std::string &name, double arg2)
-C function int overload1(int num, int offset = 0, int stride = 1)
-C function int overload1(double type, int num, int offset = 0, int stride = 1)
-C function const std::string& LastFunctionCalled() +pure
+C function void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
+C function void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)
+C function int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+C function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+C function const std::string & LastFunctionCalled()+pure
 Close wrapTutorial.h
 Close wrapTutorial.cpp
 class Class1
-C-interface, Fortran method Class1 *new()  +constructor
-C-interface, Fortran method void delete()  +destructor
+C-interface, Fortran method Class1 * new()+constructor
+C-interface, Fortran method void delete()+destructor
 C-interface, Fortran method void Method1()
 C-interface, Fortran function void Function1()
-C-interface, Fortran function double Function2(double arg1, int arg2)
-C-interface, Fortran function void Sum(int len, int *values+dimension+intent(in), int *result+intent(out))
-C-interface, Fortran function bool Function3(bool arg)
-C-interface, Fortran function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
-C-interface function const std::string& Function4a( const std::string& arg1, const std::string& arg2 ) +pure
-C-interface, Fortran function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
-C-interface function const std::string& Function4b( const std::string& arg1, const std::string& arg2 )
-C-interface, Fortran function double Function5(double arg1 = 3.13, int arg2 = 5)
-C-interface, Fortran function void Function6(const std::string& name)
-C-interface function void Function6(const std::string& name)
-C-interface, Fortran function void Function6(int indx)
-C-interface, Fortran function void Function7(ArgType arg)
-C-interface, Fortran function void Function7(ArgType arg)
-C-interface, Fortran function RetType Function8()
-C-interface, Fortran function RetType Function8()
-C-interface function void Function9(double arg)
-Fortran function void Function9(double arg)
-Fortran function void Function9(double arg)
+C-interface, Fortran function double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)
+C-interface, Fortran function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
+C-interface, Fortran function bool Function3(bool arg+intent(in)+value)
+C-interface, Fortran function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
+C-interface function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure
+C-interface, Fortran function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+C-interface function const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)
+C-interface, Fortran function double Function5(double arg1+default(3.13)+intent(in)+value, int arg2+default(5)+intent(in)+value)
+C-interface, Fortran function void Function6(const std::string & name+intent(in))
+C-interface function void Function6(const std::string & name+intent(in)+len_trim)
+C-interface, Fortran function void Function6(int indx+intent(in)+value)
+C-interface, Fortran function void Function7(int arg+intent(in)+value)
+C-interface, Fortran function void Function7(double arg+intent(in)+value)
+C-interface, Fortran function int Function8()
+C-interface, Fortran function double Function8()
+C-interface function void Function9(double arg+intent(in)+value)
+Fortran function void Function9(float arg+intent(in)+value)
+Fortran function void Function9(double arg+intent(in)+value)
 C-interface, Fortran function void Function10()
-C-interface function void Function10(const std::string &name, double arg2)
-Fortran function void Function10(const std::string &name, double arg2)
-Fortran function void Function10(const std::string &name, double arg2)
-C-interface function void Function10(const std::string &name, double arg2)
-C-interface, Fortran function int overload1(int num, int offset = 0, int stride = 1)
-C-interface, Fortran function int overload1(double type, int num, int offset = 0, int stride = 1)
-C-interface, Fortran function const std::string& LastFunctionCalled() +pure
+C-interface function void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
+Fortran function void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
+Fortran function void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
+C-interface function void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)
+C-interface, Fortran function int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+C-interface, Fortran function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+C-interface, Fortran function const std::string & LastFunctionCalled()+pure
 Close wrapftutorial.f
 class Class1
 Python method Class1 *new()  +constructor
