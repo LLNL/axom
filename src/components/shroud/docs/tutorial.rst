@@ -484,6 +484,8 @@ Fortran usage::
            the C++ compilers.
            For example, ``function5(arg2=.false.)``
 
+           Fortran has nothing similar to varargs.
+
 Overloaded Functions
 --------------------
 
