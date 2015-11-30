@@ -46,7 +46,8 @@ endmacro()
 ##------------------------------------------------------------------------------
 ## - Macro for invoking uncrustify to check code formatting
 ##
-## add_uncrustify_check(cfg)
+## add_uncrustify_check( CFG_FILE <uncrusify_configuration_file> 
+##                       SRC_FILES <list_of_src_files_to_uncrustify> )
 ##
 ##------------------------------------------------------------------------------
 macro(add_uncrustify_check)
@@ -73,7 +74,8 @@ endmacro(add_uncrustify_check)
 ##------------------------------------------------------------------------------
 ## - Macro for invoking uncrustify to apply formatting inplace
 ##
-## add_uncrustify_inplace(cfg)
+## add_uncrustify_inplace(CFG_FILE <uncrusify_configuration_file> 
+##                        SRC_FILES <list_of_src_files_to_uncrustify> )
 ##
 ##------------------------------------------------------------------------------
 macro(add_uncrustify_inplace)
