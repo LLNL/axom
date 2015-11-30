@@ -155,12 +155,15 @@ if (BUILD_TESTING)
   set(GBENCHMARK_LIBS benchmark
             CACHE INTERNAL "Google Benchmark link libraries" FORCE)
 
-  message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
-
+  #message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
+  
+  # This sets up a target to run the benchmarks
   add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
 
 
   enable_testing()
+  
+#  add_dependencies(test run_benchmarks)
 
 endif()
 
@@ -584,12 +587,13 @@ macro(add_benchmark)
       set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
    endif()
 
+   # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
    add_test( NAME ${test_name}
              COMMAND ${test_name}
-             CONFIGURATIONS Benchmark
+             CONFIGURATIONS Benchmark   
              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
              )
-
+   
    # add any passed source files to the running list for this project
    if(IS_ABSOLUTE)
       list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
