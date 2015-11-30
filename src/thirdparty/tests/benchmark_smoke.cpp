@@ -13,15 +13,39 @@
 //------------------------------------------------------------------------------
 
 #define BASIC_BENCHMARK_TEST(x) \
-    BENCHMARK(x)->Arg(8)->Arg(512)->Arg(8192)
+    BENCHMARK(x)->Arg( 1<<3 )->Arg( 1<<9 )->Arg( 1 << 13 )
 
-void BM_empty(benchmark::State& state) {
+void benchmark_smoke_empty(benchmark::State& state) {
   while (state.KeepRunning()) {
     benchmark::DoNotOptimize(state.iterations());
   }
 }
-BENCHMARK(BM_empty);
+BENCHMARK(benchmark_smoke_empty);
 
+
+void benchmark_smoke_spin_loop(benchmark::State& state) {
+    while (state.KeepRunning()) {
+        for (int i=0; i < state.range_x(); ++i) {
+          benchmark::DoNotOptimize(i);
+      }
+  }
+  state.SetItemsProcessed(state.iterations() * state.range_x());
+
+}
+BASIC_BENCHMARK_TEST(benchmark_smoke_spin_loop);
+
+
+void benchmark_smoke_accum_loop(benchmark::State& state) {
+  while (state.KeepRunning()) {
+      int accum = 0;
+      for (int i=0; i <  state.range_x(); ++i) {
+        benchmark::DoNotOptimize(accum += i);
+      }
+  }
+  state.SetItemsProcessed(state.iterations() * state.range_x());
+
+}
+BASIC_BENCHMARK_TEST(benchmark_smoke_accum_loop);
 
 BENCHMARK_MAIN()
 
