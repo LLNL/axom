@@ -160,7 +160,6 @@ if (BUILD_TESTING)
   # This sets up a target to run the benchmarks
   add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
 
-
   enable_testing()
   
 #  add_dependencies(test run_benchmarks)
@@ -593,6 +592,10 @@ macro(add_benchmark)
              CONFIGURATIONS Benchmark   
              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
              )
+
+  add_dependencies(run_benchmarks ${test_name})
+
+
    
    # add any passed source files to the running list for this project
    if(IS_ABSOLUTE)
