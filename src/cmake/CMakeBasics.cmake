@@ -148,17 +148,20 @@ if (BUILD_TESTING)
   ## Add Fruit   FortRan UnIT test
   add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
 
-  ## add google benchmark
-  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
-  set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}
+  if(ENABLE_BENCHMARK)
+    ## add google benchmark
+    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
+    set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}
             CACHE INTERNAL "Google Benchmark include directories" FORCE)
-  set(GBENCHMARK_LIBS benchmark
+    set(GBENCHMARK_LIBS benchmark
             CACHE INTERNAL "Google Benchmark link libraries" FORCE)
 
-  #message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
+    #message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
   
-  # This sets up a target to run the benchmarks
-  add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
+    # This sets up a target to run the benchmarks
+    add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
+
+  endif()
 
   enable_testing()
   
@@ -593,8 +596,7 @@ macro(add_benchmark)
              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
              )
 
-  add_dependencies(run_benchmarks ${test_name})
-
+   add_dependencies(run_benchmarks ${test_name})
 
    
    # add any passed source files to the running list for this project

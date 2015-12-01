@@ -34,10 +34,11 @@ foreach(test ${gtest_thirdparty_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON conduit)
 endforeach()
 
-foreach(test ${gbenchmark_thirdparty_tests})
-    add_benchmark( TEST_SOURCE ${test} )
-endforeach()
-
+if(ENABLE_BENCHMARK)
+  foreach(test ${gbenchmark_thirdparty_tests})
+      add_benchmark( TEST_SOURCE ${test} )
+  endforeach()
+endif()
 
 
 ################
