@@ -49,10 +49,10 @@ contains
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
-    call dbuff%declare(ATK_C_INT_T, 10_8)
+    call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
 
-!    call assert_equals(dbuff%get_type_id(), ATK_C_INT_T) ! XXX NATIVE TYPE
+    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID)
     call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
@@ -81,9 +81,9 @@ contains
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
-    call dbuff%allocate(ATK_C_INT_T, 10_8)
+    call dbuff%allocate(SIDRE_INT_ID, 10_8)
 
-!    call assert_equals(dbuff%get_type_id(), ATK_C_INT_T) ! XXX NATIVE TYPE
+    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID)
     call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
@@ -113,9 +113,9 @@ contains
 
     dbuff = ds%create_buffer()
 
-    call dbuff%allocate(ATK_C_LONG_T, 5_8)
+    call dbuff%allocate(SIDRE_LONG_ID, 5_8)
 
-!    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
+    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
     call assert_true(dbuff%get_num_elements() == 5)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
@@ -128,7 +128,7 @@ contains
   
     call dbuff%reallocate(10)
 
-!    call assert_equals(dbuff%get_type_id(), ATK_C_LONG_T) ! XXX NATIVE TYPE
+    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
     call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 

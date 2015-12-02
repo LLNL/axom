@@ -101,7 +101,7 @@ contains
     integer(C_INT) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_allocate(name, ATK_C_INT_T, 1)
+    tmpview = grp%create_view_and_allocate(name, SIDRE_INT_ID, 1)
     call tmpview%set_value(value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
@@ -112,7 +112,7 @@ contains
     real(C_DOUBLE) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_allocate(name, ATK_C_DOUBLE_T, 1)
+    tmpview = grp%create_view_and_allocate(name, SIDRE_DOUBLE_ID, 1)
     call tmpview%set_value(value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
 
@@ -260,7 +260,7 @@ subroutine CreateShockTubeMesh(prob)
   numTubeElems = numElems - 2
   tube = elem%create_group("tube")
 
-  mapToElemsView = tube%create_view_and_allocate("mapToElems", ATK_C_INT_T, numTubeElems)
+  mapToElemsView = tube%create_view_and_allocate("mapToElems", SIDRE_INT_ID, numTubeElems)
 
   call mapToElemsView%get_value(mapToElems)
 
@@ -272,7 +272,7 @@ subroutine CreateShockTubeMesh(prob)
 
   ! Each face connects to two elements
 
-  faceToElemView = face%create_view_and_allocate("faceToElem", ATK_C_INT_T, 2*numFaces)
+  faceToElemView = face%create_view_and_allocate("faceToElem", SIDRE_INT_ID, 2*numFaces)
 
   call faceToElemView%get_value(faceToElem)
 
@@ -284,7 +284,7 @@ subroutine CreateShockTubeMesh(prob)
   ! Each element connects to two faces
 !--//  Relation &elemToFace = *tube%relationCreate("elemToFace", 2)
 !  dims(0) = numElems
-  elemToFaceView = tube%create_view_and_allocate("elemToFace", ATK_C_INT_T, 2*numElems);
+  elemToFaceView = tube%create_view_and_allocate("elemToFace", SIDRE_INT_ID, 2*numElems);
   call elemToFaceView%get_value(elemToFace)
 
   do i=1, numElems
@@ -330,16 +330,16 @@ subroutine InitializeShockTube(prob)
 
   ! Create element centered quantities
 
-  tmpview = elem%create_view_and_allocate("mass", ATK_C_DOUBLE_T, numElems)
+  tmpview = elem%create_view_and_allocate("mass", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(mass)
 
-  tmpview = elem%create_view_and_allocate("momentum", ATK_C_DOUBLE_T, numElems)
+  tmpview = elem%create_view_and_allocate("momentum", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(momentum)
 
-  tmpview = elem%create_view_and_allocate("energy", ATK_C_DOUBLE_T, numElems)
+  tmpview = elem%create_view_and_allocate("energy", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(energy)
 
-  tmpview = elem%create_view_and_allocate("pressure", ATK_C_DOUBLE_T, numElems)
+  tmpview = elem%create_view_and_allocate("pressure", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(pressure)
 !!  allocate(mass(numElems))
 !!  allocate(momentum(numElems))
@@ -347,9 +347,9 @@ subroutine InitializeShockTube(prob)
 !!  allocate(pressure(numElems))
 
   ! Create face centered quantities
-  tmpview = face%create_view_and_allocate("F0", ATK_C_DOUBLE_T, numFaces)
-  tmpview = face%create_view_and_allocate("F1", ATK_C_DOUBLE_T, numFaces)
-  tmpview = face%create_view_and_allocate("F2", ATK_C_DOUBLE_T, numFaces)
+  tmpview = face%create_view_and_allocate("F0", SIDRE_DOUBLE_ID, numFaces)
+  tmpview = face%create_view_and_allocate("F1", SIDRE_DOUBLE_ID, numFaces)
+  tmpview = face%create_view_and_allocate("F2", SIDRE_DOUBLE_ID, numFaces)
 !!  allocate(F0(numFaces))
 !!  allocate(F1(numFaces))
 !!  allocate(F2(numFaces))
@@ -647,9 +647,9 @@ subroutine DumpUltra( prob )
      call view%get_name(name)
      if ( length <= 1 ) then
         select case (view%get_type_id())
-        case (ATK_INT32_T)
+        case (SIDRE_INT32_ID)
            write(fp, '("# ", a, " = ", i4)') name, view%get_value_int()
-        case (ATK_FLOAT64_T)
+        case (SIDRE_FLOAT64_ID)
            write(fp, '("# ", a, " = ", f16.5)') name, view%get_value_double()
         end select
     endif
@@ -664,12 +664,12 @@ subroutine DumpUltra( prob )
      write(fp, '("# ", a)') trim(name)
 
      select case (view%get_type_id())
-     case (ATK_INT32_T)
+     case (SIDRE_INT32_ID)
         call view%get_value(idata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), real(idata(j), C_DOUBLE)
         enddo
-     case (ATK_FLOAT64_T)
+     case (SIDRE_FLOAT64_ID)
         call view%get_value(ddata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), ddata(j)

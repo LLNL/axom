@@ -26,8 +26,11 @@ set(GCOV_PATH "/usr/apps/gnu/4.7.1/bin/gcov" CACHE PATH "")
 
 # fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE PATH "")
-
 set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.7.1/bin/gfortran" CACHE PATH "")
+
+# enable google benchmark functionality for gnu compilers
+set(ENABLE_BENCHMARK ON CACHE PATH "")
+
 
 # conduit from uberenv
 set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.7.1/conduit-github-linerrnlkbpzzguf5yxqiqj4ihmbj22f" CACHE PATH "")

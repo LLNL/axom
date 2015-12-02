@@ -40,7 +40,7 @@ contains
     view = root%create_allocatable_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -80,7 +80,7 @@ contains
     view = root%create_allocatable_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 0)
@@ -89,7 +89,7 @@ contains
 ! To be consistent with actual Fortran code, the method that creates 
 ! an allocatable view should take the type and the allocate method
 ! should take only shape, length, etc.
-    call view%allocate(ATK_C_INT_T, 10)
+    call view%allocate(SIDRE_INT_ID, 10)
     
     ! Check from Fortran with ALLOCATED and SIZE
     call assert_true(allocated(iarray))
@@ -99,7 +99,7 @@ contains
 
 ! Check datastore metadata
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -144,7 +144,7 @@ contains
     view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
@@ -178,7 +178,7 @@ contains
     view = root%create_allocatable_view("darray", darray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_DOUBLE_T)
+    call assert_equals(type, SIDRE_DOUBLE_ID)
 
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
