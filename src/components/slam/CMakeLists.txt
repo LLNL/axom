@@ -33,11 +33,15 @@ add_subdirectory(src)
 add_subdirectory(examples)
 
 ################################
-# Add tests
+# Add tests and benchmarks
 ################################
 if (BUILD_TESTING)
   add_subdirectory(tests)
+  if (ENABLE_BENCHMARK)
+    add_subdirectory(benchmarks)
+  endif()
 endif()
+
 
 add_code_check_targets(uncrustify.cfg)
 
