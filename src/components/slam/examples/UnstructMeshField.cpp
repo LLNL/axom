@@ -317,8 +317,6 @@ namespace slamUnstructuredHex {
 
     // Now, linearize the dynamic relation into a static relation here
     typedef HexMesh::NodeToZoneRelation::RelationVec  RelationVec;
-    typedef RelationVec::iterator                     RelationVecIterator;
-
     RelationVec beginsVec( mesh->nodes.size() + 1 );
     RelationVec offsetsVec( numZonesOfNode );
     HexMesh::NodeSet::IndexType count = 0;
@@ -344,7 +342,6 @@ namespace slamUnstructuredHex {
 
   void computeZoneBarycenters(HexMesh* mesh)
   {
-    typedef HexMesh::ZoneSet::iterator  ZoneIter;
     typedef HexMesh::ZoneNodeIterator   ZNIterator;
 
     // Compute the zone positions as the the averages of the positions of the nodes around each zone
@@ -384,7 +381,7 @@ namespace slamUnstructuredHex {
   DataType computeNodalErrors(HexMesh* mesh)
   {
     // Compute the node average version, and the maximum relative error
-    typedef HexMesh::NodeSet::iterator                NodeIter;
+    //typedef HexMesh::NodeSet::iterator                NodeIter;
     typedef HexMesh::NodeToZoneRelation::RelationSet  NZRelSet;
     typedef NZRelSet::const_iterator                  NZIter;
 

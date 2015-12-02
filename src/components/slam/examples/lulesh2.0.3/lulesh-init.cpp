@@ -516,8 +516,6 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 
   // Convert from a Dynamic to a Static relation
   typedef RegionToElemRelation::RelationVec         RelVec;
-  typedef RegionToElemRelation::RelationVecIterator RelVecIt;
-
   RelVec begins( numReg() + 1 );
   RelVec offsets( numElem() );
   Index_t curOffIdx = 0;

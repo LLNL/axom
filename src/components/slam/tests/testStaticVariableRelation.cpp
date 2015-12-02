@@ -255,7 +255,6 @@ TEST(gtest_slam_static_variable_relation,double_subscript_test)
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
   typedef RangeSet::iterator                                SetIter;
-  typedef StaticVariableRelation::RelationVecConstIterator  RelSetConstIter;
 
   std::cout << "\n\tLooking at relation's stored values...";
   for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end(); sIt != sItEnd; ++sIt)

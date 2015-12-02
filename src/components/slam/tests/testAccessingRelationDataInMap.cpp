@@ -85,9 +85,6 @@ TEST(gtest_slam_set_relation_map,access_pattern)
   // Note: Nothing requires the relations elements to be unique -- the relation can still be valid with duplicates
   EXPECT_TRUE(incrementingRel.isValid(true)) << "Incrementing relation was not valid";
 
-  typedef RangeSet::iterator                                SetIter;
-  typedef StaticVariableRelation::RelationVecConstIterator  RelSetConstIter;
-
   std::cout << "\n\tLooking at relation's stored values...";
   for(SetPosition fromPos = SetPosition(); fromPos < fromSet.size(); ++fromPos)
   {

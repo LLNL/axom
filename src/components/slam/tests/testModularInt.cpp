@@ -50,9 +50,10 @@ TEST(gtest_slam_modInt,runtime_modular_int_unitialized_and_full)
 TEST(gtest_slam_modInt,compile_modular_int_unitialized_and_full)
 {
   using namespace asctoolkit::slam;
-  typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
 
 #ifdef ATK_DEBUG
+  typedef ModularInt<policies::CompileTimeSizeHolder<int, 0> > ModularIntZero;
+
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
   std::cout << "\n -- Checking that modular int with modulus zero fails.\nNote: Expecting a SLIC Failure: " << std::endl;
 
