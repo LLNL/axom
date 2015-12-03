@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <iostream>
+
 #include "benchmark/benchmark_api.h"
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
@@ -22,99 +24,315 @@ namespace {
     const int OFFSET = 12;
 
 
-    typedef int DataType;
+    typedef int IndexType;
+    typedef IndexType* IndexArray;
+
+    typedef double DataType;
     typedef DataType* DataArray;
 
-    DataArray generateRandomArray(int sz)
+    // Generate an array of of size sz of indices in the range of [0,sz)
+    // NOTE: Caller must delete the array
+    IndexArray generateRandomPermutationArray(int sz, bool shouldPermute = false)
     {
-        DataArray data = new DataType[sz];
-        for(int i=0; i< sz; ++i)
+        IndexArray indices = new IndexType[sz];
+
+        for(IndexType i=0; i< sz; ++i)
         {
-            data[i] = rand();
+            indices[i] = i;
         }
 
+        if(shouldPermute)
+        {
+            for(IndexType idx=0; idx< sz; ++idx)
+            {
+                // find a random position in the array and swap value with current idx
+                IndexType otherIdx = idx + rand() % (sz - idx);
+                std::swap(indices[idx], indices[otherIdx]);
+            }
+        }
+
+        return indices;
+    }
+
+    // Generate an array of size sz of random doubles in the range [0,1)
+    // NOTE: Caller must delete the array
+    DataArray generateRandomDataField(int sz)
+    {
+        const DataType rMaxDouble = static_cast<DataType>(RAND_MAX);
+
+        DataArray data = new DataType[sz];
+        for(IndexType i=0; i< sz; ++i)
+        {
+            data[i] = rand() / rMaxDouble;;
+        }
         return data;
     }
+
+    class SetFixture : public ::benchmark::Fixture
+    {
+    public:
+        void SetUp() {
+
+            volatile int str_vol = STRIDE;  // pass through volatile variable so the
+            str = str_vol;                  // number is not a compile time constant
+
+            volatile int off_vol = OFFSET;  // pass through volatile variable so the
+            off = off_vol;                  // number is not a compile time constant
+
+            ind = ATK_NULLPTR;
+            data = ATK_NULLPTR;
+
+        }
+
+        void TearDown() {
+            if(ind != ATK_NULLPTR)
+                delete[] ind;
+            if(data != ATK_NULLPTR)
+                delete[] data;
+        }
+
+        ~SetFixture() {
+            SLIC_ASSERT( ind == ATK_NULLPTR);
+            SLIC_ASSERT( data == ATK_NULLPTR);
+        }
+
+
+        int maxIndex(int sz) { return (sz * str + off); }
+
+        int off;
+        int str;
+        IndexArray ind;
+        DataArray data;
+
+    };
 
 }
 //------------------------------------------------------------------------------
 
 
-#define BASIC_BENCHMARK_TEST(x) \
-    BENCHMARK(x)->Arg( 1<<3 )->Arg( 1<<9 )->Arg( 1 << 13 )->Arg( 1 << 24 )
+void CustomArgs(benchmark::internal::Benchmark* b) {
+    b->Arg( 1<<3 ) ;
+    b->Arg( 1<<16 );
+    b->Arg( 1 << 19 );
+    b->Arg( 1 << 25 );
+}
 
 
-void benchmark_contig_sequence(benchmark::State& state) {
+/// --------------------  Benchmarks for array indexing ---------------------
+
+BENCHMARK_DEFINE_F(SetFixture, contig_sequence)(benchmark::State& state) {
+    const int sz = state.range_x();
+    int pos = 0;
     while (state.KeepRunning()) {
-        for (int i=0; i < state.range_x(); ++i) {
-          benchmark::DoNotOptimize(i);
+        for (int i=0; i < sz; ++i) {
+          benchmark::DoNotOptimize(pos = i);
       }
   }
-  state.SetItemsProcessed(state.iterations() * state.range_x());
-
+  state.SetItemsProcessed(state.iterations() * sz);
 }
-BASIC_BENCHMARK_TEST(benchmark_contig_sequence);
+BENCHMARK_REGISTER_F(SetFixture, contig_sequence)->Apply(CustomArgs);
 
-void benchmark_strided_sequence(benchmark::State& state) {
+BENCHMARK_DEFINE_F(SetFixture, strided_sequence)(benchmark::State& state) {
+    const int sz = state.range_x();
+    int pos = 0;
+
     while (state.KeepRunning()) {
-        for (int i=0; i < state.range_x(); i += STRIDE) {
-          benchmark::DoNotOptimize(i);
+        for (int i=0; i < sz; ++i) {
+          benchmark::DoNotOptimize(pos = i* str);
       }
   }
-  state.SetItemsProcessed(state.iterations() * state.range_x());
+  state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BASIC_BENCHMARK_TEST(benchmark_strided_sequence);
+BENCHMARK_REGISTER_F(SetFixture, strided_sequence)->Apply(CustomArgs);
 
+BENCHMARK_DEFINE_F(SetFixture, offset_sequence)(benchmark::State& state) {
+    const int sz = state.range_x();
+    int pos =0;
 
-void benchmark_offset_sequence(benchmark::State& state) {
     while (state.KeepRunning()) {
-        for (int i=OFFSET; i < state.range_x(); ++i) {
-          benchmark::DoNotOptimize(i);
+        for (int i=0; i < sz; ++i) {
+          benchmark::DoNotOptimize(pos = i + off);
       }
   }
-  state.SetItemsProcessed(state.iterations() * state.range_x());
-
+  state.SetItemsProcessed(state.iterations() * sz);
 }
-BASIC_BENCHMARK_TEST(benchmark_offset_sequence);
+BENCHMARK_REGISTER_F(SetFixture, offset_sequence)->Apply(CustomArgs);
 
+BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence) (benchmark::State& state) {
+    const int sz = state.range_x();
+    int pos = 0;
 
-void benchmark_offset_strided_sequence(benchmark::State& state) {
     while (state.KeepRunning()) {
-        for (int i=OFFSET; i < state.range_x(); i+= STRIDE) {
-          benchmark::DoNotOptimize(i);
+        for (int i=0; i < sz; ++i) {
+          benchmark::DoNotOptimize(pos = i* str + off);
       }
-  }
-  state.SetItemsProcessed(state.iterations() * state.range_x());
+    }
+    state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BASIC_BENCHMARK_TEST(benchmark_offset_strided_sequence);
+BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence)->Apply(CustomArgs);
 
 
-void benchmark_indirection_sequence(benchmark::State& state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) (benchmark::State& state)
 {
-    DataArray data = generateRandomArray( state.range_x() );
+    const int sz = state.range_x();
+    int pos = 0;
+    ind = generateRandomPermutationArray( sz, false);
 
     while (state.KeepRunning())
     {
-
-        for (int i=0; i < state.range_x(); ++i)
-        {
-          benchmark::DoNotOptimize( data[i] );
+        for (int i=0; i < sz; ++i) {
+          benchmark::DoNotOptimize( pos = ind[i] );
         }
 
     }
 
-    delete[] data;
-
-  state.SetItemsProcessed(state.iterations() * state.range_x());
+  state.SetItemsProcessed(state.iterations() * sz);
 
 }
-BASIC_BENCHMARK_TEST(benchmark_indirection_sequence);
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    int pos = 0;
+    ind = generateRandomPermutationArray( sz, true);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          benchmark::DoNotOptimize( pos = ind[i] );
+        }
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted)->Apply(CustomArgs);
+
+
+/// --------------------  Benchmarks for array indexing ---------------------
+BENCHMARK_DEFINE_F(SetFixture, contig_sequence_field)(benchmark::State& state) {
+    const int sz = state.range_x();
+    data = generateRandomDataField( maxIndex(sz));
+
+    while (state.KeepRunning()) {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = i;
+          benchmark::DoNotOptimize(data[pos]);
+      }
+  }
+  state.SetItemsProcessed(state.iterations() * sz);
+}
+BENCHMARK_REGISTER_F(SetFixture, contig_sequence_field)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, strided_sequence_field)(benchmark::State& state) {
+    const int sz = state.range_x();
+    data = generateRandomDataField( maxIndex(sz));
+
+    while (state.KeepRunning()) {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = i*str;
+          benchmark::DoNotOptimize( data[pos]);
+      }
+  }
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, strided_sequence_field)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, offset_sequence_field)(benchmark::State& state) {
+    const int sz = state.range_x();
+    data = generateRandomDataField( maxIndex(sz));
+
+    while (state.KeepRunning()) {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = i + off;
+          benchmark::DoNotOptimize(data[pos]);
+      }
+  }
+  state.SetItemsProcessed(state.iterations() * sz);
+}
+BENCHMARK_REGISTER_F(SetFixture, offset_sequence_field)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence_field) (benchmark::State& state) {
+    const int sz = state.range_x();
+    data = generateRandomDataField( maxIndex(sz));
+
+    while (state.KeepRunning()) {
+        for (int i=0; i < sz; ++i) {
+            IndexType pos = i * str + off;
+            benchmark::DoNotOptimize(data[pos]);
+      }
+    }
+    state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence_field)->Apply(CustomArgs);
+
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_field) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( sz, false);
+    data = generateRandomDataField( maxIndex(sz));
+
+//    if(sz == 8)
+//    {
+//        std::cout<<"\n array indices (order)\n\t";
+//        for (int i=0; i < sz; ++i)
+//            std::cout<< "<" << ind[i] << "," << data [ ind[i] ] <<">\t";
+//        std::cout <<std::endl;
+//    }
+
+
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i];
+          benchmark::DoNotOptimize( data[pos] );
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_field)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_field) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( sz, true);
+    data = generateRandomDataField( maxIndex(sz));
+
+//    if(sz == 8)
+//    {
+//        std::cout<<"\n array indices (permute)\n\t";
+//        for (int i=0; i < sz; ++i)
+//            std::cout<< "<" << ind[i] << "," << data [ ind[i] ] <<">\t";
+//        std::cout <<std::endl;
+//    }
 
 
 
 
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i];
+          benchmark::DoNotOptimize( data[pos] );
+        }
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_field)->Apply(CustomArgs);
+
+/// ----------------------------------------------------------------------------
 
 
 
