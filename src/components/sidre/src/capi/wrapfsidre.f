@@ -135,11 +135,11 @@ module sidre_mod
         procedure :: get_view_from_index => datagroup_get_view_from_index
         procedure :: get_view_index => datagroup_get_view_index
         procedure :: get_view_name => datagroup_get_view_name
-        procedure :: create_view_and_allocate_int => datagroup_create_view_and_allocate_int
-        procedure :: create_view_and_allocate_long => datagroup_create_view_and_allocate_long
+        procedure :: create_view_and_allocate_from_type_int => datagroup_create_view_and_allocate_from_type_int
+        procedure :: create_view_and_allocate_from_type_long => datagroup_create_view_and_allocate_from_type_long
         procedure :: create_view_empty => datagroup_create_view_empty
-        procedure :: create_view_int => datagroup_create_view_int
-        procedure :: create_view_long => datagroup_create_view_long
+        procedure :: create_view_from_type_int => datagroup_create_view_from_type_int
+        procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_external_view_int => datagroup_create_external_view_int
@@ -167,14 +167,14 @@ module sidre_mod
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
             create_view_empty,  &
-            create_view_int,  &
-            create_view_long,  &
+            create_view_from_type_int,  &
+            create_view_from_type_long,  &
             create_view_into_buffer
         generic :: create_view_and_allocate => &
             ! splicer begin class.DataGroup.generic.create_view_and_allocate
             ! splicer end class.DataGroup.generic.create_view_and_allocate
-            create_view_and_allocate_int,  &
-            create_view_and_allocate_long
+            create_view_and_allocate_from_type_int,  &
+            create_view_and_allocate_from_type_long
         generic :: get_view => &
             ! splicer begin class.DataGroup.generic.get_view
             ! splicer end class.DataGroup.generic.get_view
@@ -231,8 +231,8 @@ module sidre_mod
         procedure :: declare_int => databuffer_declare_int
         procedure :: declare_long => databuffer_declare_long
         procedure :: allocate_existing => databuffer_allocate_existing
-        procedure :: allocate_int => databuffer_allocate_int
-        procedure :: allocate_long => databuffer_allocate_long
+        procedure :: allocate_from_type_int => databuffer_allocate_from_type_int
+        procedure :: allocate_from_type_long => databuffer_allocate_from_type_long
         procedure :: reallocate_int => databuffer_reallocate_int
         procedure :: reallocate_long => databuffer_reallocate_long
         procedure :: set_external_data => databuffer_set_external_data
@@ -246,8 +246,8 @@ module sidre_mod
             ! splicer begin class.DataBuffer.generic.allocate
             ! splicer end class.DataBuffer.generic.allocate
             allocate_existing,  &
-            allocate_int,  &
-            allocate_long
+            allocate_from_type_int,  &
+            allocate_from_type_long
         generic :: declare => &
             ! splicer begin class.DataBuffer.generic.declare
             ! splicer end class.DataBuffer.generic.declare
@@ -271,8 +271,8 @@ module sidre_mod
         ! splicer end class.DataView.component_part
     contains
         procedure :: allocate_simple => dataview_allocate_simple
-        procedure :: allocate_int => dataview_allocate_int
-        procedure :: allocate_long => dataview_allocate_long
+        procedure :: allocate_from_type_int => dataview_allocate_from_type_int
+        procedure :: allocate_from_type_long => dataview_allocate_from_type_long
         procedure :: reallocate_int => dataview_reallocate_int
         procedure :: reallocate_long => dataview_reallocate_long
         procedure :: apply_simple => dataview_apply_simple
@@ -305,8 +305,8 @@ module sidre_mod
             ! splicer begin class.DataView.generic.allocate
             ! splicer end class.DataView.generic.allocate
             allocate_simple,  &
-            allocate_int,  &
-            allocate_long
+            allocate_from_type_int,  &
+            allocate_from_type_long
         generic :: apply => &
             ! splicer begin class.DataView.generic.apply
             ! splicer end class.DataView.generic.apply
@@ -558,6 +558,18 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_and_allocate_from_type
         
+        function atk_datagroup_create_view_and_allocate_from_type_bufferify(self, name, Lname, type, numelems) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_and_allocate_from_type_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: numelems
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_and_allocate_from_type_bufferify
+        
         function atk_datagroup_create_view_empty(self, name) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_empty")
             use iso_c_binding
@@ -587,6 +599,18 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: numelems
             type(C_PTR) :: rv
         end function atk_datagroup_create_view_from_type
+        
+        function atk_datagroup_create_view_from_type_bufferify(self, name, Lname, type, numelems) result(rv) &
+                bind(C, name="ATK_datagroup_create_view_from_type_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: numelems
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_view_from_type_bufferify
         
         function atk_datagroup_create_view_into_buffer(self, name, buff) result(rv) &
                 bind(C, name="ATK_datagroup_create_view_into_buffer")
@@ -641,6 +665,19 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: numelems
             type(C_PTR) :: rv
         end function atk_datagroup_create_external_view
+        
+        function atk_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, numelems) result(rv) &
+                bind(C, name="ATK_datagroup_create_external_view_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR), value, intent(IN) :: external_data
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: numelems
+            type(C_PTR) :: rv
+        end function atk_datagroup_create_external_view_bufferify
         
         subroutine atk_datagroup_destroy_view(self, name) &
                 bind(C, name="ATK_datagroup_destroy_view")
@@ -1270,7 +1307,7 @@ contains
         use iso_c_binding
         implicit none
         class(datastore) :: obj
-        integer(C_INT) :: idx
+        integer(C_INT), value, intent(IN) :: idx
         type(databuffer) :: rv
         ! splicer begin class.DataStore.method.get_buffer
         rv%voidptr = atk_datastore_get_buffer(  &
@@ -1293,7 +1330,7 @@ contains
         use iso_c_binding
         implicit none
         class(datastore) :: obj
-        integer(C_INT) :: id
+        integer(C_INT), value, intent(IN) :: id
         ! splicer begin class.DataStore.method.destroy_buffer
         call atk_datastore_destroy_buffer(  &
             obj%voidptr,  &
@@ -1379,7 +1416,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_view
         rv = atk_datagroup_has_view_bufferify(  &
@@ -1393,7 +1430,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view_from_name
         rv%voidptr = atk_datagroup_get_view_from_name_bufferify(  &
@@ -1407,7 +1444,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        integer(C_INT) :: idx
+        integer(C_INT), value, intent(IN) :: idx
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view_from_index
         rv%voidptr = atk_datagroup_get_view_from_index(  &
@@ -1420,7 +1457,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_view_index
         rv = atk_datagroup_get_view_index_bufferify(  &
@@ -1434,7 +1471,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        integer(C_INT) :: idx
+        integer(C_INT), value, intent(IN) :: idx
         character(*), intent(OUT) :: name
         type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_view_name
@@ -1445,45 +1482,47 @@ contains
         ! splicer end class.DataGroup.method.get_view_name
     end subroutine datagroup_get_view_name
     
-    function datagroup_create_view_and_allocate_int(obj, name, type, numelems) result(rv)
+    function datagroup_create_view_and_allocate_from_type_int(obj, name, type, numelems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: numelems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_allocate_int
-        rv%voidptr = atk_datagroup_create_view_and_allocate_from_type(  &
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_from_type_int
+        rv%voidptr = atk_datagroup_create_view_and_allocate_from_type_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_and_allocate_int
-    end function datagroup_create_view_and_allocate_int
+        ! splicer end class.DataGroup.method.create_view_and_allocate_from_type_int
+    end function datagroup_create_view_and_allocate_from_type_int
     
-    function datagroup_create_view_and_allocate_long(obj, name, type, numelems) result(rv)
+    function datagroup_create_view_and_allocate_from_type_long(obj, name, type, numelems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_allocate_long
-        rv%voidptr = atk_datagroup_create_view_and_allocate_from_type(  &
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_from_type_long
+        rv%voidptr = atk_datagroup_create_view_and_allocate_from_type_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_and_allocate_long
-    end function datagroup_create_view_and_allocate_long
+        ! splicer end class.DataGroup.method.create_view_and_allocate_from_type_long
+    end function datagroup_create_view_and_allocate_from_type_long
     
     function datagroup_create_view_empty(obj, name) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_empty
         rv%voidptr = atk_datagroup_create_view_empty_bufferify(  &
@@ -1493,46 +1532,48 @@ contains
         ! splicer end class.DataGroup.method.create_view_empty
     end function datagroup_create_view_empty
     
-    function datagroup_create_view_int(obj, name, type, numelems) result(rv)
+    function datagroup_create_view_from_type_int(obj, name, type, numelems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: numelems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_int
-        rv%voidptr = atk_datagroup_create_view_from_type(  &
+        ! splicer begin class.DataGroup.method.create_view_from_type_int
+        rv%voidptr = atk_datagroup_create_view_from_type_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_int
-    end function datagroup_create_view_int
+        ! splicer end class.DataGroup.method.create_view_from_type_int
+    end function datagroup_create_view_from_type_int
     
-    function datagroup_create_view_long(obj, name, type, numelems) result(rv)
+    function datagroup_create_view_from_type_long(obj, name, type, numelems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
+        character(*), intent(IN) :: name
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_long
-        rv%voidptr = atk_datagroup_create_view_from_type(  &
+        ! splicer begin class.DataGroup.method.create_view_from_type_long
+        rv%voidptr = atk_datagroup_create_view_from_type_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_long
-    end function datagroup_create_view_long
+        ! splicer end class.DataGroup.method.create_view_from_type_long
+    end function datagroup_create_view_from_type_long
     
     function datagroup_create_view_into_buffer(obj, name, buff) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        type(databuffer) :: buff
+        character(*), intent(IN) :: name
+        type(databuffer), value, intent(IN) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_into_buffer
         rv%voidptr = atk_datagroup_create_view_into_buffer_bufferify(  &
@@ -1547,8 +1588,8 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        type(C_PTR) :: opaque_ptr
+        character(*), intent(IN) :: name
+        type(C_PTR), value, intent(IN) :: opaque_ptr
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_opaque_view
         rv%voidptr = atk_datagroup_create_opaque_view_bufferify(  &
@@ -1563,15 +1604,16 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        type(C_PTR) :: external_data
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
+        character(*), intent(IN) :: name
+        type(C_PTR), value, intent(IN) :: external_data
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: numelems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view_int
-        rv%voidptr = atk_datagroup_create_external_view(  &
+        rv%voidptr = atk_datagroup_create_external_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             external_data,  &
             type,  &
             int(numelems, C_LONG))
@@ -1582,15 +1624,16 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
-        type(C_PTR) :: external_data
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
+        character(*), intent(IN) :: name
+        type(C_PTR), value, intent(IN) :: external_data
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view_long
-        rv%voidptr = atk_datagroup_create_external_view(  &
+        rv%voidptr = atk_datagroup_create_external_view_bufferify(  &
             obj%voidptr,  &
-            trim(name) // C_NULL_CHAR,  &
+            name,  &
+            len_trim(name),  &
             external_data,  &
             type,  &
             int(numelems, C_LONG))
@@ -1601,7 +1644,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         ! splicer begin class.DataGroup.method.destroy_view
         call atk_datagroup_destroy_view_bufferify(  &
             obj%voidptr,  &
@@ -1614,7 +1657,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         ! splicer begin class.DataGroup.method.destroy_view_and_data
         call atk_datagroup_destroy_view_and_data_bufferify(  &
             obj%voidptr,  &
@@ -1627,7 +1670,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        type(dataview) :: view
+        type(dataview), value, intent(IN) :: view
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.move_view
         rv%voidptr = atk_datagroup_move_view(  &
@@ -1640,7 +1683,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        type(dataview) :: view
+        type(dataview), value, intent(IN) :: view
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.copy_view
         rv%voidptr = atk_datagroup_copy_view(  &
@@ -1653,7 +1696,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_group
         rv = atk_datagroup_has_group_bufferify(  &
@@ -1667,7 +1710,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.get_group
         rv%voidptr = atk_datagroup_get_group_bufferify(  &
@@ -1681,7 +1724,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_group_index
         rv = atk_datagroup_get_group_index_bufferify(  &
@@ -1695,7 +1738,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        integer(C_INT) :: idx
+        integer(C_INT), value, intent(IN) :: idx
         character(*), intent(OUT) :: name
         type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_group_name
@@ -1710,7 +1753,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.create_group
         rv%voidptr = atk_datagroup_create_group_bufferify(  &
@@ -1724,7 +1767,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: name
+        character(*), intent(IN) :: name
         ! splicer begin class.DataGroup.method.destroy_group
         call atk_datagroup_destroy_group_bufferify(  &
             obj%voidptr,  &
@@ -1737,7 +1780,7 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        type(datagroup) :: grp
+        type(datagroup), value, intent(IN) :: grp
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.move_group
         rv%voidptr = atk_datagroup_move_group(  &
@@ -1759,8 +1802,8 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: obase
-        character(*) :: protocol
+        character(*), intent(IN) :: obase
+        character(*), intent(IN) :: protocol
         ! splicer begin class.DataGroup.method.save
         call atk_datagroup_save_bufferify(  &
             obj%voidptr,  &
@@ -1775,8 +1818,8 @@ contains
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
-        character(*) :: obase
-        character(*) :: protocol
+        character(*), intent(IN) :: obase
+        character(*), intent(IN) :: protocol
         ! splicer begin class.DataGroup.method.load
         call atk_datagroup_load_bufferify(  &
             obj%voidptr,  &
@@ -2230,8 +2273,8 @@ contains
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: numelems
         ! splicer begin class.DataBuffer.method.declare_int
         call atk_databuffer_declare(  &
             obj%voidptr,  &
@@ -2244,8 +2287,8 @@ contains
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
         ! splicer begin class.DataBuffer.method.declare_long
         call atk_databuffer_declare(  &
             obj%voidptr,  &
@@ -2263,39 +2306,39 @@ contains
         ! splicer end class.DataBuffer.method.allocate_existing
     end subroutine databuffer_allocate_existing
     
-    subroutine databuffer_allocate_int(obj, type, numelems)
+    subroutine databuffer_allocate_from_type_int(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
-        ! splicer begin class.DataBuffer.method.allocate_int
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: numelems
+        ! splicer begin class.DataBuffer.method.allocate_from_type_int
         call atk_databuffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataBuffer.method.allocate_int
-    end subroutine databuffer_allocate_int
+        ! splicer end class.DataBuffer.method.allocate_from_type_int
+    end subroutine databuffer_allocate_from_type_int
     
-    subroutine databuffer_allocate_long(obj, type, numelems)
+    subroutine databuffer_allocate_from_type_long(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
-        ! splicer begin class.DataBuffer.method.allocate_long
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
+        ! splicer begin class.DataBuffer.method.allocate_from_type_long
         call atk_databuffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataBuffer.method.allocate_long
-    end subroutine databuffer_allocate_long
+        ! splicer end class.DataBuffer.method.allocate_from_type_long
+    end subroutine databuffer_allocate_from_type_long
     
     subroutine databuffer_reallocate_int(obj, numelems)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_INT) :: numelems
+        integer(C_INT), value, intent(IN) :: numelems
         ! splicer begin class.DataBuffer.method.reallocate_int
         call atk_databuffer_reallocate(  &
             obj%voidptr,  &
@@ -2307,7 +2350,7 @@ contains
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        integer(C_LONG) :: numelems
+        integer(C_LONG), value, intent(IN) :: numelems
         ! splicer begin class.DataBuffer.method.reallocate_long
         call atk_databuffer_reallocate(  &
             obj%voidptr,  &
@@ -2319,7 +2362,7 @@ contains
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
-        type(C_PTR) :: external_data
+        type(C_PTR), value, intent(IN) :: external_data
         ! splicer begin class.DataBuffer.method.set_external_data
         call atk_databuffer_set_external_data(  &
             obj%voidptr,  &
@@ -2398,39 +2441,39 @@ contains
         ! splicer end class.DataView.method.allocate_simple
     end subroutine dataview_allocate_simple
     
-    subroutine dataview_allocate_int(obj, type, numelems)
+    subroutine dataview_allocate_from_type_int(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_INT) :: numelems
-        ! splicer begin class.DataView.method.allocate_int
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: numelems
+        ! splicer begin class.DataView.method.allocate_from_type_int
         call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataView.method.allocate_int
-    end subroutine dataview_allocate_int
+        ! splicer end class.DataView.method.allocate_from_type_int
+    end subroutine dataview_allocate_from_type_int
     
-    subroutine dataview_allocate_long(obj, type, numelems)
+    subroutine dataview_allocate_from_type_long(obj, type, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
-        ! splicer begin class.DataView.method.allocate_long
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
+        ! splicer begin class.DataView.method.allocate_from_type_long
         call atk_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(numelems, C_LONG))
-        ! splicer end class.DataView.method.allocate_long
-    end subroutine dataview_allocate_long
+        ! splicer end class.DataView.method.allocate_from_type_long
+    end subroutine dataview_allocate_from_type_long
     
     subroutine dataview_reallocate_int(obj, numelems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: numelems
+        integer(C_INT), value, intent(IN) :: numelems
         ! splicer begin class.DataView.method.reallocate_int
         call atk_dataview_reallocate(  &
             obj%voidptr,  &
@@ -2442,7 +2485,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_LONG) :: numelems
+        integer(C_LONG), value, intent(IN) :: numelems
         ! splicer begin class.DataView.method.reallocate_long
         call atk_dataview_reallocate(  &
             obj%voidptr,  &
@@ -2464,7 +2507,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_LONG) :: numelems
+        integer(C_LONG), value, intent(IN) :: numelems
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems
         rv%voidptr = atk_dataview_apply_nelems(  &
@@ -2477,8 +2520,8 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_LONG) :: numelems
-        integer(C_LONG) :: offset
+        integer(C_LONG), value, intent(IN) :: numelems
+        integer(C_LONG), value, intent(IN) :: offset
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems_offset
         rv%voidptr = atk_dataview_apply_nelems_offset(  &
@@ -2492,9 +2535,9 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_LONG) :: numelems
-        integer(C_LONG) :: offset
-        integer(C_LONG) :: stride
+        integer(C_LONG), value, intent(IN) :: numelems
+        integer(C_LONG), value, intent(IN) :: offset
+        integer(C_LONG), value, intent(IN) :: stride
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems_offset_stride
         rv%voidptr = atk_dataview_apply_nelems_offset_stride(  &
@@ -2509,8 +2552,8 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems
         rv%voidptr = atk_dataview_apply_type_nelems(  &
@@ -2524,9 +2567,9 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
-        integer(C_LONG) :: offset
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
+        integer(C_LONG), value, intent(IN) :: offset
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems_offset
         rv%voidptr = atk_dataview_apply_type_nelems_offset(  &
@@ -2541,10 +2584,10 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: type
-        integer(C_LONG) :: numelems
-        integer(C_LONG) :: offset
-        integer(C_LONG) :: stride
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_LONG), value, intent(IN) :: numelems
+        integer(C_LONG), value, intent(IN) :: offset
+        integer(C_LONG), value, intent(IN) :: stride
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems_offset_stride
         rv%voidptr = atk_dataview_apply_type_nelems_offset_stride(  &
@@ -2622,7 +2665,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_INT) :: value
+        integer(C_INT), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_int
         call atk_dataview_set_value_int(  &
             obj%voidptr,  &
@@ -2634,7 +2677,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        integer(C_LONG) :: value
+        integer(C_LONG), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_long
         call atk_dataview_set_value_long(  &
             obj%voidptr,  &
@@ -2646,7 +2689,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        real(C_FLOAT) :: value
+        real(C_FLOAT), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_float
         call atk_dataview_set_value_float(  &
             obj%voidptr,  &
@@ -2658,7 +2701,7 @@ contains
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        real(C_DOUBLE) :: value
+        real(C_DOUBLE), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_double
         call atk_dataview_set_value_double(  &
             obj%voidptr,  &
@@ -2865,7 +2908,7 @@ contains
     function name_is_valid(name) result(rv)
         use iso_c_binding
         implicit none
-        character(*) :: name
+        character(*), intent(IN) :: name
         logical :: rv
         ! splicer begin name_is_valid
         rv = name .ne. " "

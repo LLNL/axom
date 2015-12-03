@@ -148,6 +148,15 @@ return static_cast<ATK_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_and_allocate_from_type
 }
 
+ATK_dataview * ATK_datagroup_create_view_and_allocate_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength numelems)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.create_view_and_allocate_from_type_bufferify
+DataView * rv = selfobj->createViewAndAllocate(std::string(name, Lname), getTypeID(type), numelems);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataGroup.method.create_view_and_allocate_from_type_bufferify
+}
+
 ATK_dataview * ATK_datagroup_create_view_empty(ATK_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
@@ -173,6 +182,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 DataView * rv = selfobj->createView(name, getTypeID(type), numelems);
 return static_cast<ATK_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_from_type
+}
+
+ATK_dataview * ATK_datagroup_create_view_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength numelems)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.create_view_from_type_bufferify
+DataView * rv = selfobj->createView(std::string(name, Lname), getTypeID(type), numelems);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataGroup.method.create_view_from_type_bufferify
 }
 
 ATK_dataview * ATK_datagroup_create_view_into_buffer(ATK_datagroup * self, const char * name, ATK_databuffer * buff)
@@ -218,6 +236,15 @@ DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 DataView * rv = selfobj->createExternalView(name, external_data, getTypeID(type), numelems);
 return static_cast<ATK_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_external_view
+}
+
+ATK_dataview * ATK_datagroup_create_external_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * external_data, int type, ATK_SidreLength numelems)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.create_external_view_bufferify
+DataView * rv = selfobj->createExternalView(std::string(name, Lname), external_data, getTypeID(type), numelems);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataGroup.method.create_external_view_bufferify
 }
 
 void ATK_datagroup_destroy_view(ATK_datagroup * self, const char * name)

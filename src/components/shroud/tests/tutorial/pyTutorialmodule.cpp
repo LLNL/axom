@@ -157,32 +157,32 @@ PY_function4b(
 // splicer end function.function4b
 }
 
-static char PY_function5__doc__[] =
+static char PY_function5_2__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_function5(
+PY_function5_2(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.function5
+// splicer begin function.function5_2
     double arg1;
-    int arg2;
+    bool arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    arg1 = 3.13;
-    arg2 = 5;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|di:Function5", kw_list,
+    arg1 = 3.1415;
+    arg2 = true;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO:Function5", kw_list,
         &arg1, &arg2))
     {
         return NULL;
     }
     double rv = Function5(arg1, arg2);
     return Py_BuildValue("d", rv);
-// splicer end function.function5
+// splicer end function.function5_2
 }
 
 static char PY_function6_from_name__doc__[] =
@@ -260,6 +260,157 @@ PY_function9(
 // splicer end function.function9
 }
 
+static char PY_function10_0__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function10_0(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function10_0
+    Function10();
+    Py_RETURN_NONE;
+// splicer end function.function10_0
+}
+
+static char PY_function10_1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function10_1(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function10_1
+    const char * name;
+    double arg2;
+    const char *kwcpp = "name\0arg2";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sd:Function10", kw_list,
+        &name, &arg2))
+    {
+        return NULL;
+    }
+    Function10(name, arg2);
+    Py_RETURN_NONE;
+// splicer end function.function10_1
+}
+
+static char PY_overload1_2__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_overload1_2(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.overload1_2
+    int num;
+    int offset;
+    int stride;
+    const char *kwcpp = "num\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
+    
+    offset = 0;
+    stride = 1;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", kw_list,
+        &num, &offset, &stride))
+    {
+        return NULL;
+    }
+    int rv = overload1(num, offset, stride);
+    return Py_BuildValue("i", rv);
+// splicer end function.overload1_2
+}
+
+static char PY_overload1_5__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_overload1_5(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.overload1_5
+    double type;
+    int num;
+    int offset;
+    int stride;
+    const char *kwcpp = "type\0num\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
+    
+    offset = 0;
+    stride = 1;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", kw_list,
+        &type, &num, &offset, &stride))
+    {
+        return NULL;
+    }
+    int rv = overload1(type, num, offset, stride);
+    return Py_BuildValue("i", rv);
+// splicer end function.overload1_5
+}
+
+static char PY_typefunc__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_typefunc(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.typefunc
+    int arg;
+    const char *kwcpp = "arg";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:typefunc", kw_list,
+        &arg))
+    {
+        return NULL;
+    }
+    TypeID rv = typefunc(arg);
+    return Py_BuildValue("i", rv);
+// splicer end function.typefunc
+}
+
+static char PY_enumfunc__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_enumfunc(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.enumfunc
+    int arg;
+    const char *kwcpp = "arg";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:enumfunc", kw_list,
+        &arg))
+    {
+        return NULL;
+    }
+    EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
+    return Py_BuildValue("i", rv);
+// splicer end function.enumfunc
+}
+
 static char PY_last_function_called__doc__[] =
 "documentation"
 ;
@@ -282,10 +433,16 @@ static PyMethodDef PY_methods[] = {
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
-{"Function5", (PyCFunction)PY_function5, METH_VARARGS|METH_KEYWORDS, PY_function5__doc__},
+{"Function5_2", (PyCFunction)PY_function5_2, METH_VARARGS|METH_KEYWORDS, PY_function5_2__doc__},
 {"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
 {"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
+{"Function10_0", (PyCFunction)PY_function10_0, METH_NOARGS, PY_function10_0__doc__},
+{"Function10_1", (PyCFunction)PY_function10_1, METH_VARARGS|METH_KEYWORDS, PY_function10_1__doc__},
+{"overload1_2", (PyCFunction)PY_overload1_2, METH_VARARGS|METH_KEYWORDS, PY_overload1_2__doc__},
+{"overload1_5", (PyCFunction)PY_overload1_5, METH_VARARGS|METH_KEYWORDS, PY_overload1_5__doc__},
+{"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
+{"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

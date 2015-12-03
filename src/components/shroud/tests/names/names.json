@@ -31,6 +31,8 @@
             "methods": [
                 {
                     "F_name_method": "type_method1", 
+                    "_decl": "void method1()", 
+                    "_function_index": 0, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method1", 
@@ -44,7 +46,6 @@
                         "method_name": "method1", 
                         "underscore_name": "method1"
                     }, 
-                    "function_index": 0, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -53,6 +54,8 @@
                     }
                 }, 
                 {
+                    "_decl": "void method2()", 
+                    "_function_index": 1, 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method2", 
@@ -66,7 +69,6 @@
                         "method_name": "method2", 
                         "underscore_name": "method2"
                     }, 
-                    "function_index": 1, 
                     "options": {}, 
                     "result": {
                         "attrs": {}, 
@@ -112,6 +114,8 @@
     }, 
     "functions": [
         {
+            "_decl": "void function1()", 
+            "_function_index": 2, 
             "args": [], 
             "attrs": {}, 
             "decl": "void function1", 
@@ -125,7 +129,6 @@
                 "method_name": "function1", 
                 "underscore_name": "function1"
             }, 
-            "function_index": 2, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -137,6 +140,8 @@
             "C_name": "c_name_special", 
             "F_C_name": "f_c_name_special", 
             "F_name_impl": "f_name_special", 
+            "_decl": "void function2()", 
+            "_function_index": 3, 
             "args": [], 
             "attrs": {}, 
             "decl": "void function2", 
@@ -150,7 +155,6 @@
                 "method_name": "function2", 
                 "underscore_name": "function2"
             }, 
-            "function_index": 3, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -161,6 +165,9 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
+            "_decl": "void function3a(int i+intent(in)+value)", 
+            "_function_index": 4, 
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -184,7 +191,6 @@
                 "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
-            "function_index": 4, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -195,6 +201,9 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
+            "_decl": "void function3a(long i+intent(in)+value)", 
+            "_function_index": 5, 
+            "_overloaded": true, 
             "args": [
                 {
                     "attrs": {
@@ -218,7 +227,6 @@
                 "method_name": "function3a", 
                 "underscore_name": "function3a"
             }, 
-            "function_index": 5, 
             "options": {}, 
             "result": {
                 "attrs": {}, 
@@ -234,6 +242,7 @@
         "C_impl_filename_library_template": "wrap{library}.cpp", 
         "C_name_function_template": "YYY_{C_prefix}{underscore_name}{function_suffix}", 
         "C_name_method_template": "XXX_{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_force_wrapper": true, 
         "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
         "F_impl_filename_library_template": "wrapf{lower_library}.f", 
         "F_module_name_class_template": "{lower_class}_mod", 
@@ -253,6 +262,7 @@
         "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
+        "debug": true, 
         "library": "testnames", 
         "namespace": "", 
         "wrap_c": true, 
@@ -272,6 +282,8 @@
             "c_type": "TES_names", 
             "cpp_to_c": "static_cast<{C_const}TES_names *>(static_cast<{C_const}void *>({var}))", 
             "cpp_type": "Names", 
+            "f_args": "{var}%{F_derived_member}", 
+            "f_derived_type": "names", 
             "f_module": {
                 "name_module": [
                     "names"
@@ -279,8 +291,6 @@
             }, 
             "f_return_code": "{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})", 
             "f_type": "type(names)", 
-            "fortran_derived": "names", 
-            "fortran_to_c": "{var}%{F_derived_member}", 
             "forward": "Names"
         }, 
         "bool": {
@@ -288,9 +298,11 @@
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
+            "f_argsdecl": [
+                "logical(C_BOOL) {tmp_var}"
+            ], 
             "f_kind": "C_BOOL", 
             "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
-            "f_pre_decl": "logical(C_BOOL) {tmp_var}", 
             "f_type": "logical", 
             "f_use_tmp": true
         }, 
@@ -429,12 +441,12 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "f_type": "character(*)"
         }, 
         "string": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -444,12 +456,12 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "f_type": "character(*)"
         }, 
         "string_from_buffer": {
             "base": "string", 
@@ -462,6 +474,7 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "{var}, len_trim({var})", 
             "f_c_argdecl": [
                 "type(C_PTR), intent(IN), value :: {var}", 
                 "integer(C_INT), intent(IN), value :: len_{var}"
@@ -474,8 +487,7 @@
                 "iso_c_binding": null
             }, 
             "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "{var}, len_trim({var})"
+            "f_type": "character(*)"
         }, 
         "string_result_as_arg": {
             "PY_ctor": "PyString_FromString({var})", 
@@ -485,15 +497,17 @@
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
+            "f_argsdecl": [
+                "character(*), intent(OUT) :: {result_arg}", 
+                "type(C_PTR) :: {F_result}"
+            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
             "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
-            "f_pre_decl": "type(C_PTR) :: {F_result}", 
             "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
-            "f_rv_decl": "character(*), intent(OUT) :: {result_arg}", 
-            "f_type": "character(*)", 
-            "fortran_to_c": "trim({var}) // C_NULL_CHAR"
+            "f_type": "character(*)"
         }, 
         "void": {
             "c_fortran": "type(C_PTR)", 

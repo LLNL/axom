@@ -13,6 +13,7 @@ splicer:
 
 options:
 #  module_name: exclass1_mod
+  debug: True
   library: UserLibrary
   C_prefix: AA_
   namespace: example nested
@@ -137,8 +138,8 @@ classes:
       result:
          name: GetNameLength
          type: int
-      qualifiers:
-         const: true
+         attrs:
+           const: true
       options:
           C_code: return selfobj->getName().length();
 
@@ -179,8 +180,6 @@ classes:
 #        - float
         - double
 
-    - decl: void testoptional(int i = 1, long j=2)
-
 
 functions:
   - decl: void local_function1
@@ -201,6 +200,21 @@ functions:
   -  decl: void test_names(const std::string &name, int flag)
      function_suffix: _flag
 
+  - decl: void testoptional(int i = 1, long j=2)
+
+# test cpp_template, fortran_generic, overload
+#  - decl: void Function10()
+#  - decl: void Function10(ArgType arg1, std::string &name, double arg2 = 0)
+#    options:
+#      F_string_len_trim: True
+#    cpp_template:
+#      ArgType:
+#      - int
+#      - double
+#    fortran_generic:
+#       arg2:
+#       - float
+#       - double
 
 
 ######################################################################

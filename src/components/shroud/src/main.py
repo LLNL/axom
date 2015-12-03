@@ -5,11 +5,12 @@ generate language bindings
 """
 from __future__ import print_function
 
-import os
-import json
 import argparse
-import yaml
+import copy
+import json
+import os
 import sys
+import yaml
 
 import util
 import parse_decl
@@ -79,6 +80,7 @@ class Schema(object):
         # default options
         def_options = util.Options(
             parent=None,
+            debug=False,   # print additional debug info
 
             library='default_library',
             namespace='',
@@ -86,6 +88,7 @@ class Schema(object):
 
             F_module_per_class=True,
             F_string_len_trim=True,
+            F_force_wrapper=False,
 
             wrap_c       = True,
             wrap_fortran = True,
@@ -206,7 +209,7 @@ class Schema(object):
 
                 f_type    = 'logical',
                 f_use_tmp  = True,
-                f_pre_decl = 'logical(C_BOOL) {tmp_var}',
+                f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
                 f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
 
                 PY_ctor   = 'PyBool_FromLong({rv})',
@@ -220,7 +223,7 @@ class Schema(object):
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
-                fortran_to_c = 'trim({var}) // C_NULL_CHAR',
+                f_args = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
@@ -240,7 +243,7 @@ class Schema(object):
                 f_c_argdecl = [ 'type(C_PTR), intent(IN), value :: {var}',
                                 'integer(C_INT), intent(IN), value :: len_{var}' ],
                 f_type     = 'character(*)',
-                fortran_to_c = '{var}, len_trim({var})',
+                f_args = '{var}, len_trim({var})',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
@@ -258,8 +261,9 @@ class Schema(object):
         # result_as_arg
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
-                f_rv_decl     = 'character(*), intent(OUT) :: {result_arg}',
-                f_pre_decl    = 'type(C_PTR) :: {F_result}',
+                f_argsdecl    = [
+                    'character(*), intent(OUT) :: {result_arg}',
+                    'type(C_PTR) :: {F_result}'],
                 f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
                 f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
                 ))
@@ -371,8 +375,6 @@ class Schema(object):
 
         fmt_func.method_name =     result['name']
         fmt_func.underscore_name = util.un_camel(result['name'])
-        if 'function_suffix' in node:
-            fmt_func.function_suffix = node['function_suffix']
 
         # docs
         self.pop_fmt()
@@ -391,6 +393,7 @@ class GenFunctions(object):
     """
     Generate types from class.
     Generate functions based on overload/template/generic/attributes
+    Computes fmt.function_suffix.
     """
 
     def __init__(self, tree, config):
@@ -400,10 +403,10 @@ class GenFunctions(object):
 
     def gen_library(self):
         tree = self.tree
-        tree['function_index'] = self.function_index = []
 
-        for cls in tree['classes']:
-            self.create_class_typedef(cls)
+        # Order of creating.
+        # Each is given a _function_index when created.
+        tree['function_index'] = self.function_index = []
 
         for cls in tree['classes']:
             cls['methods'] = self.define_function_suffix(cls['methods'])
@@ -412,80 +415,74 @@ class GenFunctions(object):
         for cls in tree['classes']:
             self.check_class_dependencies(cls)
 
-    def create_class_typedef(self, cls):
-        # create typedef for each class before generating code
-        # this allows classes to reference each other
-        name = cls['name']
-        fmt_class = cls['fmt']
-
-        if name not in self.typedef:
-#            unname = util.un_camel(name)
-            unname = name.lower()
-            cname = fmt_class.C_prefix + unname
-            self.typedef[name] = util.Typedef(
-                name,
-                cpp_type = name,
-                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
-                c_type = cname,
-                # opaque pointer -> void pointer -> class instance pointer
-                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
-                c_fortran = 'type(C_PTR)',
-                f_type = 'type(%s)' % unname,
-                fortran_derived = unname,
-                fortran_to_c = '{var}%{F_derived_member}',
-                # XXX module name may not conflict with type name
-                f_module = {fmt_class.F_module_name:[unname]},
-
-                # return from C function
-#                f_c_return_decl = 'type(CPTR)' % unname,
-                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
-
-                # allow forward declarations to avoid recursive headers
-                forward = name,
-                base = 'wrapped',
-                )
-
-        typedef = self.typedef[name]
-        fmt_class.C_type_name = typedef.c_type
-
     def append_function_index(self, node):
         """append to function_index, set index into node.
         """
         ilist = self.function_index
-        node['function_index'] = len(ilist)
+        node['_function_index'] = len(ilist)
 #        node['fmt'].function_index = str(len(ilist)) # debugging
         ilist.append(node)
 
     def define_function_suffix(self, functions):
-        """ look for functions with the same name
-        Return a new list if overloaded function inserted.
+        """ Look for functions with the same name.
+        Return a new list with overloaded function inserted.
         """
-        overloaded_functions = {}
         for function in functions:
+            if 'function_suffix' in function:
+                function['fmt'].function_suffix = function['function_suffix']
             self.append_function_index(function)
-            overloaded_functions.setdefault(function['result']['name'], []).append(function)
+
+        # Create additional functions needed for wrapping
+        ordered_functions = []
+        for method in functions:
+            if '_has_default_arg' in method:
+                self.has_default_args(method, ordered_functions)
+            ordered_functions.append(method)
+            if 'cpp_template' in method:
+                method['_overloaded'] = True
+                self.template_function(method, ordered_functions)
+
+        # Look for overloaded functions
+        overloaded_functions = {}
+        for function in ordered_functions:
+#            if not function['options'].wrap_c:
+#                continue
+            if 'cpp_template' in function:
+                continue
+            overloaded_functions.setdefault(
+                function['result']['name'], []).append(function)
 
         # look for function overload and compute function_suffix
         for mname, overloads in overloaded_functions.items():
             if len(overloads) > 1:
                 for i, function in enumerate(overloads):
-#                    method['fmt'].overloaded = True
-                    if 'function_suffix' not in function:
+                    function['_overloaded'] = True
+                    if not function['fmt'].inlocal('function_suffix'):
                         function['fmt'].function_suffix =  '_%d' % i
 
-        # Create additional functions needed for wrapping
-        ordered_functions = []
-        for method in functions:
-            ordered_functions.append(method)
-            if 'cpp_template' in method:
-                self.template_function(method, ordered_functions)
+        # Create additional C bufferify functions.
+        ordered3 = []
+        for method in ordered_functions:
+            ordered3.append(method)
+            self.string_to_buffer_and_len(method, ordered3)
+
+        # Create multiple generic Fortran wrappers to call a
+        # single C functions
+        ordered4 = []
+        for method in ordered3:
+            ordered4.append(method)
+            if not method['options'].wrap_fortran:
+                continue
             if 'fortran_generic' in method:
-                self.generic_function(method, ordered_functions)
-            self.string_to_buffer_and_len(method, ordered_functions)
-        return ordered_functions
+                method['_overloaded'] = True
+                self.generic_function(method, ordered4)
+
+        self.gen_functions_decl(ordered4)
+
+        return ordered4
 
     def template_function(self, node, ordered_functions):
-        """ Create overloaded functions for each templated method.
+        """ Create overloaded functions for each templated argument.
         """
         if len(node['cpp_template']) != 1:
             # In the future it may be useful to have multiple templates
@@ -497,9 +494,9 @@ class GenFunctions(object):
                 ordered_functions.append(new)
                 self.append_function_index(new)
 
-                new['generated'] = 'cpp_template'
+                new['_generated'] = 'cpp_template'
                 fmt = new['fmt']
-                fmt.function_suffix = '_' + type
+                fmt.function_suffix = fmt.function_suffix + '_' + type
                 del new['cpp_template']
                 options = new['options']
                 options.wrap_c = True
@@ -534,10 +531,11 @@ class GenFunctions(object):
                 ordered_functions.append(new)
                 self.append_function_index(new)
 
-                new['generated'] = 'fortran_generic'
+                new['_generated'] = 'fortran_generic'
+                new['_PTR_F_C_index'] = node['_function_index']
                 fmt = new['fmt']
-                fmt.function_suffix = '_' + type
-                fmt.PTR_F_C_index = node['function_index']
+                # XXX append to existing suffix
+                fmt.function_suffix = fmt.function_suffix + '_' + type
                 del new['fortran_generic']
                 options = new['options']
                 options.wrap_c = False
@@ -560,6 +558,40 @@ class GenFunctions(object):
 #        options.wrap_c = False
         options.wrap_fortran = False
 #        options.wrap_python = False
+
+    def has_default_args(self, node, ordered_functions):
+        """
+        For each function which has a default argument, generate
+        a version for each possible call.
+          void func(int i = 0, int j = 0)
+        generates
+          void func()
+          void func(int i)
+          void func(int i, int j)
+        """
+        default_funcs = []
+        for i, arg in enumerate(node['args']):
+            if 'default' not in arg['attrs']:
+                continue
+            new = util.copy_function_node(node)
+            new['_generated'] = 'has_default_arg'
+            del new['args'][i:]  # remove trailing arguments
+#            try:
+            del new['_has_default_arg']
+#            except:
+#                pass
+            self.append_function_index(new)
+            options = new['options']
+            options.wrap_c = True
+            options.wrap_fortran = True
+            options.wrap_python = False
+            fmt = new['fmt']
+#            fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+            default_funcs.append(new['_function_index'])
+            ordered_functions.append(new)
+
+        # keep track of generated default value functions
+        node['_default_funcs'] = default_funcs
 
     def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.
@@ -585,7 +617,7 @@ class GenFunctions(object):
         ordered_functions.append(new)
         self.append_function_index(new)
 
-        new['generated'] = 'string_to_buffer_and_len'
+        new['_generated'] = 'string_to_buffer_and_len'
         fmt = new['fmt']
         fmt.function_suffix = fmt.function_suffix + '_bufferify'
 
@@ -597,7 +629,7 @@ class GenFunctions(object):
         options = node['options']
         #        options.wrap_fortran = False
 #        # Current Fortran function should use this new C function
-        node['fmt'].PTR_F_C_index = new['function_index']
+        node['_PTR_F_C_index'] = new['_function_index']
 
         newargs = []
         for arg in new['args']:
@@ -651,6 +683,60 @@ class GenFunctions(object):
             else:
                 raise RuntimeError("%s not defined" % argtype)
 
+    _skip_annotations = [ 'const', 'ptr', 'reference' ]
+    def gen_annotations_decl(self, attrs, decl):
+        """Append annotations from attrs onto decl.
+        Skip some that are already handled.
+        """
+        for key, value in attrs.items():
+            if key in self._skip_annotations:
+                continue
+            if value is True:
+                decl.append('+' + key)
+            elif value is False:
+                pass
+#                decl.append('-' + key)
+            else:
+                decl.append('+%s(%s)' % (key, value) )
+
+    def gen_arg_decl(self, arg, decl):
+        """ Generate declaration for a single arg (or result)
+        """
+        attrs = arg['attrs']
+        if attrs.get('const', False):
+            decl.append('const ')
+        decl.append(arg['type'] + ' ')
+        if attrs.get('ptr', False):
+            decl.append('* ')
+        if attrs.get('reference', False):
+            decl.append('& ')
+        decl.append(arg['name'])
+
+    def gen_functions_decl(self, functions):
+        """ Generate _decl for generated all functions.
+        """
+        for node in functions:
+            decl = [ ]
+            self.gen_arg_decl(node['result'], decl)
+
+            if node['args']:
+                decl.append('(')
+                for arg in node['args']:
+                    self.gen_arg_decl(arg, decl)
+                    self.gen_annotations_decl(arg['attrs'], decl)
+                    decl.append(', ')
+                decl[-1] = ')'
+            else:
+                decl.append('()')
+
+            attrs = node['attrs']
+            if attrs.get('const', False):
+                decl.append(' const')
+            self.gen_annotations_decl(attrs, decl)
+
+            node['_decl'] = ''.join(decl)
+
+
 class VerifyAttrs(object):
     """
     This must be called after GenFunctions has generated typedefs
@@ -659,10 +745,13 @@ class VerifyAttrs(object):
     def __init__(self, tree, config):
         self.tree = tree    # json tree
         self.config = config
+        self.typedef = tree['types']
 
     def verify_attrs(self):
         tree = self.tree
-        self.typedef = tree['types']
+
+        for cls in tree['classes']:
+            self.create_class_typedef(cls)
 
         for cls in tree['classes']:
             for func in cls['methods']:
@@ -670,6 +759,42 @@ class VerifyAttrs(object):
 
         for func in tree['functions']:
             self.check_arg_attrs(func)
+
+    def create_class_typedef(self, cls):
+        # create typedef for each class before generating code
+        # this allows classes to reference each other
+        name = cls['name']
+        fmt_class = cls['fmt']
+
+        if name not in self.typedef:
+#            unname = util.un_camel(name)
+            unname = name.lower()
+            cname = fmt_class.C_prefix + unname
+            self.typedef[name] = util.Typedef(
+                name,
+                cpp_type = name,
+                cpp_to_c = 'static_cast<{C_const}%s *>(static_cast<{C_const}void *>({var}))' % cname,
+                c_type = cname,
+                # opaque pointer -> void pointer -> class instance pointer
+                c_to_cpp = 'static_cast<{C_const}%s{ptr}>(static_cast<{C_const}void *>({var}))' % name,
+                c_fortran = 'type(C_PTR)',
+                f_type = 'type(%s)' % unname,
+                f_derived_type = unname,
+                f_args = '{var}%{F_derived_member}',
+                # XXX module name may not conflict with type name
+                f_module = {fmt_class.F_module_name:[unname]},
+
+                # return from C function
+#                f_c_return_decl = 'type(CPTR)' % unname,
+                f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
+
+                # allow forward declarations to avoid recursive headers
+                forward = name,
+                base = 'wrapped',
+                )
+
+        typedef = self.typedef[name]
+        fmt_class.C_type_name = typedef.c_type
 
     def check_arg_attrs(self, node):
         """Regularize attributes
@@ -681,10 +806,17 @@ class VerifyAttrs(object):
         if not options.wrap_fortran and not options.wrap_c:
             return
 
+        found_default = False
         for arg in node['args']:
-            typedef = self.typedef.get(arg['type'], None)
+            argname = arg['name']
+            typename = arg['type']
+            typedef = self.typedef.get(typename, None)
             if typedef is None:
-                raise RuntimeError("No such type %s" % arg['type'])
+                cpp_template = node.get('cpp_template', {})
+                if typename not in cpp_template:
+                    raise RuntimeError("No such type %s: %s %s" % (
+                            typename, typename, argname))
+                    # XXX print decl
 
             attrs = arg['attrs']
             is_ptr = (attrs.get('ptr', False) or
@@ -734,6 +866,11 @@ class VerifyAttrs(object):
                     # No value was provided, provide default
                     attrs['dimension'] = '(*)'
 
+            if 'default' in attrs:
+                found_default = True
+                node['_has_default_arg'] = True
+            elif found_default is True:
+                raise RuntimeError("Expected default value for %s" % argname)
 #        if typedef.base == 'string':
 
 
@@ -741,7 +878,8 @@ class Namify(object):
     """Compute names of functions in library.
     Need to compute F_name and C_F_name since they interact.
     Compute all C names first, then Fortran.
-    A Fortran function may call a generated C function via PTR_F_C_index
+    A Fortran function may call a generated C function via
+    _PTR_F_C_index
     Also compute number which may be controlled by options.    
 
     C_name - Name of C function
@@ -885,8 +1023,8 @@ if __name__ == '__main__':
 
 
     Schema(all).check_schema()
-    GenFunctions(all, config).gen_library()
     VerifyAttrs(all, config).verify_attrs()
+    GenFunctions(all, config).gen_library()
     Namify(all, config).name_library()
 
     if 'splicer' in all:

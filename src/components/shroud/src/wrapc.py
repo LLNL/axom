@@ -212,10 +212,7 @@ class Wrapc(util.WrapperMixin):
             cls_function = 'method'
         else:
             cls_function = 'function'
-        if 'decl' in node:
-            self.log.write("C {0} {1[decl]}\n".format(cls_function, node))
-        else:
-            self.log.write("C {0} {1[result][name]}\n".format(cls_function, node))
+        self.log.write("C {0} {1[_decl]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
@@ -364,6 +361,9 @@ class Wrapc(util.WrapperMixin):
 
         impl = self.impl
         impl.append('')
+        if options.debug:
+            impl.append('// %s' % node['_decl'])
+            impl.append('// function_index=%d' % node['_function_index'])
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls:
