@@ -139,16 +139,33 @@ include(ExternalProject)
 if (BUILD_TESTING)
 
   ## add google test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/gtest-1.7.0)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gtest-1.7.0)
   set(GTEST_INCLUDES ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR}
             CACHE INTERNAL "GoogleTest include directories" FORCE)
   set(GTEST_LIBS gtest_main gtest
             CACHE INTERNAL "GoogleTest link libraries" FORCE)
 
-  ## Add Fruit   FortRan UuIT test
-  add_subdirectory(${PROJECT_SOURCE_DIR}/TPL/fruit-3.3.9)
+  ## Add Fruit   FortRan UnIT test
+  add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/fruit-3.3.9)
+
+  if(ENABLE_BENCHMARK)
+    ## add google benchmark
+    add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/gbenchmark)
+    set(GBENCHMARK_INCLUDES ${benchmark_SOURCE_DIR}/include ${benchmark_SOURCE_DIR}
+            CACHE INTERNAL "Google Benchmark include directories" FORCE)
+    set(GBENCHMARK_LIBS benchmark
+            CACHE INTERNAL "Google Benchmark link libraries" FORCE)
+
+    #message(STATUS "Google benchmark -- \n\t inc -- ${GBENCHMARK_INCLUDES} -- \n\t lib -- ${GBENCHMARK_LIBS} ")
+  
+    # This sets up a target to run the benchmarks
+    add_custom_target(run_benchmarks COMMAND ctest -C Benchmark -VV -R benchmark)
+
+  endif()
 
   enable_testing()
+  
+#  add_dependencies(test run_benchmarks)
 
 endif()
 
@@ -471,6 +488,58 @@ macro(add_gtest)
 
 endmacro(add_gtest)
 
+
+##------------------------------------------------------------------------------
+## add_benchmark( TEST_SOURCE testX.cxx DEPENDS_ON [dep1 [dep2 ...]] )
+##
+## Adds a (google) benchmark to the project.
+##------------------------------------------------------------------------------
+macro(add_benchmark)
+
+   set(options)
+   set(singleValueArgs TEST_SOURCE)
+   set(multiValueArgs DEPENDS_ON)
+
+   ## parse the arguments to the macro
+   cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+   get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
+   set(test_name ${test_name_base}_benchmark)
+   add_executable( ${test_name} ${arg_TEST_SOURCE} )
+   target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
+   target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
+   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+
+   if ( ENABLE_CXX11 )
+      ## Note, this requires cmake 3.1 and above
+      set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
+   endif()
+
+   # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
+   add_test( NAME ${test_name}
+             COMMAND ${test_name}
+             CONFIGURATIONS Benchmark   
+             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+             )
+
+   add_dependencies(run_benchmarks ${test_name})
+
+   
+   # add any passed source files to the running list for this project
+   if(IS_ABSOLUTE)
+      list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+   else()
+      list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
+                  "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+   endif()
+
+
+   set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
+      CACHE STRING "" FORCE )
+
+endmacro(add_benchmark)
+
 ##------------------------------------------------------------------------------
 ## - Builds and adds a fortran based test.
 ##
@@ -489,12 +558,13 @@ macro(add_fortran_test)
 
        get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
        set(test_name ${test_name_base}_ftest)
-       add_executable( ${test_name} fortran_driver.cpp ${arg_TEST_SOURCE} )
+       add_executable( ${test_name} ${arg_TEST_SOURCE} )
 
        target_include_directories( ${test_name} PUBLIC ${CMAKE_Fortran_MODULE_DIRECTORY} )
        target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-        set_target_properties(${test_name}  PROPERTIES Fortran_FORMAT "FREE")
+       set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE Fortran)
+       set_target_properties(${test_name} PROPERTIES Fortran_FORMAT "FREE")
 
         add_test( NAME ${test_name}
                   COMMAND ${test_name}

@@ -104,16 +104,16 @@ PY_databuffer_declare(
 {
 // splicer begin class.DataBuffer.method.declare
     int type;
-    ATK_SidreLength len;
-    const char *kwcpp = "type\0len";
+    ATK_SidreLength numelems;
+    const char *kwcpp = "type\0numelems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
-        &type, &len))
+        &type, &numelems))
     {
         return NULL;
     }
-    self->BBB->declare(getTypeID(type), len);
+    self->BBB->declare(getTypeID(type), numelems);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.declare
 }
@@ -146,16 +146,16 @@ PY_databuffer_allocate_from_type(
 {
 // splicer begin class.DataBuffer.method.allocate_from_type
     int type;
-    ATK_SidreLength len;
-    const char *kwcpp = "type\0len";
+    ATK_SidreLength numelems;
+    const char *kwcpp = "type\0numelems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
-        &type, &len))
+        &type, &numelems))
     {
         return NULL;
     }
-    self->BBB->allocate(getTypeID(type), len);
+    self->BBB->allocate(getTypeID(type), numelems);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.allocate_from_type
 }
@@ -171,16 +171,16 @@ PY_databuffer_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.reallocate
-    ATK_SidreLength len;
-    const char *kwcpp = "len";
+    ATK_SidreLength numelems;
+    const char *kwcpp = "numelems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:reallocate", kw_list,
-        &len))
+        &numelems))
     {
         return NULL;
     }
-    self->BBB->reallocate(len);
+    self->BBB->reallocate(numelems);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.reallocate
 }
@@ -258,20 +258,20 @@ PY_databuffer_get_type_id(
 // splicer end class.DataBuffer.method.get_type_id
 }
 
-static char PY_databuffer_get_number_of_elements__doc__[] =
+static char PY_databuffer_get_num_elements__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_databuffer_get_number_of_elements(
+PY_databuffer_get_num_elements(
   PY_DataBuffer *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataBuffer.method.get_number_of_elements
-    size_t rv = self->BBB->getNumberOfElements();
+// splicer begin class.DataBuffer.method.get_num_elements
+    size_t rv = self->BBB->getNumElements();
     return PyInt_FromLong(rv);
-// splicer end class.DataBuffer.method.get_number_of_elements
+// splicer end class.DataBuffer.method.get_num_elements
 }
 
 static char PY_databuffer_get_total_bytes__doc__[] =
@@ -356,7 +356,7 @@ static PyMethodDef PY_DataBuffer_methods[] = {
 {"isExternal", (PyCFunction)PY_databuffer_is_external, METH_NOARGS, PY_databuffer_is_external__doc__},
 {"getData", (PyCFunction)PY_databuffer_get_data, METH_NOARGS, PY_databuffer_get_data__doc__},
 {"getTypeID", (PyCFunction)PY_databuffer_get_type_id, METH_NOARGS, PY_databuffer_get_type_id__doc__},
-{"getNumberOfElements", (PyCFunction)PY_databuffer_get_number_of_elements, METH_NOARGS, PY_databuffer_get_number_of_elements__doc__},
+{"getNumElements", (PyCFunction)PY_databuffer_get_num_elements, METH_NOARGS, PY_databuffer_get_num_elements__doc__},
 {"getTotalBytes", (PyCFunction)PY_databuffer_get_total_bytes, METH_NOARGS, PY_databuffer_get_total_bytes__doc__},
 {"print", (PyCFunction)PY_databuffer_print, METH_NOARGS, PY_databuffer_print__doc__},
 {"allocate", (PyCFunction)PY_databuffer_allocate, METH_VARARGS|METH_KEYWORDS, PY_databuffer_allocate__doc__},

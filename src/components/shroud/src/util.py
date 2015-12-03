@@ -32,16 +32,16 @@ def append_format(lst, template, dct):
     # shorthand, wrap fmt.vformat
     lst.append(fmt.vformat(template, None, dct))
 
-def eval_template(options, fmt, name, default=None):
-    """ If a tname exists in options, use it; else use default.
-    fmt[name] = option[name + '_template']
+def eval_template(node, name, tname='', fmt=None):
+    """fmt[name] = node[name] or option[name + tname + '_template']
     """
-    if hasattr(options, name):
-        setattr(fmt, name, getattr(options, name))
+    if fmt is None:
+        fmt = node['fmt']
+    if name in node:
+        setattr(fmt, name, node[name])
     else:
-        dflt = default or default_template[name]
-        tname = name + '_template'
-        setattr(fmt, name, wformat(options.get(tname, dflt), fmt))
+        tname = name + tname + '_template'
+        setattr(fmt, name, wformat(node['options'][tname], fmt))
 
 
 # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case
@@ -216,38 +216,37 @@ class Typedef(object):
     """
     # valid fields
     defaults = dict(
-        base='unknown',       # base type: 'string'
-        forward=None,         # forward declaration
+        base='unknown',       # Base type: 'string'
+        forward=None,         # Forward declaration
         typedef=None,         # Initialize from existing type
 
-        cpp_type=None,        # name of type in C++
-        cpp_to_c='{var}',     # expression to convert from C++ to C
+        cpp_type=None,        # Name of type in C++
+        cpp_to_c='{var}',     # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
 
-        c_type=None,          # name of type in C
+        c_type=None,          # Name of type in C
         c_header=None,        # Name of C header file required for type
-        c_to_cpp='{var}',     # expression to convert from C to C++
-        c_fortran=None,       # expression to convert from C to Fortran
-        c_argdecl=None,       # list of argument declarations for C wrapper, None=match declaration
+        c_to_cpp='{var}',     # Expression to convert from C to C++
+        c_fortran=None,       # Expression to convert from C to Fortran
+        c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer 
 
-        f_c_args=None,        # list of argument names to F_C routine
-        f_c_argdecl=None,     # list of declarations to F_C routine
+        f_c_args=None,        # List of argument names to F_C routine
+        f_c_argdecl=None,     # List of declarations to F_C routine
 
-        f_type=None,         # name of type in Fortran
-        fortran_derived=None,    # Fortran derived type name
-        fortran_to_c='{var}', # expression to convert Fortran to C
+        f_type=None,          # Name of type in Fortran
+        f_derived_type=None,  # Fortran derived type name
+        f_args=None,          # Argument in Fortran wrapper to call C.
         f_module=None,        # Fortran modules needed for type  (dictionary)
-        f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})',
+        f_return_code=None,
         f_kind = None,        # Fortran kind of type
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
-        f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
-        f_pre_decl = None,    # declarations needed by f_pre_call
-        f_pre_call = None,    # statement to execute before call, often to coerce types
-        f_post_call = None,   # statement to execute before call - cleanup, coerce result
-        f_rv_decl = None,     # how to declare return variable - when C and Fortran return different types
+        f_use_tmp = False,    # Pass {tmp_var} to C routine instead of {var}
+        f_argsdecl = None,    # List of declarations need by argument.
+        f_pre_call = None,    # Statement to execute before call, often to coerce types
+        f_post_call = None,   # Statement to execute after call - cleanup, coerce result
 
 # XXX - maybe later.  For not in wrapping routines
 #        f_attr_len_trim = None,
@@ -371,6 +370,12 @@ class Options(object):
             elif not hasattr(self, key):
                 setattr(self, key, value)
 
+    def inlocal(self, key):
+        """ Return true if key is defined locally
+        i.e. does not check parent.
+        """
+        return key in self.__dict__
+
     def _to_dict(self):
         d = {}
         skip = '_' + self.__class__.__name__ + '__'   # __name is skipped
@@ -392,23 +397,17 @@ class Options(object):
 def copy_function_node(node):
     """Create a copy of a function node to use with C++ template.
     """
-    known = {}   # known fields
-    new = {}
+    # Shallow copy everything
+    new = node.copy()
 
     # Deep copy dictionaries
     for field in [ 'args', 'attrs', 'result' ]:
         new[field] = copy.deepcopy(node[field])
-        known[field] = True
 
     # Add new Options in chain
     for field in [ 'fmt', 'options' ]:
         new[field] = Options(node[field])
-        known[field] = True
 
-    # Shallow copy any unknown fields
-    for key, value in node.items():
-        if key not in known:
-            new[key] = value
     return new
 
 class XXXClassNode(object):

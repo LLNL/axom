@@ -8,6 +8,7 @@ program tester
 
   logical rv_logical
   integer rv_integer
+  integer(C_INT) rv_int
   real(C_DOUBLE) rv_double
   character(30) rv_char
 
@@ -36,9 +37,9 @@ contains
     call function4b("dog", "cat", rv_char)
     call assert_true( rv_char == "dogcat")
 
-    call assert_real(function5(), 8.13d0)
-    call assert_real(function5(1.d0, 2), 3.d0)
-    call assert_real(function5(arg2=6), 9.13d0)
+    call assert_real(function5(), 13.1415d0)
+    call assert_real(function5(1.d0), 11.d0)
+    call assert_real(function5(1.d0, .false.), 1.d0)
 
     call function6("name")
     call assert_true(last_function_called() == "Function6(string)")
@@ -61,8 +62,31 @@ contains
     call function9(1.d0)
     call assert_true(.true.)
 
-    rv_integer = sum(5, [1,2,3,4,5])
-    call assert_true(rv_integer .eq. 15)
+    call function10()
+    call assert_true(.true.)
+    call function10("foo", 1.0e0)
+    call assert_true(.true.)
+    call function10("bar", 2.0d0)
+    call assert_true(.true.)
+
+    call sum(5, [1,2,3,4,5], rv_int)
+    call assert_true(rv_int .eq. 15)
+
+    rv_int = overload1(10)
+    call assert_true(rv_int .eq. 10)
+    rv_int = overload1(1d0, 10)
+    call assert_true(rv_int .eq. 10)
+
+    rv_int = overload1(10, 11, 12)
+    call assert_true(rv_int .eq. 142)
+    rv_int = overload1(1d0, 10, 11, 12)
+    call assert_true(rv_int .eq. 142)
+
+    rv_int = typefunc(2)
+    call assert_true(rv_int .eq. 2)
+
+    rv_int = enumfunc(1)
+    call assert_true(rv_int .eq. 2)
 
   end subroutine test_functions
 
