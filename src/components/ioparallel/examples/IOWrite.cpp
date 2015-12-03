@@ -45,10 +45,14 @@ int main(int argc, char * argv[])
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataGroup * flds = root->createGroup("fields");
+  DataGroup * flds2 = root->createGroup("fields2");
 
   DataGroup * ga = flds->createGroup("a");
+  DataGroup * gb = flds2->createGroup("b");
   ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
   ga->getView("i0")->setValue(1);
+  gb->createViewAndBuffer("i1")->allocate(DataType::c_int());
+  gb->getView("i1")->setValue(4);
 
   std::vector<DataGroup *> groups;
   groups.push_back(root);

@@ -105,6 +105,7 @@ void IOParallel::read(const std::string& file_string, int cycle, const std::stri
        itr != m_datagroups.end(); ++itr) {
     (*itr)->load(file_name, protocol);
   }
+  (void)m_baton.finishMyTurn();
 }
 
 #if 0
