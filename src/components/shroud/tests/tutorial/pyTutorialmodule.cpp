@@ -381,9 +381,34 @@ PY_typefunc(
     {
         return NULL;
     }
-    int rv = typefunc(arg);
+    TypeID rv = typefunc(arg);
     return Py_BuildValue("i", rv);
 // splicer end function.typefunc
+}
+
+static char PY_enumfunc__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_enumfunc(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.enumfunc
+    int arg;
+    const char *kwcpp = "arg";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:enumfunc", kw_list,
+        &arg))
+    {
+        return NULL;
+    }
+    EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
+    return Py_BuildValue("i", rv);
+// splicer end function.enumfunc
 }
 
 static char PY_last_function_called__doc__[] =
@@ -417,6 +442,7 @@ static PyMethodDef PY_methods[] = {
 {"overload1_2", (PyCFunction)PY_overload1_2, METH_VARARGS|METH_KEYWORDS, PY_overload1_2__doc__},
 {"overload1_5", (PyCFunction)PY_overload1_5, METH_VARARGS|METH_KEYWORDS, PY_overload1_5__doc__},
 {"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
+{"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

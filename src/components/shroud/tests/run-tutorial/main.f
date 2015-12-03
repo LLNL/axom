@@ -85,6 +85,9 @@ contains
     rv_int = typefunc(2)
     call assert_true(rv_int .eq. 2)
 
+    rv_int = enumfunc(1)
+    call assert_true(rv_int .eq. 2)
+
   end subroutine test_functions
 
   subroutine test_class1

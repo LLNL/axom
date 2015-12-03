@@ -302,6 +302,14 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function typefunc
         
+        function enumfunc(arg) result(rv) &
+                bind(C, name="TUT_enumfunc")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: arg
+            integer(C_INT) :: rv
+        end function enumfunc
+        
         pure function tut_last_function_called() result(rv) &
                 bind(C, name="TUT_last_function_called")
             use iso_c_binding
@@ -446,7 +454,7 @@ contains
     
     ! double Function5()
     ! has_default_arg
-    ! function_index=21
+    ! function_index=22
     function function5_0() result(rv)
         use iso_c_binding
         implicit none
@@ -458,7 +466,7 @@ contains
     
     ! double Function5(double arg1+default(3.1415)+intent(in)+value)
     ! has_default_arg
-    ! function_index=22
+    ! function_index=23
     function function5_1(arg1) result(rv)
         use iso_c_binding
         implicit none
@@ -513,7 +521,7 @@ contains
     
     ! void Function7(int arg+intent(in)+value)
     ! cpp_template
-    ! function_index=23
+    ! function_index=24
     subroutine function7_int(arg)
         use iso_c_binding
         implicit none
@@ -525,7 +533,7 @@ contains
     
     ! void Function7(double arg+intent(in)+value)
     ! cpp_template
-    ! function_index=24
+    ! function_index=25
     subroutine function7_double(arg)
         use iso_c_binding
         implicit none
@@ -537,7 +545,7 @@ contains
     
     ! int Function8()
     ! cpp_template
-    ! function_index=25
+    ! function_index=26
     function function8_int() result(rv)
         use iso_c_binding
         implicit none
@@ -549,7 +557,7 @@ contains
     
     ! double Function8()
     ! cpp_template
-    ! function_index=26
+    ! function_index=27
     function function8_double() result(rv)
         use iso_c_binding
         implicit none
@@ -561,7 +569,7 @@ contains
     
     ! void Function9(float arg+intent(in)+value)
     ! fortran_generic
-    ! function_index=35
+    ! function_index=36
     subroutine function9_float(arg)
         use iso_c_binding
         implicit none
@@ -573,7 +581,7 @@ contains
     
     ! void Function9(double arg+intent(in)+value)
     ! fortran_generic
-    ! function_index=36
+    ! function_index=37
     subroutine function9_double(arg)
         use iso_c_binding
         implicit none
@@ -595,7 +603,7 @@ contains
     
     ! void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
-    ! function_index=37
+    ! function_index=38
     subroutine function10_1_float(name, arg2)
         use iso_c_binding
         implicit none
@@ -611,7 +619,7 @@ contains
     
     ! void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
-    ! function_index=38
+    ! function_index=39
     subroutine function10_1_double(name, arg2)
         use iso_c_binding
         implicit none
@@ -627,7 +635,7 @@ contains
     
     ! int overload1(int num+intent(in)+value)
     ! has_default_arg
-    ! function_index=27
+    ! function_index=28
     function overload1_0(num) result(rv)
         use iso_c_binding
         implicit none
@@ -640,7 +648,7 @@ contains
     
     ! int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)
     ! has_default_arg
-    ! function_index=28
+    ! function_index=29
     function overload1_1(num, offset) result(rv)
         use iso_c_binding
         implicit none
@@ -673,7 +681,7 @@ contains
     
     ! int overload1(double type+intent(in)+value, int num+intent(in)+value)
     ! has_default_arg
-    ! function_index=29
+    ! function_index=30
     function overload1_3(type, num) result(rv)
         use iso_c_binding
         implicit none
@@ -689,7 +697,7 @@ contains
     
     ! int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)
     ! has_default_arg
-    ! function_index=30
+    ! function_index=31
     function overload1_4(type, num, offset) result(rv)
         use iso_c_binding
         implicit none
@@ -725,7 +733,7 @@ contains
     end function overload1_5
     
     ! const std::string & LastFunctionCalled()+pure
-    ! function_index=20
+    ! function_index=21
     function last_function_called() result(rv)
         use iso_c_binding
         implicit none

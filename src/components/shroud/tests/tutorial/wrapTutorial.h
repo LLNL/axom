@@ -72,6 +72,8 @@ int TUT_overload1_5(double type, int num, int offset, int stride);
 
 int TUT_typefunc(int arg);
 
+int TUT_enumfunc(int arg);
+
 const char * TUT_last_function_called();
 
 #ifdef __cplusplus

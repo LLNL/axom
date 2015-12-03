@@ -718,6 +718,10 @@ Shroud predefines many of the native types.
   * double
   * std::string
 
+.. note:: Fortran has no support for unsigned types.
+          ``size_t`` will be the correct number of bites, but
+          will be signed.
+
 Typedef
 ^^^^^^^
 
@@ -747,9 +751,60 @@ The C wrapper will use ``int``::
 Enumerations
 ^^^^^^^^^^^^
 
+Enumeration types can also be supported by describing the type to
+shroud.
+For example::
+
+  namespace tutorial
+  {
+
+  enum EnumTypeID {
+      ENUM0,
+      ENUM1,
+      ENUM2
+  };
+
+  int enumfunc(EnumTypeID arg);
+
+  } /* end namespace tutorial */
+
+This enumeration is within a namespace so it is not available to
+C.  For C and Fortran the type can be describe as an ``int``
+similar to how the ``typedef`` is defined. But in addition we
+describe how to convert between C and C++::
+
+    types:
+      EnumTypeID:
+        typedef  : int
+        cpp_type : EnumTypeID
+        c_to_cpp : static_cast<EnumTypeID>({var})
+        cpp_to_c : static_cast<int>({var})
+
+The C argument is explicitly convert to a C++ type, then the
+return type is explicitly convert to a C type in the generated wrapper::
+
+  int TUT_enumfunc(int arg)
+  {
+    EnumTypeID rv = enumfunc(static_cast<EnumTypeID>(arg));
+    return static_cast<int>(rv);
+  }
+
+Without the explicit conversion you're likely to get an error such as::
+
+  error: invalid conversion from ‘int’ to ‘tutorial::EnumTypeID’
+
+.. note:: Currently only the types are supported. There is no support
+          for adding the enumeration values for C and Fortran.
+
+          Fortran's ``ENUM, BIND(C)`` provides a way of matching 
+          the size and values of enumerations.  However, it doesn't
+          seem to buy you too much in this case.  Defining enumeration
+          values as ``INTEGER, PARAMETER`` seems more straightforward.
+
 Structure
 ^^^^^^^^^
 
+TODO
 
 Classes
 -------

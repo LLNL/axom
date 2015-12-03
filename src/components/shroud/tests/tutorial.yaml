@@ -1,3 +1,6 @@
+# Create a runnable program for the tutorial
+#
+
 options:
   debug: True
   library: Tutorial
@@ -5,10 +8,17 @@ options:
   namespace: tutorial
   F_module_per_class: False
 
+
 types:
   TypeID:
     typedef  : int
     cpp_type : TypeID
+
+  EnumTypeID:
+    typedef  : int
+    cpp_type : EnumTypeID
+    c_to_cpp : static_cast<EnumTypeID>({var})
+    cpp_to_c : static_cast<int>({var})
 
 
 functions:
@@ -94,8 +104,10 @@ functions:
 #  options:
 #    F_string_result_as_arg: output
 
-# TypeID must be define in types
-- decl: int typefunc(TypeID arg)
+# TypeID and DataTypeId must be define in types
+- decl: TypeID typefunc(TypeID arg)
+- decl: EnumTypeID enumfunc(EnumTypeID arg)
+
 
 ##################################################
 

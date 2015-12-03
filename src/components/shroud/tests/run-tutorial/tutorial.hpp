@@ -7,6 +7,12 @@
 namespace tutorial
 {
 
+enum EnumTypeID {
+    ENUM0,
+    ENUM1,
+    ENUM2
+};
+
 typedef int TypeID;
 
 void Function1();
@@ -41,7 +47,9 @@ void Sum(int len, int * values, int *result);
 int overload1(int num, int offset = 0, int stride = 1);
 int overload1(double type, int num, int offset = 0, int stride = 1);
 
-int typefunc(TypeID arg);
+TypeID typefunc(TypeID arg);
+
+EnumTypeID enumfunc(EnumTypeID arg);
 
 const std::string& LastFunctionCalled();
 
