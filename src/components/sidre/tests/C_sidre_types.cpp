@@ -41,6 +41,7 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(LIST_ID, CONDUIT_LIST_ID);
 #endif
 
+/* Do we need any of this type testing?  The sidre types are straight up defined to conduit types now.
   EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT8_ID>()), 
             static_cast<int>(CONDUIT_INT8_T));
   EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT8_ID)), 
@@ -96,5 +97,5 @@ TEST(sidre_types,get_sidre_type)
   EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_CHAR8_STR_ID)), 
             static_cast<int>(CONDUIT_CHAR8_STR_T));
 
-
+*/
 }

@@ -30,18 +30,11 @@ namespace asctoolkit
 namespace sidre
 {
 
-// This version can be used in the C++ (templated).
-template< int TYPEID >
-inline TypeID getTypeID()
-{
-  return static_cast<TypeID>(TYPEID);
-}
-
 // This version is used for the C.
 inline TypeID getTypeID( const int typeID )
 {
 
-    return static_cast<TypeID>(typeID);
+  return static_cast<TypeID>(typeID);
 }
 
 } /* end namespace sidre */
