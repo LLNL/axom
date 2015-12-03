@@ -33,8 +33,6 @@ int main(int argc, char * argv[])
 
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
-  DataGroup * flds = root->createGroup("fields");
-  DataGroup * flds2 = root->createGroup("fields2");
 
   size_t num_files = 0;
   std::string file_base;
