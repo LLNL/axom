@@ -100,7 +100,7 @@ void Function9(double arg)
 }
 
 
-int Sum(int len, int *values)
+void Sum(int len, int *values, int *result)
 {
     last_function_called = "Sum";
 
@@ -108,7 +108,8 @@ int Sum(int len, int *values)
     for (int i=0; i < len; i++) {
 	sum += values[i];
     }
-    return sum;
+    *result = sum;
+    return;
 }
 
 //----------------------------------------------------------------------

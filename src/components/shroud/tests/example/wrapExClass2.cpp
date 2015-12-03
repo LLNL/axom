@@ -53,7 +53,7 @@ return selfobj->getName().length();
 // splicer end class.ExClass2.method.get_name_length
 }
 
-AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, AA_exclass1 * in)
+AA_exclass1 * AA_exclass2_get_class1(AA_exclass2 * self, const AA_exclass1 * in)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.get_class1

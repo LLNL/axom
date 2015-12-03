@@ -50,8 +50,8 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_buffer("u0")
-    call dv%allocate(ATK_C_INT_T, 10_8)
-    call assert_equals(dv%get_type_id(), ATK_INT32_T)  ! XXX NATIVE TYPE
+    call dv%allocate(SIDRE_INT_ID, 10_8)
+    call assert_equals(dv%get_type_id(), SIDRE_INT_ID)
     call dv%get_value(data)
 
     do i = 1, 10
@@ -77,7 +77,7 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    dv = root%create_view_and_buffer("u0", ATK_C_INT_T, 10_8)
+    dv = root%create_view_and_buffer("u0", SIDRE_INT_ID, 10_8)
     call dv%get_value(data)
 
     do i = 1, 10
@@ -105,7 +105,7 @@ contains
     root = ds%get_root()
     dbuff = ds%create_buffer()
 
-    call dbuff%declare(ATK_C_INT_T, 10_8)
+    call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
     data_ptr = dbuff%get_data()
     call c_f_pointer(data_ptr, data, [ 10 ])
@@ -167,7 +167,7 @@ contains
     root = ds%get_root()
     dbuff = ds%create_buffer()
     
-    call dbuff%allocate(ATK_C_INT_T, 10_8)
+    call dbuff%allocate(SIDRE_INT_ID, 10_8)
     data_ptr = dbuff%get_data()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
@@ -249,7 +249,7 @@ contains
 
     ! alloc our buffer
     ! we will create 4 sub views of this array
-    call base_old%allocate(ATK_C_INT_T, 40)
+    call base_old%allocate(SIDRE_INT_ID, 40)
     call base_old%get_value(data)
 
     ! init the buff with values that align with the
@@ -405,8 +405,8 @@ contains
     root = ds%get_root()
 
     ! create a view to hold the base buffer
-    a1 = root%create_view_and_buffer("a1", ATK_C_FLOAT_T, 5)
-    a2 = root%create_view_and_buffer("a2", ATK_C_INT_T, 5)
+    a1 = root%create_view_and_buffer("a1", SIDRE_FLOAT_ID, 5)
+    a2 = root%create_view_and_buffer("a2", SIDRE_INT_ID, 5)
 
     call a1%get_value(a1_data)
     call a2%get_value(a2_data)

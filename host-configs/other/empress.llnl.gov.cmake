@@ -21,6 +21,7 @@ set(CMAKE_CXX_COMPILER "/home/taylor16/gapps/gcc-4.9.3/bin/g++" CACHE PATH "")
 set(ENABLE_FORTRAN ON CACHE PATH "")
 
 set(CMAKE_Fortran_COMPILER  "/home/taylor16/gapps/gcc-4.9.3/bin/gfortran" CACHE PATH "")
+set(GCOV_PATH "/home/taylor16/gapps/gcc-4.9.3/bin/gcov" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "/home/taylor16/tpl/v2/spack/opt/spack/x86_64/gcc-4.9.3/conduit-github-t7wftaakgdvaxjbugnx7wv7z32a5e7ou" CACHE PATH "")

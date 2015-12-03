@@ -80,7 +80,7 @@ class Schema(object):
         def_options = util.Options(
             parent=None,
 
-#            library='default_library',
+            library='default_library',
             namespace='',
             cpp_header='',
 
@@ -90,33 +90,52 @@ class Schema(object):
             wrap_c       = True,
             wrap_fortran = True,
             wrap_python  = True,
+
+            C_header_filename_library_template = 'wrap{library}.h',
+            C_impl_filename_library_template = 'wrap{library}.cpp',
+
+            C_header_filename_class_template = 'wrap{cpp_class}.h',
+            C_impl_filename_class_template = 'wrap{cpp_class}.cpp',
+
+            C_name_method_template = '{C_prefix}{lower_class}_{underscore_name}{function_suffix}',
+            C_name_function_template = '{C_prefix}{underscore_name}{function_suffix}',
+
+            F_name_impl_method_template = '{lower_class}_{underscore_name}{function_suffix}',
+            F_name_impl_function_template ='{underscore_name}{function_suffix}',
+
+            F_name_method_template = '{underscore_name}{function_suffix}',
+            F_name_generic_template = '{underscore_name}',
+
+            F_module_name_library_template = '{lower_library}_mod',
+            F_impl_filename_library_template = 'wrapf{lower_library}.f',
+
+            F_module_name_class_template = '{lower_class}_mod',
+            F_impl_filename_class_template = 'wrapf{cpp_class}.f',
+
             )
+        wrapp.add_templates(def_options)
+
         if 'options' in node:
             def_options.update(node['options'])
         self.options_stack = [ def_options ]
+        node['options'] = def_options
 
         fmt_library = node['fmt'] = util.Options(None)
-        fmt_library.library       = def_options.get('library', 'default_library')
+        fmt_library.library       = def_options['library']
         fmt_library.lower_library = fmt_library.library.lower()
         fmt_library.upper_library = fmt_library.library.upper()
         fmt_library.function_suffix = ''   # assume no suffix
         fmt_library.overloaded    = False
         fmt_library.C_prefix      = def_options.get('C_prefix', fmt_library.upper_library[:3] + '_')
         fmt_library.rv            = 'rv'  # return value
-        util.eval_template(def_options, fmt_library,
-                           'C_header_filename', 'wrap{library}.h')
-        util.eval_template(def_options, fmt_library,
-                           'C_impl_filename', 'wrap{library}.cpp')
+        util.eval_template(node, 'C_header_filename', '_library')
+        util.eval_template(node, 'C_impl_filename', '_library')
         self.fmt_stack.append(fmt_library)
 
         # default some options based on other options
         # All class/methods and functions may go into this file or just functions.
-        util.eval_template(def_options, fmt_library,
-                           'F_module_name', '{lower_library}_mod')
-        util.eval_template(def_options, fmt_library,
-                           'F_impl_filename', 'wrapf{lower_library}.f')
-
-        node['options'] = def_options
+        util.eval_template(node, 'F_module_name', '_library')
+        util.eval_template(node, 'F_impl_filename', '_library')
 
         def_types = dict(
             void    = util.Typedef('void',
@@ -290,7 +309,7 @@ class Schema(object):
 
     def check_class(self, node):
         if 'name' not in node:
-            raise RuntimeError('Expeced name for class')
+            raise RuntimeError('Expected name for class')
         name = node['name']
 
         options = self.push_options(node)
@@ -302,16 +321,12 @@ class Schema(object):
             fmt_class.C_prefix = options.C_prefix
 
         if options.F_module_per_class:
-            util.eval_template(options, fmt_class,
-                               'F_module_name', '{lower_class}_mod')
-            util.eval_template(options, fmt_class,
-                               'F_impl_filename', 'wrapf{cpp_class}.f')   # XXX lower_class
+            util.eval_template(node, 'F_module_name', '_class')
+            util.eval_template(node, 'F_impl_filename', '_class')
 
         # Only one file per class for C.
-        util.eval_template(options, fmt_class,
-                           'C_header_filename', 'wrap{cpp_class}.h')
-        util.eval_template(options, fmt_class,
-                           'C_impl_filename', 'wrap{cpp_class}.cpp')
+        util.eval_template(node, 'C_header_filename', '_class')
+        util.eval_template(node, 'C_impl_filename', '_class')
 
         methods = node.setdefault('methods', [])
         for method in methods:
@@ -636,6 +651,91 @@ class GenFunctions(object):
             else:
                 raise RuntimeError("%s not defined" % argtype)
 
+class VerifyAttrs(object):
+    """
+    This must be called after GenFunctions has generated typedefs
+    for classes.
+    """
+    def __init__(self, tree, config):
+        self.tree = tree    # json tree
+        self.config = config
+
+    def verify_attrs(self):
+        tree = self.tree
+        self.typedef = tree['types']
+
+        for cls in tree['classes']:
+            for func in cls['methods']:
+                self.check_arg_attrs(func)
+
+        for func in tree['functions']:
+            self.check_arg_attrs(func)
+
+    def check_arg_attrs(self, node):
+        """Regularize attributes
+        intent: lower case, no parens, must be in, out, or inout
+        value: if pointer, default to False (pass-by-reference;
+               else True (pass-by-value).
+        """
+        options = node['options']
+        if not options.wrap_fortran and not options.wrap_c:
+            return
+
+        for arg in node['args']:
+            typedef = self.typedef.get(arg['type'], None)
+            if typedef is None:
+                raise RuntimeError("No such type %s" % arg['type'])
+
+            attrs = arg['attrs']
+            is_ptr = (attrs.get('ptr', False) or
+                      attrs.get('reference', False))
+
+            # intent
+            intent = attrs.get('intent', None)
+            if intent is None:
+                if not is_ptr:
+                    attrs['intent'] = 'in'
+                elif attrs.get('const', False):
+                    attrs['intent'] = 'in'
+                else:
+                    attrs['intent'] = 'inout'  # Fortran default
+                    attrs['intent'] = 'in' # must coordinate with VALUE
+            else:
+                intent = intent.lower()
+                if intent[0] == '(' and intent[-1] == ')':
+                    intent = intent[1:-1]
+                if intent in ['in', 'out', 'inout']:
+                    attrs['intent'] = intent
+                else:
+                    raise RuntimeError(
+                        "Bad value for intent: " + attrs['intent'])
+
+            # value
+            value = attrs.get('value', None)
+            if value is None:
+                if is_ptr:
+                    if typedef.c_fortran == 'type(C_PTR)':
+                        # This causes Fortran to dereference the C_PTR
+                        # Otherwise a void * argument becomes void **
+                        attrs['value'] = True
+                    else:
+                        attrs['value'] = False
+                else:
+                    attrs['value'] = True
+
+            # dimension
+            dimension = attrs.get('dimension', None)
+            if dimension:
+                if attrs.get('value', False):
+                    raise RuntimeError("argument must not have value=True")
+                if not is_ptr:
+                    raise RuntimeError("dimension attribute can only be used on pointer and references")
+                if dimension is True:
+                    # No value was provided, provide default
+                    attrs['dimension'] = '(*)'
+
+#        if typedef.base == 'string':
+
 
 class Namify(object):
     """Compute names of functions in library.
@@ -685,14 +785,12 @@ class Namify(object):
         fmt_func = node['fmt']
         
         if cls:
-            util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{lower_class}_{underscore_name}{function_suffix}')
+            util.eval_template(node, 'C_name', '_method')
         else:
-            util.eval_template(options, fmt_func, 'C_name',
-                               '{C_prefix}{underscore_name}{function_suffix}')
+            util.eval_template(node, 'C_name', '_function')
 
-        if 'F_C_name' in options:
-            fmt_func.F_C_name = options.F_C_name
+        if 'F_C_name' in node:
+            fmt_func.F_C_name = node['F_C_name']
         else:
             fmt_func.F_C_name = fmt_func.C_name.lower()
 
@@ -708,16 +806,12 @@ class Namify(object):
         fmt_func = node['fmt']
 
         if cls:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', '{lower_class}_{underscore_name}{function_suffix}')
+            util.eval_template(node, 'F_name_impl', '_method')
         else:
-            util.eval_template(options, fmt_func,
-                               'F_name_impl', '{underscore_name}{function_suffix}')
+            util.eval_template(node, 'F_name_impl', '_function')
 
-        util.eval_template(options, fmt_func,
-                           'F_name_method', '{underscore_name}{function_suffix}')
-        util.eval_template(options, fmt_func,
-                           'F_name_generic', '{underscore_name}')
+        util.eval_template(node, 'F_name_method')
+        util.eval_template(node, 'F_name_generic')
 
         if 'F_this' in options:
             fmt_func.F_this = options.F_this
@@ -792,6 +886,7 @@ if __name__ == '__main__':
 
     Schema(all).check_schema()
     GenFunctions(all, config).gen_library()
+    VerifyAttrs(all, config).verify_attrs()
     Namify(all, config).name_library()
 
     if 'splicer' in all:

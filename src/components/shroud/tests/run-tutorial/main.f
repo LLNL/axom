@@ -8,6 +8,7 @@ program tester
 
   logical rv_logical
   integer rv_integer
+  integer(C_INT) rv_int
   real(C_DOUBLE) rv_double
   character(30) rv_char
 
@@ -61,8 +62,8 @@ contains
     call function9(1.d0)
     call assert_true(.true.)
 
-    rv_integer = sum(5, [1,2,3,4,5])
-    call assert_true(rv_integer .eq. 15)
+    call sum(5, [1,2,3,4,5], rv_int)
+    call assert_true(rv_int .eq. 15)
 
   end subroutine test_functions
 
