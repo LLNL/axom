@@ -814,7 +814,9 @@ class VerifyAttrs(object):
             if typedef is None:
                 cpp_template = node.get('cpp_template', {})
                 if typename not in cpp_template:
-                    raise RuntimeError("No such type %s" % arg['type'])
+                    raise RuntimeError("No such type %s: %s %s" % (
+                            typename, typename, argname))
+                    # XXX print decl
 
             attrs = arg['attrs']
             is_ptr = (attrs.get('ptr', False) or

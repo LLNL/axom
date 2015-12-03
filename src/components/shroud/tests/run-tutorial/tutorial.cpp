@@ -4,6 +4,9 @@
 
 #include "tutorial.hpp"
 
+namespace tutorial
+{
+
 static std::string last_function_called;
 
 // These variables exist to avoid warning errors
@@ -119,7 +122,7 @@ void Sum(int len, int *values, int *result)
 {
     last_function_called = "Sum";
 
-    int sum;
+    int sum = 0;
     for (int i=0; i < len; i++) {
 	sum += values[i];
     }
@@ -141,6 +144,12 @@ int overload1(double type, int num, int offset, int stride)
     return num + offset * stride;
 }
 
+int typefunc(TypeID arg)
+{
+    last_function_called = "typefunc";
+    return static_cast<int>(arg);
+}
+
 
 //----------------------------------------------------------------------
 
@@ -157,3 +166,4 @@ const std::string& LastFunctionCalled()
     return last_function_called;
 }
 
+} /* end namespace tutorial */

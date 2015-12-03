@@ -151,7 +151,7 @@ In this example, ``len`` and ``values`` are an input array and
 
     void Sum(int len, int *values, int *result)
     {
-        int sum;
+        int sum = 0;
         for (int i=0; i < len; i++) {
           sum += values[i];
         }
@@ -707,7 +707,49 @@ It may now be used with single or double precision arguments::
 Types
 -----
 
-Shroud predefines all of the native types.
+Shroud predefines many of the native types.
+
+  * void
+  * int
+  * long
+  * size_t
+  * bool
+  * float
+  * double
+  * std::string
+
+Typedef
+^^^^^^^
+
+Sometimes a library will use a ``typedef`` to identify a specific
+use of a type::
+
+    typedef int TypeID;
+
+    int typefunc(TypeID arg);
+
+Shroud must be told about user defined types in the YAML file::
+
+  types:
+    TypeID:
+      typedef  : int
+      cpp_type : TypeID
+
+This will map the C++ type ``TypeID`` to the predefined type ``int``.
+The C wrapper will use ``int``::
+
+  int TUT_typefunc(int arg)
+  {
+    int rv = typefunc(arg);
+    return rv;
+  }
+
+Enumerations
+^^^^^^^^^^^^
+
+Structure
+^^^^^^^^^
+
 
 Classes
 -------

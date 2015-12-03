@@ -34,6 +34,7 @@ C function int overload1(int num+intent(in)+value, int offset+default(0)+intent(
 C function int overload1(double type+intent(in)+value, int num+intent(in)+value)
 C function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)
 C function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+C function int typefunc(TypeID arg+intent(in)+value)
 C function const std::string & LastFunctionCalled()+pure
 Close wrapTutorial.h
 Close wrapTutorial.cpp
@@ -73,6 +74,7 @@ C-interface, Fortran function int overload1(int num+intent(in)+value, int offset
 C-interface, Fortran function int overload1(double type+intent(in)+value, int num+intent(in)+value)
 C-interface, Fortran function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)
 C-interface, Fortran function int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
+C-interface, Fortran function int typefunc(TypeID arg+intent(in)+value)
 C-interface, Fortran function const std::string & LastFunctionCalled()+pure
 Close wrapftutorial.f
 class Class1
@@ -94,6 +96,7 @@ Python function void Function10()
 Python function void Function10(const std::string &name, double arg2)
 Python function int overload1(int num, int offset = 0, int stride = 1)
 Python function int overload1(double type, int num, int offset = 0, int stride = 1)
+Python function int typefunc(TypeID arg)
 Python function const std::string& LastFunctionCalled() +pure
 Close pyTutorialmodule.hpp
 Close pyTutorialmodule.cpp

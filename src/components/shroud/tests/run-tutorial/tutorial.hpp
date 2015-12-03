@@ -4,6 +4,11 @@
 
 #include <string>
 
+namespace tutorial
+{
+
+typedef int TypeID;
+
 void Function1();
 
 double Function2(double arg1, int arg2);
@@ -36,6 +41,7 @@ void Sum(int len, int * values, int *result);
 int overload1(int num, int offset = 0, int stride = 1);
 int overload1(double type, int num, int offset = 0, int stride = 1);
 
+int typefunc(TypeID arg);
 
 const std::string& LastFunctionCalled();
 
@@ -45,3 +51,4 @@ public:
     void Method1();
 };
 
+} /* end namespace tutorial */

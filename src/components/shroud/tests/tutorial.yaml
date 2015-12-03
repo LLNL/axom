@@ -5,6 +5,12 @@ options:
   namespace: tutorial
   F_module_per_class: False
 
+types:
+  TypeID:
+    typedef  : int
+    cpp_type : TypeID
+
+
 functions:
 - decl: void Function1()
 - decl: double Function2(double arg1, int arg2)
@@ -88,6 +94,8 @@ functions:
 #  options:
 #    F_string_result_as_arg: output
 
+# TypeID must be define in types
+- decl: int typefunc(TypeID arg)
 
 ##################################################
 

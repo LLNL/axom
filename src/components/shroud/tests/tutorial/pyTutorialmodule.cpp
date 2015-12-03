@@ -361,6 +361,31 @@ PY_overload1_5(
 // splicer end function.overload1_5
 }
 
+static char PY_typefunc__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_typefunc(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.typefunc
+    int arg;
+    const char *kwcpp = "arg";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:typefunc", kw_list,
+        &arg))
+    {
+        return NULL;
+    }
+    int rv = typefunc(arg);
+    return Py_BuildValue("i", rv);
+// splicer end function.typefunc
+}
+
 static char PY_last_function_called__doc__[] =
 "documentation"
 ;
@@ -391,6 +416,7 @@ static PyMethodDef PY_methods[] = {
 {"Function10_1", (PyCFunction)PY_function10_1, METH_VARARGS|METH_KEYWORDS, PY_function10_1__doc__},
 {"overload1_2", (PyCFunction)PY_overload1_2, METH_VARARGS|METH_KEYWORDS, PY_overload1_2__doc__},
 {"overload1_5", (PyCFunction)PY_overload1_5, METH_VARARGS|METH_KEYWORDS, PY_overload1_5__doc__},
+{"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

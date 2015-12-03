@@ -70,6 +70,8 @@ int TUT_overload1_4(double type, int num, int offset);
 
 int TUT_overload1_5(double type, int num, int offset, int stride);
 
+int TUT_typefunc(int arg);
+
 const char * TUT_last_function_called();
 
 #ifdef __cplusplus

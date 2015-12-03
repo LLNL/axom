@@ -58,7 +58,7 @@ return rv.c_str();
 }
 
 // const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure
-// function_index=30
+// function_index=31
 const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
 {
 // splicer begin function.function4a_bufferify
@@ -78,7 +78,7 @@ return rv.c_str();
 }
 
 // const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)
-// function_index=31
+// function_index=32
 const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
 {
 // splicer begin function.function4b_bufferify
@@ -88,7 +88,7 @@ return rv.c_str();
 }
 
 // double Function5()
-// function_index=20
+// function_index=21
 double TUT_function5_0()
 {
 // splicer begin function.function5_0
@@ -98,7 +98,7 @@ return rv;
 }
 
 // double Function5(double arg1+default(3.1415)+intent(in)+value)
-// function_index=21
+// function_index=22
 double TUT_function5_1(double arg1)
 {
 // splicer begin function.function5_1
@@ -128,7 +128,7 @@ return;
 }
 
 // void Function6(const std::string & name+intent(in)+len_trim)
-// function_index=32
+// function_index=33
 void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
 // splicer begin function.function6_from_name_bufferify
@@ -148,7 +148,7 @@ return;
 }
 
 // void Function7(int arg+intent(in)+value)
-// function_index=22
+// function_index=23
 void TUT_function7_int(int arg)
 {
 // splicer begin function.function7_int
@@ -158,7 +158,7 @@ return;
 }
 
 // void Function7(double arg+intent(in)+value)
-// function_index=23
+// function_index=24
 void TUT_function7_double(double arg)
 {
 // splicer begin function.function7_double
@@ -168,7 +168,7 @@ return;
 }
 
 // int Function8()
-// function_index=24
+// function_index=25
 int TUT_function8_int()
 {
 // splicer begin function.function8_int
@@ -178,7 +178,7 @@ return rv;
 }
 
 // double Function8()
-// function_index=25
+// function_index=26
 double TUT_function8_double()
 {
 // splicer begin function.function8_double
@@ -218,7 +218,7 @@ return;
 }
 
 // void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)
-// function_index=33
+// function_index=34
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {
 // splicer begin function.function10_1_bufferify
@@ -228,7 +228,7 @@ return;
 }
 
 // int overload1(int num+intent(in)+value)
-// function_index=26
+// function_index=27
 int TUT_overload1_0(int num)
 {
 // splicer begin function.overload1_0
@@ -238,7 +238,7 @@ return rv;
 }
 
 // int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)
-// function_index=27
+// function_index=28
 int TUT_overload1_1(int num, int offset)
 {
 // splicer begin function.overload1_1
@@ -258,7 +258,7 @@ return rv;
 }
 
 // int overload1(double type+intent(in)+value, int num+intent(in)+value)
-// function_index=28
+// function_index=29
 int TUT_overload1_3(double type, int num)
 {
 // splicer begin function.overload1_3
@@ -268,7 +268,7 @@ return rv;
 }
 
 // int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)
-// function_index=29
+// function_index=30
 int TUT_overload1_4(double type, int num, int offset)
 {
 // splicer begin function.overload1_4
@@ -287,8 +287,18 @@ return rv;
 // splicer end function.overload1_5
 }
 
-// const std::string & LastFunctionCalled()+pure
+// int typefunc(TypeID arg+intent(in)+value)
 // function_index=19
+int TUT_typefunc(int arg)
+{
+// splicer begin function.typefunc
+int rv = typefunc(arg);
+return rv;
+// splicer end function.typefunc
+}
+
+// const std::string & LastFunctionCalled()+pure
+// function_index=20
 const char * TUT_last_function_called()
 {
 // splicer begin function.last_function_called

@@ -82,6 +82,9 @@ contains
     rv_int = overload1(1d0, 10, 11, 12)
     call assert_true(rv_int .eq. 142)
 
+    rv_int = typefunc(2)
+    call assert_true(rv_int .eq. 2)
+
   end subroutine test_functions
 
   subroutine test_class1
