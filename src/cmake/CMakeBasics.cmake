@@ -153,13 +153,6 @@ if (BUILD_TESTING)
 endif()
 
 ################################
-# MPI
-################################
-if (ENABLE_MPI)
-  find_package(MPI REQUIRED)
-endif()
-
-################################
 # OpenMP
 ################################
 if(ENABLE_OMP)

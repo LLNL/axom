@@ -25,6 +25,8 @@ make_library( LIBRARY_NAME
 
 add_dependencies(common copy_headers_common)
 
+install(TARGETS common DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
+
 #
 # custom target to copy header files in the "include" folder of the build tree.
 #
