@@ -16,7 +16,6 @@ using asctoolkit::sidre::DataBuffer;
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
 using asctoolkit::sidre::DataView;
-using asctoolkit::sidre::DataType;
 
 using namespace conduit;
 
@@ -27,8 +26,10 @@ TEST(sidre_view,create_views)
   DataStore * ds   = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv_0 = root->createViewAndBuffer("field0");
-  DataView * dv_1 = root->createViewAndBuffer("field1");
+  DataView * dv_0 = root->createViewAndAllocate("field0",
+                                                asctoolkit::sidre::INT_ID, 1);
+  DataView * dv_1 = root->createViewAndAllocate("field1",
+                                                asctoolkit::sidre::INT_ID, 1);
 
 
   DataBuffer * db_0 = dv_0->getBuffer();
@@ -46,10 +47,9 @@ TEST(sidre_view,int_buffer_from_view)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv = root->createViewAndBuffer("u0");
+  DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
 
-  dv->allocate(DataType::c_int(10));
-  EXPECT_EQ(dv->getTypeID(), CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(dv->getTypeID(), asctoolkit::sidre::INT_ID);
   int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++)
@@ -71,7 +71,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
 
-  DataView * dv = root->createViewAndBuffer("u0",DataType::c_int(10));
+  DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
   int * data_ptr = dv->getValue();
 
   for(int i=0 ; i<10 ; i++)
@@ -94,7 +94,7 @@ TEST(sidre_view,int_array_multi_view)
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->declare(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  dbuff->declare(asctoolkit::sidre::INT_ID, 10);
   dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
@@ -111,8 +111,10 @@ TEST(sidre_view,int_array_multi_view)
   DataView * dv_o = root->createView("odd",dbuff);
   EXPECT_EQ(dbuff->getNumViews(), 2u);
 
+  // c_int(num_elems, offset [in bytes], stride [in bytes])
   dv_e->apply(DataType::c_int(5,0,8));
 
+  // c_int(num_elems, offset [in bytes], stride [in bytes])
   dv_o->apply(DataType::c_int(5,4,8));
 
   dv_e->print();
@@ -132,6 +134,37 @@ TEST(sidre_view,int_array_multi_view)
     EXPECT_EQ(dv_e_ptr[i] % 2, 0);
     EXPECT_EQ(dv_o_ptr[i] % 2, 1);
   }
+
+  // Run similar test to above with different view apply method
+  DataView * dv_e1 = root->createView("even1",dbuff);
+  DataView * dv_o1 = root->createView("odd1",dbuff);
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // (num_elems, offset [in # elems], stride [in # elems])
+  dv_e1->apply(asctoolkit::sidre::INT_ID, 5,0,2);
+
+  // (num_elems, offset [in # elems], stride [in # elems])
+  dv_o1->apply(asctoolkit::sidre::INT_ID, 5,1,2);
+
+  dv_e1->print();
+  dv_o1->print();
+
+  int_array dv_e1_ptr = dv_e1->getValue();
+  int_array dv_o1_ptr = dv_o1->getValue();
+  for(int i=0 ; i<5 ; i++)
+  {
+    std::cout << "idx:" <<  i
+              << " e1:" << dv_e1_ptr[i]
+              << " o1:" << dv_o1_ptr[i]
+              << " em1:" << dv_e1_ptr[i]  % 2
+              << " om1:" << dv_o1_ptr[i]  % 2
+              << std::endl;
+
+    EXPECT_EQ(dv_e1_ptr[i], dv_e_ptr[i]);
+    EXPECT_EQ(dv_o1_ptr[i], dv_o_ptr[i]);
+  }
+
+
   ds->print();
   delete ds;
 
@@ -139,57 +172,184 @@ TEST(sidre_view,int_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,init_int_array_multi_view)
+TEST(sidre_view,int_array_depth_view)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
   DataBuffer * dbuff = ds->createBuffer();
 
-  dbuff->allocate(CONDUIT_NATIVE_INT_DATATYPE_ID, 10);
+  const size_t depth_nelems = 10; 
+
+  // Allocate buffer to hold data for 4 "depth" views
+  dbuff->declare(asctoolkit::sidre::INT_ID, 4 * depth_nelems );
+  dbuff->allocate();
   int * data_ptr = static_cast<int *>(dbuff->getData());
 
-  for(int i=0 ; i<10 ; i++)
+  for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
   {
-    data_ptr[i] = i;
+    data_ptr[i] = i / depth_nelems;
   }
 
   dbuff->print();
 
-  EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
+  EXPECT_EQ(dbuff->getNumElements(), 4 * depth_nelems);
 
-
-  DataView * dv_e = root->createView("even",dbuff);
-  DataView * dv_o = root->createView("odd",dbuff);
-
-  // c_int(num_elems, offset, stride)
-  dv_e->apply(DataType::c_int(5,0,8));
-
-
-  // c_int(num_elems, offset, stride)
-  dv_o->apply(DataType::c_int(5,4,8));
-
-
-  dv_e->print();
-  dv_o->print();
-
-  int_array dv_e_ptr = dv_e->getValue();
-  int_array dv_o_ptr = dv_o->getValue();
-  for(int i=0 ; i<5 ; i++)
+  // create 4 "depth" views and apply offsets into buffer
+  DataView* views[4];
+  std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  
+  for (int id = 0; id < 4; ++id) 
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1);
+     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, id*depth_nelems);
   }
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     views[id]->print();
+  } 
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     int_array dv_ptr = views[id]->getValue();
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
+
   ds->print();
   delete ds;
-
 }
+
+//------------------------------------------------------------------------------
+
+// Similar to previous test, using other view creation methods
+TEST(sidre_view,int_array_depth_view_2)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataBuffer * dbuff = ds->createBuffer();
+
+  const size_t depth_nelems = 10; 
+
+  // Allocate buffer to hold data for 4 "depth" views
+  dbuff->declare(asctoolkit::sidre::INT_ID, 4 * depth_nelems );
+  dbuff->allocate();
+  int * data_ptr = static_cast<int *>(dbuff->getData());
+
+  for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
+  {
+    data_ptr[i] = i / depth_nelems;
+  }
+
+  dbuff->print();
+
+  EXPECT_EQ(dbuff->getNumElements(), 4 * depth_nelems);
+
+  // create 4 "depth" views and apply offsets into buffer
+  DataView* views[4];
+  std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  
+  for (int id = 0; id < 2; ++id) 
+  {
+     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, 
+                                                                id*depth_nelems);
+  }
+  // 
+  // call path including type
+  for (int id = 2; id < 4; ++id)
+  {
+     views[id] = root->createView(view_names[id], dbuff)->apply(asctoolkit::sidre::INT_ID, 
+                                                                depth_nelems, 
+                                                                id*depth_nelems);
+  }
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     views[id]->print();
+  } 
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     int_array dv_ptr = views[id]->getValue();
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
+
+  ds->print();
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,int_array_view_attach_buffer)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  const size_t field_nelems = 10;
+  std::string field_names[4] = { "field_0", "field_1", "field_2", "field_3" };
+
+  // create 4 "field" views with type and # elems
+  DataView* field[4];
+  size_t elem_count = 0; 
+  for (int fid = 0; fid < 4; ++fid)
+  { 
+    field[fid] = root->createView(field_names[fid], 
+                                  asctoolkit::sidre::INT_ID, field_nelems);
+    elem_count += field[fid]->getNumElements();
+  }
+  EXPECT_EQ(elem_count, 4 * field_nelems);
+
+  // create buffer to hold data for all fields and allocate
+  DataBuffer * dbuff = ds->createBuffer()->allocate(asctoolkit::sidre::INT_ID,
+                                                    elem_count);
+  EXPECT_EQ(dbuff->getNumElements(), elem_count);
+
+  // Initilize buffer data for testing below.
+  int_array b_ptr = dbuff->getValue();
+  for(size_t i = 0 ; i < elem_count ; ++i)
+  {
+    b_ptr[i] = i / field_nelems;
+  }
+
+  dbuff->print();
+
+  // attach field views to buffer and apply offsets into buffer
+  for (int fid = 0; fid < 4; ++fid)
+  {
+    field[fid]->attachBuffer(dbuff)->apply(field_nelems, fid * field_nelems);
+  }
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // print field views...
+  for (int id = 0; id < 4; ++id)
+  {
+     field[id]->print();
+  } 
+
+  // check values in field views...
+  for (int id = 0; id < 4; ++id)
+  {
+     int_array v_ptr = field[id]->getValue();
+     for (size_t i = 0; i < field_nelems; ++i)
+     {
+        EXPECT_EQ(v_ptr[i], id);
+     }
+  }
+
+  ds->print();
+  delete ds;
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -213,12 +373,11 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   // create a group to hold the "old" or data we want to copy
   DataGroup * r_old = root->createGroup("r_old");
-  // create a view to hold the base buffer
-  DataView * base_old = r_old->createViewAndBuffer("base_data");
+  // create a view to hold the base buffer and allocate
+  DataView * base_old = r_old->createViewAndAllocate("base_data", 
+                                                     DataType::c_int(40));
 
-  // alloc our buffer
   // we will create 4 sub views of this array
-  base_old->allocate(DataType::c_int(40));
   int * data_ptr = base_old->getValue();
 
 
@@ -284,12 +443,10 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   // create a group to hold the "old" or data we want to copy into
   DataGroup * r_new = root->createGroup("r_new");
-  // create a view to hold the base buffer
-  DataView * base_new = r_new->createViewAndBuffer("base_data");
+  // create a view to hold the base buffer and allocate
+  DataView * base_new = r_new->createViewAndAllocate("base_data",
+                                                     DataType::c_int(4 * 12));
 
-  // alloc our buffer
-  // create a buffer to hold larger subarrays
-  base_new->allocate(DataType::c_int(4 * 12));
   int * base_new_data = base_new->getValue();
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {
@@ -373,8 +530,8 @@ TEST(sidre_view,int_array_realloc)
   DataGroup * root = ds->getRoot();
 
   // create a view to hold the base buffer
-  DataView * a1 = root->createViewAndBuffer("a1",DataType::c_float(5));
-  DataView * a2 = root->createViewAndBuffer("a2",DataType::c_int(5));
+  DataView * a1 = root->createViewAndAllocate("a1",DataType::c_float(5));
+  DataView * a2 = root->createViewAndAllocate("a2",DataType::c_int(5));
 
   float * a1_ptr = a1->getValue();
   int * a2_ptr = a2->getValue();
@@ -454,23 +611,4 @@ TEST(sidre_view,simple_opaque)
   ds->print();
   delete ds;
   delete [] src_data;
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

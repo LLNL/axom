@@ -123,7 +123,7 @@ subroutine dataview_get_value_{typename}_{nd}{suffix}(view, value)
     integer(C_SIZE_T) nelems
 
     cptr = view%get_data_pointer()
-    nelems = view%get_number_of_elements()
+    nelems = view%get_num_elements()
     call c_f_pointer(cptr, value, [ nelems ])
 end subroutine dataview_get_value_{typename}_{nd}{suffix}""".format(**d)
     else:

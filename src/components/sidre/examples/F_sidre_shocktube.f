@@ -101,8 +101,7 @@ contains
     integer(C_INT) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_buffer(name, SIDRE_INT_ID, 1)
-    call tmpview%allocate()
+    tmpview = grp%create_view_and_allocate(name, SIDRE_INT_ID, 1)
     call tmpview%set_value(value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
@@ -113,8 +112,7 @@ contains
     real(C_DOUBLE) value
     type(dataview) tmpview
 
-    tmpview = grp%create_view_and_buffer(name, SIDRE_DOUBLE_ID, 1)
-    call tmpview%allocate()
+    tmpview = grp%create_view_and_allocate(name, SIDRE_DOUBLE_ID, 1)
     call tmpview%set_value(value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
 
@@ -262,11 +260,9 @@ subroutine CreateShockTubeMesh(prob)
   numTubeElems = numElems - 2
   tube = elem%create_group("tube")
 
-  mapToElemsView = tube%create_view_and_buffer("mapToElems", SIDRE_INT_ID, numTubeElems)
-  call mapToElemsView%allocate()
+  mapToElemsView = tube%create_view_and_allocate("mapToElems", SIDRE_INT_ID, numTubeElems)
 
   call mapToElemsView%get_value(mapToElems)
-!--  allocate(mapToElem(nuMTubeElems))
 
   do k=1, numTubeElems
     mapToElems(k) = k  ! XXX + 1
@@ -276,11 +272,9 @@ subroutine CreateShockTubeMesh(prob)
 
   ! Each face connects to two elements
 
-  faceToElemView = face%create_view_and_buffer("faceToElem", SIDRE_INT_ID, 2*numFaces)
-  call faceToElemView%allocate()
+  faceToElemView = face%create_view_and_allocate("faceToElem", SIDRE_INT_ID, 2*numFaces)
 
   call faceToElemView%get_value(faceToElem)
-!--  allocate(faceToElem(2, numFaces))
 
   do i=1, numFaces
     faceToElem((i-1) * 2 + IUPWIND) = i - 1 ! XXX
@@ -290,10 +284,8 @@ subroutine CreateShockTubeMesh(prob)
   ! Each element connects to two faces
 !--//  Relation &elemToFace = *tube%relationCreate("elemToFace", 2)
 !  dims(0) = numElems
-  elemToFaceView = tube%create_view_and_buffer("elemToFace", SIDRE_INT_ID, 2*numElems);
-  call elemToFaceView%allocate()
+  elemToFaceView = tube%create_view_and_allocate("elemToFace", SIDRE_INT_ID, 2*numElems);
   call elemToFaceView%get_value(elemToFace)
-!!  allocate(elemToFace(2, numElems))
 
   do i=1, numElems
     elemToFace((i-1) * 2 + IUPWIND) = i  - 1! XXX ! same map as above by coincidence
@@ -338,20 +330,16 @@ subroutine InitializeShockTube(prob)
 
   ! Create element centered quantities
 
-  tmpview = elem%create_view_and_buffer("mass")
-  call tmpview%allocate(SIDRE_DOUBLE_ID, numElems)
+  tmpview = elem%create_view_and_allocate("mass", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(mass)
 
-  tmpview = elem%create_view_and_buffer("momentum", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_allocate("momentum", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(momentum)
 
-  tmpview = elem%create_view_and_buffer("energy", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_allocate("energy", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(energy)
 
-  tmpview = elem%create_view_and_buffer("pressure", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%allocate()
+  tmpview = elem%create_view_and_allocate("pressure", SIDRE_DOUBLE_ID, numElems)
   call tmpview%get_value(pressure)
 !!  allocate(mass(numElems))
 !!  allocate(momentum(numElems))
@@ -359,12 +347,9 @@ subroutine InitializeShockTube(prob)
 !!  allocate(pressure(numElems))
 
   ! Create face centered quantities
-  tmpview = face%create_view_and_buffer("F0", SIDRE_DOUBLE_ID, numFaces)
-  call tmpview%allocate()
-  tmpview = face%create_view_and_buffer("F1", SIDRE_DOUBLE_ID, numFaces)
-  call tmpview%allocate()
-  tmpview = face%create_view_and_buffer("F2", SIDRE_DOUBLE_ID, numFaces)
-  call tmpview%allocate()
+  tmpview = face%create_view_and_allocate("F0", SIDRE_DOUBLE_ID, numFaces)
+  tmpview = face%create_view_and_allocate("F1", SIDRE_DOUBLE_ID, numFaces)
+  tmpview = face%create_view_and_allocate("F2", SIDRE_DOUBLE_ID, numFaces)
 !!  allocate(F0(numFaces))
 !!  allocate(F1(numFaces))
 !!  allocate(F2(numFaces))
@@ -458,7 +443,7 @@ subroutine ComputeFaceInfo(prob)
   tmpview = face%get_view("F2")
   call tmpview%get_value(F2)
 
-  numFaces = tmpview%get_number_of_elements()
+  numFaces = tmpview%get_num_elements()
 
   elem = prob%get_group("elem")
   tmpview = elem%get_view("mass")
@@ -590,7 +575,7 @@ subroutine UpdateElemInfo(prob)
 !--//  int *is = tube%map()
   tmpview = tube%get_view("mapToElems")
   call tmpview%get_value(is)
-  numTubeElems = tmpview%get_number_of_elements()
+  numTubeElems = tmpview%get_num_elements()
 
 
   ! The element update is calculated as the flux between faces
@@ -658,7 +643,7 @@ subroutine DumpUltra( prob )
 
   do i=1, prob%get_num_views()
      view = prob%get_view(i-1)
-     length = view%get_number_of_elements()
+     length = view%get_num_elements()
      call view%get_name(name)
      if ( length <= 1 ) then
         select case (view%get_type_id())
@@ -674,7 +659,7 @@ subroutine DumpUltra( prob )
 
   do i=1, elem%get_num_views()
      view = elem%get_view(i-1)
-     length = view%get_number_of_elements()
+     length = view%get_num_elements()
      call view%get_name(name)
      write(fp, '("# ", a)') trim(name)
 

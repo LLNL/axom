@@ -210,6 +210,8 @@ private:
   /// Collection of unused unique buffer indices (they can be recycled).
   std::stack< IndexType > m_free_buffer_ids;
 
+  /// Flag indicating whether SLIC logging environment was initialized in ctor.
+  bool m_i_initialized_slic;
 };
 
 

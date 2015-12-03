@@ -21,32 +21,32 @@ PyObject *PY_error_obj;
 // splicer begin additional_functions
 // splicer end additional_functions
 
-static char PY_is_name_valid__doc__[] =
+static char PY_name_is_valid__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_is_name_valid(
+PY_name_is_valid(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.is_name_valid
+// splicer begin function.name_is_valid
     const char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:isNameValid", kw_list,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:nameIsValid", kw_list,
         &name))
     {
         return NULL;
     }
-    bool rv = isNameValid(name);
+    bool rv = nameIsValid(name);
     return PyBool_FromLong(rv);
-// splicer end function.is_name_valid
+// splicer end function.name_is_valid
 }
 static PyMethodDef PY_methods[] = {
-{"isNameValid", (PyCFunction)PY_is_name_valid, METH_VARARGS|METH_KEYWORDS, PY_is_name_valid__doc__},
+{"nameIsValid", (PyCFunction)PY_name_is_valid, METH_VARARGS|METH_KEYWORDS, PY_name_is_valid__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

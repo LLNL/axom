@@ -53,7 +53,7 @@ contains
     call dbuff%allocate()
 
     call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID)
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
     data_ptr = dbuff%get_data()
@@ -84,7 +84,7 @@ contains
     call dbuff%allocate(SIDRE_INT_ID, 10_8)
 
     call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID)
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
     data_ptr = dbuff%get_data()
@@ -116,7 +116,7 @@ contains
     call dbuff%allocate(SIDRE_LONG_ID, 5_8)
 
     call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
-    call assert_true(dbuff%get_number_of_elements() == 5)
+    call assert_true(dbuff%get_num_elements() == 5)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     data_ptr = dbuff%get_data()
@@ -128,8 +128,8 @@ contains
   
     call dbuff%reallocate(10)
 
-   call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
+    call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     ! data buffer changes
@@ -154,11 +154,10 @@ contains
 end module sidre_buffer
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_buffer
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -172,9 +171,7 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
