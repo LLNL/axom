@@ -40,7 +40,7 @@ contains
     view = root%create_allocatable_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 10)
@@ -80,13 +80,13 @@ contains
     view = root%create_allocatable_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 0)
 
     ! Allocate array via datastore
-    call view%declare(ATK_C_INT_T, 10)
+    call view%declare(SIDRE_INT_ID, 10)
     call view%allocate()
     
     ! Check from Fortran with ALLOCATED and SIZE
@@ -97,7 +97,7 @@ contains
 
 ! Check datastore metadata
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 10)
@@ -142,7 +142,7 @@ contains
     view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 10)
@@ -176,7 +176,7 @@ contains
     view = root%create_allocatable_view("darray", darray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_DOUBLE_T)
+    call assert_equals(type, SIDRE_DOUBLE_ID)
 
     num_elements = view%get_number_of_elements()
     call assert_equals(num_elements, 10)

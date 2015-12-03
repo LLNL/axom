@@ -41,10 +41,10 @@ contains
     dbuff_1 = ds%create_buffer()
     dbuff_2 = ds%create_buffer()
 
-    call dbuff_0%allocate(ATK_C_DOUBLE_T, len)
-    call dbuff_1%declare(ATK_C_INT_T, len)
+    call dbuff_0%allocate(SIDRE_DOUBLE_ID, len)
+    call dbuff_1%declare(SIDRE_INT_ID, len)
     call dbuff_1%set_external_data(c_loc(idata))
-    call dbuff_2%declare(ATK_C_DOUBLE_T, len)
+    call dbuff_2%declare(SIDRE_DOUBLE_ID, len)
     call dbuff_2%set_external_data(c_loc(ddata))
 
     call assert_equals(dbuff_0%is_external(), .false.)
@@ -87,8 +87,8 @@ contains
        ddata(ii) = idata(ii) * 2.0
     enddo
 
-    iview = root%create_external_view("idata", c_loc(idata), ATK_C_INT_T, len)
-    dview = root%create_external_view("ddata", c_loc(ddata), ATK_C_DOUBLE_T, len)
+    iview = root%create_external_view("idata", c_loc(idata), SIDRE_INT_ID, len)
+    dview = root%create_external_view("ddata", c_loc(ddata), SIDRE_DOUBLE_ID, len)
     call assert_true(root%get_num_views() .eq. 2)
 
     call iview%print()
@@ -135,8 +135,8 @@ contains
        ddata(ii) = idata(ii) * 2.0
     enddo
 
-    iview = root%create_external_view("idata", c_loc(idata), ATK_C_INT_T, len)
-    dview = root%create_external_view("ddata", c_loc(ddata), ATK_C_DOUBLE_T, len)
+    iview = root%create_external_view("idata", c_loc(idata), SIDRE_INT_ID, len)
+    dview = root%create_external_view("ddata", c_loc(ddata), SIDRE_DOUBLE_ID, len)
 
     call assert_true(root%get_num_views() .eq. 2)
     tmpbuff = iview%get_buffer()
