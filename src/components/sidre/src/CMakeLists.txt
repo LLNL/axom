@@ -9,6 +9,7 @@ set(sidre_headers
     core/DataStore.hpp
     core/DataView.hpp
     core/SidreTypes.hpp
+    core/SidreDataTypeIds.h
     core/sidre.hpp
 )
 

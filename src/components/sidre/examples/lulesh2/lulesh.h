@@ -160,23 +160,23 @@ class Domain {
    void AllocateNodePersistent(Int_t numNode) // Node-centered
    {
 #if USE_SIDRE==1
-     m_x = m_DataGroup->createViewAndBuffer("m_x",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_y = m_DataGroup->createViewAndBuffer("m_y",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_z = m_DataGroup->createViewAndBuffer("m_z",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_x = m_DataGroup->createViewAndAllocate("m_x",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_y = m_DataGroup->createViewAndAllocate("m_y",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_z = m_DataGroup->createViewAndAllocate("m_z",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_xd = m_DataGroup->createViewAndBuffer("m_xd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_yd = m_DataGroup->createViewAndBuffer("m_yd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_zd = m_DataGroup->createViewAndBuffer("m_zd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_xd = m_DataGroup->createViewAndAllocate("m_xd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_yd = m_DataGroup->createViewAndAllocate("m_yd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_zd = m_DataGroup->createViewAndAllocate("m_zd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_xdd = m_DataGroup->createViewAndBuffer("m_xdd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_ydd = m_DataGroup->createViewAndBuffer("m_ydd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_zdd = m_DataGroup->createViewAndBuffer("m_zdd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_xdd = m_DataGroup->createViewAndAllocate("m_xdd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_ydd = m_DataGroup->createViewAndAllocate("m_ydd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_zdd = m_DataGroup->createViewAndAllocate("m_zdd",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_fx = m_DataGroup->createViewAndBuffer("m_fx",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_fy = m_DataGroup->createViewAndBuffer("m_fy",asctoolkit::sidre::DataType::float64(numNode))->getValue();
-     m_fz = m_DataGroup->createViewAndBuffer("m_fz",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_fx = m_DataGroup->createViewAndAllocate("m_fx",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_fy = m_DataGroup->createViewAndAllocate("m_fy",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_fz = m_DataGroup->createViewAndAllocate("m_fz",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
-     m_nodalMass = m_DataGroup->createViewAndBuffer("m_nodalMass",asctoolkit::sidre::DataType::float64(numNode))->getValue();
+     m_nodalMass = m_DataGroup->createViewAndAllocate("m_nodalMass",asctoolkit::sidre::DataType::float64(numNode))->getValue();
 
 #else
       m_x.resize(numNode);  // coordinates
@@ -202,42 +202,42 @@ class Domain {
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
 #if USE_SIDRE==1
-     m_nodelist = m_DataGroup->createViewAndBuffer("m_nodelist",asctoolkit::sidre::DataType::int32(8*numElem))->getValue();
+     m_nodelist = m_DataGroup->createViewAndAllocate("m_nodelist",asctoolkit::sidre::DataType::int32(8*numElem))->getValue();
 
      // elem connectivities through face
-     m_lxim = m_DataGroup->createViewAndBuffer("m_lxim",asctoolkit::sidre::DataType::int32(numElem))->getValue();
-     m_lxip = m_DataGroup->createViewAndBuffer("m_lxip",asctoolkit::sidre::DataType::int32(numElem))->getValue();
-     m_letam = m_DataGroup->createViewAndBuffer("m_letam",asctoolkit::sidre::DataType::int32(numElem))->getValue();
-     m_letap = m_DataGroup->createViewAndBuffer("m_letap",asctoolkit::sidre::DataType::int32(numElem))->getValue();
-     m_lzetam = m_DataGroup->createViewAndBuffer("m_lzetam",asctoolkit::sidre::DataType::int32(numElem))->getValue();
-     m_lzetap = m_DataGroup->createViewAndBuffer("m_lzetap",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lxim = m_DataGroup->createViewAndAllocate("m_lxim",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lxip = m_DataGroup->createViewAndAllocate("m_lxip",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_letam = m_DataGroup->createViewAndAllocate("m_letam",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_letap = m_DataGroup->createViewAndAllocate("m_letap",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lzetam = m_DataGroup->createViewAndAllocate("m_lzetam",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_lzetap = m_DataGroup->createViewAndAllocate("m_lzetap",asctoolkit::sidre::DataType::int32(numElem))->getValue();
 
 
 
-     m_elemBC = m_DataGroup->createViewAndBuffer("m_elemBC",asctoolkit::sidre::DataType::int32(numElem))->getValue();
+     m_elemBC = m_DataGroup->createViewAndAllocate("m_elemBC",asctoolkit::sidre::DataType::int32(numElem))->getValue();
 
-      m_e = m_DataGroup->createViewAndBuffer("m_e",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-      m_p = m_DataGroup->createViewAndBuffer("m_p",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_e = m_DataGroup->createViewAndAllocate("m_e",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_p = m_DataGroup->createViewAndAllocate("m_p",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_q = m_DataGroup->createViewAndBuffer("m_q",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-      m_ql = m_DataGroup->createViewAndBuffer("m_ql",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-      m_qq = m_DataGroup->createViewAndBuffer("m_qq",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_q = m_DataGroup->createViewAndAllocate("m_q",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_ql = m_DataGroup->createViewAndAllocate("m_ql",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_qq = m_DataGroup->createViewAndAllocate("m_qq",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_v = m_DataGroup->createViewAndBuffer("m_v",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_v = m_DataGroup->createViewAndAllocate("m_v",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_volo = m_DataGroup->createViewAndBuffer("m_volo",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-      m_delv = m_DataGroup->createViewAndBuffer("m_delv",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-      m_vdov = m_DataGroup->createViewAndBuffer("m_vdov",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-
-
+      m_volo = m_DataGroup->createViewAndAllocate("m_volo",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_delv = m_DataGroup->createViewAndAllocate("m_delv",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_vdov = m_DataGroup->createViewAndAllocate("m_vdov",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
 
 
-      m_arealg = m_DataGroup->createViewAndBuffer("m_arealg",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_ss = m_DataGroup->createViewAndBuffer("m_ss",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
-      m_elemMass = m_DataGroup->createViewAndBuffer("m_elemMass",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+      m_arealg = m_DataGroup->createViewAndAllocate("m_arealg",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+
+      m_ss = m_DataGroup->createViewAndAllocate("m_ss",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+
+      m_elemMass = m_DataGroup->createViewAndAllocate("m_elemMass",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
 #else
       m_nodelist.resize(8*numElem);
@@ -277,14 +277,14 @@ class Domain {
    {
 #if USE_SIDRE==1
      // Position gradients
-     m_delx_xi = m_DataGroup->createViewAndBuffer("m_delx_xi",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-     m_delx_eta = m_DataGroup->createViewAndBuffer("m_delx_eta",asctoolkit::sidre::DataType::float64(numElem))->getValue();
-     m_delx_zeta = m_DataGroup->createViewAndBuffer("m_delx_zeta",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+     m_delx_xi = m_DataGroup->createViewAndAllocate("m_delx_xi",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+     m_delx_eta = m_DataGroup->createViewAndAllocate("m_delx_eta",asctoolkit::sidre::DataType::float64(numElem))->getValue();
+     m_delx_zeta = m_DataGroup->createViewAndAllocate("m_delx_zeta",asctoolkit::sidre::DataType::float64(numElem))->getValue();
 
      // Velocity gradients
-     m_delv_xi = m_DataGroup->createViewAndBuffer("m_delv_xi",asctoolkit::sidre::DataType::float64(allElem))->getValue();
-     m_delv_eta = m_DataGroup->createViewAndBuffer("m_delv_eta",asctoolkit::sidre::DataType::float64(allElem))->getValue();
-     m_delv_zeta = m_DataGroup->createViewAndBuffer("m_delv_zeta",asctoolkit::sidre::DataType::float64(allElem))->getValue();
+     m_delv_xi = m_DataGroup->createViewAndAllocate("m_delv_xi",asctoolkit::sidre::DataType::float64(allElem))->getValue();
+     m_delv_eta = m_DataGroup->createViewAndAllocate("m_delv_eta",asctoolkit::sidre::DataType::float64(allElem))->getValue();
+     m_delv_zeta = m_DataGroup->createViewAndAllocate("m_delv_zeta",asctoolkit::sidre::DataType::float64(allElem))->getValue();
 #else
       // Position gradients
       m_delx_xi.resize(numElem) ;
@@ -322,9 +322,9 @@ class Domain {
    void AllocateStrains(Int_t numElem)
    {
 #if USE_SIDRE==1
-     m_dxx = m_DataGroup->createViewAndBuffer("m_dxx",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
-     m_dyy = m_DataGroup->createViewAndBuffer("m_dyy",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
-     m_dzz = m_DataGroup->createViewAndBuffer("m_dzz",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
+     m_dxx = m_DataGroup->createViewAndAllocate("m_dxx",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
+     m_dyy = m_DataGroup->createViewAndAllocate("m_dyy",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
+     m_dzz = m_DataGroup->createViewAndAllocate("m_dzz",asctoolkit::sidre::DataType::float64(numElem))->getValue() ;
 #else
       m_dxx.resize(numElem) ;
       m_dyy.resize(numElem) ;
@@ -378,9 +378,9 @@ class Domain {
    Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
    Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
    Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
-   bool symmXempty()          { return m_DataGroup->getView("m_symmX")->getNumberOfElements(); }
-   bool symmYempty()          { return m_DataGroup->getView("m_symmY")->getNumberOfElements(); }
-   bool symmZempty()          { return m_DataGroup->getView("m_symmZ")->getNumberOfElements(); }
+   bool symmXempty()          { return m_DataGroup->getView("m_symmX")->getNumElements(); }
+   bool symmYempty()          { return m_DataGroup->getView("m_symmY")->getNumElements(); }
+   bool symmZempty()          { return m_DataGroup->getView("m_symmZ")->getNumElements(); }
 
    //
    // Element-centered

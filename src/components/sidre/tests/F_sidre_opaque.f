@@ -208,13 +208,13 @@ contains
        zonemv_ptr = zone_mv_view%get_opaque()
        call c_f_pointer(zonemv_ptr, zonemv)
 
-       dom_zone_view = dom_gp%create_view_and_buffer("zone_data")
+       dom_zone_view = dom_gp%create_view_empty("zone_data")
        call dom_zone_view%allocate(SIDRE_INT_ID, zone_mv%getNumVals(dom_ext))
 
        nodemv_ptr = node_mv_view%get_opaque()
        call c_f_pointer(nodemv_ptr, nodemv)
 
-       dom_node_view = dom_gp%create_view_and_buffer("node_data")
+       dom_node_view = dom_gp%create_view_empty("node_data")
        call dom_node_view%allocate(SIDRE_DOUBLE_ID, nodemv%getNumVals(dom_ext))
     enddo
 
@@ -242,12 +242,12 @@ contains
 
        num_zone_vals = zonemv%getNumVals(dom_ext)
        tmpview = dom_gp%get_view("zone_data")
-       test_num_zone_vals = tmpview%get_number_of_elements()
+       test_num_zone_vals = tmpview%get_num_elements()
        call assert_equals(num_zone_vals, test_num_zone_vals)
 
        num_node_vals = nodemv%getNumVals(dom_ext)
        tmpview = dom_gp%get_view("node_data")
-       test_num_node_vals = tmpview%get_number_of_elements()
+       test_num_node_vals = tmpview%get_num_elements()
        call assert_equals(num_node_vals, test_num_node_vals)
     enddo
 
@@ -268,11 +268,10 @@ contains
 end module sidre_opaque
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_opaque
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -284,9 +283,8 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
+

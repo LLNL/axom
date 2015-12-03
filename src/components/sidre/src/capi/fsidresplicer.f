@@ -23,7 +23,6 @@ use conduit, only : &
     SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_T
 ! splicer end module_use
 
-
 ! splicer begin module_top
 integer, parameter :: invalid_index = -1
 ! splicer end module_top

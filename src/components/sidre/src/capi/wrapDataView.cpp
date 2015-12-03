@@ -18,15 +18,6 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-void ATK_dataview_declare(ATK_dataview * self, int type, ATK_SidreLength len)
-{
-DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.declare
-selfobj->declare(getTypeID(type), len);
-return;
-// splicer end class.DataView.method.declare
-}
-
 void ATK_dataview_allocate_simple(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
@@ -36,22 +27,85 @@ return;
 // splicer end class.DataView.method.allocate_simple
 }
 
-void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength len)
+void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength numelems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.allocate_from_type
-selfobj->allocate(getTypeID(type), len);
+selfobj->allocate(getTypeID(type), numelems);
 return;
 // splicer end class.DataView.method.allocate_from_type
 }
 
-void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength len)
+void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength numelems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.reallocate
-selfobj->reallocate(len);
+selfobj->reallocate(numelems);
 return;
 // splicer end class.DataView.method.reallocate
+}
+
+ATK_dataview * ATK_dataview_apply_simple(ATK_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_simple
+DataView * rv = selfobj->apply();
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_simple
+}
+
+ATK_dataview * ATK_dataview_apply_nelems(ATK_dataview * self, ATK_SidreLength numelems)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_nelems
+DataView * rv = selfobj->apply(numelems);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_nelems
+}
+
+ATK_dataview * ATK_dataview_apply_nelems_offset(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_nelems_offset
+DataView * rv = selfobj->apply(numelems, offset);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_nelems_offset
+}
+
+ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_nelems_offset_stride
+DataView * rv = selfobj->apply(numelems, offset, stride);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_nelems_offset_stride
+}
+
+ATK_dataview * ATK_dataview_apply_type_nelems(ATK_dataview * self, int type, ATK_SidreLength numelems)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_type_nelems
+DataView * rv = selfobj->apply(getTypeID(type), numelems);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_type_nelems
+}
+
+ATK_dataview * ATK_dataview_apply_type_nelems_offset(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_type_nelems_offset
+DataView * rv = selfobj->apply(getTypeID(type), numelems, offset);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_type_nelems_offset
+}
+
+ATK_dataview * ATK_dataview_apply_type_nelems_offset_stride(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_type_nelems_offset_stride
+DataView * rv = selfobj->apply(getTypeID(type), numelems, offset, stride);
+return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.apply_type_nelems_offset_stride
 }
 
 bool ATK_dataview_has_buffer(ATK_dataview * self)
@@ -207,13 +261,13 @@ return rv;
 // splicer end class.DataView.method.get_total_bytes
 }
 
-size_t ATK_dataview_get_number_of_elements(ATK_dataview * self)
+size_t ATK_dataview_get_num_elements(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_number_of_elements
-size_t rv = selfobj->getNumberOfElements();
+// splicer begin class.DataView.method.get_num_elements
+size_t rv = selfobj->getNumElements();
 return rv;
-// splicer end class.DataView.method.get_number_of_elements
+// splicer end class.DataView.method.get_num_elements
 }
 
 void ATK_dataview_print(ATK_dataview * self)

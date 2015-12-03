@@ -42,7 +42,7 @@ contains
     type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     do i=1,10
@@ -82,12 +82,14 @@ contains
     type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 0)
 
     ! Allocate array via datastore
-    call view%declare(SIDRE_INT_ID, 10)
-    call view%allocate()
+! To be consistent with actual Fortran code, the method that creates 
+! an allocatable view should take the type and the allocate method
+! should take only shape, length, etc.
+    call view%allocate(SIDRE_INT_ID, 10)
     
     ! Check from Fortran with ALLOCATED and SIZE
     call assert_true(allocated(iarray))
@@ -99,7 +101,7 @@ contains
     type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
@@ -144,7 +146,7 @@ contains
     type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
@@ -178,7 +180,7 @@ contains
     type = view%get_type_id()
     call assert_equals(type, SIDRE_DOUBLE_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     do i=1,10
@@ -198,11 +200,10 @@ contains
 end module sidre_allocatable
 
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_allocatable
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -216,9 +217,7 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
