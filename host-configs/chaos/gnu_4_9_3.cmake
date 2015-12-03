@@ -18,16 +18,16 @@
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/gcc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/mpigcc" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/g++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/mpig++" CACHE PATH "")
 set(GCOV_PATH "/usr/apps/gnu/4.9.3/bin/gcov" CACHE PATH "")
 
 # fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE PATH "")
 
-set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/mpigfortran" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/gcc-4.9.3/conduit-github-6y2swpnp6vthtm43ddawh4mn4jefan5j" CACHE PATH "")

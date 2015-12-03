@@ -30,7 +30,7 @@ namespace utilities
    /*!
     * \brief Gracefully aborts the application
     */
-   inline void processAbort();
+   void processAbort();
 
 }  // ending brace for utilities namespace
 }  // ending brace for asctoolkit namespace

@@ -1,10 +1,17 @@
+#include "common/Utilities.hpp"
+
 #include <cstdlib>
 
 #ifdef USE_MPI
 #include <mpi.h>
 #endif
 
-inline void processAbort()
+namespace asctoolkit
+{
+namespace utilities
+{
+
+void processAbort()
 {
 #ifndef USE_MPI
   exit( -1 );
@@ -21,4 +28,7 @@ inline void processAbort()
 
   }
 #endif
+}
+
+}
 }

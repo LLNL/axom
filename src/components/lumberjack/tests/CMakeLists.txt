@@ -26,9 +26,8 @@ foreach(test ${gtest_lumberjack_tests})
     add_gtest(TEST_SOURCE ${test} DEPENDS_ON lumberjack)
 endforeach()
 
-make_executable(WITH_MPI ADD_CTEST
+make_executable(ADD_CTEST
                 EXECUTABLE_SOURCE lumberjack_mpiBasicTest.cpp)
 
-make_executable(WITH_MPI
-                EXECUTABLE_SOURCE lumberjack_speedTest.cpp
+make_executable(EXECUTABLE_SOURCE lumberjack_speedTest.cpp
                 DEPENDS_ON lumberjack )

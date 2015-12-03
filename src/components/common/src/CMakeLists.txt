@@ -17,20 +17,11 @@ set(common_sources
 #
 # make the library
 #
-if (ENABLE_MPI)
-    make_library( LIBRARY_NAME
-                      common
-                  LIBRARY_SOURCES
-                      "${common_sources}"
-                      "${common_headers}"
-                  WITH_MPI )
-else()
-    make_library( LIBRARY_NAME
-                      common
-                  LIBRARY_SOURCES
-                      "${common_sources}"
-                      "${common_headers}" )
-endif()
+make_library( LIBRARY_NAME
+                  common
+              LIBRARY_SOURCES
+                  "${common_sources}"
+                  "${common_headers}" )
 
 add_dependencies(common copy_headers_common)
 
