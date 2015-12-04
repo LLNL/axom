@@ -142,7 +142,7 @@ public:
 
   /*!
   * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
-  * were not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
+  * where not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
   * function template type must be explicitly provided on call.
   *
   * Example:
