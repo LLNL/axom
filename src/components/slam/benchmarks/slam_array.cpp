@@ -47,9 +47,17 @@ namespace {
             {
                 // find a random position in the array and swap value with current idx
                 IndexType otherIdx = idx + rand() % (sz - idx);
+                SLIC_ASSERT(otherIdx >= idx && otherIdx < sz);
                 std::swap(indices[idx], indices[otherIdx]);
             }
+
         }
+
+//        for(IndexType i=0; i< sz; ++i)
+//        {
+//            SLIC_ASSERT(indices[i] >= 0 && indices[i] < sz);
+//        }
+
 
         return indices;
     }
@@ -65,6 +73,13 @@ namespace {
         {
             data[i] = rand() / rMaxDouble;;
         }
+
+
+        for(IndexType i=0; i< sz; ++i)
+        {
+            SLIC_ASSERT(data[i] >= 0.0 && data[i] <= 1.0);
+        }
+
         return data;
     }
 
@@ -106,19 +121,46 @@ namespace {
 
     };
 
+    enum ArrSizes  { S0 = 1<<3       // small
+                   ,S1 = 1<<16      // larger than  32K L1 cache
+                   ,S2 = 1<<19      // Larger than 256K L2 cache
+                   ,S3 = 1<<25      // Larger than  25M L3 cache
+                   };
+
+    void CustomArgs(benchmark::internal::Benchmark* b) {
+        b->Arg( S0) ;
+        b->Arg( S1);
+        b->Arg( S2);
+        b->Arg( S3);
+    }
+
 }
-//------------------------------------------------------------------------------
 
 
-void CustomArgs(benchmark::internal::Benchmark* b) {
-    b->Arg( 1<<3 ) ;
-    b->Arg( 1<<16 );
-    b->Arg( 1 << 19 );
-    b->Arg( 1 << 25 );
+
+
+
+
+
+/// -------------------
+
+
+template<int SZ>
+void contig_sequence_compileTimeSize(benchmark::State& state) {
+
+    while (state.KeepRunning()) {
+        for (int i=0; i < SZ; ++i) {
+            int pos = i;
+            benchmark::DoNotOptimize(pos);
+      }
+  }
+  state.SetItemsProcessed(state.iterations() * SZ);
 }
+BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S0);
+BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S1);
+BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S2);
+BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S3);
 
-
-/// --------------------  Benchmarks for array indexing ---------------------
 
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence)(benchmark::State& state) {
     const int sz = state.range_x();
