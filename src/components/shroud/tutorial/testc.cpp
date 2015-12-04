@@ -30,4 +30,7 @@ int main(int argc, char *argv[])
 
     Function9(1.0f);
     Function9(2.0);
+
+    int values[] = {1, 2, 3, 4, 5};
+    int sum = Sum(sizeof(values), values);
 }

@@ -19,9 +19,12 @@ TEST(C_sidre_view,create_views)
   ATK_datastore * ds   = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv_0 = ATK_datagroup_create_view_and_buffer_simple(root, "field0");
-  ATK_dataview * dv_1 = ATK_datagroup_create_view_and_buffer_simple(root, "field1");
-
+  ATK_dataview * dv_0 = 
+     ATK_datagroup_create_view_and_allocate_from_type(root, "field0",
+                                                      SIDRE_INT_ID, 1);
+  ATK_dataview * dv_1 = 
+     ATK_datagroup_create_view_and_allocate_from_type(root, "field1",
+                                                      SIDRE_INT_ID, 1);
 
   ATK_databuffer * db_0 = ATK_dataview_get_buffer(dv_0);
   ATK_databuffer * db_1 = ATK_dataview_get_buffer(dv_1);
@@ -38,10 +41,11 @@ TEST(C_sidre_view,int_buffer_from_view)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
+  ATK_dataview * dv = 
+     ATK_datagroup_create_view_and_allocate_from_type(root, "u0",
+                                                      SIDRE_INT_ID, 10);
 
-  ATK_dataview_allocate_from_type(dv, ATK_C_INT_T, 10);
-  EXPECT_EQ(ATK_dataview_get_type_id(dv), ATK_INT32_T);  // XXX NATIVE TYPE
+  EXPECT_EQ(ATK_dataview_get_type_id(dv), SIDRE_INT_ID);
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -63,7 +67,9 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10);
+  ATK_dataview * dv = 
+     ATK_datagroup_create_view_and_allocate_from_type(root, "u0", 
+                                                      SIDRE_INT_ID, 10);
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -86,7 +92,7 @@ TEST(C_sidre_view,int_array_multi_view)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
   ATK_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
@@ -100,35 +106,56 @@ TEST(C_sidre_view,int_array_multi_view)
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
-  ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even", dbuff);
-  ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd", dbuff);
+  ATK_dataview * dv_e = 
+     ATK_datagroup_create_view_into_buffer(root, "even", dbuff);
+  ATK_dataview * dv_o = 
+     ATK_datagroup_create_view_into_buffer(root, "odd", dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
   EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 2u);
 
-#ifdef XXX
-  dv_e->apply(DataType::uint32(5,0,8));
-
-  dv_o->apply(DataType::uint32(5,4,8));
+  ATK_dataview_apply_nelems_offset_stride(dv_e, 5, 0, 2);
+  ATK_dataview_apply_nelems_offset_stride(dv_o, 5, 1, 2);
 
   ATK_dataview_print(dv_e);
   ATK_dataview_print(dv_o);
 
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+  int* dv_e_ptr = (int *) ATK_dataview_get_data_pointer(dv_e);
+  int* dv_o_ptr = (int *) ATK_dataview_get_data_pointer(dv_o); dv_o_ptr++;
   for(int i=0 ; i<5 ; i++)
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+    EXPECT_EQ(dv_e_ptr[2*i], 2*i);
+    EXPECT_EQ(dv_o_ptr[2*i], 2*i+1);
   }
-#endif
+
+  // Run similar test to above with different view apply method
+  ATK_dataview * dv_e1 =
+     ATK_datagroup_create_view_into_buffer(root, "even1", dbuff);
+  ATK_dataview * dv_o1 =
+     ATK_datagroup_create_view_into_buffer(root, "odd1", dbuff);
+  EXPECT_TRUE(dv_e1 != NULL);
+  EXPECT_TRUE(dv_o1 != NULL);
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
+
+  ATK_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID, 5, 0, 2);
+  ATK_dataview_apply_type_nelems_offset_stride(dv_o1, SIDRE_INT_ID, 5, 1, 2);
+
+  ATK_dataview_print(dv_e1);
+  ATK_dataview_print(dv_o1);
+
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+  int* dv_e1_ptr = (int *) ATK_dataview_get_data_pointer(dv_e1);
+  int* dv_o1_ptr = (int *) ATK_dataview_get_data_pointer(dv_o1); dv_o1_ptr++;
+  for(int i=0 ; i<5 ; i++)
+  {
+    EXPECT_EQ(dv_e1_ptr[2*i], 2*i);
+    EXPECT_EQ(dv_o1_ptr[2*i], 2*i+1);
+  }
+
+
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
@@ -136,61 +163,129 @@ TEST(C_sidre_view,int_array_multi_view)
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,init_int_array_multi_view)
+TEST(C_sidre_view,int_array_depth_view)
 {
   ATK_datastore * ds = ATK_datastore_new();
   ATK_datagroup * root = ATK_datastore_get_root(ds);
   ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
+  const size_t depth_nelems = 10;
+
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+  ATK_databuffer_allocate_existing(dbuff);
   int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
 
-  for(int i=0 ; i<10 ; i++)
+  for(size_t i=0 ; i < 4 * depth_nelems ; i++)
   {
-    data_ptr[i] = i;
+    data_ptr[i] = i / depth_nelems;
   }
 
   ATK_databuffer_print(dbuff);
 
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
 
+  // create 4 "depth" views and apply offsets into buffer
+  ATK_dataview* views[4];
+  const char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
 
-  ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even",dbuff);
-  ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd",dbuff);
-  EXPECT_TRUE(dv_e != NULL);
-  EXPECT_TRUE(dv_o != NULL);
-
-#ifdef XXX
-  // uint32(num_elems, offset, stride)
-  dv_e->apply(DataType::uint32(5,0,8));
-
-
-  // uint32(num_elems, offset, stride)
-  dv_o->apply(DataType::uint32(5,4,8));
-
-  ATK_dataview_print(dv_e);
-  ATK_dataview_print(dv_o);
-
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
-  for(int i=0 ; i<5 ; i++)
+  for (int id = 0; id < 4; ++id)
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+     views[id] = ATK_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
+     ATK_dataview_apply_nelems_offset(views[id], depth_nelems, id*depth_nelems);
   }
-#endif
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     ATK_dataview_print(views[id]);
+  }
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+     int* dv_ptr = (int *) ATK_dataview_get_data_pointer(views[id]); 
+          dv_ptr += id * depth_nelems; 
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
 
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
 
 }
+
+//------------------------------------------------------------------------------
+
+#if 0
+// Similar to previous test, using other view creation methods
+TEST(C_sidre_view,int_array_depth_view_2)
+{
+  ATK_datastore * ds = ATK_datastore_new();
+  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+
+  const size_t depth_nelems = 10;
+
+  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+  ATK_databuffer_allocate_existing(dbuff);
+  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+
+  for(size_t i=0 ; i < 4 * depth_nelems ; i++)
+  {
+    data_ptr[i] = i / depth_nelems;
+  }
+
+  ATK_databuffer_print(dbuff);
+
+  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
+
+  // create 4 "depth" views and apply offsets into buffer
+  ATK_dataview* views[4];
+  const char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+
+  for (int id = 0; id < 2; ++id)
+  {
+     views[id] = 
+        ATK_datagroup_create_view_into_buffer_nelems_offset(root, 
+           view_names[id], dbuff, depth_nelems, id*depth_nelems);
+  }
+  for (int id = 2; id < 4; ++id)
+  {
+     views[id] = 
+        ATK_datagroup_create_view_into_buffer_type_nelems_offset(root, 
+           view_names[id], dbuff, SIDRE_INT_ID, depth_nelems, id*depth_nelems);
+  }
+  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 4u);
+
+  // print depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+     ATK_dataview_print(views[id]);
+  }
+
+  // check values in depth views...
+  for (int id = 0; id < 4; ++id)
+  {
+// Note: This is a big hack since the dataview get pointer method is broken
+//       and the conduit support for this sort of thing doesn't exist for C code?
+     int* dv_ptr = (int *) ATK_dataview_get_data_pointer(views[id]); 
+          dv_ptr += id * depth_nelems; 
+     for (size_t i = 0; i < depth_nelems; ++i)
+     {
+        EXPECT_EQ(dv_ptr[i], id);
+     }
+  }
+
+  ATK_datastore_print(ds);
+  ATK_datastore_delete(ds);
+
+}
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -215,11 +310,10 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // create a group to hold the "old" or data we want to copy
   ATK_datagroup * r_old = ATK_datagroup_create_group(root, "r_old");
   // create a view to hold the base buffer
-  ATK_dataview * base_old = ATK_datagroup_create_view_and_buffer_simple(r_old, "base_data");
+  ATK_dataview * base_old = 
+     ATK_datagroup_create_view_and_allocate_from_type(r_old, "base_data",
+                                                      SIDRE_INT_ID, 40);
 
-  // alloc our buffer
-  // we will create 4 sub views of this array
-  ATK_dataview_allocate_from_type(base_old, ATK_C_INT_T, 40);
   int * data_ptr = (int *) ATK_dataview_get_data_pointer(base_old);
 
 
@@ -373,8 +467,12 @@ TEST(C_sidre_view,int_array_realloc)
   ATK_datagroup * root = ATK_datastore_get_root(ds);
 
   // create a view to hold the base buffer
-  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", ATK_C_FLOAT_T, 5);
-  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", ATK_C_INT_T, 5);
+  ATK_dataview * a1 = 
+     ATK_datagroup_create_view_and_allocate_from_type(root, "a1", 
+                                                      SIDRE_FLOAT_ID, 5);
+  ATK_dataview * a2 = 
+     ATK_datagroup_create_view_and_allocate_from_type(root, "a2", 
+                                                      SIDRE_INT_ID, 5);
 
   float * a1_ptr = (float *) ATK_dataview_get_data_pointer(a1);
   int * a2_ptr = (int *)  ATK_dataview_get_data_pointer(a2);
@@ -451,23 +549,4 @@ TEST(C_sidre_view,simple_opaque)
   ATK_datastore_print(ds);
   ATK_datastore_delete(ds);
   free(src_data);
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

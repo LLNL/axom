@@ -120,7 +120,7 @@ public:
   friend class DataStore;
 
 //@{
-//!  @name Basic Accessor methods
+//!  @name Basic Accessor methods.
 
   /*!
    * \brief Return const reference to name of DataGroup instance.
@@ -184,7 +184,7 @@ public:
 
 
 //@{
-//!  @name DataView accessor methods
+//!  @name DataView accessor methods.
 
   /*!
    * \brief Return true if DataGroup owns a DataView with given name;
@@ -272,7 +272,7 @@ public:
 
 
 //@{
-//!  @name DataView iteration methods
+//!  @name DataView iteration methods.
 
   /*!
    * \brief Return first valid DataView index (i.e., smallest index
@@ -301,77 +301,134 @@ public:
 
 
 //@{
-//!  @name DataView manipulation methods (create, destroy, copy, move, etc.)
+//!  @name DataView creation methods that also allocate data.
 
   /*!
-   * \brief Create a DataView object (and buffer) with given name and
-   *        attach to this DataGroup object.
+   * \brief Create DataView object with given name, data type, and 
+   *        number of elements, allocate the data, and attach new 
+   *        view to this group object.
    *
-   * Note that created DataBuffer will be owned by DataStore object that
-   * group lives in.
-   *
-   * If name is an empty string or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createViewAndBuffer( const std::string& name );
-
-  /*!
-   * \brief Create a DataView object (and buffer) with given name,
-   *        and use the Sidre DataType and length to allocate the
-   *        underlying buffer and initialize the view.
-   *
-   * Note that created DataBuffer will be owned by associated DataStore
-   * and new view will be attached to this group.
+   * This is equivalent to calling: createView(name)->allocate(type, numelems);
    *
    * If name is an empty string, or group already has a view with given
-   * name, or given length is < 0 method does nothing.
+   * name, or given number of elements is < 0 method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
    */
-  DataView * createViewAndBuffer( const std::string& name,
-                                  TypeID type, SidreLength len );
+  DataView * createViewAndAllocate( const std::string& name,
+                                    TypeID type, SidreLength numelems );
 
   /*!
-   * \brief Create a DataView object (and buffer) with given name,
-   *        and use the Conduit DataType to allocate the
-   *        underlying buffer and initialize the view.
+   * \brief Create DataView object with given name and Conduit DataType,
+   *        allocate the data, and attach new view to this group object.
    *
-   * Note that created DataBuffer will be owned by associated DataStore
-   * and new view will be attached to this group.
+   * This is equivalent to calling: createView(name)->allocate(dtype);
    *
-   * If name is an empty string or group already has a view with given
+   * If name is an empty string, or group already has a view with given
    * name, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
    */
-  DataView * createViewAndBuffer( const std::string& name,
-                                  const DataType& dtype);
+  DataView * createViewAndAllocate( const std::string& name,
+                                    const DataType& dtype);
 
   /*!
-   * \brief Create a DataView object (and buffer) with given name,
-   *        and use the Conduit Schema to allocate the
-   *        underlying buffer and initialize the view.
+   * \brief Create DataView object with given name and Conduit Schema,
+   *        allocate the data, and attach new view to this group object.
    *
-   * Note that created DataBuffer will be owned by associated DataStore
-   * and new view will be attached to this group.
+   * This is equivalent to calling: createView(name)->allocate(schema);
    *
-   * If name is an empty string or group already has a view with given
+   * If name is an empty string, or group already has a view with given
+   * name, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created. 
+   */
+  DataView * createViewAndAllocate( const std::string& name,
+                                    const Schema& schema);
+
+//@}
+
+
+//@{
+//!  @name Methods to create a DataView and possibly define it without 
+//         data allocation.
+
+  /*!
+   * \brief Create an uninitialized DataView object with given name and 
+   *        attach new view to this group object.
+   *
+   * To do anything useful with the view, it has to be attached to a buffer
+   * and have a data description applied, for example.
+   *
+   * If name is an empty string, group already has a view with given
+   * name, or given buffer pointer is null, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name ); 
+
+  /*!
+   * \brief Create DataView object with given name, data type, and
+   *        number of elements, and attach new view to this group object.
+   *
+   * This method does not allocate data or attach the view to a data buffer.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, or given number of elements is < 0 method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         TypeID type, SidreLength numelems );
+
+  /*!
+   * \brief Create DataView object with given name and Conduit DataType,
+   *        and attach new view to this group object.
+   *
+   * This method does not allocate data or attach the view to a data buffer.
+   *
+   * If name is an empty string, or group already has a view with given
    * name, method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
    */
-  DataView * createViewAndBuffer( const std::string& name,
-                                  const Schema& schema);
+  DataView * createView( const std::string& name,
+                         const DataType& dtype);
 
   /*!
-   * \brief Create a DataView object (for view into given buffer) with
-   *        given name, and attach to this DataGroup object.
+   * \brief Create DataView object with given name and Conduit Schema,
+   *        allocate the data, and attach new view to this group object.
+   *
+   * This method does not allocate data or attach the view to a data buffer.
+   *
+   * If name is an empty string, or group already has a view with given
+   * name, method does nothing.
+   *
+   * \return pointer to created DataView object or ATK_NULLPTR if new
+   * view is not created.
+   */
+  DataView * createView( const std::string& name,
+                         const Schema& schema);
+
+//@}
+
+
+//@{
+//!  @name DataView creation methods that attach view to existing data
+//!        (data buffer, opaque data, or external data).
+
+  /*!
+   * \brief Create DataView object with given name, attach it to given buffer,
+   *        and attach new view to this group object.
+   *
+   * Note that view cannot be used to access data in buffer until it
+   * is described by calling a DataView::apply() method. 
    *
    * If name is an empty string, or group already has a view with given
    * name, or given buffer pointer is null, method does nothing.
@@ -382,63 +439,12 @@ public:
   DataView * createView( const std::string& name,
                          DataBuffer * buff );
 
-
   /*!
-   * \brief Create a DataView object (for view into given buffer) with
-   *        given name and use the Sidre TypeID and length to initialize the
-   *        view into this buffer.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given buffer pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         DataBuffer * buff,
-                         TypeID type, SidreLength len );
-
-  /*!
-   * \brief Create a DataView object (for view into given buffer) with
-   *        given name and use the Conduit DataType to initialize the
-   *        view into this buffer.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given buffer pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         DataBuffer * buff,
-                         const DataType& dtype);
-
-
-  /*!
-   * \brief Create a DataView object (for view into given buffer) with
-   *        given name and use the Conduit Schema to initialize the
-   *        view into this buffer.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given buffer pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createView( const std::string& name,
-                         DataBuffer * buff,
-                         const Schema& schema);
-
-  /*!
-   * \brief Create an opaque DataView with given name, holding data
-   *        referenced with given pointer, and attach to this DataGroup
+   * \brief Create opaque DataView with given name to hold data
+   *        referenced with given pointer. Attach new view to this group
    *        object.
+   *
+   * Note that the view is "opaque"; i.e., it has no knowledge of the data.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
@@ -450,26 +456,35 @@ public:
                                void * opaque_ptr);
 
   /*!
-   * \brief Create a DataView into externally-owned data with given name,
-   *        using the given Sidre TypeID and length to describe the data.
+   * \brief Create DataView with given name to hold external data referenced 
+   *        with given pointer. View will be initialized with given data type
+   *        and number of elements and, optionally, offset and stride. Attach 
+   *        new view to this group object.
    *
-   * New view will be attached to this DataGroup object.
+   * Note that the view will not own the data, but it can be used to
+   * access the data as though it owns it.
    *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
+   * If name is an empty string, group already has a view with given
+   * name, given data pointer is null, or given number of elements < 0, or 
+   * offset < 0, the method does nothing.
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
    */
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
-                                 TypeID type, SidreLength nitems );
+                                 TypeID type, 
+                                 SidreLength numelems,
+                                 SidreLength offset = 0,
+                                 SidreLength stride = 1 );
 
   /*!
-   * \brief Create a DataView into externally-owned data with given name,
-   *        using the given Conduit DataType to describe the data.
+   * \brief Create DataView with given name to hold data referenced with
+   *        given pointer. View will be initialized with given Conduit
+   *        DataType. Attach new view to this group object.
    *
-   * New view will be attached to this DataGroup object.
+   * Note that the view will not own the data, but it can be used to
+   * access the data as though it owns it.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
@@ -482,10 +497,12 @@ public:
                                  const DataType& dtype );
 
   /*!
-   * \brief Create a DataView into externally-owned data with given name,
-   *        using the given Conduit Schema to describe the data.
+   * \brief Create DataView with given name to hold data referenced with
+   *        given pointer. View will be initialized with given Conduit
+   *        Schema. Attach new view to this group object.
    *
-   * New view will be attached to this DataGroup object.
+   * Note that the view will not own the data, but it can be used to
+   * access the data as though it owns it.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
@@ -497,15 +514,21 @@ public:
                                  void * external_data,
                                  const Schema& schema );
 
+//@}
+
+
+//@{
+//!  @name DataView destruction methods.
+
   /*!
    * \brief Destroy view in this DataGroup with given name and leave its
-   *        associated DataBuffer intact.
+   *        associated DataBuffer intact, if it has a buffer.
    */
   void destroyView(const std::string& name);
 
   /*!
    * \brief Destroy view in this DataGroup with given index and leave its
-   *        associated DataBuffer intact.
+   *        associated DataBuffer intact, if it has a buffer.
    */
   void destroyView(IndexType idx);
 
@@ -516,22 +539,28 @@ public:
   void destroyViews();
 
   /*!
-   * \brief Destroy views in this DataGroup with given name AND destroy
-   *        its associated DataBuffer object.
+   * \brief Destroy view in this DataGroup with given name AND destroy
+   *        its associated data (i.e., its DataBuffer object).
    */
-  void destroyViewAndBuffer(const std::string& name);
+  void destroyViewAndData(const std::string& name);
 
   /*!
    * \brief Destroy view in this DataGroup with given index AND destroy
-   *        its associated DataBuffer object.
+   *        its associated data (i.e., its DataBuffer object).
    */
-  void destroyViewAndBuffer(IndexType idx);
+  void destroyViewAndData(IndexType idx);
 
   /*!
    * \brief Destroy all views in this DataGroup AND destroy their
    *        associated DataBuffer objects.
    */
-  void destroyViewsAndBuffers();
+  void destroyViewsAndData();
+
+//@}
+
+
+//@{
+//!  @name DataView move and copy methods.
 
   /*!
    * \brief Remove DataView object from its owning group and attach
@@ -549,9 +578,9 @@ public:
    * \brief Create a copy of given DataView object and attach
    *        to this DataGroup object.
    *
-   * Note that this is a "shallow" copy; the DataBuffer associated with
-   * the view is not copied. The new DataView is associated with the same
-   * buffer object.
+   * Note that this is a "shallow" copy; the data associated with
+   * the view is not copied. The new view object is associated with 
+   * the same data.
    *
    * If given view pointer is null or group already contains a view with
    * same name as given view, method does nothing.
@@ -679,21 +708,7 @@ public:
 
 
 //@{
-//!  @name DataGroup manipulation methods (create, destroy, copy, move, etc.)
-
-  /*!
-   * \brief Create a DataView object (and buffer) with given name and
-   *        attach to this DataGroup object.
-   *
-   * Note that created DataBuffer will be owned by DataStore object that
-   * group lives in.
-   *
-   * If name is an empty string or group already has a view with given
-   * name, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
+//!  @name (child) DataGroup create and destroy methods.
 
   /*!
    * \brief Create a DataGroup object with given name and attach as a
@@ -725,6 +740,12 @@ public:
    */
   void destroyGroups();
 
+//@}
+
+
+//@{
+//!  @name (child) DataGroup move and copy methods.
+
   /*!
    * \brief Remove DataGroup object from its parent group and attach
    *        to this DataGroup object.
@@ -742,9 +763,9 @@ public:
    *        DataViews and child DataGroups) and attach to this DataGroup
    *        object.
    *
-   * Note that DataGroup copying is a "shallow" copy; the DataBuffer
-   * associated with a group is not copied. The new DataGroup is associated
-   * with the same buffer objects as the given group.
+   * Note that DataGroup copying is a "shallow" copy; the data associated 
+   * with views in a group are not copied. The new DataGroup is associated
+   * with the same data as the given group.
    *
    * If given group pointer is null or group already contains a group with
    * same name as given group, method does nothing.
@@ -757,10 +778,8 @@ public:
 //@}
 
 
-  /*!
-   * \brief Copy data group description to given Conduit node.
-   */
-  void info(Node& n) const;
+//@{
+//!  @name DataGroup print methods.
 
   /*!
    * \brief Print JSON description of data group to stdout.
@@ -785,6 +804,11 @@ public:
    */
   void printTree( const int nlevels, std::ostream& os ) const;
 
+//@}
+
+
+//@{
+//!  @name DataGroup save and load methods (basic file I/O).
 
   /*!
    * \brief Save this DataGroup object (including data views and child
@@ -804,7 +828,18 @@ public:
   void load(const std::string& obase,
             const std::string& protocol);
 
+//@}
+
+  /*!
+   * \brief Copy data group description to given Conduit node.
+   */
+  void info(Node& n) const;
+
 private:
+
+//@{
+//!  @name Private DataGroup ctors and dtors 
+//!        (callable only by DataStore and DataGroup methods).
 
   /*!
    *  \brief Private ctor that creates a Group with given name
@@ -837,6 +872,18 @@ private:
    */
   ~DataGroup();
 
+//@}
+
+
+//@{
+//!  @name Private DataGroup view and buffer manipulation methods.
+
+  /*!
+   * \brief Private method to create DataView and DataBuffer and 
+   *        attach view to buffer.
+   */
+  DataView * createViewAndBuffer( const std::string& name );
+
   /*!
    * \brief Private methods to attach/detach DataView object to DataGroup.
    */
@@ -845,15 +892,6 @@ private:
   DataView * detachView(const std::string& name);
   ///
   DataView * detachView(IndexType idx);
-
-  /*!
-   * \brief Private methods to attach/detach DataGroup object to DataGroup.
-   */
-  DataGroup * attachGroup(DataGroup * group);
-  ///
-  DataGroup * detachGroup(const std::string& name);
-  ///
-  DataGroup * detachGroup(IndexType idx);
 
 #ifdef ATK_ENABLE_FORTRAN
   /*!
@@ -876,6 +914,27 @@ private:
                                                     char * name, int lname,
                                                     void * array, int type, int rank);
 #endif
+
+//@}
+
+
+//@{
+//!  @name DataGroup (child) group manipulation methods.
+
+  /*!
+   * \brief Private methods to attach/detach DataGroup object to DataGroup.
+   */
+  DataGroup * attachGroup(DataGroup * group);
+  ///
+  DataGroup * detachGroup(const std::string& name);
+  ///
+  DataGroup * detachGroup(IndexType idx);
+
+//@}
+
+
+//@{
+//!  @name Private DataGroup methods for interacting with Conduit Nodes.
 
   /*!
    * \brief Private methods to copy DataGroup to/from Conduit Node.
@@ -902,6 +961,7 @@ private:
   void copyFromNode(Node& n,
                     std::map<IndexType, IndexType>& id_map);
 
+//@}
 
 
   /// Name of this DataGroup object.

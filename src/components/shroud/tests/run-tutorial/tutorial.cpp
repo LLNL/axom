@@ -4,6 +4,9 @@
 
 #include "tutorial.hpp"
 
+namespace tutorial
+{
+
 static std::string last_function_called;
 
 // These variables exist to avoid warning errors
@@ -45,10 +48,14 @@ const std::string& Function4b(const std::string& arg1, const std::string& arg2)
     return global_str;
 }
 
-double Function5(double arg1, int arg2)
+double Function5(double arg1, bool arg2)
 {
     last_function_called = "Function5";
-    return arg1 + arg2;
+    if (arg2) {
+	return arg1 + 10.0;
+    } else {
+	return arg1;
+    }
 }
 
 void Function6(const std::string& name)
@@ -99,6 +106,59 @@ void Function9(double arg)
     return;
 }
 
+void Function10()
+{
+    last_function_called = "Function10_0";
+}
+
+void Function10(const std::string &name, double arg2)
+{
+    last_function_called = "Function10_1";
+    global_str = name;
+    global_double = arg2;
+}
+
+void Sum(int len, int *values, int *result)
+{
+    last_function_called = "Sum";
+
+    int sum = 0;
+    for (int i=0; i < len; i++) {
+	sum += values[i];
+    }
+    *result = sum;
+    return;
+}
+
+int overload1(int num, int offset, int stride)
+{
+    last_function_called = "overload1_0";
+    return num + offset * stride;
+    
+}
+
+int overload1(double type, int num, int offset, int stride)
+{
+    last_function_called = "overload1_1";
+    global_double = type;
+    return num + offset * stride;
+}
+
+TypeID typefunc(TypeID arg)
+{
+    last_function_called = "typefunc";
+    return static_cast<int>(arg);
+}
+
+EnumTypeID enumfunc(EnumTypeID arg)
+{
+    last_function_called = "enumfunc";
+    switch (arg) {
+    default:
+	return ENUM2;
+    }
+}
+
 //----------------------------------------------------------------------
 
 void Class1::Method1()
@@ -114,3 +174,4 @@ const std::string& LastFunctionCalled()
     return last_function_called;
 }
 
+} /* end namespace tutorial */

@@ -30,12 +30,11 @@ contains
 end module fruit_smoke
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use fruit_smoke
   implicit none
-  integer(C_INT) fortran_test
-  logical res
+  logical ok
 
   call init_fruit
 !----------
@@ -45,12 +44,10 @@ function fortran_test() bind(C,name="fortran_test")
 
   call fruit_summary
   call fruit_finalize
-  call is_all_successful(res)
-  if (res) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  call is_all_successful(ok)
+  if (.not. ok) then
+     call exit(1)
   endif
   
-end function fortran_test
+end program fortran_test
 

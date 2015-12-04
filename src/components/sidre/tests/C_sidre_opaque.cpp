@@ -181,12 +181,13 @@ TEST(C_sidre_opaque,meshvar)
     ATK_datagroup_create_opaque_view(dom_gp, "ext", dom_ext);
 
     AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
-    ATK_dataview * dom_zone_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "zone_data");
-    ATK_dataview_allocate_from_type(dom_zone_view, ATK_C_INT_T, AA_get_num_vals(zonemv, dom_ext));
+    (void) ATK_datagroup_create_view_and_allocate_from_type(dom_gp, "zone_data",
+                                                            SIDRE_INT_ID, 
+                                                            AA_get_num_vals(zonemv, dom_ext));
 
     AA_meshvar * nodemv = (AA_meshvar *)  ATK_dataview_get_opaque(node_mv_view);
-    ATK_dataview * dom_node_view = ATK_datagroup_create_view_and_buffer_simple(dom_gp, "node_data");
-    ATK_dataview_allocate_from_type(dom_node_view, ATK_C_DOUBLE_T, AA_get_num_vals(nodemv, dom_ext));
+    (void) ATK_datagroup_create_view_and_allocate_from_type(dom_gp, "node_data",
+                                                            SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
 
   }
 
@@ -210,12 +211,12 @@ TEST(C_sidre_opaque,meshvar)
 
     int num_zone_vals = AA_get_num_vals(zonemv, dom_ext);
     ATK_dataview * dom_zone_data_view = ATK_datagroup_get_view_from_name(dom_gp, "zone_data");
-    int test_num_zone_vals = ATK_dataview_get_number_of_elements(dom_zone_data_view);
+    int test_num_zone_vals = ATK_dataview_get_num_elements(dom_zone_data_view);
     EXPECT_EQ(num_zone_vals, test_num_zone_vals);
 
     int num_node_vals = AA_get_num_vals(nodemv, dom_ext);
     ATK_dataview * dom_node_data_view = ATK_datagroup_get_view_from_name(dom_gp, "node_data");
-    int test_num_node_vals = ATK_dataview_get_number_of_elements(dom_node_data_view);
+    int test_num_node_vals = ATK_dataview_get_num_elements(dom_node_data_view);
     EXPECT_EQ(num_node_vals, test_num_node_vals);
 
   }
@@ -231,23 +232,4 @@ TEST(C_sidre_opaque,meshvar)
     AA_extent_delete(dom_ext);
   }
   ATK_datastore_delete(ds);
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

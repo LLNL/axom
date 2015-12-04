@@ -1,4 +1,6 @@
-
+#
+# makefile to build tutorial
+#
 WRAPDIR = ../tests/tutorial
 
 FC = gfortran
@@ -13,7 +15,7 @@ OBJS = \
     fstr_mod.o
 
 
-VPATH = $(WRAPDIR)
+VPATH = $(WRAPDIR):../runtime
 
 all : testc testf
 

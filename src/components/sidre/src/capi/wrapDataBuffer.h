@@ -9,7 +9,6 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
-// wrapDataBuffer.h
 // For C users and C++ implementation
 
 #ifndef WRAPDATABUFFER_H
@@ -33,13 +32,13 @@ ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_num_views(ATK_databuffer * self);
 
-void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength len);
+void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength numelems);
 
 void ATK_databuffer_allocate_existing(ATK_databuffer * self);
 
-void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength len);
+void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength numelems);
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength len);
+void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength numelems);
 
 void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data);
 
@@ -49,7 +48,7 @@ void * ATK_databuffer_get_data(ATK_databuffer * self);
 
 int ATK_databuffer_get_type_id(ATK_databuffer * self);
 
-size_t ATK_databuffer_get_number_of_elements(ATK_databuffer * self);
+size_t ATK_databuffer_get_num_elements(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
 

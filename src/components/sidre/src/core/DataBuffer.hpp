@@ -22,8 +22,6 @@
 #define DATABUFFER_HPP_
 
 // Standard C++ headers
-#include <map>
-#include <set>
 #include <vector>
 
 // Other toolkit component headers
@@ -73,6 +71,7 @@ class DataView;
  */
 class DataBuffer
 {
+
 public:
 
   //
@@ -120,24 +119,59 @@ public:
   }
 
   /*!
+  * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
+  * version does require enough type information for the compiler to know what to cast the Value class to.
+  * Example:
+  * int* myptr = getValue();
+  * int myint = getValue();
+  */
+  Node::Value getValue()
+  {
+    return m_node.value();
+  }
+
+  /*!
+  * \brief Set value in conduit node.
+  */
+  template<typename ValueType>
+  void setValue(ValueType value)
+  {
+    m_node.set(value);
+  }
+
+
+  /*!
+  * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
+  * where not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
+  * function template type must be explicitly provided on call.
+  *
+  * Example:
+  * // will not work, compiler does not know what type to cast to for above getValue function.
+  * assert( getValue() == 10 );
+  * // use the templated version instead
+  * assert (getValue<int>() == 10);
+  */
+  template<typename ValueType>
+  ValueType getValue()
+  {
+    ValueType valueptr = m_node.value();
+    return valueptr;
+  }
+
+  /*!
    * \brief Return type of data for this DataBuffer object.
    */
   TypeID getTypeID() const
   {
-    return m_type;
+    return static_cast<TypeID>(m_schema.dtype().id());
   }
-
-  /*!
-   * \brief Return number of bytes associated with a single item of DataBuffer's type.
-   */
-  size_t getBytesPerItem() const;
 
   /*!
    * \brief Return total number of elements allocated by this DataBuffer object.
    */
-  size_t getNumberOfElements() const
+  size_t getNumElements() const
   {
-    return m_nitems;
+	  return m_schema.dtype().number_of_elements();
   }
 
   /*!
@@ -145,7 +179,7 @@ public:
    */
   size_t getTotalBytes() const;
 
-  /*!
+  /*
    * \brief Return true if DataBuffer has an associated DataView with given
    *        index; else false.
    */
@@ -173,11 +207,11 @@ public:
    * To use the buffer, the data must be allocated by calling allocate()
    * or set to external data by calling setExternalData().
    *
-   * If given length is < 0, method does nothing.
+   * If given number of elements is < 0, method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength len);
+  DataBuffer * declare(TypeID type, SidreLength numelems);
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -195,9 +229,9 @@ public:
   DataBuffer * allocate();
 
   /*!
-   * \brief Declare and allocate data described with type and length.
+   * \brief Declare and allocate data described by type and number of elements.
    *
-   * This is equivalent to calling declare(type, len), then allocate().
+   * This is equivalent to calling declare(type, numelems), then allocate().
    * on this DataBuffer object.
    *
    * If buffer is already set to externally-owned data, this method
@@ -205,19 +239,19 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(TypeID type, SidreLength len);
+  DataBuffer * allocate(TypeID type, SidreLength numelems);
 
   /*!
-   * \brief Reallocate data to len items.
+   * \brief Reallocate data to given number of elements.
    *
    *        Equivalent to calling declare(type), then allocate().
    *
-   * If buffer is already set to externally-owned data or given length < 0,
-   * this method does nothing.
+   * If buffer is already set to externally-owned data or given 
+   * number of elements < 0, this method does nothing.
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(SidreLength len);
+  DataBuffer * reallocate(SidreLength numelems);
 
   /*!
    * \brief Update contents of buffer memory.
@@ -288,9 +322,6 @@ private:
   ///
   void detachView( DataView * dataView );
 
-
-
-
   /*!
    * \brief Private methods allocate and deallocate data owned by buffer.
    */
@@ -320,11 +351,14 @@ private:
   // Type of data pointed to by m_data
   TypeID m_type;
 
-  // Length of data pointed to by m_data
-  SidreLength m_nitems;
-
   /// Pointer to the data owned by DataBuffer.
   void * m_data;
+
+  /// Conduit Node that holds buffer data.
+  Node m_node;
+
+  /// Conduit Schema that describes buffer data.
+  Schema m_schema;
 
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
@@ -348,6 +382,9 @@ private:
   DataBuffer();
   DataBuffer& operator=( const DataBuffer& );
 #endif
+
+
+
 
 };
 
