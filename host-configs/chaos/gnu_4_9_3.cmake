@@ -18,15 +18,15 @@
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/mpigcc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/gcc" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/mpig++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/g++" CACHE PATH "")
 set(GCOV_PATH "/usr/apps/gnu/4.9.3/bin/gcov" CACHE PATH "")
 
 # fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE PATH "")
-set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/mpigfortran" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/gfortran" CACHE PATH "")
 
 # enable google benchmark functionality for gnu compilers
 set(ENABLE_BENCHMARK ON CACHE PATH "")
@@ -77,3 +77,6 @@ set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_
 # MPI 
 #######
 set(ENABLE_MPI ON CACHE PATH "")
+set(MPI_C_COMPILER "/usr/apps/gnu/4.9.3/bin/mpigcc" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/mpig++" CACHE PATH "")
+set(MPI_Fortran_COMPILER  "/usr/apps/gnu/4.9.3/bin/mpigfortran" CACHE PATH "")

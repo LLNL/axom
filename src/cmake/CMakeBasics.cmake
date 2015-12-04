@@ -170,6 +170,13 @@ if (BUILD_TESTING)
 endif()
 
 ################################
+# MPI
+################################
+if (ENABLE_MPI)
+  find_package(MPI REQUIRED)
+endif()
+
+################################
 # OpenMP
 ################################
 if(ENABLE_OMP)
@@ -304,6 +311,19 @@ macro(make_library)
    if ( ${ENABLE_MPI} )
       add_target_definitions( TO ${arg_LIBRARY_NAME}
                               TARGET_DEFINITIONS USE_MPI )
+
+      target_include_directories( ${arg_LIBRARY_NAME} PUBLIC
+                                  ${MPI_C_INCLUDE_PATH} )
+
+      if(NOT "${MPI_CXX_COMPILE_FLAGS}" STREQUAL "")
+            set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS
+                                   ${MPI_CXX_COMPILE_FLAGS} )
+      endif()
+
+      if(NOT "${MPI_CXX_LINK_FLAGS}" STREQUAL "")
+            set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES LINK_FLAGS
+                                   ${MPI_CXX_LINK_FLAGS} )
+      endif()
    endif()
 
    if ( ${arg_WITH_OPENMP} )
@@ -405,6 +425,21 @@ macro(make_executable)
    if ( ${ENABLE_MPI} )
       add_target_definitions( TO ${exe_name}
                               TARGET_DEFINITIONS USE_MPI )
+
+      target_include_directories( ${exe_name} PUBLIC
+                                  ${MPI_C_INCLUDE_PATH} )
+
+      if(NOT "${MPI_CXX_COMPILE_FLAGS}" STREQUAL "")
+            set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
+                                   ${MPI_CXX_COMPILE_FLAGS} )
+      endif()
+
+      if(NOT "${MPI_CXX_LINK_FLAGS}" STREQUAL "")
+            set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
+                                   ${MPI_CXX_LINK_FLAGS} )
+      endif()
+
+      target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
    endif()
 
    if ( ${arg_WITH_OPENMP} )
