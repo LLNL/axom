@@ -20,6 +20,7 @@
 #define SIDRETYPES_HPP_
 
 #include "SidreDataTypeIds.h"
+#include "conduit.hpp"
 
 namespace asctoolkit
 {
