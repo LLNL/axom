@@ -12,6 +12,7 @@
 // wrapDataView.cpp
 #include "wrapDataView.h"
 #include "sidre/DataView.hpp"
+#include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {

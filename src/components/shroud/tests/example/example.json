@@ -1873,7 +1873,7 @@
             "c_header": "sidre/SidreTypes.h", 
             "c_to_cpp": "getTypeID({var})", 
             "c_type": "int", 
-            "cpp_header": "sidre/SidreTypes.hpp", 
+            "cpp_header": "sidre/SidreWrapperHelpers.hpp", 
             "cpp_type": "TypeID", 
             "f_module": {
                 "iso_c_binding": [
