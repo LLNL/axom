@@ -27,7 +27,6 @@
 // splicer begin header.include
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
-#include "SidreWrapperHelpers.hpp"
 // splicer end header.include
 namespace asctoolkit {
 namespace sidre {

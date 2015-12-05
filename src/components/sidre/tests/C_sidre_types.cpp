@@ -12,7 +12,6 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
-#include "sidre/SidreWrapperHelpers.hpp"
 
 using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::TypeID;

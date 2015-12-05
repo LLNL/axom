@@ -45,7 +45,7 @@ types:
   TypeID:
     # enum for types
     c_header : sidre/SidreTypes.h
-    cpp_header : sidre/SidreWrapperHelpers.hpp
+    cpp_header : sidre/SidreTypes.hpp
     c_type   : int
     cpp_type: TypeID
 #    cpp_to_c : static_cast<int>({var})

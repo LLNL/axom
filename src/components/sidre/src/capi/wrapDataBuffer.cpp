@@ -12,7 +12,6 @@
 // wrapDataBuffer.cpp
 #include "wrapDataBuffer.h"
 #include "sidre/DataBuffer.hpp"
-#include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {

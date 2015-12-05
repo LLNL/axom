@@ -16,7 +16,6 @@
 #include <cstddef>
 #include "common/CommonTypes.hpp"
 #include "common/FC.h"
-#include "SidreWrapperHelpers.hpp"
 
 #include "sidre/DataGroup.hpp"
 #include "sidre/SidreAllocatable.hpp"

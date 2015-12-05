@@ -95,7 +95,12 @@ enum DataTypeId
  */
 typedef DataTypeId TypeID;
 
+// Convenience function to convert integer to TypeID type.
+inline TypeID getTypeID( const int typeID )
+{
 
+  return static_cast<TypeID>(typeID);
+}
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

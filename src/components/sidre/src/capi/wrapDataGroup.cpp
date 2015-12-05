@@ -12,7 +12,6 @@
 // wrapDataGroup.cpp
 #include "wrapDataGroup.h"
 #include "sidre/DataGroup.hpp"
-#include "sidre/SidreWrapperHelpers.hpp"
 
 extern "C" {
 namespace asctoolkit {
