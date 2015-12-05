@@ -12,7 +12,7 @@
 // wrapDataView.cpp
 #include "wrapDataView.h"
 #include "sidre/DataView.hpp"
-#include "sidre/SidreWrapperHelpers.hpp"
+#include "sidre/SidreTypes.hpp"
 
 extern "C" {
 namespace asctoolkit {
@@ -248,7 +248,7 @@ int ATK_dataview_get_type_id(ATK_dataview * self)
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_type_id
 TypeID rv = selfobj->getTypeID();
-return rv;
+return static_cast<int>(rv);
 // splicer end class.DataView.method.get_type_id
 }
 

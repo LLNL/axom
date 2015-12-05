@@ -55,8 +55,8 @@ class DataView;
  *      not directly.
  *    - A DataBuffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the buffer is created.
- *    - The data object owned by a DataBuffer is unique to that DataDuffer
- *      object; i.e.,  DataBuffers that own data not share their data.
+ *    - The data object owned by a DataBuffer is unique to that DataBuffer
+ *      object; i.e.,  DataBuffers that own data do not share their data.
  *    - A DataBuffer may hold a pointer to externally-owned data. When this
  *      is the case, the buffer cannot be used to (re)allocate or deallocate
  *      the data. However, the external data can be desribed and accessed
