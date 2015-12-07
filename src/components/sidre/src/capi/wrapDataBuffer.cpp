@@ -12,7 +12,7 @@
 // wrapDataBuffer.cpp
 #include "wrapDataBuffer.h"
 #include "sidre/DataBuffer.hpp"
-#include "sidre/SidreWrapperHelpers.hpp"
+#include "sidre/SidreTypes.hpp"
 
 extern "C" {
 namespace asctoolkit {
@@ -104,7 +104,7 @@ int ATK_databuffer_get_type_id(ATK_databuffer * self)
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_type_id
 TypeID rv = selfobj->getTypeID();
-return rv;
+return static_cast<int>(rv);
 // splicer end class.DataBuffer.method.get_type_id
 }
 
