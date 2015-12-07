@@ -52,7 +52,7 @@ slic::message::Level getRandomLevel()
 void driver_init()
 {
   slic::initialize();
-  slic::setLoggingLevel( slic::message::Debug );
+  slic::setLoggingMsgLevel( slic::message::Debug );
 
   std::string hsp_format =
       std::string( "[<LEVEL>]: <MESSAGE>\n" ) +
@@ -62,7 +62,7 @@ void driver_init()
   // setup main hsp output
   hsp.open( "hsp.log" );
   slic::LogStream* ls = new slic::GenericOutputStream( &hsp, hsp_format );
-  slic::addStreamToAllLevels( ls );
+  slic::addStreamToAllMsgLevels( ls );
 
   std::string console_format =
       std::string( "[<LEVEL>]: <MESSAGE>\n" );
@@ -70,10 +70,10 @@ void driver_init()
   // setup console output
   slic::LogStream* console =
       new slic::GenericOutputStream( &std::cout, console_format );
-  slic::addStreamToLevel( console, slic::message::Fatal );
-  slic::addStreamToLevel( console, slic::message::Error );
-  slic::addStreamToLevel( console, slic::message::Warning );
-  slic::addStreamToLevel( console, slic::message::Info );
+  slic::addStreamToMsgLevel( console, slic::message::Fatal );
+  slic::addStreamToMsgLevel( console, slic::message::Error );
+  slic::addStreamToMsgLevel( console, slic::message::Warning );
+  slic::addStreamToMsgLevel( console, slic::message::Info );
 }
 
 //-----------------------------------------------------------------------------
