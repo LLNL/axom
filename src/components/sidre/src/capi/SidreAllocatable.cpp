@@ -192,7 +192,7 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
   size_t nitems = 0;
   switch(type)
   {
-  case CONDUIT_NATIVE_INT_DATATYPE_ID:
+  case SIDRE_INT_ID:
     switch(rank)
     {
     case 0:
@@ -205,7 +205,7 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_LONG_DATATYPE_ID:
+  case SIDRE_LONG_ID:
     switch(rank)
     {
     case 0:
@@ -218,7 +218,7 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
+  case SIDRE_FLOAT_ID:
     switch(rank)
     {
     case 0:
@@ -231,7 +231,7 @@ size_t SizeAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
+  case SIDRE_DOUBLE_ID:
     switch(rank)
     {
     case 0:
@@ -262,7 +262,7 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
   void * addr = ATK_NULLPTR;
   switch(type)
   {
-  case CONDUIT_NATIVE_INT_DATATYPE_ID:
+  case SIDRE_INT_ID:
     switch(rank)
     {
     case 0:
@@ -275,7 +275,7 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_LONG_DATATYPE_ID:
+  case SIDRE_LONG_ID:
     switch(rank)
     {
     case 0:
@@ -288,7 +288,7 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
+  case SIDRE_FLOAT_ID:
     switch(rank)
     {
     case 0:
@@ -301,7 +301,7 @@ void * AddressAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
+  case SIDRE_DOUBLE_ID:
     switch(rank)
     {
     case 0:
@@ -332,7 +332,7 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
   void * addr = ATK_NULLPTR;
   switch(type)
   {
-  case CONDUIT_NATIVE_INT_DATATYPE_ID:
+  case SIDRE_INT_ID:
     switch(rank)
     {
     case 0:
@@ -347,7 +347,7 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
       break;
     }
     break;
-  case CONDUIT_NATIVE_LONG_DATATYPE_ID:
+  case SIDRE_LONG_ID:
     switch(rank)
     {
     case 0:
@@ -362,7 +362,7 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
       break;
     }
     break;
-  case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
+  case SIDRE_FLOAT_ID:
     switch(rank)
     {
     case 0:
@@ -377,7 +377,7 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
       break;
     }
     break;
-  case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
+  case SIDRE_DOUBLE_ID:
     switch(rank)
     {
     case 0:
@@ -409,7 +409,7 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
 {
   switch(type)
   {
-  case CONDUIT_NATIVE_INT_DATATYPE_ID:
+  case SIDRE_INT_ID:
     switch(rank)
     {
     case 0:
@@ -422,7 +422,7 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_LONG_DATATYPE_ID:
+  case SIDRE_LONG_ID:
     switch(rank)
     {
     case 0:
@@ -435,7 +435,7 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_FLOAT_DATATYPE_ID:
+  case SIDRE_FLOAT_ID:
     switch(rank)
     {
     case 0:
@@ -448,7 +448,7 @@ void DeallocateAllocatable(void * array, TypeID type, int rank)
       break;
     }
     break;
-  case CONDUIT_NATIVE_DOUBLE_DATATYPE_ID:
+  case SIDRE_DOUBLE_ID:
     switch(rank)
     {
     case 0:

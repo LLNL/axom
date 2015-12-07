@@ -7,10 +7,10 @@ from __future__ import print_function
 import sys
 
 types = (
-    ( 'int',    'integer(C_INT)',  'SIDRE_INT_ID',    'CONDUIT_NATIVE_INT_DATATYPE_ID'),
-    ( 'long',   'integer(C_LONG)', 'SIDRE_LONG_ID',   'CONDUIT_NATIVE_LONG_DATATYPE_ID'),
-    ( 'float',  'real(C_FLOAT)',   'SIDRE_FLOAT_ID',  'CONDUIT_NATIVE_FLOAT_DATATYPE_ID'),
-    ( 'double', 'real(C_DOUBLE)',  'SIDRE_DOUBLE_ID', 'CONDUIT_NATIVE_DOUBLE_DATATYPE_ID'),
+    ( 'int',    'integer(C_INT)',  'SIDRE_INT_ID'),
+    ( 'long',   'integer(C_LONG)', 'SIDRE_LONG_ID'),
+    ( 'float',  'real(C_FLOAT)',   'SIDRE_FLOAT_ID'),
+    ( 'double', 'real(C_DOUBLE)',  'SIDRE_DOUBLE_ID'),
 )
 
 # XXX - only doing 0-d and 1-d for now
@@ -159,7 +159,7 @@ def foreach_value(lines, fcn, **kwargs):
     d.update(kwargs)
     indx = 0
     for typetuple in types:
-        d['typename'], d['f_type'], d['sidre_type'], d['cpp_type'] = typetuple
+        d['typename'], d['f_type'], d['sidre_type'] = typetuple
 
         # scalar values
         # XXX - generic does not distinguish between pointer and non-pointer
@@ -211,8 +211,8 @@ def print_switch(printer, calls):
     printer('  switch(type)')
     printer('  {')
     for typetuple in types:
-        d['typename'], f_type, sidre_type, cpp_type = typetuple
-        printer('  case %s:' % cpp_type)
+        d['typename'], f_type, sidre_type = typetuple
+        printer('  case %s:' % sidre_type)
         printer('    switch(rank)')
         printer('    {')
         for nd in range(0,maxdims+1):
