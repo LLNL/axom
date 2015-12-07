@@ -17,7 +17,7 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-bool ATK_name_is_valid(const char * name)
+bool SIDRE_name_is_valid(const char * name)
 {
 // splicer begin function.name_is_valid
 return name != NULL;

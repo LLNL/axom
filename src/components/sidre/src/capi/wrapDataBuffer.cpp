@@ -18,7 +18,7 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self)
+SIDRE_IndexType SIDRE_databuffer_get_index(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_index
@@ -27,7 +27,7 @@ return rv;
 // splicer end class.DataBuffer.method.get_index
 }
 
-size_t ATK_databuffer_get_num_views(ATK_databuffer * self)
+size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_num_views
@@ -36,7 +36,7 @@ return rv;
 // splicer end class.DataBuffer.method.get_num_views
 }
 
-void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength num_elems)
+void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type, SIDRE_SidreLength num_elems)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.declare
@@ -45,7 +45,7 @@ return;
 // splicer end class.DataBuffer.method.declare
 }
 
-void ATK_databuffer_allocate_existing(ATK_databuffer * self)
+void SIDRE_databuffer_allocate_existing(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.allocate_existing
@@ -54,7 +54,7 @@ return;
 // splicer end class.DataBuffer.method.allocate_existing
 }
 
-void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength num_elems)
+void SIDRE_databuffer_allocate_from_type(SIDRE_databuffer * self, int type, SIDRE_SidreLength num_elems)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.allocate_from_type
@@ -63,7 +63,7 @@ return;
 // splicer end class.DataBuffer.method.allocate_from_type
 }
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength num_elems)
+void SIDRE_databuffer_reallocate(SIDRE_databuffer * self, SIDRE_SidreLength num_elems)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.reallocate
@@ -72,7 +72,7 @@ return;
 // splicer end class.DataBuffer.method.reallocate
 }
 
-void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data)
+void SIDRE_databuffer_set_external_data(SIDRE_databuffer * self, void * external_data)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.set_external_data
@@ -81,7 +81,7 @@ return;
 // splicer end class.DataBuffer.method.set_external_data
 }
 
-bool ATK_databuffer_is_external(ATK_databuffer * self)
+bool SIDRE_databuffer_is_external(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.is_external
@@ -90,7 +90,7 @@ return rv;
 // splicer end class.DataBuffer.method.is_external
 }
 
-void * ATK_databuffer_get_data(ATK_databuffer * self)
+void * SIDRE_databuffer_get_data(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_data
@@ -99,7 +99,7 @@ return rv;
 // splicer end class.DataBuffer.method.get_data
 }
 
-int ATK_databuffer_get_type_id(ATK_databuffer * self)
+int SIDRE_databuffer_get_type_id(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_type_id
@@ -108,7 +108,7 @@ return static_cast<int>(rv);
 // splicer end class.DataBuffer.method.get_type_id
 }
 
-size_t ATK_databuffer_get_num_elements(ATK_databuffer * self)
+size_t SIDRE_databuffer_get_num_elements(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_num_elements
@@ -117,7 +117,7 @@ return rv;
 // splicer end class.DataBuffer.method.get_num_elements
 }
 
-size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self)
+size_t SIDRE_databuffer_get_total_bytes(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.get_total_bytes
@@ -126,7 +126,7 @@ return rv;
 // splicer end class.DataBuffer.method.get_total_bytes
 }
 
-void ATK_databuffer_print(ATK_databuffer * self)
+void SIDRE_databuffer_print(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.print
