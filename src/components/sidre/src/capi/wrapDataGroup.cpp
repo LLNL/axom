@@ -18,7 +18,7 @@ extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-const char * ATK_datagroup_get_name(const ATK_datagroup * self)
+const char * SIDRE_datagroup_get_name(const SIDRE_datagroup * self)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_name
@@ -27,25 +27,25 @@ return rv.c_str();
 // splicer end class.DataGroup.method.get_name
 }
 
-const ATK_datagroup * ATK_datagroup_get_parent(const ATK_datagroup * self)
+const SIDRE_datagroup * SIDRE_datagroup_get_parent(const SIDRE_datagroup * self)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_parent
 const DataGroup * rv = selfobj->getParent();
-return static_cast<const ATK_datagroup *>(static_cast<const void *>(rv));
+return static_cast<const SIDRE_datagroup *>(static_cast<const void *>(rv));
 // splicer end class.DataGroup.method.get_parent
 }
 
-const ATK_datastore * ATK_datagroup_get_data_store(const ATK_datagroup * self)
+const SIDRE_datastore * SIDRE_datagroup_get_data_store(const SIDRE_datagroup * self)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_data_store
 const DataStore * rv = selfobj->getDataStore();
-return static_cast<const ATK_datastore *>(static_cast<const void *>(rv));
+return static_cast<const SIDRE_datastore *>(static_cast<const void *>(rv));
 // splicer end class.DataGroup.method.get_data_store
 }
 
-size_t ATK_datagroup_get_num_views(ATK_datagroup * self)
+size_t SIDRE_datagroup_get_num_views(SIDRE_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_num_views
@@ -54,7 +54,7 @@ return rv;
 // splicer end class.DataGroup.method.get_num_views
 }
 
-size_t ATK_datagroup_get_num_groups(ATK_datagroup * self)
+size_t SIDRE_datagroup_get_num_groups(SIDRE_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_num_groups
@@ -63,7 +63,7 @@ return rv;
 // splicer end class.DataGroup.method.get_num_groups
 }
 
-bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name)
+bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.has_view
@@ -72,7 +72,7 @@ return rv;
 // splicer end class.DataGroup.method.has_view
 }
 
-bool ATK_datagroup_has_view_bufferify(ATK_datagroup * self, const char * name, int Lname)
+bool SIDRE_datagroup_has_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.has_view_bufferify
@@ -81,34 +81,34 @@ return rv;
 // splicer end class.DataGroup.method.has_view_bufferify
 }
 
-ATK_dataview * ATK_datagroup_get_view_from_name(ATK_datagroup * self, const char * name)
+SIDRE_dataview * SIDRE_datagroup_get_view_from_name(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_view_from_name
 DataView * rv = selfobj->getView(name);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.get_view_from_name
 }
 
-ATK_dataview * ATK_datagroup_get_view_from_name_bufferify(ATK_datagroup * self, const char * name, int Lname)
+SIDRE_dataview * SIDRE_datagroup_get_view_from_name_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_view_from_name_bufferify
 DataView * rv = selfobj->getView(std::string(name, Lname));
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.get_view_from_name_bufferify
 }
 
-ATK_dataview * ATK_datagroup_get_view_from_index(ATK_datagroup * self, const ATK_IndexType idx)
+SIDRE_dataview * SIDRE_datagroup_get_view_from_index(SIDRE_datagroup * self, const SIDRE_IndexType idx)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_view_from_index
 DataView * rv = selfobj->getView(idx);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.get_view_from_index
 }
 
-ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name)
+SIDRE_IndexType SIDRE_datagroup_get_view_index(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_view_index
@@ -117,7 +117,7 @@ return rv;
 // splicer end class.DataGroup.method.get_view_index
 }
 
-ATK_IndexType ATK_datagroup_get_view_index_bufferify(ATK_datagroup * self, const char * name, int Lname)
+SIDRE_IndexType SIDRE_datagroup_get_view_index_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_view_index_bufferify
@@ -126,128 +126,128 @@ return rv;
 // splicer end class.DataGroup.method.get_view_index_bufferify
 }
 
-const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx)
+const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self, SIDRE_IndexType idx)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_view_name
 const std::string & rv = selfobj->getViewName(idx);
 if (! nameIsValid(rv)) {
-    return ATK_InvalidName;
+    return SIDRE_InvalidName;
 }
 
 return rv.c_str();
 // splicer end class.DataGroup.method.get_view_name
 }
 
-ATK_dataview * ATK_datagroup_create_view_and_allocate_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_and_allocate_from_type
 DataView * rv = selfobj->createViewAndAllocate(name, getTypeID(type), num_elems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_and_allocate_from_type
 }
 
-ATK_dataview * ATK_datagroup_create_view_and_allocate_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_and_allocate_from_type_bufferify
 DataView * rv = selfobj->createViewAndAllocate(std::string(name, Lname), getTypeID(type), num_elems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_and_allocate_from_type_bufferify
 }
 
-ATK_dataview * ATK_datagroup_create_view_empty(ATK_datagroup * self, const char * name)
+SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_empty
 DataView * rv = selfobj->createView(name);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_empty
 }
 
-ATK_dataview * ATK_datagroup_create_view_empty_bufferify(ATK_datagroup * self, const char * name, int Lname)
+SIDRE_dataview * SIDRE_datagroup_create_view_empty_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_empty_bufferify
 DataView * rv = selfobj->createView(std::string(name, Lname));
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_empty_bufferify
 }
 
-ATK_dataview * ATK_datagroup_create_view_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_view_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_from_type
 DataView * rv = selfobj->createView(name, getTypeID(type), num_elems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_from_type
 }
 
-ATK_dataview * ATK_datagroup_create_view_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_view_from_type_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_from_type_bufferify
 DataView * rv = selfobj->createView(std::string(name, Lname), getTypeID(type), num_elems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_from_type_bufferify
 }
 
-ATK_dataview * ATK_datagroup_create_view_into_buffer(ATK_datagroup * self, const char * name, ATK_databuffer * buff)
+SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer(SIDRE_datagroup * self, const char * name, SIDRE_databuffer * buff)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_into_buffer
 DataView * rv = selfobj->createView(name, static_cast<DataBuffer *>(static_cast<void *>(buff)));
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_into_buffer
 }
 
-ATK_dataview * ATK_datagroup_create_view_into_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff)
+SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer_bufferify(SIDRE_datagroup * self, const char * name, int Lname, SIDRE_databuffer * buff)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_view_into_buffer_bufferify
 DataView * rv = selfobj->createView(std::string(name, Lname), static_cast<DataBuffer *>(static_cast<void *>(buff)));
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_into_buffer_bufferify
 }
 
-ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr)
+SIDRE_dataview * SIDRE_datagroup_create_opaque_view(SIDRE_datagroup * self, const char * name, void * opaque_ptr)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_opaque_view
 DataView * rv = selfobj->createOpaqueView(name, opaque_ptr);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_opaque_view
 }
 
-ATK_dataview * ATK_datagroup_create_opaque_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * opaque_ptr)
+SIDRE_dataview * SIDRE_datagroup_create_opaque_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * opaque_ptr)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_opaque_view_bufferify
 DataView * rv = selfobj->createOpaqueView(std::string(name, Lname), opaque_ptr);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_opaque_view_bufferify
 }
 
-ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_external_view(SIDRE_datagroup * self, const char * name, void * external_data, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_external_view
 DataView * rv = selfobj->createExternalView(name, external_data, getTypeID(type), num_elems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_external_view
 }
 
-ATK_dataview * ATK_datagroup_create_external_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * external_data, int type, ATK_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_external_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_data, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_external_view_bufferify
 DataView * rv = selfobj->createExternalView(std::string(name, Lname), external_data, getTypeID(type), num_elems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_external_view_bufferify
 }
 
-void ATK_datagroup_destroy_view(ATK_datagroup * self, const char * name)
+void SIDRE_datagroup_destroy_view(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.destroy_view
@@ -256,7 +256,7 @@ return;
 // splicer end class.DataGroup.method.destroy_view
 }
 
-void ATK_datagroup_destroy_view_bufferify(ATK_datagroup * self, const char * name, int Lname)
+void SIDRE_datagroup_destroy_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.destroy_view_bufferify
@@ -265,7 +265,7 @@ return;
 // splicer end class.DataGroup.method.destroy_view_bufferify
 }
 
-void ATK_datagroup_destroy_view_and_data(ATK_datagroup * self, const char * name)
+void SIDRE_datagroup_destroy_view_and_data(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.destroy_view_and_data
@@ -274,7 +274,7 @@ return;
 // splicer end class.DataGroup.method.destroy_view_and_data
 }
 
-void ATK_datagroup_destroy_view_and_data_bufferify(ATK_datagroup * self, const char * name, int Lname)
+void SIDRE_datagroup_destroy_view_and_data_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.destroy_view_and_data_bufferify
@@ -283,25 +283,25 @@ return;
 // splicer end class.DataGroup.method.destroy_view_and_data_bufferify
 }
 
-ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view)
+SIDRE_dataview * SIDRE_datagroup_move_view(SIDRE_datagroup * self, SIDRE_dataview * view)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.move_view
 DataView * rv = selfobj->moveView(static_cast<DataView *>(static_cast<void *>(view)));
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.move_view
 }
 
-ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view)
+SIDRE_dataview * SIDRE_datagroup_copy_view(SIDRE_datagroup * self, SIDRE_dataview * view)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.copy_view
 DataView * rv = selfobj->copyView(static_cast<DataView *>(static_cast<void *>(view)));
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.copy_view
 }
 
-bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name)
+bool SIDRE_datagroup_has_group(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.has_group
@@ -310,7 +310,7 @@ return rv;
 // splicer end class.DataGroup.method.has_group
 }
 
-bool ATK_datagroup_has_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+bool SIDRE_datagroup_has_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.has_group_bufferify
@@ -319,25 +319,25 @@ return rv;
 // splicer end class.DataGroup.method.has_group_bufferify
 }
 
-ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name)
+SIDRE_datagroup * SIDRE_datagroup_get_group(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_group
 DataGroup * rv = selfobj->getGroup(name);
-return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
+return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.get_group
 }
 
-ATK_datagroup * ATK_datagroup_get_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+SIDRE_datagroup * SIDRE_datagroup_get_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_group_bufferify
 DataGroup * rv = selfobj->getGroup(std::string(name, Lname));
-return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
+return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.get_group_bufferify
 }
 
-ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name)
+SIDRE_IndexType SIDRE_datagroup_get_group_index(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_group_index
@@ -346,7 +346,7 @@ return rv;
 // splicer end class.DataGroup.method.get_group_index
 }
 
-ATK_IndexType ATK_datagroup_get_group_index_bufferify(ATK_datagroup * self, const char * name, int Lname)
+SIDRE_IndexType SIDRE_datagroup_get_group_index_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.get_group_index_bufferify
@@ -355,38 +355,38 @@ return rv;
 // splicer end class.DataGroup.method.get_group_index_bufferify
 }
 
-const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx)
+const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self, SIDRE_IndexType idx)
 {
 const DataGroup *selfobj = static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_group_name
 const std::string & rv = selfobj->getGroupName(idx);
 if (! nameIsValid(rv)) {
-    return ATK_InvalidName;
+    return SIDRE_InvalidName;
 }
 
 return rv.c_str();
 // splicer end class.DataGroup.method.get_group_name
 }
 
-ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name)
+SIDRE_datagroup * SIDRE_datagroup_create_group(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_group
 DataGroup * rv = selfobj->createGroup(name);
-return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
+return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_group
 }
 
-ATK_datagroup * ATK_datagroup_create_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+SIDRE_datagroup * SIDRE_datagroup_create_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.create_group_bufferify
 DataGroup * rv = selfobj->createGroup(std::string(name, Lname));
-return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
+return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_group_bufferify
 }
 
-void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name)
+void SIDRE_datagroup_destroy_group(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.destroy_group
@@ -395,7 +395,7 @@ return;
 // splicer end class.DataGroup.method.destroy_group
 }
 
-void ATK_datagroup_destroy_group_bufferify(ATK_datagroup * self, const char * name, int Lname)
+void SIDRE_datagroup_destroy_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.destroy_group_bufferify
@@ -404,16 +404,16 @@ return;
 // splicer end class.DataGroup.method.destroy_group_bufferify
 }
 
-ATK_datagroup * ATK_datagroup_move_group(ATK_datagroup * self, ATK_datagroup * grp)
+SIDRE_datagroup * SIDRE_datagroup_move_group(SIDRE_datagroup * self, SIDRE_datagroup * grp)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.move_group
 DataGroup * rv = selfobj->moveGroup(static_cast<DataGroup *>(static_cast<void *>(grp)));
-return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
+return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.move_group
 }
 
-void ATK_datagroup_print(ATK_datagroup * self)
+void SIDRE_datagroup_print(SIDRE_datagroup * self)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.print
@@ -422,7 +422,7 @@ return;
 // splicer end class.DataGroup.method.print
 }
 
-void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol)
+void SIDRE_datagroup_save(SIDRE_datagroup * self, const char * obase, const char * protocol)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.save
@@ -431,7 +431,7 @@ return;
 // splicer end class.DataGroup.method.save
 }
 
-void ATK_datagroup_save_bufferify(ATK_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol)
+void SIDRE_datagroup_save_bufferify(SIDRE_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.save_bufferify
@@ -440,7 +440,7 @@ return;
 // splicer end class.DataGroup.method.save_bufferify
 }
 
-void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol)
+void SIDRE_datagroup_load(SIDRE_datagroup * self, const char * obase, const char * protocol)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.load
@@ -449,7 +449,7 @@ return;
 // splicer end class.DataGroup.method.load
 }
 
-void ATK_datagroup_load_bufferify(ATK_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol)
+void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
 // splicer begin class.DataGroup.method.load_bufferify

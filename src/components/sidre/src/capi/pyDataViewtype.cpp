@@ -88,7 +88,7 @@ PY_dataview_allocate_from_type(
 {
 // splicer begin class.DataView.method.allocate_from_type
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -113,7 +113,7 @@ PY_dataview_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.reallocate
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "num_elems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -156,7 +156,7 @@ PY_dataview_apply_nelems(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_nelems
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "num_elems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -183,8 +183,8 @@ PY_dataview_apply_nelems_offset(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_nelems_offset
-    ATK_SidreLength num_elems;
-    ATK_SidreLength offset;
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
     const char *kwcpp = "num_elems\0offset";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+10, NULL };
     
@@ -211,9 +211,9 @@ PY_dataview_apply_nelems_offset_stride(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_nelems_offset_stride
-    ATK_SidreLength num_elems;
-    ATK_SidreLength offset;
-    ATK_SidreLength stride;
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
+    SIDRE_SidreLength stride;
     const char *kwcpp = "num_elems\0offset\0stride";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+10,(char *) kwcpp+17, NULL };
     
@@ -241,7 +241,7 @@ PY_dataview_apply_type_nelems(
 {
 // splicer begin class.DataView.method.apply_type_nelems
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -269,8 +269,8 @@ PY_dataview_apply_type_nelems_offset(
 {
 // splicer begin class.DataView.method.apply_type_nelems_offset
     int type;
-    ATK_SidreLength num_elems;
-    ATK_SidreLength offset;
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
     const char *kwcpp = "type\0num_elems\0offset";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+15, NULL };
     
@@ -298,9 +298,9 @@ PY_dataview_apply_type_nelems_offset_stride(
 {
 // splicer begin class.DataView.method.apply_type_nelems_offset_stride
     int type;
-    ATK_SidreLength num_elems;
-    ATK_SidreLength offset;
-    ATK_SidreLength stride;
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
+    SIDRE_SidreLength stride;
     const char *kwcpp = "type\0num_elems\0offset\0stride";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+15,(char *) kwcpp+22, NULL };
     

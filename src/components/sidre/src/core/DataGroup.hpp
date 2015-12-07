@@ -910,9 +910,9 @@ private:
 
   /* extern "C" function which calls createFortranAllocatableView
    */
-  friend void * ATK_create_fortran_allocatable_view(void * group,
-                                                    char * name, int lname,
-                                                    void * array, int type, int rank);
+  friend void * SIDRE_create_fortran_allocatable_view(void * group,
+                                                      char * name, int lname,
+                                                      void * array, int type, int rank);
 #endif
 
 //@}

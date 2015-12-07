@@ -28,12 +28,12 @@ integer, parameter :: invalid_index = -1
 ! splicer end module_top
 
 
-# ATK_create_fortran_allocatable_view is not in api.yaml since it is not in src/core and
+# SIDRE_create_fortran_allocatable_view is not in api.yaml since it is not in src/core and
 # only required for the fortran interface.
 
 ! splicer begin additional_interfaces
-function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-   bind(C,name="ATK_create_fortran_allocatable_view") &
+function SIDRE_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
+   bind(C,name="SIDRE_create_fortran_allocatable_view") &
    result(rv)
       use iso_c_binding
       type(C_PTR), value, intent(IN)    :: group
@@ -43,5 +43,5 @@ function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, ra
       integer(C_INT), value, intent(IN) :: itype
       integer(C_INT), value, intent(IN) :: rank
       type(C_PTR) rv
-end function ATK_create_fortran_allocatable_view
+end function SIDRE_create_fortran_allocatable_view
 ! splicer end additional_interfaces

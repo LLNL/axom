@@ -51,53 +51,53 @@ module sidre_mod
     ! splicer begin class.DataStore.module_top
     interface c_loc_allocatable
     
-       subroutine atk_c_loc_allocatable_int_scalar(variable, addr)
+       subroutine sidre_c_loc_allocatable_int_scalar(variable, addr)
          use iso_c_binding
          integer(C_INT), allocatable, intent(IN) :: variable
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_int_scalar
+       end subroutine sidre_c_loc_allocatable_int_scalar
     
-       subroutine atk_c_loc_allocatable_int_1d(variable, addr)
+       subroutine sidre_c_loc_allocatable_int_1d(variable, addr)
          use iso_c_binding
          integer(C_INT), allocatable, intent(IN) :: variable(:)
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_int_1d
+       end subroutine sidre_c_loc_allocatable_int_1d
     
-       subroutine atk_c_loc_allocatable_long_scalar(variable, addr)
+       subroutine sidre_c_loc_allocatable_long_scalar(variable, addr)
          use iso_c_binding
          integer(C_LONG), allocatable, intent(IN) :: variable
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_long_scalar
+       end subroutine sidre_c_loc_allocatable_long_scalar
     
-       subroutine atk_c_loc_allocatable_long_1d(variable, addr)
+       subroutine sidre_c_loc_allocatable_long_1d(variable, addr)
          use iso_c_binding
          integer(C_LONG), allocatable, intent(IN) :: variable(:)
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_long_1d
+       end subroutine sidre_c_loc_allocatable_long_1d
     
-       subroutine atk_c_loc_allocatable_float_scalar(variable, addr)
+       subroutine sidre_c_loc_allocatable_float_scalar(variable, addr)
          use iso_c_binding
          real(C_FLOAT), allocatable, intent(IN) :: variable
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_float_scalar
+       end subroutine sidre_c_loc_allocatable_float_scalar
     
-       subroutine atk_c_loc_allocatable_float_1d(variable, addr)
+       subroutine sidre_c_loc_allocatable_float_1d(variable, addr)
          use iso_c_binding
          real(C_FLOAT), allocatable, intent(IN) :: variable(:)
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_float_1d
+       end subroutine sidre_c_loc_allocatable_float_1d
     
-       subroutine atk_c_loc_allocatable_double_scalar(variable, addr)
+       subroutine sidre_c_loc_allocatable_double_scalar(variable, addr)
          use iso_c_binding
          real(C_DOUBLE), allocatable, intent(IN) :: variable
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_double_scalar
+       end subroutine sidre_c_loc_allocatable_double_scalar
     
-       subroutine atk_c_loc_allocatable_double_1d(variable, addr)
+       subroutine sidre_c_loc_allocatable_double_1d(variable, addr)
          use iso_c_binding
          real(C_DOUBLE), allocatable, intent(IN) :: variable(:)
          type(C_PTR), intent(OUT) :: addr
-       end subroutine atk_c_loc_allocatable_double_1d
+       end subroutine sidre_c_loc_allocatable_double_1d
     end interface c_loc_allocatable
     ! splicer end class.DataStore.module_top
     
@@ -367,188 +367,188 @@ module sidre_mod
     
     interface
         
-        function atk_datastore_new() result(rv) &
-                bind(C, name="ATK_datastore_new")
+        function sidre_datastore_new() result(rv) &
+                bind(C, name="SIDRE_datastore_new")
             use iso_c_binding
             implicit none
             type(C_PTR) :: rv
-        end function atk_datastore_new
+        end function sidre_datastore_new
         
-        subroutine atk_datastore_delete(self) &
-                bind(C, name="ATK_datastore_delete")
+        subroutine sidre_datastore_delete(self) &
+                bind(C, name="SIDRE_datastore_delete")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_datastore_delete
+        end subroutine sidre_datastore_delete
         
-        function atk_datastore_get_root(self) result(rv) &
-                bind(C, name="ATK_datastore_get_root")
+        function sidre_datastore_get_root(self) result(rv) &
+                bind(C, name="SIDRE_datastore_get_root")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_datastore_get_root
+        end function sidre_datastore_get_root
         
-        function atk_datastore_get_buffer(self, idx) result(rv) &
-                bind(C, name="ATK_datastore_get_buffer")
+        function sidre_datastore_get_buffer(self, idx) result(rv) &
+                bind(C, name="SIDRE_datastore_get_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) :: rv
-        end function atk_datastore_get_buffer
+        end function sidre_datastore_get_buffer
         
-        function atk_datastore_create_buffer(self) result(rv) &
-                bind(C, name="ATK_datastore_create_buffer")
+        function sidre_datastore_create_buffer(self) result(rv) &
+                bind(C, name="SIDRE_datastore_create_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_datastore_create_buffer
+        end function sidre_datastore_create_buffer
         
-        subroutine atk_datastore_destroy_buffer(self, id) &
-                bind(C, name="ATK_datastore_destroy_buffer")
+        subroutine sidre_datastore_destroy_buffer(self, id) &
+                bind(C, name="SIDRE_datastore_destroy_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: id
-        end subroutine atk_datastore_destroy_buffer
+        end subroutine sidre_datastore_destroy_buffer
         
-        pure function atk_datastore_get_num_buffers(self) result(rv) &
-                bind(C, name="ATK_datastore_get_num_buffers")
+        pure function sidre_datastore_get_num_buffers(self) result(rv) &
+                bind(C, name="SIDRE_datastore_get_num_buffers")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_datastore_get_num_buffers
+        end function sidre_datastore_get_num_buffers
         
-        subroutine atk_datastore_print(self) &
-                bind(C, name="ATK_datastore_print")
+        subroutine sidre_datastore_print(self) &
+                bind(C, name="SIDRE_datastore_print")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_datastore_print
+        end subroutine sidre_datastore_print
         
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
         
-        pure function atk_datagroup_get_name(self) result(rv) &
-                bind(C, name="ATK_datagroup_get_name")
+        pure function sidre_datagroup_get_name(self) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
-        end function atk_datagroup_get_name
+        end function sidre_datagroup_get_name
         
-        pure function atk_datagroup_get_parent(self) result(rv) &
-                bind(C, name="ATK_datagroup_get_parent")
+        pure function sidre_datagroup_get_parent(self) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_parent")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_datagroup_get_parent
+        end function sidre_datagroup_get_parent
         
-        pure function atk_datagroup_get_data_store(self) result(rv) &
-                bind(C, name="ATK_datagroup_get_data_store")
+        pure function sidre_datagroup_get_data_store(self) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_data_store")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_datagroup_get_data_store
+        end function sidre_datagroup_get_data_store
         
-        pure function atk_datagroup_get_num_views(self) result(rv) &
-                bind(C, name="ATK_datagroup_get_num_views")
+        pure function sidre_datagroup_get_num_views(self) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_num_views")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_datagroup_get_num_views
+        end function sidre_datagroup_get_num_views
         
-        pure function atk_datagroup_get_num_groups(self) result(rv) &
-                bind(C, name="ATK_datagroup_get_num_groups")
+        pure function sidre_datagroup_get_num_groups(self) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_num_groups")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_datagroup_get_num_groups
+        end function sidre_datagroup_get_num_groups
         
-        function atk_datagroup_has_view(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_has_view")
+        function sidre_datagroup_has_view(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_has_view")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
-        end function atk_datagroup_has_view
+        end function sidre_datagroup_has_view
         
-        function atk_datagroup_has_view_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_has_view_bufferify")
+        function sidre_datagroup_has_view_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_has_view_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             logical(C_BOOL) :: rv
-        end function atk_datagroup_has_view_bufferify
+        end function sidre_datagroup_has_view_bufferify
         
-        function atk_datagroup_get_view_from_name(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_from_name")
+        function sidre_datagroup_get_view_from_name(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_view_from_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_get_view_from_name
+        end function sidre_datagroup_get_view_from_name
         
-        function atk_datagroup_get_view_from_name_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_from_name_bufferify")
+        function sidre_datagroup_get_view_from_name_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_view_from_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
-        end function atk_datagroup_get_view_from_name_bufferify
+        end function sidre_datagroup_get_view_from_name_bufferify
         
-        function atk_datagroup_get_view_from_index(self, idx) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_from_index")
+        function sidre_datagroup_get_view_from_index(self, idx) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_view_from_index")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) :: rv
-        end function atk_datagroup_get_view_from_index
+        end function sidre_datagroup_get_view_from_index
         
-        pure function atk_datagroup_get_view_index(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_index")
+        pure function sidre_datagroup_get_view_index(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_view_index")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT) :: rv
-        end function atk_datagroup_get_view_index
+        end function sidre_datagroup_get_view_index
         
-        pure function atk_datagroup_get_view_index_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_index_bufferify")
+        pure function sidre_datagroup_get_view_index_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_view_index_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             integer(C_INT) :: rv
-        end function atk_datagroup_get_view_index_bufferify
+        end function sidre_datagroup_get_view_index_bufferify
         
-        pure function atk_datagroup_get_view_name(self, idx) result(rv) &
-                bind(C, name="ATK_datagroup_get_view_name")
+        pure function sidre_datagroup_get_view_name(self, idx) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_view_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) rv
-        end function atk_datagroup_get_view_name
+        end function sidre_datagroup_get_view_name
         
-        function atk_datagroup_create_view_and_allocate_from_type(self, name, type, num_elems) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_and_allocate_from_type")
+        function sidre_datagroup_create_view_and_allocate_from_type(self, name, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -556,10 +556,10 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_and_allocate_from_type
+        end function sidre_datagroup_create_view_and_allocate_from_type
         
-        function atk_datagroup_create_view_and_allocate_from_type_bufferify(self, name, Lname, type, num_elems) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_and_allocate_from_type_bufferify")
+        function sidre_datagroup_create_view_and_allocate_from_type_bufferify(self, name, Lname, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -568,29 +568,29 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_and_allocate_from_type_bufferify
+        end function sidre_datagroup_create_view_and_allocate_from_type_bufferify
         
-        function atk_datagroup_create_view_empty(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_empty")
+        function sidre_datagroup_create_view_empty(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_empty")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_empty
+        end function sidre_datagroup_create_view_empty
         
-        function atk_datagroup_create_view_empty_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_empty_bufferify")
+        function sidre_datagroup_create_view_empty_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_empty_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_empty_bufferify
+        end function sidre_datagroup_create_view_empty_bufferify
         
-        function atk_datagroup_create_view_from_type(self, name, type, num_elems) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_from_type")
+        function sidre_datagroup_create_view_from_type(self, name, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -598,10 +598,10 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_from_type
+        end function sidre_datagroup_create_view_from_type
         
-        function atk_datagroup_create_view_from_type_bufferify(self, name, Lname, type, num_elems) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_from_type_bufferify")
+        function sidre_datagroup_create_view_from_type_bufferify(self, name, Lname, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_from_type_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -610,20 +610,20 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_from_type_bufferify
+        end function sidre_datagroup_create_view_from_type_bufferify
         
-        function atk_datagroup_create_view_into_buffer(self, name, buff) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_into_buffer")
+        function sidre_datagroup_create_view_into_buffer(self, name, buff) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_into_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR), value, intent(IN) :: buff
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_into_buffer
+        end function sidre_datagroup_create_view_into_buffer
         
-        function atk_datagroup_create_view_into_buffer_bufferify(self, name, Lname, buff) result(rv) &
-                bind(C, name="ATK_datagroup_create_view_into_buffer_bufferify")
+        function sidre_datagroup_create_view_into_buffer_bufferify(self, name, Lname, buff) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_view_into_buffer_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -631,20 +631,20 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR), value, intent(IN) :: buff
             type(C_PTR) :: rv
-        end function atk_datagroup_create_view_into_buffer_bufferify
+        end function sidre_datagroup_create_view_into_buffer_bufferify
         
-        function atk_datagroup_create_opaque_view(self, name, opaque_ptr) result(rv) &
-                bind(C, name="ATK_datagroup_create_opaque_view")
+        function sidre_datagroup_create_opaque_view(self, name, opaque_ptr) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_opaque_view")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR), value, intent(IN) :: opaque_ptr
             type(C_PTR) :: rv
-        end function atk_datagroup_create_opaque_view
+        end function sidre_datagroup_create_opaque_view
         
-        function atk_datagroup_create_opaque_view_bufferify(self, name, Lname, opaque_ptr) result(rv) &
-                bind(C, name="ATK_datagroup_create_opaque_view_bufferify")
+        function sidre_datagroup_create_opaque_view_bufferify(self, name, Lname, opaque_ptr) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_opaque_view_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -652,10 +652,10 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR), value, intent(IN) :: opaque_ptr
             type(C_PTR) :: rv
-        end function atk_datagroup_create_opaque_view_bufferify
+        end function sidre_datagroup_create_opaque_view_bufferify
         
-        function atk_datagroup_create_external_view(self, name, external_data, type, num_elems) result(rv) &
-                bind(C, name="ATK_datagroup_create_external_view")
+        function sidre_datagroup_create_external_view(self, name, external_data, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_external_view")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -664,10 +664,10 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_datagroup_create_external_view
+        end function sidre_datagroup_create_external_view
         
-        function atk_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, num_elems) result(rv) &
-                bind(C, name="ATK_datagroup_create_external_view_bufferify")
+        function sidre_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_external_view_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -677,209 +677,189 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_datagroup_create_external_view_bufferify
+        end function sidre_datagroup_create_external_view_bufferify
         
-        subroutine atk_datagroup_destroy_view(self, name) &
-                bind(C, name="ATK_datagroup_destroy_view")
+        subroutine sidre_datagroup_destroy_view(self, name) &
+                bind(C, name="SIDRE_datagroup_destroy_view")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine atk_datagroup_destroy_view
+        end subroutine sidre_datagroup_destroy_view
         
-        subroutine atk_datagroup_destroy_view_bufferify(self, name, Lname) &
-                bind(C, name="ATK_datagroup_destroy_view_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
-        end subroutine atk_datagroup_destroy_view_bufferify
-        
-        subroutine atk_datagroup_destroy_view_and_data(self, name) &
-                bind(C, name="ATK_datagroup_destroy_view_and_data")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine atk_datagroup_destroy_view_and_data
-        
-        subroutine atk_datagroup_destroy_view_and_data_bufferify(self, name, Lname) &
-                bind(C, name="ATK_datagroup_destroy_view_and_data_bufferify")
+        subroutine sidre_datagroup_destroy_view_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_datagroup_destroy_view_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine atk_datagroup_destroy_view_and_data_bufferify
+        end subroutine sidre_datagroup_destroy_view_bufferify
         
-        function atk_datagroup_move_view(self, view) result(rv) &
-                bind(C, name="ATK_datagroup_move_view")
+        subroutine sidre_datagroup_destroy_view_and_data(self, name) &
+                bind(C, name="SIDRE_datagroup_destroy_view_and_data")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+        end subroutine sidre_datagroup_destroy_view_and_data
+        
+        subroutine sidre_datagroup_destroy_view_and_data_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_datagroup_destroy_view_and_data_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine sidre_datagroup_destroy_view_and_data_bufferify
+        
+        function sidre_datagroup_move_view(self, view) result(rv) &
+                bind(C, name="SIDRE_datagroup_move_view")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: view
             type(C_PTR) :: rv
-        end function atk_datagroup_move_view
+        end function sidre_datagroup_move_view
         
-        function atk_datagroup_copy_view(self, view) result(rv) &
-                bind(C, name="ATK_datagroup_copy_view")
+        function sidre_datagroup_copy_view(self, view) result(rv) &
+                bind(C, name="SIDRE_datagroup_copy_view")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: view
             type(C_PTR) :: rv
-        end function atk_datagroup_copy_view
+        end function sidre_datagroup_copy_view
         
-        function atk_datagroup_has_group(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_has_group")
+        function sidre_datagroup_has_group(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_has_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
-        end function atk_datagroup_has_group
+        end function sidre_datagroup_has_group
         
-        function atk_datagroup_has_group_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_has_group_bufferify")
+        function sidre_datagroup_has_group_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_has_group_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             logical(C_BOOL) :: rv
-        end function atk_datagroup_has_group_bufferify
+        end function sidre_datagroup_has_group_bufferify
         
-        function atk_datagroup_get_group(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_get_group")
+        function sidre_datagroup_get_group(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_get_group
+        end function sidre_datagroup_get_group
         
-        function atk_datagroup_get_group_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_get_group_bufferify")
+        function sidre_datagroup_get_group_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_group_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
-        end function atk_datagroup_get_group_bufferify
+        end function sidre_datagroup_get_group_bufferify
         
-        pure function atk_datagroup_get_group_index(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_get_group_index")
+        pure function sidre_datagroup_get_group_index(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_group_index")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT) :: rv
-        end function atk_datagroup_get_group_index
+        end function sidre_datagroup_get_group_index
         
-        pure function atk_datagroup_get_group_index_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_get_group_index_bufferify")
+        pure function sidre_datagroup_get_group_index_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_group_index_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             integer(C_INT) :: rv
-        end function atk_datagroup_get_group_index_bufferify
+        end function sidre_datagroup_get_group_index_bufferify
         
-        pure function atk_datagroup_get_group_name(self, idx) result(rv) &
-                bind(C, name="ATK_datagroup_get_group_name")
+        pure function sidre_datagroup_get_group_name(self, idx) result(rv) &
+                bind(C, name="SIDRE_datagroup_get_group_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) rv
-        end function atk_datagroup_get_group_name
+        end function sidre_datagroup_get_group_name
         
-        function atk_datagroup_create_group(self, name) result(rv) &
-                bind(C, name="ATK_datagroup_create_group")
+        function sidre_datagroup_create_group(self, name) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             type(C_PTR) :: rv
-        end function atk_datagroup_create_group
+        end function sidre_datagroup_create_group
         
-        function atk_datagroup_create_group_bufferify(self, name, Lname) result(rv) &
-                bind(C, name="ATK_datagroup_create_group_bufferify")
+        function sidre_datagroup_create_group_bufferify(self, name, Lname) result(rv) &
+                bind(C, name="SIDRE_datagroup_create_group_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             type(C_PTR) :: rv
-        end function atk_datagroup_create_group_bufferify
+        end function sidre_datagroup_create_group_bufferify
         
-        subroutine atk_datagroup_destroy_group(self, name) &
-                bind(C, name="ATK_datagroup_destroy_group")
+        subroutine sidre_datagroup_destroy_group(self, name) &
+                bind(C, name="SIDRE_datagroup_destroy_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine atk_datagroup_destroy_group
+        end subroutine sidre_datagroup_destroy_group
         
-        subroutine atk_datagroup_destroy_group_bufferify(self, name, Lname) &
-                bind(C, name="ATK_datagroup_destroy_group_bufferify")
+        subroutine sidre_datagroup_destroy_group_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_datagroup_destroy_group_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine atk_datagroup_destroy_group_bufferify
+        end subroutine sidre_datagroup_destroy_group_bufferify
         
-        function atk_datagroup_move_group(self, grp) result(rv) &
-                bind(C, name="ATK_datagroup_move_group")
+        function sidre_datagroup_move_group(self, grp) result(rv) &
+                bind(C, name="SIDRE_datagroup_move_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: grp
             type(C_PTR) :: rv
-        end function atk_datagroup_move_group
+        end function sidre_datagroup_move_group
         
-        subroutine atk_datagroup_print(self) &
-                bind(C, name="ATK_datagroup_print")
+        subroutine sidre_datagroup_print(self) &
+                bind(C, name="SIDRE_datagroup_print")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_datagroup_print
+        end subroutine sidre_datagroup_print
         
-        subroutine atk_datagroup_save(self, obase, protocol) &
-                bind(C, name="ATK_datagroup_save")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: obase(*)
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine atk_datagroup_save
-        
-        subroutine atk_datagroup_save_bufferify(self, obase, Lobase, protocol, Lprotocol) &
-                bind(C, name="ATK_datagroup_save_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: obase(*)
-            integer(C_INT), value, intent(IN) :: Lobase
-            character(kind=C_CHAR), intent(IN) :: protocol(*)
-            integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine atk_datagroup_save_bufferify
-        
-        subroutine atk_datagroup_load(self, obase, protocol) &
-                bind(C, name="ATK_datagroup_load")
+        subroutine sidre_datagroup_save(self, obase, protocol) &
+                bind(C, name="SIDRE_datagroup_save")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: obase(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine atk_datagroup_load
+        end subroutine sidre_datagroup_save
         
-        subroutine atk_datagroup_load_bufferify(self, obase, Lobase, protocol, Lprotocol) &
-                bind(C, name="ATK_datagroup_load_bufferify")
+        subroutine sidre_datagroup_save_bufferify(self, obase, Lobase, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datagroup_save_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -887,378 +867,398 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lobase
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine atk_datagroup_load_bufferify
+        end subroutine sidre_datagroup_save_bufferify
+        
+        subroutine sidre_datagroup_load(self, obase, protocol) &
+                bind(C, name="SIDRE_datagroup_load")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: obase(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+        end subroutine sidre_datagroup_load
+        
+        subroutine sidre_datagroup_load_bufferify(self, obase, Lobase, protocol, Lprotocol) &
+                bind(C, name="SIDRE_datagroup_load_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: obase(*)
+            integer(C_INT), value, intent(IN) :: Lobase
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+        end subroutine sidre_datagroup_load_bufferify
         
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
         
-        pure function atk_databuffer_get_index(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_index")
+        pure function sidre_databuffer_get_index(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_get_index")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function atk_databuffer_get_index
+        end function sidre_databuffer_get_index
         
-        pure function atk_databuffer_get_num_views(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_num_views")
+        pure function sidre_databuffer_get_num_views(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_get_num_views")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_databuffer_get_num_views
+        end function sidre_databuffer_get_num_views
         
-        subroutine atk_databuffer_declare(self, type, num_elems) &
-                bind(C, name="ATK_databuffer_declare")
+        subroutine sidre_databuffer_declare(self, type, num_elems) &
+                bind(C, name="SIDRE_databuffer_declare")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine atk_databuffer_declare
+        end subroutine sidre_databuffer_declare
         
-        subroutine atk_databuffer_allocate_existing(self) &
-                bind(C, name="ATK_databuffer_allocate_existing")
+        subroutine sidre_databuffer_allocate_existing(self) &
+                bind(C, name="SIDRE_databuffer_allocate_existing")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_databuffer_allocate_existing
+        end subroutine sidre_databuffer_allocate_existing
         
-        subroutine atk_databuffer_allocate_from_type(self, type, num_elems) &
-                bind(C, name="ATK_databuffer_allocate_from_type")
+        subroutine sidre_databuffer_allocate_from_type(self, type, num_elems) &
+                bind(C, name="SIDRE_databuffer_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine atk_databuffer_allocate_from_type
+        end subroutine sidre_databuffer_allocate_from_type
         
-        subroutine atk_databuffer_reallocate(self, num_elems) &
-                bind(C, name="ATK_databuffer_reallocate")
+        subroutine sidre_databuffer_reallocate(self, num_elems) &
+                bind(C, name="SIDRE_databuffer_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine atk_databuffer_reallocate
+        end subroutine sidre_databuffer_reallocate
         
-        subroutine atk_databuffer_set_external_data(self, external_data) &
-                bind(C, name="ATK_databuffer_set_external_data")
+        subroutine sidre_databuffer_set_external_data(self, external_data) &
+                bind(C, name="SIDRE_databuffer_set_external_data")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: external_data
-        end subroutine atk_databuffer_set_external_data
+        end subroutine sidre_databuffer_set_external_data
         
-        pure function atk_databuffer_is_external(self) result(rv) &
-                bind(C, name="ATK_databuffer_is_external")
+        pure function sidre_databuffer_is_external(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_is_external")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
-        end function atk_databuffer_is_external
+        end function sidre_databuffer_is_external
         
-        function atk_databuffer_get_data(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_data")
+        function sidre_databuffer_get_data(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_get_data")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_databuffer_get_data
+        end function sidre_databuffer_get_data
         
-        pure function atk_databuffer_get_type_id(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_type_id")
+        pure function sidre_databuffer_get_type_id(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_get_type_id")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function atk_databuffer_get_type_id
+        end function sidre_databuffer_get_type_id
         
-        pure function atk_databuffer_get_num_elements(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_num_elements")
+        pure function sidre_databuffer_get_num_elements(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_get_num_elements")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_databuffer_get_num_elements
+        end function sidre_databuffer_get_num_elements
         
-        pure function atk_databuffer_get_total_bytes(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_total_bytes")
+        pure function sidre_databuffer_get_total_bytes(self) result(rv) &
+                bind(C, name="SIDRE_databuffer_get_total_bytes")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_databuffer_get_total_bytes
+        end function sidre_databuffer_get_total_bytes
         
-        subroutine atk_databuffer_print(self) &
-                bind(C, name="ATK_databuffer_print")
+        subroutine sidre_databuffer_print(self) &
+                bind(C, name="SIDRE_databuffer_print")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_databuffer_print
+        end subroutine sidre_databuffer_print
         
         ! splicer begin class.DataBuffer.additional_interfaces
         ! splicer end class.DataBuffer.additional_interfaces
         
-        subroutine atk_dataview_allocate_simple(self) &
-                bind(C, name="ATK_dataview_allocate_simple")
+        subroutine sidre_dataview_allocate_simple(self) &
+                bind(C, name="SIDRE_dataview_allocate_simple")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_dataview_allocate_simple
+        end subroutine sidre_dataview_allocate_simple
         
-        subroutine atk_dataview_allocate_from_type(self, type, num_elems) &
-                bind(C, name="ATK_dataview_allocate_from_type")
+        subroutine sidre_dataview_allocate_from_type(self, type, num_elems) &
+                bind(C, name="SIDRE_dataview_allocate_from_type")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine atk_dataview_allocate_from_type
+        end subroutine sidre_dataview_allocate_from_type
         
-        subroutine atk_dataview_reallocate(self, num_elems) &
-                bind(C, name="ATK_dataview_reallocate")
+        subroutine sidre_dataview_reallocate(self, num_elems) &
+                bind(C, name="SIDRE_dataview_reallocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
-        end subroutine atk_dataview_reallocate
+        end subroutine sidre_dataview_reallocate
         
-        function atk_dataview_apply_simple(self) result(rv) &
-                bind(C, name="ATK_dataview_apply_simple")
+        function sidre_dataview_apply_simple(self) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_simple")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_dataview_apply_simple
+        end function sidre_dataview_apply_simple
         
-        function atk_dataview_apply_nelems(self, num_elems) result(rv) &
-                bind(C, name="ATK_dataview_apply_nelems")
+        function sidre_dataview_apply_nelems(self, num_elems) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_nelems")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function atk_dataview_apply_nelems
+        end function sidre_dataview_apply_nelems
         
-        function atk_dataview_apply_nelems_offset(self, num_elems, offset) result(rv) &
-                bind(C, name="ATK_dataview_apply_nelems_offset")
+        function sidre_dataview_apply_nelems_offset(self, num_elems, offset) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_nelems_offset")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
             type(C_PTR) :: rv
-        end function atk_dataview_apply_nelems_offset
+        end function sidre_dataview_apply_nelems_offset
         
-        function atk_dataview_apply_nelems_offset_stride(self, num_elems, offset, stride) result(rv) &
-                bind(C, name="ATK_dataview_apply_nelems_offset_stride")
+        function sidre_dataview_apply_nelems_offset_stride(self, num_elems, offset, stride) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_nelems_offset_stride")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            integer(C_LONG), value, intent(IN) :: num_elems
-            integer(C_LONG), value, intent(IN) :: offset
-            integer(C_LONG), value, intent(IN) :: stride
-            type(C_PTR) :: rv
-        end function atk_dataview_apply_nelems_offset_stride
-        
-        function atk_dataview_apply_type_nelems(self, type, num_elems) result(rv) &
-                bind(C, name="ATK_dataview_apply_type_nelems")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: rv
-        end function atk_dataview_apply_type_nelems
-        
-        function atk_dataview_apply_type_nelems_offset(self, type, num_elems, offset) result(rv) &
-                bind(C, name="ATK_dataview_apply_type_nelems_offset")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: num_elems
-            integer(C_LONG), value, intent(IN) :: offset
-            type(C_PTR) :: rv
-        end function atk_dataview_apply_type_nelems_offset
-        
-        function atk_dataview_apply_type_nelems_offset_stride(self, type, num_elems, offset, stride) result(rv) &
-                bind(C, name="ATK_dataview_apply_type_nelems_offset_stride")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
             integer(C_LONG), value, intent(IN) :: stride
             type(C_PTR) :: rv
-        end function atk_dataview_apply_type_nelems_offset_stride
+        end function sidre_dataview_apply_nelems_offset_stride
         
-        pure function atk_dataview_has_buffer(self) result(rv) &
-                bind(C, name="ATK_dataview_has_buffer")
+        function sidre_dataview_apply_type_nelems(self, type, num_elems) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_type_nelems")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: num_elems
+            type(C_PTR) :: rv
+        end function sidre_dataview_apply_type_nelems
+        
+        function sidre_dataview_apply_type_nelems_offset(self, type, num_elems, offset) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_type_nelems_offset")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: num_elems
+            integer(C_LONG), value, intent(IN) :: offset
+            type(C_PTR) :: rv
+        end function sidre_dataview_apply_type_nelems_offset
+        
+        function sidre_dataview_apply_type_nelems_offset_stride(self, type, num_elems, offset, stride) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_type_nelems_offset_stride")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_LONG), value, intent(IN) :: num_elems
+            integer(C_LONG), value, intent(IN) :: offset
+            integer(C_LONG), value, intent(IN) :: stride
+            type(C_PTR) :: rv
+        end function sidre_dataview_apply_type_nelems_offset_stride
+        
+        pure function sidre_dataview_has_buffer(self) result(rv) &
+                bind(C, name="SIDRE_dataview_has_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
-        end function atk_dataview_has_buffer
+        end function sidre_dataview_has_buffer
         
-        pure function atk_dataview_is_opaque(self) result(rv) &
-                bind(C, name="ATK_dataview_is_opaque")
+        pure function sidre_dataview_is_opaque(self) result(rv) &
+                bind(C, name="SIDRE_dataview_is_opaque")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             logical(C_BOOL) :: rv
-        end function atk_dataview_is_opaque
+        end function sidre_dataview_is_opaque
         
-        pure function atk_dataview_get_name(self) result(rv) &
-                bind(C, name="ATK_dataview_get_name")
+        pure function sidre_dataview_get_name(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) rv
-        end function atk_dataview_get_name
+        end function sidre_dataview_get_name
         
-        pure function atk_dataview_get_opaque(self) result(rv) &
-                bind(C, name="ATK_dataview_get_opaque")
+        pure function sidre_dataview_get_opaque(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_opaque")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_dataview_get_opaque
+        end function sidre_dataview_get_opaque
         
-        function atk_dataview_get_buffer(self) result(rv) &
-                bind(C, name="ATK_dataview_get_buffer")
+        function sidre_dataview_get_buffer(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_dataview_get_buffer
+        end function sidre_dataview_get_buffer
         
-        pure function atk_dataview_get_data_pointer(self) result(rv) &
-                bind(C, name="ATK_dataview_get_data_pointer")
+        pure function sidre_dataview_get_data_pointer(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_data_pointer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_dataview_get_data_pointer
+        end function sidre_dataview_get_data_pointer
         
-        subroutine atk_dataview_set_value_int(self, value) &
-                bind(C, name="ATK_dataview_set_value_int")
+        subroutine sidre_dataview_set_value_int(self, value) &
+                bind(C, name="SIDRE_dataview_set_value_int")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_int
+        end subroutine sidre_dataview_set_value_int
         
-        subroutine atk_dataview_set_value_long(self, value) &
-                bind(C, name="ATK_dataview_set_value_long")
+        subroutine sidre_dataview_set_value_long(self, value) &
+                bind(C, name="SIDRE_dataview_set_value_long")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_long
+        end subroutine sidre_dataview_set_value_long
         
-        subroutine atk_dataview_set_value_float(self, value) &
-                bind(C, name="ATK_dataview_set_value_float")
+        subroutine sidre_dataview_set_value_float(self, value) &
+                bind(C, name="SIDRE_dataview_set_value_float")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_FLOAT), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_float
+        end subroutine sidre_dataview_set_value_float
         
-        subroutine atk_dataview_set_value_double(self, value) &
-                bind(C, name="ATK_dataview_set_value_double")
+        subroutine sidre_dataview_set_value_double(self, value) &
+                bind(C, name="SIDRE_dataview_set_value_double")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_double
+        end subroutine sidre_dataview_set_value_double
         
-        function atk_dataview_get_value_int(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_int")
+        function sidre_dataview_get_value_int(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_value_int")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function atk_dataview_get_value_int
+        end function sidre_dataview_get_value_int
         
-        function atk_dataview_get_value_long(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_long")
+        function sidre_dataview_get_value_long(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_value_long")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG) :: rv
-        end function atk_dataview_get_value_long
+        end function sidre_dataview_get_value_long
         
-        function atk_dataview_get_value_float(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_float")
+        function sidre_dataview_get_value_float(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_value_float")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_FLOAT) :: rv
-        end function atk_dataview_get_value_float
+        end function sidre_dataview_get_value_float
         
-        function atk_dataview_get_value_double(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_double")
+        function sidre_dataview_get_value_double(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_value_double")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE) :: rv
-        end function atk_dataview_get_value_double
+        end function sidre_dataview_get_value_double
         
-        function atk_dataview_get_owning_group(self) result(rv) &
-                bind(C, name="ATK_dataview_get_owning_group")
+        function sidre_dataview_get_owning_group(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_owning_group")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_dataview_get_owning_group
+        end function sidre_dataview_get_owning_group
         
-        pure function atk_dataview_get_type_id(self) result(rv) &
-                bind(C, name="ATK_dataview_get_type_id")
+        pure function sidre_dataview_get_type_id(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_type_id")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function atk_dataview_get_type_id
+        end function sidre_dataview_get_type_id
         
-        pure function atk_dataview_get_total_bytes(self) result(rv) &
-                bind(C, name="ATK_dataview_get_total_bytes")
+        pure function sidre_dataview_get_total_bytes(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_total_bytes")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_dataview_get_total_bytes
+        end function sidre_dataview_get_total_bytes
         
-        pure function atk_dataview_get_num_elements(self) result(rv) &
-                bind(C, name="ATK_dataview_get_num_elements")
+        pure function sidre_dataview_get_num_elements(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_num_elements")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
-        end function atk_dataview_get_num_elements
+        end function sidre_dataview_get_num_elements
         
-        subroutine atk_dataview_print(self) &
-                bind(C, name="ATK_dataview_print")
+        subroutine sidre_dataview_print(self) &
+                bind(C, name="SIDRE_dataview_print")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-        end subroutine atk_dataview_print
+        end subroutine sidre_dataview_print
         
         ! splicer begin class.DataView.additional_interfaces
         ! splicer end class.DataView.additional_interfaces
         
-        function atk_name_is_valid(name) result(rv) &
-                bind(C, name="ATK_name_is_valid")
+        function sidre_name_is_valid(name) result(rv) &
+                bind(C, name="SIDRE_name_is_valid")
             use iso_c_binding
             implicit none
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: rv
-        end function atk_name_is_valid
+        end function sidre_name_is_valid
         
         ! splicer begin additional_interfaces
-        function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-           bind(C,name="ATK_create_fortran_allocatable_view") &
+        function SIDRE_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
+           bind(C,name="SIDRE_create_fortran_allocatable_view") &
            result(rv)
               use iso_c_binding
               type(C_PTR), value, intent(IN)    :: group
@@ -1268,7 +1268,7 @@ module sidre_mod
               integer(C_INT), value, intent(IN) :: itype
               integer(C_INT), value, intent(IN) :: rank
               type(C_PTR) rv
-        end function ATK_create_fortran_allocatable_view
+        end function SIDRE_create_fortran_allocatable_view
         ! splicer end additional_interfaces
     end interface
 
@@ -1279,7 +1279,7 @@ contains
         implicit none
         type(datastore) :: rv
         ! splicer begin class.DataStore.method.new
-        rv%voidptr = atk_datastore_new()
+        rv%voidptr = sidre_datastore_new()
         ! splicer end class.DataStore.method.new
     end function datastore_new
     
@@ -1288,7 +1288,7 @@ contains
         implicit none
         class(datastore) :: obj
         ! splicer begin class.DataStore.method.delete
-        call atk_datastore_delete(obj%voidptr)
+        call sidre_datastore_delete(obj%voidptr)
         obj%voidptr = C_NULL_PTR
         ! splicer end class.DataStore.method.delete
     end subroutine datastore_delete
@@ -1299,7 +1299,7 @@ contains
         class(datastore) :: obj
         type(datagroup) :: rv
         ! splicer begin class.DataStore.method.get_root
-        rv%voidptr = atk_datastore_get_root(obj%voidptr)
+        rv%voidptr = sidre_datastore_get_root(obj%voidptr)
         ! splicer end class.DataStore.method.get_root
     end function datastore_get_root
     
@@ -1310,7 +1310,7 @@ contains
         integer(C_INT), value, intent(IN) :: idx
         type(databuffer) :: rv
         ! splicer begin class.DataStore.method.get_buffer
-        rv%voidptr = atk_datastore_get_buffer(  &
+        rv%voidptr = sidre_datastore_get_buffer(  &
             obj%voidptr,  &
             idx)
         ! splicer end class.DataStore.method.get_buffer
@@ -1322,7 +1322,7 @@ contains
         class(datastore) :: obj
         type(databuffer) :: rv
         ! splicer begin class.DataStore.method.create_buffer
-        rv%voidptr = atk_datastore_create_buffer(obj%voidptr)
+        rv%voidptr = sidre_datastore_create_buffer(obj%voidptr)
         ! splicer end class.DataStore.method.create_buffer
     end function datastore_create_buffer
     
@@ -1332,7 +1332,7 @@ contains
         class(datastore) :: obj
         integer(C_INT), value, intent(IN) :: id
         ! splicer begin class.DataStore.method.destroy_buffer
-        call atk_datastore_destroy_buffer(  &
+        call sidre_datastore_destroy_buffer(  &
             obj%voidptr,  &
             id)
         ! splicer end class.DataStore.method.destroy_buffer
@@ -1344,7 +1344,7 @@ contains
         class(datastore) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataStore.method.get_num_buffers
-        rv = atk_datastore_get_num_buffers(obj%voidptr)
+        rv = sidre_datastore_get_num_buffers(obj%voidptr)
         ! splicer end class.DataStore.method.get_num_buffers
     end function datastore_get_num_buffers
     
@@ -1353,7 +1353,7 @@ contains
         implicit none
         class(datastore) :: obj
         ! splicer begin class.DataStore.method.print
-        call atk_datastore_print(obj%voidptr)
+        call sidre_datastore_print(obj%voidptr)
         ! splicer end class.DataStore.method.print
     end subroutine datastore_print
     
@@ -1367,7 +1367,7 @@ contains
         character(*), intent(OUT) :: name
         type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_name
-        rv = atk_datagroup_get_name(obj%voidptr)
+        rv = sidre_datagroup_get_name(obj%voidptr)
         call FccCopyPtr(name, len(name), rv)
         ! splicer end class.DataGroup.method.get_name
     end subroutine datagroup_get_name
@@ -1378,7 +1378,7 @@ contains
         class(datagroup) :: obj
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.get_parent
-        rv%voidptr = atk_datagroup_get_parent(obj%voidptr)
+        rv%voidptr = sidre_datagroup_get_parent(obj%voidptr)
         ! splicer end class.DataGroup.method.get_parent
     end function datagroup_get_parent
     
@@ -1388,7 +1388,7 @@ contains
         class(datagroup) :: obj
         type(datastore) :: rv
         ! splicer begin class.DataGroup.method.get_data_store
-        rv%voidptr = atk_datagroup_get_data_store(obj%voidptr)
+        rv%voidptr = sidre_datagroup_get_data_store(obj%voidptr)
         ! splicer end class.DataGroup.method.get_data_store
     end function datagroup_get_data_store
     
@@ -1398,7 +1398,7 @@ contains
         class(datagroup) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataGroup.method.get_num_views
-        rv = atk_datagroup_get_num_views(obj%voidptr)
+        rv = sidre_datagroup_get_num_views(obj%voidptr)
         ! splicer end class.DataGroup.method.get_num_views
     end function datagroup_get_num_views
     
@@ -1408,7 +1408,7 @@ contains
         class(datagroup) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataGroup.method.get_num_groups
-        rv = atk_datagroup_get_num_groups(obj%voidptr)
+        rv = sidre_datagroup_get_num_groups(obj%voidptr)
         ! splicer end class.DataGroup.method.get_num_groups
     end function datagroup_get_num_groups
     
@@ -1419,7 +1419,7 @@ contains
         character(*), intent(IN) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_view
-        rv = atk_datagroup_has_view_bufferify(  &
+        rv = sidre_datagroup_has_view_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1433,7 +1433,7 @@ contains
         character(*), intent(IN) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view_from_name
-        rv%voidptr = atk_datagroup_get_view_from_name_bufferify(  &
+        rv%voidptr = sidre_datagroup_get_view_from_name_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1447,7 +1447,7 @@ contains
         integer(C_INT), value, intent(IN) :: idx
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.get_view_from_index
-        rv%voidptr = atk_datagroup_get_view_from_index(  &
+        rv%voidptr = sidre_datagroup_get_view_from_index(  &
             obj%voidptr,  &
             idx)
         ! splicer end class.DataGroup.method.get_view_from_index
@@ -1460,7 +1460,7 @@ contains
         character(*), intent(IN) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_view_index
-        rv = atk_datagroup_get_view_index_bufferify(  &
+        rv = sidre_datagroup_get_view_index_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1475,7 +1475,7 @@ contains
         character(*), intent(OUT) :: name
         type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_view_name
-        rv = atk_datagroup_get_view_name(  &
+        rv = sidre_datagroup_get_view_name(  &
             obj%voidptr,  &
             idx)
         call FccCopyPtr(name, len(name), rv)
@@ -1491,7 +1491,7 @@ contains
         integer(C_INT), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_allocate_from_type_int
-        rv%voidptr = atk_datagroup_create_view_and_allocate_from_type_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_view_and_allocate_from_type_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1509,7 +1509,7 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_and_allocate_from_type_long
-        rv%voidptr = atk_datagroup_create_view_and_allocate_from_type_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_view_and_allocate_from_type_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1525,7 +1525,7 @@ contains
         character(*), intent(IN) :: name
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_empty
-        rv%voidptr = atk_datagroup_create_view_empty_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_view_empty_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1541,7 +1541,7 @@ contains
         integer(C_INT), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_from_type_int
-        rv%voidptr = atk_datagroup_create_view_from_type_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_view_from_type_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1559,7 +1559,7 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_from_type_long
-        rv%voidptr = atk_datagroup_create_view_from_type_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_view_from_type_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1576,7 +1576,7 @@ contains
         type(databuffer), value, intent(IN) :: buff
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_view_into_buffer
-        rv%voidptr = atk_datagroup_create_view_into_buffer_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_view_into_buffer_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1592,7 +1592,7 @@ contains
         type(C_PTR), value, intent(IN) :: opaque_ptr
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_opaque_view
-        rv%voidptr = atk_datagroup_create_opaque_view_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_opaque_view_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1610,7 +1610,7 @@ contains
         integer(C_INT), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view_int
-        rv%voidptr = atk_datagroup_create_external_view_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_external_view_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1630,7 +1630,7 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.create_external_view_long
-        rv%voidptr = atk_datagroup_create_external_view_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_external_view_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
@@ -1646,7 +1646,7 @@ contains
         class(datagroup) :: obj
         character(*), intent(IN) :: name
         ! splicer begin class.DataGroup.method.destroy_view
-        call atk_datagroup_destroy_view_bufferify(  &
+        call sidre_datagroup_destroy_view_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1659,7 +1659,7 @@ contains
         class(datagroup) :: obj
         character(*), intent(IN) :: name
         ! splicer begin class.DataGroup.method.destroy_view_and_data
-        call atk_datagroup_destroy_view_and_data_bufferify(  &
+        call sidre_datagroup_destroy_view_and_data_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1673,7 +1673,7 @@ contains
         type(dataview), value, intent(IN) :: view
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.move_view
-        rv%voidptr = atk_datagroup_move_view(  &
+        rv%voidptr = sidre_datagroup_move_view(  &
             obj%voidptr,  &
             view%voidptr)
         ! splicer end class.DataGroup.method.move_view
@@ -1686,7 +1686,7 @@ contains
         type(dataview), value, intent(IN) :: view
         type(dataview) :: rv
         ! splicer begin class.DataGroup.method.copy_view
-        rv%voidptr = atk_datagroup_copy_view(  &
+        rv%voidptr = sidre_datagroup_copy_view(  &
             obj%voidptr,  &
             view%voidptr)
         ! splicer end class.DataGroup.method.copy_view
@@ -1699,7 +1699,7 @@ contains
         character(*), intent(IN) :: name
         logical :: rv
         ! splicer begin class.DataGroup.method.has_group
-        rv = atk_datagroup_has_group_bufferify(  &
+        rv = sidre_datagroup_has_group_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1713,7 +1713,7 @@ contains
         character(*), intent(IN) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.get_group
-        rv%voidptr = atk_datagroup_get_group_bufferify(  &
+        rv%voidptr = sidre_datagroup_get_group_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1727,7 +1727,7 @@ contains
         character(*), intent(IN) :: name
         integer(C_INT) :: rv
         ! splicer begin class.DataGroup.method.get_group_index
-        rv = atk_datagroup_get_group_index_bufferify(  &
+        rv = sidre_datagroup_get_group_index_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1742,7 +1742,7 @@ contains
         character(*), intent(OUT) :: name
         type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_group_name
-        rv = atk_datagroup_get_group_name(  &
+        rv = sidre_datagroup_get_group_name(  &
             obj%voidptr,  &
             idx)
         call FccCopyPtr(name, len(name), rv)
@@ -1756,7 +1756,7 @@ contains
         character(*), intent(IN) :: name
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.create_group
-        rv%voidptr = atk_datagroup_create_group_bufferify(  &
+        rv%voidptr = sidre_datagroup_create_group_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1769,7 +1769,7 @@ contains
         class(datagroup) :: obj
         character(*), intent(IN) :: name
         ! splicer begin class.DataGroup.method.destroy_group
-        call atk_datagroup_destroy_group_bufferify(  &
+        call sidre_datagroup_destroy_group_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
@@ -1783,7 +1783,7 @@ contains
         type(datagroup), value, intent(IN) :: grp
         type(datagroup) :: rv
         ! splicer begin class.DataGroup.method.move_group
-        rv%voidptr = atk_datagroup_move_group(  &
+        rv%voidptr = sidre_datagroup_move_group(  &
             obj%voidptr,  &
             grp%voidptr)
         ! splicer end class.DataGroup.method.move_group
@@ -1794,7 +1794,7 @@ contains
         implicit none
         class(datagroup) :: obj
         ! splicer begin class.DataGroup.method.print
-        call atk_datagroup_print(obj%voidptr)
+        call sidre_datagroup_print(obj%voidptr)
         ! splicer end class.DataGroup.method.print
     end subroutine datagroup_print
     
@@ -1805,7 +1805,7 @@ contains
         character(*), intent(IN) :: obase
         character(*), intent(IN) :: protocol
         ! splicer begin class.DataGroup.method.save
-        call atk_datagroup_save_bufferify(  &
+        call sidre_datagroup_save_bufferify(  &
             obj%voidptr,  &
             obase,  &
             len_trim(obase),  &
@@ -1821,7 +1821,7 @@ contains
         character(*), intent(IN) :: obase
         character(*), intent(IN) :: protocol
         ! splicer begin class.DataGroup.method.load
-        call atk_datagroup_load_bufferify(  &
+        call sidre_datagroup_load_bufferify(  &
             obj%voidptr,  &
             obase,  &
             len_trim(obase),  &
@@ -1847,7 +1847,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_int_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1865,7 +1865,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_int_1d
     
     ! Generated by genfsidresplicer.py
@@ -1883,7 +1883,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_long_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1901,7 +1901,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_long_1d
     
     ! Generated by genfsidresplicer.py
@@ -1919,7 +1919,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_float_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1937,7 +1937,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_float_1d
     
     ! Generated by genfsidresplicer.py
@@ -1955,7 +1955,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_double_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1973,7 +1973,7 @@ contains
     
         lname = len_trim(name)
         call c_loc_allocatable(value, addr)
-        rv%voidptr = ATK_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
+        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
     end function datagroup_create_allocatable_view_double_1d
     
     ! Generated by genfsidresplicer.py
@@ -1982,7 +1982,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -1991,9 +1992,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2006,8 +2007,8 @@ contains
     
         lname = len_trim(name)
         nitems = 1_C_LONG
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_int_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2016,7 +2017,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2025,9 +2027,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2040,8 +2042,8 @@ contains
     
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_int_1d
     
     ! Generated by genfsidresplicer.py
@@ -2050,7 +2052,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2059,9 +2062,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2074,8 +2077,8 @@ contains
     
         lname = len_trim(name)
         nitems = 1_C_LONG
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_long_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2084,7 +2087,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2093,9 +2097,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2108,8 +2112,8 @@ contains
     
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_long_1d
     
     ! Generated by genfsidresplicer.py
@@ -2118,7 +2122,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2127,9 +2132,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2142,8 +2147,8 @@ contains
     
         lname = len_trim(name)
         nitems = 1_C_LONG
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_float_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2152,7 +2157,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2161,9 +2167,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2176,8 +2182,8 @@ contains
     
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_float_1d
     
     ! Generated by genfsidresplicer.py
@@ -2186,7 +2192,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2195,9 +2202,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2210,8 +2217,8 @@ contains
     
         lname = len_trim(name)
         nitems = 1_C_LONG
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_double_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2220,7 +2227,8 @@ contains
         implicit none
     
         interface
-           function ATK_create_array_view(group, name, lname, addr, type, nitems) result(rv) bind(C,name="ATK_create_array_view")
+           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
+               result(rv) bind(C,name="SIDRE_create_array_view")
            use iso_c_binding
            type(C_PTR), value, intent(IN)     :: group
            character(kind=C_CHAR), intent(IN) :: name(*)
@@ -2229,9 +2237,9 @@ contains
            integer(C_INT), value, intent(IN)  :: type
            integer(C_LONG), value, intent(IN) :: nitems
            type(C_PTR) rv
-           end function ATK_create_array_view
+           end function SIDRE_create_array_view
         end interface
-        external :: ATK_C_LOC
+        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2244,8 +2252,8 @@ contains
     
         lname = len_trim(name)
         nitems = size(value, kind=1_C_LONG)
-        call ATK_C_LOC(value, addr)
-        rv%voidptr = ATK_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
     end function datagroup_create_array_view_double_1d
     ! splicer end class.DataGroup.additional_functions
     
@@ -2255,7 +2263,7 @@ contains
         class(databuffer) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.DataBuffer.method.get_index
-        rv = atk_databuffer_get_index(obj%voidptr)
+        rv = sidre_databuffer_get_index(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_index
     end function databuffer_get_index
     
@@ -2265,7 +2273,7 @@ contains
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataBuffer.method.get_num_views
-        rv = atk_databuffer_get_num_views(obj%voidptr)
+        rv = sidre_databuffer_get_num_views(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_num_views
     end function databuffer_get_num_views
     
@@ -2276,7 +2284,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.DataBuffer.method.declare_int
-        call atk_databuffer_declare(  &
+        call sidre_databuffer_declare(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
@@ -2290,7 +2298,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.DataBuffer.method.declare_long
-        call atk_databuffer_declare(  &
+        call sidre_databuffer_declare(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
@@ -2302,7 +2310,7 @@ contains
         implicit none
         class(databuffer) :: obj
         ! splicer begin class.DataBuffer.method.allocate_existing
-        call atk_databuffer_allocate_existing(obj%voidptr)
+        call sidre_databuffer_allocate_existing(obj%voidptr)
         ! splicer end class.DataBuffer.method.allocate_existing
     end subroutine databuffer_allocate_existing
     
@@ -2313,7 +2321,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.DataBuffer.method.allocate_from_type_int
-        call atk_databuffer_allocate_from_type(  &
+        call sidre_databuffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
@@ -2327,7 +2335,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.DataBuffer.method.allocate_from_type_long
-        call atk_databuffer_allocate_from_type(  &
+        call sidre_databuffer_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
@@ -2340,7 +2348,7 @@ contains
         class(databuffer) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.DataBuffer.method.reallocate_int
-        call atk_databuffer_reallocate(  &
+        call sidre_databuffer_reallocate(  &
             obj%voidptr,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_int
@@ -2352,7 +2360,7 @@ contains
         class(databuffer) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.DataBuffer.method.reallocate_long
-        call atk_databuffer_reallocate(  &
+        call sidre_databuffer_reallocate(  &
             obj%voidptr,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataBuffer.method.reallocate_long
@@ -2364,7 +2372,7 @@ contains
         class(databuffer) :: obj
         type(C_PTR), value, intent(IN) :: external_data
         ! splicer begin class.DataBuffer.method.set_external_data
-        call atk_databuffer_set_external_data(  &
+        call sidre_databuffer_set_external_data(  &
             obj%voidptr,  &
             external_data)
         ! splicer end class.DataBuffer.method.set_external_data
@@ -2376,7 +2384,7 @@ contains
         class(databuffer) :: obj
         logical :: rv
         ! splicer begin class.DataBuffer.method.is_external
-        rv = atk_databuffer_is_external(obj%voidptr)
+        rv = sidre_databuffer_is_external(obj%voidptr)
         ! splicer end class.DataBuffer.method.is_external
     end function databuffer_is_external
     
@@ -2386,7 +2394,7 @@ contains
         class(databuffer) :: obj
         type(C_PTR) :: rv
         ! splicer begin class.DataBuffer.method.get_data
-        rv = atk_databuffer_get_data(obj%voidptr)
+        rv = sidre_databuffer_get_data(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_data
     end function databuffer_get_data
     
@@ -2396,7 +2404,7 @@ contains
         class(databuffer) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.DataBuffer.method.get_type_id
-        rv = atk_databuffer_get_type_id(obj%voidptr)
+        rv = sidre_databuffer_get_type_id(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_type_id
     end function databuffer_get_type_id
     
@@ -2406,7 +2414,7 @@ contains
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataBuffer.method.get_num_elements
-        rv = atk_databuffer_get_num_elements(obj%voidptr)
+        rv = sidre_databuffer_get_num_elements(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_num_elements
     end function databuffer_get_num_elements
     
@@ -2416,7 +2424,7 @@ contains
         class(databuffer) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataBuffer.method.get_total_bytes
-        rv = atk_databuffer_get_total_bytes(obj%voidptr)
+        rv = sidre_databuffer_get_total_bytes(obj%voidptr)
         ! splicer end class.DataBuffer.method.get_total_bytes
     end function databuffer_get_total_bytes
     
@@ -2425,7 +2433,7 @@ contains
         implicit none
         class(databuffer) :: obj
         ! splicer begin class.DataBuffer.method.print
-        call atk_databuffer_print(obj%voidptr)
+        call sidre_databuffer_print(obj%voidptr)
         ! splicer end class.DataBuffer.method.print
     end subroutine databuffer_print
     
@@ -2437,7 +2445,7 @@ contains
         implicit none
         class(dataview) :: obj
         ! splicer begin class.DataView.method.allocate_simple
-        call atk_dataview_allocate_simple(obj%voidptr)
+        call sidre_dataview_allocate_simple(obj%voidptr)
         ! splicer end class.DataView.method.allocate_simple
     end subroutine dataview_allocate_simple
     
@@ -2448,7 +2456,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.DataView.method.allocate_from_type_int
-        call atk_dataview_allocate_from_type(  &
+        call sidre_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
@@ -2462,7 +2470,7 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.DataView.method.allocate_from_type_long
-        call atk_dataview_allocate_from_type(  &
+        call sidre_dataview_allocate_from_type(  &
             obj%voidptr,  &
             type,  &
             int(num_elems, C_LONG))
@@ -2475,7 +2483,7 @@ contains
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: num_elems
         ! splicer begin class.DataView.method.reallocate_int
-        call atk_dataview_reallocate(  &
+        call sidre_dataview_reallocate(  &
             obj%voidptr,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataView.method.reallocate_int
@@ -2487,7 +2495,7 @@ contains
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         ! splicer begin class.DataView.method.reallocate_long
-        call atk_dataview_reallocate(  &
+        call sidre_dataview_reallocate(  &
             obj%voidptr,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataView.method.reallocate_long
@@ -2499,7 +2507,7 @@ contains
         class(dataview) :: obj
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_simple
-        rv%voidptr = atk_dataview_apply_simple(obj%voidptr)
+        rv%voidptr = sidre_dataview_apply_simple(obj%voidptr)
         ! splicer end class.DataView.method.apply_simple
     end function dataview_apply_simple
     
@@ -2510,7 +2518,7 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems
-        rv%voidptr = atk_dataview_apply_nelems(  &
+        rv%voidptr = sidre_dataview_apply_nelems(  &
             obj%voidptr,  &
             num_elems)
         ! splicer end class.DataView.method.apply_nelems
@@ -2524,7 +2532,7 @@ contains
         integer(C_LONG), value, intent(IN) :: offset
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems_offset
-        rv%voidptr = atk_dataview_apply_nelems_offset(  &
+        rv%voidptr = sidre_dataview_apply_nelems_offset(  &
             obj%voidptr,  &
             num_elems,  &
             offset)
@@ -2540,7 +2548,7 @@ contains
         integer(C_LONG), value, intent(IN) :: stride
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems_offset_stride
-        rv%voidptr = atk_dataview_apply_nelems_offset_stride(  &
+        rv%voidptr = sidre_dataview_apply_nelems_offset_stride(  &
             obj%voidptr,  &
             num_elems,  &
             offset,  &
@@ -2556,7 +2564,7 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems
-        rv%voidptr = atk_dataview_apply_type_nelems(  &
+        rv%voidptr = sidre_dataview_apply_type_nelems(  &
             obj%voidptr,  &
             type,  &
             num_elems)
@@ -2572,7 +2580,7 @@ contains
         integer(C_LONG), value, intent(IN) :: offset
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems_offset
-        rv%voidptr = atk_dataview_apply_type_nelems_offset(  &
+        rv%voidptr = sidre_dataview_apply_type_nelems_offset(  &
             obj%voidptr,  &
             type,  &
             num_elems,  &
@@ -2590,7 +2598,7 @@ contains
         integer(C_LONG), value, intent(IN) :: stride
         type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems_offset_stride
-        rv%voidptr = atk_dataview_apply_type_nelems_offset_stride(  &
+        rv%voidptr = sidre_dataview_apply_type_nelems_offset_stride(  &
             obj%voidptr,  &
             type,  &
             num_elems,  &
@@ -2605,7 +2613,7 @@ contains
         class(dataview) :: obj
         logical :: rv
         ! splicer begin class.DataView.method.has_buffer
-        rv = atk_dataview_has_buffer(obj%voidptr)
+        rv = sidre_dataview_has_buffer(obj%voidptr)
         ! splicer end class.DataView.method.has_buffer
     end function dataview_has_buffer
     
@@ -2615,7 +2623,7 @@ contains
         class(dataview) :: obj
         logical :: rv
         ! splicer begin class.DataView.method.is_opaque
-        rv = atk_dataview_is_opaque(obj%voidptr)
+        rv = sidre_dataview_is_opaque(obj%voidptr)
         ! splicer end class.DataView.method.is_opaque
     end function dataview_is_opaque
     
@@ -2626,7 +2634,7 @@ contains
         character(*), intent(OUT) :: name
         type(C_PTR) :: rv
         ! splicer begin class.DataView.method.get_name
-        rv = atk_dataview_get_name(obj%voidptr)
+        rv = sidre_dataview_get_name(obj%voidptr)
         call FccCopyPtr(name, len(name), rv)
         ! splicer end class.DataView.method.get_name
     end subroutine dataview_get_name
@@ -2637,7 +2645,7 @@ contains
         class(dataview) :: obj
         type(C_PTR) :: rv
         ! splicer begin class.DataView.method.get_opaque
-        rv = atk_dataview_get_opaque(obj%voidptr)
+        rv = sidre_dataview_get_opaque(obj%voidptr)
         ! splicer end class.DataView.method.get_opaque
     end function dataview_get_opaque
     
@@ -2647,7 +2655,7 @@ contains
         class(dataview) :: obj
         type(databuffer) :: rv
         ! splicer begin class.DataView.method.get_buffer
-        rv%voidptr = atk_dataview_get_buffer(obj%voidptr)
+        rv%voidptr = sidre_dataview_get_buffer(obj%voidptr)
         ! splicer end class.DataView.method.get_buffer
     end function dataview_get_buffer
     
@@ -2657,7 +2665,7 @@ contains
         class(dataview) :: obj
         type(C_PTR) :: rv
         ! splicer begin class.DataView.method.get_data_pointer
-        rv = atk_dataview_get_data_pointer(obj%voidptr)
+        rv = sidre_dataview_get_data_pointer(obj%voidptr)
         ! splicer end class.DataView.method.get_data_pointer
     end function dataview_get_data_pointer
     
@@ -2667,7 +2675,7 @@ contains
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_int
-        call atk_dataview_set_value_int(  &
+        call sidre_dataview_set_value_int(  &
             obj%voidptr,  &
             value)
         ! splicer end class.DataView.method.set_value_int
@@ -2679,7 +2687,7 @@ contains
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_long
-        call atk_dataview_set_value_long(  &
+        call sidre_dataview_set_value_long(  &
             obj%voidptr,  &
             value)
         ! splicer end class.DataView.method.set_value_long
@@ -2691,7 +2699,7 @@ contains
         class(dataview) :: obj
         real(C_FLOAT), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_float
-        call atk_dataview_set_value_float(  &
+        call sidre_dataview_set_value_float(  &
             obj%voidptr,  &
             value)
         ! splicer end class.DataView.method.set_value_float
@@ -2703,7 +2711,7 @@ contains
         class(dataview) :: obj
         real(C_DOUBLE), value, intent(IN) :: value
         ! splicer begin class.DataView.method.set_value_double
-        call atk_dataview_set_value_double(  &
+        call sidre_dataview_set_value_double(  &
             obj%voidptr,  &
             value)
         ! splicer end class.DataView.method.set_value_double
@@ -2715,7 +2723,7 @@ contains
         class(dataview) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.DataView.method.get_value_int
-        rv = atk_dataview_get_value_int(obj%voidptr)
+        rv = sidre_dataview_get_value_int(obj%voidptr)
         ! splicer end class.DataView.method.get_value_int
     end function dataview_get_value_int
     
@@ -2725,7 +2733,7 @@ contains
         class(dataview) :: obj
         integer(C_LONG) :: rv
         ! splicer begin class.DataView.method.get_value_long
-        rv = atk_dataview_get_value_long(obj%voidptr)
+        rv = sidre_dataview_get_value_long(obj%voidptr)
         ! splicer end class.DataView.method.get_value_long
     end function dataview_get_value_long
     
@@ -2735,7 +2743,7 @@ contains
         class(dataview) :: obj
         real(C_FLOAT) :: rv
         ! splicer begin class.DataView.method.get_value_float
-        rv = atk_dataview_get_value_float(obj%voidptr)
+        rv = sidre_dataview_get_value_float(obj%voidptr)
         ! splicer end class.DataView.method.get_value_float
     end function dataview_get_value_float
     
@@ -2745,7 +2753,7 @@ contains
         class(dataview) :: obj
         real(C_DOUBLE) :: rv
         ! splicer begin class.DataView.method.get_value_double
-        rv = atk_dataview_get_value_double(obj%voidptr)
+        rv = sidre_dataview_get_value_double(obj%voidptr)
         ! splicer end class.DataView.method.get_value_double
     end function dataview_get_value_double
     
@@ -2755,7 +2763,7 @@ contains
         class(dataview) :: obj
         type(datagroup) :: rv
         ! splicer begin class.DataView.method.get_owning_group
-        rv%voidptr = atk_dataview_get_owning_group(obj%voidptr)
+        rv%voidptr = sidre_dataview_get_owning_group(obj%voidptr)
         ! splicer end class.DataView.method.get_owning_group
     end function dataview_get_owning_group
     
@@ -2765,7 +2773,7 @@ contains
         class(dataview) :: obj
         integer(C_INT) :: rv
         ! splicer begin class.DataView.method.get_type_id
-        rv = atk_dataview_get_type_id(obj%voidptr)
+        rv = sidre_dataview_get_type_id(obj%voidptr)
         ! splicer end class.DataView.method.get_type_id
     end function dataview_get_type_id
     
@@ -2775,7 +2783,7 @@ contains
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataView.method.get_total_bytes
-        rv = atk_dataview_get_total_bytes(obj%voidptr)
+        rv = sidre_dataview_get_total_bytes(obj%voidptr)
         ! splicer end class.DataView.method.get_total_bytes
     end function dataview_get_total_bytes
     
@@ -2785,7 +2793,7 @@ contains
         class(dataview) :: obj
         integer(C_SIZE_T) :: rv
         ! splicer begin class.DataView.method.get_num_elements
-        rv = atk_dataview_get_num_elements(obj%voidptr)
+        rv = sidre_dataview_get_num_elements(obj%voidptr)
         ! splicer end class.DataView.method.get_num_elements
     end function dataview_get_num_elements
     
@@ -2794,7 +2802,7 @@ contains
         implicit none
         class(dataview) :: obj
         ! splicer begin class.DataView.method.print
-        call atk_dataview_print(obj%voidptr)
+        call sidre_dataview_print(obj%voidptr)
         ! splicer end class.DataView.method.print
     end subroutine dataview_print
     

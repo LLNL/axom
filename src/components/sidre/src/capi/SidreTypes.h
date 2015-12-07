@@ -20,13 +20,13 @@
 
 #include "SidreDataTypeIds.h"
 
-typedef int ATK_IndexType;
+typedef int SIDRE_IndexType;
 
-typedef long int ATK_SidreLength;
+typedef long int SIDRE_SidreLength;
 
-#define ATK_InvalidIndex  -1
+#define SIDRE_InvalidIndex  -1
 
-#define ATK_InvalidName   NULL
+#define SIDRE_InvalidName   NULL
 
 
 

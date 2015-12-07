@@ -104,7 +104,7 @@ PY_databuffer_declare(
 {
 // splicer begin class.DataBuffer.method.declare
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -146,7 +146,7 @@ PY_databuffer_allocate_from_type(
 {
 // splicer begin class.DataBuffer.method.allocate_from_type
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -171,7 +171,7 @@ PY_databuffer_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.reallocate
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "num_elems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     

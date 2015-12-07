@@ -14,7 +14,7 @@ copyright:
 
 options:
   library: Sidre
-  C_prefix: ATK_
+  C_prefix: SIDRE_
   namespace: asctoolkit sidre
   F_module_per_class: False
 
@@ -32,14 +32,14 @@ types:
 # defined in SidreTypes.hpp
     typedef  : int
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_IndexType
+    c_type   : SIDRE_IndexType
     cpp_type : IndexType
 
   SidreLength:
 # defined in SidreTypes.hpp
     typedef  : long
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_SidreLength
+    c_type   : SIDRE_SidreLength
     cpp_type : SidreLength
 
   TypeID:
@@ -332,7 +332,7 @@ functions:
 patterns:
     C_invalid_name: >
         if (! nameIsValid({var})) {{
-            return ATK_InvalidName;
+            return SIDRE_InvalidName;
         }}
     PY_invalid_name: >
         if (! nameIsValid({var})) {{

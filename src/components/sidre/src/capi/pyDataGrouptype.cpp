@@ -221,7 +221,7 @@ PY_datagroup_get_view_from_index(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.get_view_from_index
-    const ATK_IndexType idx;
+    const SIDRE_IndexType idx;
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -273,7 +273,7 @@ PY_datagroup_get_view_name(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.get_view_name
-    ATK_IndexType idx;
+    SIDRE_IndexType idx;
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -304,7 +304,7 @@ PY_datagroup_create_view_and_allocate_from_type(
 // splicer begin class.DataGroup.method.create_view_and_allocate_from_type
     const char * name;
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "name\0type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
     
@@ -360,7 +360,7 @@ PY_datagroup_create_view_from_type(
 // splicer begin class.DataGroup.method.create_view_from_type
     const char * name;
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "name\0type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+10, NULL };
     
@@ -448,7 +448,7 @@ PY_datagroup_create_external_view(
     const char * name;
     void * external_data;
     int type;
-    ATK_SidreLength num_elems;
+    SIDRE_SidreLength num_elems;
     const char *kwcpp = "name\0external_data\0type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+19,(char *) kwcpp+24, NULL };
     
@@ -664,7 +664,7 @@ PY_datagroup_get_group_name(
   PyObject *kwds)
 {
 // splicer begin class.DataGroup.method.get_group_name
-    ATK_IndexType idx;
+    SIDRE_IndexType idx;
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
