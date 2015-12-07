@@ -32,13 +32,13 @@ ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
 
 size_t ATK_databuffer_get_num_views(ATK_databuffer * self);
 
-void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength numelems);
+void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength num_elems);
 
 void ATK_databuffer_allocate_existing(ATK_databuffer * self);
 
-void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength numelems);
+void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength num_elems);
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength numelems);
+void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength num_elems);
 
 void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data);
 

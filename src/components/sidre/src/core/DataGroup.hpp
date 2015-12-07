@@ -308,7 +308,7 @@ public:
    *        number of elements, allocate the data, and attach new 
    *        view to this group object.
    *
-   * This is equivalent to calling: createView(name)->allocate(type, numelems);
+   * This is equivalent to calling: createView(name)->allocate(type, num_elems);
    *
    * If name is an empty string, or group already has a view with given
    * name, or given number of elements is < 0 method does nothing.
@@ -317,7 +317,7 @@ public:
    * view is not created.
    */
   DataView * createViewAndAllocate( const std::string& name,
-                                    TypeID type, SidreLength numelems );
+                                    TypeID type, SidreLength num_elems );
 
   /*!
    * \brief Create DataView object with given name and Conduit DataType,
@@ -384,7 +384,7 @@ public:
    * view is not created.
    */
   DataView * createView( const std::string& name,
-                         TypeID type, SidreLength numelems );
+                         TypeID type, SidreLength num_elems );
 
   /*!
    * \brief Create DataView object with given name and Conduit DataType,
@@ -474,7 +474,7 @@ public:
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
                                  TypeID type, 
-                                 SidreLength numelems,
+                                 SidreLength num_elems,
                                  SidreLength offset = 0,
                                  SidreLength stride = 1 );
 

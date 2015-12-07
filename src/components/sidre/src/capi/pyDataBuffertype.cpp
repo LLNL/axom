@@ -104,16 +104,16 @@ PY_databuffer_declare(
 {
 // splicer begin class.DataBuffer.method.declare
     int type;
-    ATK_SidreLength numelems;
-    const char *kwcpp = "type\0numelems";
+    ATK_SidreLength num_elems;
+    const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:declare", kw_list,
-        &type, &numelems))
+        &type, &num_elems))
     {
         return NULL;
     }
-    self->BBB->declare(getTypeID(type), numelems);
+    self->BBB->declare(getTypeID(type), num_elems);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.declare
 }
@@ -146,16 +146,16 @@ PY_databuffer_allocate_from_type(
 {
 // splicer begin class.DataBuffer.method.allocate_from_type
     int type;
-    ATK_SidreLength numelems;
-    const char *kwcpp = "type\0numelems";
+    ATK_SidreLength num_elems;
+    const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
-        &type, &numelems))
+        &type, &num_elems))
     {
         return NULL;
     }
-    self->BBB->allocate(getTypeID(type), numelems);
+    self->BBB->allocate(getTypeID(type), num_elems);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.allocate_from_type
 }
@@ -171,16 +171,16 @@ PY_databuffer_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataBuffer.method.reallocate
-    ATK_SidreLength numelems;
-    const char *kwcpp = "numelems";
+    ATK_SidreLength num_elems;
+    const char *kwcpp = "num_elems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:reallocate", kw_list,
-        &numelems))
+        &num_elems))
     {
         return NULL;
     }
-    self->BBB->reallocate(numelems);
+    self->BBB->reallocate(num_elems);
     Py_RETURN_NONE;
 // splicer end class.DataBuffer.method.reallocate
 }

@@ -34,23 +34,23 @@ typedef struct s_ATK_dataview ATK_dataview;
 
 void ATK_dataview_allocate_simple(ATK_dataview * self);
 
-void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength numelems);
+void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength num_elems);
 
-void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength numelems);
+void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength num_elems);
 
 ATK_dataview * ATK_dataview_apply_simple(ATK_dataview * self);
 
-ATK_dataview * ATK_dataview_apply_nelems(ATK_dataview * self, ATK_SidreLength numelems);
+ATK_dataview * ATK_dataview_apply_nelems(ATK_dataview * self, ATK_SidreLength num_elems);
 
-ATK_dataview * ATK_dataview_apply_nelems_offset(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset);
+ATK_dataview * ATK_dataview_apply_nelems_offset(ATK_dataview * self, ATK_SidreLength num_elems, ATK_SidreLength offset);
 
-ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride);
+ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength num_elems, ATK_SidreLength offset, ATK_SidreLength stride);
 
-ATK_dataview * ATK_dataview_apply_type_nelems(ATK_dataview * self, int type, ATK_SidreLength numelems);
+ATK_dataview * ATK_dataview_apply_type_nelems(ATK_dataview * self, int type, ATK_SidreLength num_elems);
 
-ATK_dataview * ATK_dataview_apply_type_nelems_offset(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset);
+ATK_dataview * ATK_dataview_apply_type_nelems_offset(ATK_dataview * self, int type, ATK_SidreLength num_elems, ATK_SidreLength offset);
 
-ATK_dataview * ATK_dataview_apply_type_nelems_offset_stride(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride);
+ATK_dataview * ATK_dataview_apply_type_nelems_offset_stride(ATK_dataview * self, int type, ATK_SidreLength num_elems, ATK_SidreLength offset, ATK_SidreLength stride);
 
 bool ATK_dataview_has_buffer(ATK_dataview * self);
 

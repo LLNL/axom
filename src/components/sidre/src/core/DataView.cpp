@@ -60,8 +60,8 @@ DataView * DataView::allocate()
     if ( m_data_buffer->getNumViews() == 1 )
     {
       TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-      SidreLength numelems = m_schema.dtype().number_of_elements();
-      m_data_buffer->allocate(type, numelems);
+      SidreLength num_elems = m_schema.dtype().number_of_elements();
+      m_data_buffer->allocate(type, num_elems);
       apply();  
     }
   } 
@@ -76,14 +76,14 @@ DataView * DataView::allocate()
  *
  *************************************************************************
  */
-DataView * DataView::allocate( TypeID type, SidreLength numelems)
+DataView * DataView::allocate( TypeID type, SidreLength num_elems)
 {
   SLIC_ASSERT( allocationIsValid() ); 
-  SLIC_ASSERT_MSG(numelems >= 0, "Must allocate number of elements >= 0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must allocate number of elements >= 0");
 
-  if ( allocationIsValid() && numelems >= 0 )
+  if ( allocationIsValid() && num_elems >= 0 )
   {
-    declare(type, numelems);
+    declare(type, num_elems);
     allocate();
     apply();
   }
@@ -137,17 +137,17 @@ DataView * DataView::allocate(const Schema& schema)
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(SidreLength numelems)
+DataView * DataView::reallocate(SidreLength num_elems)
 {
   SLIC_ASSERT( allocationIsValid() ); 
-  SLIC_ASSERT_MSG(numelems >= 0, "Must re-allocate number of elements >= 0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must re-allocate number of elements >= 0");
 
-  if ( allocationIsValid() && numelems >= 0 )
+  if ( allocationIsValid() && num_elems >= 0 )
   {
     // preserve current type
     TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
-    declare(vtype, numelems);
-    m_data_buffer->reallocate(numelems);
+    declare(vtype, num_elems);
+    m_data_buffer->reallocate(num_elems);
     apply();
   }
   return this;
@@ -173,8 +173,8 @@ DataView * DataView::reallocate(const DataType& dtype)
     if (type == view_type)
     {
       declare(dtype);
-      SidreLength numelems = dtype.number_of_elements();
-      m_data_buffer->reallocate(numelems);
+      SidreLength num_elems = dtype.number_of_elements();
+      m_data_buffer->reallocate(num_elems);
       apply();
     }
   }
@@ -201,8 +201,8 @@ DataView * DataView::reallocate(const Schema& schema)
     if (type == view_type)
     {
       declare(schema);
-      SidreLength numelems = schema.dtype().number_of_elements();
-      m_data_buffer->reallocate(numelems);
+      SidreLength num_elems = schema.dtype().number_of_elements();
+      m_data_buffer->reallocate(num_elems);
       apply();
     }
   }
@@ -267,19 +267,19 @@ DataView * DataView::apply()
  *
  *************************************************************************
  */
-DataView * DataView::apply(SidreLength numelems,
+DataView * DataView::apply(SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
   SLIC_ASSERT_MSG( !isOpaque(), "Cannot call declare on an opaque view");
   SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
-  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
 
-  if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && numelems >= 0 && offset >= 0)
+  if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && num_elems >= 0 && offset >= 0)
   {
     DataType dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
-    dtype.set_number_of_elements(numelems);
+    dtype.set_number_of_elements(num_elems);
     dtype.set_offset(offset * dtype.element_bytes() );
     dtype.set_stride(stride * dtype.element_bytes() );
 
@@ -296,22 +296,22 @@ DataView * DataView::apply(SidreLength numelems,
  *
  *************************************************************************
  */
-DataView * DataView::apply(TypeID type, SidreLength numelems,
+DataView * DataView::apply(TypeID type, SidreLength num_elems,
                                         SidreLength offset,
                                         SidreLength stride)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call declare on an opaque view");
-  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
 
-  if ( !isOpaque() && numelems >= 0 && offset >= 0)
+  if ( !isOpaque() && num_elems >= 0 && offset >= 0)
   {
     DataType dtype = conduit::DataType::default_dtype(type);
 
     size_t bytes_per_elem = dtype.element_bytes();
 
-    dtype.set_number_of_elements(numelems);
+    dtype.set_number_of_elements(num_elems);
     dtype.set_offset(offset * bytes_per_elem);
     dtype.set_stride(stride * bytes_per_elem);
 
@@ -536,16 +536,16 @@ bool DataView::allocationIsValid() const
  *
  *************************************************************************
  */
-DataView * DataView::declare(TypeID type, SidreLength numelems)
+DataView * DataView::declare(TypeID type, SidreLength num_elems)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
                   "Cannot call declare on an opaque view");
-  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >= 0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >= 0");
 
-  if ( !isOpaque() && numelems >= 0) 
+  if ( !isOpaque() && num_elems >= 0) 
   {
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(numelems);
+    dtype.set_number_of_elements(num_elems);
 
     m_schema.set(dtype);
     m_is_applied = false;

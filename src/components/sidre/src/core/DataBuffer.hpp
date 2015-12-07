@@ -211,7 +211,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength numelems);
+  DataBuffer * declare(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -231,7 +231,7 @@ public:
   /*!
    * \brief Declare and allocate data described by type and number of elements.
    *
-   * This is equivalent to calling declare(type, numelems), then allocate().
+   * This is equivalent to calling declare(type, num_elems), then allocate().
    * on this DataBuffer object.
    *
    * If buffer is already set to externally-owned data, this method
@@ -239,7 +239,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(TypeID type, SidreLength numelems);
+  DataBuffer * allocate(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -251,7 +251,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(SidreLength numelems);
+  DataBuffer * reallocate(SidreLength num_elems);
 
   /*!
    * \brief Update contents of buffer memory.

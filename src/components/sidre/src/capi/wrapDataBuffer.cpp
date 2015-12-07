@@ -36,11 +36,11 @@ return rv;
 // splicer end class.DataBuffer.method.get_num_views
 }
 
-void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength numelems)
+void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength num_elems)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.declare
-selfobj->declare(getTypeID(type), numelems);
+selfobj->declare(getTypeID(type), num_elems);
 return;
 // splicer end class.DataBuffer.method.declare
 }
@@ -54,20 +54,20 @@ return;
 // splicer end class.DataBuffer.method.allocate_existing
 }
 
-void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength numelems)
+void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength num_elems)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.allocate_from_type
-selfobj->allocate(getTypeID(type), numelems);
+selfobj->allocate(getTypeID(type), num_elems);
 return;
 // splicer end class.DataBuffer.method.allocate_from_type
 }
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength numelems)
+void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength num_elems)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
 // splicer begin class.DataBuffer.method.reallocate
-selfobj->reallocate(numelems);
+selfobj->reallocate(num_elems);
 return;
 // splicer end class.DataBuffer.method.reallocate
 }
