@@ -13,7 +13,7 @@
 
 import unittest
 import sidre
-from sidre import InvalidIndex, isNameValid
+from sidre import InvalidIndex, nameIsValid
 
 class SidreGroup(unittest.TestCase):
 #------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ class SidreGroup(unittest.TestCase):
 
         name3 = parent.getViewName(idx3)
         self.assertTrue(name3 is None)
-        self.assertFalse(isNameValid(name3))
+        self.assertFalse(nameIsValid(name3))
 
         ds.delete()
 
@@ -154,7 +154,7 @@ class SidreGroup(unittest.TestCase):
 
         name3 = parent.getGroupName(idx3)
         self.assertTrue(name3 is None)
-        self.assertFalse(isNameValid(name3))
+        self.assertFalse(nameIsValid(name3))
 
         ds.delete()
 

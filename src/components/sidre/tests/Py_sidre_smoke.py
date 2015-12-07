@@ -16,7 +16,7 @@ class SidreSmoke(unittest.TestCase):
       self.assertTrue(idx != InvalidIndex)
 
       name = "foo"
-      self.assertTrue(isNameValid(name))
+      self.assertTrue(nameIsValid(name))
 
       root = ds.getRoot()
 

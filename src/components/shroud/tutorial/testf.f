@@ -11,6 +11,7 @@ program tester
   real(C_DOUBLE) rv2
   logical rv3
   character(30) rv4, rv4b
+  integer rvsum
 
   call function1
 
@@ -45,5 +46,8 @@ program tester
 
   call function9(1.0)
   call function9(1.0d0)
+
+  rvsum = sum(5, [1,2,3,4,5])
+  print *, "sum = ", rvsum
 
 end program tester

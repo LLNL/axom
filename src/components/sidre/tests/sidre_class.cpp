@@ -49,7 +49,7 @@ public:
   void copyFromGroup(DataGroup * gp)
   {
     DataView * iview = gp->getView("idata");
-    size_t ilen = iview->getNumberOfElements();
+    size_t ilen = iview->getNumElements();
     m_idata = std::vector<int>(ilen);
 
     int * g_idata = iview->getValue();
@@ -131,7 +131,7 @@ public:
     }
 
     DataView * dview = gp->getView("ddata");
-    size_t dlen = dview->getNumberOfElements();
+    size_t dlen = dview->getNumElements();
     m_ddata = std::vector<double>(dlen);
 
     double * g_ddata = dview->getValue();
@@ -256,23 +256,4 @@ TEST(sidre_class, save_load_class_to_group)
 
   delete ds;
   delete ds2;
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

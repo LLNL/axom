@@ -30,99 +30,12 @@ namespace asctoolkit
 namespace sidre
 {
 
-template< int TYPEID >
-inline TypeID getTypeID()
-{
-  return static_cast<TypeID>(TYPEID);
-}
-
-/*
- *************************************************************************
- *
- * Convert C #define value to TypeID.
- * Used with C wrappers.
- *
- *************************************************************************
- */
+// This version is used for the C.
 inline TypeID getTypeID( const int typeID )
 {
-  TypeID rval = CONDUIT_EMPTY_T;
 
-  switch( typeID )
-  {
-  /****************************************************************************
-   We don't support these Conduit cases as Sidre Types
-   ****************************************************************************
-  case 0:
-    rval = CONDUIT_EMPTY_T;
-    break;
-  case 1:
-    rval = CONDUIT_OBJECT_T;
-    break;
-  case 2:
-    rval = CONDUIT_LIST_T;
-    break;
-  ****************************************************************************/
-
-  case ATK_INT8_T:
-    rval = CONDUIT_INT8_T;
-    break;
-  case ATK_INT16_T:
-    rval = CONDUIT_INT16_T;
-    break;
-  case ATK_INT32_T:
-    rval = CONDUIT_INT32_T;
-    break;
-  case ATK_INT64_T:
-    rval = CONDUIT_INT64_T;
-    break;
-  case ATK_UINT8_T:
-    rval = CONDUIT_UINT8_T;
-    break;
-  case ATK_UINT16_T:
-    rval = CONDUIT_UINT16_T;
-    break;
-  case ATK_UINT32_T:
-    rval = CONDUIT_UINT32_T;
-    break;
-  case ATK_UINT64_T:
-    rval = CONDUIT_UINT64_T;
-    break;
-  case ATK_FLOAT32_T:
-    rval = CONDUIT_FLOAT32_T;
-    break;
-  case ATK_FLOAT64_T:
-    rval = CONDUIT_FLOAT64_T;
-    break;
-  case ATK_CHAR8_STR_T:
-    rval = CONDUIT_CHAR8_STR_T;
-    break;
-
-  case ATK_C_INT_T:
-    rval = CONDUIT_NATIVE_INT_DATATYPE_ID;
-    break;
-  case ATK_C_LONG_T:
-    rval = CONDUIT_NATIVE_LONG_DATATYPE_ID;
-    break;
-  case ATK_C_FLOAT_T:
-    rval = CONDUIT_NATIVE_FLOAT_DATATYPE_ID;
-    break;
-  case ATK_C_DOUBLE_T:
-    rval = CONDUIT_NATIVE_DOUBLE_DATATYPE_ID;
-    break;
-
-  default:
-    rval = CONDUIT_EMPTY_T;
-    break;
-//      ATK_ERROR( "getTypeID(int) passed invalid type" );
-
-
-  }
-
-  return rval;
-
+  return static_cast<TypeID>(typeID);
 }
-
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

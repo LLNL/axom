@@ -7,10 +7,10 @@ from __future__ import print_function
 import sys
 
 types = (
-    ( 'int',    'integer(C_INT)',  'ATK_C_INT_T',    'CONDUIT_NATIVE_INT_DATATYPE_ID'),
-    ( 'long',   'integer(C_LONG)', 'ATK_C_LONG_T',   'CONDUIT_NATIVE_LONG_DATATYPE_ID'),
-    ( 'float',  'real(C_FLOAT)',   'ATK_C_FLOAT_T',  'CONDUIT_NATIVE_FLOAT_DATATYPE_ID'),
-    ( 'double', 'real(C_DOUBLE)',  'ATK_C_DOUBLE_T', 'CONDUIT_NATIVE_DOUBLE_DATATYPE_ID'),
+    ( 'int',    'integer(C_INT)',  'SIDRE_INT_ID',    'CONDUIT_NATIVE_INT_DATATYPE_ID'),
+    ( 'long',   'integer(C_LONG)', 'SIDRE_LONG_ID',   'CONDUIT_NATIVE_LONG_DATATYPE_ID'),
+    ( 'float',  'real(C_FLOAT)',   'SIDRE_FLOAT_ID',  'CONDUIT_NATIVE_FLOAT_DATATYPE_ID'),
+    ( 'double', 'real(C_DOUBLE)',  'SIDRE_DOUBLE_ID', 'CONDUIT_NATIVE_DOUBLE_DATATYPE_ID'),
 )
 
 # XXX - only doing 0-d and 1-d for now
@@ -123,7 +123,7 @@ subroutine dataview_get_value_{typename}_{nd}{suffix}(view, value)
     integer(C_SIZE_T) nelems
 
     cptr = view%get_data_pointer()
-    nelems = view%get_number_of_elements()
+    nelems = view%get_num_elements()
     call c_f_pointer(cptr, value, [ nelems ])
 end subroutine dataview_get_value_{typename}_{nd}{suffix}""".format(**d)
     else:

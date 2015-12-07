@@ -3,9 +3,16 @@
 !
 
 module sidre_allocatable
+  use iso_c_binding
   use fruit
   use sidre_mod
   implicit none
+
+  ! Global variables to add to datastore.
+  ! If they were local to a subroutine, then Fortran will attempt to
+  ! free them before returning and we want the datastore to free them.
+  integer, allocatable :: iarray(:)
+  real(C_DOUBLE), allocatable :: darray(:)
 
 contains
 
@@ -15,7 +22,6 @@ contains
 !----------------------------------------------------------------------
 
   subroutine local_allocatable_int
-    integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
@@ -34,9 +40,9 @@ contains
     view = root%create_allocatable_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     do i=1,10
@@ -58,7 +64,6 @@ contains
 ! Check from Fortran with ALLOCATED and SIZE
 ! Check datastore metadata
   subroutine ds_allocatable_int
-    integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
@@ -75,14 +80,16 @@ contains
     view = root%create_allocatable_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 0)
 
     ! Allocate array via datastore
-    call view%declare(ATK_C_INT_T, 10)
-    call view%allocate()
+! To be consistent with actual Fortran code, the method that creates 
+! an allocatable view should take the type and the allocate method
+! should take only shape, length, etc.
+    call view%allocate(SIDRE_INT_ID, 10)
     
     ! Check from Fortran with ALLOCATED and SIZE
     call assert_true(allocated(iarray))
@@ -92,9 +99,9 @@ contains
 
 ! Check datastore metadata
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
@@ -137,9 +144,9 @@ contains
     view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_INT_T)
+    call assert_equals(type, SIDRE_INT_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
@@ -154,9 +161,7 @@ contains
 !--- check other types
 
   subroutine local_allocatable_double
-    use iso_c_binding
-    real(C_DOUBLE), allocatable :: iarray(:)
-    real(C_DOUBLE), pointer :: ipointer(:)
+    real(C_DOUBLE), pointer :: dpointer(:)
 
     type(datastore) ds
     type(datagroup) root
@@ -168,23 +173,23 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    allocate(iarray(10))
+    allocate(darray(10))
 
-    view = root%create_allocatable_view("iarray", iarray)
+    view = root%create_allocatable_view("darray", darray)
 
     type = view%get_type_id()
-!XXX    call assert_equals(type, ATK_C_DOUBLE_T)
+    call assert_equals(type, SIDRE_DOUBLE_ID)
 
-    num_elements = view%get_number_of_elements()
+    num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
     do i=1,10
-       iarray(i) = i + 0.5d0
+       darray(i) = i + 0.5d0
     enddo
 
     ! get array via a pointer
-    call view%get_value(ipointer)
-    call assert_true(all(abs(iarray-ipointer).lt..0005))
+    call view%get_value(dpointer)
+    call assert_true(all(abs(darray-dpointer).lt..0005))
 
     call ds%delete()
 
@@ -195,12 +200,10 @@ contains
 end module sidre_allocatable
 
 
-function fortran_test() bind(C,name="fortran_test")
-  use iso_c_binding
+program fortran_test
   use fruit
   use sidre_allocatable
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -214,9 +217,7 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test

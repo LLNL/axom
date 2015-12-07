@@ -46,8 +46,8 @@ namespace slic
  *
  *     ::testing::InitGoogleTest(&argc, argv);
  *
- *     UnitTestLogger logger;  // create & initialize test logger,
- *                         // finalized when exiting main scope
+ *     // create & initialize test logger, finalized when exiting main scope
+ *     UnitTestLogger logger;
  *
  *     result = RUN_ALL_TESTS();
  *  

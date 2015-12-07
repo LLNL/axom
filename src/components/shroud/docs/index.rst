@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to shroud's documentation!
-==================================
+Shroud
+======
 
 Contents:
 
@@ -13,7 +13,8 @@ Contents:
 
    introduction
    tutorial
-   options
+   reference
+   faq
    previouswork
    futurework
 

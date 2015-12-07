@@ -11,7 +11,7 @@ class UberenvAsctoolkit(Package):
     # hash for dummy tarfile
     version('0.1', '8d378ef62dedc2df5db447b029b71200')
     
-    # all of these theses are custom
+    # all of theses are custom
     depends_on("cmake")
     depends_on("python")
     depends_on("conduit")

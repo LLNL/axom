@@ -9,7 +9,6 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
-// wrapSidre.h
 // For C users and C++ implementation
 
 #ifndef WRAPSIDRE_H
@@ -24,7 +23,7 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-bool ATK_is_name_valid(const char * name);
+bool ATK_name_is_valid(const char * name);
 
 #ifdef __cplusplus
 }

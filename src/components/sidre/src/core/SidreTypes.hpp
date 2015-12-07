@@ -19,8 +19,7 @@
 #ifndef SIDRETYPES_HPP_
 #define SIDRETYPES_HPP_
 
-// Other CS Toolkit headers
-#include "conduit.hpp"
+#include "SidreDataTypeIds.h"
 
 namespace asctoolkit
 {
@@ -32,10 +31,6 @@ namespace sidre
  */
 typedef conduit::DataType DataType;
 
-/*!
- * \brief TypeID is used to identify the type of a buffer (ATK_INT8_T, etc).
- */
-typedef int TypeID;
 
 /*!
  * \brief IndexType is used for any labeling of a sidre object by an
@@ -60,73 +55,45 @@ inline bool indexIsValid(IndexType idx)
  */
 const std::string InvalidName;
 ///
-inline bool isNameValid(const std::string& name)
+inline bool nameIsValid(const std::string& name)
 {
   return name != InvalidName;
 }
 
-
-
-/*
- *************************************************************************
- *
- * Given a Sidre type enum create a Conduit DataType.
- *
- *************************************************************************
+/*!
+ * \brief Enum that holds the numeric data type id options for sidre types.
  */
-#if 0
-inline DataType createDataType( TypeID type, long len )
-{
-  DataType rval;
 
-  switch( type )
-  {
-  case DataType::INT8_T:
-    rval = DataType::int8(len);
-    break;
-  case DataType::INT16_T:
-    rval = DataType::int16(len);
-    break;
-  case DataType::INT32_T:
-    rval = DataType::int32(len);
-    break;
-  case DataType::INT64_T:
-    rval = DataType::int64(len);
-    break;
-  case DataType::UINT8_T:
-    rval = DataType::uint8(len);
-    break;
-  case DataType::UINT16_T:
-    rval = DataType::uint16(len);
-    break;
-  case DataType::UINT32_T:
-    rval = DataType::uint32(len);
-    break;
-  case DataType::UINT64_T:
-    rval = DataType::uint64(len);
-    break;
-  case DataType::FLOAT32_T:
-    rval = DataType::float32(len);
-    break;
-  case DataType::FLOAT64_T:
-    rval = DataType::float64(len);
-    break;
-#if 0
-  case DataType::CHAR8_STR_T:
-    rval = DataType::c_char(len);
-    break;
-#endif
-  default:
-    break;
-//      ATK_ERROR( "getTypeID(int) passed invalid type" );
+enum DataTypeId
+{    
+    EMPTY_ID = SIDRE_EMPTY_ID,
+    INT8_ID  = SIDRE_INT8_ID,
+    INT16_ID = SIDRE_INT16_ID,
+    INT32_ID = SIDRE_INT32_ID,
+    INT64_ID = SIDRE_INT64_ID,
+    
+    UINT8_ID  = SIDRE_UINT8_ID,
+    UINT16_ID = SIDRE_UINT16_ID,
+    UINT32_ID = SIDRE_UINT32_ID,
+    UINT64_ID = SIDRE_UINT64_ID,
+    
+    FLOAT32_ID   = SIDRE_FLOAT32_ID,
+    FLOAT64_ID   = SIDRE_FLOAT64_ID,
+    CHAR8_STR_ID = SIDRE_CHAR8_STR_ID,
+    
+    INT_ID = SIDRE_INT_ID,
+    UINT_ID = SIDRE_UINT_ID,
+    LONG_ID = SIDRE_LONG_ID,
+    ULONG_ID = SIDRE_ULONG_ID,
+    FLOAT_ID = SIDRE_FLOAT_ID,
+    DOUBLE_ID = SIDRE_DOUBLE_ID
+};
 
 
-  }
-
-  return rval;
-
-}
-#endif
+/*!
+ * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
+ */
+typedef DataTypeId TypeID;
 
 
 
