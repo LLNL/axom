@@ -90,12 +90,29 @@ enum DataTypeId
     DOUBLE_ID = SIDRE_DOUBLE_ID
 };
 
+/*!
+ * \brief Sidre Type traits to assist in converting compiler types to the appropriate sidre enum.
+ */
+template<typename T> struct SidreTT {};
+template<> struct SidreTT<int> {  static inline DataTypeId id() { return INT_ID; }; };
+template<> struct SidreTT<unsigned int> {  static inline DataTypeId id() { return UINT_ID; }; };
+template<> struct SidreTT<long> {  static inline DataTypeId id() { return LONG_ID; }; };
+template<> struct SidreTT<unsigned long> {  static inline DataTypeId id() { return ULONG_ID; }; };
+template<> struct SidreTT<float> {  static inline DataTypeId id() { return FLOAT_ID; }; };
+template<> struct SidreTT<double> {  static inline DataTypeId id() { return DOUBLE_ID; }; };
+
+/*
+template<> struct SidreTT<unsigned int> {  enum { ENUM_ID = SIDRE_UINT_ID }; };
+template<> struct SidreTT<long> {  enum { ENUM_ID = SIDRE_LONG_ID }; };
+template<> struct SidreTT<unsigned long> {  enum { ENUM_ID = SIDRE_ULONG_ID }; };
+template<> struct SidreTT<float> {  enum { ENUM_ID = SIDRE_FLOAT_ID }; };
+template<> struct SidreTT<double> {  enum { ENUM_ID = SIDRE_DOUBLE_ID }; };
+*/
 
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
  */
 typedef DataTypeId TypeID;
-
 
 
 } /* end namespace sidre */

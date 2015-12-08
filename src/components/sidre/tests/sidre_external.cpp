@@ -91,13 +91,13 @@ TEST(sidre_external, create_external_view)
   root->getView("idata")->print();
   root->getView("ddata")->print();
 
-  int * idata_chk = root->getView("idata")->getValue();
+  int * idata_chk = root->getView("idata")->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = root->getView("ddata")->getValue();
+  double * ddata_chk = root->getView("ddata")->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -155,13 +155,13 @@ TEST(sidre_external, save_load_external_view)
   EXPECT_EQ(root2->getView("idata")->getBuffer()->isExternal(), false);
   EXPECT_EQ(root2->getView("ddata")->getBuffer()->isExternal(), false);
 
-  int * idata_chk = root2->getView("idata")->getValue();
+  int * idata_chk = root2->getView("idata")->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = root2->getView("ddata")->getValue();
+  double * ddata_chk = root2->getView("ddata")->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);

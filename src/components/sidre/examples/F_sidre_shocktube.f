@@ -72,11 +72,11 @@ program main
 
   ! use a pointer when you want to update the param directly
   tmpview = prob%get_view("cycle")
-  call tmpview%get_value(currCycle)
+  call tmpview%get_data(currCycle)
   tmpview = prob%get_view("numTotalCycles")
-  numTotalCycles = tmpview%get_value_int()
+  numTotalCycles = tmpview%get_data_int()
   tmpview = prob%get_view("numCyclesPerDump")
-  dumpInterval = tmpview%get_value_int()
+  dumpInterval = tmpview%get_data_int()
   
   do currCycle = 0, numTotalcycles-1
     ! dump the ultra file, based on the user chosen attribute mask
@@ -102,7 +102,7 @@ contains
     type(dataview) tmpview
 
     tmpview = grp%create_view_and_allocate(name, SIDRE_INT_ID, 1)
-    call tmpview%set_value(value)
+    call tmpview%set_scalar(value)
   end subroutine CreateScalarIntBufferViewAndSetVal
 
 
@@ -113,7 +113,7 @@ contains
     type(dataview) tmpview
 
     tmpview = grp%create_view_and_allocate(name, SIDRE_DOUBLE_ID, 1)
-    call tmpview%set_value(value)
+    call tmpview%set_scalar(value)
   end subroutine CreateScalarFloatBufferViewAndSetVal
 
 !*************************************************************************
@@ -233,9 +233,9 @@ subroutine CreateShockTubeMesh(prob)
 !  integer outflow(1)
 
   tmpview = prob%get_view("numElems")
-  numElems = tmpview%get_value_int()
+  numElems = tmpview%get_data_int()
   tmpview = prob%get_view("numFaces")
-  numFaces = tmpview%get_value_int()
+  numFaces = tmpview%get_data_int()
 
   ! create element and face classes
 
@@ -262,7 +262,7 @@ subroutine CreateShockTubeMesh(prob)
 
   mapToElemsView = tube%create_view_and_allocate("mapToElems", SIDRE_INT_ID, numTubeElems)
 
-  call mapToElemsView%get_value(mapToElems)
+  call mapToElemsView%get_data(mapToElems)
 
   do k=1, numTubeElems
     mapToElems(k) = k  ! XXX + 1
@@ -274,7 +274,7 @@ subroutine CreateShockTubeMesh(prob)
 
   faceToElemView = face%create_view_and_allocate("faceToElem", SIDRE_INT_ID, 2*numFaces)
 
-  call faceToElemView%get_value(faceToElem)
+  call faceToElemView%get_data(faceToElem)
 
   do i=1, numFaces
     faceToElem((i-1) * 2 + IUPWIND) = i - 1 ! XXX
@@ -285,7 +285,7 @@ subroutine CreateShockTubeMesh(prob)
 !--//  Relation &elemToFace = *tube%relationCreate("elemToFace", 2)
 !  dims(0) = numElems
   elemToFaceView = tube%create_view_and_allocate("elemToFace", SIDRE_INT_ID, 2*numElems);
-  call elemToFaceView%get_value(elemToFace)
+  call elemToFaceView%get_data(elemToFace)
 
   do i=1, numElems
     elemToFace((i-1) * 2 + IUPWIND) = i  - 1! XXX ! same map as above by coincidence
@@ -323,24 +323,24 @@ subroutine InitializeShockTube(prob)
   face = prob%get_group("face")
 
   tmpview = prob%get_view("numElems")
-  numElems = tmpview%get_value_int()
+  numElems = tmpview%get_data_int()
 
   tmpview = prob%get_view("numFaces")
-  numFaces = tmpview%get_value_int()
+  numFaces = tmpview%get_data_int()
 
   ! Create element centered quantities
 
   tmpview = elem%create_view_and_allocate("mass", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%get_value(mass)
+  call tmpview%get_data(mass)
 
   tmpview = elem%create_view_and_allocate("momentum", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%get_value(momentum)
+  call tmpview%get_data(momentum)
 
   tmpview = elem%create_view_and_allocate("energy", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%get_value(energy)
+  call tmpview%get_data(energy)
 
   tmpview = elem%create_view_and_allocate("pressure", SIDRE_DOUBLE_ID, numElems)
-  call tmpview%get_value(pressure)
+  call tmpview%get_data(pressure)
 !!  allocate(mass(numElems))
 !!  allocate(momentum(numElems))
 !!  allocate(energy(numElems))
@@ -377,9 +377,9 @@ subroutine InitializeShockTube(prob)
 
   ! adjust parameters for low pressure portion of tube
   tmpview = prob%get_view("densityRatio")
-  dratio = tmpview%get_value_double()
+  dratio = tmpview%get_data_double()
   tmpview = prob%get_view("pressureRatio")
-  pratio = tmpview%get_value_double()
+  pratio = tmpview%get_data_double()
 
   massInitial = massInitial * dratio
   pressureInitial = pressureInitial * pratio
@@ -398,7 +398,7 @@ subroutine InitializeShockTube(prob)
 
   call CreateScalarFloatBufferViewAndSetVal(prob, "dx", 1.0d0 / endTube)
   tmpview = prob%get_view("dx")
-  dx = tmpview%get_value_double()
+  dx = tmpview%get_data_double()
   call CreateScalarFloatBufferViewAndSetVal(prob, "dt", 0.4d0 * dx)
 
   return
@@ -434,24 +434,24 @@ subroutine ComputeFaceInfo(prob)
   face = prob%get_group("face")
 
   tmpview = face%get_view("faceToElem")
-  call tmpview%get_value(faceToElem)
+  call tmpview%get_data(faceToElem)
 
   tmpview = face%get_view("F0")
-  call tmpview%get_value(F0)
+  call tmpview%get_data(F0)
   tmpview = face%get_view("F1")
-  call tmpview%get_value(F1)
+  call tmpview%get_data(F1)
   tmpview = face%get_view("F2")
-  call tmpview%get_value(F2)
+  call tmpview%get_data(F2)
 
   numFaces = tmpview%get_num_elements()
 
   elem = prob%get_group("elem")
   tmpview = elem%get_view("mass")
-  call tmpview%get_value(mass)
+  call tmpview%get_data(mass)
   tmpview = elem%get_view("momentum")
-  call tmpview%get_value(momentum)
+  call tmpview%get_data(momentum)
   tmpview = elem%get_view("energy")
-  call tmpview%get_value(energy)
+  call tmpview%get_data(energy)
 
   do i=1, numFaces
      ! each face has an upwind and downwind element.
@@ -555,44 +555,44 @@ subroutine UpdateElemInfo(prob)
   elem = prob%get_group("elem")
 
   tmpview = elem%get_view("mass")
-  call tmpview%get_value(mass)
+  call tmpview%get_data(mass)
   tmpview = elem%get_view("momentum")
-  call tmpview%get_value(momentum)
+  call tmpview%get_data(momentum)
   tmpview = elem%get_view("energy")
-  call tmpview%get_value(energy)
+  call tmpview%get_data(energy)
   tmpview = elem%get_view("pressure")
-  call tmpview%get_value(pressure)
+  call tmpview%get_data(pressure)
 
   ! focus on just the elements within the shock tube
   tube = elem%get_group("tube")
 
   tmpview = tube%get_view("elemToFace")
-  call tmpview%get_value(elemToFace)
+  call tmpview%get_data(elemToFace)
 
 !--//  Relation &elemToFace = *tube%relation("elemToFace")
 !  integer numTubeElems = tube%GetDataShape().m_dimensions(0)
 
 !--//  int *is = tube%map()
   tmpview = tube%get_view("mapToElems")
-  call tmpview%get_value(is)
+  call tmpview%get_data(is)
   numTubeElems = tmpview%get_num_elements()
 
 
   ! The element update is calculated as the flux between faces
   face = prob%get_group("face")
   tmpview = face%get_view("F0")
-  call tmpview%get_value(F0)
+  call tmpview%get_data(F0)
   tmpview = face%get_view("F1")
-  call tmpview%get_value(F1)
+  call tmpview%get_data(F1)
   tmpview = face%get_view("F2")
-  call tmpview%get_value(F2)
+  call tmpview%get_data(F2)
 
   tmpview = prob%get_view("dx")
-  dx = tmpview%get_value_double()
+  dx = tmpview%get_data_double()
   tmpview = prob%get_view("dt")
-  dt = tmpview%get_value_double()
+  dt = tmpview%get_data_double()
   tmpview = prob%get_view("time")
-  call tmpview%get_value(time)
+  call tmpview%get_data(time)
 
   do i=1, numTubeElems
      ! recalculate elements in the shocktube, don't touch inflow/outflow
@@ -631,7 +631,7 @@ subroutine DumpUltra( prob )
 
   view = prob%get_view("cycle")
 
-  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), view%get_value_int()
+  write(fname, '(a, "_", i4.4, ".ult")') trim(fname), view%get_data_int()
   open(fp, file=fname, iostat=ierr)
   if (ierr /= 0) then
      print *, "Could not open file ", trim(fname), ". Aborting."
@@ -648,9 +648,9 @@ subroutine DumpUltra( prob )
      if ( length <= 1 ) then
         select case (view%get_type_id())
         case (SIDRE_INT32_ID)
-           write(fp, '("# ", a, " = ", i4)') name, view%get_value_int()
+           write(fp, '("# ", a, " = ", i4)') name, view%get_data_int()
         case (SIDRE_FLOAT64_ID)
-           write(fp, '("# ", a, " = ", f16.5)') name, view%get_value_double()
+           write(fp, '("# ", a, " = ", f16.5)') name, view%get_data_double()
         end select
     endif
   enddo
@@ -665,12 +665,12 @@ subroutine DumpUltra( prob )
 
      select case (view%get_type_id())
      case (SIDRE_INT32_ID)
-        call view%get_value(idata)
+        call view%get_data(idata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), real(idata(j), C_DOUBLE)
         enddo
      case (SIDRE_FLOAT64_ID)
-        call view%get_value(ddata)
+        call view%get_data(ddata)
         do j = 1, length
            write(fp, '(f12.6,1x, f12.6)') real(j, C_DOUBLE), ddata(j)
         enddo

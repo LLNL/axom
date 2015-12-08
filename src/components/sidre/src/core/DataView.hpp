@@ -26,6 +26,7 @@
 
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
+#include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
@@ -376,21 +377,6 @@ public:
   {
     return m_data_buffer;
   }
-
-  /*!
-   * \brief Return void* pointer to opaque data in view, else ATK_NULLPTR
-   *        if view has not been declared opaque.
-   */
-  void * getOpaque() const;
-
-  /*!
-   * \brief Return void-pointer to data associated with DataView.
-   *
-   * This will return the data pointer for all DataViews, including opaque
-   * and external.
-   */
-  void * getDataPointer() const;
-
   /*!
    * \brief Return const reference to Conduit schema describing data.
    */
@@ -415,52 +401,104 @@ public:
     return m_node;
   }
 
-//@}
 
-
-//@{
-//!  @name DataView getValue/setValue methods.
+  //@{
+  //!  @name Accesser methods for retrieving data from a view.
 
   /*!
-   * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
-   * version does require enough type information for the compiler to know what to cast the Value class to.
-   * Example:
-   * int* myptr = getValue();
-   * int myint = getValue();
+   * \brief Return node's data (should be a pointer to external, unowned memory).
    */
-  Node::Value getValue()
+  void * getOpaquePtr()
   {
+    //TODO: Add check to verify isOpaque() is true, else return null ptr.
+    return m_node.data_ptr();
+  }
+
+  /*!
+   * \brief Return node's data (should be an array or other block of memory, so a pointer is returned).
+   */
+  Node::Value getPtr()
+  {
+    // TODO: Add some checks to verify the node actual holds a pointer type.
     return m_node.value();
   }
 
   /*!
-   * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
-   * were not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
-   * function template type must be explicitly provided on call.
-   *
-   * Example:
-   * // will not work, compiler does not know what type to cast to for above getValue function.
-   * assert( getValue() == 10 );
-   * // use the templated version instead
-   * assert (getValue<int>() == 10);
+   * \brief Return node's data (should be a string).
    */
-  template<typename ValueType>
-  ValueType getValue()
+  std::string getString()
   {
-    ValueType valueptr = m_node.value();
-    return valueptr;
+    // TODO: Add some checks to verify the node actual holds a string type.
+    return m_node.as_string();
   }
 
   /*!
-   * \brief Set value in conduit node.
+   * \brief Return node's data (should be a scalar).
    */
-  template<typename ValueType>
-  void setValue(ValueType value)
+  Node::Value getScalar()
   {
-    m_node.set(value);
+    // TODO: Add some checks to verify the node actual holds a scalar type.
+    return m_node.value();
   }
 
-//@}
+  //@}
+
+  //@{
+  //!  @name Set methods for setting data in the view.
+
+  /*!
+   * \brief Set node's data (should be a string).
+   */
+  void setString(const std::string& value)
+  {
+    // TODO: Add some checks to verify the node actual holds a string type.
+    m_node.set_string(value);
+  }
+
+  /*!
+   * \brief Set  node's data ( should be a scalar ).
+   */
+  template<typename ScalarType>
+  void setScalar(ScalarType value)
+  {
+    // Check that the internal datatype isn't being changed (type-safety check).
+#if defined(ATK_DEBUG)
+    DataTypeId arg_id = SidreTT<ScalarType>::id();
+    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
+      "Mismatch between setScalar()" << DataType::id_to_name( arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() << ").");
+#endif
+
+	m_node.set(value);
+  }
+
+  //@}
+
+  /*!
+   * \brief Returns Conduit Value class instance that supports casting to the appropriate data return type.  This
+   * function version require an assignment, so it has enough type information for the compiler to know what to
+   * cast the Node::Value class to.
+   * Example:
+   * int* myptr = getData();
+   * int myint = getData();
+   */
+
+  // TODO - can we go ahead and update tests to not need this ( I know it adds a line or two to checks in tests )
+  // otherwise, need to add a version of this for all our functions which use the conduit operator() overloading to cast.
+  /*!
+   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(), but not
+   * assigning the return.
+   *
+   */
+  //template<typename DataType>
+  //DataType getData()
+  //{
+  // DataType data = m_node.value();
+  //  return data;
+  //}
+
+
+
+
 
 
 //@{

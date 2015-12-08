@@ -51,7 +51,7 @@ contains
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
     call assert_equals(dv%get_type_id(), SIDRE_INT_ID)
-    call dv%get_value(data)
+    call dv%get_data(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -77,7 +77,7 @@ contains
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
-    call dv%get_value(data)
+    call dv%get_data(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -248,7 +248,7 @@ contains
     ! we will create 4 sub views of this array
     base_old = r_old%create_view_and_allocate("base_data", SIDRE_INT_ID, 40)
 
-    call base_old%get_value(data)
+    call base_old%get_data(data)
 
     ! init the buff with values that align with the
     ! 4 subsections.
@@ -406,8 +406,8 @@ contains
     a1 = root%create_view_and_allocate("a1", SIDRE_FLOAT_ID, 5)
     a2 = root%create_view_and_allocate("a2", SIDRE_FLOAT_ID, 5)
 
-    call a1%get_value(a1_data)
-    call a2%get_value(a2_data)
+    call a1%get_data(a1_data)
+    call a2%get_data(a2_data)
 
     do i = 1, 5
        a1_data(i) =  5.0
@@ -421,8 +421,8 @@ contains
     call a1%reallocate(10)
     call a2%reallocate(15)
 
-    call a1%get_value(a1_data)
-    call a2%get_value(a2_data)
+    call a1%get_data(a1_data)
+    call a2%get_data(a2_data)
 
     do i = 1, 5
        call assert_equals(a1_data(i), 5.0)

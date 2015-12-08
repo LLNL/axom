@@ -286,19 +286,19 @@ classes:
 #    - decl: const Node& getNode() const
 #    - decl: Node::Value getValue()
 
-#           template<typename ValueType>
-    - decl: void setValue(ValueType value)
+#           template<typename ScalarType>
+    - decl: void setScalar(ScalarType value)
       cpp_template:
-        ValueType:
+        ScalarType:
         - int
         - long
         - float
         - double
 
-#           template<typename ValueType>
-    - decl: ValueType getValue()
+#           template<typename DataType>
+    - decl: DataType getData()
       cpp_template:
-        ValueType:
+        DataType:
         - int
         - long
         - float

@@ -50,7 +50,7 @@ TEST(sidre_view,int_buffer_from_view)
   DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
 
   EXPECT_EQ(dv->getTypeID(), asctoolkit::sidre::INT_ID);
-  int * data_ptr = dv->getValue();
+  int * data_ptr = dv->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -72,7 +72,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
   DataGroup * root = ds->getRoot();
 
   DataView * dv = root->createViewAndAllocate("u0", DataType::c_int(10));
-  int * data_ptr = dv->getValue();
+  int * data_ptr = dv->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -120,8 +120,8 @@ TEST(sidre_view,int_array_multi_view)
   dv_e->print();
   dv_o->print();
 
-  int_array dv_e_ptr = dv_e->getValue();
-  int_array dv_o_ptr = dv_o->getValue();
+  int_array dv_e_ptr = dv_e->getData();
+  int_array dv_o_ptr = dv_o->getData();
   for(int i=0 ; i<5 ; i++)
   {
     std::cout << "idx:" <<  i
@@ -149,8 +149,8 @@ TEST(sidre_view,int_array_multi_view)
   dv_e1->print();
   dv_o1->print();
 
-  int_array dv_e1_ptr = dv_e1->getValue();
-  int_array dv_o1_ptr = dv_o1->getValue();
+  int_array dv_e1_ptr = dv_e1->getData();
+  int_array dv_o1_ptr = dv_o1->getData();
   for(int i=0 ; i<5 ; i++)
   {
     std::cout << "idx:" <<  i
@@ -213,7 +213,7 @@ TEST(sidre_view,int_array_depth_view)
   // check values in depth views...
   for (int id = 0; id < 4; ++id)
   {
-     int_array dv_ptr = views[id]->getValue();
+     int_array dv_ptr = views[id]->getData();
      for (size_t i = 0; i < depth_nelems; ++i)
      {
         EXPECT_EQ(dv_ptr[i], id);
@@ -277,7 +277,7 @@ TEST(sidre_view,int_array_depth_view_2)
   // check values in depth views...
   for (int id = 0; id < 4; ++id)
   {
-     int_array dv_ptr = views[id]->getValue();
+     int_array dv_ptr = views[id]->getData();
      for (size_t i = 0; i < depth_nelems; ++i)
      {
         EXPECT_EQ(dv_ptr[i], id);
@@ -315,7 +315,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(dbuff->getNumElements(), elem_count);
 
   // Initilize buffer data for testing below.
-  int_array b_ptr = dbuff->getValue();
+  int_array b_ptr = dbuff->getData();
   for(size_t i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
@@ -339,7 +339,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   // check values in field views...
   for (int id = 0; id < 4; ++id)
   {
-     int_array v_ptr = field[id]->getValue();
+     int_array v_ptr = field[id]->getData();
      for (size_t i = 0; i < field_nelems; ++i)
      {
         EXPECT_EQ(v_ptr[i], id);
@@ -378,7 +378,7 @@ TEST(sidre_view,int_array_multi_view_resize)
                                                      DataType::c_int(40));
 
   // we will create 4 sub views of this array
-  int * data_ptr = base_old->getValue();
+  int * data_ptr = base_old->getData();
 
 
   // init the buff with values that align with the
@@ -425,7 +425,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
   /// check that our views actually point to the expected data
   //
-  int * r0_ptr = r0_old->getValue();
+  int * r0_ptr = r0_old->getData();
   for(int i=0 ; i<10 ; i++)
   {
     EXPECT_EQ(r0_ptr[i], 1);
@@ -433,7 +433,7 @@ TEST(sidre_view,int_array_multi_view_resize)
     EXPECT_EQ(&r0_ptr[i], &data_ptr[i]);
   }
 
-  int * r3_ptr = r3_old->getValue();
+  int * r3_ptr = r3_old->getData();
   for(int i=0 ; i<10 ; i++)
   {
     EXPECT_EQ(r3_ptr[i], 4);
@@ -447,7 +447,7 @@ TEST(sidre_view,int_array_multi_view_resize)
   DataView * base_new = r_new->createViewAndAllocate("base_data",
                                                      DataType::c_int(4 * 12));
 
-  int * base_new_data = base_new->getValue();
+  int * base_new_data = base_new->getData();
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {
     base_new_data[i] = 0;
@@ -489,7 +489,7 @@ TEST(sidre_view,int_array_multi_view_resize)
 
 
   /// check pointer values
-  int * r2_new_ptr = r2_new->getValue();
+  int * r2_new_ptr = r2_new->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -533,8 +533,8 @@ TEST(sidre_view,int_array_realloc)
   DataView * a1 = root->createViewAndAllocate("a1",DataType::c_float(5));
   DataView * a2 = root->createViewAndAllocate("a2",DataType::c_int(5));
 
-  float * a1_ptr = a1->getValue();
-  int * a2_ptr = a2->getValue();
+  float * a1_ptr = a1->getData();
+  int * a2_ptr = a2->getData();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -549,8 +549,8 @@ TEST(sidre_view,int_array_realloc)
   a1->reallocate(DataType::c_float(10));
   a2->reallocate(DataType::c_int(15));
 
-  a1_ptr = a1->getValue();
-  a2_ptr = a2->getValue();
+  a1_ptr = a1->getData();
+  a2_ptr = a2->getData();
 
   for(int i=0 ; i<5 ; i++)
   {

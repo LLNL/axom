@@ -162,76 +162,76 @@ return rv;
 // splicer end class.DataView.method.get_data_pointer
 }
 
-void ATK_dataview_set_value_int(ATK_dataview * self, int value)
+void ATK_dataview_set_scalar_int(ATK_dataview * self, int value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_value_int
-selfobj->setValue<int>(value);
+// splicer begin class.DataView.method.set_scalar_int
+selfobj->setScalar<int>(value);
 return;
-// splicer end class.DataView.method.set_value_int
+// splicer end class.DataView.method.set_scalar_int
 }
 
-void ATK_dataview_set_value_long(ATK_dataview * self, long value)
+void ATK_dataview_set_scalar_long(ATK_dataview * self, long value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_value_long
-selfobj->setValue<long>(value);
+// splicer begin class.DataView.method.set_scalar_long
+selfobj->setScalar<long>(value);
 return;
-// splicer end class.DataView.method.set_value_long
+// splicer end class.DataView.method.set_scalar_long
 }
 
-void ATK_dataview_set_value_float(ATK_dataview * self, float value)
+void ATK_dataview_set_scalar_float(ATK_dataview * self, float value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_value_float
-selfobj->setValue<float>(value);
+// splicer begin class.DataView.method.set_scalar_float
+selfobj->setScalar<float>(value);
 return;
-// splicer end class.DataView.method.set_value_float
+// splicer end class.DataView.method.set_scalar_float
 }
 
-void ATK_dataview_set_value_double(ATK_dataview * self, double value)
+void ATK_dataview_set_scalar_double(ATK_dataview * self, double value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_value_double
-selfobj->setValue<double>(value);
+// splicer begin class.DataView.method.set_scalar_double
+selfobj->setScalar<double>(value);
 return;
-// splicer end class.DataView.method.set_value_double
+// splicer end class.DataView.method.set_scalar_double
 }
 
-int ATK_dataview_get_value_int(ATK_dataview * self)
+int ATK_dataview_get_data_int(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_value_int
-int rv = selfobj->getValue<int>();
+// splicer begin class.DataView.method.get_data_int
+int rv = selfobj->getData<int>();
 return rv;
-// splicer end class.DataView.method.get_value_int
+// splicer end class.DataView.method.get_data_int
 }
 
-long ATK_dataview_get_value_long(ATK_dataview * self)
+long ATK_dataview_get_data_long(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_value_long
-long rv = selfobj->getValue<long>();
+// splicer begin class.DataView.method.get_data_long
+long rv = selfobj->getData<long>();
 return rv;
-// splicer end class.DataView.method.get_value_long
+// splicer end class.DataView.method.get_data_long
 }
 
-float ATK_dataview_get_value_float(ATK_dataview * self)
+float ATK_dataview_get_data_float(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_value_float
-float rv = selfobj->getValue<float>();
+// splicer begin class.DataView.method.get_data_float
+float rv = selfobj->getData<float>();
 return rv;
-// splicer end class.DataView.method.get_value_float
+// splicer end class.DataView.method.get_data_float
 }
 
-double ATK_dataview_get_value_double(ATK_dataview * self)
+double ATK_dataview_get_data_double(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_value_double
-double rv = selfobj->getValue<double>();
+// splicer begin class.DataView.method.get_data_double
+double rv = selfobj->getData<double>();
 return rv;
-// splicer end class.DataView.method.get_value_double
+// splicer end class.DataView.method.get_data_double
 }
 
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)

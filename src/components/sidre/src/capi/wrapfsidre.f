@@ -288,14 +288,14 @@ module sidre_mod
         procedure :: get_opaque => dataview_get_opaque
         procedure :: get_buffer => dataview_get_buffer
         procedure :: get_data_pointer => dataview_get_data_pointer
-        procedure :: set_value_int => dataview_set_value_int
-        procedure :: set_value_long => dataview_set_value_long
-        procedure :: set_value_float => dataview_set_value_float
-        procedure :: set_value_double => dataview_set_value_double
-        procedure :: get_value_int => dataview_get_value_int
-        procedure :: get_value_long => dataview_get_value_long
-        procedure :: get_value_float => dataview_get_value_float
-        procedure :: get_value_double => dataview_get_value_double
+        procedure :: set_scalar_int => dataview_set_scalar_int
+        procedure :: set_scalar_long => dataview_set_scalar_long
+        procedure :: set_scalar_float => dataview_set_scalar_float
+        procedure :: set_scalar_double => dataview_set_scalar_double
+        procedure :: get_data_int => dataview_get_data_int
+        procedure :: get_data_long => dataview_get_data_long
+        procedure :: get_data_float => dataview_get_data_float
+        procedure :: get_data_double => dataview_get_data_double
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
@@ -322,31 +322,31 @@ module sidre_mod
             ! splicer end class.DataView.generic.reallocate
             reallocate_int,  &
             reallocate_long
-        generic :: set_value => &
-            ! splicer begin class.DataView.generic.set_value
-            ! splicer end class.DataView.generic.set_value
-            set_value_int,  &
-            set_value_long,  &
-            set_value_float,  &
-            set_value_double
+        generic :: set_scalar => &
+            ! splicer begin class.DataView.generic.set_scalar
+            ! splicer end class.DataView.generic.set_scalar
+            set_scalar_int,  &
+            set_scalar_long,  &
+            set_scalar_float,  &
+            set_scalar_double
         ! splicer begin class.DataView.type_bound_procedure_part
-        procedure :: get_value_int_scalar_ptr => dataview_get_value_int_scalar_ptr
-        procedure :: get_value_int_1d_ptr => dataview_get_value_int_1d_ptr
-        procedure :: get_value_long_scalar_ptr => dataview_get_value_long_scalar_ptr
-        procedure :: get_value_long_1d_ptr => dataview_get_value_long_1d_ptr
-        procedure :: get_value_float_scalar_ptr => dataview_get_value_float_scalar_ptr
-        procedure :: get_value_float_1d_ptr => dataview_get_value_float_1d_ptr
-        procedure :: get_value_double_scalar_ptr => dataview_get_value_double_scalar_ptr
-        procedure :: get_value_double_1d_ptr => dataview_get_value_double_1d_ptr
-        generic :: get_value => &
-            get_value_int_scalar_ptr,  &
-            get_value_int_1d_ptr,  &
-            get_value_long_scalar_ptr,  &
-            get_value_long_1d_ptr,  &
-            get_value_float_scalar_ptr,  &
-            get_value_float_1d_ptr,  &
-            get_value_double_scalar_ptr,  &
-            get_value_double_1d_ptr
+        procedure :: get_data_int_scalar_ptr => dataview_get_data_int_scalar_ptr
+        procedure :: get_data_int_1d_ptr => dataview_get_data_int_1d_ptr
+        procedure :: get_data_long_scalar_ptr => dataview_get_data_long_scalar_ptr
+        procedure :: get_data_long_1d_ptr => dataview_get_data_long_1d_ptr
+        procedure :: get_data_float_scalar_ptr => dataview_get_data_float_scalar_ptr
+        procedure :: get_data_float_1d_ptr => dataview_get_data_float_1d_ptr
+        procedure :: get_data_double_scalar_ptr => dataview_get_data_double_scalar_ptr
+        procedure :: get_data_double_1d_ptr => dataview_get_data_double_1d_ptr
+        generic :: get_data => &
+            get_data_int_scalar_ptr,  &
+            get_data_int_1d_ptr,  &
+            get_data_long_scalar_ptr,  &
+            get_data_long_1d_ptr,  &
+            get_data_float_scalar_ptr,  &
+            get_data_float_1d_ptr,  &
+            get_data_double_scalar_ptr,  &
+            get_data_double_1d_ptr
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
     
@@ -1142,69 +1142,69 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_dataview_get_data_pointer
         
-        subroutine atk_dataview_set_value_int(self, value) &
-                bind(C, name="ATK_dataview_set_value_int")
+        subroutine atk_dataview_set_scalar_int(self, value) &
+                bind(C, name="ATK_dataview_set_scalar_int")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_int
+        end subroutine atk_dataview_set_scalar_int
         
-        subroutine atk_dataview_set_value_long(self, value) &
-                bind(C, name="ATK_dataview_set_value_long")
+        subroutine atk_dataview_set_scalar_long(self, value) &
+                bind(C, name="ATK_dataview_set_scalar_long")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_long
+        end subroutine atk_dataview_set_scalar_long
         
-        subroutine atk_dataview_set_value_float(self, value) &
-                bind(C, name="ATK_dataview_set_value_float")
+        subroutine atk_dataview_set_scalar_float(self, value) &
+                bind(C, name="ATK_dataview_set_scalar_float")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_FLOAT), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_float
+        end subroutine atk_dataview_set_scalar_float
         
-        subroutine atk_dataview_set_value_double(self, value) &
-                bind(C, name="ATK_dataview_set_value_double")
+        subroutine atk_dataview_set_scalar_double(self, value) &
+                bind(C, name="ATK_dataview_set_scalar_double")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE), value, intent(IN) :: value
-        end subroutine atk_dataview_set_value_double
+        end subroutine atk_dataview_set_scalar_double
         
-        function atk_dataview_get_value_int(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_int")
+        function atk_dataview_get_data_int(self) result(rv) &
+                bind(C, name="ATK_dataview_get_data_int")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT) :: rv
-        end function atk_dataview_get_value_int
+        end function atk_dataview_get_data_int
         
-        function atk_dataview_get_value_long(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_long")
+        function atk_dataview_get_data_long(self) result(rv) &
+                bind(C, name="ATK_dataview_get_data_long")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG) :: rv
-        end function atk_dataview_get_value_long
+        end function atk_dataview_get_data_long
         
-        function atk_dataview_get_value_float(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_float")
+        function atk_dataview_get_data_float(self) result(rv) &
+                bind(C, name="ATK_dataview_get_data_float")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_FLOAT) :: rv
-        end function atk_dataview_get_value_float
+        end function atk_dataview_get_data_float
         
-        function atk_dataview_get_value_double(self) result(rv) &
-                bind(C, name="ATK_dataview_get_value_double")
+        function atk_dataview_get_data_double(self) result(rv) &
+                bind(C, name="ATK_dataview_get_data_double")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE) :: rv
-        end function atk_dataview_get_value_double
+        end function atk_dataview_get_data_double
         
         function atk_dataview_get_owning_group(self) result(rv) &
                 bind(C, name="ATK_dataview_get_owning_group")
@@ -2661,93 +2661,93 @@ contains
         ! splicer end class.DataView.method.get_data_pointer
     end function dataview_get_data_pointer
     
-    subroutine dataview_set_value_int(obj, value)
+    subroutine dataview_set_scalar_int(obj, value)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: value
-        ! splicer begin class.DataView.method.set_value_int
-        call atk_dataview_set_value_int(  &
+        ! splicer begin class.DataView.method.set_scalar_int
+        call atk_dataview_set_scalar_int(  &
             obj%voidptr,  &
             value)
-        ! splicer end class.DataView.method.set_value_int
-    end subroutine dataview_set_value_int
+        ! splicer end class.DataView.method.set_scalar_int
+    end subroutine dataview_set_scalar_int
     
-    subroutine dataview_set_value_long(obj, value)
+    subroutine dataview_set_scalar_long(obj, value)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: value
-        ! splicer begin class.DataView.method.set_value_long
-        call atk_dataview_set_value_long(  &
+        ! splicer begin class.DataView.method.set_scalar_long
+        call atk_dataview_set_scalar_long(  &
             obj%voidptr,  &
             value)
-        ! splicer end class.DataView.method.set_value_long
-    end subroutine dataview_set_value_long
+        ! splicer end class.DataView.method.set_scalar_long
+    end subroutine dataview_set_scalar_long
     
-    subroutine dataview_set_value_float(obj, value)
+    subroutine dataview_set_scalar_float(obj, value)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         real(C_FLOAT), value, intent(IN) :: value
-        ! splicer begin class.DataView.method.set_value_float
-        call atk_dataview_set_value_float(  &
+        ! splicer begin class.DataView.method.set_scalar_float
+        call atk_dataview_set_scalar_float(  &
             obj%voidptr,  &
             value)
-        ! splicer end class.DataView.method.set_value_float
-    end subroutine dataview_set_value_float
+        ! splicer end class.DataView.method.set_scalar_float
+    end subroutine dataview_set_scalar_float
     
-    subroutine dataview_set_value_double(obj, value)
+    subroutine dataview_set_scalar_double(obj, value)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         real(C_DOUBLE), value, intent(IN) :: value
-        ! splicer begin class.DataView.method.set_value_double
-        call atk_dataview_set_value_double(  &
+        ! splicer begin class.DataView.method.set_scalar_double
+        call atk_dataview_set_scalar_double(  &
             obj%voidptr,  &
             value)
-        ! splicer end class.DataView.method.set_value_double
-    end subroutine dataview_set_value_double
+        ! splicer end class.DataView.method.set_scalar_double
+    end subroutine dataview_set_scalar_double
     
-    function dataview_get_value_int(obj) result(rv)
+    function dataview_get_data_int(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT) :: rv
-        ! splicer begin class.DataView.method.get_value_int
-        rv = atk_dataview_get_value_int(obj%voidptr)
-        ! splicer end class.DataView.method.get_value_int
-    end function dataview_get_value_int
+        ! splicer begin class.DataView.method.get_data_int
+        rv = atk_dataview_get_data_int(obj%voidptr)
+        ! splicer end class.DataView.method.get_data_int
+    end function dataview_get_data_int
     
-    function dataview_get_value_long(obj) result(rv)
+    function dataview_get_data_long(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_LONG) :: rv
-        ! splicer begin class.DataView.method.get_value_long
-        rv = atk_dataview_get_value_long(obj%voidptr)
-        ! splicer end class.DataView.method.get_value_long
-    end function dataview_get_value_long
+        ! splicer begin class.DataView.method.get_data_long
+        rv = atk_dataview_get_data_long(obj%voidptr)
+        ! splicer end class.DataView.method.get_data_long
+    end function dataview_get_data_long
     
-    function dataview_get_value_float(obj) result(rv)
+    function dataview_get_data_float(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         real(C_FLOAT) :: rv
-        ! splicer begin class.DataView.method.get_value_float
-        rv = atk_dataview_get_value_float(obj%voidptr)
-        ! splicer end class.DataView.method.get_value_float
-    end function dataview_get_value_float
+        ! splicer begin class.DataView.method.get_data_float
+        rv = atk_dataview_get_data_float(obj%voidptr)
+        ! splicer end class.DataView.method.get_data_float
+    end function dataview_get_data_float
     
-    function dataview_get_value_double(obj) result(rv)
+    function dataview_get_data_double(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         real(C_DOUBLE) :: rv
-        ! splicer begin class.DataView.method.get_value_double
-        rv = atk_dataview_get_value_double(obj%voidptr)
-        ! splicer end class.DataView.method.get_value_double
-    end function dataview_get_value_double
+        ! splicer begin class.DataView.method.get_data_double
+        rv = atk_dataview_get_data_double(obj%voidptr)
+        ! splicer end class.DataView.method.get_data_double
+    end function dataview_get_data_double
     
     function dataview_get_owning_group(obj) result(rv)
         use iso_c_binding
@@ -2801,7 +2801,7 @@ contains
     ! splicer begin class.DataView.additional_functions
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_int_scalar_ptr(view, value)
+    subroutine dataview_get_data_int_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2810,10 +2810,10 @@ contains
     
         cptr = view%get_data_pointer()
         call c_f_pointer(cptr, value)
-    end subroutine dataview_get_value_int_scalar_ptr
+    end subroutine dataview_get_data_int_scalar_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_int_1d_ptr(view, value)
+    subroutine dataview_get_data_int_1d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2824,10 +2824,10 @@ contains
         cptr = view%get_data_pointer()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
-    end subroutine dataview_get_value_int_1d_ptr
+    end subroutine dataview_get_data_int_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_long_scalar_ptr(view, value)
+    subroutine dataview_get_data_long_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2836,10 +2836,10 @@ contains
     
         cptr = view%get_data_pointer()
         call c_f_pointer(cptr, value)
-    end subroutine dataview_get_value_long_scalar_ptr
+    end subroutine dataview_get_data_long_scalar_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_long_1d_ptr(view, value)
+    subroutine dataview_get_data_long_1d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2850,10 +2850,10 @@ contains
         cptr = view%get_data_pointer()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
-    end subroutine dataview_get_value_long_1d_ptr
+    end subroutine dataview_get_data_long_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_float_scalar_ptr(view, value)
+    subroutine dataview_get_data_float_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2862,10 +2862,10 @@ contains
     
         cptr = view%get_data_pointer()
         call c_f_pointer(cptr, value)
-    end subroutine dataview_get_value_float_scalar_ptr
+    end subroutine dataview_get_data_float_scalar_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_float_1d_ptr(view, value)
+    subroutine dataview_get_data_float_1d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2876,10 +2876,10 @@ contains
         cptr = view%get_data_pointer()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
-    end subroutine dataview_get_value_float_1d_ptr
+    end subroutine dataview_get_data_float_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_double_scalar_ptr(view, value)
+    subroutine dataview_get_data_double_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2888,10 +2888,10 @@ contains
     
         cptr = view%get_data_pointer()
         call c_f_pointer(cptr, value)
-    end subroutine dataview_get_value_double_scalar_ptr
+    end subroutine dataview_get_data_double_scalar_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_double_1d_ptr(view, value)
+    subroutine dataview_get_data_double_1d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2902,7 +2902,7 @@ contains
         cptr = view%get_data_pointer()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
-    end subroutine dataview_get_value_double_1d_ptr
+    end subroutine dataview_get_data_double_1d_ptr
     ! splicer end class.DataView.additional_functions
     
     function name_is_valid(name) result(rv)

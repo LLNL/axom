@@ -94,12 +94,12 @@ contains
     call iview%print()
     call dview%print()
 
-    call iview%get_value(idata_chk)
+    call iview%get_data(idata_chk)
     do ii = 1, len
        call assert_equals(idata_chk(ii), idata(ii))
     enddo
 
-    call dview%get_value(ddata_chk)
+    call dview%get_data(ddata_chk)
     do ii = 1, len
        call assert_equals(ddata_chk(ii), ddata(ii))
     enddo
@@ -170,12 +170,12 @@ contains
     tmpbuff = dview%get_buffer()
     call assert_equals(tmpbuff%is_external(), .false.)
 
-    call iview%get_value(idata_chk)
+    call iview%get_data(idata_chk)
     do ii = 1, len
        call assert_equals(idata_chk(ii), idata(ii))
     enddo
 
-    call dview%get_value(ddata_chk)
+    call dview%get_data(ddata_chk)
     do ii = 1, len
        call assert_equals(ddata_chk(ii), ddata(ii))
     enddo

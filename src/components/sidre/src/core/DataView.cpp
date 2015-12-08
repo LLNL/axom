@@ -37,7 +37,6 @@ namespace asctoolkit
 namespace sidre
 {
 
-
 /*
  *************************************************************************
  *
@@ -253,7 +252,7 @@ DataView * DataView::apply()
     }
     else 
     {
-       m_node.set_external(m_schema, m_data_buffer->getData());
+       m_node.set_external(m_schema, m_data_buffer->getVoidPtr());
        m_is_applied = true;
     }
   }
@@ -360,42 +359,6 @@ DataView * DataView::apply(const Schema& schema)
   }
   return this;
 }
-
-/*
- *************************************************************************
- *
- * Return void* pointer to buffer data.
- *
- *************************************************************************
- */
-void * DataView::getDataPointer() const
-{
-  if ( isOpaque() ) {
-      return (void *)(getNode().as_uint64());
-  } else {
-      return m_data_buffer->getData();
-  }
-}
-
-/*
- *************************************************************************
- *
- * Return void* pointer to opaque data.
- *
- *************************************************************************
- */
-void * DataView::getOpaque() const
-{
-  if ( isOpaque() ) 
-  {
-    return (void *)(getNode().as_uint64());
-  } 
-  else 
-  {
-    return ATK_NULLPTR; 
-  }
-}
-
 
 /*
  *************************************************************************

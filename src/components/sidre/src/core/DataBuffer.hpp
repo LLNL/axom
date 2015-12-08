@@ -26,6 +26,7 @@
 
 // Other toolkit component headers
 #include "common/CommonTypes.hpp"
+#include "slic/slic.hpp"
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
@@ -113,50 +114,12 @@ public:
   /*!
    * \brief Return void-pointer to data held by DataBuffer.
    */
-  void * getData()
+  void * getPointer()
   {
     return m_data;
   }
 
-  /*!
-  * \brief Returns Value class instance that supports casting to the appropriate data return type.  This function
-  * version does require enough type information for the compiler to know what to cast the Value class to.
-  * Example:
-  * int* myptr = getValue();
-  * int myint = getValue();
-  */
-  Node::Value getValue()
-  {
-    return m_node.value();
-  }
-
-  /*!
-  * \brief Set value in conduit node.
-  */
-  template<typename ValueType>
-  void setValue(ValueType value)
-  {
-    m_node.set(value);
-  }
-
-
-  /*!
-  * \brief Lightweight templated wrapper around getValue that returns a Value class.  This function can be used in cases
-  * where not enough information is provided to the compiler to cast the Value class based on the caller code line.  The
-  * function template type must be explicitly provided on call.
-  *
-  * Example:
-  * // will not work, compiler does not know what type to cast to for above getValue function.
-  * assert( getValue() == 10 );
-  * // use the templated version instead
-  * assert (getValue<int>() == 10);
-  */
-  template<typename ValueType>
-  ValueType getValue()
-  {
-    ValueType valueptr = m_node.value();
-    return valueptr;
-  }
+  //@}
 
   /*!
    * \brief Return type of data for this DataBuffer object.

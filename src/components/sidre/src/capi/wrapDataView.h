@@ -64,21 +64,21 @@ ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self);
 
 void * ATK_dataview_get_data_pointer(ATK_dataview * self);
 
-void ATK_dataview_set_value_int(ATK_dataview * self, int value);
+void ATK_dataview_set_scalar_int(ATK_dataview * self, int value);
 
-void ATK_dataview_set_value_long(ATK_dataview * self, long value);
+void ATK_dataview_set_scalar_long(ATK_dataview * self, long value);
 
-void ATK_dataview_set_value_float(ATK_dataview * self, float value);
+void ATK_dataview_set_scalar_float(ATK_dataview * self, float value);
 
-void ATK_dataview_set_value_double(ATK_dataview * self, double value);
+void ATK_dataview_set_scalar_double(ATK_dataview * self, double value);
 
-int ATK_dataview_get_value_int(ATK_dataview * self);
+int ATK_dataview_get_data_int(ATK_dataview * self);
 
-long ATK_dataview_get_value_long(ATK_dataview * self);
+long ATK_dataview_get_data_long(ATK_dataview * self);
 
-float ATK_dataview_get_value_float(ATK_dataview * self);
+float ATK_dataview_get_data_float(ATK_dataview * self);
 
-double ATK_dataview_get_value_double(ATK_dataview * self);
+double ATK_dataview_get_data_double(ATK_dataview * self);
 
 ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);
 

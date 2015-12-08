@@ -246,9 +246,9 @@ TEST(C_sidre_group,view_copy_move)
      ATK_datagroup_create_view_and_allocate_from_type(flds, "d0", 
                                                       SIDRE_DOUBLE_ID, 1);
 
-  ATK_dataview_set_value_int(i0_view, 1);
-  ATK_dataview_set_value_float(f0_view, 100.0);
-  ATK_dataview_set_value_double(d0_view, 3000.0);
+  ATK_dataview_set_scalar_int(i0_view, 1);
+  ATK_dataview_set_scalar_float(f0_view, 100.0);
+  ATK_dataview_set_scalar_double(d0_view, 3000.0);
 
   EXPECT_TRUE(ATK_datagroup_has_view(flds, "i0"));
   EXPECT_TRUE(ATK_datagroup_has_view(flds, "f0"));
@@ -313,9 +313,9 @@ TEST(C_sidre_group,groups_move_copy)
      ATK_datagroup_create_view_and_allocate_from_type(gc, "d0",
                                                       SIDRE_DOUBLE_ID, 1);
 
-  ATK_dataview_set_value_int(i0_view, 1);
-  ATK_dataview_set_value_float(f0_view, 100.0);
-  ATK_dataview_set_value_double(d0_view, 3000.0);
+  ATK_dataview_set_scalar_int(i0_view, 1);
+  ATK_dataview_set_scalar_float(f0_view, 100.0);
+  ATK_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
@@ -492,7 +492,7 @@ TEST(C_sidre_group,save_restore_simple)
   ATK_dataview * i0_view = 
      ATK_datagroup_create_view_and_allocate_from_type(ga, "i0",
                                                       SIDRE_INT_ID, 1);
-  ATK_dataview_set_value_int(i0_view, 1);
+  ATK_dataview_set_scalar_int(i0_view, 1);
 
   EXPECT_TRUE(ATK_datagroup_has_group(root, "fields"));
   EXPECT_TRUE(ATK_datagroup_has_group(ATK_datagroup_get_group(root, "fields"), "a"));
@@ -516,7 +516,7 @@ TEST(C_sidre_group,save_restore_simple)
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
   ga = ATK_datagroup_get_group(flds, "a");
   i0_view = ATK_datagroup_get_view_from_name(ga, "i0");
-  EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
+  EXPECT_EQ(ATK_dataview_get_data_int(i0_view), 1);
 
   ATK_datastore_print(ds2);
 
@@ -539,17 +539,17 @@ TEST(C_sidre_group,save_restore_complex)
   ATK_dataview * i0_view = 
      ATK_datagroup_create_view_and_allocate_from_type(ga, "i0",
                                                       SIDRE_INT_ID, 1);
-  ATK_dataview_set_value_int(i0_view, 1);
+  ATK_dataview_set_scalar_int(i0_view, 1);
 
   ATK_dataview * f0_view = 
      ATK_datagroup_create_view_and_allocate_from_type(gb, "f0",
                                                       SIDRE_FLOAT_ID, 1);
-  ATK_dataview_set_value_float(f0_view, 100.0);
+  ATK_dataview_set_scalar_float(f0_view, 100.0);
 
   ATK_dataview * d0_view = 
      ATK_datagroup_create_view_and_allocate_from_type(gc, "d0",
                                                       SIDRE_DOUBLE_ID, 1);
-  ATK_dataview_set_value_double(d0_view, 3000.0);
+  ATK_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
@@ -579,9 +579,9 @@ TEST(C_sidre_group,save_restore_complex)
   f0_view = ATK_datagroup_get_view_from_name(gb, "f0");
   d0_view = ATK_datagroup_get_view_from_name(gc, "d0");
 
-  EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
-  EXPECT_NEAR(ATK_dataview_get_value_float(f0_view), 100.0, 1e-12);
-  EXPECT_NEAR(ATK_dataview_get_value_double(d0_view), 3000.0, 1e-12);
+  EXPECT_EQ(ATK_dataview_get_data_int(i0_view), 1);
+  EXPECT_NEAR(ATK_dataview_get_data_float(f0_view), 100.0, 1e-12);
+  EXPECT_NEAR(ATK_dataview_get_data_double(d0_view), 3000.0, 1e-12);
 
   ATK_datastore_print(ds2);
 
