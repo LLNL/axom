@@ -229,12 +229,13 @@ contains
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
-    integer depth_nelems
-    integer total_nelems
-    integer offset
+    integer(C_INT) depth_nelems
+    integer(C_INT) total_nelems
+    integer(C_INT) offset
 
     ! create our main data store
     ds = datastore_new()
+    dbuff = ds%create_buffer()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -245,7 +246,9 @@ contains
     ! Allocate buffer to hold data for 4 "depth" views
     call dbuff%declare(SIDRE_INT_ID, total_nelems)
     call dbuff%allocate()
+
     data_ptr = dbuff%get_data()
+    call c_f_pointer(data_ptr, data, [ total_nelems ])
 
     do i = 1, total_nelems
        data(i) = i / depth_nelems
@@ -256,9 +259,10 @@ contains
     call assert_true( dbuff%get_num_elements() == 4 * depth_nelems )
 
     ! create 4 "depth" views and apply offsets into buffer
-!    view0 = root%create_view_into_buffer("view0", dbuff)
-!    offset = 0 * depth_nelems
-!    call view0%apply(depth_nelems, offset)
+    view0 = root%create_view_into_buffer("view0", dbuff)
+    offset = 0 * depth_nelems
+!    call view0%apply_nelems_offset(depth_nelems, offset)
+!    dataview_apply_nelems_offset(view0, depth_nelems, offset)
 !
 !    view1 = root%create_view_into_buffer("view1", dbuff)
 !    call view1%apply_nelems_offset(depth_nelems, 1 * depth_nelems)
@@ -583,7 +587,7 @@ program fortran_test
   call int_buffer_from_view_conduit_value
   call int_array_multi_view
   call init_int_array_multi_view
-!  call int_array_depth_view
+  call int_array_depth_view
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque
