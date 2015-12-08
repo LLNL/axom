@@ -323,7 +323,7 @@ std::string getActiveLoggerName();
  * \param [in] level user-supplied level to log.
  *******************************************************************************
  */
-void setLoggingLevel( message::Level level );
+void setLoggingMsgLevel( message::Level level );
 
 /*!
  *******************************************************************************
@@ -370,7 +370,7 @@ bool getAbortOnError();
  * \pre ls != ATK_NULLPTR
  *******************************************************************************
  */
-void addStreamToLevel( LogStream* ls, message::Level level);
+void addStreamToMsgLevel( LogStream* ls, message::Level level);
 
 /*!
  *******************************************************************************
@@ -379,7 +379,7 @@ void addStreamToLevel( LogStream* ls, message::Level level);
  * \pre ls != ATK_NULLPTR.
  *******************************************************************************
  */
-void addStreamToAllLevels( LogStream* ls );
+void addStreamToAllMsgLevels( LogStream* ls );
 
 /*!
  *******************************************************************************

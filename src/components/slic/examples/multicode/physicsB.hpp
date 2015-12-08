@@ -60,8 +60,8 @@ void init()
 
   slic::createLogger( "physicsB", slic::inherit::errors_and_warnings );
   slic::activateLogger( "physicsB" );
-  slic::setLoggingLevel( slic::message::Debug );
-  slic::addStreamToAllLevels( ls );
+  slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::addStreamToAllMsgLevels( ls );
 
   slic::activateLogger( current_logger );
 }
