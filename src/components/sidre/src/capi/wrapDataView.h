@@ -38,21 +38,21 @@ void SIDRE_dataview_allocate_from_type(SIDRE_dataview * self, int type, SIDRE_Si
 
 void SIDRE_dataview_reallocate(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 
-SIDRE_dataview * SIDRE_dataview_apply_0(SIDRE_dataview * self);
+void SIDRE_dataview_apply_0(SIDRE_dataview * self);
 
 SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff);
 
-SIDRE_dataview * SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
+void SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 
-SIDRE_dataview * SIDRE_dataview_apply_nelems_offset(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset);
+void SIDRE_dataview_apply_nelems_offset(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset);
 
-SIDRE_dataview * SIDRE_dataview_apply_nelems_offset_stride(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
+void SIDRE_dataview_apply_nelems_offset_stride(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
 
-SIDRE_dataview * SIDRE_dataview_apply_type_nelems(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems);
+void SIDRE_dataview_apply_type_nelems(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems);
 
-SIDRE_dataview * SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset);
+void SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset);
 
-SIDRE_dataview * SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
+void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
 
 bool SIDRE_dataview_has_buffer(SIDRE_dataview * self);
 

@@ -138,10 +138,8 @@ PY_dataview_apply_0(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_0
-    DataView * rv = self->BBB->apply();
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply();
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_0
 }
 
@@ -194,10 +192,8 @@ PY_dataview_apply_nelems(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(num_elems);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(num_elems);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_nelems
 }
 
@@ -222,10 +218,8 @@ PY_dataview_apply_nelems_offset(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(num_elems, offset);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(num_elems, offset);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_nelems_offset
 }
 
@@ -251,10 +245,8 @@ PY_dataview_apply_nelems_offset_stride(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(num_elems, offset, stride);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(num_elems, offset, stride);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_nelems_offset_stride
 }
 
@@ -279,10 +271,8 @@ PY_dataview_apply_type_nelems(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(getTypeID(type), num_elems);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(getTypeID(type), num_elems);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_type_nelems
 }
 
@@ -308,10 +298,8 @@ PY_dataview_apply_type_nelems_offset(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(getTypeID(type), num_elems, offset);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(getTypeID(type), num_elems, offset);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_type_nelems_offset
 }
 
@@ -338,10 +326,8 @@ PY_dataview_apply_type_nelems_offset_stride(
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(getTypeID(type), num_elems, offset, stride);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(getTypeID(type), num_elems, offset, stride);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_type_nelems_offset_stride
 }
 

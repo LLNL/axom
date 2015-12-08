@@ -45,12 +45,12 @@ return;
 // splicer end class.DataView.method.reallocate
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_0(SIDRE_dataview * self)
+void SIDRE_dataview_apply_0(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_0
-DataView * rv = selfobj->apply();
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply();
+return;
 // splicer end class.DataView.method.apply_0
 }
 
@@ -63,57 +63,57 @@ return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.attach_buffer
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems)
+void SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_nelems
-DataView * rv = selfobj->apply(num_elems);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply(num_elems);
+return;
 // splicer end class.DataView.method.apply_nelems
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_nelems_offset(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset)
+void SIDRE_dataview_apply_nelems_offset(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_nelems_offset
-DataView * rv = selfobj->apply(num_elems, offset);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply(num_elems, offset);
+return;
 // splicer end class.DataView.method.apply_nelems_offset
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_nelems_offset_stride(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride)
+void SIDRE_dataview_apply_nelems_offset_stride(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_nelems_offset_stride
-DataView * rv = selfobj->apply(num_elems, offset, stride);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply(num_elems, offset, stride);
+return;
 // splicer end class.DataView.method.apply_nelems_offset_stride
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_type_nelems(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems)
+void SIDRE_dataview_apply_type_nelems(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_type_nelems
-DataView * rv = selfobj->apply(getTypeID(type), num_elems);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply(getTypeID(type), num_elems);
+return;
 // splicer end class.DataView.method.apply_type_nelems
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset)
+void SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_type_nelems_offset
-DataView * rv = selfobj->apply(getTypeID(type), num_elems, offset);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply(getTypeID(type), num_elems, offset);
+return;
 // splicer end class.DataView.method.apply_type_nelems_offset
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride)
+void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_type_nelems_offset_stride
-DataView * rv = selfobj->apply(getTypeID(type), num_elems, offset, stride);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->apply(getTypeID(type), num_elems, offset, stride);
+return;
 // splicer end class.DataView.method.apply_type_nelems_offset_stride
 }
 

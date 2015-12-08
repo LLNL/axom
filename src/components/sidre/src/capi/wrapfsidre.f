@@ -1024,13 +1024,12 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine sidre_dataview_reallocate
         
-        function sidre_dataview_apply_0(self) result(rv) &
+        subroutine sidre_dataview_apply_0(self) &
                 bind(C, name="SIDRE_dataview_apply_0")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_0
+        end subroutine sidre_dataview_apply_0
         
         function sidre_dataview_attach_buffer(self, buff) result(rv) &
                 bind(C, name="SIDRE_dataview_attach_buffer")
@@ -1041,26 +1040,24 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_dataview_attach_buffer
         
-        function sidre_dataview_apply_nelems(self, num_elems) result(rv) &
+        subroutine sidre_dataview_apply_nelems(self, num_elems) &
                 bind(C, name="SIDRE_dataview_apply_nelems")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_nelems
+        end subroutine sidre_dataview_apply_nelems
         
-        function sidre_dataview_apply_nelems_offset(self, num_elems, offset) result(rv) &
+        subroutine sidre_dataview_apply_nelems_offset(self, num_elems, offset) &
                 bind(C, name="SIDRE_dataview_apply_nelems_offset")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_nelems_offset
+        end subroutine sidre_dataview_apply_nelems_offset
         
-        function sidre_dataview_apply_nelems_offset_stride(self, num_elems, offset, stride) result(rv) &
+        subroutine sidre_dataview_apply_nelems_offset_stride(self, num_elems, offset, stride) &
                 bind(C, name="SIDRE_dataview_apply_nelems_offset_stride")
             use iso_c_binding
             implicit none
@@ -1068,20 +1065,18 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
             integer(C_LONG), value, intent(IN) :: stride
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_nelems_offset_stride
+        end subroutine sidre_dataview_apply_nelems_offset_stride
         
-        function sidre_dataview_apply_type_nelems(self, type, num_elems) result(rv) &
+        subroutine sidre_dataview_apply_type_nelems(self, type, num_elems) &
                 bind(C, name="SIDRE_dataview_apply_type_nelems")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_type_nelems
+        end subroutine sidre_dataview_apply_type_nelems
         
-        function sidre_dataview_apply_type_nelems_offset(self, type, num_elems, offset) result(rv) &
+        subroutine sidre_dataview_apply_type_nelems_offset(self, type, num_elems, offset) &
                 bind(C, name="SIDRE_dataview_apply_type_nelems_offset")
             use iso_c_binding
             implicit none
@@ -1089,10 +1084,9 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_type_nelems_offset
+        end subroutine sidre_dataview_apply_type_nelems_offset
         
-        function sidre_dataview_apply_type_nelems_offset_stride(self, type, num_elems, offset, stride) result(rv) &
+        subroutine sidre_dataview_apply_type_nelems_offset_stride(self, type, num_elems, offset, stride) &
                 bind(C, name="SIDRE_dataview_apply_type_nelems_offset_stride")
             use iso_c_binding
             implicit none
@@ -1101,8 +1095,7 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
             integer(C_LONG), value, intent(IN) :: stride
-            type(C_PTR) :: rv
-        end function sidre_dataview_apply_type_nelems_offset_stride
+        end subroutine sidre_dataview_apply_type_nelems_offset_stride
         
         pure function sidre_dataview_has_buffer(self) result(rv) &
                 bind(C, name="SIDRE_dataview_has_buffer")
@@ -2511,15 +2504,14 @@ contains
         ! splicer end class.DataView.method.reallocate_long
     end subroutine dataview_reallocate_long
     
-    function dataview_apply_0(obj) result(rv)
+    subroutine dataview_apply_0(obj)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_0
-        rv%voidptr = sidre_dataview_apply_0(obj%voidptr)
+        call sidre_dataview_apply_0(obj%voidptr)
         ! splicer end class.DataView.method.apply_0
-    end function dataview_apply_0
+    end subroutine dataview_apply_0
     
     function dataview_attach_buffer(obj, buff) result(rv)
         use iso_c_binding
@@ -2534,84 +2526,79 @@ contains
         ! splicer end class.DataView.method.attach_buffer
     end function dataview_attach_buffer
     
-    function dataview_apply_nelems(obj, num_elems) result(rv)
+    subroutine dataview_apply_nelems(obj, num_elems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems
-        rv%voidptr = sidre_dataview_apply_nelems(  &
+        call sidre_dataview_apply_nelems(  &
             obj%voidptr,  &
             num_elems)
         ! splicer end class.DataView.method.apply_nelems
-    end function dataview_apply_nelems
+    end subroutine dataview_apply_nelems
     
-    function dataview_apply_nelems_offset(obj, num_elems, offset) result(rv)
+    subroutine dataview_apply_nelems_offset(obj, num_elems, offset)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems_offset
-        rv%voidptr = sidre_dataview_apply_nelems_offset(  &
+        call sidre_dataview_apply_nelems_offset(  &
             obj%voidptr,  &
             num_elems,  &
             offset)
         ! splicer end class.DataView.method.apply_nelems_offset
-    end function dataview_apply_nelems_offset
+    end subroutine dataview_apply_nelems_offset
     
-    function dataview_apply_nelems_offset_stride(obj, num_elems, offset, stride) result(rv)
+    subroutine dataview_apply_nelems_offset_stride(obj, num_elems, offset, stride)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
         integer(C_LONG), value, intent(IN) :: stride
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_nelems_offset_stride
-        rv%voidptr = sidre_dataview_apply_nelems_offset_stride(  &
+        call sidre_dataview_apply_nelems_offset_stride(  &
             obj%voidptr,  &
             num_elems,  &
             offset,  &
             stride)
         ! splicer end class.DataView.method.apply_nelems_offset_stride
-    end function dataview_apply_nelems_offset_stride
+    end subroutine dataview_apply_nelems_offset_stride
     
-    function dataview_apply_type_nelems(obj, type, num_elems) result(rv)
+    subroutine dataview_apply_type_nelems(obj, type, num_elems)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems
-        rv%voidptr = sidre_dataview_apply_type_nelems(  &
+        call sidre_dataview_apply_type_nelems(  &
             obj%voidptr,  &
             type,  &
             num_elems)
         ! splicer end class.DataView.method.apply_type_nelems
-    end function dataview_apply_type_nelems
+    end subroutine dataview_apply_type_nelems
     
-    function dataview_apply_type_nelems_offset(obj, type, num_elems, offset) result(rv)
+    subroutine dataview_apply_type_nelems_offset(obj, type, num_elems, offset)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems_offset
-        rv%voidptr = sidre_dataview_apply_type_nelems_offset(  &
+        call sidre_dataview_apply_type_nelems_offset(  &
             obj%voidptr,  &
             type,  &
             num_elems,  &
             offset)
         ! splicer end class.DataView.method.apply_type_nelems_offset
-    end function dataview_apply_type_nelems_offset
+    end subroutine dataview_apply_type_nelems_offset
     
-    function dataview_apply_type_nelems_offset_stride(obj, type, num_elems, offset, stride) result(rv)
+    subroutine dataview_apply_type_nelems_offset_stride(obj, type, num_elems, offset, stride)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
@@ -2619,16 +2606,15 @@ contains
         integer(C_LONG), value, intent(IN) :: num_elems
         integer(C_LONG), value, intent(IN) :: offset
         integer(C_LONG), value, intent(IN) :: stride
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.apply_type_nelems_offset_stride
-        rv%voidptr = sidre_dataview_apply_type_nelems_offset_stride(  &
+        call sidre_dataview_apply_type_nelems_offset_stride(  &
             obj%voidptr,  &
             type,  &
             num_elems,  &
             offset,  &
             stride)
         ! splicer end class.DataView.method.apply_type_nelems_offset_stride
-    end function dataview_apply_type_nelems_offset_stride
+    end subroutine dataview_apply_type_nelems_offset_stride
     
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding

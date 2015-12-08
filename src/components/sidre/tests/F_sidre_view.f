@@ -229,9 +229,9 @@ contains
     integer(C_INT), pointer :: data(:)
     type(C_PTR) data_ptr
     integer i
-    integer(C_INT) depth_nelems
-    integer(C_INT) total_nelems
-    integer(C_INT) offset
+    integer(C_LONG) depth_nelems
+    integer(C_LONG) total_nelems
+    integer(C_LONG) offset
 
     ! create our main data store
     ds = datastore_new()
@@ -261,26 +261,26 @@ contains
     ! create 4 "depth" views and apply offsets into buffer
     view0 = root%create_view_into_buffer("view0", dbuff)
     offset = 0 * depth_nelems
-!    call view0%apply_nelems_offset(depth_nelems, offset)
-!    dataview_apply_nelems_offset(view0, depth_nelems, offset)
-!
-!    view1 = root%create_view_into_buffer("view1", dbuff)
-!    call view1%apply_nelems_offset(depth_nelems, 1 * depth_nelems)
-!
-!    view2 = root%create_view_into_buffer("view2", dbuff)
-!    call view2%apply_nelems_offset(depth_nelems, 2 * depth_nelems)
-!
-!    view3 = root%create_view_into_buffer("view3", dbuff)
-!    call view3%apply_nelems_offset(depth_nelems, 3 * depth_nelems)
-!
-!    call assert_true( dbuff%get_num_views() == 4 )
-!
-!    call view0%print()
-!    call view1%print()
-!    call view2%print()
-!    call view3%print()
-!
-!    ! check values in depth views...
+    call view0%apply_nelems_offset(depth_nelems, offset)
+    call dataview_apply_nelems_offset(view0, depth_nelems, offset)
+
+    view1 = root%create_view_into_buffer("view1", dbuff)
+    call view1%apply_nelems_offset(depth_nelems, 1 * depth_nelems)
+
+    view2 = root%create_view_into_buffer("view2", dbuff)
+    call view2%apply_nelems_offset(depth_nelems, 2 * depth_nelems)
+
+    view3 = root%create_view_into_buffer("view3", dbuff)
+    call view3%apply_nelems_offset(depth_nelems, 3 * depth_nelems)
+
+    call assert_true( dbuff%get_num_views() == 4 )
+
+    call view0%print()
+    call view1%print()
+    call view2%print()
+    call view3%print()
+
+    ! check values in depth views...
 !    call view0%get_value(data)
 !    do i = 1, depth_nelems
 !       call assert_equals( data(i), 0 )
