@@ -260,7 +260,7 @@ classes:
 #    - decl: DataView* reallocate(const DataType& dtype)
 #    - decl: DataView* reallocate(const Schema& schema)
     - decl: DataView* apply()
-      function_suffix: _simple
+    - decl: DataView* attachBuffer(DataBuffer * buff)
     - decl: DataView* apply(SidreLength num_elems)
       function_suffix: _nelems
     - decl: DataView* apply(SidreLength num_elems, SidreLength offset)

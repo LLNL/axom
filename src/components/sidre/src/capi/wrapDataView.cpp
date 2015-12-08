@@ -45,13 +45,22 @@ return;
 // splicer end class.DataView.method.reallocate
 }
 
-SIDRE_dataview * SIDRE_dataview_apply_simple(SIDRE_dataview * self)
+SIDRE_dataview * SIDRE_dataview_apply_0(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.apply_simple
+// splicer begin class.DataView.method.apply_0
 DataView * rv = selfobj->apply();
 return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataView.method.apply_simple
+// splicer end class.DataView.method.apply_0
+}
+
+SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.attach_buffer
+DataView * rv = selfobj->attachBuffer(static_cast<DataBuffer *>(static_cast<void *>(buff)));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.attach_buffer
 }
 
 SIDRE_dataview * SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems)

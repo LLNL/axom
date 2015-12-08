@@ -275,7 +275,8 @@ module sidre_mod
         procedure :: allocate_from_type_long => dataview_allocate_from_type_long
         procedure :: reallocate_int => dataview_reallocate_int
         procedure :: reallocate_long => dataview_reallocate_long
-        procedure :: apply_simple => dataview_apply_simple
+        procedure :: apply_0 => dataview_apply_0
+        procedure :: attach_buffer => dataview_attach_buffer
         procedure :: apply_nelems => dataview_apply_nelems
         procedure :: apply_nelems_offset => dataview_apply_nelems_offset
         procedure :: apply_nelems_offset_stride => dataview_apply_nelems_offset_stride
@@ -310,7 +311,7 @@ module sidre_mod
         generic :: apply => &
             ! splicer begin class.DataView.generic.apply
             ! splicer end class.DataView.generic.apply
-            apply_simple,  &
+            apply_0,  &
             apply_nelems,  &
             apply_nelems_offset,  &
             apply_nelems_offset_stride,  &
@@ -1023,13 +1024,22 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine sidre_dataview_reallocate
         
-        function sidre_dataview_apply_simple(self) result(rv) &
-                bind(C, name="SIDRE_dataview_apply_simple")
+        function sidre_dataview_apply_0(self) result(rv) &
+                bind(C, name="SIDRE_dataview_apply_0")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function sidre_dataview_apply_simple
+        end function sidre_dataview_apply_0
+        
+        function sidre_dataview_attach_buffer(self, buff) result(rv) &
+                bind(C, name="SIDRE_dataview_attach_buffer")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: buff
+            type(C_PTR) :: rv
+        end function sidre_dataview_attach_buffer
         
         function sidre_dataview_apply_nelems(self, num_elems) result(rv) &
                 bind(C, name="SIDRE_dataview_apply_nelems")
@@ -2501,15 +2511,28 @@ contains
         ! splicer end class.DataView.method.reallocate_long
     end subroutine dataview_reallocate_long
     
-    function dataview_apply_simple(obj) result(rv)
+    function dataview_apply_0(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(dataview) :: rv
-        ! splicer begin class.DataView.method.apply_simple
-        rv%voidptr = sidre_dataview_apply_simple(obj%voidptr)
-        ! splicer end class.DataView.method.apply_simple
-    end function dataview_apply_simple
+        ! splicer begin class.DataView.method.apply_0
+        rv%voidptr = sidre_dataview_apply_0(obj%voidptr)
+        ! splicer end class.DataView.method.apply_0
+    end function dataview_apply_0
+    
+    function dataview_attach_buffer(obj, buff) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        type(databuffer), value, intent(IN) :: buff
+        type(dataview) :: rv
+        ! splicer begin class.DataView.method.attach_buffer
+        rv%voidptr = sidre_dataview_attach_buffer(  &
+            obj%voidptr,  &
+            buff%voidptr)
+        ! splicer end class.DataView.method.attach_buffer
+    end function dataview_attach_buffer
     
     function dataview_apply_nelems(obj, num_elems) result(rv)
         use iso_c_binding

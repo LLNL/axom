@@ -221,7 +221,6 @@ TEST(C_sidre_view,int_array_depth_view)
 
 //------------------------------------------------------------------------------
 
-#if 0
 // Similar to previous test, using other view creation methods
 TEST(C_sidre_view,int_array_depth_view_2)
 {
@@ -251,14 +250,16 @@ TEST(C_sidre_view,int_array_depth_view_2)
   for (int id = 0; id < 2; ++id)
   {
      views[id] = 
-        SIDRE_datagroup_create_view_into_buffer_nelems_offset(root, 
-           view_names[id], dbuff, depth_nelems, id*depth_nelems);
+        SIDRE_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
+     SIDRE_dataview_apply_nelems_offset(views[id], depth_nelems, id*depth_nelems);
   }
+  //
+  // call path including type
   for (int id = 2; id < 4; ++id)
   {
      views[id] = 
-        SIDRE_datagroup_create_view_into_buffer_type_nelems_offset(root, 
-           view_names[id], dbuff, SIDRE_INT_ID, depth_nelems, id*depth_nelems);
+        SIDRE_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
+     SIDRE_dataview_apply_type_nelems_offset(views[id], SIDRE_INT_ID, depth_nelems, id*depth_nelems);
   }
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
 
@@ -284,6 +285,68 @@ TEST(C_sidre_view,int_array_depth_view_2)
   SIDRE_datastore_print(ds);
   SIDRE_datastore_delete(ds);
 
+}
+
+//------------------------------------------------------------------------------
+#if 0
+TEST(sidre_view,int_array_view_attach_buffer)
+{
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+
+  const size_t field_nelems = 10;
+  std::string field_names[4] = { "field_0", "field_1", "field_2", "field_3" };
+
+  // create 4 "field" views with type and # elems
+  DataView* field[4];
+  size_t elem_count = 0;
+  for (int fid = 0; fid < 4; ++fid)
+  {
+    field[fid] = root->createView(field_names[fid],
+                                  asctoolkit::sidre::INT_ID, field_nelems);
+    elem_count += field[fid]->getNumElements();
+  }
+  EXPECT_EQ(elem_count, 4 * field_nelems);
+
+  // create buffer to hold data for all fields and allocate
+  DataBuffer * dbuff = ds->createBuffer()->allocate(asctoolkit::sidre::INT_ID,
+                                                    elem_count);
+  EXPECT_EQ(dbuff->getNumElements(), elem_count);
+
+  // Initilize buffer data for testing below.
+  int_array b_ptr = dbuff->getValue();
+  for(size_t i = 0 ; i < elem_count ; ++i)
+  {
+    b_ptr[i] = i / field_nelems;
+  }
+
+  dbuff->print();
+
+  // attach field views to buffer and apply offsets into buffer
+  for (int fid = 0; fid < 4; ++fid)
+  {
+    field[fid]->attachBuffer(dbuff)->apply(field_nelems, fid * field_nelems);
+  }
+  EXPECT_EQ(dbuff->getNumViews(), 4u);
+
+  // print field views...
+  for (int id = 0; id < 4; ++id)
+  {
+     field[id]->print();
+  }
+
+  // check values in field views...
+  for (int id = 0; id < 4; ++id)
+  {
+     int_array v_ptr = field[id]->getValue();
+     for (size_t i = 0; i < field_nelems; ++i)
+     {
+        EXPECT_EQ(v_ptr[i], id);
+     }
+  }
+
+  ds->print();
+  delete ds;
 }
 #endif
 

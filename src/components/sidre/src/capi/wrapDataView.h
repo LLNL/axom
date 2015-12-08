@@ -38,7 +38,9 @@ void SIDRE_dataview_allocate_from_type(SIDRE_dataview * self, int type, SIDRE_Si
 
 void SIDRE_dataview_reallocate(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 
-SIDRE_dataview * SIDRE_dataview_apply_simple(SIDRE_dataview * self);
+SIDRE_dataview * SIDRE_dataview_apply_0(SIDRE_dataview * self);
+
+SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff);
 
 SIDRE_dataview * SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 

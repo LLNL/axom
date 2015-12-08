@@ -127,22 +127,51 @@ PY_dataview_reallocate(
 // splicer end class.DataView.method.reallocate
 }
 
-static char PY_dataview_apply_simple__doc__[] =
+static char PY_dataview_apply_0__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_dataview_apply_simple(
+PY_dataview_apply_0(
   PY_DataView *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.apply_simple
+// splicer begin class.DataView.method.apply_0
     DataView * rv = self->BBB->apply();
     PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataView.method.apply_simple
+// splicer end class.DataView.method.apply_0
+}
+
+static char PY_dataview_attach_buffer__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_attach_buffer(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.attach_buffer
+    PY_DataBuffer * buff;
+    DataBuffer * buff_ptr;
+    const char *kwcpp = "buff";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:attachBuffer", kw_list,
+        &PY_DataBuffer_Type, &buff))
+    {
+        return NULL;
+    }
+    buff_ptr = (buff ? buff->BBB : NULL);
+    DataView * rv = self->BBB->attachBuffer(buff_ptr);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataView.method.attach_buffer
 }
 
 static char PY_dataview_apply_nelems__doc__[] =
@@ -550,7 +579,7 @@ PY_dataview_apply(
     int totArgs = numArgs + numNamedArgs;
     PyObject *rvobj;
     {
-        rvobj = PY_dataview_apply_simple(self, args, kwds);
+        rvobj = PY_dataview_apply_0(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
         } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
@@ -622,7 +651,8 @@ static PyMethodDef PY_DataView_methods[] = {
 {"allocate_simple", (PyCFunction)PY_dataview_allocate_simple, METH_NOARGS, PY_dataview_allocate_simple__doc__},
 {"allocate_from_type", (PyCFunction)PY_dataview_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_dataview_reallocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_reallocate__doc__},
-{"apply_simple", (PyCFunction)PY_dataview_apply_simple, METH_NOARGS, PY_dataview_apply_simple__doc__},
+{"apply_0", (PyCFunction)PY_dataview_apply_0, METH_NOARGS, PY_dataview_apply_0__doc__},
+{"attachBuffer", (PyCFunction)PY_dataview_attach_buffer, METH_VARARGS|METH_KEYWORDS, PY_dataview_attach_buffer__doc__},
 {"apply_nelems", (PyCFunction)PY_dataview_apply_nelems, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems__doc__},
 {"apply_nelems_offset", (PyCFunction)PY_dataview_apply_nelems_offset, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems_offset__doc__},
 {"apply_nelems_offset_stride", (PyCFunction)PY_dataview_apply_nelems_offset_stride, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems_offset_stride__doc__},
