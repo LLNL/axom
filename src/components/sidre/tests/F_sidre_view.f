@@ -284,7 +284,7 @@ contains
     enddo
 
     call view1%get_value(data)
-! This is broken: Looks like get_value is returning the buffer base pointer,
+! This is broken: Looks like get_value is returning the buffer base ptr,
 !                 not the view pointer. See second loop below.  
 !   do i = 1, depth_nelems
 !      call assert_equals( data(i), 1 )
