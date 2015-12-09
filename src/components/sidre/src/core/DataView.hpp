@@ -111,7 +111,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * allocate( TypeID type, SidreLength numelems);
+  DataView * allocate( TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
@@ -146,7 +146,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * reallocate(SidreLength numelems);
+  DataView * reallocate(SidreLength num_elems);
 
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
@@ -223,7 +223,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * apply( SidreLength numelems,
+  DataView * apply( SidreLength num_elems,
                     SidreLength offset = 0,
                     SidreLength stride = 1);
 
@@ -243,7 +243,7 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView * apply( TypeID type, SidreLength numelems,
+  DataView * apply( TypeID type, SidreLength num_elems,
                                  SidreLength offset = 0,
                                  SidreLength stride = 1);
 
@@ -460,6 +460,16 @@ public:
     m_node.set(value);
   }
 
+  /*!
+   * \brief Set view to hold data referenced with given pointer.
+   *
+   * Note that the view will be "opaque"; i.e., it will have no knowledge of 
+   * type or structure of the data.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView* setOpaque(void * opaque_ptr);
+
 //@}
 
 
@@ -548,7 +558,7 @@ private:
    *
    * \return pointer to this DataView object.
    */
-  DataView * declare( TypeID type, SidreLength numelems);
+  DataView * declare( TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.

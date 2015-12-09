@@ -107,7 +107,7 @@ PY_datastore_get_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.get_buffer
-    ATK_IndexType idx;
+    SIDRE_IndexType idx;
     const char *kwcpp = "idx";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -152,7 +152,7 @@ PY_datastore_destroy_buffer(
   PyObject *kwds)
 {
 // splicer begin class.DataStore.method.destroy_buffer
-    ATK_IndexType id;
+    SIDRE_IndexType id;
     const char *kwcpp = "id";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     

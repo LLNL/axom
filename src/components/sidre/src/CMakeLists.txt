@@ -29,7 +29,6 @@ if (ENABLE_FORTRAN)
     list(APPEND sidre_headers
         capi/sidre.h
         capi/SidreTypes.h
-        capi/SidreWrapperHelpers.hpp
         capi/SidreAllocatable.hpp
         # generated headers
         capi/wrapSidre.h

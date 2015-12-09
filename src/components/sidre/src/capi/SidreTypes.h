@@ -8,24 +8,26 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
-
-//
-// DataTypes.h
-//
-// Data enums used by C and Fortran
-#ifndef SIDRE_DATATYPES_H
-#define SIDRE_DATATYPES_H
+/**
+ *  \file SidreTypes.h
+ *
+ *  \brief File containing C types and constants used in
+ *         SiDRe toolkit component.
+ *
+ */
+#ifndef SIDRETYPES_H
+#define SIDRETYPES_H
 
 #include "SidreDataTypeIds.h"
 
-typedef int ATK_IndexType;
+typedef int SIDRE_IndexType;
 
-typedef long int ATK_SidreLength;
+typedef long int SIDRE_SidreLength;
 
-#define ATK_InvalidIndex  -1
+#define SIDRE_InvalidIndex  -1
 
-#define ATK_InvalidName   NULL
+#define SIDRE_InvalidName   NULL
 
 
 
-#endif  // SIDRE_DATATYPES_H
+#endif  // SIDRETYPES_H

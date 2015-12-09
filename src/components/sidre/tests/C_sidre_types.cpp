@@ -12,90 +12,57 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
-#include "sidre/SidreWrapperHelpers.hpp"
+#include "sidre/SidreTypes.hpp"
 
 using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::getTypeID;
 //------------------------------------------------------------------------------
-// This test verifies that the getTypeID C version and C++ (templated) version
-// returns the same types.
+// This test verifies that the Conduit, Sidre C++ and C use the same types.
 //------------------------------------------------------------------------------
 
 TEST(sidre_types,get_sidre_type)
 {
-#if 0
-  TypeID EMPTY_T = getTypeID<0>();
-  EXPECT_EQ(EMPTY_ID, CONDUIT_EMPTY_ID);
-  EMPTY_T = getTypeID(0);
-  EXPECT_EQ(EMPTY_ID, CONDUIT_EMPTY_ID);
+  EXPECT_EQ(SIDRE_EMPTY_ID,     CONDUIT_EMPTY_T);
+  EXPECT_EQ(SIDRE_INT8_ID,      CONDUIT_INT8_T);
+  EXPECT_EQ(SIDRE_INT16_ID,     CONDUIT_INT16_T);
+  EXPECT_EQ(SIDRE_INT32_ID,     CONDUIT_INT32_T);
+  EXPECT_EQ(SIDRE_INT64_ID,     CONDUIT_INT64_T);
+  EXPECT_EQ(SIDRE_UINT8_ID,     CONDUIT_UINT8_T);
+  EXPECT_EQ(SIDRE_UINT16_ID,    CONDUIT_UINT16_T);
+  EXPECT_EQ(SIDRE_UINT32_ID,    CONDUIT_UINT32_T);
+  EXPECT_EQ(SIDRE_UINT64_ID,    CONDUIT_UINT64_T);
+  EXPECT_EQ(SIDRE_FLOAT32_ID,   CONDUIT_FLOAT32_T);
+  EXPECT_EQ(SIDRE_FLOAT64_ID,   CONDUIT_FLOAT64_T);
+  EXPECT_EQ(SIDRE_CHAR8_STR_ID, CONDUIT_CHAR8_STR_T);
 
-  TypeID OBJECT_T = getTypeID<1>();
-  EXPECT_EQ(OBJECT_ID, CONDUIT_OBJECT_ID);
-  OBJECT_T = getTypeID(1);
-  EXPECT_EQ(OBJECT_ID, CONDUIT_OBJECT_ID);
+  EXPECT_EQ(SIDRE_INT_ID,    CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_UINT_ID,   CONDUIT_NATIVE_UNSIGNED_INT_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_LONG_ID,   CONDUIT_NATIVE_LONG_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_ULONG_ID,  CONDUIT_NATIVE_UNSIGNED_LONG_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_FLOAT_ID,  CONDUIT_NATIVE_FLOAT_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_DOUBLE_ID, CONDUIT_NATIVE_DOUBLE_DATATYPE_ID);
 
-  TypeID LIST_T = getTypeID<2>();
-  EXPECT_EQ(LIST_ID, CONDUIT_LIST_ID);
-  LIST_T = getTypeID(2);
-  EXPECT_EQ(LIST_ID, CONDUIT_LIST_ID);
-#endif
+  EXPECT_EQ(asctoolkit::sidre::EMPTY_ID,  getTypeID(SIDRE_EMPTY_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT8_ID,   getTypeID(SIDRE_INT8_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT16_ID,  getTypeID(SIDRE_INT16_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT32_ID,  getTypeID(SIDRE_INT32_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT64_ID,  getTypeID(SIDRE_INT64_ID));
 
-/* Do we need any of this type testing?  The sidre types are straight up defined to conduit types now.
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT8_ID>()), 
-            static_cast<int>(CONDUIT_INT8_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT8_ID)), 
-            static_cast<int>(CONDUIT_INT8_T));
+  EXPECT_EQ(asctoolkit::sidre::UINT8_ID,   getTypeID(SIDRE_UINT8_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT16_ID,  getTypeID(SIDRE_UINT16_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT32_ID,  getTypeID(SIDRE_UINT32_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT64_ID,  getTypeID(SIDRE_UINT64_ID));
 
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT16_ID>()), 
-            static_cast<int>(CONDUIT_INT16_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT16_ID)), 
-            static_cast<int>(CONDUIT_INT16_T));
+  EXPECT_EQ(asctoolkit::sidre::FLOAT32_ID,    getTypeID(SIDRE_FLOAT32_ID));
+  EXPECT_EQ(asctoolkit::sidre::FLOAT64_ID,    getTypeID(SIDRE_FLOAT64_ID));
+  EXPECT_EQ(asctoolkit::sidre::CHAR8_STR_ID,  getTypeID(SIDRE_CHAR8_STR_ID));
 
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT32_ID>()), 
-            static_cast<int>(CONDUIT_INT32_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT32_ID)), 
-            static_cast<int>(CONDUIT_INT32_T));
+  EXPECT_EQ(asctoolkit::sidre::INT_ID,  getTypeID(SIDRE_INT_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT_ID,  getTypeID(SIDRE_UINT_ID));
+  EXPECT_EQ(asctoolkit::sidre::LONG_ID,  getTypeID(SIDRE_LONG_ID));
+  EXPECT_EQ(asctoolkit::sidre::ULONG_ID,  getTypeID(SIDRE_ULONG_ID));
+  EXPECT_EQ(asctoolkit::sidre::FLOAT_ID,  getTypeID(SIDRE_FLOAT_ID));
+  EXPECT_EQ(asctoolkit::sidre::DOUBLE_ID,  getTypeID(SIDRE_DOUBLE_ID));
 
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_INT64_ID>()), 
-            static_cast<int>(CONDUIT_INT64_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_INT64_ID)), 
-            static_cast<int>(CONDUIT_INT64_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT8_ID>()), 
-            static_cast<int>(CONDUIT_UINT8_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT8_ID)), 
-            static_cast<int>(CONDUIT_UINT8_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT16_ID>()), 
-            static_cast<int>(CONDUIT_UINT16_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT16_ID)), 
-            static_cast<int>(CONDUIT_UINT16_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT32_ID>()), 
-            static_cast<int>(CONDUIT_UINT32_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT32_ID)), 
-            static_cast<int>(CONDUIT_UINT32_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_UINT64_ID>()), 
-            static_cast<int>(CONDUIT_UINT64_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_UINT64_ID)), 
-            static_cast<int>(CONDUIT_UINT64_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_FLOAT32_ID>()), 
-            static_cast<int>(CONDUIT_FLOAT32_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_FLOAT32_ID)), 
-            static_cast<int>(CONDUIT_FLOAT32_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_FLOAT64_ID>()), 
-            static_cast<int>(CONDUIT_FLOAT64_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_FLOAT64_ID)), 
-            static_cast<int>(CONDUIT_FLOAT64_T));
-
-  EXPECT_EQ(static_cast<int>(getTypeID<SIDRE_CHAR8_STR_ID>()), 
-            static_cast<int>(CONDUIT_CHAR8_STR_T));
-  EXPECT_EQ(static_cast<int>(getTypeID(SIDRE_CHAR8_STR_ID)), 
-            static_cast<int>(CONDUIT_CHAR8_STR_T));
-
-*/
 }

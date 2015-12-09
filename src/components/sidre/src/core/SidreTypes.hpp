@@ -20,6 +20,7 @@
 #define SIDRETYPES_HPP_
 
 #include "SidreDataTypeIds.h"
+#include "conduit.hpp"
 
 namespace asctoolkit
 {
@@ -95,6 +96,15 @@ enum DataTypeId
  */
 typedef DataTypeId TypeID;
 
+/*!
+ * \brief Convenience function to convert int to TypeID type.
+ *
+ *  Used to convert C defines to C++ enumerations.
+ */
+inline TypeID getTypeID( const int typeID )
+{
+  return static_cast<TypeID>(typeID);
+}
 
 
 } /* end namespace sidre */

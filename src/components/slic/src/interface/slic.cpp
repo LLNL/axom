@@ -68,9 +68,9 @@ std::string getActiveLoggerName()
 }
 
 //------------------------------------------------------------------------------
-void setLoggingLevel( message::Level level )
+void setLoggingMsgLevel( message::Level level )
 {
-  Logger::getActiveLogger()->setLoggingLevel( level );
+  Logger::getActiveLogger()->setLoggingMsgLevel( level );
 }
 
 //------------------------------------------------------------------------------
@@ -99,15 +99,15 @@ bool getAbortOnError()
 }
 
 //------------------------------------------------------------------------------
-void addStreamToLevel( LogStream* ls, message::Level level )
+void addStreamToMsgLevel( LogStream* ls, message::Level level )
 {
-  Logger::getActiveLogger()->addStreamToLevel( ls, level );
+  Logger::getActiveLogger()->addStreamToMsgLevel( ls, level );
 }
 
 //------------------------------------------------------------------------------
-void addStreamToAllLevels( LogStream* ls )
+void addStreamToAllMsgLevels( LogStream* ls )
 {
-  Logger::getActiveLogger()->addStreamToAllLevels( ls );
+  Logger::getActiveLogger()->addStreamToAllMsgLevels( ls );
 }
 
 //------------------------------------------------------------------------------

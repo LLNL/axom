@@ -80,8 +80,8 @@ DataStore::DataStore()
     std::string( "LINE=<LINE>\n" ) +
     std::string("***********************************\n");
 
-    slic::setLoggingLevel( slic::message::Debug );
-    slic::addStreamToAllLevels( new slic::GenericOutputStream(&std::cout, 
+    slic::setLoggingMsgLevel( slic::message::Debug );
+    slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout,
                                                               format) );
 
     m_i_initialized_slic = true;

@@ -19,12 +19,12 @@ void * AllocateAllocatable(void * array, TypeID type, int rank, SidreLength nite
 
 void DeallocateAllocatable(void * array, TypeID type, int rank);
 
-void * ATK_create_fortran_allocatable_view(void * group,
-                                           char * name, int lname,
-                                           void * array, int type, int rank);
+void * SIDRE_create_fortran_allocatable_view(void * group,
+                                             char * name, int lname,
+                                             void * array, int type, int rank);
 
-void * ATK_create_array_view(void * group, char * name, int lname,
-                             void * addr, int type, long nitems);
+void * SIDRE_create_array_view(void * group, char * name, int lname,
+                               void * addr, int type, long nitems);
 
 }  // namespace asctoolkit
 }  // namespace sidre

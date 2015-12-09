@@ -55,8 +55,8 @@ int main( int argc, char** argv )
   std::ofstream ofs;
   ofs.open( oss.str().c_str() );
 
-  slic::setLoggingLevel( slic::message::Debug );
-  slic::addStreamToAllLevels( new slic::GenericOutputStream(&ofs) );
+  slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&ofs) );
 
 
   // STEP 3: loop N times and generate a random logging event

@@ -22,37 +22,37 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-struct s_ATK_databuffer;
-typedef struct s_ATK_databuffer ATK_databuffer;
+struct s_SIDRE_databuffer;
+typedef struct s_SIDRE_databuffer SIDRE_databuffer;
 
 // splicer begin class.DataBuffer.C_definition
 // splicer end class.DataBuffer.C_definition
 
-ATK_IndexType ATK_databuffer_get_index(ATK_databuffer * self);
+SIDRE_IndexType SIDRE_databuffer_get_index(SIDRE_databuffer * self);
 
-size_t ATK_databuffer_get_num_views(ATK_databuffer * self);
+size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self);
 
-void ATK_databuffer_declare(ATK_databuffer * self, int type, ATK_SidreLength numelems);
+void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type, SIDRE_SidreLength num_elems);
 
-void ATK_databuffer_allocate_existing(ATK_databuffer * self);
+void SIDRE_databuffer_allocate_existing(SIDRE_databuffer * self);
 
-void ATK_databuffer_allocate_from_type(ATK_databuffer * self, int type, ATK_SidreLength numelems);
+void SIDRE_databuffer_allocate_from_type(SIDRE_databuffer * self, int type, SIDRE_SidreLength num_elems);
 
-void ATK_databuffer_reallocate(ATK_databuffer * self, ATK_SidreLength numelems);
+void SIDRE_databuffer_reallocate(SIDRE_databuffer * self, SIDRE_SidreLength num_elems);
 
-void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_data);
+void SIDRE_databuffer_set_external_data(SIDRE_databuffer * self, void * external_data);
 
-bool ATK_databuffer_is_external(ATK_databuffer * self);
+bool SIDRE_databuffer_is_external(SIDRE_databuffer * self);
 
-void * ATK_databuffer_get_data(ATK_databuffer * self);
+void * SIDRE_databuffer_get_data(SIDRE_databuffer * self);
 
-int ATK_databuffer_get_type_id(ATK_databuffer * self);
+int SIDRE_databuffer_get_type_id(SIDRE_databuffer * self);
 
-size_t ATK_databuffer_get_num_elements(ATK_databuffer * self);
+size_t SIDRE_databuffer_get_num_elements(SIDRE_databuffer * self);
 
-size_t ATK_databuffer_get_total_bytes(ATK_databuffer * self);
+size_t SIDRE_databuffer_get_total_bytes(SIDRE_databuffer * self);
 
-void ATK_databuffer_print(ATK_databuffer * self);
+void SIDRE_databuffer_print(SIDRE_databuffer * self);
 
 #ifdef __cplusplus
 }

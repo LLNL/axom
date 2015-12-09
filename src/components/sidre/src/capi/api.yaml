@@ -14,7 +14,7 @@ copyright:
 
 options:
   library: Sidre
-  C_prefix: ATK_
+  C_prefix: SIDRE_
   namespace: asctoolkit sidre
   F_module_per_class: False
 
@@ -32,24 +32,25 @@ types:
 # defined in SidreTypes.hpp
     typedef  : int
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_IndexType
+    c_type   : SIDRE_IndexType
     cpp_type : IndexType
 
   SidreLength:
 # defined in SidreTypes.hpp
     typedef  : long
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_SidreLength
+    c_type   : SIDRE_SidreLength
     cpp_type : SidreLength
 
   TypeID:
     typedef  : int
     # enum for types
     c_header : sidre/SidreTypes.h
-    cpp_header : sidre/SidreWrapperHelpers.hpp
+    cpp_header : sidre/SidreTypes.hpp
     cpp_type : TypeID
     c_to_cpp : getTypeID({var})
 #    c_to_cpp : static_cast<TypeID>({var})
+    cpp_to_c : static_cast<int>({var})
 
 
 # XXX
@@ -110,10 +111,10 @@ classes:
 
 #    -  decl: IndexType getFirstValidViewIndex() const
 #    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
-    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength numelems)
+    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
-         numelems:
+         num_elems:
          -  int
          -  long
 
@@ -122,10 +123,10 @@ classes:
 
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
-    -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength numelems)
+    -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
-         numelems:
+         num_elems:
          -  int
          -  long
 
@@ -136,9 +137,9 @@ classes:
        function_suffix: _into_buffer
 
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength numelems )
+    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength num_elems )
        fortran_generic:
-         numelems:
+         num_elems:
          -  int
          -  long
 
@@ -191,10 +192,10 @@ classes:
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeID type, SidreLength numelems)
+      - decl: DataBuffer* declare(TypeID type, SidreLength num_elems)
         return_this: True
         fortran_generic:
-          numelems:
+          num_elems:
           -  int
           -  long
 #      - decl: DataBuffer* declare(const Schema& schema)
@@ -202,17 +203,17 @@ classes:
       - decl: DataBuffer* allocate()
         function_suffix: _existing
         return_this: True
-      - decl: DataBuffer* allocate(TypeID type, SidreLength numelems)
+      - decl: DataBuffer* allocate(TypeID type, SidreLength num_elems)
         function_suffix: _from_type
         return_this: True
         fortran_generic:
-          numelems:
+          num_elems:
           -  int
           -  long
-      - decl: DataBuffer * reallocate(SidreLength numelems)
+      - decl: DataBuffer * reallocate(SidreLength num_elems)
         return_this: True
         fortran_generic:
-          numelems:
+          num_elems:
           -  int
           -  long
       - decl: DataBuffer * setExternalData( void* external_data)
@@ -241,37 +242,45 @@ classes:
     - decl: DataView* allocate()
       function_suffix: _simple
       return_this: True
-    - decl: DataView* allocate(TypeID type, SidreLength numelems)
+    - decl: DataView* allocate(TypeID type, SidreLength num_elems)
       function_suffix: _from_type
       return_this: True
       fortran_generic:
-        numelems:
+        num_elems:
         -  int
         -  long
 #    - decl: DataView* allocate(const DataType& dtype)
 #    - decl: DataView* allocate(const Schema& schema)
-    - decl: DataView * reallocate(SidreLength numelems)
+    - decl: DataView * reallocate(SidreLength num_elems)
       return_this: True
       fortran_generic:
-        numelems:
+        num_elems:
         -  int
         -  long
 #    - decl: DataView* reallocate(const DataType& dtype)
 #    - decl: DataView* reallocate(const Schema& schema)
     - decl: DataView* apply()
-      function_suffix: _simple
-    - decl: DataView* apply(SidreLength numelems)
+      return_this: True
+    - decl: DataView* attachBuffer(DataBuffer * buff)
+      return_this: True
+    - decl: DataView* apply(SidreLength num_elems)
       function_suffix: _nelems
-    - decl: DataView* apply(SidreLength numelems, SidreLength offset)
+      return_this: True
+    - decl: DataView* apply(SidreLength num_elems, SidreLength offset)
       function_suffix: _nelems_offset
-    - decl: DataView* apply(SidreLength numelems, SidreLength offset, SidreLength stride)
+      return_this: True
+    - decl: DataView* apply(SidreLength num_elems, SidreLength offset, SidreLength stride)
       function_suffix: _nelems_offset_stride
-    - decl: DataView* apply(TypeID type, SidreLength numelems)
+      return_this: True
+    - decl: DataView* apply(TypeID type, SidreLength num_elems)
       function_suffix: _type_nelems
-    - decl: DataView* apply(TypeID type, SidreLength numelems, SidreLength offset)
+      return_this: True
+    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset)
       function_suffix: _type_nelems_offset
-    - decl: DataView* apply(TypeID type, SidreLength numelems, SidreLength offset, SidreLength stride)
+      return_this: True
+    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset, SidreLength stride)
       function_suffix: _type_nelems_offset_stride
+      return_this: True
 #    - decl: DataView* apply(const DataType& dtype)
 #    - decl: DataView* apply(const Schema& schema)
     - decl: bool  hasBuffer() const
@@ -304,7 +313,8 @@ classes:
         - float
         - double
 
-#    - decl: const Schema& getSchema() const
+    -  decl: DataView * setOpaque(void * opaque_ptr)
+##    - decl: const Schema& getSchema() const
     - decl: DataGroup* getOwningGroup()
 #    - decl: DataGroup const* getOwningGroup() const
     - decl: TypeID getTypeID() const
@@ -331,7 +341,7 @@ functions:
 patterns:
     C_invalid_name: >
         if (! nameIsValid({var})) {{
-            return ATK_InvalidName;
+            return SIDRE_InvalidName;
         }}
     PY_invalid_name: >
         if (! nameIsValid({var})) {{
