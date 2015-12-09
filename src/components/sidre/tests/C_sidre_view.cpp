@@ -69,7 +69,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 
   SIDRE_dataview * dv = 
      SIDRE_datagroup_create_view_and_allocate_from_type(root, "u0", 
-                                                      SIDRE_INT_ID, 10);
+                                                        SIDRE_INT_ID, 10);
   int * data_ptr = (int *) SIDRE_dataview_get_data_pointer(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -86,7 +86,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,int_array_multi_view)
+TEST(C_sidre_view,int_array_strided_views)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
@@ -221,134 +221,70 @@ TEST(C_sidre_view,int_array_depth_view)
 
 //------------------------------------------------------------------------------
 
-// Similar to previous test, using other view creation methods
-TEST(C_sidre_view,int_array_depth_view_2)
+TEST(sidre_view,int_array_view_attach_buffer)
 {
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+
+  const size_t field_nelems = 10;
+
+  // create 2 "field" views with type and # elems
+  size_t elem_count = 0;
+  SIDRE_dataview* field0 = 
+    SIDRE_datagroup_create_view_from_type(root,"field0",
+                                          SIDRE_INT_ID, field_nelems);
+  elem_count += SIDRE_dataview_get_num_elements(field0);
+  SIDRE_dataview* field1 = 
+    SIDRE_datagroup_create_view_from_type(root, "field1",
+                                          SIDRE_INT_ID, field_nelems);
+  elem_count += SIDRE_dataview_get_num_elements(field1);
+  EXPECT_EQ(elem_count, 2 * field_nelems);
+
+  // create buffer to hold data for all fields and allocate
   SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
-
-  const size_t depth_nelems = 10;
-
-  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 2 * field_nelems);
   SIDRE_databuffer_allocate_existing(dbuff);
-  int * data_ptr = (int *) SIDRE_databuffer_get_data(dbuff);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
 
-  for(size_t i=0 ; i < 4 * depth_nelems ; i++)
+  // Initilize buffer data for testing below.
+  int* b_ptr = (int*) SIDRE_databuffer_get_data(dbuff);
+  for(size_t i = 0 ; i < elem_count ; ++i)
   {
-    data_ptr[i] = i / depth_nelems;
+    b_ptr[i] = i / field_nelems;
   }
 
   SIDRE_databuffer_print(dbuff);
 
-  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
+  // attach field views to buffer and apply offsets into buffer
+  SIDRE_dataview_attach_buffer(field0, dbuff);
+  SIDRE_dataview_apply_nelems_offset(field0, field_nelems, 0 * field_nelems);
+  SIDRE_dataview_attach_buffer(field1, dbuff);
+  SIDRE_dataview_apply_nelems_offset(field1, field_nelems, 1 * field_nelems);
 
-  // create 4 "depth" views and apply offsets into buffer
-  SIDRE_dataview* views[4];
-  const char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
 
-  for (int id = 0; id < 2; ++id)
+  // print field views...
+  SIDRE_dataview_print(field0);
+  SIDRE_dataview_print(field1);
+
+  // check values in field views...
+  int* f0_ptr = (int *) SIDRE_dataview_get_data_pointer(field0); 
+  for (size_t i = 0; i < field_nelems; ++i)
   {
-     views[id] = 
-        SIDRE_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
-     SIDRE_dataview_apply_nelems_offset(views[id], depth_nelems, id*depth_nelems);
+     EXPECT_EQ(f0_ptr[i], 0);
   }
-  //
-  // call path including type
-  for (int id = 2; id < 4; ++id)
-  {
-     views[id] = 
-        SIDRE_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
-     SIDRE_dataview_apply_type_nelems_offset(views[id], SIDRE_INT_ID, depth_nelems, id*depth_nelems);
-  }
-  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
-
-  // print depth views...
-  for (int id = 0; id < 4; ++id)
-  {
-     SIDRE_dataview_print(views[id]);
-  }
-
-  // check values in depth views...
-  for (int id = 0; id < 4; ++id)
-  {
 // Note: This is a big hack since the dataview get pointer method is broken
-//       and the conduit support for this sort of thing doesn't exist for C code?
-     int* dv_ptr = (int *) SIDRE_dataview_get_data_pointer(views[id]); 
-          dv_ptr += id * depth_nelems; 
-     for (size_t i = 0; i < depth_nelems; ++i)
-     {
-        EXPECT_EQ(dv_ptr[i], id);
-     }
+  int* f1_ptr = (int *) SIDRE_dataview_get_data_pointer(field1); 
+  f1_ptr += 1 * field_nelems; 
+  for (size_t i = 0; i < field_nelems; ++i)
+  {
+     EXPECT_EQ(f1_ptr[i], 1);
   }
 
   SIDRE_datastore_print(ds);
   SIDRE_datastore_delete(ds);
 
 }
-
-//------------------------------------------------------------------------------
-#if 0
-TEST(sidre_view,int_array_view_attach_buffer)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-
-  const size_t field_nelems = 10;
-  std::string field_names[4] = { "field_0", "field_1", "field_2", "field_3" };
-
-  // create 4 "field" views with type and # elems
-  DataView* field[4];
-  size_t elem_count = 0;
-  for (int fid = 0; fid < 4; ++fid)
-  {
-    field[fid] = root->createView(field_names[fid],
-                                  asctoolkit::sidre::INT_ID, field_nelems);
-    elem_count += field[fid]->getNumElements();
-  }
-  EXPECT_EQ(elem_count, 4 * field_nelems);
-
-  // create buffer to hold data for all fields and allocate
-  DataBuffer * dbuff = ds->createBuffer()->allocate(asctoolkit::sidre::INT_ID,
-                                                    elem_count);
-  EXPECT_EQ(dbuff->getNumElements(), elem_count);
-
-  // Initilize buffer data for testing below.
-  int_array b_ptr = dbuff->getValue();
-  for(size_t i = 0 ; i < elem_count ; ++i)
-  {
-    b_ptr[i] = i / field_nelems;
-  }
-
-  dbuff->print();
-
-  // attach field views to buffer and apply offsets into buffer
-  for (int fid = 0; fid < 4; ++fid)
-  {
-    field[fid]->attachBuffer(dbuff)->apply(field_nelems, fid * field_nelems);
-  }
-  EXPECT_EQ(dbuff->getNumViews(), 4u);
-
-  // print field views...
-  for (int id = 0; id < 4; ++id)
-  {
-     field[id]->print();
-  }
-
-  // check values in field views...
-  for (int id = 0; id < 4; ++id)
-  {
-     int_array v_ptr = field[id]->getValue();
-     for (size_t i = 0; i < field_nelems; ++i)
-     {
-        EXPECT_EQ(v_ptr[i], id);
-     }
-  }
-
-  ds->print();
-  delete ds;
-}
-#endif
 
 //------------------------------------------------------------------------------
 

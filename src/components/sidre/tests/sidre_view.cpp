@@ -88,7 +88,7 @@ TEST(sidre_view,int_buffer_from_view_conduit_value)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view,int_array_multi_view)
+TEST(sidre_view,int_array_strided_views)
 {
   DataStore * ds = new DataStore();
   DataGroup * root = ds->getRoot();
@@ -274,20 +274,18 @@ TEST(sidre_view,int_array_view_attach_buffer)
   DataGroup * root = ds->getRoot();
 
   const size_t field_nelems = 10;
-  std::string field_names[4] = { "field_0", "field_1", "field_2", "field_3" };
 
-  // create 4 "field" views with type and # elems
-  DataView* field[4];
+  // create 2 "field" views with type and # elems
   size_t elem_count = 0; 
-  for (int fid = 0; fid < 4; ++fid)
-  { 
-    field[fid] = root->createView(field_names[fid], 
-                                  asctoolkit::sidre::INT_ID, field_nelems);
-    elem_count += field[fid]->getNumElements();
-  }
-  EXPECT_EQ(elem_count, 4 * field_nelems);
+  DataView* field0 = root->createView("field0",
+                                      asctoolkit::sidre::INT_ID, field_nelems);
+  elem_count += field0->getNumElements();
+  DataView* field1 = root->createView("field1",
+                                      asctoolkit::sidre::INT_ID, field_nelems);
+  elem_count += field1->getNumElements();
+  EXPECT_EQ(elem_count, 2 * field_nelems);
 
-  // create buffer to hold data for all fields and allocate
+  // create buffer to hold data for fields and allocate
   DataBuffer * dbuff = ds->createBuffer()->allocate(asctoolkit::sidre::INT_ID,
                                                     elem_count);
   EXPECT_EQ(dbuff->getNumElements(), elem_count);
@@ -302,26 +300,24 @@ TEST(sidre_view,int_array_view_attach_buffer)
   dbuff->print();
 
   // attach field views to buffer and apply offsets into buffer
-  for (int fid = 0; fid < 4; ++fid)
-  {
-    field[fid]->attachBuffer(dbuff)->apply(field_nelems, fid * field_nelems);
-  }
-  EXPECT_EQ(dbuff->getNumViews(), 4u);
+  field0->attachBuffer(dbuff)->apply(field_nelems, 0 * field_nelems);
+  field1->attachBuffer(dbuff)->apply(field_nelems, 1 * field_nelems);
+  EXPECT_EQ(dbuff->getNumViews(), 2u);
 
   // print field views...
-  for (int id = 0; id < 4; ++id)
-  {
-     field[id]->print();
-  } 
+  field0->print();
+  field1->print();
 
   // check values in field views...
-  for (int id = 0; id < 4; ++id)
+  int* f0_ptr = field0->getValue();
+  for (size_t i = 0; i < field_nelems; ++i)
   {
-     int* v_ptr = field[id]->getValue();
-     for (size_t i = 0; i < field_nelems; ++i)
-     {
-        EXPECT_EQ(v_ptr[i], id);
-     }
+     EXPECT_EQ(f0_ptr[i], 0);
+  }
+  int* f1_ptr = field1->getValue();
+  for (size_t i = 0; i < field_nelems; ++i)
+  {
+     EXPECT_EQ(f1_ptr[i], 1);
   }
 
   ds->print();
