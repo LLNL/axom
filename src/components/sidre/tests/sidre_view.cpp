@@ -120,9 +120,26 @@ TEST(sidre_view,int_array_multi_view)
   dv_e->print();
   dv_o->print();
 
+// Check base pointer case:
+  int* v_e_ptr = dv_e->getValue();
+  int* v_o_ptr = dv_o->getValue();
+  for(int i=0 ; i<10 ; i += 2)
+  {
+    std::cout << "idx:" <<  i
+              << " e:" << v_e_ptr[i]
+              << " o:" << v_o_ptr[i]
+              << " em:" << v_e_ptr[i]  % 2
+              << " om:" << v_o_ptr[i]  % 2
+              << std::endl;
+
+    EXPECT_EQ(v_e_ptr[i] % 2, 0);
+    EXPECT_EQ(v_o_ptr[i] % 2, 1);
+  }
+
+// Check Conduit mem-map struct case:
   int_array dv_e_ptr = dv_e->getValue();
   int_array dv_o_ptr = dv_o->getValue();
-  for(int i=0 ; i<5 ; i++)
+  for(int i=0 ; i<5 ; ++i)
   {
     std::cout << "idx:" <<  i
               << " e:" << dv_e_ptr[i]
@@ -149,6 +166,23 @@ TEST(sidre_view,int_array_multi_view)
   dv_e1->print();
   dv_o1->print();
 
+// Check base pointer case:
+  int* v_e1_ptr = dv_e1->getValue();
+  int* v_o1_ptr = dv_o1->getValue();
+  for(int i=0 ; i<10 ; i += 2)
+  {
+    std::cout << "idx:" <<  i
+              << " e1:" << v_e1_ptr[i]
+              << " oj:" << v_o1_ptr[i]
+              << " em1:" << v_e1_ptr[i]  % 2
+              << " om1:" << v_o1_ptr[i]  % 2
+              << std::endl;
+
+    EXPECT_EQ(v_e1_ptr[i], v_e_ptr[i]);
+    EXPECT_EQ(v_o1_ptr[i], v_o_ptr[i]);
+  }
+
+// Check Conduit mem-map struct case:
   int_array dv_e1_ptr = dv_e1->getValue();
   int_array dv_o1_ptr = dv_o1->getValue();
   for(int i=0 ; i<5 ; i++)
@@ -198,65 +232,9 @@ TEST(sidre_view,int_array_depth_view)
   DataView* views[4];
   std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
   
-  for (int id = 0; id < 4; ++id) 
-  {
-     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, id*depth_nelems);
-  }
-  EXPECT_EQ(dbuff->getNumViews(), 4u);
-
-  // print depth views...
-  for (int id = 0; id < 4; ++id)
-  {
-     views[id]->print();
-  } 
-
-  // check values in depth views...
-  for (int id = 0; id < 4; ++id)
-  {
-     int_array dv_ptr = views[id]->getValue();
-     for (size_t i = 0; i < depth_nelems; ++i)
-     {
-        EXPECT_EQ(dv_ptr[i], id);
-     }
-  }
-
-  ds->print();
-  delete ds;
-}
-
-//------------------------------------------------------------------------------
-
-// Similar to previous test, using other view creation methods
-TEST(sidre_view,int_array_depth_view_2)
-{
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
-  DataBuffer * dbuff = ds->createBuffer();
-
-  const size_t depth_nelems = 10; 
-
-  // Allocate buffer to hold data for 4 "depth" views
-  dbuff->declare(asctoolkit::sidre::INT_ID, 4 * depth_nelems );
-  dbuff->allocate();
-  int * data_ptr = static_cast<int *>(dbuff->getData());
-
-  for(size_t i = 0 ; i < 4 * depth_nelems ; ++i)
-  {
-    data_ptr[i] = i / depth_nelems;
-  }
-
-  dbuff->print();
-
-  EXPECT_EQ(dbuff->getNumElements(), 4 * depth_nelems);
-
-  // create 4 "depth" views and apply offsets into buffer
-  DataView* views[4];
-  std::string view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
-  
   for (int id = 0; id < 2; ++id) 
   {
-     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, 
-                                                                id*depth_nelems);
+     views[id] = root->createView(view_names[id], dbuff)->apply(depth_nelems, id*depth_nelems);
   }
   // 
   // call path including type
@@ -277,7 +255,7 @@ TEST(sidre_view,int_array_depth_view_2)
   // check values in depth views...
   for (int id = 0; id < 4; ++id)
   {
-     int_array dv_ptr = views[id]->getValue();
+     int* dv_ptr = views[id]->getValue();
      for (size_t i = 0; i < depth_nelems; ++i)
      {
         EXPECT_EQ(dv_ptr[i], id);
@@ -315,7 +293,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(dbuff->getNumElements(), elem_count);
 
   // Initilize buffer data for testing below.
-  int_array b_ptr = dbuff->getValue();
+  int* b_ptr = dbuff->getValue();
   for(size_t i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
@@ -339,7 +317,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   // check values in field views...
   for (int id = 0; id < 4; ++id)
   {
-     int_array v_ptr = field[id]->getValue();
+     int* v_ptr = field[id]->getValue();
      for (size_t i = 0; i < field_nelems; ++i)
      {
         EXPECT_EQ(v_ptr[i], id);
