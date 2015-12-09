@@ -53,10 +53,10 @@ namespace {
 
         }
 
-//        for(IndexType i=0; i< sz; ++i)
-//        {
-//            SLIC_ASSERT(indices[i] >= 0 && indices[i] < sz);
-//        }
+        for(IndexType i=0; i< sz; ++i)
+        {
+            SLIC_ASSERT(indices[i] >= 0 && indices[i] < sz);
+        }
 
 
         return indices;
@@ -101,9 +101,15 @@ namespace {
 
         void TearDown() {
             if(ind != ATK_NULLPTR)
+            {
                 delete[] ind;
+                ind = ATK_NULLPTR;
+            }
             if(data != ATK_NULLPTR)
+            {
                 delete[] data;
+                data = ATK_NULLPTR;
+            }
         }
 
         ~SetFixture() {
@@ -225,7 +231,7 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) (benchmark::State& 
     while (state.KeepRunning())
     {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize( pos = ind[i] );
+          benchmark::DoNotOptimize( pos = i); //ind[i] );
         }
 
     }
@@ -381,9 +387,11 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_field)->Apply(Cus
 int main(int argc, char * argv[])
 {
   std::srand (std::time(NULL));
-  asctoolkit::slic::UnitTestLogger logger;  // create & initialize test logger,
 
   ::benchmark::Initialize(&argc, argv);
+
+  asctoolkit::slic::UnitTestLogger logger;  // create & initialize test logger,
+
   ::benchmark::RunSpecifiedBenchmarks();
 
   return 0;
