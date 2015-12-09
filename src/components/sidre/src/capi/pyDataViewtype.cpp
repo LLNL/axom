@@ -165,10 +165,8 @@ PY_dataview_attach_buffer(
         return NULL;
     }
     buff_ptr = (buff ? buff->BBB : NULL);
-    DataView * rv = self->BBB->attachBuffer(buff_ptr);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->attachBuffer(buff_ptr);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.attach_buffer
 }
 

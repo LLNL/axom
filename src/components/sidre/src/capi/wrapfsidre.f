@@ -1031,14 +1031,13 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine sidre_dataview_apply_0
         
-        function sidre_dataview_attach_buffer(self, buff) result(rv) &
+        subroutine sidre_dataview_attach_buffer(self, buff) &
                 bind(C, name="SIDRE_dataview_attach_buffer")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR), value, intent(IN) :: buff
-            type(C_PTR) :: rv
-        end function sidre_dataview_attach_buffer
+        end subroutine sidre_dataview_attach_buffer
         
         subroutine sidre_dataview_apply_nelems(self, num_elems) &
                 bind(C, name="SIDRE_dataview_apply_nelems")
@@ -2513,18 +2512,17 @@ contains
         ! splicer end class.DataView.method.apply_0
     end subroutine dataview_apply_0
     
-    function dataview_attach_buffer(obj, buff) result(rv)
+    subroutine dataview_attach_buffer(obj, buff)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(databuffer), value, intent(IN) :: buff
-        type(dataview) :: rv
         ! splicer begin class.DataView.method.attach_buffer
-        rv%voidptr = sidre_dataview_attach_buffer(  &
+        call sidre_dataview_attach_buffer(  &
             obj%voidptr,  &
             buff%voidptr)
         ! splicer end class.DataView.method.attach_buffer
-    end function dataview_attach_buffer
+    end subroutine dataview_attach_buffer
     
     subroutine dataview_apply_nelems(obj, num_elems)
         use iso_c_binding

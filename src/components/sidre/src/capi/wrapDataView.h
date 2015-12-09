@@ -40,7 +40,7 @@ void SIDRE_dataview_reallocate(SIDRE_dataview * self, SIDRE_SidreLength num_elem
 
 void SIDRE_dataview_apply_0(SIDRE_dataview * self);
 
-SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff);
+void SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff);
 
 void SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 

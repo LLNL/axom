@@ -262,6 +262,7 @@ classes:
     - decl: DataView* apply()
       return_this: True
     - decl: DataView* attachBuffer(DataBuffer * buff)
+      return_this: True
     - decl: DataView* apply(SidreLength num_elems)
       function_suffix: _nelems
       return_this: True
