@@ -363,9 +363,10 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
 
-  // we expect the actual data  pointers to be the same
-  EXPECT_EQ(flds->getView("i0")->getDataPointer(),
-            flds->getGroup("sub")->getView("i0")->getDataPointer());
+  // we expect the data pointers to be the same
+  int * i0_ptr = flds->getView("i0")->getData();
+  int * sub_io0_ptr = flds->getGroup("sub")->getView("i0")->getData();
+  EXPECT_EQ(i0_ptr, sub_io0_ptr);
 
   delete ds;
 }

@@ -31,7 +31,6 @@
 // SiDRe project headers
 #include "sidre/SidreTypes.hpp"
 
-
 namespace asctoolkit
 {
 namespace sidre
@@ -86,7 +85,6 @@ public:
   // private members.
   //
   friend class DataGroup;
-
 
 //@{
 //!  @name DataView allocation methods
@@ -269,7 +267,6 @@ public:
 
 //@}
 
-
 //@{
 //!  @name DataView query methods
 
@@ -306,7 +303,7 @@ public:
    * \brief Return total number of bytes associated with this DataView object.
    *
    * IMPORTANT: This is the total bytes described by the view; they may not 
-   *            yet be allocated.
+   *            yet be allocated or may differ from the schema in the buffer.
    */
   size_t getTotalBytes() const
   {
@@ -317,7 +314,7 @@ public:
    * \brief Return total number of elements described by this DataView object.
    *
    * IMPORTANT: This is the number of elements described by the view; 
-   *            they may not yet be allocated.
+   *            they may not yet be allocated ormay differ from the schema in the buffer.
    */
   size_t getNumElements() const
   {
@@ -401,57 +398,64 @@ public:
     return m_node;
   }
 
-
   //@{
   //!  @name Accesser methods for retrieving data from a view.
+
+  /*!
+   * \brief Returns held data.  Returns a Node::Value which will automatically cast to the correct data type.
+   * Requires the caller to assign the return value to a variable so the Value class knows what the cast to.
+   * Examples:
+   * int my_int = getData();
+   * int* my_ptr = getData();
+   */
+  Node::Value getData()
+  {
+    return m_node.value();
+  }
 
   /*!
    * \brief Return node's data (should be a pointer to external, unowned memory).
    */
   void * getOpaquePtr()
   {
-    //TODO: Add check to verify isOpaque() is true, else return null ptr.
-    return m_node.data_ptr();
+    return m_opaque_ptr;
   }
+  //@}
+
+  //@{
+  //! @name Additional accessor methods.  These are provided to make a consistent interface available to getting/setting values.
+  //! Example:
+  //! getString/setString
+  //! getScalar/setScalar
+  //! These get functions are optional, the above data types can be retrieved via the generic getData() function.
 
   /*!
    * \brief Return node's data (should be an array or other block of memory, so a pointer is returned).
    */
-  Node::Value getPtr()
-  {
-    // TODO: Add some checks to verify the node actual holds a pointer type.
-    return m_node.value();
-  }
-
-  /*!
-   * \brief Return node's data (should be a string).
-   */
-  std::string getString()
-  {
-    // TODO: Add some checks to verify the node actual holds a string type.
-    return m_node.as_string();
-  }
-
-  /*!
-   * \brief Return node's data (should be a scalar).
-   */
-  Node::Value getScalar()
-  {
-    // TODO: Add some checks to verify the node actual holds a scalar type.
-    return m_node.value();
-  }
+  inline Node::Value getPtr()  { return getData(); }
+  inline Node::Value getString() { return getData(); }
+  inline Node::Value getScalar() { return getData(); }
 
   //@}
 
   //@{
-  //!  @name Set methods for setting data in the view.
+  //!  @name Set methods for setting data in the view.  These data types do not have a separate data buffer.  Values
+  //!  are stored directly in the view's node (or in the case of an opaque pointer, in the class member m_data_ptr.
+
+  /*!
+   * \brief Set node's data (should be an opaque pointer).
+   */
+  void setOpaquePtr(void* value)
+  {
+    m_opaque_ptr = value;
+  }
 
   /*!
    * \brief Set node's data (should be a string).
    */
   void setString(const std::string& value)
   {
-    // TODO: Add some checks to verify the node actual holds a string type.
+    // TODO: Will conduit complain if node doesn't already hold a string type?  What happens if this is called by mistake on a node containing other data?
     m_node.set_string(value);
   }
 
@@ -461,14 +465,14 @@ public:
   template<typename ScalarType>
   void setScalar(ScalarType value)
   {
-    // Check that the internal datatype isn't being changed (type-safety check).
+    // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
     DataTypeId arg_id = SidreTT<ScalarType>::id();
     SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
       "Mismatch between setScalar()" << DataType::id_to_name( arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() << ").");
 #endif
 
-	m_node.set(value);
+    m_node.set(value);
   }
 
   //@}
@@ -489,16 +493,12 @@ public:
    * assigning the return.
    *
    */
-  //template<typename DataType>
-  //DataType getData()
-  //{
-  // DataType data = m_node.value();
-  //  return data;
-  //}
-
-
-
-
+  template<typename DataType>
+  DataType getData()
+  {
+    DataType data = m_node.value();
+    return data;
+  }
 
 
 //@{
@@ -625,6 +625,9 @@ private:
 
   /// DataBuffer associated with this DataView object.
   DataBuffer * m_data_buffer;
+
+  /// Optional opaque pointer value.  Only used if storing opaque pointer, not a node.
+  void * m_opaque_ptr;
 
   /// Conduit Schema that describes this DataView.
   Schema m_schema;

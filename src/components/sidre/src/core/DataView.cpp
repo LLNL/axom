@@ -252,7 +252,7 @@ DataView * DataView::apply()
     }
     else 
     {
-       m_node.set_external(m_schema, m_data_buffer->getVoidPtr());
+       m_node.set_external(m_schema, m_data_buffer->getPtr());
        m_is_applied = true;
     }
   }
@@ -460,7 +460,7 @@ DataView::DataView( const std::string& name,
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
-  m_node.set((conduit::uint64)opaque_ptr);
+  m_opaque_ptr = opaque_ptr;
 }
 
 /*

@@ -602,7 +602,7 @@ TEST(sidre_view,simple_opaque)
 
   EXPECT_TRUE(opq_view->isOpaque());
 
-  void * opq_ptr = opq_view->getOpaque();
+  void * opq_ptr = opq_view->getOpaquePtr();
 
   int * out_data = (int *)opq_ptr;
   EXPECT_EQ(opq_ptr,src_ptr);

@@ -131,7 +131,7 @@ TEST(sidre_opaque,inout)
   EXPECT_EQ(test_opaque, true);
 
   Extent * test_extent =
-    static_cast<Extent *>(ext_view->getOpaque());
+    static_cast<Extent *>(ext_view->getOpaquePtr());
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
@@ -183,11 +183,11 @@ TEST(sidre_opaque,meshvar)
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createOpaqueView("ext", dom_ext);
 
-    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaquePtr() );
     DataView * dom_zone_view = dom_gp->createView("zone_data");
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
-    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaquePtr() );
     DataView * dom_node_view = dom_gp->createView("node_data");
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
@@ -207,10 +207,10 @@ TEST(sidre_opaque,meshvar)
 
     DataGroup * dom_gp = problem_gp->getGroup(dom_name[idom]);
     Extent * dom_ext = static_cast<Extent *>(
-      dom_gp->getView("ext")->getOpaque() );
+      dom_gp->getView("ext")->getOpaquePtr() );
 
-    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
-    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaquePtr() );
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaquePtr() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
     int test_num_zone_vals = dom_gp->getView("zone_data")->getNumElements();
@@ -228,7 +228,7 @@ TEST(sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
     delete static_cast<Extent *>(
-      problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaque() );
+      problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaquePtr() );
   }
   delete ds;
 }

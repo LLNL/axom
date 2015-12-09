@@ -114,9 +114,17 @@ public:
   /*!
    * \brief Return void-pointer to data held by DataBuffer.
    */
-  void * getPointer()
+  void * getPtr()
   {
     return m_data;
+  }
+
+  /*!
+   * \brief Returns data held by node (or pointer to data if array).
+   */
+  Node::Value getData()
+  {
+    return m_node.value();
   }
 
   //@}
