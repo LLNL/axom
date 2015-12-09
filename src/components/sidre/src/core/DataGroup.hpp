@@ -444,7 +444,8 @@ public:
    *        referenced with given pointer. Attach new view to this group
    *        object.
    *
-   * Note that the view is "opaque"; i.e., it has no knowledge of the data.
+   * Note that the view is "opaque"; i.e., it has no knowledge of the 
+   * type or structure of the data.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.

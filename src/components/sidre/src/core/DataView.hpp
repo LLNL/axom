@@ -460,6 +460,16 @@ public:
     m_node.set(value);
   }
 
+  /*!
+   * \brief Set view to hold data referenced with given pointer.
+   *
+   * Note that the view will be "opaque"; i.e., it will have no knowledge of 
+   * type or structure of the data.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView* setOpaque(void * opaque_ptr);
+
 //@}
 
 

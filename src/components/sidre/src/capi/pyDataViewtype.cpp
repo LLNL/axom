@@ -427,6 +427,33 @@ PY_dataview_get_data_pointer(
 // splicer end class.DataView.method.get_data_pointer
 }
 
+static char PY_dataview_set_opaque__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_set_opaque(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.set_opaque
+    void * opaque_ptr;
+    const char *kwcpp = "opaque_ptr";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:setOpaque", kw_list,
+        &opaque_ptr))
+    {
+        return NULL;
+    }
+    DataView * rv = self->BBB->setOpaque(opaque_ptr);
+    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
+    rv_obj->BBB = rv;
+    return (PyObject *) rv_obj;
+// splicer end class.DataView.method.set_opaque
+}
+
 static char PY_dataview_get_owning_group__doc__[] =
 "documentation"
 ;
@@ -649,6 +676,7 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getOpaque", (PyCFunction)PY_dataview_get_opaque, METH_NOARGS, PY_dataview_get_opaque__doc__},
 {"getBuffer", (PyCFunction)PY_dataview_get_buffer, METH_NOARGS, PY_dataview_get_buffer__doc__},
 {"getDataPointer", (PyCFunction)PY_dataview_get_data_pointer, METH_NOARGS, PY_dataview_get_data_pointer__doc__},
+{"setOpaque", (PyCFunction)PY_dataview_set_opaque, METH_VARARGS|METH_KEYWORDS, PY_dataview_set_opaque__doc__},
 {"getOwningGroup", (PyCFunction)PY_dataview_get_owning_group, METH_NOARGS, PY_dataview_get_owning_group__doc__},
 {"getTypeID", (PyCFunction)PY_dataview_get_type_id, METH_NOARGS, PY_dataview_get_type_id__doc__},
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},

@@ -271,7 +271,7 @@ DataView * DataView::apply(SidreLength num_elems,
                            SidreLength offset,
                            SidreLength stride)
 {
-  SLIC_ASSERT_MSG( !isOpaque(), "Cannot call declare on an opaque view");
+  SLIC_ASSERT_MSG( !isOpaque(), "Cannot call apply on an opaque view");
   SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
   SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
@@ -301,7 +301,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
                                         SidreLength stride)
 {
   SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
+                  "Cannot call apply on an opaque view");
   SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must declare offset >= 0");
 
@@ -396,23 +396,28 @@ void * DataView::getOpaque() const
   }
 }
 
-
 /*
  *************************************************************************
  *
- * Copy data view description to given Conduit node.
+ * Set DataView to be associated with opaque data.
  *
  *************************************************************************
  */
-void DataView::info(Node &n) const
+DataView * DataView::setOpaque(void * opaque_ptr)
 {
-  n["name"] = m_name;
-  n["schema"] = m_schema.to_json();
-  n["node"] = m_node.to_json();
-  n["is_opaque"] = m_is_opaque;
-  n["is_applied"] = m_is_applied;
-}
+  SLIC_ASSERT_MSG(m_data_buffer == ATK_NULLPTR, "Cannot set a view to be opaque if it already is attached to a buffer");
+  SLIC_ASSERT_MSG(!m_is_applied, "Cannot set a view to be opaque if it already has been applied");
 
+  if ( m_data_buffer == ATK_NULLPTR && !m_is_applied )
+  {
+    // todo, conduit should provide a check for if uint64 is a
+    // good enough type to rep void *
+    m_node.set((conduit::uint64)opaque_ptr);
+
+    m_is_opaque = true;
+  }
+  return this; 
+}
 
 /*
  *************************************************************************
@@ -438,6 +443,22 @@ void DataView::print(std::ostream& os) const
   Node n;
   info(n);
   n.to_json_stream(os);
+}
+
+/*
+ *************************************************************************
+ *
+ * Copy data view description to given Conduit node.
+ *
+ *************************************************************************
+ */
+void DataView::info(Node &n) const
+{
+  n["name"] = m_name;
+  n["schema"] = m_schema.to_json();
+  n["node"] = m_node.to_json();
+  n["is_opaque"] = m_is_opaque;
+  n["is_applied"] = m_is_applied;
 }
 
 /*

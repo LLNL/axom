@@ -297,6 +297,7 @@ module sidre_mod
         procedure :: get_value_long => dataview_get_value_long
         procedure :: get_value_float => dataview_get_value_float
         procedure :: get_value_double => dataview_get_value_double
+        procedure :: set_opaque => dataview_set_opaque
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
@@ -1207,6 +1208,15 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE) :: rv
         end function sidre_dataview_get_value_double
+        
+        function sidre_dataview_set_opaque(self, opaque_ptr) result(rv) &
+                bind(C, name="SIDRE_dataview_set_opaque")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: opaque_ptr
+            type(C_PTR) :: rv
+        end function sidre_dataview_set_opaque
         
         function sidre_dataview_get_owning_group(self) result(rv) &
                 bind(C, name="SIDRE_dataview_get_owning_group")
@@ -2763,6 +2773,19 @@ contains
         rv = sidre_dataview_get_value_double(obj%voidptr)
         ! splicer end class.DataView.method.get_value_double
     end function dataview_get_value_double
+    
+    function dataview_set_opaque(obj, opaque_ptr) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        type(C_PTR), value, intent(IN) :: opaque_ptr
+        type(dataview) :: rv
+        ! splicer begin class.DataView.method.set_opaque
+        rv%voidptr = sidre_dataview_set_opaque(  &
+            obj%voidptr,  &
+            opaque_ptr)
+        ! splicer end class.DataView.method.set_opaque
+    end function dataview_set_opaque
     
     function dataview_get_owning_group(obj) result(rv)
         use iso_c_binding
