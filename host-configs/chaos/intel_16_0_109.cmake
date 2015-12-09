@@ -69,3 +69,11 @@ set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_
 
 # additional flags for debug builds
 # set(EXTRA_CXX_RELEASE_FLAGS "-DEXTRA_CXX_RELEASE_FLAGS_DEFINE" CACHE PATH "")
+
+#######
+# MPI 
+#######
+set(ENABLE_MPI ON CACHE PATH "")
+set(MPI_C_COMPILER "/usr/local/tools/mvapich2-intel-2.1/bin/mpicc" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/local/tools/mvapich2-intel-2.1/bin/mpicxx" CACHE PATH "")
+set(MPI_Fortran_COMPILER  "/usr/local/tools/mvapich2-intel-2.1/bin/mpifort" CACHE PATH "")
