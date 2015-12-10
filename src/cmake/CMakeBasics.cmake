@@ -540,14 +540,19 @@ endmacro(add_gtest)
 
 
 ##------------------------------------------------------------------------------
-## add_benchmark( TEST_SOURCE testX.cxx CLAS <commandLineArguments> DEPENDS_ON [dep1 [dep2 ...]] )
+## add_benchmark( TEST_SOURCE testX.cxx TEST_ARGS <commandLineArguments> DEPENDS_ON [dep1 [dep2 ...]] )
 ##
-## Adds a (google) benchmark to the project.
+## Adds a (google) benchmark test to the project.
+## TEST_ARGS is a string containing a space delimited set of command line arguments for the test
+## e.g.        
+##   add_benchmark( TEST_SOURCE slamBench.cpp 
+##                  TEST_ARGS "--benchmark_min_time=0.0 --v=3 --benchmark_format=json"
+##                  DEPENDS_ON slic slam)
 ##------------------------------------------------------------------------------
 macro(add_benchmark)
 
    set(options)
-   set(singleValueArgs TEST_SOURCE CLAS)
+   set(singleValueArgs TEST_SOURCE TEST_ARGS)
    set(multiValueArgs DEPENDS_ON)
 
    ## parse the arguments to the macro
@@ -566,11 +571,13 @@ macro(add_benchmark)
       set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
    endif()
 
+   # Add the command line arguments, if present
    set(test_command "${test_name}")
-   if( arg_CLAS )
-      list(APPEND test_command ${arg_CLAS})
+   if( arg_TEST_ARGS )
+      separate_arguments(argList UNIX_COMMAND ${arg_TEST_ARGS})
+      list(APPEND test_command ${argList})
    endif()
-
+   
    # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
    add_test( NAME ${test_name}
              COMMAND ${test_command}
