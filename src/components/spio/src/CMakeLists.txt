@@ -3,7 +3,7 @@
 #
 set(spio_headers
     IOBaton.hpp
-    IOParallel.hpp
+    IOManager.hpp
     )
 
 #
@@ -11,7 +11,7 @@ set(spio_headers
 #
 set(spio_sources
     IOBaton.cpp
-    IOParallel.cpp
+    IOManager.cpp
     )
 
 

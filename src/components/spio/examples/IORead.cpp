@@ -16,11 +16,11 @@
 
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
-#include "spio/IOParallel.hpp"
+#include "spio/IOManager.hpp"
 
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
-using asctoolkit::spio::IOParallel;
+using asctoolkit::spio::IOManager;
 
 /**************************************************************************
  * Subroutine:  main
@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
   std::vector<DataGroup *> groups;
   groups.push_back(root);
 
-  IOParallel reader(MPI_COMM_WORLD, groups, num_files);
+  IOManager reader(MPI_COMM_WORLD, groups, num_files);
   reader.read(file_base, 0, "conduit");
 
   delete ds;

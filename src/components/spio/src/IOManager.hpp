@@ -13,7 +13,7 @@
  *
  * \file
  *
- * \brief   Header file containing definition of IOParallel class.
+ * \brief   Header file containing definition of IOManager class.
  *
  ******************************************************************************
  */
@@ -39,31 +39,29 @@ namespace asctoolkit
 namespace spio
 {
 
-// using directives to make Conduit usage easier and less visible
-//using conduit::Node;
 
 /*!
- * \class IOParallel
+ * \class IOManager
  *
- * \brief IOParallel
+ * \brief IOManager
  *
  * It dumps and reads
  */
-class IOParallel
+class IOManager
 {
 public:
 
   /*!
-   * \brief Default ctor initializes IOParallel
+   * \brief Default ctor initializes IOManager
    */
-  IOParallel(MPI_Comm com,
+  IOManager(MPI_Comm com,
              std::vector<sidre::DataGroup *>& groups,
              int num_files);
 
   /*!
    * \brief Dtor destroys
    */
-  ~IOParallel();
+  ~IOManager();
 
   void write(const std::string& file_string, int cycle, const std::string& protocol);
   void read(const std::string& file_string, int cycle, const std::string& protocol);
@@ -73,14 +71,14 @@ private:
    *  Unimplemented ctors and copy-assignment operators.
    */
 #ifdef USE_CXX11
-  IOParallel( const IOParallel& ) = delete;
-  IOParallel( IOParallel&& ) = delete;
+  IOManager( const IOManager& ) = delete;
+  IOManager( IOManager&& ) = delete;
 
-  IOParallel& operator=( const IOParallel& ) = delete;
-  IOParallel& operator=( IOParallel&& ) = delete;
+  IOManager& operator=( const IOManager& ) = delete;
+  IOManager& operator=( IOManager&& ) = delete;
 #else
-  IOParallel( const IOParallel& );
-  IOParallel& operator=( const IOParallel& );
+  IOManager( const IOManager& );
+  IOManager& operator=( const IOManager& );
 #endif
 
   int m_comm_size;  // num procs in the MPI communicator
