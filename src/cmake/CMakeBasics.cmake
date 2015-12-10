@@ -540,14 +540,14 @@ endmacro(add_gtest)
 
 
 ##------------------------------------------------------------------------------
-## add_benchmark( TEST_SOURCE testX.cxx DEPENDS_ON [dep1 [dep2 ...]] )
+## add_benchmark( TEST_SOURCE testX.cxx CLAS <commandLineArguments> DEPENDS_ON [dep1 [dep2 ...]] )
 ##
 ## Adds a (google) benchmark to the project.
 ##------------------------------------------------------------------------------
 macro(add_benchmark)
 
    set(options)
-   set(singleValueArgs TEST_SOURCE)
+   set(singleValueArgs TEST_SOURCE CLAS)
    set(multiValueArgs DEPENDS_ON)
 
    ## parse the arguments to the macro
@@ -566,9 +566,14 @@ macro(add_benchmark)
       set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
    endif()
 
+   set(test_command "${test_name}")
+   if( arg_CLAS )
+      list(APPEND test_command ${arg_CLAS})
+   endif()
+
    # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
    add_test( NAME ${test_name}
-             COMMAND ${test_name}
+             COMMAND ${test_command}
              CONFIGURATIONS Benchmark   
              WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
              )

@@ -75,8 +75,8 @@ public:
         std::string( "LINE=<LINE>\n" ) +
         std::string("***********************************\n");
 
-     setLoggingLevel( message::Debug );
-     addStreamToAllLevels(new GenericOutputStream(&std::cout, format));
+     setLoggingMsgLevel( message::Debug );
+     addStreamToAllMsgLevels(new GenericOutputStream(&std::cout, format));
  }
 
   /*!

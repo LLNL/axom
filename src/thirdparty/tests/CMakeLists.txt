@@ -36,7 +36,7 @@ endforeach()
 
 if(ENABLE_BENCHMARK)
   foreach(test ${gbenchmark_thirdparty_tests})
-      add_benchmark( TEST_SOURCE ${test} )
+      add_benchmark( TEST_SOURCE ${test} CLAS "--benchmark_min_time=0.01" )
   endforeach()
 endif()
 

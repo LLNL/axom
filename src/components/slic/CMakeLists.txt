@@ -27,9 +27,9 @@ add_subdirectory(examples)
 ################################
 # Add tests
 ################################
-#if (BUILD_TESTING)
-#  add_subdirectory(tests)
-#endif()
+if (BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
 
 #
 #add_code_check_targets(uncrustify.cfg)
