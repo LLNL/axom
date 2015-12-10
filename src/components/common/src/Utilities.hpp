@@ -28,7 +28,7 @@
 #include <cstdlib>
 
 #ifdef USE_MPI
-#include <mpi.h>
+#include "mpi.h"
 #endif
 
 namespace asctoolkit
@@ -45,10 +45,10 @@ namespace utilities
      exit( -1 );
 #else
      int mpi = 0;
-     MPI_Initialized( &mpi );
+//     MPI_Initialized( &mpi );
      if ( mpi ) {
 
-       MPI_Abort( MPI_COMM_WORLD, -1 );
+//       MPI_Abort( MPI_COMM_WORLD, -1 );
 
      } else {
 

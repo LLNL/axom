@@ -16,11 +16,12 @@
 
 #include "sidre/DataGroup.hpp"
 #include "sidre/DataStore.hpp"
-#include "ioparallel/IOParallel.hpp"
+#include "spio/IOParallel.hpp"
 
 using asctoolkit::sidre::DataGroup;
 using asctoolkit::sidre::DataStore;
-using asctoolkit::ioparallel::IOParallel;
+using asctoolkit::sidre::DataType;
+using asctoolkit::spio::IOParallel;
 
 /**************************************************************************
  * Subroutine:  main
@@ -31,8 +32,6 @@ int main(int argc, char * argv[])
 {
   MPI_Init(&argc, &argv);
 
-  DataStore * ds = new DataStore();
-  DataGroup * root = ds->getRoot();
 
   size_t num_files = 0;
   std::string file_base;
@@ -43,11 +42,23 @@ int main(int argc, char * argv[])
     return 0;
   }
 
+  DataStore * ds = new DataStore();
+  DataGroup * root = ds->getRoot();
+  DataGroup * flds = root->createGroup("fields");
+  DataGroup * flds2 = root->createGroup("fields2");
+
+  DataGroup * ga = flds->createGroup("a");
+  DataGroup * gb = flds2->createGroup("b");
+  ga->createViewAndBuffer("i0")->allocate(DataType::c_int());
+  ga->getView("i0")->setValue(1);
+  gb->createViewAndBuffer("i1")->allocate(DataType::c_int());
+  gb->getView("i1")->setValue(4);
+
   std::vector<DataGroup *> groups;
   groups.push_back(root);
 
-  IOParallel reader(MPI_COMM_WORLD, groups, num_files);
-  reader.read(file_base, 0, "conduit");
+  IOParallel writer(MPI_COMM_WORLD, groups, num_files);
+  writer.write(file_base, 0, "conduit");
 
   delete ds;
 

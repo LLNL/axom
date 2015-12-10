@@ -31,7 +31,7 @@
 
 namespace asctoolkit
 {
-namespace ioparallel
+namespace spio
 {
 
 

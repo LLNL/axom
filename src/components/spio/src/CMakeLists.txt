@@ -1,7 +1,7 @@
 #
 # Specify all headers
 #
-set(ioparallel_headers
+set(spio_headers
     IOBaton.hpp
     IOParallel.hpp
     )
@@ -9,7 +9,7 @@ set(ioparallel_headers
 #
 # Specify all sources
 #
-set(ioparallel_sources
+set(spio_sources
     IOBaton.cpp
     IOParallel.cpp
     )
@@ -18,21 +18,21 @@ set(ioparallel_sources
 #
 # custom target to copy header files in the "include" folder of the build tree.
 #
-copy_headers_target(  ${PROJECT_NAME}  "${ioparallel_headers}"
+copy_headers_target(  ${PROJECT_NAME}  "${spio_headers}"
                      ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
 
 #
 # make the library
 #
 make_library( LIBRARY_NAME
-                ioparallel
+                spio
               LIBRARY_SOURCES
-                "${ioparallel_sources}"
-                "${ioparallel_headers}"
+                "${spio_sources}"
+                "${spio_headers}"
               DEPENDS_ON
                 conduit
                 sidre
               WITH_MPI
             )
 
-install(TARGETS ioparallel DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
+install(TARGETS spio DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

@@ -1,7 +1,7 @@
 ################################
 # IOParallel
 ################################
-project(ioparallel)
+project(spio)
 
 ################################
 # Add the conduit include path

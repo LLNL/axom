@@ -31,7 +31,7 @@
 
 namespace asctoolkit
 {
-namespace ioparallel
+namespace spio
 {
 
 
@@ -123,5 +123,5 @@ int IOBaton::finishMyTurn()
 
 
 
-} /* end namespace ioparallel */
+} /* end namespace spio */
 } /* end namespace asctoolkit */

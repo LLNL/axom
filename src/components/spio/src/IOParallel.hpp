@@ -13,13 +13,13 @@
  *
  * \file
  *
- * \brief   Header file containing definition of IOBaton class.
+ * \brief   Header file containing definition of IOParallel class.
  *
  ******************************************************************************
  */
 
-#ifndef IOBATON_HPP_
-#define IOBATON_HPP_
+#ifndef IOPARALLEL_HPP_
+#define IOPARALLEL_HPP_
 
 // Standard C++ headers
 #include <vector>
@@ -30,75 +30,70 @@
 // Other CS Toolkit headers
 #include "common/CommonTypes.hpp"
 #include "sidre/DataGroup.hpp"
+#include "spio/IOBaton.hpp"
 #include "slic/slic.hpp"
 
 
 namespace asctoolkit
 {
-namespace ioparallel
+namespace spio
 {
 
 // using directives to make Conduit usage easier and less visible
 //using conduit::Node;
 
 /*!
- * \class IOBaton
+ * \class IOParallel
  *
- * \brief IOBaton
+ * \brief IOParallel
  *
  * It dumps and reads
  */
-class IOBaton
+class IOParallel
 {
 public:
 
   /*!
-   * \brief Default ctor initializes IOBaton
+   * \brief Default ctor initializes IOParallel
    */
-  IOBaton(MPI_Comm com,
-          int num_files);
+  IOParallel(MPI_Comm com,
+             std::vector<sidre::DataGroup *>& groups,
+             int num_files);
 
   /*!
    * \brief Dtor destroys
    */
-  ~IOBaton();
+  ~IOParallel();
 
-  int waitForMyTurn();
-  int finishMyTurn(); 
+  void write(const std::string& file_string, int cycle, const std::string& protocol);
+  void read(const std::string& file_string, int cycle, const std::string& protocol);
 
 private:
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
 #ifdef USE_CXX11
-  IOBaton( const IOBaton& ) = delete;
-  IOBaton( IOBaton&& ) = delete;
+  IOParallel( const IOParallel& ) = delete;
+  IOParallel( IOParallel&& ) = delete;
 
-  IOBaton& operator=( const IOBaton& ) = delete;
-  IOBaton& operator=( IOBaton&& ) = delete;
+  IOParallel& operator=( const IOParallel& ) = delete;
+  IOParallel& operator=( IOParallel&& ) = delete;
 #else
-  IOBaton( const IOBaton& );
-  IOBaton& operator=( const IOBaton& );
+  IOParallel( const IOParallel& );
+  IOParallel& operator=( const IOParallel& );
 #endif
-
-  MPI_Comm m_mpi_comm;
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
-  int m_num_groups; // number of groups (files)
-  int m_num_larger_groups;  // some group have one extra
-  int m_group_size; // regular group size (m_comm_size / m_num_groups) w/o remainder
-  int m_group_id;
-  int m_first_regular_group_rank;
-  int m_rank_within_group;
-  int m_rank_before_me;
-  int m_rank_after_me;
 
-  int m_mpi_tag;
+  IOBaton m_baton;
+
+  std::vector<sidre::DataGroup *> m_datagroups;
+
 };
 
 
-} /* end namespace ioparallel */
+} /* end namespace spio */
 } /* end namespace asctoolkit */
 
-#endif /* IOBATON_HPP_ */
+#endif /* IOPARALLEL_HPP_ */
