@@ -74,6 +74,6 @@ set(GENHTML_PATH "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_
 # MPI 
 #######
 set(ENABLE_MPI ON CACHE PATH "")
-set(MPI_C_COMPILER "/usr/local/tools/mvapich2-intel-2.1/bin/mpicc" CACHE PATH "")
-set(MPI_CXX_COMPILER "/usr/local/tools/mvapich2-intel-2.1/bin/mpicxx" CACHE PATH "")
-set(MPI_Fortran_COMPILER  "/usr/local/tools/mvapich2-intel-2.1/bin/mpifort" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/local/tools/mvapich2-intel-2.0/bin/mpicc" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/local/tools/mvapich2-intel-2.0/bin/mpicxx" CACHE PATH "")
+set(MPI_Fortran_COMPILER  "/usr/local/tools/mvapich2-intel-2.0/bin/mpif90" CACHE PATH "")
