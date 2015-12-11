@@ -574,55 +574,56 @@ endmacro(add_gtest)
 ##------------------------------------------------------------------------------
 macro(add_benchmark)
 
-   set(options)
-   set(singleValueArgs TEST_SOURCE TEST_ARGS)
-   set(multiValueArgs DEPENDS_ON)
+   if(ENABLE_BENCHMARK)
+      set(options)
+      set(singleValueArgs TEST_SOURCE TEST_ARGS)
+      set(multiValueArgs DEPENDS_ON)
 
-   ## parse the arguments to the macro
-   cmake_parse_arguments(arg
-        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+      ## parse the arguments to the macro
+      cmake_parse_arguments(arg
+           "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-   get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
-   set(test_name ${test_name_base}_benchmark)
-   add_executable( ${test_name} ${arg_TEST_SOURCE} )
-   target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
-   target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
-   target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
+      get_filename_component(test_name_base ${arg_TEST_SOURCE} NAME_WE)
+      set(test_name ${test_name_base}_benchmark)
+      add_executable( ${test_name} ${arg_TEST_SOURCE} )
+      target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
+      target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
+      target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
 
-   if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-   endif()
+      if ( ENABLE_CXX11 )
+         ## Note, this requires cmake 3.1 and above
+         set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
+      endif()
 
-   # Add the command line arguments, if present
-   set(test_command "${test_name}")
-   if( arg_TEST_ARGS )
-      separate_arguments(argList UNIX_COMMAND ${arg_TEST_ARGS})
-      list(APPEND test_command ${argList})
-   endif()
-   
-   # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
-   add_test( NAME ${test_name}
-             COMMAND ${test_command}
-             CONFIGURATIONS Benchmark   
-             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
-             )
+      # Add the command line arguments, if present
+      set(test_command "${test_name}")
+      if( arg_TEST_ARGS )
+         separate_arguments(argList UNIX_COMMAND ${arg_TEST_ARGS})
+         list(APPEND test_command ${argList})
+      endif()
+      
+      # The 'CONFIGURATIONS Benchmark' line excludes benchmarks from the general list of tests
+      add_test( NAME ${test_name}
+                COMMAND ${test_command}
+                CONFIGURATIONS Benchmark   
+                WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+                )
 
-   add_dependencies(run_benchmarks ${test_name})
+      add_dependencies(run_benchmarks ${test_name})
 
-   
-   # add any passed source files to the running list for this project
-   if(IS_ABSOLUTE)
-      list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
-   else()
-      list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
-                  "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
-   endif()
+      
+      # add any passed source files to the running list for this project
+      if(IS_ABSOLUTE)
+         list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_TEST_SOURCE}")
+      else()
+         list(APPEND "${PROJECT_NAME}_ALL_SOURCES"
+                     "${CMAKE_CURRENT_SOURCE_DIR}/${arg_TEST_SOURCE}")
+      endif()
 
 
-   set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
-      CACHE STRING "" FORCE )
-
+      set("${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
+         CACHE STRING "" FORCE )
+   endif(ENABLE_BENCHMARK)
 endmacro(add_benchmark)
 
 ##------------------------------------------------------------------------------
@@ -656,7 +657,7 @@ macro(add_fortran_test)
                   WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
                   )
        #TODO: we aren't tracking / grouping fortran sources.
-   endif()
+    endif(ENABLE_FORTRAN)
 endmacro(add_fortran_test)
 
 
