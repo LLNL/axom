@@ -366,9 +366,6 @@ private:
   /// Number of dimensions
   int m_fortran_rank;
 
-  /// Pointer to Fortran allocatable array.
-  void * m_fortran_allocatable;
-
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */
