@@ -327,6 +327,37 @@ DataView * DataGroup::createExternalView( const std::string& name,
 /*
  *************************************************************************
  *
+ * Create external view with given data type, number of dimensions and shape
+ * then attach to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createExternalView( const std::string& name,
+                                          void * external_data,
+					  TypeID type, 
+                                          int ndims, SidreLength * shape)
+{
+  SLIC_ASSERT_MSG( ndims > 0,
+                   "Cannot create external view with ndims <= 1");
+ 
+  if ( ndims < 0)
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    SidreLength num_elems = 1;
+    for (int i=0; i < ndims; i++)
+    {
+	num_elems *= shape[i];
+    }
+    return createExternalView( name, external_data, type, num_elems );
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Create external view with given data type and attach to group.
  *
  *************************************************************************

@@ -476,6 +476,11 @@ public:
                                  SidreLength offset = 0,
                                  SidreLength stride = 1 );
 
+  DataView * createExternalView( const std::string& name,
+                                 void * external_data,
+                                 TypeID type, 
+                                 int ndims, SidreLength * shape);
+
   /*!
    * \brief Create DataView with given name to hold data referenced with
    *        given pointer. View will be initialized with given Conduit
