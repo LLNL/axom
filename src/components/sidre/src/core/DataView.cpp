@@ -324,6 +324,31 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
 /*
  *************************************************************************
  *
+ * Apply given type, number of dimensions and shape to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
+{
+  SLIC_ASSERT_MSG( !isOpaque(), "Cannot call apply on an opaque view");
+  SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
+  SLIC_ASSERT_MSG(ndims >= 1, "Must declare number of dimensions >= 0");
+
+  if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && ndims >= 0 )
+  {
+    SidreLength num_elems = 1;
+    for (int i=0; i < ndims; i++)
+    {
+      num_elems *= shape[i];
+    }
+    apply(type, num_elems );
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Apply a Consuit data type description to data view.
  *
  *************************************************************************

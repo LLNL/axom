@@ -247,6 +247,8 @@ public:
                                  SidreLength offset = 0,
                                  SidreLength stride = 1);
 
+  DataView * apply( TypeID type, int ndims, SidreLength * shape );
+
   /*!
    * \brief Apply data description of given Conduit data type to data view.
    *
@@ -609,6 +611,9 @@ private:
 
   /// Has Schema been applied data?
   bool m_is_applied;
+
+  /// Shape information
+    //  std::vector<SidreLength *> m_shape;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

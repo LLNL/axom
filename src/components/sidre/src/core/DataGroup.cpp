@@ -337,10 +337,14 @@ DataView * DataGroup::createExternalView( const std::string& name,
 					  TypeID type, 
                                           int ndims, SidreLength * shape)
 {
-  SLIC_ASSERT_MSG( ndims > 0,
-                   "Cannot create external view with ndims <= 1");
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR ,
+                   "Cannot create external view with null data pointer" );
+  SLIC_ASSERT_MSG( ndims >= 0, 
+                  "Cannot create external view with ndims < 0");
  
-  if ( ndims < 0)
+  if ( name.empty() || hasView(name) || external_data == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
   }
@@ -349,9 +353,18 @@ DataView * DataGroup::createExternalView( const std::string& name,
     SidreLength num_elems = 1;
     for (int i=0; i < ndims; i++)
     {
-	num_elems *= shape[i];
+      num_elems *= shape[i];
     }
-    return createExternalView( name, external_data, type, num_elems );
+
+    DataBuffer * buff = this->getDataStore()->createBuffer();
+    buff->declare(type, num_elems);
+    buff->setExternalData(external_data);
+
+    DataView * const view = new DataView( name, this, buff);
+    buff->attachView(view);
+    view->apply(type, ndims, shape);
+
+    return attachView(view);
   }
 }
 
