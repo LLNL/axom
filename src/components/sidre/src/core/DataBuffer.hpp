@@ -363,9 +363,6 @@ private:
   /// Is buffer holding externally-owned data?
   bool m_is_data_external;
 
-  /// Number of dimensions
-  int m_fortran_rank;
-
   /*!
    *  Unimplemented ctors and copy-assignment operators.
    */

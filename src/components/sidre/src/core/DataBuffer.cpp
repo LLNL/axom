@@ -277,8 +277,7 @@ DataBuffer::DataBuffer( IndexType index )
   m_data(ATK_NULLPTR),
   m_node(),
   m_schema(),
-  m_is_data_external(false),
-  m_fortran_rank(0)
+  m_is_data_external(false)
 {}
 
 
@@ -296,8 +295,7 @@ DataBuffer::DataBuffer(const DataBuffer& source )
   m_data(source.m_data),
   m_node(source.m_node),
   m_schema(source.m_schema),
-  m_is_data_external(source.m_is_data_external),
-  m_fortran_rank(0)
+  m_is_data_external(source.m_is_data_external)
 {
 // disallow?
 }
