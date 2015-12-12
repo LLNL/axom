@@ -35,13 +35,13 @@ extern "C" {
  * Called from Fortran.
  */
 void * SIDRE_create_array_view(void * group, char * name, int lname,
-                             void * addr, int type, long nitems)
+                               void * addr, int type, int rank, SidreLength * extents)
 {
   DataGroup * grp = static_cast<DataGroup *>(group);
   DataView * view = grp->createExternalView(std::string(name, lname),
                                             addr,
                                             static_cast<TypeID>(type),
-                                            static_cast<SidreLength>(nitems));
+                                            static_cast<SidreLength>(extents[0]));
   return view;
 }
 

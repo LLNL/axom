@@ -12,7 +12,7 @@ namespace sidre
 {
 
 void * SIDRE_create_array_view(void * group, char * name, int lname,
-                               void * addr, int type, long nitems);
+                               void * addr, int type, int rank, SidreLength * extents);
 
 }  // namespace asctoolkit
 }  // namespace sidre

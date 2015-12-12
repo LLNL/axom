@@ -21,9 +21,12 @@ use conduit, only : &
     SIDRE_ULONG_ID      => CONDUIT_ULONG_T, &
     SIDRE_FLOAT_ID      => CONDUIT_FLOAT_T, &
     SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_T
+use, intrinsic :: iso_c_binding, only : C_LONG
 ! splicer end module_use
 
 ! splicer begin module_top
+integer, parameter :: SIDRE_LENGTH = C_LONG
+
 integer, parameter :: invalid_index = -1
 ! splicer end module_top
 
