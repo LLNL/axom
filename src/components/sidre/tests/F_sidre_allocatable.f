@@ -58,72 +58,10 @@ contains
   end subroutine local_allocatable_int
 
 !----------------------------------------------------------------------
-
-! Register with datastore, check type and length
-! Allocate array via the datastore
-! Check from Fortran with ALLOCATED and SIZE
-! Check datastore metadata
-  subroutine ds_allocatable_int
-    integer, pointer :: ipointer(:)
-
-    type(datastore) ds
-    type(datagroup) root
-    type(dataview)  view
-    integer num_elements
-    integer type
-    integer i
-
-    ds = datastore_new()
-    root = ds%get_root()
-
-    ! Register with datastore, check type and length
-    view = root%create_allocatable_view("iarray", iarray)
-
-    type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
-
-    num_elements = view%get_num_elements()
-    call assert_equals(num_elements, 0)
-
-    ! Allocate array via datastore
-! To be consistent with actual Fortran code, the method that creates 
-! an allocatable view should take the type and the allocate method
-! should take only shape, length, etc.
-    call view%allocate(SIDRE_INT_ID, 10)
-    
-    ! Check from Fortran with ALLOCATED and SIZE
-    call assert_true(allocated(iarray))
-
-    ! Check size intrinsic
-    call assert_equals(size(iarray), 10)
-
-! Check datastore metadata
-    type = view%get_type_id()
-    call assert_equals(type, SIDRE_INT_ID)
-
-    num_elements = view%get_num_elements()
-    call assert_equals(num_elements, 10)
-
-    ! get array via a pointer
-    do i=1,10
-       iarray(i) = i
-    enddo
-    
-    call view%get_value(ipointer)
-    call assert_true(all(iarray.eq.ipointer))
-
-    call ds%delete()
-
-    ! deleting the datastore deallocates iarray
-    call assert_false(allocated(iarray))
-
-  end subroutine ds_allocatable_int
-
-!----------------------------------------------------------------------
 !
-! register a static array with the datastore
+! register a static (non-allocatable) array with the datastore as external view
 
-  subroutine local_static_int_array
+  subroutine local_static_int
     integer :: iarray(10)
     integer, pointer :: ipointer(:)
 
@@ -155,7 +93,7 @@ contains
 
     call ds%delete()
 
-  end subroutine local_static_int_array
+  end subroutine local_static_int
 
 !----------------------------------------------------------------------
 !--- check other types
@@ -209,8 +147,7 @@ program fortran_test
   call init_fruit
 
   call local_allocatable_int
-  call ds_allocatable_int
-  call local_static_int_array
+  call local_static_int
   call local_allocatable_double
 
   call fruit_summary
