@@ -8,12 +8,6 @@ module sidre_allocatable
   use sidre_mod
   implicit none
 
-  ! Global variables to add to datastore.
-  ! If they were local to a subroutine, then Fortran will attempt to
-  ! free them before returning and we want the datastore to free them.
-  integer, allocatable :: iarray(:)
-  real(C_DOUBLE), allocatable :: darray(:)
-
 contains
 
 ! Allocate array via Fortran
@@ -22,6 +16,7 @@ contains
 !----------------------------------------------------------------------
 
   subroutine local_allocatable_int
+    integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
     type(datastore) ds
@@ -34,10 +29,13 @@ contains
     ds = datastore_new()
     root = ds%get_root()
 
-    ! Allocate array via Fortran
     allocate(iarray(10))
 
-    view = root%create_allocatable_view("iarray", iarray)
+    do i=1,10
+       iarray(i) = i
+    enddo
+
+    view = root%create_array_view("iarray", iarray)
 
     type = view%get_type_id()
     call assert_equals(type, SIDRE_INT_ID)
@@ -45,15 +43,13 @@ contains
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
-    do i=1,10
-       iarray(i) = i
-    enddo
-
     ! get array via a pointer
     call view%get_value(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
+
+    deallocate(iarray)
 
   end subroutine local_allocatable_int
 
@@ -99,6 +95,7 @@ contains
 !--- check other types
 
   subroutine local_allocatable_double
+    real(C_DOUBLE), allocatable :: darray(:)
     real(C_DOUBLE), pointer :: dpointer(:)
 
     type(datastore) ds
@@ -113,7 +110,11 @@ contains
 
     allocate(darray(10))
 
-    view = root%create_allocatable_view("darray", darray)
+    do i=1,10
+       darray(i) = i + 0.5d0
+    enddo
+
+    view = root%create_array_view("darray", darray)
 
     type = view%get_type_id()
     call assert_equals(type, SIDRE_DOUBLE_ID)
@@ -121,15 +122,13 @@ contains
     num_elements = view%get_num_elements()
     call assert_equals(num_elements, 10)
 
-    do i=1,10
-       darray(i) = i + 0.5d0
-    enddo
-
     ! get array via a pointer
     call view%get_value(dpointer)
     call assert_true(all(abs(darray-dpointer).lt..0005))
 
     call ds%delete()
+
+    deallocate(darray)
 
   end subroutine local_allocatable_double
 
