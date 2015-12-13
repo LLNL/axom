@@ -489,13 +489,18 @@
             "args": [], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
             "fmt": {
-                "C_name": "TUT_function5_0", 
-                "F_C_name": "tut_function5_0", 
+                "C_name": "TUT_function5", 
+                "F_C_name": "tut_function5", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5_0", 
-                "F_name_method": "function5_0", 
-                "function_suffix": "_0"
+                "F_name_impl": "function5", 
+                "F_name_method": "function5", 
+                "function_suffix": ""
             }, 
             "options": {
                 "wrap_c": true, 
@@ -526,13 +531,18 @@
             ], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
             "fmt": {
-                "C_name": "TUT_function5_1", 
-                "F_C_name": "tut_function5_1", 
+                "C_name": "TUT_function5_arg1", 
+                "F_C_name": "tut_function5_arg1", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5_1", 
-                "F_name_method": "function5_1", 
-                "function_suffix": "_1"
+                "F_name_impl": "function5_arg1", 
+                "F_name_method": "function5_arg1", 
+                "function_suffix": "_arg1"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -576,14 +586,19 @@
             ], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
             "fmt": {
-                "C_name": "TUT_function5_2", 
-                "F_C_name": "tut_function5_2", 
+                "C_name": "TUT_function5_arg1_arg2", 
+                "F_C_name": "tut_function5_arg1_arg2", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5_2", 
-                "F_name_method": "function5_2", 
-                "PY_name_impl": "PY_function5_2", 
-                "function_suffix": "_2", 
+                "F_name_impl": "function5_arg1_arg2", 
+                "F_name_method": "function5_arg1_arg2", 
+                "PY_name_impl": "PY_function5_arg1_arg2", 
+                "function_suffix": "_arg1_arg2", 
                 "method_name": "Function5", 
                 "underscore_name": "function5"
             }, 
@@ -1242,13 +1257,18 @@
             ], 
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
             "fmt": {
-                "C_name": "TUT_overload1_0", 
-                "F_C_name": "tut_overload1_0", 
+                "C_name": "TUT_overload1_num", 
+                "F_C_name": "tut_overload1_num", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_0", 
-                "F_name_method": "overload1_0", 
-                "function_suffix": "_0"
+                "F_name_impl": "overload1_num", 
+                "F_name_method": "overload1_num", 
+                "function_suffix": "_num"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1287,13 +1307,18 @@
             ], 
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
             "fmt": {
-                "C_name": "TUT_overload1_1", 
-                "F_C_name": "tut_overload1_1", 
+                "C_name": "TUT_overload1_num_offset", 
+                "F_C_name": "tut_overload1_num_offset", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_1", 
-                "F_name_method": "overload1_1", 
-                "function_suffix": "_1"
+                "F_name_impl": "overload1_num_offset", 
+                "F_name_method": "overload1_num_offset", 
+                "function_suffix": "_num_offset"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1345,14 +1370,19 @@
             ], 
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
             "fmt": {
-                "C_name": "TUT_overload1_2", 
-                "F_C_name": "tut_overload1_2", 
+                "C_name": "TUT_overload1_num_offset_stride", 
+                "F_C_name": "tut_overload1_num_offset_stride", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_2", 
-                "F_name_method": "overload1_2", 
-                "PY_name_impl": "PY_overload1_2", 
-                "function_suffix": "_2", 
+                "F_name_impl": "overload1_num_offset_stride", 
+                "F_name_method": "overload1_num_offset_stride", 
+                "PY_name_impl": "PY_overload1_num_offset_stride", 
+                "function_suffix": "_num_offset_stride", 
                 "method_name": "overload1", 
                 "underscore_name": "overload1"
             }, 
