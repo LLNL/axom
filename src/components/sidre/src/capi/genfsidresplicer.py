@@ -100,11 +100,12 @@ subroutine dataview_get_value_{typename}_{nd}{suffix}(view, value)
     class(dataview), intent(IN) :: view
     {f_type}, pointer, intent(OUT) :: value{shape}
     type(C_PTR) cptr
-    integer(C_SIZE_T) nelems
+    integer rank
+    integer(SIDRE_LENGTH) extents({rank})
 
     cptr = view%get_data_pointer()
-    nelems = view%get_num_elements()
-    call c_f_pointer(cptr, value, [ nelems ])
+    rank = view%get_shape({rank}, extents)
+    call c_f_pointer(cptr, value, extents)
 end subroutine dataview_get_value_{typename}_{nd}{suffix}""".format(**d)
     else:
         raise RuntimeError("rank too large in print_get_value")
