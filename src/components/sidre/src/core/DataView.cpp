@@ -336,10 +336,20 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 
   if ( !isOpaque() && m_data_buffer != ATK_NULLPTR && ndims >= 0 )
   {
+    if (m_shape != ATK_NULLPTR)
+    {
+	m_shape->resize(ndims);
+    }
+    else
+    {
+	m_shape = new std::vector<SidreLength>(ndims);
+    }
+
     SidreLength num_elems = 1;
     for (int i=0; i < ndims; i++)
     {
       num_elems *= shape[i];
+      (*m_shape)[i] = shape[i];
     }
     apply(type, num_elems );
   }
@@ -384,6 +394,56 @@ DataView * DataView::apply(const Schema& schema)
     apply();
   }
   return this;
+}
+
+int DataView::getNumDimensions() const
+{
+  if (m_shape == ATK_NULLPTR)
+  {
+    return 1;
+  }
+  else 
+  {
+    return m_shape->size();
+  }
+}
+
+int DataView::getShape(int ndims, SidreLength * shape) const
+{
+  if (m_shape == ATK_NULLPTR)
+  {
+    if (ndims > 0)
+    {
+      shape[0] = getNumElements();
+      return 1;
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  else 
+  {
+      if (static_cast<unsigned>(ndims) < m_shape->size())
+    {
+      return -1;
+    }
+    else
+    {
+#if 0
+      for(std::vector<SidreLength>::iterator it = v.begin(); it != v.end(); ++it)
+      {
+          *shape++ = it.
+      }
+#else
+      for(std::vector<SidreLength>::size_type i = 0; i != m_shape->size(); i++)
+      {
+        shape[i] = (*m_shape)[i];
+      }
+#endif
+    }
+    return m_shape->size();
+  }
 }
 
 /*
@@ -501,7 +561,8 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(false),
-  m_is_applied(false)
+  m_is_applied(false),
+  m_shape(ATK_NULLPTR)
 {}
 
 /*
@@ -520,7 +581,8 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(false),
-  m_is_applied(false)
+  m_is_applied(false),
+  m_shape(ATK_NULLPTR)
 {}
 
 /*
@@ -539,7 +601,8 @@ DataView::DataView( const std::string& name,
   m_schema(),
   m_node(),
   m_is_opaque(true),
-  m_is_applied(false)
+  m_is_applied(false),
+  m_shape(ATK_NULLPTR)
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
@@ -558,6 +621,10 @@ DataView::~DataView()
   if (m_data_buffer != ATK_NULLPTR)
   {
     m_data_buffer->detachView(this);
+  }
+  if (m_shape != ATK_NULLPTR)
+  {
+    delete m_shape;
   }
 }
 

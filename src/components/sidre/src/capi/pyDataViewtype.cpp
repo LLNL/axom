@@ -520,6 +520,48 @@ PY_dataview_get_num_elements(
 // splicer end class.DataView.method.get_num_elements
 }
 
+static char PY_dataview_get_num_dimensions__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_get_num_dimensions(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.get_num_dimensions
+    int rv = self->BBB->getNumDimensions();
+    return Py_BuildValue("i", rv);
+// splicer end class.DataView.method.get_num_dimensions
+}
+
+static char PY_dataview_get_shape__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_get_shape(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.get_shape
+    int ndims;
+    SIDRE_SidreLength * shape;
+    const char *kwcpp = "ndims\0shape";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+6, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:getShape", kw_list,
+        &ndims, &shape))
+    {
+        return NULL;
+    }
+    int rv = self->BBB->getShape(ndims, shape);
+    return Py_BuildValue("i", rv);
+// splicer end class.DataView.method.get_shape
+}
+
 static char PY_dataview_print__doc__[] =
 "documentation"
 ;
@@ -681,6 +723,8 @@ static PyMethodDef PY_DataView_methods[] = {
 {"getTypeID", (PyCFunction)PY_dataview_get_type_id, METH_NOARGS, PY_dataview_get_type_id__doc__},
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},
 {"getNumElements", (PyCFunction)PY_dataview_get_num_elements, METH_NOARGS, PY_dataview_get_num_elements__doc__},
+{"getNumDimensions", (PyCFunction)PY_dataview_get_num_dimensions, METH_NOARGS, PY_dataview_get_num_dimensions__doc__},
+{"getShape", (PyCFunction)PY_dataview_get_shape, METH_VARARGS|METH_KEYWORDS, PY_dataview_get_shape__doc__},
 {"print", (PyCFunction)PY_dataview_print, METH_NOARGS, PY_dataview_print__doc__},
 {"allocate", (PyCFunction)PY_dataview_allocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate__doc__},
 {"apply", (PyCFunction)PY_dataview_apply, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply__doc__},

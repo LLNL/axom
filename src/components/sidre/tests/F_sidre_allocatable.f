@@ -25,6 +25,8 @@ contains
     integer type
     integer num_elements
     integer i
+    integer rank
+    integer(SIDRE_LENGTH) extents(7)
 
     ds = datastore_new()
     root = ds%get_root()
@@ -41,7 +43,14 @@ contains
     call assert_equals(type, SIDRE_INT_ID)
 
     num_elements = view%get_num_elements()
-    call assert_equals(num_elements, 10)
+    call assert_equals(num_elements, size(iarray))
+
+    rank = view%get_num_dimensions()
+    call assert_equals(rank, 1)
+
+    rank = view%get_shape(7, extents)
+    call assert_equals(rank, 1)
+    call assert_true(extents(1) == 10)
 
     ! get array via a pointer
     call view%get_value(ipointer)

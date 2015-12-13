@@ -325,6 +325,18 @@ public:
     return m_schema.dtype().number_of_elements();
   }
 
+  /*!
+   * \brief Return number of dimensions in data view.
+   */
+  int getNumDimensions() const;
+
+  /*!
+   * \brief Return number of dimensions in data view and fill in shape of this data view object.
+   *
+   *  ndims - maximum number of dimensions to return.
+   */
+  int getShape(int ndims, SidreLength * shape) const;
+
 //@}
 
 
@@ -613,7 +625,7 @@ private:
   bool m_is_applied;
 
   /// Shape information
-    //  std::vector<SidreLength *> m_shape;
+  std::vector<SidreLength> * m_shape;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

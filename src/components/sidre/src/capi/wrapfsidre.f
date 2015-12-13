@@ -238,6 +238,8 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_num_elements => dataview_get_num_elements
+        procedure :: get_num_dimensions => dataview_get_num_dimensions
+        procedure :: get_shape => dataview_get_shape
         procedure :: print => dataview_print
         generic :: allocate => &
             ! splicer begin class.DataView.generic.allocate
@@ -1185,6 +1187,24 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             integer(C_SIZE_T) :: rv
         end function sidre_dataview_get_num_elements
+        
+        pure function sidre_dataview_get_num_dimensions(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_num_dimensions")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function sidre_dataview_get_num_dimensions
+        
+        pure function sidre_dataview_get_shape(self, ndims, shape) result(rv) &
+                bind(C, name="SIDRE_dataview_get_shape")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+            integer(C_INT) :: rv
+        end function sidre_dataview_get_shape
         
         subroutine sidre_dataview_print(self) &
                 bind(C, name="SIDRE_dataview_print")
@@ -2634,6 +2654,31 @@ contains
         rv = sidre_dataview_get_num_elements(obj%voidptr)
         ! splicer end class.DataView.method.get_num_elements
     end function dataview_get_num_elements
+    
+    function dataview_get_num_dimensions(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataView.method.get_num_dimensions
+        rv = sidre_dataview_get_num_dimensions(obj%voidptr)
+        ! splicer end class.DataView.method.get_num_dimensions
+    end function dataview_get_num_dimensions
+    
+    function dataview_get_shape(obj, ndims, shape) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT), value, intent(IN) :: ndims
+        integer(C_LONG), intent(IN) :: shape(*)
+        integer(C_INT) :: rv
+        ! splicer begin class.DataView.method.get_shape
+        rv = sidre_dataview_get_shape(  &
+            obj%voidptr,  &
+            ndims,  &
+            shape)
+        ! splicer end class.DataView.method.get_shape
+    end function dataview_get_shape
     
     subroutine dataview_print(obj)
         use iso_c_binding
