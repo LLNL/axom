@@ -395,10 +395,10 @@ The different styles are use as::
 
 
 
-Optional Arguments
-------------------
+Default Value Arguments
+------------------------
 
-Each function with default arguments will create a C and Fortran 
+Each function with default value arguments will create a C and Fortran 
 wrapper for each possible prototype.  For Fortran, these functions
 are then wrapped in a generic statement which allows them to be
 called by the original name.
@@ -407,22 +407,30 @@ allows C++ to provide the default values::
 
     functions:
     - decl: double Function5(double arg1 = 3.1415, bool arg2 = true)
+      default_arg_suffix:
+      -  
+      -  _arg1
+      -  _arg1_arg2
+
+The *default_arg_suffix* provides a list of values of
+*function_suffix* for each possible set of arguments for the function.
+In this case 0, 1, or 2 arguments.
 
 C wrappers::
 
-    double TUT_function5_0()
+    double TUT_function5()
     {
       double rv = Function5();
       return rv;
     }
     
-    double TUT_function5_1(double arg1)
+    double TUT_function5_arg1(double arg1)
     {
       double rv = Function5(arg1);
       return rv;
     }
     
-    double TUT_function5_2(double arg1, bool arg2)
+    double TUT_function5_arg1_arg2(double arg1, bool arg2)
     {
       double rv = Function5(arg1, arg2);
       return rv;
@@ -432,29 +440,29 @@ C wrappers::
 Fortran wrapper::
 
     interface function5
-        module procedure function5_0
-        module procedure function5_1
-        module procedure function5_2
+        module procedure function5
+        module procedure function5_arg1
+        module procedure function5_arg1_arg2
     end interface function5
 
     contains
 
-    function function5_0() result(rv)
+    function function5() result(rv)
         use iso_c_binding
         implicit none
         real(C_DOUBLE) :: rv
-        rv = tut_function5_0()
-    end function function5_0
+        rv = tut_function5()
+    end function function5
     
-    function function5_1(arg1) result(rv)
+    function function5_arg1(arg1) result(rv)
         use iso_c_binding
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg1
         real(C_DOUBLE) :: rv
-        rv = tut_function5_1(arg1)
-    end function function5_1
+        rv = tut_function5_arg1(arg1)
+    end function function5_arg1
     
-    function function5_2(arg1, arg2) result(rv)
+    function function5_arg1_arg2(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
         real(C_DOUBLE), value, intent(IN) :: arg1
@@ -462,8 +470,8 @@ Fortran wrapper::
         logical(C_BOOL) tmp_arg2
         real(C_DOUBLE) :: rv
         tmp_arg2 = arg2  ! coerce to C_BOOL
-        rv = tut_function5_2(arg1, tmp_arg2)
-    end function function5_2
+        rv = tut_function5_arg1_arg2(arg1, tmp_arg2)
+    end function function5_arg1_arg2
 
 Fortran usage::
 
