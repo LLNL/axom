@@ -37,22 +37,6 @@ def create_array_view(d):
 function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(rv)
     use iso_c_binding
     implicit none
-
-    interface
-       function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-           result(rv) bind(C,name="SIDRE_create_array_view")
-       use iso_c_binding
-       import SIDRE_LENGTH
-       type(C_PTR), value, intent(IN)     :: group
-       character(kind=C_CHAR), intent(IN) :: name(*)
-       integer(C_INT), value, intent(IN)  :: lname
-       type(C_PTR), value,     intent(IN) :: addr
-       integer(C_INT), value, intent(IN)  :: type
-       integer(C_INT), value, intent(IN)  :: rank
-       integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-       type(C_PTR) rv
-       end function SIDRE_create_array_view
-    end interface
     external :: SIDRE_C_LOC
 
     class(datagroup), intent(IN) :: group
