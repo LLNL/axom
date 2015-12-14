@@ -1092,46 +1092,6 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
 /*
  *************************************************************************
  *
- * Create external view for a Fortran allocatable and attach to group.
- *
- *************************************************************************
- */
-#ifdef ATK_ENABLE_FORTRAN
-DataView * DataGroup::createFortranAllocatableView( const std::string& name,
-						    void * array, TypeID type, int rank )
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( array != ATK_NULLPTR ,
-                   "Cannot create Fortran allocatable view with null array pointer" );
- 
-  if ( name.empty() || hasView(name) || array == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    SidreLength num_elems = SizeAllocatable(array, type, rank);
-    buff->declare(type, num_elems);
-    buff->setFortranAllocatable(array, type, rank);
-
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(num_elems);
-    view->apply(dtype);
-
-    return attachView(view);
-  }
-}
-#endif
-
-/*
- *************************************************************************
- *
  * PRIVATE method to copy group to given Conduit node.
  *
  *************************************************************************

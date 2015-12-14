@@ -46,7 +46,6 @@ if (ENABLE_FORTRAN)
         capi/wrapDataView.cpp
         capi/wrapfsidre.f
         capi/SidreAllocatable.cpp
-        capi/SidreAllocatablef.f
     )
     add_subdirectory(capi)
 
