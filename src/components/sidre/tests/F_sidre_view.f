@@ -106,7 +106,7 @@ contains
 
     call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -167,7 +167,7 @@ contains
     dbuff = ds%create_buffer()
     
     call dbuff%allocate(SIDRE_INT_ID, 10_8)
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -469,7 +469,7 @@ contains
 
     call assert_true(opq_view%is_opaque())
 
-    opq_ptr = opq_view%get_opaque()
+    opq_ptr = opq_view%get_void_ptr()
     call c_f_pointer(opq_ptr, out_data)
 
     call assert_true(c_associated(opq_ptr, src_ptr))

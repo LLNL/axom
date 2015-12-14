@@ -271,7 +271,7 @@ TEST(C_sidre_group,view_copy_move)
   {
     ATK_dataview * tmpview = ATK_datagroup_get_view_from_name(sub, "d0");
     ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    d0_data = (double *) ATK_databuffer_get_data(tmpbuf);
+    d0_data = (double *) ATK_databuffer_get_void_ptr(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
@@ -411,8 +411,8 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName2), view2 );
 
 #ifdef XXX
-  int * v1_vals = (int *) ATK_dataview_get_data(view1);
-  double * v2_vals = (double *)  ATK_dataview_get_data(view1);
+  int * v1_vals = (int *) ATK_dataview_get_void_ptr(view1);
+  double * v2_vals = (double *)  ATK_dataview_get_void_ptr(view1);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -444,7 +444,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
     ATK_datagroup_create_view_and_allocate_from_type(root, "base", 
                                                      SIDRE_INT_ID, 10);
 #ifdef XXX
-  int * base_vals = (int *) ATK_dataview_get_data(base);
+  int * base_vals = (int *) ATK_dataview_get_void_ptr(base);
   for(int i=0 ; i<10 ; i++)
   {
     if(i < 5)
@@ -467,8 +467,8 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   Schema s(DataType::uint32(5, 5*sizeof(int)));
   ATK_datagroup_createView(root, "sub_b", base_buff, s);
 
-  int * sub_a_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view_from_name(root, "sub_a"));
-  int * sub_b_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view_from_name(root, "sub_b"));
+  int * sub_a_vals = (int *) ATK_dataview_get_void_ptr(ATK_datagroup_get_view_from_name(root, "sub_a"));
+  int * sub_b_vals = (int *) ATK_dataview_get_void_ptr(ATK_datagroup_get_view_from_name(root, "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {

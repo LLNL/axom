@@ -114,7 +114,7 @@ public:
   /*!
    * \brief Return void-pointer to data held by DataBuffer.
    */
-  void * getPtr()
+  void * getVoidPtr()
   {
     return m_data;
   }

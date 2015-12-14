@@ -135,15 +135,6 @@ return rv.c_str();
 // splicer end class.DataView.method.get_name
 }
 
-void * ATK_dataview_get_opaque(ATK_dataview * self)
-{
-DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_opaque
-void * rv = selfobj->getOpaque();
-return rv;
-// splicer end class.DataView.method.get_opaque
-}
-
 ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
@@ -153,13 +144,13 @@ return static_cast<ATK_databuffer *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.get_buffer
 }
 
-void * ATK_dataview_get_data_pointer(ATK_dataview * self)
+void * ATK_dataview_get_void_ptr(ATK_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.get_data_pointer
-void * rv = selfobj->getDataPointer();
+// splicer begin class.DataView.method.get_void_ptr
+void * rv = selfobj->getVoidPtr();
 return rv;
-// splicer end class.DataView.method.get_data_pointer
+// splicer end class.DataView.method.get_void_ptr
 }
 
 void ATK_dataview_set_scalar_int(ATK_dataview * self, int value)

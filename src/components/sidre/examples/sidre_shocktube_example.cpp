@@ -56,7 +56,7 @@ const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
 
-void CreateScalarIntBufferViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
+void CreateScalarIntViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
 {
   DataView * const view = grp->createViewAndAllocate(name, DataType::int32());
   view->setScalar(value);
@@ -94,9 +94,9 @@ void GetUserInput(DataGroup * const prob)
     numFaces = numElems - 1;
 
     // create buffer and view, and set value
-    CreateScalarIntBufferViewAndSetVal( prob, "numElems", numElems );
+    CreateScalarIntViewAndSetVal( prob, "numElems", numElems );
 
-    CreateScalarIntBufferViewAndSetVal( prob, "numFaces", numFaces );
+    CreateScalarIntViewAndSetVal( prob, "numFaces", numFaces );
 
   }
 
@@ -146,11 +146,11 @@ void GetUserInput(DataGroup * const prob)
 //    scanf("%d", &numCyclesPerDump);
     numCyclesPerDump = 10;
 
-    CreateScalarIntBufferViewAndSetVal( prob, "numUltraDumps", numUltraDumps );
+    CreateScalarIntViewAndSetVal( prob, "numUltraDumps", numUltraDumps );
 
-    CreateScalarIntBufferViewAndSetVal( prob, "numCyclesPerDump", numCyclesPerDump );
+    CreateScalarIntViewAndSetVal( prob, "numCyclesPerDump", numCyclesPerDump );
 
-    CreateScalarIntBufferViewAndSetVal( prob, "numTotalCycles", numUltraDumps * numCyclesPerDump );
+    CreateScalarIntViewAndSetVal( prob, "numTotalCycles", numUltraDumps * numCyclesPerDump );
 
 
   }
@@ -316,7 +316,7 @@ void InitializeShockTube(DataGroup * const prob)
   /* Create needed time info */
 
   CreateScalarFloatBufferViewAndSetVal( prob, "time", 0.0 );
-  CreateScalarIntBufferViewAndSetVal( prob, "cycle", 0 );
+  CreateScalarIntViewAndSetVal( prob, "cycle", 0 );
 
   CreateScalarFloatBufferViewAndSetVal( prob, "dx", (1.0 / ((double) endTube)) );
   double dx = prob->getView("dx")->getData();

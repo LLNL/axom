@@ -134,7 +134,7 @@ contains
 
     call assert_equals(ext_view%is_opaque(), .true.)
 
-    test_extent_ptr = ext_view%get_opaque()
+    test_extent_ptr = ext_view%get_void_ptr()
     call c_f_pointer(test_extent_ptr, test_extent)
 
     test_ihi = test_extent%m_ihi
@@ -205,13 +205,13 @@ contains
        dom_ext = Extent(ilo_val(idom), ihi_val(idom))
        ext_view = dom_gp%create_opaque_view("ext", c_loc(dom_ext))
 
-       zonemv_ptr = zone_mv_view%get_opaque()
+       zonemv_ptr = zone_mv_view%get_void_ptr()
        call c_f_pointer(zonemv_ptr, zonemv)
 
        dom_zone_view = dom_gp%create_view_empty("zone_data")
        call dom_zone_view%allocate(SIDRE_INT_ID, zone_mv%getNumVals(dom_ext))
 
-       nodemv_ptr = node_mv_view%get_opaque()
+       nodemv_ptr = node_mv_view%get_void_ptr()
        call c_f_pointer(nodemv_ptr, nodemv)
 
        dom_node_view = dom_gp%create_view_empty("node_data")
@@ -231,13 +231,13 @@ contains
        dom_gp = problem_gp%get_group(dom_name(idom))
 
        tmpview = dom_gp%get_view("ext")
-       dom_ext_ptr = tmpview%get_opaque()
+       dom_ext_ptr = tmpview%get_void_ptr()
        call c_f_pointer(dom_ext_ptr, dom_ext)
 
-       zonemv_ptr = zone_mv_view%get_opaque()
+       zonemv_ptr = zone_mv_view%get_void_ptr()
        call c_f_pointer(zonemv_ptr, zonemv)
 
-       nodemv_ptr = node_mv_view%get_opaque()
+       nodemv_ptr = node_mv_view%get_void_ptr()
        call c_f_pointer(nodemv_ptr, nodemv)
 
        num_zone_vals = zonemv%getNumVals(dom_ext)
@@ -257,7 +257,7 @@ contains
     do idom = 1, 2
        tmpgroup = problem_gp%get_group(dom_name(idom))
        tmpview = tmpgroup%get_view("ext")
-       dom_ext_ptr = tmpview%get_opaque()
+       dom_ext_ptr = tmpview%get_void_ptr()
        call c_f_pointer(dom_ext_ptr, dom_ext)
        deallocate(dom_ext)
     enddo

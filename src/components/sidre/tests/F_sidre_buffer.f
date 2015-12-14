@@ -56,7 +56,7 @@ contains
     call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -87,7 +87,7 @@ contains
     call assert_true(dbuff%get_num_elements() == 10)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -119,7 +119,7 @@ contains
     call assert_true(dbuff%get_num_elements() == 5)
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 5 ])
 
     data(:) = 5
@@ -133,7 +133,7 @@ contains
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     ! data buffer changes
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 5

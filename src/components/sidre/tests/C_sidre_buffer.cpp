@@ -47,7 +47,7 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
   EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 10u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
-  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+  int * data_ptr = (int *) ATK_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -73,7 +73,7 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
   EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 10u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
-  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+  int * data_ptr = (int *) ATK_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -100,7 +100,7 @@ TEST(C_sidre_buffer,realloc_buffer)
   EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 5u);
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
-  long * data_ptr = (long *) ATK_databuffer_get_data(dbuff);
+  long * data_ptr = (long *) ATK_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -116,7 +116,7 @@ TEST(C_sidre_buffer,realloc_buffer)
   EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 
   // data buffer changes
-  data_ptr = (long *) ATK_databuffer_get_data(dbuff);
+  data_ptr = (long *) ATK_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {

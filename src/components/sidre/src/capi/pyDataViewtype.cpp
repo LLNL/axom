@@ -364,22 +364,6 @@ PY_dataview_get_name(
 // splicer end class.DataView.method.get_name
 }
 
-static char PY_dataview_get_opaque__doc__[] =
-"documentation"
-;
-
-static PyObject *
-PY_dataview_get_opaque(
-  PY_DataView *self,
-  PyObject *args,
-  PyObject *kwds)
-{
-// splicer begin class.DataView.method.get_opaque
-    void * rv = self->BBB->getOpaque();
-    return Py_BuildValue("O", rv);
-// splicer end class.DataView.method.get_opaque
-}
-
 static char PY_dataview_get_buffer__doc__[] =
 "documentation"
 ;
@@ -398,20 +382,20 @@ PY_dataview_get_buffer(
 // splicer end class.DataView.method.get_buffer
 }
 
-static char PY_dataview_get_data_pointer__doc__[] =
+static char PY_dataview_get_void_ptr__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_dataview_get_data_pointer(
+PY_dataview_get_void_ptr(
   PY_DataView *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.get_data_pointer
-    void * rv = self->BBB->getDataPointer();
+// splicer begin class.DataView.method.get_void_ptr
+    void * rv = self->BBB->getVoidPtr();
     return Py_BuildValue("O", rv);
-// splicer end class.DataView.method.get_data_pointer
+// splicer end class.DataView.method.get_void_ptr
 }
 
 static char PY_dataview_get_owning_group__doc__[] =
@@ -632,9 +616,8 @@ static PyMethodDef PY_DataView_methods[] = {
 {"hasBuffer", (PyCFunction)PY_dataview_has_buffer, METH_NOARGS, PY_dataview_has_buffer__doc__},
 {"isOpaque", (PyCFunction)PY_dataview_is_opaque, METH_NOARGS, PY_dataview_is_opaque__doc__},
 {"getName", (PyCFunction)PY_dataview_get_name, METH_NOARGS, PY_dataview_get_name__doc__},
-{"getOpaque", (PyCFunction)PY_dataview_get_opaque, METH_NOARGS, PY_dataview_get_opaque__doc__},
 {"getBuffer", (PyCFunction)PY_dataview_get_buffer, METH_NOARGS, PY_dataview_get_buffer__doc__},
-{"getDataPointer", (PyCFunction)PY_dataview_get_data_pointer, METH_NOARGS, PY_dataview_get_data_pointer__doc__},
+{"getVoidPtr", (PyCFunction)PY_dataview_get_void_ptr, METH_NOARGS, PY_dataview_get_void_ptr__doc__},
 {"getOwningGroup", (PyCFunction)PY_dataview_get_owning_group, METH_NOARGS, PY_dataview_get_owning_group__doc__},
 {"getTypeID", (PyCFunction)PY_dataview_get_type_id, METH_NOARGS, PY_dataview_get_type_id__doc__},
 {"getTotalBytes", (PyCFunction)PY_dataview_get_total_bytes, METH_NOARGS, PY_dataview_get_total_bytes__doc__},

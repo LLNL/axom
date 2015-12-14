@@ -237,7 +237,7 @@ module sidre_mod
         procedure :: reallocate_long => databuffer_reallocate_long
         procedure :: set_external_data => databuffer_set_external_data
         procedure :: is_external => databuffer_is_external
-        procedure :: get_data => databuffer_get_data
+        procedure :: get_void_ptr => databuffer_get_void_ptr
         procedure :: get_type_id => databuffer_get_type_id
         procedure :: get_num_elements => databuffer_get_num_elements
         procedure :: get_total_bytes => databuffer_get_total_bytes
@@ -285,9 +285,8 @@ module sidre_mod
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
-        procedure :: get_opaque => dataview_get_opaque
         procedure :: get_buffer => dataview_get_buffer
-        procedure :: get_data_pointer => dataview_get_data_pointer
+        procedure :: get_void_ptr => dataview_get_void_ptr
         procedure :: set_scalar_int => dataview_set_scalar_int
         procedure :: set_scalar_long => dataview_set_scalar_long
         procedure :: set_scalar_float => dataview_set_scalar_float
@@ -957,13 +956,13 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function atk_databuffer_is_external
         
-        function atk_databuffer_get_data(self) result(rv) &
-                bind(C, name="ATK_databuffer_get_data")
+        function atk_databuffer_get_void_ptr(self) result(rv) &
+                bind(C, name="ATK_databuffer_get_void_ptr")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_databuffer_get_data
+        end function atk_databuffer_get_void_ptr
         
         pure function atk_databuffer_get_type_id(self) result(rv) &
                 bind(C, name="ATK_databuffer_get_type_id")
@@ -1118,14 +1117,6 @@ module sidre_mod
             type(C_PTR) rv
         end function atk_dataview_get_name
         
-        pure function atk_dataview_get_opaque(self) result(rv) &
-                bind(C, name="ATK_dataview_get_opaque")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            type(C_PTR) :: rv
-        end function atk_dataview_get_opaque
-        
         function atk_dataview_get_buffer(self) result(rv) &
                 bind(C, name="ATK_dataview_get_buffer")
             use iso_c_binding
@@ -1134,13 +1125,13 @@ module sidre_mod
             type(C_PTR) :: rv
         end function atk_dataview_get_buffer
         
-        pure function atk_dataview_get_data_pointer(self) result(rv) &
-                bind(C, name="ATK_dataview_get_data_pointer")
+        pure function atk_dataview_get_void_ptr(self) result(rv) &
+                bind(C, name="ATK_dataview_get_void_ptr")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             type(C_PTR) :: rv
-        end function atk_dataview_get_data_pointer
+        end function atk_dataview_get_void_ptr
         
         subroutine atk_dataview_set_scalar_int(self, value) &
                 bind(C, name="ATK_dataview_set_scalar_int")
@@ -2380,15 +2371,15 @@ contains
         ! splicer end class.DataBuffer.method.is_external
     end function databuffer_is_external
     
-    function databuffer_get_data(obj) result(rv)
+    function databuffer_get_void_ptr(obj) result(rv)
         use iso_c_binding
         implicit none
         class(databuffer) :: obj
         type(C_PTR) :: rv
-        ! splicer begin class.DataBuffer.method.get_data
-        rv = atk_databuffer_get_data(obj%voidptr)
-        ! splicer end class.DataBuffer.method.get_data
-    end function databuffer_get_data
+        ! splicer begin class.DataBuffer.method.get_void_ptr
+        rv = atk_databuffer_get_void_ptr(obj%voidptr)
+        ! splicer end class.DataBuffer.method.get_void_ptr
+    end function databuffer_get_void_ptr
     
     function databuffer_get_type_id(obj) result(rv)
         use iso_c_binding
@@ -2631,16 +2622,6 @@ contains
         ! splicer end class.DataView.method.get_name
     end subroutine dataview_get_name
     
-    function dataview_get_opaque(obj) result(rv)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        type(C_PTR) :: rv
-        ! splicer begin class.DataView.method.get_opaque
-        rv = atk_dataview_get_opaque(obj%voidptr)
-        ! splicer end class.DataView.method.get_opaque
-    end function dataview_get_opaque
-    
     function dataview_get_buffer(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -2651,15 +2632,15 @@ contains
         ! splicer end class.DataView.method.get_buffer
     end function dataview_get_buffer
     
-    function dataview_get_data_pointer(obj) result(rv)
+    function dataview_get_void_ptr(obj) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
         type(C_PTR) :: rv
-        ! splicer begin class.DataView.method.get_data_pointer
-        rv = atk_dataview_get_data_pointer(obj%voidptr)
-        ! splicer end class.DataView.method.get_data_pointer
-    end function dataview_get_data_pointer
+        ! splicer begin class.DataView.method.get_void_ptr
+        rv = atk_dataview_get_void_ptr(obj%voidptr)
+        ! splicer end class.DataView.method.get_void_ptr
+    end function dataview_get_void_ptr
     
     subroutine dataview_set_scalar_int(obj, value)
         use iso_c_binding
@@ -2808,7 +2789,7 @@ contains
         integer(C_INT), pointer, intent(OUT) :: value
         type(C_PTR) cptr
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         call c_f_pointer(cptr, value)
     end subroutine dataview_get_data_int_scalar_ptr
     
@@ -2821,7 +2802,7 @@ contains
         type(C_PTR) cptr
         integer(C_SIZE_T) nelems
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_data_int_1d_ptr
@@ -2834,7 +2815,7 @@ contains
         integer(C_LONG), pointer, intent(OUT) :: value
         type(C_PTR) cptr
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         call c_f_pointer(cptr, value)
     end subroutine dataview_get_data_long_scalar_ptr
     
@@ -2847,7 +2828,7 @@ contains
         type(C_PTR) cptr
         integer(C_SIZE_T) nelems
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_data_long_1d_ptr
@@ -2860,7 +2841,7 @@ contains
         real(C_FLOAT), pointer, intent(OUT) :: value
         type(C_PTR) cptr
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         call c_f_pointer(cptr, value)
     end subroutine dataview_get_data_float_scalar_ptr
     
@@ -2873,7 +2854,7 @@ contains
         type(C_PTR) cptr
         integer(C_SIZE_T) nelems
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_data_float_1d_ptr
@@ -2886,7 +2867,7 @@ contains
         real(C_DOUBLE), pointer, intent(OUT) :: value
         type(C_PTR) cptr
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         call c_f_pointer(cptr, value)
     end subroutine dataview_get_data_double_scalar_ptr
     
@@ -2899,7 +2880,7 @@ contains
         type(C_PTR) cptr
         integer(C_SIZE_T) nelems
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         nelems = view%get_num_elements()
         call c_f_pointer(cptr, value, [ nelems ])
     end subroutine dataview_get_data_double_1d_ptr

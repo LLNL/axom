@@ -131,7 +131,7 @@ TEST(C_sidre_opaque,inout)
   bool test_opaque = ATK_dataview_is_opaque(ext_view);
   EXPECT_EQ(test_opaque, true);
 
-  AA_extent * test_extent = (AA_extent *) ATK_dataview_get_opaque(ext_view);
+  AA_extent * test_extent = (AA_extent *) ATK_dataview_get_void_ptr(ext_view);
   int test_ihi = test_extent->ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
@@ -180,12 +180,12 @@ TEST(C_sidre_opaque,meshvar)
     AA_extent * dom_ext = AA_extent_new(ilo_val[idom], ihi_val[idom]);
     ATK_datagroup_create_opaque_view(dom_gp, "ext", dom_ext);
 
-    AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
+    AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_void_ptr(zone_mv_view);
     (void) ATK_datagroup_create_view_and_allocate_from_type(dom_gp, "zone_data",
                                                             SIDRE_INT_ID, 
                                                             AA_get_num_vals(zonemv, dom_ext));
 
-    AA_meshvar * nodemv = (AA_meshvar *)  ATK_dataview_get_opaque(node_mv_view);
+    AA_meshvar * nodemv = (AA_meshvar *)  ATK_dataview_get_void_ptr(node_mv_view);
     (void) ATK_datagroup_create_view_and_allocate_from_type(dom_gp, "node_data",
                                                             SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
 
@@ -204,10 +204,10 @@ TEST(C_sidre_opaque,meshvar)
   {
     ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
     ATK_dataview * ext_view = ATK_datagroup_get_view_from_name(dom_gp, "ext");
-    AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
+    AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_void_ptr(ext_view);
 
-    AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_opaque(zone_mv_view);
-    AA_meshvar * nodemv = (AA_meshvar *) ATK_dataview_get_opaque(node_mv_view);
+    AA_meshvar * zonemv = (AA_meshvar *) ATK_dataview_get_void_ptr(zone_mv_view);
+    AA_meshvar * nodemv = (AA_meshvar *) ATK_dataview_get_void_ptr(node_mv_view);
 
     int num_zone_vals = AA_get_num_vals(zonemv, dom_ext);
     ATK_dataview * dom_zone_data_view = ATK_datagroup_get_view_from_name(dom_gp, "zone_data");
@@ -228,7 +228,7 @@ TEST(C_sidre_opaque,meshvar)
   {
     ATK_datagroup * dom_gp = ATK_datagroup_get_group(problem_gp, dom_name[idom].c_str());
     ATK_dataview * ext_view = ATK_datagroup_get_view_from_name(dom_gp, "ext");
-    AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_opaque(ext_view);
+    AA_extent * dom_ext = (AA_extent *) ATK_dataview_get_void_ptr(ext_view);
     AA_extent_delete(dom_ext);
   }
   ATK_datastore_delete(ds);

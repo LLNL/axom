@@ -107,7 +107,7 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     {f_type}, pointer, intent(OUT) :: value{shape}
     type(C_PTR) cptr
 
-    cptr = view%get_data_pointer()
+    cptr = view%get_void_ptr()
     call c_f_pointer(cptr, value)
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)
 
@@ -122,7 +122,7 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     type(C_PTR) cptr
     integer(C_SIZE_T) nelems
 
-    cptr = view%get_data_pointer()
+    cptr = view%get_void_ptr()
     nelems = view%get_num_elements()
     call c_f_pointer(cptr, value, [ nelems ])
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)

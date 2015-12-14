@@ -90,13 +90,13 @@ return rv;
 // splicer end class.DataBuffer.method.is_external
 }
 
-void * ATK_databuffer_get_data(ATK_databuffer * self)
+void * ATK_databuffer_get_void_ptr(ATK_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.get_data
-void * rv = selfobj->getData();
+// splicer begin class.DataBuffer.method.get_void_ptr
+void * rv = selfobj->getVoidPtr();
 return rv;
-// splicer end class.DataBuffer.method.get_data
+// splicer end class.DataBuffer.method.get_void_ptr
 }
 
 int ATK_databuffer_get_type_id(ATK_databuffer * self)

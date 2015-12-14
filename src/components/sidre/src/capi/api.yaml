@@ -218,7 +218,7 @@ classes:
       - decl: DataBuffer * setExternalData( void* external_data)
         return_this: True
       - decl: bool isExternal() const
-      - decl: void* getData()
+      - decl: void* getVoidPtr()
       - decl: TypeID getTypeID() const
       - decl: size_t getNumElements() const
       - decl: size_t getTotalBytes() const
@@ -278,10 +278,9 @@ classes:
     - decl: bool  isOpaque() const
 #    - decl: bool isApplied() const
     - decl: const std::string& getName() const
-    - decl: void* getOpaque() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
-    - decl: void * getDataPointer() const
+    - decl: void * getVoidPtr() const
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
 #    - decl: Node::Value getValue()

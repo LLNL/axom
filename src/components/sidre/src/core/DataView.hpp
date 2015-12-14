@@ -303,7 +303,7 @@ public:
    * \brief Return total number of bytes associated with this DataView object.
    *
    * IMPORTANT: This is the total bytes described by the view; they may not 
-   *            yet be allocated or may differ from the schema in the buffer.
+   *            yet be allocated.
    */
   size_t getTotalBytes() const
   {
@@ -314,7 +314,7 @@ public:
    * \brief Return total number of elements described by this DataView object.
    *
    * IMPORTANT: This is the number of elements described by the view; 
-   *            they may not yet be allocated ormay differ from the schema in the buffer.
+   *            they may not yet be allocated.
    */
   size_t getNumElements() const
   {
@@ -398,72 +398,109 @@ public:
     return m_node;
   }
 
+  //@}
+
   //@{
-  //!  @name Accesser methods for retrieving data from a view.
+  //! @name Accessor methods for retrieving data from a view.  These require the caller to assign the return value
+  //! to a variable.
+  //! Examples:
+  //! int my_int = getData();
+  //! int* my_ptr = getData();
 
   /*!
-   * \brief Returns held data.  Returns a Node::Value which will automatically cast to the correct data type.
-   * Requires the caller to assign the return value to a variable so the Value class knows what the cast to.
-   * Examples:
-   * int my_int = getData();
-   * int* my_ptr = getData();
+   * \brief Return a pointer or conduit int_array object to the view's array data.
+   */
+  Node::Value getArray()
+  {
+    //TODO add check that view holds array data.  Will be added in later commit.
+    //If debug, should trigger assert.  If release, issue warning.
+    return getData();
+  }
+
+  /*!
+   * \brief Returns a copy of the string contained in the view.
+   */
+  Node::Value getString()
+  {
+    //TODO add check that view holds array data.  Will be added in later commit.
+    //If debug, should trigger assert.  If release, issue warning.
+    return getData();
+  }
+
+  /*!
+   * \brief Returns a void pointer to the view's data.
+   * The returned pointer value will take into account any offsets or strides applied to described data.
+   */
+  void * getVoidPtr()
+  {
+    // This needs to be changed to check if data is owned, not whether it's described (ie opaque or not)
+    if (isOpaque())
+    {
+      return (void *)m_node.as_uint64();
+    }
+    // else, view contains data store owned data so retrieve pointer to node's data.
+    else
+    {
+      return m_node.element_ptr(0);
+    }
+  }
+
+  /*!
+   * \brief Returns a copy of the scalar value contained in the view.
+   */
+  Node::Value getScalar()
+  {
+    return getData();
+  }
+
+  /*!
+   * \brief This is an advanced accessor function for retrieving the data in a view that allows a developer more
+   * flexibility with casting the data to another type.  It will allow a developer to cast held data to any compatible
+   * type allowed by the conduit Node::Value return overloading mechanism.
    */
   Node::Value getData()
   {
+    //TODO - add check that data is described (not opaque)
+    SLIC_ASSERT_MSG( !isOpaque(), "This view contains data that is not described to the data store (opaque).  You "
+      << "must use getVoidPtr() to retrieve a pointer to opaque data.");
+
     return m_node.value();
   }
 
-  /*!
-   * \brief Return node's data (should be a pointer to external, unowned memory).
-   */
-  void * getOpaquePtr()
-  {
-    return m_opaque_ptr;
-  }
   //@}
 
   //@{
-  //! @name Additional accessor methods.  These are provided to make a consistent interface available to getting/setting values.
-  //! Example:
-  //! getString/setString
-  //! getScalar/setScalar
-  //! These get functions are optional, the above data types can be retrieved via the generic getData() function.
-
-  /*!
-   * \brief Return node's data (should be an array or other block of memory, so a pointer is returned).
-   */
-  inline Node::Value getPtr()  { return getData(); }
-  inline Node::Value getString() { return getData(); }
-  inline Node::Value getScalar() { return getData(); }
-
-  //@}
-
-  //@{
-  //!  @name Set methods for setting data in the view.  These data types do not have a separate data buffer.  Values
+  //!  @name Set methods for setting data in the view.  Set methods are provided for simple scalars, strings, and
+  //!  void pointers for undescribed (opaque) data.
   //!  are stored directly in the view's node (or in the case of an opaque pointer, in the class member m_data_ptr.
 
+  // Developer note: Strings, Scalars, and pointers to unowned described (external) or undescribed (opaque) data can
+  // all be handled by the view's conduit node.  Having a data buffer is unnecessary, so there is room for refactoring
+  // here.  (However, scalars will be refactored in the future to be in a scalar pool).
+
   /*!
-   * \brief Set node's data (should be an opaque pointer).
+   * \brief Set view to point to undescribed data not owned by the data store (ie, opaque data).
+   *
+   * \return pointer to this DataView object.
    */
-  void setOpaquePtr(void* value)
-  {
-    m_opaque_ptr = value;
-  }
+  DataView* setVoidPtr(void * value);
 
   /*!
    * \brief Set node's data (should be a string).
    */
-  void setString(const std::string& value)
+  DataView* setString(const std::string& value)
   {
-    // TODO: Will conduit complain if node doesn't already hold a string type?  What happens if this is called by mistake on a node containing other data?
+    // TODO: Will add check to verify that view holds a string in later commit (need enum set up first).
+    // TODO: Check with Cyrus that the set_string function is the right call (should be).
     m_node.set_string(value);
+    return this;
   }
 
   /*!
    * \brief Set  node's data ( should be a scalar ).
    */
   template<typename ScalarType>
-  void setScalar(ScalarType value)
+  DataView* setScalar(ScalarType value)
   {
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
@@ -473,33 +510,24 @@ public:
 #endif
 
     m_node.set(value);
+    return this;
   }
 
   //@}
 
   /*!
-   * \brief Returns Conduit Value class instance that supports casting to the appropriate data return type.  This
-   * function version require an assignment, so it has enough type information for the compiler to know what to
-   * cast the Node::Value class to.
-   * Example:
-   * int* myptr = getData();
-   * int myint = getData();
-   */
-
-  // TODO - can we go ahead and update tests to not need this ( I know it adds a line or two to checks in tests )
-  // otherwise, need to add a version of this for all our functions which use the conduit operator() overloading to cast.
-  /*!
    * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(), but not
    * assigning the return.
    *
    */
+  // TODO - Will a app code ever use this?  We are just using it for internal tests, so maybe we can move this function
+  // to a 'test helper' source file and remove it from the core API.
   template<typename DataType>
   DataType getData()
   {
     DataType data = m_node.value();
     return data;
   }
-
 
 //@{
 //!  @name DataView print methods.
@@ -616,7 +644,6 @@ private:
 
 //@}
 
-
   /// Name of this DataView object.
   std::string m_name;
 
@@ -626,19 +653,18 @@ private:
   /// DataBuffer associated with this DataView object.
   DataBuffer * m_data_buffer;
 
-  /// Optional opaque pointer value.  Only used if storing opaque pointer, not a node.
-  void * m_opaque_ptr;
-
   /// Conduit Schema that describes this DataView.
   Schema m_schema;
 
   /// Conduit node used to access the data in this DataView.
   Node m_node;
 
-  /// Is this DataView opaque?
+  // TODO - these will get replaced with enum types for the different states of a view (described, applied, allocated, etc)
+
+  /// Is this DataView opaque?  Will get refactored.
   bool m_is_opaque;
 
-  /// Has Schema been applied data?
+  /// Has Schema been applied data? Will get refactored.
   bool m_is_applied;
 
   /*!

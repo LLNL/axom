@@ -44,7 +44,7 @@ void ATK_databuffer_set_external_data(ATK_databuffer * self, void * external_dat
 
 bool ATK_databuffer_is_external(ATK_databuffer * self);
 
-void * ATK_databuffer_get_data(ATK_databuffer * self);
+void * ATK_databuffer_get_void_ptr(ATK_databuffer * self);
 
 int ATK_databuffer_get_type_id(ATK_databuffer * self);
 

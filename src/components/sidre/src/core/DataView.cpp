@@ -252,7 +252,7 @@ DataView * DataView::apply()
     }
     else 
     {
-       m_node.set_external(m_schema, m_data_buffer->getPtr());
+       m_node.set_external(m_schema, m_data_buffer->getVoidPtr());
        m_is_applied = true;
     }
   }
@@ -392,6 +392,41 @@ void DataView::print() const
 /*
  *************************************************************************
  *
+ * Set DataView to be associated with opaque data.
+ *
+ *************************************************************************
+ */
+DataView * DataView::setVoidPtr(void * data_ptr)
+{
+  // Checks need to be updated, this function requires:
+  // view should not
+  // - query:
+  //TODO - This function should be refactored to allow setting the data pointer when:
+  // #1 The view contains unowned data.  Either undescribed (opaque) or described (external) shouldn't matter.
+
+  // This check is still fine, as long as the presence of a data buffer imples owned data.
+  SLIC_ASSERT_MSG(m_data_buffer == ATK_NULLPTR, "Cannot call setVoidPtr() on data owned by the data store.");
+  // Commented this out - whether or not data is external or opaque shouldn't matter.  A host code should still
+  // be able to change the data pointer.  However, if offset, stride has been set... is a bit trickier on what
+  // to do and expect.
+  //SLIC_ASSERT_MSG(!m_is_applied, "Cannot set a view to be opaque if it already has been applied");
+
+  if ( m_data_buffer == ATK_NULLPTR )
+    //!m_is_applied )
+  {
+    // todo, conduit should provide a check for if uint64 is a
+    // good enough type to rep void *
+    m_node.set((conduit::uint64)data_ptr);
+
+    // setting the pointer should not affect the state a view is in.
+    //m_is_opaque = true;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Print JSON description of data view to an  ostream.
  *
  *************************************************************************
@@ -460,7 +495,7 @@ DataView::DataView( const std::string& name,
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
-  m_opaque_ptr = opaque_ptr;
+  m_node.set((conduit::uint64)opaque_ptr);
 }
 
 /*
