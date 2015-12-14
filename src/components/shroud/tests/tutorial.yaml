@@ -7,6 +7,7 @@ options:
   cpp_header: tutorial.hpp
   namespace: tutorial
   F_module_per_class: False
+  wrap_python: True
 
 
 types:

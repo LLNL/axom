@@ -92,7 +92,7 @@ class Schema(object):
 
             wrap_c       = True,
             wrap_fortran = True,
-            wrap_python  = True,
+            wrap_python  = False,
 
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
@@ -1066,12 +1066,15 @@ if __name__ == '__main__':
                 log.write("Read splicer %s\n" % name)
                 splicer.get_splicers(fullname, subsplicer)
 
+                
+    if all['options'].wrap_c:
+        wrapc.Wrapc(all, config, splicers['c']).wrap_library()
 
-    wrapc.Wrapc(all, config, splicers['c']).wrap_library()
+    if all['options'].wrap_fortran:
+        wrapf.Wrapf(all, config, splicers['f']).wrap_library()
 
-    wrapf.Wrapf(all, config, splicers['f']).wrap_library()
-
-    wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+    if all['options'].wrap_python:
+        wrapp.Wrapp(all, config, splicers['py']).wrap_library()
 
     # when dumping json, remove function_index to avoid duplication
     del all['function_index']

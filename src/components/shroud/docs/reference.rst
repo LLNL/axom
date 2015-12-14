@@ -129,6 +129,20 @@ namespace
 
   Blank delimited list of namespaces for **cpp_header**.
 
+wrap_c
+
+  If *true*, create C wrappers.
+  Defaults to *true*.
+
+wrap_fortran
+
+  If *true*, create Fortran wrappers.
+  Defaults to *true*.
+
+wrap_python
+
+  If *true*, create Python wrappers.
+  Defaults to *false*.
 
 
 
