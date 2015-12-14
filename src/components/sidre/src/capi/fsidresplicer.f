@@ -35,16 +35,17 @@ integer, parameter :: invalid_index = -1
 # only required for the fortran interface.
 
 ! splicer begin additional_interfaces
-function SIDRE_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-   bind(C,name="SIDRE_create_fortran_allocatable_view") &
-   result(rv)
-      use iso_c_binding
-      type(C_PTR), value, intent(IN)    :: group
-      character(kind=C_CHAR), intent(IN) :: name(*)
-      integer(C_INT), value, intent(IN) :: lname
-      type(C_PTR), value                :: addr
-      integer(C_INT), value, intent(IN) :: itype
-      integer(C_INT), value, intent(IN) :: rank
-      type(C_PTR) rv
-end function SIDRE_create_fortran_allocatable_view
+function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
+      result(rv) bind(C,name="SIDRE_create_array_view")
+    use iso_c_binding
+    import SIDRE_LENGTH
+    type(C_PTR), value, intent(IN)     :: group
+    character(kind=C_CHAR), intent(IN) :: name(*)
+    integer(C_INT), value, intent(IN)  :: lname
+    type(C_PTR), value,     intent(IN) :: addr
+    integer(C_INT), value, intent(IN)  :: type
+    integer(C_INT), value, intent(IN)  :: rank
+    integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
+    type(C_PTR) rv
+end function SIDRE_create_array_view
 ! splicer end additional_interfaces

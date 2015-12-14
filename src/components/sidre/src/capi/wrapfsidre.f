@@ -1257,18 +1257,19 @@ module sidre_mod
         end function sidre_name_is_valid
         
         ! splicer begin additional_interfaces
-        function SIDRE_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-           bind(C,name="SIDRE_create_fortran_allocatable_view") &
-           result(rv)
-              use iso_c_binding
-              type(C_PTR), value, intent(IN)    :: group
-              character(kind=C_CHAR), intent(IN) :: name(*)
-              integer(C_INT), value, intent(IN) :: lname
-              type(C_PTR), value                :: addr
-              integer(C_INT), value, intent(IN) :: itype
-              integer(C_INT), value, intent(IN) :: rank
-              type(C_PTR) rv
-        end function SIDRE_create_fortran_allocatable_view
+        function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
+              result(rv) bind(C,name="SIDRE_create_array_view")
+            use iso_c_binding
+            import SIDRE_LENGTH
+            type(C_PTR), value, intent(IN)     :: group
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN)  :: lname
+            type(C_PTR), value,     intent(IN) :: addr
+            integer(C_INT), value, intent(IN)  :: type
+            integer(C_INT), value, intent(IN)  :: rank
+            integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
+            type(C_PTR) rv
+        end function SIDRE_create_array_view
         ! splicer end additional_interfaces
     end interface
 
@@ -1836,22 +1837,6 @@ contains
     function datagroup_create_array_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -1873,22 +1858,6 @@ contains
     function datagroup_create_array_view_int_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -1910,22 +1879,6 @@ contains
     function datagroup_create_array_view_int_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -1947,22 +1900,6 @@ contains
     function datagroup_create_array_view_int_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -1984,22 +1921,6 @@ contains
     function datagroup_create_array_view_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2021,22 +1942,6 @@ contains
     function datagroup_create_array_view_long_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2058,22 +1963,6 @@ contains
     function datagroup_create_array_view_long_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2095,22 +1984,6 @@ contains
     function datagroup_create_array_view_long_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2132,22 +2005,6 @@ contains
     function datagroup_create_array_view_float_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2169,22 +2026,6 @@ contains
     function datagroup_create_array_view_float_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2206,22 +2047,6 @@ contains
     function datagroup_create_array_view_float_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2243,22 +2068,6 @@ contains
     function datagroup_create_array_view_float_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2280,22 +2089,6 @@ contains
     function datagroup_create_array_view_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2317,22 +2110,6 @@ contains
     function datagroup_create_array_view_double_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2354,22 +2131,6 @@ contains
     function datagroup_create_array_view_double_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2391,22 +2152,6 @@ contains
     function datagroup_create_array_view_double_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           import SIDRE_LENGTH
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_INT), value, intent(IN)  :: rank
-           integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
