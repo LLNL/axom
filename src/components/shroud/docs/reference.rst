@@ -612,6 +612,13 @@ decl
    Function declaration.
    Parsed to extract function name, type and arguments descriptions.
 
+default_arg_suffix
+
+   A list of suffixes to apply to C and Fortran functions generated when
+   wrapping a C++ function with default arguments.  The first entry is for
+   the function with the fewest arguments and the final entry should be for
+   all of the arguments.
+
 function_suffix
 
    Suffix to append to the end of generated name.

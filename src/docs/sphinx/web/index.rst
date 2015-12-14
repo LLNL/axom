@@ -32,7 +32,14 @@ Components
   *  `SiDRe: Simulation Data Repository (formerly known as Datastore) <https://lc.llnl.gov/toolkit/docs/sphinx/sidre_docs/html/index.html>`_
   *  SLAM (Set-theoretic Lightweight API for Meshes)
   *  SLIC (Simple Logging Interface Code)
-  *  `Shroud (Fortran wrapping utility)  <https://lc.llnl.gov/toolkit/docs/sphinx/shroud_docs/html/index.html>`_
+  *  `Shroud (C++ API to C/Fortran)  <https://lc.llnl.gov/toolkit/docs/sphinx/shroud_docs/html/index.html>`_
+
+Doxygen
+
+  *  `SLAM <https://lc.llnl.gov/toolkit/docs/doxygen/meshapi_doxygen/html/index.html>`_
+  *  `SiDRe <https://lc.llnl.gov/toolkit/docs/doxygen/sidre_doxygen/html/index.html>`_
+  *  `SLIC <https://lc.llnl.gov/toolkit/docs/doxygen/slic_doxygen/html/index.html>`_
+  
 
 
 

@@ -40,6 +40,10 @@ functions:
     F_string_result_as_arg: output
 
 - decl: double Function5(double arg1 = 3.1415, bool arg2 = true)
+  default_arg_suffix:
+  -  
+  -  _arg1
+  -  _arg1_arg2
 
 - decl: void Function6(const std::string& name)
   function_suffix: _from_name
@@ -96,6 +100,10 @@ functions:
 # overload with optional
 - decl: int overload1(int num,
           int offset = 0, int stride = 1)
+  default_arg_suffix:
+  - _num
+  - _num_offset
+  - _num_offset_stride
 - decl: int overload1(double type, int num,
           int offset = 0, int stride = 1)
 
