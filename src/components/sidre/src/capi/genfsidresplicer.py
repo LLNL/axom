@@ -37,7 +37,6 @@ def create_array_view(d):
 function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(rv)
     use iso_c_binding
     implicit none
-    external :: SIDRE_C_LOC
 
     class(datagroup), intent(IN) :: group
     character(*), intent(IN) :: name
@@ -50,7 +49,7 @@ function datagroup_create_array_view_{typename}_{nd}(group, name, value) result(
 
     lname = len_trim(name)
     {extents_asgn}
-    call SIDRE_C_LOC(value, addr)
+    call SHROUD_C_LOC(value, addr)
     rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, {rank}, extents)
 end function datagroup_create_array_view_{typename}_{nd}""".format(
         extents_decl=extents_decl,

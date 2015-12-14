@@ -1837,7 +1837,6 @@ contains
     function datagroup_create_array_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1850,7 +1849,7 @@ contains
     
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_int_scalar
     
@@ -1858,7 +1857,6 @@ contains
     function datagroup_create_array_view_int_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1871,7 +1869,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_int_1d
     
@@ -1879,7 +1877,6 @@ contains
     function datagroup_create_array_view_int_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1892,7 +1889,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_int_2d
     
@@ -1900,7 +1897,6 @@ contains
     function datagroup_create_array_view_int_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1913,7 +1909,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_int_3d
     
@@ -1921,7 +1917,6 @@ contains
     function datagroup_create_array_view_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1934,7 +1929,7 @@ contains
     
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_long_scalar
     
@@ -1942,7 +1937,6 @@ contains
     function datagroup_create_array_view_long_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1955,7 +1949,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_long_1d
     
@@ -1963,7 +1957,6 @@ contains
     function datagroup_create_array_view_long_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1976,7 +1969,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_long_2d
     
@@ -1984,7 +1977,6 @@ contains
     function datagroup_create_array_view_long_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -1997,7 +1989,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_long_3d
     
@@ -2005,7 +1997,6 @@ contains
     function datagroup_create_array_view_float_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2018,7 +2009,7 @@ contains
     
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_float_scalar
     
@@ -2026,7 +2017,6 @@ contains
     function datagroup_create_array_view_float_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2039,7 +2029,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_float_1d
     
@@ -2047,7 +2037,6 @@ contains
     function datagroup_create_array_view_float_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2060,7 +2049,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_float_2d
     
@@ -2068,7 +2057,6 @@ contains
     function datagroup_create_array_view_float_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2081,7 +2069,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_float_3d
     
@@ -2089,7 +2077,6 @@ contains
     function datagroup_create_array_view_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2102,7 +2089,7 @@ contains
     
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_double_scalar
     
@@ -2110,7 +2097,6 @@ contains
     function datagroup_create_array_view_double_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2123,7 +2109,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_double_1d
     
@@ -2131,7 +2117,6 @@ contains
     function datagroup_create_array_view_double_2d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2144,7 +2129,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_double_2d
     
@@ -2152,7 +2137,6 @@ contains
     function datagroup_create_array_view_double_3d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-        external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
         character(*), intent(IN) :: name
@@ -2165,7 +2149,7 @@ contains
     
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
-        call SIDRE_C_LOC(value, addr)
+        call SHROUD_C_LOC(value, addr)
         rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_double_3d
     ! splicer end class.DataGroup.additional_functions
