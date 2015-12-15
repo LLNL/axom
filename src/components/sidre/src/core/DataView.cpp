@@ -466,9 +466,6 @@ void DataView::print() const
  */
 DataView * DataView::setVoidPtr(void * data_ptr)
 {
-  // Checks need to be updated, this function requires:
-  // view should not
-  // - query:
   //TODO - This function should be refactored to allow setting the data pointer when:
   // #1 The view contains unowned data.  Either undescribed (opaque) or described (external) shouldn't matter.
 
@@ -486,8 +483,10 @@ DataView * DataView::setVoidPtr(void * data_ptr)
     // good enough type to rep void *
     m_node.set((conduit::uint64)data_ptr);
 
-    // setting the pointer should not affect the state a view is in.
-    //m_is_opaque = true;
+    // TODO:
+    // Setting the pointer should not affect the state a view is in.  This needs to be REMOVED after the view is
+    // properly storing a state enum.
+    m_is_opaque = true;
   }
   return this;
 }

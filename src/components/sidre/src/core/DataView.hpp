@@ -124,7 +124,7 @@ public:
   DataView * allocate(const DataType& dtype);
 
   /*!
-   * \brief Allocate data for view described by a Conduit schema object.
+   * \brief Allocate data for view described by a data description (schema) object.
    *
    * NOTE: Allocation from a view is only allowed if it is the only
    *       view associated with its buffer, or if it is not opaque or
@@ -162,7 +162,7 @@ public:
   DataView * reallocate(const DataType& dtype);
 
   /*!
-   * \brief  Reallocate data for view as specified by Conduit schema object.
+   * \brief  Reallocate data for view as specified by a data description (schema) object.
    *
    * NOTE: Reallocation from a view is only allowed if it is the only
    *       view associated with its buffer, or if it is not opaque or
@@ -170,7 +170,7 @@ public:
    *
    * NOTE: The current type of the view data must match that of the given 
    *       schema object. If not, the method does nothing.
-   *
+   * 
    * \return pointer to this DataView object.
    */
   DataView * reallocate(const Schema& schema);
@@ -252,16 +252,17 @@ public:
    * \brief Apply data description of given Conduit data type to data view.
    *
    * If view is opaque, the method does nothing.
+   * TODO: If the view has undescribed data, this should describe it ( not 'do nothing') ?
    *
    * \return pointer to this DataView object.
    */
   DataView * apply(const DataType& dtype);
 
   /*!
-   * \brief Apply data description of given Conduit schema to data view.
-   *        this DataView object
+   * \brief Apply data description (schema) to view's data.
    *
    * If view is opaque, the method does nothing.
+   * TODO: If the view has undescribed data, this should describe it ( not 'do nothing') ?
    *
    * \return pointer to this DataView object.
    */
@@ -287,13 +288,15 @@ public:
    *        of the data it holds and can only return a void* pointer to it);
    *        false otherwise.
    */
+  // TODO - this m_is_opaque flag should go away.  Instead we will have a state identifying whether a view holds data
+  // that is described.  Data will start off not described, then will be described when a schema or type info is set.
   bool  isOpaque() const
   {
     return m_is_opaque;
   }
 
   /*!
-   * \brief Return true if data declaration has been applied to data
+   * \brief Return true if data description (schema) has been applied to data
    *        in buffer associated with view; false otherwise.
    */
   bool isApplied() const
@@ -389,7 +392,7 @@ public:
     return m_data_buffer;
   }
   /*!
-   * \brief Return const reference to Conduit schema describing data.
+   * \brief Return const reference to schema describing data.
    */
   const Schema& getSchema() const
   {
@@ -486,7 +489,6 @@ public:
   //@{
   //!  @name Set methods for setting data in the view.  Set methods are provided for simple scalars, strings, and
   //!  void pointers for undescribed (opaque) data.
-  //!  are stored directly in the view's node (or in the case of an opaque pointer, in the class member m_data_ptr.
 
   // Developer note: Strings, Scalars, and pointers to unowned described (external) or undescribed (opaque) data can
   // all be handled by the view's conduit node.  Having a data buffer is unnecessary, so there is room for refactoring
@@ -497,10 +499,10 @@ public:
    *
    * \return pointer to this DataView object.
    */
-  DataView* setVoidPtr(void * value);
+  DataView* setVoidPtr(void * data_ptr);
 
   /*!
-   * \brief Set node's data (should be a string).
+   * \brief Set the view's data (should be a string).
    */
   DataView* setString(const std::string& value)
   {
@@ -511,7 +513,7 @@ public:
   }
 
   /*!
-   * \brief Set  node's data ( should be a scalar ).
+   * \brief Set the view's data ( should be a scalar ).
    */
   template<typename ScalarType>
   DataView* setScalar(ScalarType value)
@@ -644,7 +646,7 @@ private:
   DataView * declare(const DataType& dtype);
 
   /*!
-   * \brief Declare a data view with a Conduit schema object.
+   * \brief Declare a data view with a schema object.
    *
    * IMPORTANT: If view has been previously declared, this operation will
    *            re-declare the view. To have the new declaration take effect,
@@ -667,7 +669,7 @@ private:
   /// DataBuffer associated with this DataView object.
   DataBuffer * m_data_buffer;
 
-  /// Conduit Schema that describes this DataView.
+  /// Data description (schema) that describes the view's data.
   Schema m_schema;
 
   /// Conduit node used to access the data in this DataView.
@@ -678,7 +680,7 @@ private:
   /// Is this DataView opaque?  Will get refactored.
   bool m_is_opaque;
 
-  /// Has Schema been applied data? Will get refactored.
+  /// Has data description been applied to the view's data?
   bool m_is_applied;
 
   /// Shape information
