@@ -97,6 +97,7 @@ module sidre_mod
         procedure :: create_opaque_view => datagroup_create_opaque_view
         procedure :: create_external_view_int => datagroup_create_external_view_int
         procedure :: create_external_view_long => datagroup_create_external_view_long
+        procedure :: create_external_view_with_shape => datagroup_create_external_view_with_shape
         procedure :: destroy_view => datagroup_destroy_view
         procedure :: destroy_view_and_data => datagroup_destroy_view_and_data
         procedure :: move_view => datagroup_move_view
@@ -115,7 +116,8 @@ module sidre_mod
             ! splicer begin class.DataGroup.generic.create_external_view
             ! splicer end class.DataGroup.generic.create_external_view
             create_external_view_int,  &
-            create_external_view_long
+            create_external_view_long,  &
+            create_external_view_with_shape
         generic :: create_view => &
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
@@ -339,7 +341,8 @@ module sidre_mod
     
     interface
         
-        function sidre_datastore_new() result(rv) &
+        function sidre_datastore_new() &
+                result(rv) &
                 bind(C, name="SIDRE_datastore_new")
             use iso_c_binding
             implicit none
@@ -353,7 +356,8 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine sidre_datastore_delete
         
-        function sidre_datastore_get_root(self) result(rv) &
+        function sidre_datastore_get_root(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datastore_get_root")
             use iso_c_binding
             implicit none
@@ -361,7 +365,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datastore_get_root
         
-        function sidre_datastore_get_buffer(self, idx) result(rv) &
+        function sidre_datastore_get_buffer(self, idx) &
+                result(rv) &
                 bind(C, name="SIDRE_datastore_get_buffer")
             use iso_c_binding
             implicit none
@@ -370,7 +375,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datastore_get_buffer
         
-        function sidre_datastore_create_buffer(self) result(rv) &
+        function sidre_datastore_create_buffer(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datastore_create_buffer")
             use iso_c_binding
             implicit none
@@ -386,7 +392,8 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: id
         end subroutine sidre_datastore_destroy_buffer
         
-        pure function sidre_datastore_get_num_buffers(self) result(rv) &
+        pure function sidre_datastore_get_num_buffers(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datastore_get_num_buffers")
             use iso_c_binding
             implicit none
@@ -404,7 +411,8 @@ module sidre_mod
         ! splicer begin class.DataStore.additional_interfaces
         ! splicer end class.DataStore.additional_interfaces
         
-        pure function sidre_datagroup_get_name(self) result(rv) &
+        pure function sidre_datagroup_get_name(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_name")
             use iso_c_binding
             implicit none
@@ -412,7 +420,8 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_datagroup_get_name
         
-        pure function sidre_datagroup_get_parent(self) result(rv) &
+        pure function sidre_datagroup_get_parent(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_parent")
             use iso_c_binding
             implicit none
@@ -420,7 +429,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_parent
         
-        pure function sidre_datagroup_get_data_store(self) result(rv) &
+        pure function sidre_datagroup_get_data_store(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_data_store")
             use iso_c_binding
             implicit none
@@ -428,7 +438,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_data_store
         
-        pure function sidre_datagroup_get_num_views(self) result(rv) &
+        pure function sidre_datagroup_get_num_views(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_num_views")
             use iso_c_binding
             implicit none
@@ -436,7 +447,8 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function sidre_datagroup_get_num_views
         
-        pure function sidre_datagroup_get_num_groups(self) result(rv) &
+        pure function sidre_datagroup_get_num_groups(self) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_num_groups")
             use iso_c_binding
             implicit none
@@ -444,7 +456,8 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function sidre_datagroup_get_num_groups
         
-        function sidre_datagroup_has_view(self, name) result(rv) &
+        function sidre_datagroup_has_view(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_has_view")
             use iso_c_binding
             implicit none
@@ -453,7 +466,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_datagroup_has_view
         
-        function sidre_datagroup_has_view_bufferify(self, name, Lname) result(rv) &
+        function sidre_datagroup_has_view_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_has_view_bufferify")
             use iso_c_binding
             implicit none
@@ -463,7 +477,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_datagroup_has_view_bufferify
         
-        function sidre_datagroup_get_view_from_name(self, name) result(rv) &
+        function sidre_datagroup_get_view_from_name(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_view_from_name")
             use iso_c_binding
             implicit none
@@ -472,7 +487,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_view_from_name
         
-        function sidre_datagroup_get_view_from_name_bufferify(self, name, Lname) result(rv) &
+        function sidre_datagroup_get_view_from_name_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_view_from_name_bufferify")
             use iso_c_binding
             implicit none
@@ -482,7 +498,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_view_from_name_bufferify
         
-        function sidre_datagroup_get_view_from_index(self, idx) result(rv) &
+        function sidre_datagroup_get_view_from_index(self, idx) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_view_from_index")
             use iso_c_binding
             implicit none
@@ -491,7 +508,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_view_from_index
         
-        pure function sidre_datagroup_get_view_index(self, name) result(rv) &
+        pure function sidre_datagroup_get_view_index(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_view_index")
             use iso_c_binding
             implicit none
@@ -500,7 +518,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_datagroup_get_view_index
         
-        pure function sidre_datagroup_get_view_index_bufferify(self, name, Lname) result(rv) &
+        pure function sidre_datagroup_get_view_index_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_view_index_bufferify")
             use iso_c_binding
             implicit none
@@ -510,7 +529,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_datagroup_get_view_index_bufferify
         
-        pure function sidre_datagroup_get_view_name(self, idx) result(rv) &
+        pure function sidre_datagroup_get_view_name(self, idx) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_view_name")
             use iso_c_binding
             implicit none
@@ -519,7 +539,8 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_datagroup_get_view_name
         
-        function sidre_datagroup_create_view_and_allocate_from_type(self, name, type, num_elems) result(rv) &
+        function sidre_datagroup_create_view_and_allocate_from_type(self, name, type, num_elems) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type")
             use iso_c_binding
             implicit none
@@ -530,7 +551,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_and_allocate_from_type
         
-        function sidre_datagroup_create_view_and_allocate_from_type_bufferify(self, name, Lname, type, num_elems) result(rv) &
+        function sidre_datagroup_create_view_and_allocate_from_type_bufferify(self, name, Lname, type, num_elems) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type_bufferify")
             use iso_c_binding
             implicit none
@@ -542,7 +564,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_and_allocate_from_type_bufferify
         
-        function sidre_datagroup_create_view_empty(self, name) result(rv) &
+        function sidre_datagroup_create_view_empty(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_empty")
             use iso_c_binding
             implicit none
@@ -551,7 +574,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_empty
         
-        function sidre_datagroup_create_view_empty_bufferify(self, name, Lname) result(rv) &
+        function sidre_datagroup_create_view_empty_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_empty_bufferify")
             use iso_c_binding
             implicit none
@@ -561,7 +585,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_empty_bufferify
         
-        function sidre_datagroup_create_view_from_type(self, name, type, num_elems) result(rv) &
+        function sidre_datagroup_create_view_from_type(self, name, type, num_elems) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_from_type")
             use iso_c_binding
             implicit none
@@ -572,7 +597,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_from_type
         
-        function sidre_datagroup_create_view_from_type_bufferify(self, name, Lname, type, num_elems) result(rv) &
+        function sidre_datagroup_create_view_from_type_bufferify(self, name, Lname, type, num_elems) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_from_type_bufferify")
             use iso_c_binding
             implicit none
@@ -584,7 +610,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_from_type_bufferify
         
-        function sidre_datagroup_create_view_into_buffer(self, name, buff) result(rv) &
+        function sidre_datagroup_create_view_into_buffer(self, name, buff) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_into_buffer")
             use iso_c_binding
             implicit none
@@ -594,7 +621,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_into_buffer
         
-        function sidre_datagroup_create_view_into_buffer_bufferify(self, name, Lname, buff) result(rv) &
+        function sidre_datagroup_create_view_into_buffer_bufferify(self, name, Lname, buff) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_into_buffer_bufferify")
             use iso_c_binding
             implicit none
@@ -605,7 +633,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_into_buffer_bufferify
         
-        function sidre_datagroup_create_opaque_view(self, name, opaque_ptr) result(rv) &
+        function sidre_datagroup_create_opaque_view(self, name, opaque_ptr) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_opaque_view")
             use iso_c_binding
             implicit none
@@ -615,7 +644,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_opaque_view
         
-        function sidre_datagroup_create_opaque_view_bufferify(self, name, Lname, opaque_ptr) result(rv) &
+        function sidre_datagroup_create_opaque_view_bufferify(self, name, Lname, opaque_ptr) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_opaque_view_bufferify")
             use iso_c_binding
             implicit none
@@ -626,7 +656,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_opaque_view_bufferify
         
-        function sidre_datagroup_create_external_view(self, name, external_data, type, num_elems) result(rv) &
+        function sidre_datagroup_create_external_view(self, name, external_data, type, num_elems) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_external_view")
             use iso_c_binding
             implicit none
@@ -638,7 +669,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_external_view
         
-        function sidre_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, num_elems) result(rv) &
+        function sidre_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, num_elems) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_external_view_bufferify")
             use iso_c_binding
             implicit none
@@ -650,6 +682,35 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
         end function sidre_datagroup_create_external_view_bufferify
+        
+        function sidre_datagroup_create_external_view_with_shape(self, name, external_data, type, ndims, shape) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_external_view_with_shape")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            type(C_PTR), value, intent(IN) :: external_data
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+            type(C_PTR) :: rv
+        end function sidre_datagroup_create_external_view_with_shape
+        
+        function sidre_datagroup_create_external_view_with_shape_bufferify(self, name, Lname, external_data, type, ndims, shape) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_create_external_view_with_shape_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+            type(C_PTR), value, intent(IN) :: external_data
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+            type(C_PTR) :: rv
+        end function sidre_datagroup_create_external_view_with_shape_bufferify
         
         subroutine sidre_datagroup_destroy_view(self, name) &
                 bind(C, name="SIDRE_datagroup_destroy_view")
@@ -685,7 +746,8 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine sidre_datagroup_destroy_view_and_data_bufferify
         
-        function sidre_datagroup_move_view(self, view) result(rv) &
+        function sidre_datagroup_move_view(self, view) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_move_view")
             use iso_c_binding
             implicit none
@@ -694,7 +756,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_move_view
         
-        function sidre_datagroup_copy_view(self, view) result(rv) &
+        function sidre_datagroup_copy_view(self, view) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_copy_view")
             use iso_c_binding
             implicit none
@@ -703,7 +766,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_copy_view
         
-        function sidre_datagroup_has_group(self, name) result(rv) &
+        function sidre_datagroup_has_group(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_has_group")
             use iso_c_binding
             implicit none
@@ -712,7 +776,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_datagroup_has_group
         
-        function sidre_datagroup_has_group_bufferify(self, name, Lname) result(rv) &
+        function sidre_datagroup_has_group_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_has_group_bufferify")
             use iso_c_binding
             implicit none
@@ -722,7 +787,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_datagroup_has_group_bufferify
         
-        function sidre_datagroup_get_group(self, name) result(rv) &
+        function sidre_datagroup_get_group(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_group")
             use iso_c_binding
             implicit none
@@ -731,7 +797,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_group
         
-        function sidre_datagroup_get_group_bufferify(self, name, Lname) result(rv) &
+        function sidre_datagroup_get_group_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_group_bufferify")
             use iso_c_binding
             implicit none
@@ -741,7 +808,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_get_group_bufferify
         
-        pure function sidre_datagroup_get_group_index(self, name) result(rv) &
+        pure function sidre_datagroup_get_group_index(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_group_index")
             use iso_c_binding
             implicit none
@@ -750,7 +818,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_datagroup_get_group_index
         
-        pure function sidre_datagroup_get_group_index_bufferify(self, name, Lname) result(rv) &
+        pure function sidre_datagroup_get_group_index_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_group_index_bufferify")
             use iso_c_binding
             implicit none
@@ -760,7 +829,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_datagroup_get_group_index_bufferify
         
-        pure function sidre_datagroup_get_group_name(self, idx) result(rv) &
+        pure function sidre_datagroup_get_group_name(self, idx) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_get_group_name")
             use iso_c_binding
             implicit none
@@ -769,7 +839,8 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_datagroup_get_group_name
         
-        function sidre_datagroup_create_group(self, name) result(rv) &
+        function sidre_datagroup_create_group(self, name) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_group")
             use iso_c_binding
             implicit none
@@ -778,7 +849,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_group
         
-        function sidre_datagroup_create_group_bufferify(self, name, Lname) result(rv) &
+        function sidre_datagroup_create_group_bufferify(self, name, Lname) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_create_group_bufferify")
             use iso_c_binding
             implicit none
@@ -805,7 +877,8 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine sidre_datagroup_destroy_group_bufferify
         
-        function sidre_datagroup_move_group(self, grp) result(rv) &
+        function sidre_datagroup_move_group(self, grp) &
+                result(rv) &
                 bind(C, name="SIDRE_datagroup_move_group")
             use iso_c_binding
             implicit none
@@ -864,7 +937,8 @@ module sidre_mod
         ! splicer begin class.DataGroup.additional_interfaces
         ! splicer end class.DataGroup.additional_interfaces
         
-        pure function sidre_databuffer_get_index(self) result(rv) &
+        pure function sidre_databuffer_get_index(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_get_index")
             use iso_c_binding
             implicit none
@@ -872,7 +946,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_databuffer_get_index
         
-        pure function sidre_databuffer_get_num_views(self) result(rv) &
+        pure function sidre_databuffer_get_num_views(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_get_num_views")
             use iso_c_binding
             implicit none
@@ -921,7 +996,8 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: external_data
         end subroutine sidre_databuffer_set_external_data
         
-        pure function sidre_databuffer_is_external(self) result(rv) &
+        pure function sidre_databuffer_is_external(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_is_external")
             use iso_c_binding
             implicit none
@@ -929,7 +1005,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_databuffer_is_external
         
-        function sidre_databuffer_get_data(self) result(rv) &
+        function sidre_databuffer_get_data(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_get_data")
             use iso_c_binding
             implicit none
@@ -937,7 +1014,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_databuffer_get_data
         
-        pure function sidre_databuffer_get_type_id(self) result(rv) &
+        pure function sidre_databuffer_get_type_id(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_get_type_id")
             use iso_c_binding
             implicit none
@@ -945,7 +1023,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_databuffer_get_type_id
         
-        pure function sidre_databuffer_get_num_elements(self) result(rv) &
+        pure function sidre_databuffer_get_num_elements(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_get_num_elements")
             use iso_c_binding
             implicit none
@@ -953,7 +1032,8 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function sidre_databuffer_get_num_elements
         
-        pure function sidre_databuffer_get_total_bytes(self) result(rv) &
+        pure function sidre_databuffer_get_total_bytes(self) &
+                result(rv) &
                 bind(C, name="SIDRE_databuffer_get_total_bytes")
             use iso_c_binding
             implicit none
@@ -1067,7 +1147,8 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: stride
         end subroutine sidre_dataview_apply_type_nelems_offset_stride
         
-        pure function sidre_dataview_has_buffer(self) result(rv) &
+        pure function sidre_dataview_has_buffer(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_has_buffer")
             use iso_c_binding
             implicit none
@@ -1075,7 +1156,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_dataview_has_buffer
         
-        pure function sidre_dataview_is_opaque(self) result(rv) &
+        pure function sidre_dataview_is_opaque(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_is_opaque")
             use iso_c_binding
             implicit none
@@ -1083,7 +1165,8 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_dataview_is_opaque
         
-        pure function sidre_dataview_get_name(self) result(rv) &
+        pure function sidre_dataview_get_name(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_name")
             use iso_c_binding
             implicit none
@@ -1091,7 +1174,8 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_dataview_get_name
         
-        pure function sidre_dataview_get_opaque(self) result(rv) &
+        pure function sidre_dataview_get_opaque(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_opaque")
             use iso_c_binding
             implicit none
@@ -1099,7 +1183,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_dataview_get_opaque
         
-        function sidre_dataview_get_buffer(self) result(rv) &
+        function sidre_dataview_get_buffer(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_buffer")
             use iso_c_binding
             implicit none
@@ -1107,7 +1192,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_dataview_get_buffer
         
-        pure function sidre_dataview_get_data_pointer(self) result(rv) &
+        pure function sidre_dataview_get_data_pointer(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_data_pointer")
             use iso_c_binding
             implicit none
@@ -1147,7 +1233,8 @@ module sidre_mod
             real(C_DOUBLE), value, intent(IN) :: value
         end subroutine sidre_dataview_set_value_double
         
-        function sidre_dataview_get_value_int(self) result(rv) &
+        function sidre_dataview_get_value_int(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_value_int")
             use iso_c_binding
             implicit none
@@ -1155,7 +1242,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_dataview_get_value_int
         
-        function sidre_dataview_get_value_long(self) result(rv) &
+        function sidre_dataview_get_value_long(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_value_long")
             use iso_c_binding
             implicit none
@@ -1163,7 +1251,8 @@ module sidre_mod
             integer(C_LONG) :: rv
         end function sidre_dataview_get_value_long
         
-        function sidre_dataview_get_value_float(self) result(rv) &
+        function sidre_dataview_get_value_float(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_value_float")
             use iso_c_binding
             implicit none
@@ -1171,7 +1260,8 @@ module sidre_mod
             real(C_FLOAT) :: rv
         end function sidre_dataview_get_value_float
         
-        function sidre_dataview_get_value_double(self) result(rv) &
+        function sidre_dataview_get_value_double(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_value_double")
             use iso_c_binding
             implicit none
@@ -1179,7 +1269,8 @@ module sidre_mod
             real(C_DOUBLE) :: rv
         end function sidre_dataview_get_value_double
         
-        function sidre_dataview_set_opaque(self, opaque_ptr) result(rv) &
+        function sidre_dataview_set_opaque(self, opaque_ptr) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_set_opaque")
             use iso_c_binding
             implicit none
@@ -1188,7 +1279,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_dataview_set_opaque
         
-        function sidre_dataview_get_owning_group(self) result(rv) &
+        function sidre_dataview_get_owning_group(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_owning_group")
             use iso_c_binding
             implicit none
@@ -1196,7 +1288,8 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_dataview_get_owning_group
         
-        pure function sidre_dataview_get_type_id(self) result(rv) &
+        pure function sidre_dataview_get_type_id(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_type_id")
             use iso_c_binding
             implicit none
@@ -1204,7 +1297,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_dataview_get_type_id
         
-        pure function sidre_dataview_get_total_bytes(self) result(rv) &
+        pure function sidre_dataview_get_total_bytes(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_total_bytes")
             use iso_c_binding
             implicit none
@@ -1212,7 +1306,8 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function sidre_dataview_get_total_bytes
         
-        pure function sidre_dataview_get_num_elements(self) result(rv) &
+        pure function sidre_dataview_get_num_elements(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_num_elements")
             use iso_c_binding
             implicit none
@@ -1220,7 +1315,8 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function sidre_dataview_get_num_elements
         
-        pure function sidre_dataview_get_num_dimensions(self) result(rv) &
+        pure function sidre_dataview_get_num_dimensions(self) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_num_dimensions")
             use iso_c_binding
             implicit none
@@ -1228,7 +1324,8 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_dataview_get_num_dimensions
         
-        pure function sidre_dataview_get_shape(self, ndims, shape) result(rv) &
+        pure function sidre_dataview_get_shape(self, ndims, shape) &
+                result(rv) &
                 bind(C, name="SIDRE_dataview_get_shape")
             use iso_c_binding
             implicit none
@@ -1248,7 +1345,8 @@ module sidre_mod
         ! splicer begin class.DataView.additional_interfaces
         ! splicer end class.DataView.additional_interfaces
         
-        function sidre_name_is_valid(name) result(rv) &
+        function sidre_name_is_valid(name) &
+                result(rv) &
                 bind(C, name="SIDRE_name_is_valid")
             use iso_c_binding
             implicit none
@@ -1641,6 +1739,28 @@ contains
         ! splicer end class.DataGroup.method.create_external_view_long
     end function datagroup_create_external_view_long
     
+    function datagroup_create_external_view_with_shape(obj, name, external_data, type, ndims, shape) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        character(*), intent(IN) :: name
+        type(C_PTR), value, intent(IN) :: external_data
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: ndims
+        integer(C_LONG), intent(IN) :: shape(*)
+        type(dataview) :: rv
+        ! splicer begin class.DataGroup.method.create_external_view_with_shape
+        rv%voidptr = sidre_datagroup_create_external_view_with_shape_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len_trim(name),  &
+            external_data,  &
+            type,  &
+            ndims,  &
+            shape)
+        ! splicer end class.DataGroup.method.create_external_view_with_shape
+    end function datagroup_create_external_view_with_shape
+    
     subroutine datagroup_destroy_view(obj, name)
         use iso_c_binding
         implicit none
@@ -1850,7 +1970,8 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_int_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1870,7 +1991,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_int_1d
     
     ! Generated by genfsidresplicer.py
@@ -1890,7 +2012,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_int_2d
     
     ! Generated by genfsidresplicer.py
@@ -1910,7 +2033,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_int_3d
     
     ! Generated by genfsidresplicer.py
@@ -1930,7 +2054,8 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_long_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1950,7 +2075,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_long_1d
     
     ! Generated by genfsidresplicer.py
@@ -1970,7 +2096,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_long_2d
     
     ! Generated by genfsidresplicer.py
@@ -1990,7 +2117,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_long_3d
     
     ! Generated by genfsidresplicer.py
@@ -2010,7 +2138,8 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_float_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2030,7 +2159,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_float_1d
     
     ! Generated by genfsidresplicer.py
@@ -2050,7 +2180,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_float_2d
     
     ! Generated by genfsidresplicer.py
@@ -2070,7 +2201,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_float_3d
     
     ! Generated by genfsidresplicer.py
@@ -2090,7 +2222,8 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_double_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2110,7 +2243,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_double_1d
     
     ! Generated by genfsidresplicer.py
@@ -2130,7 +2264,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 2, extents)
     end function datagroup_create_array_view_double_2d
     
     ! Generated by genfsidresplicer.py
@@ -2150,7 +2285,8 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
+            group%voidptr, name, lname, addr, type, 3, extents)
     end function datagroup_create_array_view_double_3d
     ! splicer end class.DataGroup.additional_functions
     
