@@ -218,6 +218,94 @@ contains
 
 !------------------------------------------------------------------------------
 
+  subroutine int_array_depth_view()
+    type(datastore) ds
+    type(datagroup) root
+    type(databuffer) dbuff
+    type(dataview) view0
+    type(dataview) view1
+    type(dataview) view2
+    type(dataview) view3
+    integer(C_INT), pointer :: data(:)
+    type(C_PTR) data_ptr
+    integer i
+    integer(C_LONG) depth_nelems
+    integer(C_LONG) total_nelems
+
+    ! create our main data store
+    ds = datastore_new()
+    dbuff = ds%create_buffer()
+
+    ! get access to our root data Group
+    root = ds%get_root()
+
+    depth_nelems = 10 
+    total_nelems = 4 * depth_nelems
+
+    ! Allocate buffer to hold data for 4 "depth" views
+    call dbuff%declare(SIDRE_INT_ID, total_nelems)
+    call dbuff%allocate()
+
+    data_ptr = dbuff%get_void_ptr()
+    call c_f_pointer(data_ptr, data, [ total_nelems ])
+
+    do i = 1, total_nelems
+       data(i) = (i - 1) / depth_nelems
+    enddo
+
+    call dbuff%print()
+
+    call assert_true( dbuff%get_num_elements() == 4 * depth_nelems )
+
+    ! create 4 "depth" views and apply offsets into buffer
+    view0 = root%create_view_into_buffer("view0", dbuff)
+    call view0%apply_nelems_offset(depth_nelems, 0 * depth_nelems)
+
+    view1 = root%create_view_into_buffer("view1", dbuff)
+    call view1%apply_nelems_offset(depth_nelems, 1 * depth_nelems)
+
+    view2 = root%create_view_into_buffer("view2", dbuff)
+    call view2%apply_nelems_offset(depth_nelems, 2 * depth_nelems)
+
+    view3 = root%create_view_into_buffer("view3", dbuff)
+    call view3%apply_nelems_offset(depth_nelems, 3 * depth_nelems)
+
+    call assert_true( dbuff%get_num_views() == 4 )
+
+    call view0%print()
+    call view1%print()
+    call view2%print()
+    call view3%print()
+
+    ! check values in depth views...
+    call view0%get_data(data)
+    do i = 1, depth_nelems
+       call assert_equals( data(i), 0 )
+    enddo
+
+    call view1%get_data(data)
+   do i = 1, depth_nelems
+      call assert_equals( data(i), 1 )
+   enddo
+
+   call view2%get_data(data)
+   do i = 1, depth_nelems
+      call assert_equals( data(i), 2 )
+   enddo
+
+   call view3%get_data(data)
+   do i = 1, depth_nelems
+      call assert_equals( data(i), 3 )
+      call assert_true( data(i) ==  3 )
+   enddo
+
+    call ds%print()
+    call ds%delete()
+
+  end subroutine int_array_depth_view
+
+!------------------------------------------------------------------------------
+
   subroutine int_array_multi_view_resize()
      !
      ! This example creates a 4 * 10 buffer of ints,
@@ -497,6 +585,7 @@ program fortran_test
   call int_buffer_from_view_conduit_value
   call int_array_multi_view
   call init_int_array_multi_view
+  call int_array_depth_view
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque

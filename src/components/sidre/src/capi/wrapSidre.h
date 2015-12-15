@@ -23,7 +23,7 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-bool ATK_name_is_valid(const char * name);
+bool SIDRE_name_is_valid(const char * name);
 
 #ifdef __cplusplus
 }

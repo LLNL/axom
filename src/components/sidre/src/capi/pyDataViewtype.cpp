@@ -88,16 +88,16 @@ PY_dataview_allocate_from_type(
 {
 // splicer begin class.DataView.method.allocate_from_type
     int type;
-    ATK_SidreLength numelems;
-    const char *kwcpp = "type\0numelems";
+    SIDRE_SidreLength num_elems;
+    const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:allocate", kw_list,
-        &type, &numelems))
+        &type, &num_elems))
     {
         return NULL;
     }
-    self->BBB->allocate(getTypeID(type), numelems);
+    self->BBB->allocate(getTypeID(type), num_elems);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.allocate_from_type
 }
@@ -113,36 +113,63 @@ PY_dataview_reallocate(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.reallocate
-    ATK_SidreLength numelems;
-    const char *kwcpp = "numelems";
+    SIDRE_SidreLength num_elems;
+    const char *kwcpp = "num_elems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:reallocate", kw_list,
-        &numelems))
+        &num_elems))
     {
         return NULL;
     }
-    self->BBB->reallocate(numelems);
+    self->BBB->reallocate(num_elems);
     Py_RETURN_NONE;
 // splicer end class.DataView.method.reallocate
 }
 
-static char PY_dataview_apply_simple__doc__[] =
+static char PY_dataview_apply_0__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_dataview_apply_simple(
+PY_dataview_apply_0(
   PY_DataView *self,
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.DataView.method.apply_simple
-    DataView * rv = self->BBB->apply();
+// splicer begin class.DataView.method.apply_0
+    self->BBB->apply();
+    Py_RETURN_NONE;
+// splicer end class.DataView.method.apply_0
+}
+
+static char PY_dataview_attach_buffer__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_dataview_attach_buffer(
+  PY_DataView *self,
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin class.DataView.method.attach_buffer
+    PY_DataBuffer * buff;
+    DataBuffer * buff_ptr;
+    const char *kwcpp = "buff";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:attachBuffer", kw_list,
+        &PY_DataBuffer_Type, &buff))
+    {
+        return NULL;
+    }
+    buff_ptr = (buff ? buff->BBB : NULL);
+    DataView * rv = self->BBB->attachBuffer(buff_ptr);
     PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
-// splicer end class.DataView.method.apply_simple
+// splicer end class.DataView.method.attach_buffer
 }
 
 static char PY_dataview_apply_nelems__doc__[] =
@@ -156,19 +183,17 @@ PY_dataview_apply_nelems(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_nelems
-    ATK_SidreLength numelems;
-    const char *kwcpp = "numelems";
+    SIDRE_SidreLength num_elems;
+    const char *kwcpp = "num_elems";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "l:apply", kw_list,
-        &numelems))
+        &num_elems))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(numelems);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(num_elems);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_nelems
 }
 
@@ -183,20 +208,18 @@ PY_dataview_apply_nelems_offset(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_nelems_offset
-    ATK_SidreLength numelems;
-    ATK_SidreLength offset;
-    const char *kwcpp = "numelems\0offset";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+9, NULL };
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
+    const char *kwcpp = "num_elems\0offset";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+10, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ll:apply", kw_list,
-        &numelems, &offset))
+        &num_elems, &offset))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(numelems, offset);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(num_elems, offset);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_nelems_offset
 }
 
@@ -211,21 +234,19 @@ PY_dataview_apply_nelems_offset_stride(
   PyObject *kwds)
 {
 // splicer begin class.DataView.method.apply_nelems_offset_stride
-    ATK_SidreLength numelems;
-    ATK_SidreLength offset;
-    ATK_SidreLength stride;
-    const char *kwcpp = "numelems\0offset\0stride";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
+    SIDRE_SidreLength stride;
+    const char *kwcpp = "num_elems\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+10,(char *) kwcpp+17, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "lll:apply", kw_list,
-        &numelems, &offset, &stride))
+        &num_elems, &offset, &stride))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(numelems, offset, stride);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(num_elems, offset, stride);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_nelems_offset_stride
 }
 
@@ -241,19 +262,17 @@ PY_dataview_apply_type_nelems(
 {
 // splicer begin class.DataView.method.apply_type_nelems
     int type;
-    ATK_SidreLength numelems;
-    const char *kwcpp = "type\0numelems";
+    SIDRE_SidreLength num_elems;
+    const char *kwcpp = "type\0num_elems";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "il:apply", kw_list,
-        &type, &numelems))
+        &type, &num_elems))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(getTypeID(type), numelems);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(getTypeID(type), num_elems);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_type_nelems
 }
 
@@ -269,20 +288,18 @@ PY_dataview_apply_type_nelems_offset(
 {
 // splicer begin class.DataView.method.apply_type_nelems_offset
     int type;
-    ATK_SidreLength numelems;
-    ATK_SidreLength offset;
-    const char *kwcpp = "type\0numelems\0offset";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+14, NULL };
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
+    const char *kwcpp = "type\0num_elems\0offset";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+15, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "ill:apply", kw_list,
-        &type, &numelems, &offset))
+        &type, &num_elems, &offset))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(getTypeID(type), numelems, offset);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(getTypeID(type), num_elems, offset);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_type_nelems_offset
 }
 
@@ -298,21 +315,19 @@ PY_dataview_apply_type_nelems_offset_stride(
 {
 // splicer begin class.DataView.method.apply_type_nelems_offset_stride
     int type;
-    ATK_SidreLength numelems;
-    ATK_SidreLength offset;
-    ATK_SidreLength stride;
-    const char *kwcpp = "type\0numelems\0offset\0stride";
-    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+14,(char *) kwcpp+21, NULL };
+    SIDRE_SidreLength num_elems;
+    SIDRE_SidreLength offset;
+    SIDRE_SidreLength stride;
+    const char *kwcpp = "type\0num_elems\0offset\0stride";
+    char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+15,(char *) kwcpp+22, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "illl:apply", kw_list,
-        &type, &numelems, &offset, &stride))
+        &type, &num_elems, &offset, &stride))
     {
         return NULL;
     }
-    DataView * rv = self->BBB->apply(getTypeID(type), numelems, offset, stride);
-    PY_DataView * rv_obj = PyObject_New(PY_DataView, &PY_DataView_Type);
-    rv_obj->BBB = rv;
-    return (PyObject *) rv_obj;
+    self->BBB->apply(getTypeID(type), num_elems, offset, stride);
+    Py_RETURN_NONE;
 // splicer end class.DataView.method.apply_type_nelems_offset_stride
 }
 
@@ -534,7 +549,7 @@ PY_dataview_apply(
     int totArgs = numArgs + numNamedArgs;
     PyObject *rvobj;
     {
-        rvobj = PY_dataview_apply_simple(self, args, kwds);
+        rvobj = PY_dataview_apply_0(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
         } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
@@ -606,7 +621,8 @@ static PyMethodDef PY_DataView_methods[] = {
 {"allocate_simple", (PyCFunction)PY_dataview_allocate_simple, METH_NOARGS, PY_dataview_allocate_simple__doc__},
 {"allocate_from_type", (PyCFunction)PY_dataview_allocate_from_type, METH_VARARGS|METH_KEYWORDS, PY_dataview_allocate_from_type__doc__},
 {"reallocate", (PyCFunction)PY_dataview_reallocate, METH_VARARGS|METH_KEYWORDS, PY_dataview_reallocate__doc__},
-{"apply_simple", (PyCFunction)PY_dataview_apply_simple, METH_NOARGS, PY_dataview_apply_simple__doc__},
+{"apply_0", (PyCFunction)PY_dataview_apply_0, METH_NOARGS, PY_dataview_apply_0__doc__},
+{"attachBuffer", (PyCFunction)PY_dataview_attach_buffer, METH_VARARGS|METH_KEYWORDS, PY_dataview_attach_buffer__doc__},
 {"apply_nelems", (PyCFunction)PY_dataview_apply_nelems, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems__doc__},
 {"apply_nelems_offset", (PyCFunction)PY_dataview_apply_nelems_offset, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems_offset__doc__},
 {"apply_nelems_offset_stride", (PyCFunction)PY_dataview_apply_nelems_offset_stride, METH_VARARGS|METH_KEYWORDS, PY_dataview_apply_nelems_offset_stride__doc__},

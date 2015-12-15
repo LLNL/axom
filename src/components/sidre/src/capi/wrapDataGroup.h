@@ -22,113 +22,113 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-struct s_ATK_databuffer;
-typedef struct s_ATK_databuffer ATK_databuffer;
-struct s_ATK_datagroup;
-typedef struct s_ATK_datagroup ATK_datagroup;
-struct s_ATK_datastore;
-typedef struct s_ATK_datastore ATK_datastore;
-struct s_ATK_dataview;
-typedef struct s_ATK_dataview ATK_dataview;
+struct s_SIDRE_databuffer;
+typedef struct s_SIDRE_databuffer SIDRE_databuffer;
+struct s_SIDRE_datagroup;
+typedef struct s_SIDRE_datagroup SIDRE_datagroup;
+struct s_SIDRE_datastore;
+typedef struct s_SIDRE_datastore SIDRE_datastore;
+struct s_SIDRE_dataview;
+typedef struct s_SIDRE_dataview SIDRE_dataview;
 
 // splicer begin class.DataGroup.C_definition
 // splicer end class.DataGroup.C_definition
 
-const char * ATK_datagroup_get_name(const ATK_datagroup * self);
+const char * SIDRE_datagroup_get_name(const SIDRE_datagroup * self);
 
-const ATK_datagroup * ATK_datagroup_get_parent(const ATK_datagroup * self);
+const SIDRE_datagroup * SIDRE_datagroup_get_parent(const SIDRE_datagroup * self);
 
-const ATK_datastore * ATK_datagroup_get_data_store(const ATK_datagroup * self);
+const SIDRE_datastore * SIDRE_datagroup_get_data_store(const SIDRE_datagroup * self);
 
-size_t ATK_datagroup_get_num_views(ATK_datagroup * self);
+size_t SIDRE_datagroup_get_num_views(SIDRE_datagroup * self);
 
-size_t ATK_datagroup_get_num_groups(ATK_datagroup * self);
+size_t SIDRE_datagroup_get_num_groups(SIDRE_datagroup * self);
 
-bool ATK_datagroup_has_view(ATK_datagroup * self, const char * name);
+bool SIDRE_datagroup_has_view(SIDRE_datagroup * self, const char * name);
 
-bool ATK_datagroup_has_view_bufferify(ATK_datagroup * self, const char * name, int Lname);
+bool SIDRE_datagroup_has_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_dataview * ATK_datagroup_get_view_from_name(ATK_datagroup * self, const char * name);
+SIDRE_dataview * SIDRE_datagroup_get_view_from_name(SIDRE_datagroup * self, const char * name);
 
-ATK_dataview * ATK_datagroup_get_view_from_name_bufferify(ATK_datagroup * self, const char * name, int Lname);
+SIDRE_dataview * SIDRE_datagroup_get_view_from_name_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_dataview * ATK_datagroup_get_view_from_index(ATK_datagroup * self, const ATK_IndexType idx);
+SIDRE_dataview * SIDRE_datagroup_get_view_from_index(SIDRE_datagroup * self, const SIDRE_IndexType idx);
 
-ATK_IndexType ATK_datagroup_get_view_index(ATK_datagroup * self, const char * name);
+SIDRE_IndexType SIDRE_datagroup_get_view_index(SIDRE_datagroup * self, const char * name);
 
-ATK_IndexType ATK_datagroup_get_view_index_bufferify(ATK_datagroup * self, const char * name, int Lname);
+SIDRE_IndexType SIDRE_datagroup_get_view_index_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-const char * ATK_datagroup_get_view_name(const ATK_datagroup * self, ATK_IndexType idx);
+const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self, SIDRE_IndexType idx);
 
-ATK_dataview * ATK_datagroup_create_view_and_allocate_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_datagroup_create_view_and_allocate_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_datagroup_create_view_empty(ATK_datagroup * self, const char * name);
+SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self, const char * name);
 
-ATK_dataview * ATK_datagroup_create_view_empty_bufferify(ATK_datagroup * self, const char * name, int Lname);
+SIDRE_dataview * SIDRE_datagroup_create_view_empty_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_dataview * ATK_datagroup_create_view_from_type(ATK_datagroup * self, const char * name, int type, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_datagroup_create_view_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_datagroup_create_view_from_type_bufferify(ATK_datagroup * self, const char * name, int Lname, int type, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_datagroup_create_view_from_type_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_datagroup_create_view_into_buffer(ATK_datagroup * self, const char * name, ATK_databuffer * buff);
+SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer(SIDRE_datagroup * self, const char * name, SIDRE_databuffer * buff);
 
-ATK_dataview * ATK_datagroup_create_view_into_buffer_bufferify(ATK_datagroup * self, const char * name, int Lname, ATK_databuffer * buff);
+SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer_bufferify(SIDRE_datagroup * self, const char * name, int Lname, SIDRE_databuffer * buff);
 
-ATK_dataview * ATK_datagroup_create_opaque_view(ATK_datagroup * self, const char * name, void * opaque_ptr);
+SIDRE_dataview * SIDRE_datagroup_create_opaque_view(SIDRE_datagroup * self, const char * name, void * opaque_ptr);
 
-ATK_dataview * ATK_datagroup_create_opaque_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * opaque_ptr);
+SIDRE_dataview * SIDRE_datagroup_create_opaque_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * opaque_ptr);
 
-ATK_dataview * ATK_datagroup_create_external_view(ATK_datagroup * self, const char * name, void * external_data, int type, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_datagroup_create_external_view(SIDRE_datagroup * self, const char * name, void * external_data, int type, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_datagroup_create_external_view_bufferify(ATK_datagroup * self, const char * name, int Lname, void * external_data, int type, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_datagroup_create_external_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_data, int type, SIDRE_SidreLength num_elems);
 
-void ATK_datagroup_destroy_view(ATK_datagroup * self, const char * name);
+void SIDRE_datagroup_destroy_view(SIDRE_datagroup * self, const char * name);
 
-void ATK_datagroup_destroy_view_bufferify(ATK_datagroup * self, const char * name, int Lname);
+void SIDRE_datagroup_destroy_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-void ATK_datagroup_destroy_view_and_data(ATK_datagroup * self, const char * name);
+void SIDRE_datagroup_destroy_view_and_data(SIDRE_datagroup * self, const char * name);
 
-void ATK_datagroup_destroy_view_and_data_bufferify(ATK_datagroup * self, const char * name, int Lname);
+void SIDRE_datagroup_destroy_view_and_data_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_dataview * ATK_datagroup_move_view(ATK_datagroup * self, ATK_dataview * view);
+SIDRE_dataview * SIDRE_datagroup_move_view(SIDRE_datagroup * self, SIDRE_dataview * view);
 
-ATK_dataview * ATK_datagroup_copy_view(ATK_datagroup * self, ATK_dataview * view);
+SIDRE_dataview * SIDRE_datagroup_copy_view(SIDRE_datagroup * self, SIDRE_dataview * view);
 
-bool ATK_datagroup_has_group(ATK_datagroup * self, const char * name);
+bool SIDRE_datagroup_has_group(SIDRE_datagroup * self, const char * name);
 
-bool ATK_datagroup_has_group_bufferify(ATK_datagroup * self, const char * name, int Lname);
+bool SIDRE_datagroup_has_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_datagroup * ATK_datagroup_get_group(ATK_datagroup * self, const char * name);
+SIDRE_datagroup * SIDRE_datagroup_get_group(SIDRE_datagroup * self, const char * name);
 
-ATK_datagroup * ATK_datagroup_get_group_bufferify(ATK_datagroup * self, const char * name, int Lname);
+SIDRE_datagroup * SIDRE_datagroup_get_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_IndexType ATK_datagroup_get_group_index(ATK_datagroup * self, const char * name);
+SIDRE_IndexType SIDRE_datagroup_get_group_index(SIDRE_datagroup * self, const char * name);
 
-ATK_IndexType ATK_datagroup_get_group_index_bufferify(ATK_datagroup * self, const char * name, int Lname);
+SIDRE_IndexType SIDRE_datagroup_get_group_index_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-const char * ATK_datagroup_get_group_name(const ATK_datagroup * self, ATK_IndexType idx);
+const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self, SIDRE_IndexType idx);
 
-ATK_datagroup * ATK_datagroup_create_group(ATK_datagroup * self, const char * name);
+SIDRE_datagroup * SIDRE_datagroup_create_group(SIDRE_datagroup * self, const char * name);
 
-ATK_datagroup * ATK_datagroup_create_group_bufferify(ATK_datagroup * self, const char * name, int Lname);
+SIDRE_datagroup * SIDRE_datagroup_create_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-void ATK_datagroup_destroy_group(ATK_datagroup * self, const char * name);
+void SIDRE_datagroup_destroy_group(SIDRE_datagroup * self, const char * name);
 
-void ATK_datagroup_destroy_group_bufferify(ATK_datagroup * self, const char * name, int Lname);
+void SIDRE_datagroup_destroy_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
 
-ATK_datagroup * ATK_datagroup_move_group(ATK_datagroup * self, ATK_datagroup * grp);
+SIDRE_datagroup * SIDRE_datagroup_move_group(SIDRE_datagroup * self, SIDRE_datagroup * grp);
 
-void ATK_datagroup_print(ATK_datagroup * self);
+void SIDRE_datagroup_print(SIDRE_datagroup * self);
 
-void ATK_datagroup_save(ATK_datagroup * self, const char * obase, const char * protocol);
+void SIDRE_datagroup_save(SIDRE_datagroup * self, const char * obase, const char * protocol);
 
-void ATK_datagroup_save_bufferify(ATK_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol);
+void SIDRE_datagroup_save_bufferify(SIDRE_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol);
 
-void ATK_datagroup_load(ATK_datagroup * self, const char * obase, const char * protocol);
+void SIDRE_datagroup_load(SIDRE_datagroup * self, const char * obase, const char * protocol);
 
-void ATK_datagroup_load_bufferify(ATK_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol);
+void SIDRE_datagroup_load_bufferify(SIDRE_datagroup * self, const char * obase, int Lobase, const char * protocol, int Lprotocol);
 
 #ifdef __cplusplus
 }

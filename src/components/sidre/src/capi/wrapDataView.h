@@ -22,71 +22,73 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-struct s_ATK_databuffer;
-typedef struct s_ATK_databuffer ATK_databuffer;
-struct s_ATK_datagroup;
-typedef struct s_ATK_datagroup ATK_datagroup;
-struct s_ATK_dataview;
-typedef struct s_ATK_dataview ATK_dataview;
+struct s_SIDRE_databuffer;
+typedef struct s_SIDRE_databuffer SIDRE_databuffer;
+struct s_SIDRE_datagroup;
+typedef struct s_SIDRE_datagroup SIDRE_datagroup;
+struct s_SIDRE_dataview;
+typedef struct s_SIDRE_dataview SIDRE_dataview;
 
 // splicer begin class.DataView.C_definition
 // splicer end class.DataView.C_definition
 
-void ATK_dataview_allocate_simple(ATK_dataview * self);
+void SIDRE_dataview_allocate_simple(SIDRE_dataview * self);
 
-void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength numelems);
+void SIDRE_dataview_allocate_from_type(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems);
 
-void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength numelems);
+void SIDRE_dataview_reallocate(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_dataview_apply_simple(ATK_dataview * self);
+void SIDRE_dataview_apply_0(SIDRE_dataview * self);
 
-ATK_dataview * ATK_dataview_apply_nelems(ATK_dataview * self, ATK_SidreLength numelems);
+SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff);
 
-ATK_dataview * ATK_dataview_apply_nelems_offset(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset);
+void SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride);
+void SIDRE_dataview_apply_nelems_offset(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset);
 
-ATK_dataview * ATK_dataview_apply_type_nelems(ATK_dataview * self, int type, ATK_SidreLength numelems);
+void SIDRE_dataview_apply_nelems_offset_stride(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
 
-ATK_dataview * ATK_dataview_apply_type_nelems_offset(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset);
+void SIDRE_dataview_apply_type_nelems(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems);
 
-ATK_dataview * ATK_dataview_apply_type_nelems_offset_stride(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride);
+void SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset);
 
-bool ATK_dataview_has_buffer(ATK_dataview * self);
+void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
 
-bool ATK_dataview_is_opaque(ATK_dataview * self);
+bool SIDRE_dataview_has_buffer(SIDRE_dataview * self);
 
-const char * ATK_dataview_get_name(const ATK_dataview * self);
+bool SIDRE_dataview_is_opaque(SIDRE_dataview * self);
 
-ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self);
+const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);
 
-void * ATK_dataview_get_void_ptr(ATK_dataview * self);
+SIDRE_databuffer * SIDRE_dataview_get_buffer(SIDRE_dataview * self);
 
-void ATK_dataview_set_scalar_int(ATK_dataview * self, int value);
+void * SIDRE_dataview_get_void_ptr(SIDRE_dataview * self);
 
-void ATK_dataview_set_scalar_long(ATK_dataview * self, long value);
+void SIDRE_dataview_set_scalar_int(SIDRE_dataview * self, int value);
 
-void ATK_dataview_set_scalar_float(ATK_dataview * self, float value);
+void SIDRE_dataview_set_scalar_long(SIDRE_dataview * self, long value);
 
-void ATK_dataview_set_scalar_double(ATK_dataview * self, double value);
+void SIDRE_dataview_set_scalar_float(SIDRE_dataview * self, float value);
 
-int ATK_dataview_get_data_int(ATK_dataview * self);
+void SIDRE_dataview_set_scalar_double(SIDRE_dataview * self, double value);
 
-long ATK_dataview_get_data_long(ATK_dataview * self);
+int SIDRE_dataview_get_data_int(SIDRE_dataview * self);
 
-float ATK_dataview_get_data_float(ATK_dataview * self);
+long SIDRE_dataview_get_data_long(SIDRE_dataview * self);
 
-double ATK_dataview_get_data_double(ATK_dataview * self);
+float SIDRE_dataview_get_data_float(SIDRE_dataview * self);
 
-ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self);
+double SIDRE_dataview_get_data_double(SIDRE_dataview * self);
 
-int ATK_dataview_get_type_id(ATK_dataview * self);
+SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
 
-size_t ATK_dataview_get_total_bytes(ATK_dataview * self);
+int SIDRE_dataview_get_type_id(SIDRE_dataview * self);
 
-size_t ATK_dataview_get_num_elements(ATK_dataview * self);
+size_t SIDRE_dataview_get_total_bytes(SIDRE_dataview * self);
 
-void ATK_dataview_print(ATK_dataview * self);
+size_t SIDRE_dataview_get_num_elements(SIDRE_dataview * self);
+
+void SIDRE_dataview_print(SIDRE_dataview * self);
 
 #ifdef __cplusplus
 }

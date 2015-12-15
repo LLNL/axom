@@ -56,8 +56,8 @@ class DataView;
  *      not directly.
  *    - A DataBuffer object has a unique identifier within a DataStore,
  *      which is assigned by the DataStore when the buffer is created.
- *    - The data object owned by a DataBuffer is unique to that DataDuffer
- *      object; i.e.,  DataBuffers that own data not share their data.
+ *    - The data object owned by a DataBuffer is unique to that DataBuffer
+ *      object; i.e.,  DataBuffers that own data do not share their data.
  *    - A DataBuffer may hold a pointer to externally-owned data. When this
  *      is the case, the buffer cannot be used to (re)allocate or deallocate
  *      the data. However, the external data can be desribed and accessed
@@ -182,7 +182,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * declare(TypeID type, SidreLength numelems);
+  DataBuffer * declare(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Allocate data previously declared using a declare() method.
@@ -202,7 +202,7 @@ public:
   /*!
    * \brief Declare and allocate data described by type and number of elements.
    *
-   * This is equivalent to calling declare(type, numelems), then allocate().
+   * This is equivalent to calling declare(type, num_elems), then allocate().
    * on this DataBuffer object.
    *
    * If buffer is already set to externally-owned data, this method
@@ -210,7 +210,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * allocate(TypeID type, SidreLength numelems);
+  DataBuffer * allocate(TypeID type, SidreLength num_elems);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -222,7 +222,7 @@ public:
    *
    * \return pointer to this DataBuffer object.
    */
-  DataBuffer * reallocate(SidreLength numelems);
+  DataBuffer * reallocate(SidreLength num_elems);
 
   /*!
    * \brief Update contents of buffer memory.

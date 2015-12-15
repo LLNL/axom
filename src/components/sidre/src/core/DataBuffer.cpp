@@ -81,16 +81,16 @@ DataView * DataBuffer::getView( IndexType idx )
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::declare(TypeID type, SidreLength numelems)
+DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(numelems >= 0, "Must declare number of elements >=0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must declare number of elements >=0");
 
-  if ( numelems >= 0 )
+  if ( num_elems >= 0 )
   {
     m_type = type;
 
     DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(numelems);
+    dtype.set_number_of_elements(num_elems);
     m_schema.set(dtype);
   }
   return this;
@@ -138,15 +138,15 @@ DataBuffer * DataBuffer::allocate()
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::allocate(TypeID type, SidreLength numelems)
+DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(numelems >= 0, "Must allocate number of elements >=0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
                   "Attempting to allocate buffer holding external data");
 
-  if ( numelems >= 0 && !m_is_data_external )
+  if ( num_elems >= 0 && !m_is_data_external )
   {
-    declare(type, numelems);
+    declare(type, num_elems);
     allocate();
   }
 
@@ -160,9 +160,9 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength numelems)
  *
  *************************************************************************
  */
-DataBuffer * DataBuffer::reallocate( SidreLength numelems)
+DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG(numelems >= 0, "Must re-allocate number of elements >=0");
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must re-allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external, "Attempting to re-allocate buffer holding external data");
   SLIC_ASSERT_MSG( m_data != ATK_NULLPTR, "Attempting to reallocate an unallocated buffer");
 
@@ -179,7 +179,7 @@ DataBuffer * DataBuffer::reallocate( SidreLength numelems)
 	std::size_t old_size = getTotalBytes();
     // update the buffer's Conduit Node
     DataType dtype = conduit::DataType::default_dtype(m_type);
-    dtype.set_number_of_elements( numelems );
+    dtype.set_number_of_elements( num_elems );
     m_schema.set(dtype);
 
 	std::size_t new_size = getTotalBytes();

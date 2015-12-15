@@ -12,13 +12,13 @@
 // wrapDataView.cpp
 #include "wrapDataView.h"
 #include "sidre/DataView.hpp"
-#include "sidre/SidreWrapperHelpers.hpp"
+#include "sidre/SidreTypes.hpp"
 
 extern "C" {
 namespace asctoolkit {
 namespace sidre {
 
-void ATK_dataview_allocate_simple(ATK_dataview * self)
+void SIDRE_dataview_allocate_simple(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.allocate_simple
@@ -27,88 +27,97 @@ return;
 // splicer end class.DataView.method.allocate_simple
 }
 
-void ATK_dataview_allocate_from_type(ATK_dataview * self, int type, ATK_SidreLength numelems)
+void SIDRE_dataview_allocate_from_type(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.allocate_from_type
-selfobj->allocate(getTypeID(type), numelems);
+selfobj->allocate(getTypeID(type), num_elems);
 return;
 // splicer end class.DataView.method.allocate_from_type
 }
 
-void ATK_dataview_reallocate(ATK_dataview * self, ATK_SidreLength numelems)
+void SIDRE_dataview_reallocate(SIDRE_dataview * self, SIDRE_SidreLength num_elems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.reallocate
-selfobj->reallocate(numelems);
+selfobj->reallocate(num_elems);
 return;
 // splicer end class.DataView.method.reallocate
 }
 
-ATK_dataview * ATK_dataview_apply_simple(ATK_dataview * self)
+void SIDRE_dataview_apply_0(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.apply_simple
-DataView * rv = selfobj->apply();
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataView.method.apply_simple
+// splicer begin class.DataView.method.apply_0
+selfobj->apply();
+return;
+// splicer end class.DataView.method.apply_0
 }
 
-ATK_dataview * ATK_dataview_apply_nelems(ATK_dataview * self, ATK_SidreLength numelems)
+SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.attach_buffer
+DataView * rv = selfobj->attachBuffer(static_cast<DataBuffer *>(static_cast<void *>(buff)));
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.attach_buffer
+}
+
+void SIDRE_dataview_apply_nelems(SIDRE_dataview * self, SIDRE_SidreLength num_elems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_nelems
-DataView * rv = selfobj->apply(numelems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+selfobj->apply(num_elems);
+return;
 // splicer end class.DataView.method.apply_nelems
 }
 
-ATK_dataview * ATK_dataview_apply_nelems_offset(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset)
+void SIDRE_dataview_apply_nelems_offset(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_nelems_offset
-DataView * rv = selfobj->apply(numelems, offset);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+selfobj->apply(num_elems, offset);
+return;
 // splicer end class.DataView.method.apply_nelems_offset
 }
 
-ATK_dataview * ATK_dataview_apply_nelems_offset_stride(ATK_dataview * self, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride)
+void SIDRE_dataview_apply_nelems_offset_stride(SIDRE_dataview * self, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_nelems_offset_stride
-DataView * rv = selfobj->apply(numelems, offset, stride);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+selfobj->apply(num_elems, offset, stride);
+return;
 // splicer end class.DataView.method.apply_nelems_offset_stride
 }
 
-ATK_dataview * ATK_dataview_apply_type_nelems(ATK_dataview * self, int type, ATK_SidreLength numelems)
+void SIDRE_dataview_apply_type_nelems(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_type_nelems
-DataView * rv = selfobj->apply(getTypeID(type), numelems);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+selfobj->apply(getTypeID(type), num_elems);
+return;
 // splicer end class.DataView.method.apply_type_nelems
 }
 
-ATK_dataview * ATK_dataview_apply_type_nelems_offset(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset)
+void SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_type_nelems_offset
-DataView * rv = selfobj->apply(getTypeID(type), numelems, offset);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+selfobj->apply(getTypeID(type), num_elems, offset);
+return;
 // splicer end class.DataView.method.apply_type_nelems_offset
 }
 
-ATK_dataview * ATK_dataview_apply_type_nelems_offset_stride(ATK_dataview * self, int type, ATK_SidreLength numelems, ATK_SidreLength offset, ATK_SidreLength stride)
+void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.apply_type_nelems_offset_stride
-DataView * rv = selfobj->apply(getTypeID(type), numelems, offset, stride);
-return static_cast<ATK_dataview *>(static_cast<void *>(rv));
+selfobj->apply(getTypeID(type), num_elems, offset, stride);
+return;
 // splicer end class.DataView.method.apply_type_nelems_offset_stride
 }
 
-bool ATK_dataview_has_buffer(ATK_dataview * self)
+bool SIDRE_dataview_has_buffer(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.has_buffer
@@ -117,7 +126,7 @@ return rv;
 // splicer end class.DataView.method.has_buffer
 }
 
-bool ATK_dataview_is_opaque(ATK_dataview * self)
+bool SIDRE_dataview_is_opaque(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.is_opaque
@@ -126,7 +135,7 @@ return rv;
 // splicer end class.DataView.method.is_opaque
 }
 
-const char * ATK_dataview_get_name(const ATK_dataview * self)
+const char * SIDRE_dataview_get_name(const SIDRE_dataview * self)
 {
 const DataView *selfobj = static_cast<const DataView *>(static_cast<const void *>(self));
 // splicer begin class.DataView.method.get_name
@@ -135,16 +144,16 @@ return rv.c_str();
 // splicer end class.DataView.method.get_name
 }
 
-ATK_databuffer * ATK_dataview_get_buffer(ATK_dataview * self)
+SIDRE_databuffer * SIDRE_dataview_get_buffer(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_buffer
 DataBuffer * rv = selfobj->getBuffer();
-return static_cast<ATK_databuffer *>(static_cast<void *>(rv));
+return static_cast<SIDRE_databuffer *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.get_buffer
 }
 
-void * ATK_dataview_get_void_ptr(ATK_dataview * self)
+void * SIDRE_dataview_get_void_ptr(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_void_ptr
@@ -153,7 +162,7 @@ return rv;
 // splicer end class.DataView.method.get_void_ptr
 }
 
-void ATK_dataview_set_scalar_int(ATK_dataview * self, int value)
+void SIDRE_dataview_set_scalar_int(SIDRE_dataview * self, int value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_scalar_int
@@ -162,7 +171,7 @@ return;
 // splicer end class.DataView.method.set_scalar_int
 }
 
-void ATK_dataview_set_scalar_long(ATK_dataview * self, long value)
+void SIDRE_dataview_set_scalar_long(SIDRE_dataview * self, long value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_scalar_long
@@ -171,7 +180,7 @@ return;
 // splicer end class.DataView.method.set_scalar_long
 }
 
-void ATK_dataview_set_scalar_float(ATK_dataview * self, float value)
+void SIDRE_dataview_set_scalar_float(SIDRE_dataview * self, float value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_scalar_float
@@ -180,7 +189,7 @@ return;
 // splicer end class.DataView.method.set_scalar_float
 }
 
-void ATK_dataview_set_scalar_double(ATK_dataview * self, double value)
+void SIDRE_dataview_set_scalar_double(SIDRE_dataview * self, double value)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.set_scalar_double
@@ -189,7 +198,7 @@ return;
 // splicer end class.DataView.method.set_scalar_double
 }
 
-int ATK_dataview_get_data_int(ATK_dataview * self)
+int SIDRE_dataview_get_data_int(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_data_int
@@ -198,7 +207,7 @@ return rv;
 // splicer end class.DataView.method.get_data_int
 }
 
-long ATK_dataview_get_data_long(ATK_dataview * self)
+long SIDRE_dataview_get_data_long(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_data_long
@@ -207,7 +216,7 @@ return rv;
 // splicer end class.DataView.method.get_data_long
 }
 
-float ATK_dataview_get_data_float(ATK_dataview * self)
+float SIDRE_dataview_get_data_float(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_data_float
@@ -216,7 +225,7 @@ return rv;
 // splicer end class.DataView.method.get_data_float
 }
 
-double ATK_dataview_get_data_double(ATK_dataview * self)
+double SIDRE_dataview_get_data_double(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_data_double
@@ -225,25 +234,25 @@ return rv;
 // splicer end class.DataView.method.get_data_double
 }
 
-ATK_datagroup * ATK_dataview_get_owning_group(ATK_dataview * self)
+SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_owning_group
 DataGroup * rv = selfobj->getOwningGroup();
-return static_cast<ATK_datagroup *>(static_cast<void *>(rv));
+return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataView.method.get_owning_group
 }
 
-int ATK_dataview_get_type_id(ATK_dataview * self)
+int SIDRE_dataview_get_type_id(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_type_id
 TypeID rv = selfobj->getTypeID();
-return rv;
+return static_cast<int>(rv);
 // splicer end class.DataView.method.get_type_id
 }
 
-size_t ATK_dataview_get_total_bytes(ATK_dataview * self)
+size_t SIDRE_dataview_get_total_bytes(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_total_bytes
@@ -252,7 +261,7 @@ return rv;
 // splicer end class.DataView.method.get_total_bytes
 }
 
-size_t ATK_dataview_get_num_elements(ATK_dataview * self)
+size_t SIDRE_dataview_get_num_elements(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.get_num_elements
@@ -261,7 +270,7 @@ return rv;
 // splicer end class.DataView.method.get_num_elements
 }
 
-void ATK_dataview_print(ATK_dataview * self)
+void SIDRE_dataview_print(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.print
