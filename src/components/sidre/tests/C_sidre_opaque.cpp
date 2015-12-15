@@ -121,12 +121,12 @@ TEST(C_sidre_opaque,basic_inout)
   AA_extent * ext2 = AA_extent_new(0, 2 * ihi_val);
 
   SIDRE_dataview * ext2_view = SIDRE_datagroup_create_view_empty(problem_gp, "ext2");
-  ext2_view = SIDRE_dataview_set_opaque(ext2_view, ext2);
+  ext2_view = SIDRE_dataview_set_void_ptr(ext2_view, ext2);
 
   bool test_opaque2 = SIDRE_dataview_is_opaque(ext2_view);
   EXPECT_EQ(test_opaque2, true);
 
-  AA_extent * test_extent2 = (AA_extent *) SIDRE_dataview_get_opaque(ext2_view);
+  AA_extent * test_extent2 = (AA_extent *) SIDRE_dataview_get_void_ptr(ext2_view);
   int test_ihi2 = test_extent2->ihi;
 
   EXPECT_EQ(test_ihi2, 2 * ihi_val);

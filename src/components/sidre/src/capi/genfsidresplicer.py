@@ -87,7 +87,7 @@ subroutine dataview_get_data_{typename}_{nd}{suffix}(view, value)
     integer rank
     integer(SIDRE_LENGTH) extents({rank})
 
-    cptr = view%get_void_pointer()
+    cptr = view%get_void_ptr()
     rank = view%get_shape({rank}, extents)
     call c_f_pointer(cptr, value, extents)
 end subroutine dataview_get_data_{typename}_{nd}{suffix}""".format(**d)

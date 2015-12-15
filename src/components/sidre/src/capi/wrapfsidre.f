@@ -239,7 +239,6 @@ module sidre_mod
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
         procedure :: get_buffer => dataview_get_buffer
-<<<<<<< HEAD
         procedure :: get_void_ptr => dataview_get_void_ptr
         procedure :: set_scalar_int => dataview_set_scalar_int
         procedure :: set_scalar_long => dataview_set_scalar_long
@@ -249,18 +248,7 @@ module sidre_mod
         procedure :: get_data_long => dataview_get_data_long
         procedure :: get_data_float => dataview_get_data_float
         procedure :: get_data_double => dataview_get_data_double
-=======
-        procedure :: get_data_pointer => dataview_get_data_pointer
-        procedure :: set_value_int => dataview_set_value_int
-        procedure :: set_value_long => dataview_set_value_long
-        procedure :: set_value_float => dataview_set_value_float
-        procedure :: set_value_double => dataview_set_value_double
-        procedure :: get_value_int => dataview_get_value_int
-        procedure :: get_value_long => dataview_get_value_long
-        procedure :: get_value_float => dataview_get_value_float
-        procedure :: get_value_double => dataview_get_value_double
-        procedure :: set_opaque => dataview_set_opaque
->>>>>>> sprint/10
+        procedure :: set_void_ptr => dataview_set_void_ptr
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
@@ -297,59 +285,39 @@ module sidre_mod
             set_scalar_float,  &
             set_scalar_double
         ! splicer begin class.DataView.type_bound_procedure_part
-<<<<<<< HEAD
         procedure :: get_data_int_scalar_ptr => dataview_get_data_int_scalar_ptr
         procedure :: get_data_int_1d_ptr => dataview_get_data_int_1d_ptr
+        procedure :: get_data_int_2d_ptr => dataview_get_data_int_2d_ptr
+        procedure :: get_data_int_3d_ptr => dataview_get_data_int_3d_ptr
         procedure :: get_data_long_scalar_ptr => dataview_get_data_long_scalar_ptr
         procedure :: get_data_long_1d_ptr => dataview_get_data_long_1d_ptr
+        procedure :: get_data_long_2d_ptr => dataview_get_data_long_2d_ptr
+        procedure :: get_data_long_3d_ptr => dataview_get_data_long_3d_ptr
         procedure :: get_data_float_scalar_ptr => dataview_get_data_float_scalar_ptr
         procedure :: get_data_float_1d_ptr => dataview_get_data_float_1d_ptr
+        procedure :: get_data_float_2d_ptr => dataview_get_data_float_2d_ptr
+        procedure :: get_data_float_3d_ptr => dataview_get_data_float_3d_ptr
         procedure :: get_data_double_scalar_ptr => dataview_get_data_double_scalar_ptr
         procedure :: get_data_double_1d_ptr => dataview_get_data_double_1d_ptr
+        procedure :: get_data_double_2d_ptr => dataview_get_data_double_2d_ptr
+        procedure :: get_data_double_3d_ptr => dataview_get_data_double_3d_ptr
         generic :: get_data => &
             get_data_int_scalar_ptr,  &
             get_data_int_1d_ptr,  &
+            get_data_int_2d_ptr,  &
+            get_data_int_3d_ptr,  &
             get_data_long_scalar_ptr,  &
             get_data_long_1d_ptr,  &
+            get_data_long_2d_ptr,  &
+            get_data_long_3d_ptr,  &
             get_data_float_scalar_ptr,  &
             get_data_float_1d_ptr,  &
+            get_data_float_2d_ptr,  &
+            get_data_float_3d_ptr,  &
             get_data_double_scalar_ptr,  &
-            get_data_double_1d_ptr
-=======
-        procedure :: get_value_int_scalar_ptr => dataview_get_value_int_scalar_ptr
-        procedure :: get_value_int_1d_ptr => dataview_get_value_int_1d_ptr
-        procedure :: get_value_int_2d_ptr => dataview_get_value_int_2d_ptr
-        procedure :: get_value_int_3d_ptr => dataview_get_value_int_3d_ptr
-        procedure :: get_value_long_scalar_ptr => dataview_get_value_long_scalar_ptr
-        procedure :: get_value_long_1d_ptr => dataview_get_value_long_1d_ptr
-        procedure :: get_value_long_2d_ptr => dataview_get_value_long_2d_ptr
-        procedure :: get_value_long_3d_ptr => dataview_get_value_long_3d_ptr
-        procedure :: get_value_float_scalar_ptr => dataview_get_value_float_scalar_ptr
-        procedure :: get_value_float_1d_ptr => dataview_get_value_float_1d_ptr
-        procedure :: get_value_float_2d_ptr => dataview_get_value_float_2d_ptr
-        procedure :: get_value_float_3d_ptr => dataview_get_value_float_3d_ptr
-        procedure :: get_value_double_scalar_ptr => dataview_get_value_double_scalar_ptr
-        procedure :: get_value_double_1d_ptr => dataview_get_value_double_1d_ptr
-        procedure :: get_value_double_2d_ptr => dataview_get_value_double_2d_ptr
-        procedure :: get_value_double_3d_ptr => dataview_get_value_double_3d_ptr
-        generic :: get_value => &
-            get_value_int_scalar_ptr,  &
-            get_value_int_1d_ptr,  &
-            get_value_int_2d_ptr,  &
-            get_value_int_3d_ptr,  &
-            get_value_long_scalar_ptr,  &
-            get_value_long_1d_ptr,  &
-            get_value_long_2d_ptr,  &
-            get_value_long_3d_ptr,  &
-            get_value_float_scalar_ptr,  &
-            get_value_float_1d_ptr,  &
-            get_value_float_2d_ptr,  &
-            get_value_float_3d_ptr,  &
-            get_value_double_scalar_ptr,  &
-            get_value_double_1d_ptr,  &
-            get_value_double_2d_ptr,  &
-            get_value_double_3d_ptr
->>>>>>> sprint/10
+            get_data_double_1d_ptr,  &
+            get_data_double_2d_ptr,  &
+            get_data_double_3d_ptr
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
     
@@ -1202,14 +1170,14 @@ module sidre_mod
             real(C_DOUBLE) :: rv
         end function sidre_dataview_get_data_double
         
-        function sidre_dataview_set_opaque(self, opaque_ptr) result(rv) &
-                bind(C, name="SIDRE_dataview_set_opaque")
+        function sidre_dataview_set_void_ptr(self, data_ptr) result(rv) &
+                bind(C, name="SIDRE_dataview_set_void_ptr")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: opaque_ptr
+            type(C_PTR), value, intent(IN) :: data_ptr
             type(C_PTR) :: rv
-        end function sidre_dataview_set_opaque
+        end function sidre_dataview_set_void_ptr
         
         function sidre_dataview_get_owning_group(self) result(rv) &
                 bind(C, name="SIDRE_dataview_get_owning_group")
@@ -2688,18 +2656,18 @@ contains
         ! splicer end class.DataView.method.get_data_double
     end function dataview_get_data_double
     
-    function dataview_set_opaque(obj, opaque_ptr) result(rv)
+    function dataview_set_void_ptr(obj, data_ptr) result(rv)
         use iso_c_binding
         implicit none
         class(dataview) :: obj
-        type(C_PTR), value, intent(IN) :: opaque_ptr
+        type(C_PTR), value, intent(IN) :: data_ptr
         type(dataview) :: rv
-        ! splicer begin class.DataView.method.set_opaque
-        rv%voidptr = sidre_dataview_set_opaque(  &
+        ! splicer begin class.DataView.method.set_void_ptr
+        rv%voidptr = sidre_dataview_set_void_ptr(  &
             obj%voidptr,  &
-            opaque_ptr)
-        ! splicer end class.DataView.method.set_opaque
-    end function dataview_set_opaque
+            data_ptr)
+        ! splicer end class.DataView.method.set_void_ptr
+    end function dataview_set_void_ptr
     
     function dataview_get_owning_group(obj) result(rv)
         use iso_c_binding
@@ -2799,22 +2767,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(1)
     
-<<<<<<< HEAD
         cptr = view%get_void_ptr()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_data_int_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_data_long_scalar_ptr(view, value)
-=======
-        cptr = view%get_data_pointer()
-        rank = view%get_shape(1, extents)
-        call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_int_1d_ptr
-    
-    ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_int_2d_ptr(view, value)
+    subroutine dataview_get_data_int_2d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2823,13 +2782,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(2)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(2, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_int_2d_ptr
+    end subroutine dataview_get_data_int_2d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_int_3d_ptr(view, value)
+    subroutine dataview_get_data_int_3d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2838,14 +2797,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(3)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(3, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_int_3d_ptr
+    end subroutine dataview_get_data_int_3d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_long_scalar_ptr(view, value)
->>>>>>> sprint/10
+    subroutine dataview_get_data_long_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2866,22 +2824,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(1)
     
-<<<<<<< HEAD
         cptr = view%get_void_ptr()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_data_long_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_data_float_scalar_ptr(view, value)
-=======
-        cptr = view%get_data_pointer()
-        rank = view%get_shape(1, extents)
-        call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_long_1d_ptr
-    
-    ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_long_2d_ptr(view, value)
+    subroutine dataview_get_data_long_2d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2890,13 +2839,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(2)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(2, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_long_2d_ptr
+    end subroutine dataview_get_data_long_2d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_long_3d_ptr(view, value)
+    subroutine dataview_get_data_long_3d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2905,14 +2854,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(3)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(3, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_long_3d_ptr
+    end subroutine dataview_get_data_long_3d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_float_scalar_ptr(view, value)
->>>>>>> sprint/10
+    subroutine dataview_get_data_float_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2933,22 +2881,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(1)
     
-<<<<<<< HEAD
         cptr = view%get_void_ptr()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_data_float_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_data_double_scalar_ptr(view, value)
-=======
-        cptr = view%get_data_pointer()
-        rank = view%get_shape(1, extents)
-        call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_float_1d_ptr
-    
-    ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_float_2d_ptr(view, value)
+    subroutine dataview_get_data_float_2d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2957,13 +2896,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(2)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(2, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_float_2d_ptr
+    end subroutine dataview_get_data_float_2d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_float_3d_ptr(view, value)
+    subroutine dataview_get_data_float_3d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -2972,14 +2911,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(3)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(3, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_float_3d_ptr
+    end subroutine dataview_get_data_float_3d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_double_scalar_ptr(view, value)
->>>>>>> sprint/10
+    subroutine dataview_get_data_double_scalar_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -3000,19 +2938,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(1)
     
-<<<<<<< HEAD
         cptr = view%get_void_ptr()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
-    end subroutine dataview_get_data_double_1d_ptr
-=======
-        cptr = view%get_data_pointer()
         rank = view%get_shape(1, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_double_1d_ptr
+    end subroutine dataview_get_data_double_1d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_double_2d_ptr(view, value)
+    subroutine dataview_get_data_double_2d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -3021,13 +2953,13 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(2)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(2, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_double_2d_ptr
+    end subroutine dataview_get_data_double_2d_ptr
     
     ! Generated by genfsidresplicer.py
-    subroutine dataview_get_value_double_3d_ptr(view, value)
+    subroutine dataview_get_data_double_3d_ptr(view, value)
         use iso_c_binding
         implicit none
         class(dataview), intent(IN) :: view
@@ -3036,11 +2968,10 @@ contains
         integer rank
         integer(SIDRE_LENGTH) extents(3)
     
-        cptr = view%get_data_pointer()
+        cptr = view%get_void_ptr()
         rank = view%get_shape(3, extents)
         call c_f_pointer(cptr, value, extents)
-    end subroutine dataview_get_value_double_3d_ptr
->>>>>>> sprint/10
+    end subroutine dataview_get_data_double_3d_ptr
     ! splicer end class.DataView.additional_functions
     
     function name_is_valid(name) result(rv)

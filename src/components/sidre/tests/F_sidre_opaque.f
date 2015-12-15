@@ -128,11 +128,11 @@ contains
     ext2 = Extent(0, 2 * ihi_val)
 
     ext2_view = problem_gp%create_view_empty("ext2")
-    ext2_view = ext2_view%set_opaque( c_loc(ext2) )
+    ext2_view = ext2_view%set_void_ptr( c_loc(ext2) )
 
     call assert_equals(ext2_view%is_opaque(), .true.)
 
-    test_extent2_ptr = ext2_view%get_opaque()
+    test_extent2_ptr = ext2_view%get_void_ptr()
     call c_f_pointer(test_extent2_ptr, test_extent2)
 
     test_ihi2 = test_extent2%m_ihi

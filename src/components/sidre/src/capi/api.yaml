@@ -306,7 +306,7 @@ classes:
         - float
         - double
 
-    -  decl: DataView * setOpaque(void * opaque_ptr)
+    -  decl: DataView * setVoidPtr(void * data_ptr)
 ##    - decl: const Schema& getSchema() const
     - decl: DataGroup* getOwningGroup()
 #    - decl: DataGroup const* getOwningGroup() const

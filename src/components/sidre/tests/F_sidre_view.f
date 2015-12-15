@@ -341,7 +341,7 @@ contains
     call assert_true( dbuff%get_num_elements() == elem_count )
 
     ! Initilize buffer data for testing below
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ elem_count ])
 
     do i = 1, elem_count
@@ -363,12 +363,12 @@ contains
     call field1%print()
 
     ! check values in field views...
-    call field0%get_value(data)
+    call field0%get_data(data)
     do i = 1, field_nelems
        call assert_equals( data(i), 0 )
     enddo
 
-    call field1%get_value(data)
+    call field1%get_data(data)
 ! XXXX This is broken: Looks like get_value is returning the buffer base ptr,
 !                 not the view pointer. See second loop below.  
 !   do i = 1, field_nelems
@@ -659,15 +659,34 @@ program fortran_test
 
   call init_fruit
 
+  print*,"Calling create_views..."
   call create_views
+
+  print*,"Calling int_buffer_from_view..."
   call int_buffer_from_view
+
+  print*,"Calling int_buffer_from_view_conduit_value..."
   call int_buffer_from_view_conduit_value
+
+  print*,"Calling int_array_multi_view..."
   call int_array_multi_view
+
+  print*,"Calling init_int_array_multi_view..."
   call init_int_array_multi_view
+
+  print*,"Calling int_array_depth_view..."
   call int_array_depth_view
+
+  print*,"Calling int_array_view_attach_buffer..."
   call int_array_view_attach_buffer
+
+  print*,"Calling int_array_multi_view_resize..."
   call int_array_multi_view_resize
+
+  print*,"Calling int_array_realloc..."
   call int_array_realloc
+
+  print*,"Calling simple_opaque..."
   call simple_opaque
 
   call fruit_summary

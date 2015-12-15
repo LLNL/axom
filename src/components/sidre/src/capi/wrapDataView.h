@@ -80,7 +80,7 @@ float SIDRE_dataview_get_data_float(SIDRE_dataview * self);
 
 double SIDRE_dataview_get_data_double(SIDRE_dataview * self);
 
-SIDRE_dataview * SIDRE_dataview_set_opaque(SIDRE_dataview * self, void * opaque_ptr);
+SIDRE_dataview * SIDRE_dataview_set_void_ptr(SIDRE_dataview * self, void * data_ptr);
 
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
 

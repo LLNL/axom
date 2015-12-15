@@ -234,13 +234,13 @@ return rv;
 // splicer end class.DataView.method.get_data_double
 }
 
-SIDRE_dataview * SIDRE_dataview_set_opaque(SIDRE_dataview * self, void * opaque_ptr)
+SIDRE_dataview * SIDRE_dataview_set_void_ptr(SIDRE_dataview * self, void * data_ptr)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_opaque
-DataView * rv = selfobj->setOpaque(opaque_ptr);
+// splicer begin class.DataView.method.set_void_ptr
+DataView * rv = selfobj->setVoidPtr(data_ptr);
 return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataView.method.set_opaque
+// splicer end class.DataView.method.set_void_ptr
 }
 
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self)

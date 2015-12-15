@@ -240,7 +240,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
 
   // Initilize buffer data for testing below.
-  int* b_ptr = (int*) SIDRE_databuffer_get_data(dbuff);
+  int* b_ptr = (int*) SIDRE_databuffer_get_void_ptr(dbuff);
   for(size_t i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
@@ -261,14 +261,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_dataview_print(field1);
 
   // check values in field views...
-  int* f0_ptr = (int *) SIDRE_dataview_get_data_pointer(field0); 
+  int* f0_ptr = (int *) SIDRE_dataview_get_void_ptr(field0); 
   for (size_t i = 0; i < field_nelems; ++i)
   {
      EXPECT_EQ(f0_ptr[i], 0);
   }
-// Note: This is a big hack since the dataview get pointer method is broken
-  int* f1_ptr = (int *) SIDRE_dataview_get_data_pointer(field1); 
-  f1_ptr += 1 * field_nelems; 
+  int* f1_ptr = (int *) SIDRE_dataview_get_void_ptr(field1); 
   for (size_t i = 0; i < field_nelems; ++i)
   {
      EXPECT_EQ(f1_ptr[i], 1);

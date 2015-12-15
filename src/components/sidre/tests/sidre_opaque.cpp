@@ -125,13 +125,12 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * ext2 = new Extent(0, 2 * ihi_val);
 
-  DataView * ext2_view = problem_gp->createView("ext2")->setOpaque(ext2);
+  DataView * ext2_view = problem_gp->createView("ext2")->setVoidPtr(ext2);
 
   bool test_opaque2 = ext2_view->isOpaque();
   EXPECT_EQ(test_opaque2, true);
 
-  Extent * test_extent2 =
-    static_cast<Extent *>(ext2_view->getOpaque());
+  Extent * test_extent2 = static_cast<Extent *>(ext2_view->getVoidPtr());
   int test_ihi2 = test_extent2->m_ihi;
 
   EXPECT_EQ(test_ihi2, 2 * ihi_val);
