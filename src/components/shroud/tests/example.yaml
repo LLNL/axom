@@ -19,6 +19,7 @@ options:
   namespace: example nested
   F_module_per_class: True
   # include files to add to module
+  wrap_python: True
 
   PY_prefix: PP_
 

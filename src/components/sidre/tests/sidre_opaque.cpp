@@ -22,7 +22,7 @@ using asctoolkit::sidre::DataType;
 // Some simple types and functions used in tests
 // (included in namespace to prevent clashes)
 //------------------------------------------------------------------------------
-namespace dsopaquetest
+namespace sidreopaquetest
 {
 
 enum Centering { _Zone_,
@@ -90,16 +90,16 @@ public:
 };
 
 
-}  // closing brace for dsopaquetest namespace
+}  // closing brace for sidreopaquetest namespace
 
 //------------------------------------------------------------------------------
 //
 // Simple test that adds an opaque data object, retrieves it and checks if
 // the retrieved object is in the expected state.
 //
-TEST(sidre_opaque,inout)
+TEST(sidre_opaque,basic_inout)
 {
-  using namespace dsopaquetest;
+  using namespace sidreopaquetest;
 
   const int ihi_val = 9;
 
@@ -111,21 +111,6 @@ TEST(sidre_opaque,inout)
   Extent * ext = new Extent(0, ihi_val);
 
   DataView * ext_view = problem_gp->createOpaqueView("ext", ext);
-#if 1 // Some random tests to check error macro behavior, 
-      // should be moved to group unit tests
-//  problem_gp->createView("ext");
-//  problem_gp->createOpaqueView("ext", ext);
-//  problem_gp->createView("ext", ATK_NULLPTR);
-//  problem_gp->moveView(ATK_NULLPTR);
-//  problem_gp->moveView(problem_gp->getView("ext"));
-//  problem_gp->copyView(ATK_NULLPTR);
-//  problem_gp->copyView(problem_gp->getView("ext"));
-//  problem_gp->copyView(problem_gp->getView("ext"));
-//  problem_gp->destroyView("foo");
-//  root->moveGroup(problem_gp);
-//  root->copyGroup(problem_gp);
-//  problem_gp->getView(2);
-#endif
 
   bool test_opaque = ext_view->isOpaque();
   EXPECT_EQ(test_opaque, true);
@@ -135,6 +120,21 @@ TEST(sidre_opaque,inout)
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
+
+  // Similar test with different view methods 
+
+  Extent * ext2 = new Extent(0, 2 * ihi_val);
+
+  DataView * ext2_view = problem_gp->createView("ext2")->setOpaque(ext2);
+
+  bool test_opaque2 = ext2_view->isOpaque();
+  EXPECT_EQ(test_opaque2, true);
+
+  Extent * test_extent2 =
+    static_cast<Extent *>(ext2_view->getOpaque());
+  int test_ihi2 = test_extent2->m_ihi;
+
+  EXPECT_EQ(test_ihi2, 2 * ihi_val);
 
   // clean up...
   delete ext;
@@ -150,7 +150,7 @@ TEST(sidre_opaque,inout)
 //
 TEST(sidre_opaque,meshvar)
 {
-  using namespace dsopaquetest;
+  using namespace sidreopaquetest;
 
   const int ilo_val[] = {0, 10};
   const int ihi_val[] = {9, 21};

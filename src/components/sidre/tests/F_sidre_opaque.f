@@ -92,15 +92,17 @@ contains
 ! Simple test that adds an opaque data object, retrieves it and checks if
 ! the retrieved object is in the expected state.
 !
-  subroutine inout
+  subroutine basic_inout
     use dsopaquetest
     type(datastore) ds
     type(datagroup) root, problem_gp
     type(dataview) ext_view
+    type(dataview) ext2_view
     integer, parameter :: ihi_val = 9
     integer(C_INT) test_ihi
-    type(Extent), pointer :: ext, test_extent
-    type(C_PTR) :: test_extent_ptr
+    integer(C_INT) test_ihi2
+    type(Extent), pointer :: ext, test_extent, ext2, test_extent2
+    type(C_PTR) :: test_extent_ptr, test_extent2_ptr
 
     ds = datastore_new()
     root = ds%get_root()
@@ -112,26 +114,6 @@ contains
 
     ext_view = problem_gp%create_opaque_view("ext", c_loc(ext))
 
-    !  problem_gp%CreateViewAndBuffer("ext")
-    !  problem_gp%CreateOpaqueView("ext", ext)
-    !  problem_gp%CreateView("ext", 0)
-    !  problem_gp%MoveView(0)
-    !  problem_gp%MoveView(problem_gp%GetView("ext"))
-    !  problem_gp%CopyView(0)
-    !  problem_gp%CopyView(problem_gp%GetView("ext"))
-    !  problem_gp%AttachView(0)
-    !  problem_gp%CopyView(problem_gp%GetView("ext"))
-    !  Can't do following: method is private...
-    !  DataView* v = problem_gp%DetachView("ext")
-    !  std::cout << "view name = " << v%GetName() << std::endl
-    !  problem_gp%DestroyView("foo")
-    !  root%MoveGroup(problem_gp)
-    !  root%CopyGroup(problem_gp)
-    !  Can't do following: method is private...
-    !  root%DetachGroup("bar")
-    !  root%DestroyGroup("bar")
-    !  problem_gp%get_view(2)
-
     call assert_equals(ext_view%is_opaque(), .true.)
 
     test_extent_ptr = ext_view%get_void_ptr()
@@ -140,10 +122,26 @@ contains
     test_ihi = test_extent%m_ihi
     call assert_equals(test_extent%m_ihi, ihi_val)
 
+    ! Similar test with different view methods
+    
+    allocate(ext2)
+    ext2 = Extent(0, 2 * ihi_val)
+
+    ext2_view = problem_gp%create_view_empty("ext2")
+    ext2_view = ext2_view%set_opaque( c_loc(ext2) )
+
+    call assert_equals(ext2_view%is_opaque(), .true.)
+
+    test_extent2_ptr = ext2_view%get_opaque()
+    call c_f_pointer(test_extent2_ptr, test_extent2)
+
+    test_ihi2 = test_extent2%m_ihi
+    call assert_equals(test_extent2%m_ihi, 2 * ihi_val)
+
     ! clean up...
     deallocate(ext)
     call ds%delete()
-  end subroutine inout
+  end subroutine basic_inout
 
   !------------------------------------------------------------------------------
   !
@@ -276,7 +274,7 @@ program fortran_test
 
   call init_fruit
 
-  call inout
+  call basic_inout
   call meshvar_test
 
   call fruit_summary

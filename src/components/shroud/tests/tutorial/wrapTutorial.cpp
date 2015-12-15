@@ -89,32 +89,32 @@ return rv.c_str();
 
 // double Function5()
 // function_index=22
-double TUT_function5_0()
+double TUT_function5()
 {
-// splicer begin function.function5_0
+// splicer begin function.function5
 double rv = Function5();
 return rv;
-// splicer end function.function5_0
+// splicer end function.function5
 }
 
 // double Function5(double arg1+default(3.1415)+intent(in)+value)
 // function_index=23
-double TUT_function5_1(double arg1)
+double TUT_function5_arg1(double arg1)
 {
-// splicer begin function.function5_1
+// splicer begin function.function5_arg1
 double rv = Function5(arg1);
 return rv;
-// splicer end function.function5_1
+// splicer end function.function5_arg1
 }
 
 // double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
 // function_index=9
-double TUT_function5_2(double arg1, bool arg2)
+double TUT_function5_arg1_arg2(double arg1, bool arg2)
 {
-// splicer begin function.function5_2
+// splicer begin function.function5_arg1_arg2
 double rv = Function5(arg1, arg2);
 return rv;
-// splicer end function.function5_2
+// splicer end function.function5_arg1_arg2
 }
 
 // void Function6(const std::string & name+intent(in))
@@ -229,32 +229,32 @@ return;
 
 // int overload1(int num+intent(in)+value)
 // function_index=28
-int TUT_overload1_0(int num)
+int TUT_overload1_num(int num)
 {
-// splicer begin function.overload1_0
+// splicer begin function.overload1_num
 int rv = overload1(num);
 return rv;
-// splicer end function.overload1_0
+// splicer end function.overload1_num
 }
 
 // int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)
 // function_index=29
-int TUT_overload1_1(int num, int offset)
+int TUT_overload1_num_offset(int num, int offset)
 {
-// splicer begin function.overload1_1
+// splicer begin function.overload1_num_offset
 int rv = overload1(num, offset);
 return rv;
-// splicer end function.overload1_1
+// splicer end function.overload1_num_offset
 }
 
 // int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)
 // function_index=17
-int TUT_overload1_2(int num, int offset, int stride)
+int TUT_overload1_num_offset_stride(int num, int offset, int stride)
 {
-// splicer begin function.overload1_2
+// splicer begin function.overload1_num_offset_stride
 int rv = overload1(num, offset, stride);
 return rv;
-// splicer end function.overload1_2
+// splicer end function.overload1_num_offset_stride
 }
 
 // int overload1(double type+intent(in)+value, int num+intent(in)+value)

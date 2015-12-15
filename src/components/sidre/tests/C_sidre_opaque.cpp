@@ -94,7 +94,7 @@ int AA_get_num_vals(AA_meshvar * self, AA_extent * ext)
 // Simple test that adds an opaque data object, retrieves it and checks if
 // the retrieved object is in the expected state.
 //
-TEST(C_sidre_opaque,inout)
+TEST(C_sidre_opaque,basic_inout)
 {
   const int ihi_val = 9;
 
@@ -106,27 +106,6 @@ TEST(C_sidre_opaque,inout)
   AA_extent * ext = AA_extent_new(0, ihi_val);
 
   SIDRE_dataview * ext_view = SIDRE_datagroup_create_opaque_view(problem_gp, "ext", ext);
-#if 1
-//  SIDRE_datagroup_CreateViewAndBuffer("ext");
-//  SIDRE_datagroup_CreateOpaqueView("ext", ext);
-//  SIDRE_datagroup_CreateView("ext", 0);
-//  SIDRE_datagroup_MoveView(0);
-//  SIDRE_datagroup_MoveView(SIDRE_datagroup_GetView(problem_gp, "ext"));
-//  SIDRE_datagroup_CopyView(0);
-//  SIDRE_datagroup_CopyView(SIDRE_datagroup_GetView(problem_gp, "ext"));
-//  SIDRE_datagroup_AttachView(0);
-//  SIDRE_datagroup_CopyView(SIDRE_datagroup_GetView(problem_gp, "ext"));
-//  Can't do following: method is private...
-//  DataView* v = SIDRE_datagroup_DetachView("ext");
-//  std::cout << "view name = " << v->GetName() << std::endl;
-//  SIDRE_datagroup_DestroyView("foo");
-//  root->MoveGroup(problem_gp);
-//  root->CopyGroup(problem_gp);
-//  Can't do following: method is private...
-//  root->DetachGroup("bar");
-//  root->DestroyGroup("bar");
-//  SIDRE_datagroup_get_view(2);
-#endif
 
   bool test_opaque = SIDRE_dataview_is_opaque(ext_view);
   EXPECT_EQ(test_opaque, true);
@@ -135,6 +114,23 @@ TEST(C_sidre_opaque,inout)
   int test_ihi = test_extent->ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
+
+#if 1
+  // Similar test with different view methods
+
+  AA_extent * ext2 = AA_extent_new(0, 2 * ihi_val);
+
+  SIDRE_dataview * ext2_view = SIDRE_datagroup_create_view_empty(problem_gp, "ext2");
+  ext2_view = SIDRE_dataview_set_opaque(ext2_view, ext2);
+
+  bool test_opaque2 = SIDRE_dataview_is_opaque(ext2_view);
+  EXPECT_EQ(test_opaque2, true);
+
+  AA_extent * test_extent2 = (AA_extent *) SIDRE_dataview_get_opaque(ext2_view);
+  int test_ihi2 = test_extent2->ihi;
+
+  EXPECT_EQ(test_ihi2, 2 * ihi_val);
+#endif
 
   // clean up...
   AA_extent_delete(ext);

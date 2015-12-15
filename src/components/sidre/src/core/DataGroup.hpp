@@ -58,9 +58,6 @@
 #include "SidreTypes.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
-#if ATK_ENABLE_FORTRAN
-#include "sidre/SidreAllocatable.hpp"
-#endif
 
 
 
@@ -444,7 +441,8 @@ public:
    *        referenced with given pointer. Attach new view to this group
    *        object.
    *
-   * Note that the view is "opaque"; i.e., it has no knowledge of the data.
+   * Note that the view is "opaque"; i.e., it has no knowledge of the 
+   * type or structure of the data.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
@@ -477,6 +475,11 @@ public:
                                  SidreLength num_elems,
                                  SidreLength offset = 0,
                                  SidreLength stride = 1 );
+
+  DataView * createExternalView( const std::string& name,
+                                 void * external_data,
+                                 TypeID type, 
+                                 int ndims, SidreLength * shape);
 
   /*!
    * \brief Create DataView with given name to hold data referenced with
@@ -892,28 +895,6 @@ private:
   DataView * detachView(const std::string& name);
   ///
   DataView * detachView(IndexType idx);
-
-#ifdef ATK_ENABLE_FORTRAN
-  /*!
-   * \brief Create a DataView to a Fortran allocatable.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createFortranAllocatableView( const std::string& name,
-                                           void * array, TypeID type, int rank );
-
-  /* extern "C" function which calls createFortranAllocatableView
-   */
-  friend void * SIDRE_create_fortran_allocatable_view(void * group,
-                                                      char * name, int lname,
-                                                      void * array, int type, int rank);
-#endif
 
 //@}
 

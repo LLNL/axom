@@ -54,12 +54,12 @@ return;
 // splicer end class.DataView.method.apply_0
 }
 
-SIDRE_dataview * SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff)
+void SIDRE_dataview_attach_buffer(SIDRE_dataview * self, SIDRE_databuffer * buff)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 // splicer begin class.DataView.method.attach_buffer
-DataView * rv = selfobj->attachBuffer(static_cast<DataBuffer *>(static_cast<void *>(buff)));
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+selfobj->attachBuffer(static_cast<DataBuffer *>(static_cast<void *>(buff)));
+return;
 // splicer end class.DataView.method.attach_buffer
 }
 
@@ -234,6 +234,15 @@ return rv;
 // splicer end class.DataView.method.get_data_double
 }
 
+SIDRE_dataview * SIDRE_dataview_set_opaque(SIDRE_dataview * self, void * opaque_ptr)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.set_opaque
+DataView * rv = selfobj->setOpaque(opaque_ptr);
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.set_opaque
+}
+
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
@@ -268,6 +277,24 @@ DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 size_t rv = selfobj->getNumElements();
 return rv;
 // splicer end class.DataView.method.get_num_elements
+}
+
+int SIDRE_dataview_get_num_dimensions(SIDRE_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.get_num_dimensions
+int rv = selfobj->getNumDimensions();
+return rv;
+// splicer end class.DataView.method.get_num_dimensions
+}
+
+int SIDRE_dataview_get_shape(SIDRE_dataview * self, int ndims, SIDRE_SidreLength * shape)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.get_shape
+int rv = selfobj->getShape(ndims, shape);
+return rv;
+// splicer end class.DataView.method.get_shape
 }
 
 void SIDRE_dataview_print(SIDRE_dataview * self)
