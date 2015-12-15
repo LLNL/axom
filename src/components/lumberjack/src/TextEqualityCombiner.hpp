@@ -34,11 +34,11 @@ namespace lumberjack {
  *
  * \brief Combines Message classes if their Message::text are equal.
  *
- *  This class instance is automatically added to Lumberjack's Logger for you. If you want it
- *  removed call Logger::removeCombiner with the string "TextEqualityCombiner" as it's
+ *  This class instance is automatically added to Lumberjack's Lumberjack for you. If you want it
+ *  removed call Lumberjack::removeCombiner with the string "TextEqualityCombiner" as it's
  *  parameter.
  *
- * \see Combiner Logger
+ * \see Combiner Lumberjack
  *******************************************************************************
  */
 class TextEqualityCombiner: public Combiner {
@@ -47,7 +47,7 @@ class TextEqualityCombiner: public Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Returns the unique string identifier for this combiner. Used by Logger
+         * \brief Returns the unique string identifier for this combiner. Used by Lumberjack
          *  to differentiate between other combiners.
          *****************************************************************************
          */
@@ -58,7 +58,7 @@ class TextEqualityCombiner: public Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Function used by Logger to indicate whether two messages should be
+         * \brief Function used by Lumberjack to indicate whether two messages should be
          * combined.
          *
          * They are not actually combined by this function. Message classes are 

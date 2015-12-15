@@ -37,9 +37,9 @@ namespace lumberjack {
  * \brief A Communicator that utilizes a binary tree stucture of MPI nodes 
  * to scalably pass Message classes.
  *
- *  You will need to add your Communicator using Logger::initialize.
+ *  You will need to add your Communicator using Lumberjack::initialize.
  *
- * \see Communicator Logger
+ * \see Communicator Lumberjack
  *******************************************************************************
  */
 class BinaryTreeCommunicator: public Communicator {
@@ -69,6 +69,13 @@ class BinaryTreeCommunicator: public Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Returns the MPI rank of this node
+         *****************************************************************************
+         */
+        int rank();
+
+        /*!
+         *****************************************************************************
          * \brief Sets the rank limit.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
@@ -93,46 +100,36 @@ class BinaryTreeCommunicator: public Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Function used by the Lumberjack class to indicate how many individual pushes
+         *  fully flush all currently held Message classes to the root node. The Communicator
+         *  class's tree structure dictates this.
+         *****************************************************************************
+         */
+        int numPushesToFlush();
+
+        /*!
+         *****************************************************************************
          * \brief All children push their Message classes pushed to their parent and then combined.
          *
          * This is helpful when you want to spread your Lumberjack work over a set of 
          * your work. Instead of doing all of Lumberjack's work at one point in your program.
          * This does not guarantee your Message will be ready to output.  After this call
-         * only Message classes at the root node will be returned from Logger::getMessages.
+         * only Message classes at the root node will be returned from Lumberjack::getMessages.
          *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
+         * \param [in] packedMessagesToBeSent All of this rank's Message classes packed into a single buffer.
+         * \param [in,out] receivedPackedMessages Recieved packed message buffers from this nodes children.
          *****************************************************************************
          */
-        void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
+        void push(const char* packedMessagesToBeSent,
+                  std::vector<const char*>& receivedPackedMessages);
 
         /*!
          *****************************************************************************
-         * \brief All Message classes pushed from child to parent until all have passed
-         * through Lumberjack. Messages are combined after each iteration.
-         *
-         * This is helpful when you want to completely clear out Message classes in Lumberjack.
-         *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
-         *****************************************************************************
-         */
-        void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
-
-        /*!
-         *****************************************************************************
-         * \brief Function used by the Logger to indicate whether this node should be
+         * \brief Function used by the Lumberjack to indicate whether this node should be
          * outputting messages. Only the root node outputs messages.
          *****************************************************************************
          */
         bool shouldMessagesBeOutputted();
-
-        /*!
-         *****************************************************************************
-         * \brief Returns the MPI rank of this node
-         *****************************************************************************
-         */
-        int rank();
     private:
         MPI_Comm m_mpiComm;
         int m_mpiCommRank;

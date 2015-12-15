@@ -268,7 +268,7 @@ endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
 ## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
-##               DEPENDS_ON [dep1 ...] [WITH_MPI] [WITH_OPENMP])
+##               DEPENDS_ON [dep1 ...] [WITH_OPENMP])
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -283,29 +283,19 @@ endmacro(add_target_definitions)
 ## "make_library", as well as, the corresponding "copy_headers_target" of each
 ## of the supplied dependencies.
 ##
-## Optionally, "WITH_MPI" can be supplied as an argument. When this argument is
-## supplied, the MPI include directory will be added to the compiler command
-## and the -DUSE_MPI, as well as other compiler flags, will be included to the
-## compiler definition.
-##
 ## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
-   set(options WITH_MPI WITH_OPENMP)
+   set(options WITH_OPENMP)
    set(singleValueArgs LIBRARY_NAME)
    set(multiValueArgs LIBRARY_SOURCES DEPENDS_ON)
 
    ## parse the arguments
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-   ## sanity check MPI
-   if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
-      message( FATAL_ERROR "Building an MPI library, but MPI is disabled!" )
-   endif()
 
    ## sanity check OpenMP
    if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
@@ -318,23 +308,24 @@ macro(make_library)
       add_library(${arg_LIBRARY_NAME} STATIC ${arg_LIBRARY_SOURCES})
    endif()
 
-   if ( ${arg_WITH_MPI} )
-
+   if ( ${ENABLE_MPI} )
       add_target_definitions( TO ${arg_LIBRARY_NAME}
                               TARGET_DEFINITIONS USE_MPI )
 
       target_include_directories( ${arg_LIBRARY_NAME} PUBLIC
                                   ${MPI_C_INCLUDE_PATH} )
 
-      if(NOT "${MPI_CXX_COMPILE_FLAGS}" STREQUAL "")
+      if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
             set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES COMPILE_FLAGS
-                                   ${MPI_CXX_COMPILE_FLAGS} )
+                                   ${MPI_C_COMPILE_FLAGS} )
       endif()
 
-      if(NOT "${MPI_CXX_LINK_FLAGS}" STREQUAL "")
+      if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
             set_target_properties( ${arg_LIBRARY_NAME} PROPERTIES LINK_FLAGS
-                                   ${MPI_CXX_LINK_FLAGS} )
+                                   ${MPI_C_LINK_FLAGS} )
       endif()
+
+      target_link_libraries(${arg_LIBRARY_NAME} ${MPI_C_LIBRARIES})
 
    endif()
 
@@ -372,6 +363,7 @@ macro(make_library)
    endif()
 
    foreach(dependency ${arg_DEPENDS_ON})
+     target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
      set(header_target "copy_headers_${dependency}")
      if (TARGET ${header_target})
         add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
@@ -382,7 +374,7 @@ endmacro(make_library)
 
 ##------------------------------------------------------------------------------
 ## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
-##                  [WITH_MPI] [WITH_OPENMP])
+##                  [WITH_OPENMP] [ADD_CTEST])
 ##
 ## Adds an executable to the project.
 ##
@@ -393,29 +385,23 @@ endmacro(make_library)
 ## In addition, the target will be linked with the given list of library
 ## dependencies.
 ##
-## Optionally, "WITH_MPI" can be supplied as an argument for MPI executables.
-## When the "WITH_MPI" argument is supplied, the executable will be linked with
-## the MPI C libraries and the MPI includes as well as -DUSE_MPI and other flags
-## will be added to the compiler command.
-##
 ## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
 ## and the -DUSE_MPI, will be included to the compiler definition.
+##
+## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
+## is supplied, the executable is added as a ctest with no command line options.
+## If you need command line options for your ctest, add it manually with ADD_TEST().
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options WITH_MPI WITH_OPENMP)
+   set(options WITH_OPENMP ADD_CTEST)
    set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE)
    set(multiValueArgs DEPENDS_ON)
 
    ## parse the arguments to the macro
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
-
-   ## sanity check MPI
-   if ( ${arg_WITH_MPI} AND NOT ${ENABLE_MPI} )
-      message( FATAL_ERROR "Building an MPI executable, but MPI is disabled!" )
-   endif()
 
    ## sanity check OpenMP
    if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
@@ -439,21 +425,21 @@ macro(make_executable)
      set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
    endif()
 
-   if ( ${arg_WITH_MPI} )
+   if ( ${ENABLE_MPI} )
       add_target_definitions( TO ${exe_name}
                               TARGET_DEFINITIONS USE_MPI )
 
       target_include_directories( ${exe_name} PUBLIC
                                   ${MPI_C_INCLUDE_PATH} )
 
-      if(NOT "${MPI_CXX_COMPILE_FLAGS}" STREQUAL "")
+      if(NOT "${MPI_C_COMPILE_FLAGS}" STREQUAL "")
             set_target_properties( ${exe_name} PROPERTIES COMPILE_FLAGS
-                                   ${MPI_CXX_COMPILE_FLAGS} )
+                                   ${MPI_C_COMPILE_FLAGS} )
       endif()
 
-      if(NOT "${MPI_CXX_LINK_FLAGS}" STREQUAL "")
+      if(NOT "${MPI_C_LINK_FLAGS}" STREQUAL "")
             set_target_properties( ${exe_name} PROPERTIES LINK_FLAGS
-                                   ${MPI_CXX_LINK_FLAGS} )
+                                   ${MPI_C_LINK_FLAGS} )
       endif()
 
       target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
@@ -470,10 +456,12 @@ macro(make_executable)
 
    endif()
 
-   add_test( NAME ${exe_name}
-             COMMAND ${exe_name}
-             WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
-             )
+   if ( ${arg_ADD_CTEST} )
+     add_test( NAME ${exe_name}
+               COMMAND ${exe_name}
+               WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+               )
+   endif()
 
    if(IS_ABSOLUTE)
        list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${arg_EXECUTABLE_SOURCE}")
