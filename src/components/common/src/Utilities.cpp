@@ -8,6 +8,16 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Implementation file for utility functions.
+ *
+ ******************************************************************************
+ */
+
 #include "common/Utilities.hpp"
 
 #include <cstdlib>
