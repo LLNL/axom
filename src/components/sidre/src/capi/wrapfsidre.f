@@ -33,6 +33,7 @@ module sidre_mod
         SIDRE_ULONG_ID      => CONDUIT_ULONG_T, &
         SIDRE_FLOAT_ID      => CONDUIT_FLOAT_T, &
         SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_T
+    use, intrinsic :: iso_c_binding, only : C_LONG
     ! splicer end module_use
     ! splicer begin class.DataStore.module_use
     ! splicer end class.DataStore.module_use
@@ -45,60 +46,12 @@ module sidre_mod
     implicit none
     
     ! splicer begin module_top
+    integer, parameter :: SIDRE_LENGTH = C_LONG
+    
     integer, parameter :: invalid_index = -1
     ! splicer end module_top
     
     ! splicer begin class.DataStore.module_top
-    interface c_loc_allocatable
-    
-       subroutine sidre_c_loc_allocatable_int_scalar(variable, addr)
-         use iso_c_binding
-         integer(C_INT), allocatable, intent(IN) :: variable
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_int_scalar
-    
-       subroutine sidre_c_loc_allocatable_int_1d(variable, addr)
-         use iso_c_binding
-         integer(C_INT), allocatable, intent(IN) :: variable(:)
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_int_1d
-    
-       subroutine sidre_c_loc_allocatable_long_scalar(variable, addr)
-         use iso_c_binding
-         integer(C_LONG), allocatable, intent(IN) :: variable
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_long_scalar
-    
-       subroutine sidre_c_loc_allocatable_long_1d(variable, addr)
-         use iso_c_binding
-         integer(C_LONG), allocatable, intent(IN) :: variable(:)
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_long_1d
-    
-       subroutine sidre_c_loc_allocatable_float_scalar(variable, addr)
-         use iso_c_binding
-         real(C_FLOAT), allocatable, intent(IN) :: variable
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_float_scalar
-    
-       subroutine sidre_c_loc_allocatable_float_1d(variable, addr)
-         use iso_c_binding
-         real(C_FLOAT), allocatable, intent(IN) :: variable(:)
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_float_1d
-    
-       subroutine sidre_c_loc_allocatable_double_scalar(variable, addr)
-         use iso_c_binding
-         real(C_DOUBLE), allocatable, intent(IN) :: variable
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_double_scalar
-    
-       subroutine sidre_c_loc_allocatable_double_1d(variable, addr)
-         use iso_c_binding
-         real(C_DOUBLE), allocatable, intent(IN) :: variable(:)
-         type(C_PTR), intent(OUT) :: addr
-       end subroutine sidre_c_loc_allocatable_double_1d
-    end interface c_loc_allocatable
     ! splicer end class.DataStore.module_top
     
     type datastore
@@ -181,40 +134,39 @@ module sidre_mod
             get_view_from_name,  &
             get_view_from_index
         ! splicer begin class.DataGroup.type_bound_procedure_part
-        procedure :: create_allocatable_view_int_scalar => datagroup_create_allocatable_view_int_scalar
-        procedure :: create_allocatable_view_int_1d => datagroup_create_allocatable_view_int_1d
-        procedure :: create_allocatable_view_long_scalar => datagroup_create_allocatable_view_long_scalar
-        procedure :: create_allocatable_view_long_1d => datagroup_create_allocatable_view_long_1d
-        procedure :: create_allocatable_view_float_scalar => datagroup_create_allocatable_view_float_scalar
-        procedure :: create_allocatable_view_float_1d => datagroup_create_allocatable_view_float_1d
-        procedure :: create_allocatable_view_double_scalar => datagroup_create_allocatable_view_double_scalar
-        procedure :: create_allocatable_view_double_1d => datagroup_create_allocatable_view_double_1d
-        generic :: create_allocatable_view => &
-            create_allocatable_view_int_scalar,  &
-            create_allocatable_view_int_1d,  &
-            create_allocatable_view_long_scalar,  &
-            create_allocatable_view_long_1d,  &
-            create_allocatable_view_float_scalar,  &
-            create_allocatable_view_float_1d,  &
-            create_allocatable_view_double_scalar,  &
-            create_allocatable_view_double_1d
         procedure :: create_array_view_int_scalar => datagroup_create_array_view_int_scalar
         procedure :: create_array_view_int_1d => datagroup_create_array_view_int_1d
+        procedure :: create_array_view_int_2d => datagroup_create_array_view_int_2d
+        procedure :: create_array_view_int_3d => datagroup_create_array_view_int_3d
         procedure :: create_array_view_long_scalar => datagroup_create_array_view_long_scalar
         procedure :: create_array_view_long_1d => datagroup_create_array_view_long_1d
+        procedure :: create_array_view_long_2d => datagroup_create_array_view_long_2d
+        procedure :: create_array_view_long_3d => datagroup_create_array_view_long_3d
         procedure :: create_array_view_float_scalar => datagroup_create_array_view_float_scalar
         procedure :: create_array_view_float_1d => datagroup_create_array_view_float_1d
+        procedure :: create_array_view_float_2d => datagroup_create_array_view_float_2d
+        procedure :: create_array_view_float_3d => datagroup_create_array_view_float_3d
         procedure :: create_array_view_double_scalar => datagroup_create_array_view_double_scalar
         procedure :: create_array_view_double_1d => datagroup_create_array_view_double_1d
+        procedure :: create_array_view_double_2d => datagroup_create_array_view_double_2d
+        procedure :: create_array_view_double_3d => datagroup_create_array_view_double_3d
         generic :: create_array_view => &
             create_array_view_int_scalar,  &
             create_array_view_int_1d,  &
+            create_array_view_int_2d,  &
+            create_array_view_int_3d,  &
             create_array_view_long_scalar,  &
             create_array_view_long_1d,  &
+            create_array_view_long_2d,  &
+            create_array_view_long_3d,  &
             create_array_view_float_scalar,  &
             create_array_view_float_1d,  &
+            create_array_view_float_2d,  &
+            create_array_view_float_3d,  &
             create_array_view_double_scalar,  &
-            create_array_view_double_1d
+            create_array_view_double_1d,  &
+            create_array_view_double_2d,  &
+            create_array_view_double_3d
         ! splicer end class.DataGroup.type_bound_procedure_part
     end type datagroup
     
@@ -302,6 +254,8 @@ module sidre_mod
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
         procedure :: get_num_elements => dataview_get_num_elements
+        procedure :: get_num_dimensions => dataview_get_num_dimensions
+        procedure :: get_shape => dataview_get_shape
         procedure :: print => dataview_print
         generic :: allocate => &
             ! splicer begin class.DataView.generic.allocate
@@ -334,21 +288,37 @@ module sidre_mod
         ! splicer begin class.DataView.type_bound_procedure_part
         procedure :: get_value_int_scalar_ptr => dataview_get_value_int_scalar_ptr
         procedure :: get_value_int_1d_ptr => dataview_get_value_int_1d_ptr
+        procedure :: get_value_int_2d_ptr => dataview_get_value_int_2d_ptr
+        procedure :: get_value_int_3d_ptr => dataview_get_value_int_3d_ptr
         procedure :: get_value_long_scalar_ptr => dataview_get_value_long_scalar_ptr
         procedure :: get_value_long_1d_ptr => dataview_get_value_long_1d_ptr
+        procedure :: get_value_long_2d_ptr => dataview_get_value_long_2d_ptr
+        procedure :: get_value_long_3d_ptr => dataview_get_value_long_3d_ptr
         procedure :: get_value_float_scalar_ptr => dataview_get_value_float_scalar_ptr
         procedure :: get_value_float_1d_ptr => dataview_get_value_float_1d_ptr
+        procedure :: get_value_float_2d_ptr => dataview_get_value_float_2d_ptr
+        procedure :: get_value_float_3d_ptr => dataview_get_value_float_3d_ptr
         procedure :: get_value_double_scalar_ptr => dataview_get_value_double_scalar_ptr
         procedure :: get_value_double_1d_ptr => dataview_get_value_double_1d_ptr
+        procedure :: get_value_double_2d_ptr => dataview_get_value_double_2d_ptr
+        procedure :: get_value_double_3d_ptr => dataview_get_value_double_3d_ptr
         generic :: get_value => &
             get_value_int_scalar_ptr,  &
             get_value_int_1d_ptr,  &
+            get_value_int_2d_ptr,  &
+            get_value_int_3d_ptr,  &
             get_value_long_scalar_ptr,  &
             get_value_long_1d_ptr,  &
+            get_value_long_2d_ptr,  &
+            get_value_long_3d_ptr,  &
             get_value_float_scalar_ptr,  &
             get_value_float_1d_ptr,  &
+            get_value_float_2d_ptr,  &
+            get_value_float_3d_ptr,  &
             get_value_double_scalar_ptr,  &
-            get_value_double_1d_ptr
+            get_value_double_1d_ptr,  &
+            get_value_double_2d_ptr,  &
+            get_value_double_3d_ptr
         ! splicer end class.DataView.type_bound_procedure_part
     end type dataview
     
@@ -1250,6 +1220,24 @@ module sidre_mod
             integer(C_SIZE_T) :: rv
         end function sidre_dataview_get_num_elements
         
+        pure function sidre_dataview_get_num_dimensions(self) result(rv) &
+                bind(C, name="SIDRE_dataview_get_num_dimensions")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function sidre_dataview_get_num_dimensions
+        
+        pure function sidre_dataview_get_shape(self, ndims, shape) result(rv) &
+                bind(C, name="SIDRE_dataview_get_shape")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+            integer(C_INT) :: rv
+        end function sidre_dataview_get_shape
+        
         subroutine sidre_dataview_print(self) &
                 bind(C, name="SIDRE_dataview_print")
             use iso_c_binding
@@ -1269,18 +1257,19 @@ module sidre_mod
         end function sidre_name_is_valid
         
         ! splicer begin additional_interfaces
-        function SIDRE_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-           bind(C,name="SIDRE_create_fortran_allocatable_view") &
-           result(rv)
-              use iso_c_binding
-              type(C_PTR), value, intent(IN)    :: group
-              character(kind=C_CHAR), intent(IN) :: name(*)
-              integer(C_INT), value, intent(IN) :: lname
-              type(C_PTR), value                :: addr
-              integer(C_INT), value, intent(IN) :: itype
-              integer(C_INT), value, intent(IN) :: rank
-              type(C_PTR) rv
-        end function SIDRE_create_fortran_allocatable_view
+        function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
+              result(rv) bind(C,name="SIDRE_create_array_view")
+            use iso_c_binding
+            import SIDRE_LENGTH
+            type(C_PTR), value, intent(IN)     :: group
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN)  :: lname
+            type(C_PTR), value,     intent(IN) :: addr
+            integer(C_INT), value, intent(IN)  :: type
+            integer(C_INT), value, intent(IN)  :: rank
+            integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
+            type(C_PTR) rv
+        end function SIDRE_create_array_view
         ! splicer end additional_interfaces
     end interface
 
@@ -1845,167 +1834,9 @@ contains
     ! splicer begin class.DataGroup.additional_functions
     
     ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_int_scalar(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        integer(C_INT), allocatable, intent(IN) :: value
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = SIDRE_INT_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_int_scalar
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_int_1d(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        integer(C_INT), allocatable, intent(IN) :: value(:)
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = SIDRE_INT_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_int_1d
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_long_scalar(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        integer(C_LONG), allocatable, intent(IN) :: value
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = SIDRE_LONG_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_long_scalar
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_long_1d(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        integer(C_LONG), allocatable, intent(IN) :: value(:)
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = SIDRE_LONG_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_long_1d
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_float_scalar(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        real(C_FLOAT), allocatable, intent(IN) :: value
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = SIDRE_FLOAT_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_float_scalar
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_float_1d(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        real(C_FLOAT), allocatable, intent(IN) :: value(:)
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = SIDRE_FLOAT_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_float_1d
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_double_scalar(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        real(C_DOUBLE), allocatable, intent(IN) :: value
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 0
-        integer(C_INT), parameter :: itype = SIDRE_DOUBLE_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_double_scalar
-    
-    ! Generated by genfsidresplicer.py
-    function datagroup_create_allocatable_view_double_1d(group, name, value) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup), intent(IN) :: group
-        character(*), intent(IN) :: name
-        real(C_DOUBLE), allocatable, intent(IN) :: value(:)
-        integer(C_INT) :: lname
-        type(dataview) :: rv
-        type(C_PTR) :: addr
-        integer(C_INT), parameter :: rank = 1
-        integer(C_INT), parameter :: itype = SIDRE_DOUBLE_ID
-    
-        lname = len_trim(name)
-        call c_loc_allocatable(value, addr)
-        rv%voidptr = SIDRE_create_fortran_allocatable_view(group%voidptr, name, lname, addr, itype, rank)
-    end function datagroup_create_allocatable_view_double_1d
-    
-    ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_int_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2013,34 +1844,20 @@ contains
         integer(C_INT), target, intent(IN) :: value
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = 1_C_LONG
+        extents(1) = 1_SIDRE_LENGTH
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_int_scalar
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_int_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2048,34 +1865,62 @@ contains
         integer(C_INT), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = size(value, kind=1_C_LONG)
+        extents = shape(value, kind=SIDRE_LENGTH)
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_int_1d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_int_2d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(2)
+        integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+    end function datagroup_create_array_view_int_2d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_int_3d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_INT), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(3)
+        integer(C_INT), parameter :: type = SIDRE_INT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+    end function datagroup_create_array_view_int_3d
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_long_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2083,34 +1928,20 @@ contains
         integer(C_LONG), target, intent(IN) :: value
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = 1_C_LONG
+        extents(1) = 1_SIDRE_LENGTH
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_long_scalar
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_long_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2118,34 +1949,62 @@ contains
         integer(C_LONG), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = size(value, kind=1_C_LONG)
+        extents = shape(value, kind=SIDRE_LENGTH)
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_long_1d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_long_2d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(2)
+        integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+    end function datagroup_create_array_view_long_2d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_long_3d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        integer(C_LONG), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(3)
+        integer(C_INT), parameter :: type = SIDRE_LONG_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+    end function datagroup_create_array_view_long_3d
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_float_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2153,34 +2012,20 @@ contains
         real(C_FLOAT), target, intent(IN) :: value
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = 1_C_LONG
+        extents(1) = 1_SIDRE_LENGTH
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_float_scalar
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_float_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2188,34 +2033,62 @@ contains
         real(C_FLOAT), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = size(value, kind=1_C_LONG)
+        extents = shape(value, kind=SIDRE_LENGTH)
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_float_1d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_float_2d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(2)
+        integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+    end function datagroup_create_array_view_float_2d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_float_3d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_FLOAT), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(3)
+        integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+    end function datagroup_create_array_view_float_3d
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_double_scalar(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2223,34 +2096,20 @@ contains
         real(C_DOUBLE), target, intent(IN) :: value
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = 1_C_LONG
+        extents(1) = 1_SIDRE_LENGTH
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 0, extents)
     end function datagroup_create_array_view_double_scalar
     
     ! Generated by genfsidresplicer.py
     function datagroup_create_array_view_double_1d(group, name, value) result(rv)
         use iso_c_binding
         implicit none
-    
-        interface
-           function SIDRE_create_array_view(group, name, lname, addr, type, nitems) &
-               result(rv) bind(C,name="SIDRE_create_array_view")
-           use iso_c_binding
-           type(C_PTR), value, intent(IN)     :: group
-           character(kind=C_CHAR), intent(IN) :: name(*)
-           integer(C_INT), value, intent(IN)  :: lname
-           type(C_PTR), value,     intent(IN) :: addr
-           integer(C_INT), value, intent(IN)  :: type
-           integer(C_LONG), value, intent(IN) :: nitems
-           type(C_PTR) rv
-           end function SIDRE_create_array_view
-        end interface
         external :: SIDRE_C_LOC
     
         class(datagroup), intent(IN) :: group
@@ -2258,15 +2117,57 @@ contains
         real(C_DOUBLE), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
         type(dataview) :: rv
-        integer(C_LONG) :: nitems
+        integer(SIDRE_LENGTH) :: extents(1)
         integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr
     
         lname = len_trim(name)
-        nitems = size(value, kind=1_C_LONG)
+        extents = shape(value, kind=SIDRE_LENGTH)
         call SIDRE_C_LOC(value, addr)
-        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, nitems)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 1, extents)
     end function datagroup_create_array_view_double_1d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_double_2d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(2)
+        integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 2, extents)
+    end function datagroup_create_array_view_double_2d
+    
+    ! Generated by genfsidresplicer.py
+    function datagroup_create_array_view_double_3d(group, name, value) result(rv)
+        use iso_c_binding
+        implicit none
+        external :: SIDRE_C_LOC
+    
+        class(datagroup), intent(IN) :: group
+        character(*), intent(IN) :: name
+        real(C_DOUBLE), target, intent(IN) :: value(:,:,:)
+        integer(C_INT) :: lname
+        type(dataview) :: rv
+        integer(SIDRE_LENGTH) :: extents(3)
+        integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
+        type(C_PTR) addr
+    
+        lname = len_trim(name)
+        extents = shape(value, kind=SIDRE_LENGTH)
+        call SIDRE_C_LOC(value, addr)
+        rv%voidptr = SIDRE_create_array_view(group%voidptr, name, lname, addr, type, 3, extents)
+    end function datagroup_create_array_view_double_3d
     ! splicer end class.DataGroup.additional_functions
     
     function databuffer_get_index(obj) result(rv)
@@ -2827,6 +2728,31 @@ contains
         ! splicer end class.DataView.method.get_num_elements
     end function dataview_get_num_elements
     
+    function dataview_get_num_dimensions(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataView.method.get_num_dimensions
+        rv = sidre_dataview_get_num_dimensions(obj%voidptr)
+        ! splicer end class.DataView.method.get_num_dimensions
+    end function dataview_get_num_dimensions
+    
+    function dataview_get_shape(obj, ndims, shape) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT), value, intent(IN) :: ndims
+        integer(C_LONG), intent(IN) :: shape(*)
+        integer(C_INT) :: rv
+        ! splicer begin class.DataView.method.get_shape
+        rv = sidre_dataview_get_shape(  &
+            obj%voidptr,  &
+            ndims,  &
+            shape)
+        ! splicer end class.DataView.method.get_shape
+    end function dataview_get_shape
+    
     subroutine dataview_print(obj)
         use iso_c_binding
         implicit none
@@ -2857,12 +2783,43 @@ contains
         class(dataview), intent(IN) :: view
         integer(C_INT), pointer, intent(OUT) :: value(:)
         type(C_PTR) cptr
-        integer(C_SIZE_T) nelems
+        integer rank
+        integer(SIDRE_LENGTH) extents(1)
     
         cptr = view%get_data_pointer()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_value_int_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_int_2d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_INT), pointer, intent(OUT) :: value(:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(2)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(2, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_int_2d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_int_3d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_INT), pointer, intent(OUT) :: value(:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(3)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(3, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_int_3d_ptr
     
     ! Generated by genfsidresplicer.py
     subroutine dataview_get_value_long_scalar_ptr(view, value)
@@ -2883,12 +2840,43 @@ contains
         class(dataview), intent(IN) :: view
         integer(C_LONG), pointer, intent(OUT) :: value(:)
         type(C_PTR) cptr
-        integer(C_SIZE_T) nelems
+        integer rank
+        integer(SIDRE_LENGTH) extents(1)
     
         cptr = view%get_data_pointer()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_value_long_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_long_2d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), pointer, intent(OUT) :: value(:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(2)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(2, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_long_2d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_long_3d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        integer(C_LONG), pointer, intent(OUT) :: value(:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(3)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(3, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_long_3d_ptr
     
     ! Generated by genfsidresplicer.py
     subroutine dataview_get_value_float_scalar_ptr(view, value)
@@ -2909,12 +2897,43 @@ contains
         class(dataview), intent(IN) :: view
         real(C_FLOAT), pointer, intent(OUT) :: value(:)
         type(C_PTR) cptr
-        integer(C_SIZE_T) nelems
+        integer rank
+        integer(SIDRE_LENGTH) extents(1)
     
         cptr = view%get_data_pointer()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_value_float_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_float_2d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), pointer, intent(OUT) :: value(:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(2)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(2, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_float_2d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_float_3d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_FLOAT), pointer, intent(OUT) :: value(:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(3)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(3, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_float_3d_ptr
     
     ! Generated by genfsidresplicer.py
     subroutine dataview_get_value_double_scalar_ptr(view, value)
@@ -2935,12 +2954,43 @@ contains
         class(dataview), intent(IN) :: view
         real(C_DOUBLE), pointer, intent(OUT) :: value(:)
         type(C_PTR) cptr
-        integer(C_SIZE_T) nelems
+        integer rank
+        integer(SIDRE_LENGTH) extents(1)
     
         cptr = view%get_data_pointer()
-        nelems = view%get_num_elements()
-        call c_f_pointer(cptr, value, [ nelems ])
+        rank = view%get_shape(1, extents)
+        call c_f_pointer(cptr, value, extents)
     end subroutine dataview_get_value_double_1d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_double_2d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), pointer, intent(OUT) :: value(:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(2)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(2, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_double_2d_ptr
+    
+    ! Generated by genfsidresplicer.py
+    subroutine dataview_get_value_double_3d_ptr(view, value)
+        use iso_c_binding
+        implicit none
+        class(dataview), intent(IN) :: view
+        real(C_DOUBLE), pointer, intent(OUT) :: value(:,:,:)
+        type(C_PTR) cptr
+        integer rank
+        integer(SIDRE_LENGTH) extents(3)
+    
+        cptr = view%get_data_pointer()
+        rank = view%get_shape(3, extents)
+        call c_f_pointer(cptr, value, extents)
+    end subroutine dataview_get_value_double_3d_ptr
     ! splicer end class.DataView.additional_functions
     
     function name_is_valid(name) result(rv)

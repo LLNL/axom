@@ -129,6 +129,20 @@ namespace
 
   Blank delimited list of namespaces for **cpp_header**.
 
+wrap_c
+
+  If *true*, create C wrappers.
+  Defaults to *true*.
+
+wrap_fortran
+
+  If *true*, create Fortran wrappers.
+  Defaults to *true*.
+
+wrap_python
+
+  If *true*, create Python wrappers.
+  Defaults to *false*.
 
 
 
@@ -611,6 +625,13 @@ decl
 
    Function declaration.
    Parsed to extract function name, type and arguments descriptions.
+
+default_arg_suffix
+
+   A list of suffixes to apply to C and Fortran functions generated when
+   wrapping a C++ function with default arguments.  The first entry is for
+   the function with the fewest arguments and the final entry should be for
+   all of the arguments.
 
 function_suffix
 

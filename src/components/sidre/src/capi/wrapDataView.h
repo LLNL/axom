@@ -92,6 +92,10 @@ size_t SIDRE_dataview_get_total_bytes(SIDRE_dataview * self);
 
 size_t SIDRE_dataview_get_num_elements(SIDRE_dataview * self);
 
+int SIDRE_dataview_get_num_dimensions(SIDRE_dataview * self);
+
+int SIDRE_dataview_get_shape(SIDRE_dataview * self, int ndims, SIDRE_SidreLength * shape);
+
 void SIDRE_dataview_print(SIDRE_dataview * self);
 
 #ifdef __cplusplus

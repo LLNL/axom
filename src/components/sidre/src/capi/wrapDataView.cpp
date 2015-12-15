@@ -288,6 +288,24 @@ return rv;
 // splicer end class.DataView.method.get_num_elements
 }
 
+int SIDRE_dataview_get_num_dimensions(SIDRE_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.get_num_dimensions
+int rv = selfobj->getNumDimensions();
+return rv;
+// splicer end class.DataView.method.get_num_dimensions
+}
+
+int SIDRE_dataview_get_shape(SIDRE_dataview * self, int ndims, SIDRE_SidreLength * shape)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.get_shape
+int rv = selfobj->getShape(ndims, shape);
+return rv;
+// splicer end class.DataView.method.get_shape
+}
+
 void SIDRE_dataview_print(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));

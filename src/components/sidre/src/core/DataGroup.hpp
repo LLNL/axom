@@ -58,9 +58,6 @@
 #include "SidreTypes.hpp"
 #include "Collections.hpp"
 #include "DataView.hpp"
-#if ATK_ENABLE_FORTRAN
-#include "sidre/SidreAllocatable.hpp"
-#endif
 
 
 
@@ -479,6 +476,11 @@ public:
                                  SidreLength offset = 0,
                                  SidreLength stride = 1 );
 
+  DataView * createExternalView( const std::string& name,
+                                 void * external_data,
+                                 TypeID type, 
+                                 int ndims, SidreLength * shape);
+
   /*!
    * \brief Create DataView with given name to hold data referenced with
    *        given pointer. View will be initialized with given Conduit
@@ -893,28 +895,6 @@ private:
   DataView * detachView(const std::string& name);
   ///
   DataView * detachView(IndexType idx);
-
-#ifdef ATK_ENABLE_FORTRAN
-  /*!
-   * \brief Create a DataView to a Fortran allocatable.
-   *
-   * New view will be attached to this DataGroup object.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createFortranAllocatableView( const std::string& name,
-                                           void * array, TypeID type, int rank );
-
-  /* extern "C" function which calls createFortranAllocatableView
-   */
-  friend void * SIDRE_create_fortran_allocatable_view(void * group,
-                                                      char * name, int lname,
-                                                      void * array, int type, int rank);
-#endif
 
 //@}
 
