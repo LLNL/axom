@@ -327,6 +327,50 @@ DataView * DataGroup::createExternalView( const std::string& name,
 /*
  *************************************************************************
  *
+ * Create external view with given data type, number of dimensions and shape
+ * then attach to group.
+ *
+ *************************************************************************
+ */
+DataView * DataGroup::createExternalView( const std::string& name,
+                                          void * external_data,
+					  TypeID type, 
+                                          int ndims, SidreLength * shape)
+{
+  SLIC_ASSERT( !name.empty() );
+  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR ,
+                   "Cannot create external view with null data pointer" );
+  SLIC_ASSERT_MSG( ndims >= 0, 
+                  "Cannot create external view with ndims < 0");
+ 
+  if ( name.empty() || hasView(name) || external_data == ATK_NULLPTR )
+  {
+    return ATK_NULLPTR;
+  }
+  else
+  {
+    SidreLength num_elems = 1;
+    for (int i=0; i < ndims; i++)
+    {
+      num_elems *= shape[i];
+    }
+
+    DataBuffer * buff = this->getDataStore()->createBuffer();
+    buff->declare(type, num_elems);
+    buff->setExternalData(external_data);
+
+    DataView * const view = new DataView( name, this, buff);
+    buff->attachView(view);
+    view->apply(type, ndims, shape);
+
+    return attachView(view);
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Create external view with given data type and attach to group.
  *
  *************************************************************************
@@ -1088,46 +1132,6 @@ DataGroup * DataGroup::detachGroup(IndexType idx)
 
   return group;
 }
-
-/*
- *************************************************************************
- *
- * Create external view for a Fortran allocatable and attach to group.
- *
- *************************************************************************
- */
-#ifdef ATK_ENABLE_FORTRAN
-DataView * DataGroup::createFortranAllocatableView( const std::string& name,
-						    void * array, TypeID type, int rank )
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( array != ATK_NULLPTR ,
-                   "Cannot create Fortran allocatable view with null array pointer" );
- 
-  if ( name.empty() || hasView(name) || array == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    SidreLength num_elems = SizeAllocatable(array, type, rank);
-    buff->declare(type, num_elems);
-    buff->setFortranAllocatable(array, type, rank);
-
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(num_elems);
-    view->apply(dtype);
-
-    return attachView(view);
-  }
-}
-#endif
 
 /*
  *************************************************************************

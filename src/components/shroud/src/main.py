@@ -92,7 +92,7 @@ class Schema(object):
 
             wrap_c       = True,
             wrap_fortran = True,
-            wrap_python  = True,
+            wrap_python  = False,
 
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
@@ -361,6 +361,13 @@ class Schema(object):
         if 'function_suffix' in node and node['function_suffix'] is None:
             # YAML turns blanks strings to None
             node['function_suffix'] = ''
+        if 'default_arg_suffix' in node:
+            default_arg_suffix = node['default_arg_suffix']
+            if not isinstance(default_arg_suffix, list):
+                raise RuntimeError('default_arg_suffix must be a list')
+            for i, value in enumerate(node['default_arg_suffix']):
+                if value is None:
+                    node['default_arg_suffix'][i] = '' # YAML turns blanks strings to None
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -570,6 +577,10 @@ class GenFunctions(object):
           void func(int i, int j)
         """
         default_funcs = []
+
+        default_arg_suffix = node.get('default_arg_suffix', [])
+        ndefault = 0
+
         for i, arg in enumerate(node['args']):
             if 'default' not in arg['attrs']:
                 continue
@@ -586,12 +597,22 @@ class GenFunctions(object):
             options.wrap_fortran = True
             options.wrap_python = False
             fmt = new['fmt']
-#            fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+            try:
+                fmt.function_suffix = default_arg_suffix[ndefault]
+            except IndexError:
+#               fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+                pass
             default_funcs.append(new['_function_index'])
             ordered_functions.append(new)
+            ndefault += 1
 
         # keep track of generated default value functions
         node['_default_funcs'] = default_funcs
+        # The last name calls with all arguments (the original decl)
+        try:
+            node['fmt'].function_suffix = default_arg_suffix[ndefault]
+        except IndexError:
+            pass
 
     def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.
@@ -1045,12 +1066,15 @@ if __name__ == '__main__':
                 log.write("Read splicer %s\n" % name)
                 splicer.get_splicers(fullname, subsplicer)
 
+                
+    if all['options'].wrap_c:
+        wrapc.Wrapc(all, config, splicers['c']).wrap_library()
 
-    wrapc.Wrapc(all, config, splicers['c']).wrap_library()
+    if all['options'].wrap_fortran:
+        wrapf.Wrapf(all, config, splicers['f']).wrap_library()
 
-    wrapf.Wrapf(all, config, splicers['f']).wrap_library()
-
-    wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+    if all['options'].wrap_python:
+        wrapp.Wrapp(all, config, splicers['py']).wrap_library()
 
     # when dumping json, remove function_index to avoid duplication
     del all['function_index']

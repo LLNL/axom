@@ -263,23 +263,17 @@ classes:
       return_this: True
     - decl: DataView* attachBuffer(DataBuffer * buff)
       return_this: True
-    - decl: DataView* apply(SidreLength num_elems)
-      function_suffix: _nelems
+    - decl: DataView* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+      default_arg_suffix:
+        -  _nelems
+        -  _nelems_offset
+        -  _nelems_offset_stride
       return_this: True
-    - decl: DataView* apply(SidreLength num_elems, SidreLength offset)
-      function_suffix: _nelems_offset
-      return_this: True
-    - decl: DataView* apply(SidreLength num_elems, SidreLength offset, SidreLength stride)
-      function_suffix: _nelems_offset_stride
-      return_this: True
-    - decl: DataView* apply(TypeID type, SidreLength num_elems)
-      function_suffix: _type_nelems
-      return_this: True
-    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset)
-      function_suffix: _type_nelems_offset
-      return_this: True
-    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset, SidreLength stride)
-      function_suffix: _type_nelems_offset_stride
+    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+      default_arg_suffix:
+        -  _type_nelems
+        -  _type_nelems_offset
+        -  _type_nelems_offset_stride
       return_this: True
 #    - decl: DataView* apply(const DataType& dtype)
 #    - decl: DataView* apply(const Schema& schema)
@@ -320,6 +314,8 @@ classes:
     - decl: TypeID getTypeID() const
     - decl: size_t getTotalBytes() const
     - decl: size_t getNumElements() const
+    - decl: int getNumDimensions() const
+    - decl: int getShape(int ndims, SidreLength * shape+dimension) const
 #    - decl: void info(Node& n) const
     - decl: void print() const
 

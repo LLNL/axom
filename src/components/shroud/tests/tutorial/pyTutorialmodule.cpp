@@ -157,17 +157,17 @@ PY_function4b(
 // splicer end function.function4b
 }
 
-static char PY_function5_2__doc__[] =
+static char PY_function5_arg1_arg2__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_function5_2(
+PY_function5_arg1_arg2(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.function5_2
+// splicer begin function.function5_arg1_arg2
     double arg1;
     bool arg2;
     const char *kwcpp = "arg1\0arg2";
@@ -182,7 +182,7 @@ PY_function5_2(
     }
     double rv = Function5(arg1, arg2);
     return Py_BuildValue("d", rv);
-// splicer end function.function5_2
+// splicer end function.function5_arg1_arg2
 }
 
 static char PY_function6_from_name__doc__[] =
@@ -302,17 +302,17 @@ PY_function10_1(
 // splicer end function.function10_1
 }
 
-static char PY_overload1_2__doc__[] =
+static char PY_overload1_num_offset_stride__doc__[] =
 "documentation"
 ;
 
 static PyObject *
-PY_overload1_2(
+PY_overload1_num_offset_stride(
   PyObject *self,    /* not used */
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.overload1_2
+// splicer begin function.overload1_num_offset_stride
     int num;
     int offset;
     int stride;
@@ -328,7 +328,7 @@ PY_overload1_2(
     }
     int rv = overload1(num, offset, stride);
     return Py_BuildValue("i", rv);
-// splicer end function.overload1_2
+// splicer end function.overload1_num_offset_stride
 }
 
 static char PY_overload1_5__doc__[] =
@@ -433,13 +433,13 @@ static PyMethodDef PY_methods[] = {
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
-{"Function5_2", (PyCFunction)PY_function5_2, METH_VARARGS|METH_KEYWORDS, PY_function5_2__doc__},
+{"Function5_arg1_arg2", (PyCFunction)PY_function5_arg1_arg2, METH_VARARGS|METH_KEYWORDS, PY_function5_arg1_arg2__doc__},
 {"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
 {"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
 {"Function10_0", (PyCFunction)PY_function10_0, METH_NOARGS, PY_function10_0__doc__},
 {"Function10_1", (PyCFunction)PY_function10_1, METH_VARARGS|METH_KEYWORDS, PY_function10_1__doc__},
-{"overload1_2", (PyCFunction)PY_overload1_2, METH_VARARGS|METH_KEYWORDS, PY_overload1_2__doc__},
+{"overload1_num_offset_stride", (PyCFunction)PY_overload1_num_offset_stride, METH_VARARGS|METH_KEYWORDS, PY_overload1_num_offset_stride__doc__},
 {"overload1_5", (PyCFunction)PY_overload1_5, METH_VARARGS|METH_KEYWORDS, PY_overload1_5__doc__},
 {"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
 {"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},
