@@ -246,9 +246,9 @@ TEST(C_sidre_group,view_copy_move)
      SIDRE_datagroup_create_view_and_allocate_from_type(flds, "d0", 
                                                       SIDRE_DOUBLE_ID, 1);
 
-  SIDRE_dataview_set_value_int(i0_view, 1);
-  SIDRE_dataview_set_value_float(f0_view, 100.0);
-  SIDRE_dataview_set_value_double(d0_view, 3000.0);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
+  SIDRE_dataview_set_scalar_float(f0_view, 100.0);
+  SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
   EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "i0"));
   EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "f0"));
@@ -271,7 +271,7 @@ TEST(C_sidre_group,view_copy_move)
   {
     SIDRE_dataview * tmpview = SIDRE_datagroup_get_view_from_name(sub, "d0");
     SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(tmpview);
-    d0_data = (double *) SIDRE_databuffer_get_data(tmpbuf);
+    d0_data = (double *) SIDRE_databuffer_get_void_ptr(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
@@ -313,9 +313,9 @@ TEST(C_sidre_group,groups_move_copy)
      SIDRE_datagroup_create_view_and_allocate_from_type(gc, "d0",
                                                       SIDRE_DOUBLE_ID, 1);
 
-  SIDRE_dataview_set_value_int(i0_view, 1);
-  SIDRE_dataview_set_value_float(f0_view, 100.0);
-  SIDRE_dataview_set_value_double(d0_view, 3000.0);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
+  SIDRE_dataview_set_scalar_float(f0_view, 100.0);
+  SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
@@ -411,8 +411,8 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName2), view2 );
 
 #ifdef XXX
-  int * v1_vals = (int *) SIDRE_dataview_get_data(view1);
-  double * v2_vals = (double *)  SIDRE_dataview_get_data(view1);
+  int * v1_vals = (int *) SIDRE_dataview_get_void_ptr(view1);
+  double * v2_vals = (double *)  SIDRE_dataview_get_void_ptr(view1);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -444,7 +444,7 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
     SIDRE_datagroup_create_view_and_allocate_from_type(root, "base", 
                                                      SIDRE_INT_ID, 10);
 #ifdef XXX
-  int * base_vals = (int *) SIDRE_dataview_get_data(base);
+  int * base_vals = (int *) SIDRE_dataview_get_void_ptr(base);
   for(int i=0 ; i<10 ; i++)
   {
     if(i < 5)
@@ -467,8 +467,8 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   Schema s(DataType::uint32(5, 5*sizeof(int)));
   SIDRE_datagroup_createView(root, "sub_b", base_buff, s);
 
-  int * sub_a_vals = (int *) SIDRE_dataview_get_data(SIDRE_datagroup_get_view_from_name(root, "sub_a"));
-  int * sub_b_vals = (int *) SIDRE_dataview_get_data(SIDRE_datagroup_get_view_from_name(root, "sub_b"));
+  int * sub_a_vals = (int *) SIDRE_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(root, "sub_a"));
+  int * sub_b_vals = (int *) SIDR_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(root, "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -492,7 +492,7 @@ TEST(C_sidre_group,save_restore_simple)
   SIDRE_dataview * i0_view = 
      SIDRE_datagroup_create_view_and_allocate_from_type(ga, "i0",
                                                       SIDRE_INT_ID, 1);
-  SIDRE_dataview_set_value_int(i0_view, 1);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
 
   EXPECT_TRUE(SIDRE_datagroup_has_group(root, "fields"));
   EXPECT_TRUE(SIDRE_datagroup_has_group(SIDRE_datagroup_get_group(root, "fields"), "a"));
@@ -516,7 +516,7 @@ TEST(C_sidre_group,save_restore_simple)
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
   ga = SIDRE_datagroup_get_group(flds, "a");
   i0_view = SIDRE_datagroup_get_view_from_name(ga, "i0");
-  EXPECT_EQ(SIDRE_dataview_get_value_int(i0_view), 1);
+  EXPECT_EQ(SIDRE_dataview_get_data_int(i0_view), 1);
 
   SIDRE_datastore_print(ds2);
 
@@ -539,17 +539,13 @@ TEST(C_sidre_group,save_restore_complex)
   SIDRE_dataview * i0_view = 
      SIDRE_datagroup_create_view_and_allocate_from_type(ga, "i0",
                                                       SIDRE_INT_ID, 1);
-  SIDRE_dataview_set_value_int(i0_view, 1);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
 
-  SIDRE_dataview * f0_view = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(gb, "f0",
-                                                      SIDRE_FLOAT_ID, 1);
-  SIDRE_dataview_set_value_float(f0_view, 100.0);
+  SIDRE_dataview * f0_view = SIDRE_datagroup_create_view_and_allocate_from_type(gb, "f0", SIDRE_FLOAT_ID, 1);
+  SIDRE_dataview_set_scalar_float(f0_view, 100.0);
 
-  SIDRE_dataview * d0_view = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(gc, "d0",
-                                                      SIDRE_DOUBLE_ID, 1);
-  SIDRE_dataview_set_value_double(d0_view, 3000.0);
+  SIDRE_dataview * d0_view = SIDRE_datagroup_create_view_and_allocate_from_type(gc, "d0", SIDRE_DOUBLE_ID, 1);
+  SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
@@ -579,9 +575,9 @@ TEST(C_sidre_group,save_restore_complex)
   f0_view = SIDRE_datagroup_get_view_from_name(gb, "f0");
   d0_view = SIDRE_datagroup_get_view_from_name(gc, "d0");
 
-  EXPECT_EQ(SIDRE_dataview_get_value_int(i0_view), 1);
-  EXPECT_NEAR(SIDRE_dataview_get_value_float(f0_view), 100.0, 1e-12);
-  EXPECT_NEAR(SIDRE_dataview_get_value_double(d0_view), 3000.0, 1e-12);
+  EXPECT_EQ(SIDRE_dataview_get_data_int(i0_view), 1);
+  EXPECT_NEAR(SIDRE_dataview_get_data_float(f0_view), 100.0, 1e-12);
+  EXPECT_NEAR(SIDRE_dataview_get_data_double(d0_view), 3000.0, 1e-12);
 
   SIDRE_datastore_print(ds2);
 

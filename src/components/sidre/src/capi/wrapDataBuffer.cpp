@@ -90,13 +90,13 @@ return rv;
 // splicer end class.DataBuffer.method.is_external
 }
 
-void * SIDRE_databuffer_get_data(SIDRE_databuffer * self)
+void * SIDRE_databuffer_get_void_ptr(SIDRE_databuffer * self)
 {
 DataBuffer *selfobj = static_cast<DataBuffer *>(static_cast<void *>(self));
-// splicer begin class.DataBuffer.method.get_data
-void * rv = selfobj->getData();
+// splicer begin class.DataBuffer.method.get_void_ptr
+void * rv = selfobj->getVoidPtr();
 return rv;
-// splicer end class.DataBuffer.method.get_data
+// splicer end class.DataBuffer.method.get_void_ptr
 }
 
 int SIDRE_databuffer_get_type_id(SIDRE_databuffer * self)

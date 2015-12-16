@@ -46,7 +46,7 @@ TEST(C_sidre_view,int_buffer_from_view)
                                                       SIDRE_INT_ID, 10);
 
   EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
-  int * data_ptr = (int *) SIDRE_dataview_get_data_pointer(dv);
+  int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -69,8 +69,8 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 
   SIDRE_dataview * dv = 
      SIDRE_datagroup_create_view_and_allocate_from_type(root, "u0", 
-                                                        SIDRE_INT_ID, 10);
-  int * data_ptr = (int *) SIDRE_dataview_get_data_pointer(dv);
+                                                      SIDRE_INT_ID, 10);
+  int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -94,7 +94,7 @@ TEST(C_sidre_view,int_array_strided_views)
 
   SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
   SIDRE_databuffer_allocate_existing(dbuff);
-  int * data_ptr = (int *) SIDRE_databuffer_get_data(dbuff);
+  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -106,10 +106,8 @@ TEST(C_sidre_view,int_array_strided_views)
   EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
-  SIDRE_dataview * dv_e = 
-     SIDRE_datagroup_create_view_into_buffer(root, "even", dbuff);
-  SIDRE_dataview * dv_o = 
-     SIDRE_datagroup_create_view_into_buffer(root, "odd", dbuff);
+  SIDRE_dataview * dv_e = SIDRE_datagroup_create_view_into_buffer(root, "even", dbuff);
+  SIDRE_dataview * dv_o = SIDRE_datagroup_create_view_into_buffer(root, "odd", dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
@@ -120,10 +118,9 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_dataview_print(dv_e);
   SIDRE_dataview_print(dv_o);
 
-// Note: This is a big hack since the dataview get pointer method is broken
-//       and the conduit support for this sort of thing doesn't exist for C code?
-  int* dv_e_ptr = (int *) SIDRE_dataview_get_data_pointer(dv_e);
-  int* dv_o_ptr = (int *) SIDRE_dataview_get_data_pointer(dv_o); dv_o_ptr++;
+  // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
+  int* dv_e_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e);
+  int* dv_o_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o);
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(dv_e_ptr[2*i], 2*i);
@@ -145,16 +142,14 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_dataview_print(dv_e1);
   SIDRE_dataview_print(dv_o1);
 
-// Note: This is a big hack since the dataview get pointer method is broken
-//       and the conduit support for this sort of thing doesn't exist for C code?
-  int* dv_e1_ptr = (int *) SIDRE_dataview_get_data_pointer(dv_e1);
-  int* dv_o1_ptr = (int *) SIDRE_dataview_get_data_pointer(dv_o1); dv_o1_ptr++;
+  // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
+  int* dv_e1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e1);
+  int* dv_o1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o1);
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(dv_e1_ptr[2*i], 2*i);
     EXPECT_EQ(dv_o1_ptr[2*i], 2*i+1);
   }
-
 
   SIDRE_datastore_print(ds);
   SIDRE_datastore_delete(ds);
@@ -173,7 +168,7 @@ TEST(C_sidre_view,int_array_depth_view)
 
   SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
   SIDRE_databuffer_allocate_existing(dbuff);
-  int * data_ptr = (int *) SIDRE_databuffer_get_data(dbuff);
+  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(size_t i=0 ; i < 4 * depth_nelems ; i++)
   {
@@ -204,10 +199,8 @@ TEST(C_sidre_view,int_array_depth_view)
   // check values in depth views...
   for (int id = 0; id < 4; ++id)
   {
-// Note: This is a big hack since the dataview get pointer method is broken
-//       and the conduit support for this sort of thing doesn't exist for C code?
-     int* dv_ptr = (int *) SIDRE_dataview_get_data_pointer(views[id]); 
-          dv_ptr += id * depth_nelems; 
+// Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
+     int* dv_ptr = (int *) SIDRE_dataview_get_void_ptr(views[id]);
      for (size_t i = 0; i < depth_nelems; ++i)
      {
         EXPECT_EQ(dv_ptr[i], id);
@@ -247,7 +240,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
 
   // Initilize buffer data for testing below.
-  int* b_ptr = (int*) SIDRE_databuffer_get_data(dbuff);
+  int* b_ptr = (int*) SIDRE_databuffer_get_void_ptr(dbuff);
   for(size_t i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
@@ -268,14 +261,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_dataview_print(field1);
 
   // check values in field views...
-  int* f0_ptr = (int *) SIDRE_dataview_get_data_pointer(field0); 
+  int* f0_ptr = (int *) SIDRE_dataview_get_void_ptr(field0); 
   for (size_t i = 0; i < field_nelems; ++i)
   {
      EXPECT_EQ(f0_ptr[i], 0);
   }
-// Note: This is a big hack since the dataview get pointer method is broken
-  int* f1_ptr = (int *) SIDRE_dataview_get_data_pointer(field1); 
-  f1_ptr += 1 * field_nelems; 
+  int* f1_ptr = (int *) SIDRE_dataview_get_void_ptr(field1); 
   for (size_t i = 0; i < field_nelems; ++i)
   {
      EXPECT_EQ(f1_ptr[i], 1);
@@ -313,7 +304,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
      SIDRE_datagroup_create_view_and_allocate_from_type(r_old, "base_data",
                                                       SIDRE_INT_ID, 40);
 
-  int * data_ptr = (int *) SIDRE_dataview_get_data_pointer(base_old);
+  int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(base_old);
 
 
   // init the buff with values that align with the
@@ -426,7 +417,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 
   /// check pointer values
-  int * r2_new_ptr = (int *) SIDRE_dataview_get_data_pointer(r2_new);
+  int * r2_new_ptr = (int *) SIDRE_dataview_get_void_ptr(r2_new);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -473,8 +464,8 @@ TEST(C_sidre_view,int_array_realloc)
      SIDRE_datagroup_create_view_and_allocate_from_type(root, "a2", 
                                                       SIDRE_INT_ID, 5);
 
-  float * a1_ptr = (float *) SIDRE_dataview_get_data_pointer(a1);
-  int * a2_ptr = (int *)  SIDRE_dataview_get_data_pointer(a2);
+  float * a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
+  int * a2_ptr = (int *)  SIDRE_dataview_get_void_ptr(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -489,8 +480,8 @@ TEST(C_sidre_view,int_array_realloc)
   SIDRE_dataview_reallocate(a1, 10);
   SIDRE_dataview_reallocate(a2, 15);
 
-  a1_ptr = (float *) SIDRE_dataview_get_data_pointer(a1);
-  a2_ptr = (int *) SIDRE_dataview_get_data_pointer(a2);
+  a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
+  a2_ptr = (int *) SIDRE_dataview_get_void_ptr(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -539,7 +530,7 @@ TEST(C_sidre_view,simple_opaque)
 
   EXPECT_TRUE(SIDRE_dataview_is_opaque(opq_view));
 
-  void * opq_ptr = SIDRE_dataview_get_opaque(opq_view);
+  void * opq_ptr = SIDRE_dataview_get_void_ptr(opq_view);
 
   int * out_data = (int *)opq_ptr;
   EXPECT_EQ(opq_ptr,src_ptr);

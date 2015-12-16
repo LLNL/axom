@@ -90,6 +90,16 @@ enum DataTypeId
     DOUBLE_ID = SIDRE_DOUBLE_ID
 };
 
+/*!
+ * \brief Sidre Type traits to assist in converting compiler types to the appropriate sidre enum.
+ */
+template<typename T> struct SidreTT {};
+template<> struct SidreTT<int> {  static inline DataTypeId id() { return INT_ID; }; };
+template<> struct SidreTT<unsigned int> {  static inline DataTypeId id() { return UINT_ID; }; };
+template<> struct SidreTT<long> {  static inline DataTypeId id() { return LONG_ID; }; };
+template<> struct SidreTT<unsigned long> {  static inline DataTypeId id() { return ULONG_ID; }; };
+template<> struct SidreTT<float> {  static inline DataTypeId id() { return FLOAT_ID; }; };
+template<> struct SidreTT<double> {  static inline DataTypeId id() { return DOUBLE_ID; }; };
 
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
@@ -105,7 +115,6 @@ inline TypeID getTypeID( const int typeID )
 {
   return static_cast<TypeID>(typeID);
 }
-
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

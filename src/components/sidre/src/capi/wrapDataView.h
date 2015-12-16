@@ -60,29 +60,27 @@ bool SIDRE_dataview_is_opaque(SIDRE_dataview * self);
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);
 
-void * SIDRE_dataview_get_opaque(SIDRE_dataview * self);
-
 SIDRE_databuffer * SIDRE_dataview_get_buffer(SIDRE_dataview * self);
 
-void * SIDRE_dataview_get_data_pointer(SIDRE_dataview * self);
+void * SIDRE_dataview_get_void_ptr(SIDRE_dataview * self);
 
-void SIDRE_dataview_set_value_int(SIDRE_dataview * self, int value);
+void SIDRE_dataview_set_scalar_int(SIDRE_dataview * self, int value);
 
-void SIDRE_dataview_set_value_long(SIDRE_dataview * self, long value);
+void SIDRE_dataview_set_scalar_long(SIDRE_dataview * self, long value);
 
-void SIDRE_dataview_set_value_float(SIDRE_dataview * self, float value);
+void SIDRE_dataview_set_scalar_float(SIDRE_dataview * self, float value);
 
-void SIDRE_dataview_set_value_double(SIDRE_dataview * self, double value);
+void SIDRE_dataview_set_scalar_double(SIDRE_dataview * self, double value);
 
-int SIDRE_dataview_get_value_int(SIDRE_dataview * self);
+int SIDRE_dataview_get_data_int(SIDRE_dataview * self);
 
-long SIDRE_dataview_get_value_long(SIDRE_dataview * self);
+long SIDRE_dataview_get_data_long(SIDRE_dataview * self);
 
-float SIDRE_dataview_get_value_float(SIDRE_dataview * self);
+float SIDRE_dataview_get_data_float(SIDRE_dataview * self);
 
-double SIDRE_dataview_get_value_double(SIDRE_dataview * self);
+double SIDRE_dataview_get_data_double(SIDRE_dataview * self);
 
-SIDRE_dataview * SIDRE_dataview_set_opaque(SIDRE_dataview * self, void * opaque_ptr);
+SIDRE_dataview * SIDRE_dataview_set_void_ptr(SIDRE_dataview * self, void * data_ptr);
 
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
 

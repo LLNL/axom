@@ -336,9 +336,9 @@ TEST(sidre_group,view_copy_move)
   flds->createViewAndAllocate("f0", DataType::c_float());
   flds->createViewAndAllocate("d0", DataType::c_double());
 
-  flds->getView("i0")->setValue(1);
-  flds->getView("f0")->setValue(100.0);
-  flds->getView("d0")->setValue(3000.0);
+  flds->getView("i0")->setScalar(1);
+  flds->getView("f0")->setScalar(100.0);
+  flds->getView("d0")->setScalar(3000.0);
 
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->hasView("f0"));
@@ -352,7 +352,7 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
 
   // check the data value
-  double * d0_data =  flds->getGroup("sub")->getView("d0")->getValue();
+  double * d0_data =  flds->getGroup("sub")->getView("d0")->getData();
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds to sub
@@ -363,9 +363,10 @@ TEST(sidre_group,view_copy_move)
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
 
-  // we expect the actual data  pointers to be the same
-  EXPECT_EQ(flds->getView("i0")->getDataPointer(),
-            flds->getGroup("sub")->getView("i0")->getDataPointer());
+  // we expect the data pointers to be the same
+  int * i0_ptr = flds->getView("i0")->getData();
+  int * sub_io0_ptr = flds->getGroup("sub")->getView("i0")->getData();
+  EXPECT_EQ(i0_ptr, sub_io0_ptr);
 
   delete ds;
 }
@@ -384,9 +385,9 @@ TEST(sidre_group,groups_move_copy)
   gb->createViewAndAllocate("f0", DataType::c_float());
   gc->createViewAndAllocate("d0", DataType::c_double());
 
-  ga->getView("i0")->setValue(1);
-  gb->getView("f0")->setValue(100.0);
-  gc->getView("d0")->setValue(3000.0);
+  ga->getView("i0")->setScalar(1);
+  gb->getView("f0")->setScalar(100.0);
+  gc->getView("d0")->setScalar(3000.0);
 
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
@@ -473,8 +474,8 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   EXPECT_EQ( grp->getView(viewName2), view2 );
 
 
-  int * v1_vals = view1->getValue();
-  double * v2_vals = view2->getValue();
+  int * v1_vals = view1->getData();
+  double * v2_vals = view2->getData();
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -502,7 +503,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   // use create + alloc convenience methods
   // this one is the DataType & method
   DataView * base =  root->createViewAndAllocate("base", DataType::c_int(10));
-  int * base_vals = base->getValue();
+  int * base_vals = base->getData();
   for(int i=0 ; i<10 ; i++)
   {
     if(i < 5)
@@ -527,8 +528,8 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   conduit::Schema s(DataType::c_int(5,5*sizeof(int)));
   root->createView("sub_b",base_buff)->apply(s);
 
-  int * sub_a_vals = root->getView("sub_a")->getValue();
-  int * sub_b_vals = root->getView("sub_b")->getValue();
+  int * sub_a_vals = root->getView("sub_a")->getData();
+  int * sub_b_vals = root->getView("sub_b")->getData();
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -552,7 +553,7 @@ TEST(sidre_group,save_restore_simple)
 
   ga->createView("i0")->allocate(DataType::c_int());
 
-  ga->getView("i0")->setValue(1);
+  ga->getView("i0")->setScalar(1);
 
   EXPECT_TRUE(ds->getRoot()->hasGroup("fields"));
   EXPECT_TRUE(ds->getRoot()->getGroup("fields")->hasGroup("a"));
@@ -572,7 +573,7 @@ TEST(sidre_group,save_restore_simple)
   flds = ds2->getRoot()->getGroup("fields");
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
-  int testvalue = flds->getGroup("a")->getView("i0")->getValue();
+  int testvalue = flds->getGroup("a")->getView("i0")->getData();
   EXPECT_EQ(testvalue,1);
 
   //ds2->print();
@@ -596,13 +597,13 @@ TEST(sidre_group,save_restore_complex)
   gb->createViewAndAllocate("f0", DataType::c_float());
   gc->createViewAndAllocate("d0", DataType::c_double());
 
-  ga->getView("i0")->setValue(1);
+  ga->getView("i0")->setScalar(1);
   // Be careful on floats.  If you just hand it 100.0, the compiler will assume you want a double.
   // Either cast the value to float, or be explicit on the template argument.
-  gb->getView("f0")->setValue( 100.0f );
+  gb->getView("f0")->setScalar( 100.0f );
   //this would have worked equally well also.
-  //gb->getView("f0")->setValue<float>(100.0);
-  gc->getView("d0")->setValue(3000.00);
+  //gb->getView("f0")->setScalar<float>(100.0);
+  gc->getView("d0")->setScalar(3000.00);
 
   // check that all sub groups exist
   EXPECT_TRUE(flds->hasGroup("a"));
@@ -624,9 +625,9 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getValue<int>(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getValue<float>(),100.0,  1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getValue<double>(),3000.0, 1e-12);
+  EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),1);
+  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getData<float>(),100.0,  1e-12);
+  EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getData<double>(),3000.0, 1e-12);
 
   //ds2->print();
 

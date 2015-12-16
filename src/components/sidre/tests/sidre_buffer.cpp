@@ -51,7 +51,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
   EXPECT_EQ(dbuff->getTotalBytes(), sizeof(int) * 10);
 
   //  int * data_ptr = static_cast<int *>(dbuff->getData());
-  int * data_ptr = dbuff->getValue();
+  int * data_ptr = dbuff->getData();
 
   for(int i=0 ; i<10 ; i++)
   {

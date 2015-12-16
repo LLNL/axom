@@ -116,7 +116,7 @@ TEST(sidre_opaque,basic_inout)
   EXPECT_EQ(test_opaque, true);
 
   Extent * test_extent =
-    static_cast<Extent *>(ext_view->getOpaque());
+    static_cast<Extent *>(ext_view->getVoidPtr());
   int test_ihi = test_extent->m_ihi;
 
   EXPECT_EQ(test_ihi, ihi_val);
@@ -125,13 +125,12 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * ext2 = new Extent(0, 2 * ihi_val);
 
-  DataView * ext2_view = problem_gp->createView("ext2")->setOpaque(ext2);
+  DataView * ext2_view = problem_gp->createView("ext2")->setVoidPtr(ext2);
 
   bool test_opaque2 = ext2_view->isOpaque();
   EXPECT_EQ(test_opaque2, true);
 
-  Extent * test_extent2 =
-    static_cast<Extent *>(ext2_view->getOpaque());
+  Extent * test_extent2 = static_cast<Extent *>(ext2_view->getVoidPtr());
   int test_ihi2 = test_extent2->m_ihi;
 
   EXPECT_EQ(test_ihi2, 2 * ihi_val);
@@ -183,11 +182,11 @@ TEST(sidre_opaque,meshvar)
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
     dom_gp->createOpaqueView("ext", dom_ext);
 
-    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
     DataView * dom_zone_view = dom_gp->createView("zone_data");
     dom_zone_view->allocate( DataType::c_int(zonemv->getNumVals(dom_ext)) );
 
-    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getVoidPtr() );
     DataView * dom_node_view = dom_gp->createView("node_data");
     dom_node_view->allocate( DataType::c_double(nodemv->getNumVals(dom_ext)) );
 
@@ -207,10 +206,10 @@ TEST(sidre_opaque,meshvar)
 
     DataGroup * dom_gp = problem_gp->getGroup(dom_name[idom]);
     Extent * dom_ext = static_cast<Extent *>(
-      dom_gp->getView("ext")->getOpaque() );
+      dom_gp->getView("ext")->getVoidPtr() );
 
-    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getOpaque() );
-    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getOpaque() );
+    MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
+    MeshVar * nodemv = static_cast<MeshVar *>( node_mv_view->getVoidPtr() );
 
     int num_zone_vals = zonemv->getNumVals(dom_ext);
     int test_num_zone_vals = dom_gp->getView("zone_data")->getNumElements();
@@ -228,7 +227,7 @@ TEST(sidre_opaque,meshvar)
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
     delete static_cast<Extent *>(
-      problem_gp->getGroup(dom_name[idom])->getView("ext")->getOpaque() );
+      problem_gp->getGroup(dom_name[idom])->getView("ext")->getVoidPtr() );
   }
   delete ds;
 }
