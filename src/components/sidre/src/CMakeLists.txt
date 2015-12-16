@@ -29,7 +29,6 @@ if (ENABLE_FORTRAN)
     list(APPEND sidre_headers
         capi/sidre.h
         capi/SidreTypes.h
-        capi/SidreAllocatable.hpp
         # generated headers
         capi/wrapSidre.h
         capi/wrapDataStore.h
@@ -45,7 +44,6 @@ if (ENABLE_FORTRAN)
         capi/wrapDataBuffer.cpp
         capi/wrapDataView.cpp
         capi/wrapfsidre.f
-        capi/SidreAllocatable.cpp
     )
     add_subdirectory(capi)
 
