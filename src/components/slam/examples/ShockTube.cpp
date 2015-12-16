@@ -134,8 +134,8 @@ namespace slamShocktube {
 // TODO: Might need an additional uint version for mesh data
   typedef asctoolkit::slam::FieldRegistry<int>    IntsRegistry;
   typedef asctoolkit::slam::FieldRegistry<double> RealsRegistry;
-  typedef IntsRegistry::MapType   IntField;
-  typedef RealsRegistry::MapType  RealField;
+  typedef IntsRegistry::MapType                   IntField;
+  typedef RealsRegistry::MapType                  RealField;
 
   IntsRegistry intsRegistry;
   RealsRegistry realsRegistry;
@@ -305,8 +305,8 @@ namespace slamShocktube {
  *************************************************************************/
   void InitializeShockTube(ShockTubeMesh const& mesh)
   {
-    typedef ShockTubeMesh::IndexType IndexType;
-    typedef ShockTubeMesh::RangeSet RangeSet;
+    typedef ShockTubeMesh::IndexType  IndexType;
+    typedef ShockTubeMesh::RangeSet   RangeSet;
 
     // TODO: Define and use mesh API maps over sets for these
     // Note -- the extra code and allocations here will be unnecessary once maps on sets are defined
