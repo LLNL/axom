@@ -56,8 +56,7 @@ module exclass1_mod
     
     interface
         
-        function aa_exclass1_new(name) &
-                result(rv) &
+        function aa_exclass1_new(name) result(rv) &
                 bind(C, name="AA_exclass1_new")
             use iso_c_binding
             implicit none
@@ -65,8 +64,7 @@ module exclass1_mod
             type(C_PTR) :: rv
         end function aa_exclass1_new
         
-        function aa_exclass1_new_bufferify(name, Lname) &
-                result(rv) &
+        function aa_exclass1_new_bufferify(name, Lname) result(rv) &
                 bind(C, name="AA_exclass1_new_bufferify")
             use iso_c_binding
             implicit none
@@ -82,8 +80,7 @@ module exclass1_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass1_delete
         
-        function aa_exclass1_increment_count(self, incr) &
-                result(rv) &
+        function aa_exclass1_increment_count(self, incr) result(rv) &
                 bind(C, name="AA_exclass1_increment_count")
             use iso_c_binding
             implicit none
@@ -92,8 +89,7 @@ module exclass1_mod
             integer(C_INT) :: rv
         end function aa_exclass1_increment_count
         
-        pure function aa_exclass1_get_name(self) &
-                result(rv) &
+        pure function aa_exclass1_get_name(self) result(rv) &
                 bind(C, name="AA_exclass1_get_name")
             use iso_c_binding
             implicit none
@@ -101,8 +97,7 @@ module exclass1_mod
             type(C_PTR) rv
         end function aa_exclass1_get_name
         
-        pure function aa_exclass1_get_name_length(self) &
-                result(rv) &
+        pure function aa_exclass1_get_name_length(self) result(rv) &
                 bind(C, name="AA_exclass1_get_name_length")
             use iso_c_binding
             implicit none
@@ -110,8 +105,7 @@ module exclass1_mod
             integer(C_INT) :: rv
         end function aa_exclass1_get_name_length
         
-        pure function aa_exclass1_get_name_error_check(self) &
-                result(rv) &
+        pure function aa_exclass1_get_name_error_check(self) result(rv) &
                 bind(C, name="AA_exclass1_get_name_error_check")
             use iso_c_binding
             implicit none
@@ -119,8 +113,7 @@ module exclass1_mod
             type(C_PTR) rv
         end function aa_exclass1_get_name_error_check
         
-        pure function aa_exclass1_get_name_arg(self) &
-                result(rv) &
+        pure function aa_exclass1_get_name_arg(self) result(rv) &
                 bind(C, name="AA_exclass1_get_name_arg")
             use iso_c_binding
             implicit none
@@ -128,8 +121,7 @@ module exclass1_mod
             type(C_PTR) rv
         end function aa_exclass1_get_name_arg
         
-        function aa_exclass1_get_root(self) &
-                result(rv) &
+        function aa_exclass1_get_root(self) result(rv) &
                 bind(C, name="AA_exclass1_get_root")
             use iso_c_binding
             implicit none
@@ -137,8 +129,7 @@ module exclass1_mod
             type(C_PTR) :: rv
         end function aa_exclass1_get_root
         
-        function aa_exclass1_get_value_from_int(self, value) &
-                result(rv) &
+        function aa_exclass1_get_value_from_int(self, value) result(rv) &
                 bind(C, name="AA_exclass1_get_value_from_int")
             use iso_c_binding
             implicit none
@@ -147,8 +138,7 @@ module exclass1_mod
             integer(C_INT) :: rv
         end function aa_exclass1_get_value_from_int
         
-        function aa_exclass1_get_value_1(self, value) &
-                result(rv) &
+        function aa_exclass1_get_value_1(self, value) result(rv) &
                 bind(C, name="AA_exclass1_get_value_1")
             use iso_c_binding
             implicit none
@@ -157,8 +147,7 @@ module exclass1_mod
             integer(C_LONG) :: rv
         end function aa_exclass1_get_value_1
         
-        function aa_exclass1_get_addr(self) &
-                result(rv) &
+        function aa_exclass1_get_addr(self) result(rv) &
                 bind(C, name="AA_exclass1_get_addr")
             use iso_c_binding
             implicit none
@@ -166,8 +155,7 @@ module exclass1_mod
             type(C_PTR) :: rv
         end function aa_exclass1_get_addr
         
-        function aa_exclass1_has_addr(self, in) &
-                result(rv) &
+        function aa_exclass1_has_addr(self, in) result(rv) &
                 bind(C, name="AA_exclass1_has_addr")
             use iso_c_binding
             implicit none

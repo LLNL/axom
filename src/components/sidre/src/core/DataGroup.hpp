@@ -476,21 +476,6 @@ public:
                                  SidreLength offset = 0,
                                  SidreLength stride = 1 );
 
-  /*!
-   * \brief Create DataView with given name to hold external data referenced 
-   *        with given pointer. View will be initialized with given data type
-   *        number of dimensions and shape. Attach new view to this group object.
-   *
-   * Note that the view will not own the data, but it can be used to
-   * access the data as though it owns it.
-   *
-   * If name is an empty string, group already has a view with given
-   * name, given data pointer is null, or given number of dimensions < 0,
-   * the method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
   DataView * createExternalView( const std::string& name,
                                  void * external_data,
                                  TypeID type, 

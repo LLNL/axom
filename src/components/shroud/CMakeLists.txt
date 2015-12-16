@@ -1,8 +1,6 @@
 #
 #
 #
-project(shroud)
-
 add_subdirectory(docs)
 
 if(ENABLE_FORTRAN)
@@ -73,9 +71,3 @@ if(ENABLE_FORTRAN AND ENABLE_SHROUD)
     )
 endif()
 
-
-################################
-# Create CMake importable
-# exports for all of our targets
-################################
-install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)

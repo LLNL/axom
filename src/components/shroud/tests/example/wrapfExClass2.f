@@ -66,8 +66,7 @@ module exclass2_mod
     
     interface
         
-        function aa_exclass2_ex_class2(name) &
-                result(rv) &
+        function aa_exclass2_ex_class2(name) result(rv) &
                 bind(C, name="AA_exclass2_ex_class2")
             use iso_c_binding
             implicit none
@@ -75,8 +74,7 @@ module exclass2_mod
             type(C_PTR) :: rv
         end function aa_exclass2_ex_class2
         
-        function aa_exclass2_ex_class2_bufferify(name, Lname) &
-                result(rv) &
+        function aa_exclass2_ex_class2_bufferify(name, Lname) result(rv) &
                 bind(C, name="AA_exclass2_ex_class2_bufferify")
             use iso_c_binding
             implicit none
@@ -92,8 +90,7 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass2_delete
         
-        pure function aa_exclass2_get_name(self) &
-                result(rv) &
+        pure function aa_exclass2_get_name(self) result(rv) &
                 bind(C, name="AA_exclass2_get_name")
             use iso_c_binding
             implicit none
@@ -101,8 +98,7 @@ module exclass2_mod
             type(C_PTR) rv
         end function aa_exclass2_get_name
         
-        function aa_exclass2_get_name_length(self) &
-                result(rv) &
+        function aa_exclass2_get_name_length(self) result(rv) &
                 bind(C, name="AA_exclass2_get_name_length")
             use iso_c_binding
             implicit none
@@ -110,8 +106,7 @@ module exclass2_mod
             integer(C_INT) :: rv
         end function aa_exclass2_get_name_length
         
-        function aa_exclass2_get_class1(self, in) &
-                result(rv) &
+        function aa_exclass2_get_class1(self, in) result(rv) &
                 bind(C, name="AA_exclass2_get_class1")
             use iso_c_binding
             implicit none
@@ -144,8 +139,7 @@ module exclass2_mod
             type(C_PTR), value, intent(IN) :: self
         end subroutine aa_exclass2_destroyall
         
-        pure function aa_exclass2_get_type_id(self) &
-                result(rv) &
+        pure function aa_exclass2_get_type_id(self) result(rv) &
                 bind(C, name="AA_exclass2_get_type_id")
             use iso_c_binding
             implicit none
@@ -185,8 +179,7 @@ module exclass2_mod
             real(C_DOUBLE), value, intent(IN) :: value
         end subroutine aa_exclass2_set_value_double
         
-        function aa_exclass2_get_value_int(self) &
-                result(rv) &
+        function aa_exclass2_get_value_int(self) result(rv) &
                 bind(C, name="AA_exclass2_get_value_int")
             use iso_c_binding
             implicit none
@@ -194,8 +187,7 @@ module exclass2_mod
             integer(C_INT) :: rv
         end function aa_exclass2_get_value_int
         
-        function aa_exclass2_get_value_double(self) &
-                result(rv) &
+        function aa_exclass2_get_value_double(self) result(rv) &
                 bind(C, name="AA_exclass2_get_value_double")
             use iso_c_binding
             implicit none
