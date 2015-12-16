@@ -13,7 +13,8 @@ module {F_module_name}
 
   ! interface for C functions
   interface
-    {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
+    {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}) &
+        {F_C_result_clause} &
         bind(C, name="{C_name}")
       {arg_c_decl}
     end {F_C_subprogram} {F_C_name}
@@ -403,7 +404,7 @@ class Wrapf(util.WrapperMixin):
             fmt.F_C_subprogram = 'subroutine'
         else:
             fmt.F_C_subprogram = 'function'
-            fmt.F_C_result_clause = ' result(%s)' % fmt.F_result
+            fmt.F_C_result_clause = 'result(%s)' % fmt.F_result
             if is_pure or func_is_const:
                 fmt.F_C_pure_clause = 'pure '
 
@@ -456,9 +457,13 @@ class Wrapf(util.WrapperMixin):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
+                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}) &',
                 fmt))
         c_interface.append(2)  # extra indent for continued line
+        if fmt.F_C_result_clause:
+            c_interface.append(wformat(
+                    '{F_C_result_clause} &',
+                    fmt))
         c_interface.append(wformat(
                 'bind(C, name="{C_name}")',
                 fmt))

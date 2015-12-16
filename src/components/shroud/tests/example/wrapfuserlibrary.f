@@ -18,7 +18,8 @@ module userlibrary_mod
             implicit none
         end subroutine local_function1
         
-        function aa_is_name_valid(name) result(rv) &
+        function aa_is_name_valid(name) &
+                result(rv) &
                 bind(C, name="AA_is_name_valid")
             use iso_c_binding
             implicit none
@@ -26,7 +27,8 @@ module userlibrary_mod
             logical(C_BOOL) :: rv
         end function aa_is_name_valid
         
-        function aa_is_name_valid_bufferify(name, Lname) result(rv) &
+        function aa_is_name_valid_bufferify(name, Lname) &
+                result(rv) &
                 bind(C, name="AA_is_name_valid_bufferify")
             use iso_c_binding
             implicit none
