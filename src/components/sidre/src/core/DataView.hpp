@@ -675,7 +675,26 @@ private:
   /// Conduit node used to access the data in this DataView.
   Node m_node;
 
-  // TODO - these will get replaced with enum types for the different states of a view (described, applied, allocated, etc)
+  /// Tracks the state of the view's held data.
+  enum State
+  {
+    // Some states imply other states, these are documented below.  Unless mentioned, assume a state implies no other
+    // condition.
+    // Note:  These states do not track whether the data description (schema) has been applied to data, this is tracked
+    // by the m_is_applied flag.
+
+    EMPTY, // The view holds no data (yet).
+    DESCRIBED, // The view's data is described ( schema is populated ).  Implies !EMPTY.
+    ALLOCATED, // The view's data is allocated.  Implies !EMPTY & DESCRIBED & !EXTERNAL.
+    // TODO - double check if this sets m_is_applied in all cases.
+    BUFFER_ATTACHED, // This view has an attached buffer.  Implies !EMPTY & DESCRIBED & !EXTERNAL.
+    EXTERNAL, // This view holds undescribed (not owned) data.  Implies !EMPTY.
+    SCALAR, // View holds scalar data.  Implies !EMPTY & DESCRIBED & !EXTERNAL & m_is_applied.
+    STRING // View holds string data.  Implies !EMPTY & DESCRIBED & !EXTERNAL & m_is_applied.
+  };
+
+  /// State of view's held data.
+  State m_state;
 
   /// Is this DataView opaque?  Will get refactored.
   bool m_is_opaque;
