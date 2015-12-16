@@ -76,9 +76,9 @@ SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer(SIDRE_datagroup * self,
 
 SIDRE_dataview * SIDRE_datagroup_create_view_into_buffer_bufferify(SIDRE_datagroup * self, const char * name, int Lname, SIDRE_databuffer * buff);
 
-SIDRE_dataview * SIDRE_datagroup_create_opaque_view(SIDRE_datagroup * self, const char * name, void * opaque_ptr);
+SIDRE_dataview * SIDRE_datagroup_create_view_external(SIDRE_datagroup * self, const char * name, void * external_ptr);
 
-SIDRE_dataview * SIDRE_datagroup_create_opaque_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * opaque_ptr);
+SIDRE_dataview * SIDRE_datagroup_create_view_external_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_ptr);
 
 SIDRE_dataview * SIDRE_datagroup_create_external_view(SIDRE_datagroup * self, const char * name, void * external_data, int type, SIDRE_SidreLength num_elems);
 

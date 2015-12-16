@@ -262,25 +262,25 @@ DataView * DataGroup::createView( const std::string& name,
 /*
  *************************************************************************
  *
- * Create opaque view and attach to group.
+ * Create external data view and attach to group.
  *
  *************************************************************************
  */
-DataView * DataGroup::createOpaqueView( const std::string& name,
-                                        void * opaque_ptr)
+DataView * DataGroup::createView( const std::string& name,
+                                  void * external_ptr )
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( opaque_ptr != ATK_NULLPTR ,
-                   "Cannot create opaque view with null data pointer" );
+  SLIC_ASSERT_MSG( external_ptr != ATK_NULLPTR ,
+                   "Cannot create external view with null data pointer" );
   
-  if ( name.empty() || hasView(name) || opaque_ptr == ATK_NULLPTR )
+  if ( name.empty() || hasView(name) || external_ptr == ATK_NULLPTR )
   {
     return ATK_NULLPTR;
   }
   else
   {
-    DataView * const view = new DataView(name, this, opaque_ptr);
+    DataView * const view = new DataView(name, this, external_ptr);
     return attachView(view);
   }
 }

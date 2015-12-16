@@ -648,11 +648,13 @@ contains
    
     src_ptr = c_loc(src_data)
 
-    opq_view = root%create_opaque_view("my_opaque", src_ptr)
+    opq_view = root%create_view_external("my_opaque", src_ptr)
 
     ! we shouldn't have any buffers
     call assert_true(ds%get_num_buffers() == 0)
 
+    call assert_true(opq_view%is_external(), "opq_view%is_external()")
+    call assert_true(opq_view%is_applied() .eqv. .false., "opq_view%is_applied()")
     call assert_true(opq_view%is_opaque(), "opq_view%is_opaque()")
 
     opq_ptr = opq_view%get_void_ptr()

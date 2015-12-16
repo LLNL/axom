@@ -460,33 +460,23 @@ void DataView::print() const
 /*
  *************************************************************************
  *
- * Set DataView to be associated with opaque data.
+ * Set data view to hold external data.
  *
  *************************************************************************
  */
-DataView * DataView::setVoidPtr(void * data_ptr)
+DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  //TODO - This function should be refactored to allow setting the data pointer when:
-  // #1 The view contains unowned data.  Either undescribed (opaque) or described (external) shouldn't matter.
-
-  // This check is still fine, as long as the presence of a data buffer imples owned data.
-  SLIC_ASSERT_MSG(m_data_buffer == ATK_NULLPTR, "Cannot call setVoidPtr() on data owned by the data store.");
-  // Commented this out - whether or not data is external or opaque shouldn't matter.  A host code should still
-  // be able to change the data pointer.  However, if offset, stride has been set... is a bit trickier on what
-  // to do and expect.
-  //SLIC_ASSERT_MSG(!m_is_applied, "Cannot set a view to be opaque if it already has been applied");
+  SLIC_ASSERT_MSG(m_data_buffer == ATK_NULLPTR, "Cannot set view to hold external data if it has a buffer.");
 
   if ( m_data_buffer == ATK_NULLPTR )
-    //!m_is_applied )
   {
     // todo, conduit should provide a check for if uint64 is a
     // good enough type to rep void *
-    m_node.set((conduit::uint64)data_ptr);
+    m_node.set((conduit::uint64)external_ptr);
 
-    // TODO:
-    // Setting the pointer should not affect the state a view is in.  This needs to be REMOVED after the view is
-    // properly storing a state enum.
-    m_is_opaque = true;
+// RDH TO DO -- need to call apply here if view is described
+
+    m_state = EXTERNAL;
   }
   return this;
 }
@@ -517,7 +507,9 @@ void DataView::info(Node &n) const
   n["name"] = m_name;
   n["schema"] = m_schema.to_json();
   n["node"] = m_node.to_json();
-  n["is_opaque"] = m_is_opaque;
+#if 0
+  n["state"] = getStateStringName(m_state);
+#endif
   n["is_applied"] = m_is_applied;
 }
 
@@ -535,9 +527,9 @@ DataView::DataView( const std::string& name,
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
-  m_is_opaque(false),
-  m_is_applied(false),
-  m_shape(ATK_NULLPTR)
+  m_shape(ATK_NULLPTR),
+  m_state(EMPTY),
+  m_is_applied(false)
 {}
 
 /*
@@ -555,9 +547,9 @@ DataView::DataView( const std::string& name,
   m_data_buffer(data_buffer),
   m_schema(),
   m_node(),
-  m_is_opaque(false),
-  m_is_applied(false),
-  m_shape(ATK_NULLPTR)
+  m_shape(ATK_NULLPTR),
+  m_state(BUFFER_ATTACHED),
+  m_is_applied(false)
 {}
 
 /*
@@ -569,19 +561,19 @@ DataView::DataView( const std::string& name,
  */
 DataView::DataView( const std::string& name,
                     DataGroup * const owning_group,
-                    void * opaque_ptr)
+                    void * external_ptr)
   : m_name(name),
   m_owning_group(owning_group),
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
-  m_is_opaque(true),
-  m_is_applied(false),
-  m_shape(ATK_NULLPTR)
+  m_shape(ATK_NULLPTR),
+  m_state(EXTERNAL),
+  m_is_applied(false)
 {
   // todo, conduit should provide a check for if uint64 is a
   // good enough type to rep void *
-  m_node.set((conduit::uint64)opaque_ptr);
+  m_node.set((conduit::uint64)external_ptr);
 }
 
 /*
@@ -601,20 +593,6 @@ DataView::~DataView()
   {
     delete m_shape;
   }
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE method to check whether allocation on view is a valid operation.
- *
- *************************************************************************
- */
-bool DataView::allocationIsValid() const
-{
-   return ( !isOpaque() && (m_data_buffer == ATK_NULLPTR || 
-                             (!m_data_buffer->isExternal() && 
-                               m_data_buffer->getNumViews() == 1) ) );
 }
 
 /*
@@ -680,6 +658,85 @@ DataView * DataView::declare(const Schema& schema)
   }
   return this;
 }
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns true if view can allocate data; else false.
+ *
+ *************************************************************************
+ */
+bool DataView::allocationIsValid() const
+{
+   return ( !isOpaque() && (m_data_buffer == ATK_NULLPTR ||
+                             (!m_data_buffer->isExternal() &&
+                               m_data_buffer->getNumViews() == 1) ) );
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns string name of given view state enum value.
+ *
+ *************************************************************************
+ */
+char const * DataView::getStateStringName(State state) const
+{
+   char const * ret_string = NULL;
+
+   switch ( state ) 
+   {
+      case EMPTY : 
+      {
+         ret_string = "EMPTY";
+         break;
+      }
+
+      case DESCRIBED : 
+      {
+         ret_string = "DESCRIBED";
+         break;
+      }
+
+      case ALLOCATED : 
+      {
+         ret_string = "ALLOCATED";
+         break;
+      }
+
+      case BUFFER_ATTACHED : 
+      {
+         ret_string = "BUFFER_ATTACHED";
+         break;
+      }
+
+      case EXTERNAL : 
+      {
+         ret_string = "EXTERNAL";
+         break;
+      }
+
+      case SCALAR : 
+      {
+         ret_string = "SCALAR";
+         break;
+      }
+
+      case STRING : 
+      {
+         ret_string = "STRING";
+         break;
+      }
+
+      default :
+      {
+         ret_string = "/0";
+      }
+   }
+
+   return( ret_string );
+}
+
 
 } /* end namespace sidre */
 } /* end namespace asctoolkit */

@@ -56,6 +56,10 @@ void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int t
 
 bool SIDRE_dataview_has_buffer(SIDRE_dataview * self);
 
+bool SIDRE_dataview_is_external(SIDRE_dataview * self);
+
+bool SIDRE_dataview_is_applied(SIDRE_dataview * self);
+
 bool SIDRE_dataview_is_opaque(SIDRE_dataview * self);
 
 const char * SIDRE_dataview_get_name(const SIDRE_dataview * self);
@@ -72,6 +76,8 @@ void SIDRE_dataview_set_scalar_float(SIDRE_dataview * self, float value);
 
 void SIDRE_dataview_set_scalar_double(SIDRE_dataview * self, double value);
 
+SIDRE_dataview * SIDRE_dataview_set_external_data_ptr(SIDRE_dataview * self, void * external_ptr);
+
 int SIDRE_dataview_get_data_int(SIDRE_dataview * self);
 
 long SIDRE_dataview_get_data_long(SIDRE_dataview * self);
@@ -79,8 +85,6 @@ long SIDRE_dataview_get_data_long(SIDRE_dataview * self);
 float SIDRE_dataview_get_data_float(SIDRE_dataview * self);
 
 double SIDRE_dataview_get_data_double(SIDRE_dataview * self);
-
-SIDRE_dataview * SIDRE_dataview_set_void_ptr(SIDRE_dataview * self, void * data_ptr);
 
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self);
 

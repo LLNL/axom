@@ -523,11 +523,13 @@ TEST(C_sidre_view,simple_opaque)
 
   void * src_ptr = (void *)src_data;
 
-  SIDRE_dataview * opq_view = SIDRE_datagroup_create_opaque_view(root, "my_opaque",src_ptr);
+  SIDRE_dataview * opq_view = SIDRE_datagroup_create_view_external(root, "my_opaque",src_ptr);
 
   // we shouldn't have any buffers
   EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 0u);
 
+  EXPECT_TRUE(SIDRE_dataview_is_external(opq_view));
+  EXPECT_TRUE(!SIDRE_dataview_is_applied(opq_view));
   EXPECT_TRUE(SIDRE_dataview_is_opaque(opq_view));
 
   void * opq_ptr = SIDRE_dataview_get_void_ptr(opq_view);

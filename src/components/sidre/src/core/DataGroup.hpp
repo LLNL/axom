@@ -437,12 +437,12 @@ public:
                          DataBuffer * buff );
 
   /*!
-   * \brief Create opaque DataView with given name to hold data
+   * \brief Create DataView object with given name to hold external data
    *        referenced with given pointer. Attach new view to this group
    *        object.
    *
    * Note that the view is "opaque"; i.e., it has no knowledge of the 
-   * type or structure of the data.
+   * type or structure of the data until a DataView::apply() method is called.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
@@ -450,8 +450,8 @@ public:
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
    */
-  DataView * createOpaqueView( const std::string& name,
-                               void * opaque_ptr);
+  DataView * createView( const std::string& name,
+                         void * external_ptr );
 
   /*!
    * \brief Create DataView with given name to hold external data referenced 

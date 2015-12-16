@@ -110,7 +110,13 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * ext = new Extent(0, ihi_val);
 
-  DataView * ext_view = problem_gp->createOpaqueView("ext", ext);
+  DataView * ext_view = problem_gp->createView("ext", ext);
+
+  bool test_external = ext_view->isExternal();
+  EXPECT_EQ(test_external, true);
+
+  bool test_applied = ext_view->isApplied();
+  EXPECT_EQ(test_applied, false);
 
   bool test_opaque = ext_view->isOpaque();
   EXPECT_EQ(test_opaque, true);
@@ -125,7 +131,7 @@ TEST(sidre_opaque,basic_inout)
 
   Extent * ext2 = new Extent(0, 2 * ihi_val);
 
-  DataView * ext2_view = problem_gp->createView("ext2")->setVoidPtr(ext2);
+  DataView * ext2_view = problem_gp->createView("ext2")->setExternalDataPtr(ext2);
 
   bool test_opaque2 = ext2_view->isOpaque();
   EXPECT_EQ(test_opaque2, true);
@@ -167,9 +173,9 @@ TEST(sidre_opaque,meshvar)
   // Add two different mesh vars to mesh var group
   DataGroup * meshvar_gp = problem_gp->createGroup("mesh_var");
   MeshVar * zone_mv = new MeshVar(_Zone_, _Int_, zone_var_depth);
-  DataView * zone_mv_view = meshvar_gp->createOpaqueView("zone_mv", zone_mv);
+  DataView * zone_mv_view = meshvar_gp->createView("zone_mv", zone_mv);
   MeshVar * node_mv = new MeshVar(_Node_, _Double_, node_var_depth);
-  DataView * node_mv_view = meshvar_gp->createOpaqueView("node_mv", node_mv);
+  DataView * node_mv_view = meshvar_gp->createView("node_mv", node_mv);
 
   //
   // Create domain groups, add extents
@@ -180,7 +186,7 @@ TEST(sidre_opaque,meshvar)
 
     DataGroup * dom_gp = problem_gp->createGroup(dom_name[idom]);
     Extent * dom_ext = new Extent(ilo_val[idom], ihi_val[idom]);
-    dom_gp->createOpaqueView("ext", dom_ext);
+    dom_gp->createView("ext", dom_ext);
 
     MeshVar * zonemv = static_cast<MeshVar *>( zone_mv_view->getVoidPtr() );
     DataView * dom_zone_view = dom_gp->createView("zone_data");

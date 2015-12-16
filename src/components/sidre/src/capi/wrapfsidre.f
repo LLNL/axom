@@ -94,7 +94,7 @@ module sidre_mod
         procedure :: create_view_from_type_int => datagroup_create_view_from_type_int
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
-        procedure :: create_opaque_view => datagroup_create_opaque_view
+        procedure :: create_view_external => datagroup_create_view_external
         procedure :: create_external_view_int => datagroup_create_external_view_int
         procedure :: create_external_view_long => datagroup_create_external_view_long
         procedure :: create_external_view_with_shape => datagroup_create_external_view_with_shape
@@ -124,7 +124,8 @@ module sidre_mod
             create_view_empty,  &
             create_view_from_type_int,  &
             create_view_from_type_long,  &
-            create_view_into_buffer
+            create_view_into_buffer,  &
+            create_view_external
         generic :: create_view_and_allocate => &
             ! splicer begin class.DataGroup.generic.create_view_and_allocate
             ! splicer end class.DataGroup.generic.create_view_and_allocate
@@ -238,6 +239,8 @@ module sidre_mod
         procedure :: apply_type_nelems_offset => dataview_apply_type_nelems_offset
         procedure :: apply_type_nelems_offset_stride => dataview_apply_type_nelems_offset_stride
         procedure :: has_buffer => dataview_has_buffer
+        procedure :: is_external => dataview_is_external
+        procedure :: is_applied => dataview_is_applied
         procedure :: is_opaque => dataview_is_opaque
         procedure :: get_name => dataview_get_name
         procedure :: get_buffer => dataview_get_buffer
@@ -246,11 +249,11 @@ module sidre_mod
         procedure :: set_scalar_long => dataview_set_scalar_long
         procedure :: set_scalar_float => dataview_set_scalar_float
         procedure :: set_scalar_double => dataview_set_scalar_double
+        procedure :: set_external_data_ptr => dataview_set_external_data_ptr
         procedure :: get_data_int => dataview_get_data_int
         procedure :: get_data_long => dataview_get_data_long
         procedure :: get_data_float => dataview_get_data_float
         procedure :: get_data_double => dataview_get_data_double
-        procedure :: set_void_ptr => dataview_set_void_ptr
         procedure :: get_owning_group => dataview_get_owning_group
         procedure :: get_type_id => dataview_get_type_id
         procedure :: get_total_bytes => dataview_get_total_bytes
@@ -632,28 +635,28 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_into_buffer_bufferify
         
-        function sidre_datagroup_create_opaque_view(self, name, opaque_ptr) &
+        function sidre_datagroup_create_view_external(self, name, external_ptr) &
                 result(rv) &
-                bind(C, name="SIDRE_datagroup_create_opaque_view")
+                bind(C, name="SIDRE_datagroup_create_view_external")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-            type(C_PTR), value, intent(IN) :: opaque_ptr
+            type(C_PTR), value, intent(IN) :: external_ptr
             type(C_PTR) :: rv
-        end function sidre_datagroup_create_opaque_view
+        end function sidre_datagroup_create_view_external
         
-        function sidre_datagroup_create_opaque_view_bufferify(self, name, Lname, opaque_ptr) &
+        function sidre_datagroup_create_view_external_bufferify(self, name, Lname, external_ptr) &
                 result(rv) &
-                bind(C, name="SIDRE_datagroup_create_opaque_view_bufferify")
+                bind(C, name="SIDRE_datagroup_create_view_external_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-            type(C_PTR), value, intent(IN) :: opaque_ptr
+            type(C_PTR), value, intent(IN) :: external_ptr
             type(C_PTR) :: rv
-        end function sidre_datagroup_create_opaque_view_bufferify
+        end function sidre_datagroup_create_view_external_bufferify
         
         function sidre_datagroup_create_external_view(self, name, external_data, type, num_elems) &
                 result(rv) &
@@ -1155,6 +1158,24 @@ module sidre_mod
             logical(C_BOOL) :: rv
         end function sidre_dataview_has_buffer
         
+        pure function sidre_dataview_is_external(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_external")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function sidre_dataview_is_external
+        
+        pure function sidre_dataview_is_applied(self) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_is_applied")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            logical(C_BOOL) :: rv
+        end function sidre_dataview_is_applied
+        
         pure function sidre_dataview_is_opaque(self) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_is_opaque")
@@ -1223,6 +1244,16 @@ module sidre_mod
             real(C_DOUBLE), value, intent(IN) :: value
         end subroutine sidre_dataview_set_scalar_double
         
+        function sidre_dataview_set_external_data_ptr(self, external_ptr) &
+                result(rv) &
+                bind(C, name="SIDRE_dataview_set_external_data_ptr")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            type(C_PTR), value, intent(IN) :: external_ptr
+            type(C_PTR) :: rv
+        end function sidre_dataview_set_external_data_ptr
+        
         function sidre_dataview_get_data_int(self) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_get_data_int")
@@ -1258,16 +1289,6 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: self
             real(C_DOUBLE) :: rv
         end function sidre_dataview_get_data_double
-        
-        function sidre_dataview_set_void_ptr(self, data_ptr) &
-                result(rv) &
-                bind(C, name="SIDRE_dataview_set_void_ptr")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            type(C_PTR), value, intent(IN) :: data_ptr
-            type(C_PTR) :: rv
-        end function sidre_dataview_set_void_ptr
         
         function sidre_dataview_get_owning_group(self) &
                 result(rv) &
@@ -1673,21 +1694,21 @@ contains
         ! splicer end class.DataGroup.method.create_view_into_buffer
     end function datagroup_create_view_into_buffer
     
-    function datagroup_create_opaque_view(obj, name, opaque_ptr) result(rv)
+    function datagroup_create_view_external(obj, name, external_ptr) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
-        type(C_PTR), value, intent(IN) :: opaque_ptr
+        type(C_PTR), value, intent(IN) :: external_ptr
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_opaque_view
-        rv%voidptr = sidre_datagroup_create_opaque_view_bufferify(  &
+        ! splicer begin class.DataGroup.method.create_view_external
+        rv%voidptr = sidre_datagroup_create_view_external_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
-            opaque_ptr)
-        ! splicer end class.DataGroup.method.create_opaque_view
-    end function datagroup_create_opaque_view
+            external_ptr)
+        ! splicer end class.DataGroup.method.create_view_external
+    end function datagroup_create_view_external
     
     function datagroup_create_external_view_int(obj, name, external_data, type, num_elems) result(rv)
         use iso_c_binding
@@ -2645,6 +2666,26 @@ contains
         ! splicer end class.DataView.method.has_buffer
     end function dataview_has_buffer
     
+    function dataview_is_external(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_external
+        rv = sidre_dataview_is_external(obj%voidptr)
+        ! splicer end class.DataView.method.is_external
+    end function dataview_is_external
+    
+    function dataview_is_applied(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        logical :: rv
+        ! splicer begin class.DataView.method.is_applied
+        rv = sidre_dataview_is_applied(obj%voidptr)
+        ! splicer end class.DataView.method.is_applied
+    end function dataview_is_applied
+    
     function dataview_is_opaque(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -2735,6 +2776,19 @@ contains
         ! splicer end class.DataView.method.set_scalar_double
     end subroutine dataview_set_scalar_double
     
+    function dataview_set_external_data_ptr(obj, external_ptr) result(rv)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        type(C_PTR), value, intent(IN) :: external_ptr
+        type(dataview) :: rv
+        ! splicer begin class.DataView.method.set_external_data_ptr
+        rv%voidptr = sidre_dataview_set_external_data_ptr(  &
+            obj%voidptr,  &
+            external_ptr)
+        ! splicer end class.DataView.method.set_external_data_ptr
+    end function dataview_set_external_data_ptr
+    
     function dataview_get_data_int(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -2774,19 +2828,6 @@ contains
         rv = sidre_dataview_get_data_double(obj%voidptr)
         ! splicer end class.DataView.method.get_data_double
     end function dataview_get_data_double
-    
-    function dataview_set_void_ptr(obj, data_ptr) result(rv)
-        use iso_c_binding
-        implicit none
-        class(dataview) :: obj
-        type(C_PTR), value, intent(IN) :: data_ptr
-        type(dataview) :: rv
-        ! splicer begin class.DataView.method.set_void_ptr
-        rv%voidptr = sidre_dataview_set_void_ptr(  &
-            obj%voidptr,  &
-            data_ptr)
-        ! splicer end class.DataView.method.set_void_ptr
-    end function dataview_set_void_ptr
     
     function dataview_get_owning_group(obj) result(rv)
         use iso_c_binding

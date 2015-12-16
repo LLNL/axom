@@ -569,11 +569,13 @@ TEST(sidre_view,simple_opaque)
 
   void * src_ptr = (void *)src_data;
 
-  DataView * opq_view = root->createOpaqueView("my_opaque",src_ptr);
+  DataView * opq_view = root->createView("my_opaque", src_ptr);
 
   // we shouldn't have any buffers
   EXPECT_EQ(ds->getNumBuffers(), 0u);
 
+  EXPECT_TRUE(opq_view->isExternal());
+  EXPECT_TRUE(!opq_view->isApplied());
   EXPECT_TRUE(opq_view->isOpaque());
 
   void * opq_ptr = opq_view->getVoidPtr();
