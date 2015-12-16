@@ -110,11 +110,15 @@ namespace {
                 delete[] data;
                 data = ATK_NULLPTR;
             }
+
+            SLIC_ASSERT( ind == ATK_NULLPTR);
+            SLIC_ASSERT( data == ATK_NULLPTR);
+
         }
 
         ~SetFixture() {
-            SLIC_ASSERT( ind == ATK_NULLPTR);
-            SLIC_ASSERT( data == ATK_NULLPTR);
+            // Note: This destructor is called after the logger is finalized,
+            //       so its messages are ignored.
         }
 
 
@@ -128,9 +132,9 @@ namespace {
     };
 
     enum ArrSizes  { S0 = 1<<3       // small
-                   ,S1 = 1<<16      // larger than  32K L1 cache
-                   ,S2 = 1<<19      // Larger than 256K L2 cache
-                   ,S3 = 1<<25      // Larger than  25M L3 cache
+                   , S1 = 1<<16      // larger than  32K L1 cache
+                   , S2 = 1<<19      // Larger than 256K L2 cache
+                   , S3 = 1<<25      // Larger than  25M L3 cache
                    };
 
     void CustomArgs(benchmark::internal::Benchmark* b) {
@@ -156,7 +160,7 @@ void contig_sequence_compileTimeSize(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         for (int i=0; i < SZ; ++i) {
-            int pos = i;
+            IndexType pos = i;
             benchmark::DoNotOptimize(pos);
       }
   }
@@ -170,10 +174,11 @@ BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S3);
 
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence)(benchmark::State& state) {
     const int sz = state.range_x();
-    int pos = 0;
+
     while (state.KeepRunning()) {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize(pos = i);
+          IndexType pos = i;
+          benchmark::DoNotOptimize(pos);
       }
   }
   state.SetItemsProcessed(state.iterations() * sz);
@@ -182,11 +187,11 @@ BENCHMARK_REGISTER_F(SetFixture, contig_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, strided_sequence)(benchmark::State& state) {
     const int sz = state.range_x();
-    int pos = 0;
 
     while (state.KeepRunning()) {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize(pos = i* str);
+            IndexType pos = i * str;
+            benchmark::DoNotOptimize(pos);
       }
   }
   state.SetItemsProcessed(state.iterations() * sz);
@@ -196,11 +201,11 @@ BENCHMARK_REGISTER_F(SetFixture, strided_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_sequence)(benchmark::State& state) {
     const int sz = state.range_x();
-    int pos =0;
 
     while (state.KeepRunning()) {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize(pos = i + off);
+            IndexType pos = i + off;
+            benchmark::DoNotOptimize(pos);
       }
   }
   state.SetItemsProcessed(state.iterations() * sz);
@@ -209,11 +214,11 @@ BENCHMARK_REGISTER_F(SetFixture, offset_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence) (benchmark::State& state) {
     const int sz = state.range_x();
-    int pos = 0;
 
     while (state.KeepRunning()) {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize(pos = i* str + off);
+            IndexType pos = i * str + off;
+            benchmark::DoNotOptimize(pos);
       }
     }
     state.SetItemsProcessed(state.iterations() * sz);
@@ -225,13 +230,13 @@ BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence)->Apply(CustomArgs);
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) (benchmark::State& state)
 {
     const int sz = state.range_x();
-    int pos = 0;
-    ind = generateRandomPermutationArray( sz, false);
+    ind = generateRandomPermutationArray( maxIndex(sz), false);
 
     while (state.KeepRunning())
     {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize( pos = i); //ind[i] );
+          IndexType pos = ind[i];
+          benchmark::DoNotOptimize(pos);
         }
 
     }
@@ -241,16 +246,73 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered) (benchmark::State& 
 }
 BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered)->Apply(CustomArgs);
 
-BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) (benchmark::State& state)
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided) (benchmark::State& state)
 {
     const int sz = state.range_x();
-    int pos = 0;
-    ind = generateRandomPermutationArray( sz, true);
+    ind = generateRandomPermutationArray( maxIndex(sz), false);
 
     while (state.KeepRunning())
     {
         for (int i=0; i < sz; ++i) {
-          benchmark::DoNotOptimize( pos = ind[i] );
+          IndexType pos = ind[i*str];
+          benchmark::DoNotOptimize(pos);
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_offset) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( maxIndex(sz), false);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i+off];
+          benchmark::DoNotOptimize(pos);
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_offset)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided_offset) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( maxIndex(sz), false);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i*str+off];
+          benchmark::DoNotOptimize(pos);
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided_offset)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( maxIndex(sz), true);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+            IndexType pos = ind[i];
+            benchmark::DoNotOptimize(pos);
         }
     }
 
@@ -258,6 +320,65 @@ BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted) (benchmark::State&
 
 }
 BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted)->Apply(CustomArgs);
+
+
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( maxIndex(sz), true);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i*str];
+          benchmark::DoNotOptimize(pos);
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_offset) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( maxIndex(sz), true);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i+off];
+          benchmark::DoNotOptimize(pos);
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_offset)->Apply(CustomArgs);
+
+BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided_offset) (benchmark::State& state)
+{
+    const int sz = state.range_x();
+    ind = generateRandomPermutationArray( maxIndex(sz), true);
+
+    while (state.KeepRunning())
+    {
+        for (int i=0; i < sz; ++i) {
+          IndexType pos = ind[i*str+off];
+          benchmark::DoNotOptimize(pos);
+        }
+
+    }
+
+  state.SetItemsProcessed(state.iterations() * sz);
+
+}
+BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided_offset)->Apply(CustomArgs);
 
 
 /// --------------------  Benchmarks for array indexing ---------------------
