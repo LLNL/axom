@@ -138,10 +138,13 @@ classes:
 
     -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
     -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength num_elems )
+       function_suffix:
        fortran_generic:
          num_elems:
          -  int
          -  long
+    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, int ndims, SidreLength * shape+dimension )
+       function_suffix: _with_shape
 
 #    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, const DataType& dtype )
 #    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, const Schema& schema )

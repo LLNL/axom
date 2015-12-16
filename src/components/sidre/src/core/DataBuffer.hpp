@@ -30,9 +30,6 @@
 
 // SiDRe project headers
 #include "SidreTypes.hpp"
-#if ATK_ENABLE_FORTRAN
-#include "sidre/SidreAllocatable.hpp"
-#endif
 
 namespace asctoolkit
 {

@@ -37,7 +37,8 @@ module tutorial_mod
     
     interface
         
-        function tut_class1_new() result(rv) &
+        function tut_class1_new() &
+                result(rv) &
                 bind(C, name="TUT_class1_new")
             use iso_c_binding
             implicit none
@@ -67,7 +68,8 @@ module tutorial_mod
             implicit none
         end subroutine function1
         
-        function function2(arg1, arg2) result(rv) &
+        function function2(arg1, arg2) &
+                result(rv) &
                 bind(C, name="TUT_function2")
             use iso_c_binding
             implicit none
@@ -85,7 +87,8 @@ module tutorial_mod
             integer(C_INT), intent(OUT) :: result
         end subroutine sum
         
-        function tut_function3(arg) result(rv) &
+        function tut_function3(arg) &
+                result(rv) &
                 bind(C, name="TUT_function3")
             use iso_c_binding
             implicit none
@@ -93,7 +96,8 @@ module tutorial_mod
             logical(C_BOOL) :: rv
         end function tut_function3
         
-        pure function tut_function4a(arg1, arg2) result(rv) &
+        pure function tut_function4a(arg1, arg2) &
+                result(rv) &
                 bind(C, name="TUT_function4a")
             use iso_c_binding
             implicit none
@@ -102,7 +106,8 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4a
         
-        pure function tut_function4a_bufferify(arg1, Larg1, arg2, Larg2) result(rv) &
+        pure function tut_function4a_bufferify(arg1, Larg1, arg2, Larg2) &
+                result(rv) &
                 bind(C, name="TUT_function4a_bufferify")
             use iso_c_binding
             implicit none
@@ -113,7 +118,8 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4a_bufferify
         
-        function tut_function4b(arg1, arg2) result(rv) &
+        function tut_function4b(arg1, arg2) &
+                result(rv) &
                 bind(C, name="TUT_function4b")
             use iso_c_binding
             implicit none
@@ -122,7 +128,8 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4b
         
-        function tut_function4b_bufferify(arg1, Larg1, arg2, Larg2) result(rv) &
+        function tut_function4b_bufferify(arg1, Larg1, arg2, Larg2) &
+                result(rv) &
                 bind(C, name="TUT_function4b_bufferify")
             use iso_c_binding
             implicit none
@@ -133,14 +140,16 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4b_bufferify
         
-        function tut_function5() result(rv) &
+        function tut_function5() &
+                result(rv) &
                 bind(C, name="TUT_function5")
             use iso_c_binding
             implicit none
             real(C_DOUBLE) :: rv
         end function tut_function5
         
-        function tut_function5_arg1(arg1) result(rv) &
+        function tut_function5_arg1(arg1) &
+                result(rv) &
                 bind(C, name="TUT_function5_arg1")
             use iso_c_binding
             implicit none
@@ -148,7 +157,8 @@ module tutorial_mod
             real(C_DOUBLE) :: rv
         end function tut_function5_arg1
         
-        function tut_function5_arg1_arg2(arg1, arg2) result(rv) &
+        function tut_function5_arg1_arg2(arg1, arg2) &
+                result(rv) &
                 bind(C, name="TUT_function5_arg1_arg2")
             use iso_c_binding
             implicit none
@@ -193,14 +203,16 @@ module tutorial_mod
             real(C_DOUBLE), value, intent(IN) :: arg
         end subroutine tut_function7_double
         
-        function tut_function8_int() result(rv) &
+        function tut_function8_int() &
+                result(rv) &
                 bind(C, name="TUT_function8_int")
             use iso_c_binding
             implicit none
             integer(C_INT) :: rv
         end function tut_function8_int
         
-        function tut_function8_double() result(rv) &
+        function tut_function8_double() &
+                result(rv) &
                 bind(C, name="TUT_function8_double")
             use iso_c_binding
             implicit none
@@ -237,7 +249,8 @@ module tutorial_mod
             real(C_DOUBLE), value, intent(IN) :: arg2
         end subroutine tut_function10_1_bufferify
         
-        function tut_overload1_num(num) result(rv) &
+        function tut_overload1_num(num) &
+                result(rv) &
                 bind(C, name="TUT_overload1_num")
             use iso_c_binding
             implicit none
@@ -245,7 +258,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function tut_overload1_num
         
-        function tut_overload1_num_offset(num, offset) result(rv) &
+        function tut_overload1_num_offset(num, offset) &
+                result(rv) &
                 bind(C, name="TUT_overload1_num_offset")
             use iso_c_binding
             implicit none
@@ -254,7 +268,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function tut_overload1_num_offset
         
-        function tut_overload1_num_offset_stride(num, offset, stride) result(rv) &
+        function tut_overload1_num_offset_stride(num, offset, stride) &
+                result(rv) &
                 bind(C, name="TUT_overload1_num_offset_stride")
             use iso_c_binding
             implicit none
@@ -264,7 +279,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function tut_overload1_num_offset_stride
         
-        function tut_overload1_3(type, num) result(rv) &
+        function tut_overload1_3(type, num) &
+                result(rv) &
                 bind(C, name="TUT_overload1_3")
             use iso_c_binding
             implicit none
@@ -273,7 +289,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function tut_overload1_3
         
-        function tut_overload1_4(type, num, offset) result(rv) &
+        function tut_overload1_4(type, num, offset) &
+                result(rv) &
                 bind(C, name="TUT_overload1_4")
             use iso_c_binding
             implicit none
@@ -283,7 +300,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function tut_overload1_4
         
-        function tut_overload1_5(type, num, offset, stride) result(rv) &
+        function tut_overload1_5(type, num, offset, stride) &
+                result(rv) &
                 bind(C, name="TUT_overload1_5")
             use iso_c_binding
             implicit none
@@ -294,7 +312,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function tut_overload1_5
         
-        function typefunc(arg) result(rv) &
+        function typefunc(arg) &
+                result(rv) &
                 bind(C, name="TUT_typefunc")
             use iso_c_binding
             implicit none
@@ -302,7 +321,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function typefunc
         
-        function enumfunc(arg) result(rv) &
+        function enumfunc(arg) &
+                result(rv) &
                 bind(C, name="TUT_enumfunc")
             use iso_c_binding
             implicit none
@@ -310,7 +330,8 @@ module tutorial_mod
             integer(C_INT) :: rv
         end function enumfunc
         
-        pure function tut_last_function_called() result(rv) &
+        pure function tut_last_function_called() &
+                result(rv) &
                 bind(C, name="TUT_last_function_called")
             use iso_c_binding
             implicit none

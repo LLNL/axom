@@ -8,6 +8,7 @@
 make_library( LIBRARY_NAME
                   shroudrt
               LIBRARY_SOURCES
+                  shroudc.cpp
                   fstr_mod.f
              )
 

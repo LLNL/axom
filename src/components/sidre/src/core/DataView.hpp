@@ -675,25 +675,32 @@ private:
   /// Conduit node used to access the data in this DataView.
   Node m_node;
 
-  /// Tracks the state of the view's held data.
+  /// 
+  /// Enum with constants that identify the state of a view.
+  ///
+  /// Note that these states are not mutually-exclusive. These constants
+  /// combined with the boolean m_is_applied uniquesly identify the view
+  /// state, or how it was created and defined.
+  ///
   enum State
   {
-    // Some states imply other states, these are documented below.  Unless mentioned, assume a state implies no other
-    // condition.
-    // Note:  These states do not track whether the data description (schema) has been applied to data, this is tracked
-    // by the m_is_applied flag.
-
-    EMPTY, // The view holds no data (yet).
-    DESCRIBED, // The view's data is described ( schema is populated ).  Implies !EMPTY.
-    ALLOCATED, // The view's data is allocated.  Implies !EMPTY & DESCRIBED & !EXTERNAL.
-    // TODO - double check if this sets m_is_applied in all cases.
-    BUFFER_ATTACHED, // This view has an attached buffer.  Implies !EMPTY & DESCRIBED & !EXTERNAL.
-    EXTERNAL, // This view holds undescribed (not owned) data.  Implies !EMPTY.
-    SCALAR, // View holds scalar data.  Implies !EMPTY & DESCRIBED & !EXTERNAL & m_is_applied.
-    STRING // View holds string data.  Implies !EMPTY & DESCRIBED & !EXTERNAL & m_is_applied.
+    EMPTY,           // View created with name only :
+                     //    has no data or data description
+    DESCRIBED,       // View created with name and data description :
+                     //    applied is false
+    ALLOCATED,       // View created, described, and allocated (by view) :
+                     //    applied is true
+    BUFFER_ATTACHED, // View has a buffer attached explicitly. :
+                     //    applied may be true or false 
+    EXTERNAL,        // View holds pointer to external data (no buffer) :
+                     //    applied may be true or false
+    SCALAR,          // View holds scalar data (via setScalar()):
+                     //    applied is true
+    STRING           // View holds string data (view setString()):
+                     //    applied is true
   };
 
-  /// State of view's held data.
+  /// State of view.
   State m_state;
 
   /// Is this DataView opaque?  Will get refactored.
