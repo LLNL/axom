@@ -84,13 +84,13 @@ TEST(C_sidre_external, create_external_view)
   SIDRE_dataview_print(iview);
   SIDRE_dataview_print(dview);
 
-  int * idata_chk = (int *) SIDRE_dataview_get_data_pointer(iview);
+  int * idata_chk = (int *) SIDRE_dataview_get_void_ptr(iview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = (double *) SIDRE_dataview_get_data_pointer(dview);
+  double * ddata_chk = (double *) SIDRE_dataview_get_void_ptr(dview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -153,13 +153,13 @@ TEST(C_sidre_external, save_load_external_view)
   tmpbuf = SIDRE_dataview_get_buffer(dview2);
   EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), false);
 
-  int * idata_chk = (int *) SIDRE_dataview_get_data_pointer(iview2);
+  int * idata_chk = (int *) SIDRE_dataview_get_void_ptr(iview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = (double *) SIDRE_dataview_get_data_pointer(dview2);
+  double * ddata_chk = (double *) SIDRE_dataview_get_void_ptr(dview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);

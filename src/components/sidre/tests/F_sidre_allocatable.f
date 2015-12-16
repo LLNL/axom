@@ -53,7 +53,7 @@ contains
     call assert_true(extents(1) == size(iarray, 1))
 
     ! get array via a pointer
-    call view%get_value(ipointer)
+    call view%get_data(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -108,7 +108,7 @@ contains
     call assert_true(extents(3) == size(iarray, 3))
 
     ! get array via a pointer
-    call view%get_value(ipointer)
+    call view%get_data(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -148,7 +148,7 @@ contains
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
-    call view%get_value(ipointer)
+    call view%get_data(ipointer)
     call assert_true(all(iarray.eq.ipointer))
 
     call ds%delete()
@@ -187,7 +187,7 @@ contains
     call assert_equals(num_elements, 10)
 
     ! get array via a pointer
-    call view%get_value(dpointer)
+    call view%get_data(dpointer)
     call assert_true(all(abs(darray-dpointer).lt..0005))
 
     call ds%delete()

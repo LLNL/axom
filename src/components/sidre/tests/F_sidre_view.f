@@ -23,6 +23,8 @@ contains
     type(dataview) dv_0, dv_1
     type(databuffer) db_0, db_1
 
+    call set_case_name("create_views")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -32,8 +34,8 @@ contains
     db_0 = dv_0%get_buffer()
     db_1 = dv_1%get_buffer()
 
-    call assert_equals(db_0%get_index(), 0)
-    call assert_equals(db_1%get_index(), 1)
+    call assert_equals(db_0%get_index(), 0, "db_0%get_index(), 0")
+    call assert_equals(db_1%get_index(), 1, "db_1%get_index(), 1")
     call ds%delete()
   end subroutine create_views
 
@@ -46,12 +48,14 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_buffer_from_view")
+
     ds = datastore_new()
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
-    call assert_equals(dv%get_type_id(), SIDRE_INT_ID)
-    call dv%get_value(data)
+    call assert_equals(dv%get_type_id(), SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
+    call dv%get_data(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -73,11 +77,13 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_buffer_from_view_conduit")
+
     ds = datastore_new()
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
-    call dv%get_value(data)
+    call dv%get_data(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -100,13 +106,15 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_array_multi_view")
+
     ds = datastore_new()
     root = ds%get_root()
     dbuff = ds%create_buffer()
 
     call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -122,7 +130,7 @@ contains
 
     dv_e = root%create_view("even", dbuff)
     dv_o = root%create_view("odd", dbuff)
-    call assert_true(dbuff%get_num_views() == 2)
+    call assert_true(dbuff%get_num_views() == 2, "dbuff%get_num_views() == 2")
 
 !--#ifdef XXX
 !--  dv_e->apply(DataType::uint32(5,0,8))
@@ -162,12 +170,14 @@ contains
     integer, pointer :: data(:)
     integer i
     
+    call set_case_name("init_int_array_multi_view")
+
     ds = datastore_new()
     root = ds%get_root()
     dbuff = ds%create_buffer()
     
     call dbuff%allocate(SIDRE_INT_ID, 10_8)
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -232,6 +242,8 @@ contains
     integer(C_LONG) depth_nelems
     integer(C_LONG) total_nelems
 
+    call set_case_name("int_array_depth_view")
+
     ! create our main data store
     ds = datastore_new()
     dbuff = ds%create_buffer()
@@ -246,7 +258,7 @@ contains
     call dbuff%declare(SIDRE_INT_ID, total_nelems)
     call dbuff%allocate()
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ total_nelems ])
 
     do i = 1, total_nelems
@@ -255,7 +267,7 @@ contains
 
     call dbuff%print()
 
-    call assert_true( dbuff%get_num_elements() == 4 * depth_nelems )
+    call assert_true( dbuff%get_num_elements() == 4 * depth_nelems, "dbuff%get_num_elements() == 4 * depth_nelems" )
 
     ! create 4 "depth" views and apply offsets into buffer
     view0 = root%create_view_into_buffer("view0", dbuff)
@@ -270,7 +282,7 @@ contains
     view3 = root%create_view_into_buffer("view3", dbuff)
     call view3%apply_nelems_offset(depth_nelems, 3 * depth_nelems)
 
-    call assert_true( dbuff%get_num_views() == 4 )
+    call assert_true( dbuff%get_num_views() == 4, "dbuff%get_num_views() == 4" )
 
     call view0%print()
     call view1%print()
@@ -278,31 +290,26 @@ contains
     call view3%print()
 
     ! check values in depth views...
-    call view0%get_value(data)
+    call view0%get_data(data)
     do i = 1, depth_nelems
-       call assert_equals( data(i), 0 )
+       call assert_equals( data(i), 0, "data(i), 0" )
     enddo
 
-    call view1%get_value(data)
-! XXXX This is broken: Looks like get_value is returning the buffer base ptr,
-!                 not the view pointer. See second loop below.  
-!   do i = 1, depth_nelems
-!      call assert_equals( data(i), 1 )
-!   enddo
-    do i = depth_nelems + 1, depth_nelems * 2
-       call assert_equals( data(i), 1 )
-    enddo
+    call view1%get_data(data)
+   do i = 1, depth_nelems
+      call assert_equals( data(i), 1, "data(i), 1" )
+   enddo
 
-!   call view2%get_value(data)
-!   do i = 1, depth_nelems
-!      call assert_equals( data(i), 2 )
-!   enddo
+   call view2%get_data(data)
+   do i = 1, depth_nelems
+      call assert_equals( data(i), 2, "data(i), 2" )
+   enddo
 
-!   call view3%get_value(data)
-!   do i = 1, depth_nelems
-!      call assert_equals( data(i), 3 )
-!      call assert_true( data(i) ==  3 )
-!   enddo
+   call view3%get_data(data)
+   do i = 1, depth_nelems
+      call assert_equals( data(i), 3, "data(i), 3" )
+      call assert_true( data(i) ==  3, "data(i) == 3" )
+   enddo
 
     call ds%print()
     call ds%delete()
@@ -323,6 +330,8 @@ contains
     integer(C_LONG) field_nelems
     integer(C_LONG) elem_count
 
+    call set_case_name("int_array_view_attach_buffer")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -335,18 +344,22 @@ contains
     elem_count = 0
     field0 = root%create_view("field0", SIDRE_INT_ID, field_nelems)
     elem_count = elem_count + field0%get_num_elements()
+    print*,"elem_count field0",elem_count
     field1 = root%create_view("field1", SIDRE_INT_ID, field_nelems)
     elem_count = elem_count + field1%get_num_elements()
-    call assert_true( elem_count == 2 * field_nelems )
+    print*,"elem_count field1",elem_count
 
-    ! reate buffer to hold data for all fields and allocate
+    call assert_true( elem_count == 2 * field_nelems, "elem_count == 2 * field_nelems" )
+
+    ! Create buffer to hold data for all fields and allocate
     dbuff = ds%create_buffer()
     call dbuff%declare(SIDRE_INT_ID, elem_count)
     call dbuff%allocate()
-    call assert_true( dbuff%get_num_elements() == elem_count )
+
+    call assert_true( dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements() == elem_count" ) 
 
     ! Initilize buffer data for testing below
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ elem_count ])
 
     do i = 1, elem_count
@@ -361,26 +374,21 @@ contains
     call field1%attach_buffer(dbuff)
     call field1%apply_nelems_offset(field_nelems, 1 * field_nelems);
 
-    call assert_true( dbuff%get_num_views() == 2 )
+    call assert_true( dbuff%get_num_views() == 2, "dbuff%get_num_views() == 2" )
 
     ! print field views...
     call field0%print()
     call field1%print()
 
     ! check values in field views...
-    call field0%get_value(data)
+    call field0%get_data(data)
     do i = 1, field_nelems
-       call assert_equals( data(i), 0 )
+       call assert_equals( data(i), 0, "data(i), 0")
     enddo
 
-    call field1%get_value(data)
-! XXXX This is broken: Looks like get_value is returning the buffer base ptr,
-!                 not the view pointer. See second loop below.  
-!   do i = 1, field_nelems
-!      call assert_equals( data(i), 1 )
-!   enddo
-    do i = field_nelems + 1, field_nelems * 2
-       call assert_equals( data(i), 1 )
+    call field1%get_data(data)
+    do i = 1, field_nelems
+       call assert_equals( data(i), 1, "data(i), 1" )
     enddo
 
     call ds%print()
@@ -407,6 +415,8 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_array_multi_view_resize")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -420,7 +430,7 @@ contains
     ! we will create 4 sub views of this array
     base_old = r_old%create_view_and_allocate("base_data", SIDRE_INT_ID, 40)
 
-    call base_old%get_value(data)
+    call base_old%get_data(data)
 
     ! init the buff with values that align with the
     ! 4 subsections.
@@ -568,6 +578,8 @@ contains
     integer(C_INT), pointer :: a2_data(:)
     integer i
 
+    call set_case_name("int_array_realloc")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -578,8 +590,8 @@ contains
     a1 = root%create_view_and_allocate("a1", SIDRE_FLOAT_ID, 5)
     a2 = root%create_view_and_allocate("a2", SIDRE_FLOAT_ID, 5)
 
-    call a1%get_value(a1_data)
-    call a2%get_value(a2_data)
+    call a1%get_data(a1_data)
+    call a2%get_data(a2_data)
 
     do i = 1, 5
        a1_data(i) =  5.0
@@ -593,8 +605,8 @@ contains
     call a1%reallocate(10)
     call a2%reallocate(15)
 
-    call a1%get_value(a1_data)
-    call a2%get_value(a2_data)
+    call a1%get_data(a1_data)
+    call a2%get_data(a2_data)
 
     do i = 1, 5
        call assert_equals(a1_data(i), 5.0)
@@ -624,6 +636,8 @@ contains
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr
 
+    call set_case_name("simple_opaque")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -639,13 +653,13 @@ contains
     ! we shouldn't have any buffers
     call assert_true(ds%get_num_buffers() == 0)
 
-    call assert_true(opq_view%is_opaque())
+    call assert_true(opq_view%is_opaque(), "opq_view%is_opaque()")
 
-    opq_ptr = opq_view%get_opaque()
+    opq_ptr = opq_view%get_void_ptr()
     call c_f_pointer(opq_ptr, out_data)
 
-    call assert_true(c_associated(opq_ptr, src_ptr))
-    call assert_equals(out_data, 42)
+    call assert_true(c_associated(opq_ptr, src_ptr), "c_associated(opq_ptr,src_ptr)")
+    call assert_equals(out_data, 42, "out_data, 42")
 
     call ds%print()
     call ds%delete()

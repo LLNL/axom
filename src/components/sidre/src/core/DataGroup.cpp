@@ -1157,9 +1157,9 @@ void DataGroup::copyToNode(Node& n) const
     buff["schema"].set(dtype.to_json());
 
     // only set our data if the buffer was initialized
-    if (ds_buff->getData() != NULL )
+    if (ds_buff->getVoidPtr() != ATK_NULLPTR )
     {
-      buff["data"].set_external(dtype, ds_buff->getData());
+      buff["data"].set_external(dtype, ds_buff->getVoidPtr());
     }
   }
 

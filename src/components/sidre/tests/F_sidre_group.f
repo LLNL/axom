@@ -276,13 +276,13 @@ contains
     flds = root%create_group("fields")
 
     i0_view = flds%create_view_and_allocate("i0", SIDRE_INT_ID, 1)
-    call i0_view%set_value(1)
+    call i0_view%set_scalar(1)
 
     f0_view = flds%create_view_and_allocate("f0", SIDRE_FLOAT_ID, 1)
-    call f0_view%set_value(100.0)
+    call f0_view%set_scalar(100.0)
 
     d0_view = flds%create_view_and_allocate("d0", SIDRE_DOUBLE_ID, 1)
-    call d0_view%set_value(3000.0d0)  ! XXX without d0, error in get_value_double
+    call d0_view%set_scalar(3000.0d0)  ! XXX without d0, error in get_data_double
 
     call assert_true(flds%has_view("i0"))
     call assert_true(flds%has_view("f0"))
@@ -297,7 +297,7 @@ contains
     call assert_true(subgrp%has_view("d0"))
 
     ! check the data value
-    call assert_equals(tmpview%get_value_double(), 3000.0_C_DOUBLE)
+    call assert_equals(tmpview%get_data_double(), 3000.0_C_DOUBLE)
 
     ! test copying a view from flds to sub
     tmpview = subgrp%copy_view(flds%get_view("i0"))
@@ -330,13 +330,13 @@ contains
     gc = flds%create_group("c")
 
     i0_view = ga%create_view_and_allocate("i0", SIDRE_INT_ID, 1_8)
-    call i0_view%set_value(1)
+    call i0_view%set_scalar(1)
 
     f0_view = gb%create_view_and_allocate("f0", SIDRE_FLOAT_ID, 1_8)
-    call f0_view%set_value(100.0)
+    call f0_view%set_scalar(100.0)
 
     d0_view = gc%create_view_and_allocate("d0", SIDRE_DOUBLE_ID, 1_8)
-    call d0_view%set_value(3000.0d0)
+    call d0_view%set_scalar(3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -436,8 +436,8 @@ contains
 !--    call assert_equals( grp%get_view(view_name2), view2 )
 
 
-    call view1%get_value(v1_vals)
-!--    double * v2_vals = view2%get_value()
+    call view1%get_data(v1_vals)
+!--    double * v2_vals = view2%get_data()
   
     do i = 1, 10
        v1_vals(i) = i
@@ -471,7 +471,7 @@ contains
     ! use create + alloc convenience methods
     ! this one is the DataType & method
     base =  root%create_view_and_allocate("base", SIDRE_INT_ID, 10)
-    call base%get_value(base_vals)
+    call base%get_data(base_vals)
 
     base_vals(1:5) = 10
     base_vals(6:10) = 20
@@ -485,8 +485,8 @@ contains
 !--    Schema s(DataType::c_int(5,5*sizeof(int)))
 !--    root%createView("sub_b",base_buff,s)
 
-!--    int * sub_a_vals = root%get_view("sub_a")%get_value(sub_a_vals)
-!--    int * sub_b_vals = root%get_view("sub_b")%get_value(sub_b_vals)
+!--    int * sub_a_vals = root%get_view("sub_a")%get_data(sub_a_vals)
+!--    int * sub_b_vals = root%get_view("sub_b")%get_data(sub_b_vals)
 
 !--    do i = 1, 5
 !--       call assert_equals(sub_a_vals(i), 10)
@@ -509,7 +509,7 @@ contains
     ga = flds%create_group("a")
 
     i0_view = ga%create_view_and_allocate("i0", SIDRE_INT_ID, 1)
-    call i0_view%set_value(1)
+    call i0_view%set_scalar(1)
 
     call assert_true(root%has_group("fields"))
     call assert_true(flds%has_group("a"))
@@ -531,7 +531,7 @@ contains
     call assert_true(flds%has_group("a"))
     ga = flds%get_group("a")
     i0_view = ga%get_view("i0")
-    call assert_equals(i0_view%get_value_int(), 1)
+    call assert_equals(i0_view%get_data_int(), 1)
 
     call ds2%print()
     
@@ -555,13 +555,13 @@ contains
     gc = flds%create_group("c")
 
     i0_view = ga%create_view_and_allocate("i0", SIDRE_INT_ID, 1)
-    call i0_view%set_value(1)
+    call i0_view%set_scalar(1)
 
     f0_view = gb%create_view_and_allocate("f0", SIDRE_FLOAT_ID, 1)
-    call f0_view%set_value(100.0)
+    call f0_view%set_scalar(100.0)
 
     d0_view = gc%create_view_and_allocate("d0", SIDRE_DOUBLE_ID, 1)
-    call d0_view%set_value(3000.0d0)
+    call d0_view%set_scalar(3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -591,9 +591,9 @@ contains
     f0_view = gb%get_view("f0");
     d0_view = gc%get_view("d0");
 
-    call assert_equals(i0_view%get_value_int(), 1)
-    call assert_equals(f0_view%get_value_float(), 100.0)
-    call assert_equals(d0_view%get_value_double(), 3000.0d0)
+    call assert_equals(i0_view%get_data_int(), 1)
+    call assert_equals(f0_view%get_data_float(), 100.0)
+    call assert_equals(d0_view%get_data_double(), 3000.0d0)
 
     call ds2%print()
 

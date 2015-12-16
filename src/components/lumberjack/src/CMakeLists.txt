@@ -17,7 +17,7 @@ set(lumberjack_headers
     BinaryTreeCommunicator.hpp
     Combiner.hpp
     Communicator.hpp
-    Logger.hpp
+    Lumberjack.hpp
     Message.hpp
     MPIUtility.hpp
     RootCommunicator.hpp
@@ -30,7 +30,7 @@ set(lumberjack_headers
 #
 set(lumberjack_sources
     BinaryTreeCommunicator.cpp
-    Logger.cpp
+    Lumberjack.cpp
     Message.cpp
     MPIUtility.cpp
     RootCommunicator.cpp
@@ -46,7 +46,6 @@ make_library( LIBRARY_NAME
               LIBRARY_SOURCES
                   "${lumberjack_sources}"
                   "${lumberjack_headers}"
-              WITH_MPI
               )
 
 add_dependencies(lumberjack copy_headers_lumberjack)

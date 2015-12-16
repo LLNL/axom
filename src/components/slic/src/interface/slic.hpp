@@ -26,7 +26,6 @@
 #include "slic/MessageLevel.h"
 
 #include "common/CommonTypes.hpp" // for ATK_NULLPTR
-#include "common/Utilities.hpp"   // for utilities::processAbort()
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
