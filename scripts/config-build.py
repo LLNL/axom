@@ -54,7 +54,7 @@ parser.add_argument("-ecc",
 parser.add_argument("-co",
                     "--cmakeoption",
                     type=str,
-                    help="specify additional cmake options to add to cmake line.  Use with caution, if you are doing something non-trivial, use ccmake or cmake-gui.")
+                    help="specify additional cmake option to add to cmake line.  A '-D' will automatically be prepended.  Use caution, if you are doing something non-trivial, use ccmake or cmake-gui.")
 
 parser.add_argument("-hc",
                     "--hostconfig",
@@ -159,7 +159,7 @@ if args.xcode:
     cmakeline += ' -G "XCode"'
 
 if args.cmakeoption:
-    cmakeline += " " + args.cmakeoption
+    cmakeline += " -D" + args.cmakeoption
 
 cmakeline += " %s/../src " % scriptsdir
 
