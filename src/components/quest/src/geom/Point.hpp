@@ -27,9 +27,15 @@ namespace quest
  *  provides access methods to set and query the point coordinates.
  *******************************************************************************
  */
-template < typename T, int ndims >
+template < typename T, int DIM >
 class Point
 {
+public:
+    enum {
+        DIMENSION = DIM
+        , BYTES = DIM * sizeof(T)
+    };
+
 public:
 
   /*!
@@ -45,14 +51,14 @@ public:
    * \param [in] rhs
    *****************************************************************************
    */
-  Point( const Point<T,ndims>& rhs ) { *this = rhs; };
+  Point( const Point<T,DIM>& rhs ) { *this = rhs; };
 
   /*!
    *****************************************************************************
    * \brief Destructor.
    *****************************************************************************
    */
-  virtual ~Point();
+   ~Point();
 
   /*!
    *****************************************************************************
@@ -61,7 +67,7 @@ public:
    * \post d >= 1.
    *****************************************************************************
    */
-  int dimension() const { return ndims; };
+  int dimension() const { return DIM; };
 
   /*!
    *****************************************************************************
@@ -69,7 +75,7 @@ public:
    * \param [in] rhs a point instance on the right hand side.
    *****************************************************************************
    */
-  Point<T,ndims>& operator=(const Point<T,ndims>& rhs);
+  Point<T,DIM>& operator=(const Point<T,DIM>& rhs);
 
   /*!
    *****************************************************************************
@@ -82,6 +88,15 @@ public:
   const T& operator[](int i) const;
   T& operator[](int i);
 
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a pointer to the underlying data.
+   *****************************************************************************
+   */
+  const T& data() const;
+  T& data();
+
   /*!
    *****************************************************************************
    * \brief Constructs a Point instance with the given coordinates.
@@ -91,7 +106,7 @@ public:
    * \return p a Point instance with the given coordinates.
    *****************************************************************************
    */
-  static Point<T,ndims> make_point( const T& x, const T& y, const T& z=0.0 );
+  static Point<T,DIM> make_point( const T& x, const T& y, const T& z=0.0 );
 
   /*!
    *****************************************************************************
@@ -101,11 +116,16 @@ public:
    * \return p point at the midpoint A and B.
    *****************************************************************************
    */
-  static Point<T,ndims> midpoint( const Point<T,ndims>& A,
-                                  const Point<T,ndims>& B );
+  static Point<T,DIM> midpoint( const Point<T,DIM>& A,
+                                  const Point<T,DIM>& B );
+
+
+  static Point zero() { return Point(); }
+  static Point ones() { return Point::fromValue( static_cast<T>(1)); }
+  static Point fromValue(T val);
 
 protected:
-  T m_components[ ndims ];
+  T m_components[ DIM ];
 };
 
 /// \name Pre-defined point types
@@ -124,23 +144,31 @@ typedef Point<double,3> Point3D;
 namespace quest {
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-Point< T, ndims >::Point()
+template < typename T, int DIM >
+Point< T, DIM >::Point()
 {
-  SLIC_ASSERT( ndims >= 1 );
-  std::fill( m_components, m_components+ndims, 0.0 );
+  SLIC_ASSERT( DIM >= 1 );
+  std::fill( m_components, m_components+DIM, T() );
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-Point< T, ndims >::~Point()
+template < typename T, int DIM >
+Point< T, DIM >::~Point()
 {
 
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline Point<T,ndims>& Point< T,ndims >::operator=(const Point<T,ndims>& rhs )
+template < typename T, int DIM >
+inline Point< T, DIM > Point< T, DIM >::fromValue(T val)
+{
+  Point pt;
+  std::fill( pt.data(), pt.data()+DIM, val );
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline Point<T,DIM>& Point< T,DIM >::operator=(const Point<T,DIM>& rhs )
 {
 
   if( this == &rhs ) {
@@ -148,13 +176,13 @@ inline Point<T,ndims>& Point< T,ndims >::operator=(const Point<T,ndims>& rhs )
   }
 
   // copy all the data
-  memcpy( m_components, rhs.m_components, ndims*sizeof( T ) );
+  memcpy( m_components, rhs.m_components, DIM*sizeof( T ) );
   return *this;
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline Point< T, ndims > Point< T,ndims >::make_point( const T& x,
+template < typename T, int DIM >
+inline Point< T, DIM > Point< T,DIM >::make_point( const T& x,
                                                    const T& y,
                                                    const T& z )
 {
@@ -163,9 +191,9 @@ inline Point< T, ndims > Point< T,ndims >::make_point( const T& x,
   tmp_array[1] = y;
   tmp_array[2] = z;
 
-  Point< T, ndims > p;
+  Point< T, DIM > p;
 
-  for ( int i=0; i < ndims; ++i ) {
+  for ( int i=0; i < DIM; ++i ) {
      p[ i ] = tmp_array[ i ];
   }
 
@@ -173,14 +201,14 @@ inline Point< T, ndims > Point< T,ndims >::make_point( const T& x,
 }
 
 //------------------------------------------------------------------------------
-template< typename T, int ndims >
-inline Point< T,ndims > Point< T,ndims >::midpoint(
-        const Point<T,ndims>& A,
-        const Point<T,ndims>& B )
+template< typename T, int DIM >
+inline Point< T,DIM > Point< T,DIM >::midpoint(
+        const Point<T,DIM>& A,
+        const Point<T,DIM>& B )
 {
-  Point< T,ndims > mid_point;
+  Point< T,DIM > mid_point;
 
-  for ( int i=0; i < ndims; ++i ) {
+  for ( int i=0; i < DIM; ++i ) {
 
      mid_point[ i ] = 0.5*( A[i]+B[i] );
   }
@@ -189,21 +217,35 @@ inline Point< T,ndims > Point< T,ndims >::midpoint(
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline T& Point< T, ndims >::operator[](int i)
+template < typename T, int DIM >
+inline T& Point< T, DIM >::operator[](int i)
 {
-  SLIC_ASSERT( (i >= 0) && (i < ndims) );
+  SLIC_ASSERT( (i >= 0) && (i < DIM) );
   return m_components[ i ];
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline const T& Point< T, ndims >::operator[](int i) const
+template < typename T, int DIM >
+inline const T& Point< T, DIM >::operator[](int i) const
 {
-  SLIC_ASSERT( (i >= 0) && (i < ndims) );
+  SLIC_ASSERT( (i >= 0) && (i < DIM) );
   return m_components[ i ];
 }
 
-} /* namespace Ares */
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline const T& Point< T, DIM >::data() const
+{
+  return &m_components[ 0 ];
+}
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline T& Point< T, DIM >::data()
+{
+    return &m_components[ 0 ];
+}
+
+
+} /* namespace quest*/
 
 #endif /* POINT_HXX_ */

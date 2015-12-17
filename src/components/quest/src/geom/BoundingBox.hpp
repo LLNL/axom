@@ -14,13 +14,18 @@
 #ifndef BOUNDINGBOX_HPP_
 #define BOUNDINGBOX_HPP_
 
-#include <cstring> // for memcpy
+#include "quest/Point.hpp"
+
 
 namespace quest
 {
 
+template<int DIM>
 class BoundingBox
 {
+public:
+    typedef double CoordType;
+    typedef Point<CoordType, DIM> PointType;
 public:
 
   /*!
@@ -28,7 +33,7 @@ public:
    * \brief Constructor. Creates a bounding box instance within [0,1]
    *****************************************************************************
    */
-  BoundingBox();
+  BoundingBox() : m_min( PointType::zero()), m_max( PointType::ones() ) {};
 
   /*!
    *****************************************************************************
@@ -43,7 +48,7 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-  virtual ~BoundingBox();
+   ~BoundingBox();
 
   /*!
    *****************************************************************************
@@ -51,7 +56,7 @@ public:
    * \param [in] min user-supplied min coordinates.
    *****************************************************************************
    */
-  void setMin( double min[3] ) { memcpy( m_min, min, 3*sizeof(double) ); } ;
+  void setMin(const PointType& pt) { m_min = pt; } ;
 
   /*!
    *****************************************************************************
@@ -59,7 +64,7 @@ public:
    * \param [in] max user-supplied max coordinates.
    *****************************************************************************
    */
-  void setMax( double max[3] ) { memcpy( m_max, max, 3*sizeof(double) ); } ;
+  void setMax(const PointType& pt) { m_max = pt; } ;
 
   /*!
    *****************************************************************************
@@ -68,7 +73,7 @@ public:
    * \post ptr != ATK_NULLPTR
    *****************************************************************************
    */
-  const double* getMin() const { return &m_min[0]; };
+  const PointType& getMin() const { return m_min; };
 
   /*!
    *****************************************************************************
@@ -77,7 +82,7 @@ public:
    * \post ptr != ATK_NULLPTR
    *****************************************************************************
    */
-  const double* getMax() const { return &m_max[0]; };
+  const PointType& getMax() const { return m_max; };
 
   /*!
    *****************************************************************************
@@ -97,22 +102,25 @@ public:
    * @return status true if point inside the box, else false.
    *****************************************************************************
    */
-  bool hasPoint( double x, double y, double z=0.0 ) const;
+  template<typename T>
+  bool hasPoint( const Point<T, DIM>& otherPt) const;
+
 
   /*!
    *****************************************************************************
-   * \brief Computes the union of two bounding boxes, b1, b2.
-   * \param [in] b1 user-supplied bounding box.
-   * \param [in] b2 user-supplied bounding box.
-   * \return BB the bounding box that contains both b1 and b2.
+   * \brief Checks that we have a valid bounding box.
+   * A bounding box is valid its extent in each dimension
+   * (max point minus min point) is greater than or equal to zero
+   * @return status true if point inside the box, else false.
    *****************************************************************************
    */
-  static BoundingBox box_union( const BoundingBox& b1,
-                                const BoundingBox& b2 );
+  bool isValid() const;
 
+static BoundingBox box_union( const BoundingBox& b1,
+                                const BoundingBox& b2 );
 private:
-  double m_min[3];
-  double m_max[3];
+  PointType m_min;
+  PointType m_max;
 };
 
 } /* namespace quest */
@@ -123,7 +131,8 @@ private:
 //------------------------------------------------------------------------------
 namespace quest {
 
-inline BoundingBox BoundingBox::box_union( const BoundingBox& b1,
+template<int DIM>
+inline BoundingBox<DIM> BoundingBox<DIM>::box_union( const BoundingBox& b1,
                                            const BoundingBox& b2 )
 {
    BoundingBox bb;

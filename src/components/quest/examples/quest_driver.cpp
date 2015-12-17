@@ -190,7 +190,9 @@ void compute_bounds( meshtk::Mesh* mesh, double min[3], double max[3] )
 
                min[dim] = pnt[dim];
 
-           } else if ( pnt[dim] > max[dim] ) {
+           }
+
+           if ( pnt[dim] > max[dim] ) {
 
                max[dim] = pnt[dim];
 

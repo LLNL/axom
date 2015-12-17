@@ -13,50 +13,47 @@
 
 #include "BoundingBox.hpp"
 
-// C/C++ includes
-#include <algorithm> // for fill
 
 namespace quest
 {
 
-BoundingBox::BoundingBox()
-{
-  std::fill( m_min, m_min+3, 0.0 );
-  std::fill( m_max, m_max+3, 1.0 );
-}
-
 //------------------------------------------------------------------------------
-BoundingBox::~BoundingBox()
-{
-
-}
-
-//------------------------------------------------------------------------------
-BoundingBox& BoundingBox::operator=(const BoundingBox& rhs )
+template<int DIM>
+BoundingBox<DIM>& BoundingBox<DIM>::operator=(const BoundingBox& rhs )
 {
 
   if ( this != &rhs ) {
-    memcpy( m_min, rhs.m_min, 3*sizeof(double) );
-    memcpy( m_max, rhs.m_max, 3*sizeof(double) );
+    m_min = rhs.m_min;
+    m_max = rhs.m_max;
   }
 
   return *this;
 }
 
 //------------------------------------------------------------------------------
-bool BoundingBox::hasPoint( double x, double y, double z ) const
+template<int DIM>
+template<typename T>
+bool BoundingBox<DIM>::hasPoint(const Point<T,DIM>& otherPt) const
 {
-  bool status = false;
-
-  if ( x >= m_min[0] && x <= m_max[0] &&
-       y >= m_min[1] && y <= m_max[1] &&
-       z >= m_min[2] && z <= m_max[2]       ) {
-
-       status = true;
-
-  }
-
-  return status;
+    for(int dim = 0; dim < DIM; ++dim)
+    {
+        if( otherPt[dim] < m_min[dim] || otherPt[dim] >  m_max[dim])
+            return false;
+    }
+    return true;
 }
 
+
+//------------------------------------------------------------------------------
+template<int DIM>
+bool BoundingBox<DIM>::isValid() const
+{
+  for(int dim = 0; dim < DIM; ++dim)
+  {
+      if( m_min[dim] <  m_max[dim])
+          return false;
+  }
+  return true;
+
+}
 } /* namespace quest */

@@ -11,16 +11,15 @@
 set( quest_headers
    
     ## CG Headers
-    cg/BoundingBox.hpp
-    cg/Determinants.hpp
-    cg/HyperSphere.hpp
-    cg/Orientation.hpp
-    cg/Point.hpp
-    cg/RTree.hpp
-    cg/SquaredDistance.hpp
-    cg/Triangle.hpp
-    cg/Vector.hpp
-    cg/fuzzy_compare.hpp
+    geom/Vector.hpp
+    geom/Triangle.hpp
+    geom/SquaredDistance.hpp
+    geom/HyperSphere.hpp
+    geom/Orientation.hpp
+    geom/Point.hpp
+    geom/Determinants.hpp
+    geom/BoundingBox.hpp
+    geom/fuzzy_compare.hpp
     
     ## Mesh Library Headers
     mesh/CellConnectivity.hpp
@@ -49,7 +48,7 @@ set( quest_headers
 set( quest_sources
     
     ## CG Sources
-    cg/BoundingBox.cpp
+    #geom/BoundingBox.cpp
     
     ## Mesh Library Sources
     mesh/CurvilinearMesh.cpp
@@ -81,6 +80,7 @@ make_library( LIBRARY_NAME
               DEPENDS_ON
                 common
                 slic
+                #slam
              )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )
