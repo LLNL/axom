@@ -25,6 +25,8 @@
 #include "quest/Triangle.hpp"
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
+#include "quest/Point.hpp"
+#include "quest/BoundingBox.hpp"
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
 
@@ -172,44 +174,38 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
-void compute_bounds( meshtk::Mesh* mesh, double min[3], double max[3] )
+void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
-   std::fill( min, min+3, std::numeric_limits< double >::max() );
-   std::fill( max, max+3, std::numeric_limits< double >::min() );
+   using namespace quest;
 
-   for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i ) {
+   int const DIM = 3;
+   BoundingBox<DIM> meshBB;
+   Point3D pt;
 
-       double pnt[3];
-       mesh->getMeshNode( i, pnt );
-
-       for (int dim=0; dim < 3; ++dim ) {
-
-           if ( pnt[dim] < min[dim] ) {
-
-               min[dim] = pnt[dim];
-
-           }
-
-           if ( pnt[dim] > max[dim] ) {
-
-               max[dim] = pnt[dim];
-
-           }
-
-       } // END for all dims
-
-
+   for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
+   {
+       mesh->getMeshNode( i, pt.data() );
+       meshBB.addPoint( pt );
    } // END for all nodes
 
+   SLIC_ASSERT( meshBB.isValid() );
+
+   const Point3D& bbMin = meshBB.getMin();//toarray
+   const Point3D& bbMax = meshBB.getMax();
+   for(int i=0; i< DIM; ++i)
+   {
+       minPt[i] = bbMin[i];
+       maxPt[i] = bbMax[i];
+   }
 
 }
 
 //------------------------------------------------------------------------------
 void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 {
-   /* Sanit checks */
+   /* Sanity checks */
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
    SLIC_ASSERT( umesh != ATK_NULLPTR );
 

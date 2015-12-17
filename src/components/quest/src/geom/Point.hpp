@@ -16,6 +16,27 @@
 
 #include "slic/slic.hpp"
 
+
+namespace {
+    /*!
+     *****************************************************************************
+     * \brief Utility function that clamps an input val to a given range.
+     * \param [in] val  The value to clamp
+     * \param [in] lower The lower range
+     * \param [in] upper The upper range
+     * \return The clamped value.
+     * \post lower <= returned value <= upper.
+     *****************************************************************************
+     */
+    template<typename T>
+    T clamp(T val, T lower, T upper)
+    {
+        SLIC_ASSERT( lower <= upper);
+        return std::min( std::max( val, lower), upper);
+    }
+}
+
+
 namespace quest
 {
 
@@ -32,18 +53,33 @@ class Point
 {
 public:
     enum {
-        DIMENSION = DIM
-        , BYTES = DIM * sizeof(T)
+        NDIMS = DIM
+        , NBYTES = DIM * sizeof(T)
     };
 
 public:
 
   /*!
    *****************************************************************************
-   * \brief Default Constructor. Creates a point at the origin.
+   * \brief Fill the first sz coordinates with val and zeros the rest
+   * \param [in] val The value to set the coordinates to.  Defaults to zero
+   * \param [in] sz The number of coordinates to set to val.
+   * The rest will be set to zero.  Defaults is DIM.
+   * If sz is greater than DIM, we set all coordinates to val
    *****************************************************************************
    */
-  Point();
+  Point(T val = T(), int sz = DIM);
+
+  /*!
+   *****************************************************************************
+   * \brief Creates a point from the first sz values of the input array.
+   * \param [in] vals An array containing at least sz values
+   * \param [in] sz The number of coordinates to take from the array.  Defaults
+   * to DIM.
+   * It sz is greater than DIM, we only take the first DIM values.
+   *****************************************************************************
+   */
+  Point(T* vals, int sz = DIM);
 
   /*!
    *****************************************************************************
@@ -58,7 +94,7 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-   ~Point();
+   ~Point() {}
 
   /*!
    *****************************************************************************
@@ -94,8 +130,8 @@ public:
    * \brief Returns a pointer to the underlying data.
    *****************************************************************************
    */
-  const T& data() const;
-  T& data();
+  const T* data() const;
+  T* data();
 
   /*!
    *****************************************************************************
@@ -121,8 +157,10 @@ public:
 
 
   static Point zero() { return Point(); }
-  static Point ones() { return Point::fromValue( static_cast<T>(1)); }
-  static Point fromValue(T val);
+  static Point ones() { return Point(static_cast<T>(1)); }
+
+private:
+  void verifyIndex(int idx) const { SLIC_ASSERT(idx >= 0 && idx < DIM); }
 
 protected:
   T m_components[ DIM ];
@@ -145,25 +183,37 @@ namespace quest {
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-Point< T, DIM >::Point()
+Point< T, DIM >::Point(T val, int sz)
+{
+  // NOTE (KW): This should be a static assert in the class
+  SLIC_ASSERT( DIM >= 1 );
+
+  const int nvals = clamp(sz, 0, DIM);
+
+  std::fill( m_components, m_components+nvals, val );
+
+  // Fill any remaining coordinates with zero
+  if(nvals < DIM)
+  {
+      std::fill( m_components+nvals, m_components+DIM, T() );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+Point< T, DIM >::Point(T* vals, int sz)
 {
   SLIC_ASSERT( DIM >= 1 );
-  std::fill( m_components, m_components+DIM, T() );
-}
 
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-Point< T, DIM >::~Point()
-{
+  const int nvals = clamp(sz, 0, DIM);
 
-}
+  std::copy( vals, vals+nvals, m_components);
 
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline Point< T, DIM > Point< T, DIM >::fromValue(T val)
-{
-  Point pt;
-  std::fill( pt.data(), pt.data()+DIM, val );
+  // Fill any remaining coordinates with zero
+  if(nvals < DIM)
+  {
+      std::fill( m_components+nvals, m_components+DIM, T());
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -191,13 +241,7 @@ inline Point< T, DIM > Point< T,DIM >::make_point( const T& x,
   tmp_array[1] = y;
   tmp_array[2] = z;
 
-  Point< T, DIM > p;
-
-  for ( int i=0; i < DIM; ++i ) {
-     p[ i ] = tmp_array[ i ];
-  }
-
-  return( p );
+  return Point(tmp_array, DIM);
 }
 
 //------------------------------------------------------------------------------
@@ -220,29 +264,29 @@ inline Point< T,DIM > Point< T,DIM >::midpoint(
 template < typename T, int DIM >
 inline T& Point< T, DIM >::operator[](int i)
 {
-  SLIC_ASSERT( (i >= 0) && (i < DIM) );
-  return m_components[ i ];
+    verifyIndex(i);
+    return m_components[ i ];
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
 inline const T& Point< T, DIM >::operator[](int i) const
 {
-  SLIC_ASSERT( (i >= 0) && (i < DIM) );
+  verifyIndex(i);
   return m_components[ i ];
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline const T& Point< T, DIM >::data() const
+inline const T* Point< T, DIM >::data() const
 {
-  return &m_components[ 0 ];
+  return m_components;
 }
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline T& Point< T, DIM >::data()
+inline T* Point< T, DIM >::data()
 {
-    return &m_components[ 0 ];
+    return m_components;
 }
 
 

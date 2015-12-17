@@ -10,7 +10,7 @@
 
 set( quest_headers
    
-    ## CG Headers
+    ## Geometry Headers
     geom/Vector.hpp
     geom/Triangle.hpp
     geom/SquaredDistance.hpp
@@ -48,8 +48,8 @@ set( quest_headers
 set( quest_sources
     
     ## CG Sources
-    #geom/BoundingBox.cpp
-    
+    # <nothing yet>
+        
     ## Mesh Library Sources
     mesh/CurvilinearMesh.cpp
     mesh/Field.cpp

@@ -14,6 +14,8 @@
 #ifndef BOUNDINGBOX_HPP_
 #define BOUNDINGBOX_HPP_
 
+#include <limits>
+
 #include "quest/Point.hpp"
 
 
@@ -30,10 +32,38 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Constructor. Creates a bounding box instance within [0,1]
+   * \brief Constructor. Creates a bounding box with an invalid bound
+   * The lower bound is set to the greatest possible point and the upper bound
+   * is set to the smallest possible point.  This way adding any point resets
+   * the bounds to a valid range.
    *****************************************************************************
    */
-  BoundingBox() : m_min( PointType::zero()), m_max( PointType::ones() ) {};
+  BoundingBox()
+    : m_min( PointType( std::numeric_limits< CoordType>::max() ) )
+    , m_max( PointType( std::numeric_limits< CoordType>::min() ) ) {}
+
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor. Creates a bounding box containing a single point
+   *****************************************************************************
+   */
+  BoundingBox(const PointType& pt)
+      : m_min( pt), m_max( pt)
+  {
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor. Creates a bounding box with a given min and max point
+   * The code ensures that the bounds are valid.
+   *****************************************************************************
+   */
+  BoundingBox(const PointType& lowerPt, const PointType& upperPt)
+      : m_min( lowerPt), m_max( upperPt)
+  {
+      checkAndFixBounds();
+  }
 
   /*!
    *****************************************************************************
@@ -48,7 +78,7 @@ public:
    * \brief Destructor.
    *****************************************************************************
    */
-   ~BoundingBox();
+   ~BoundingBox() {}
 
   /*!
    *****************************************************************************
@@ -84,6 +114,15 @@ public:
    */
   const PointType& getMax() const { return m_max; };
 
+
+  /*!
+   *****************************************************************************
+   * \brief Updates bounds to include the provided point.
+   * \param [in] point to include.
+   *****************************************************************************
+   */
+  void addPoint(const PointType& pt);
+
   /*!
    *****************************************************************************
    * \brief Overloaded assignment operator.
@@ -103,14 +142,14 @@ public:
    *****************************************************************************
    */
   template<typename T>
-  bool hasPoint( const Point<T, DIM>& otherPt) const;
+  bool contains( const Point<T, DIM>& otherPt) const;
 
 
   /*!
    *****************************************************************************
    * \brief Checks that we have a valid bounding box.
-   * A bounding box is valid its extent in each dimension
-   * (max point minus min point) is greater than or equal to zero
+   * A bounding box is valid when its extent in each dimension
+   * (max coordinate minus min coordinate) is greater than or equal to zero
    * @return status true if point inside the box, else false.
    *****************************************************************************
    */
@@ -119,6 +158,16 @@ public:
 static BoundingBox box_union( const BoundingBox& b1,
                                 const BoundingBox& b2 );
 private:
+  /*!
+   *****************************************************************************
+   * \brief Ensures that the bounds are valid.
+   * A bounding box is valid when its extent in each dimension
+   * (max coordinate minus min coordinate) is greater than or equal to zero
+   *****************************************************************************
+   */
+  void checkAndFixBounds();
+
+private:
   PointType m_min;
   PointType m_max;
 };
@@ -126,10 +175,77 @@ private:
 } /* namespace quest */
 
 
+
 //------------------------------------------------------------------------------
-//              BoundingBox Implementation
+//  BoundingBox implementation
 //------------------------------------------------------------------------------
-namespace quest {
+namespace quest{
+
+
+    //------------------------------------------------------------------------------
+    template<int DIM>
+    BoundingBox<DIM>& BoundingBox<DIM>::operator=(const BoundingBox& rhs )
+    {
+
+      if ( this != &rhs ) {
+        m_min = rhs.m_min;
+        m_max = rhs.m_max;
+      }
+
+      return *this;
+    }
+
+    //------------------------------------------------------------------------------
+    template<int DIM>
+    template<typename T>
+    bool BoundingBox<DIM>::contains(const Point<T,DIM>& otherPt) const
+    {
+        for(int dim = 0; dim < DIM; ++dim)
+        {
+            if( otherPt[dim] < m_min[dim] || otherPt[dim] >  m_max[dim])
+                return false;
+        }
+        return true;
+    }
+
+
+    //------------------------------------------------------------------------------
+    template<int DIM>
+    bool BoundingBox<DIM>::isValid() const
+    {
+      for(int dim = 0; dim < DIM; ++dim)
+      {
+          if( m_min[dim] >  m_max[dim])
+              return false;
+      }
+      return true;
+
+    }
+
+    //------------------------------------------------------------------------------
+    template<int DIM>
+    void BoundingBox<DIM>::addPoint (const PointType& pt)
+    {
+        for (int dim=0; dim < DIM; ++dim ) {
+            if ( pt[dim] < m_min[dim] ) {
+                m_min[dim] = pt[dim];
+            }
+            if ( pt[dim] > m_max[dim] ) {
+                m_max[dim] = pt[dim];
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    template<int DIM>
+    void BoundingBox<DIM>::checkAndFixBounds ()
+    {
+        for (int dim=0; dim < DIM; ++dim ) {
+            if ( m_min[dim] > m_max[dim] ) {
+                std::swap( m_min[dim], m_max[dim] );
+            }
+        }
+    }
 
 template<int DIM>
 inline BoundingBox<DIM> BoundingBox<DIM>::box_union( const BoundingBox& b1,
@@ -149,7 +265,7 @@ inline BoundingBox<DIM> BoundingBox<DIM>::box_union( const BoundingBox& b1,
    return( bb );
 }
 
-} /* namespace quest */
+} // end namespace quest
 
 
 #endif /* BOUNDINGBOX_HPP_ */
