@@ -126,6 +126,24 @@ return rv;
 // splicer end class.DataView.method.has_buffer
 }
 
+bool SIDRE_dataview_is_external(SIDRE_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.is_external
+bool rv = selfobj->isExternal();
+return rv;
+// splicer end class.DataView.method.is_external
+}
+
+bool SIDRE_dataview_is_applied(SIDRE_dataview * self)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.is_applied
+bool rv = selfobj->isApplied();
+return rv;
+// splicer end class.DataView.method.is_applied
+}
+
 bool SIDRE_dataview_is_opaque(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
@@ -198,6 +216,15 @@ return;
 // splicer end class.DataView.method.set_scalar_double
 }
 
+SIDRE_dataview * SIDRE_dataview_set_external_data_ptr(SIDRE_dataview * self, void * external_ptr)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.set_external_data_ptr
+DataView * rv = selfobj->setExternalDataPtr(external_ptr);
+return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
+// splicer end class.DataView.method.set_external_data_ptr
+}
+
 int SIDRE_dataview_get_data_int(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
@@ -232,15 +259,6 @@ DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
 double rv = selfobj->getData<double>();
 return rv;
 // splicer end class.DataView.method.get_data_double
-}
-
-SIDRE_dataview * SIDRE_dataview_set_void_ptr(SIDRE_dataview * self, void * data_ptr)
-{
-DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
-// splicer begin class.DataView.method.set_void_ptr
-DataView * rv = selfobj->setVoidPtr(data_ptr);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataView.method.set_void_ptr
 }
 
 SIDRE_datagroup * SIDRE_dataview_get_owning_group(SIDRE_dataview * self)

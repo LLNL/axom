@@ -105,7 +105,13 @@ TEST(C_sidre_opaque,basic_inout)
 
   AA_extent * ext = AA_extent_new(0, ihi_val);
 
-  SIDRE_dataview * ext_view = SIDRE_datagroup_create_opaque_view(problem_gp, "ext", ext);
+  SIDRE_dataview * ext_view = SIDRE_datagroup_create_view_external(problem_gp, "ext", ext);
+
+  bool test_external = SIDRE_dataview_is_external(ext_view);
+  EXPECT_EQ(test_external, true);
+
+  bool test_applied = SIDRE_dataview_is_applied(ext_view);
+  EXPECT_EQ(test_applied, false);
 
   bool test_opaque = SIDRE_dataview_is_opaque(ext_view);
   EXPECT_EQ(test_opaque, true);
@@ -121,7 +127,7 @@ TEST(C_sidre_opaque,basic_inout)
   AA_extent * ext2 = AA_extent_new(0, 2 * ihi_val);
 
   SIDRE_dataview * ext2_view = SIDRE_datagroup_create_view_empty(problem_gp, "ext2");
-  ext2_view = SIDRE_dataview_set_void_ptr(ext2_view, ext2);
+  ext2_view = SIDRE_dataview_set_external_data_ptr(ext2_view, ext2);
 
   bool test_opaque2 = SIDRE_dataview_is_opaque(ext2_view);
   EXPECT_EQ(test_opaque2, true);
@@ -160,11 +166,16 @@ TEST(C_sidre_opaque,meshvar)
   SIDRE_datagroup * problem_gp = SIDRE_datagroup_create_group(root, "problem");
 
   // Add two different mesh vars to mesh var group
-  SIDRE_datagroup * meshvar_gp = SIDRE_datagroup_create_group(problem_gp, "mesh_var");
+  SIDRE_datagroup * meshvar_gp = 
+    SIDRE_datagroup_create_group(problem_gp, "mesh_var");
+
   AA_meshvar * zone_mv = AA_meshvar_new(_Zone_, _Int_, zone_var_depth);
-  SIDRE_dataview * zone_mv_view = SIDRE_datagroup_create_opaque_view(meshvar_gp, "zone_mv", zone_mv);
+  SIDRE_dataview * zone_mv_view = 
+    SIDRE_datagroup_create_view_external(meshvar_gp, "zone_mv", zone_mv);
+
   AA_meshvar * node_mv = AA_meshvar_new(_Node_, _Double_, node_var_depth);
-  SIDRE_dataview * node_mv_view = SIDRE_datagroup_create_opaque_view(meshvar_gp, "node_mv", node_mv);
+  SIDRE_dataview * node_mv_view = 
+     SIDRE_datagroup_create_view_external(meshvar_gp, "node_mv", node_mv);
 
   //
   // Create domain groups, add extents
@@ -172,16 +183,20 @@ TEST(C_sidre_opaque,meshvar)
   //
   for (int idom = 0 ; idom < 2 ; ++idom)
   {
-    SIDRE_datagroup * dom_gp = SIDRE_datagroup_create_group(problem_gp, dom_name[idom].c_str());
-    AA_extent * dom_ext = AA_extent_new(ilo_val[idom], ihi_val[idom]);
-    SIDRE_datagroup_create_opaque_view(dom_gp, "ext", dom_ext);
+    SIDRE_datagroup * dom_gp = 
+      SIDRE_datagroup_create_group(problem_gp, dom_name[idom].c_str());
 
-    AA_meshvar * zonemv = (AA_meshvar *) SIDRE_dataview_get_void_ptr(zone_mv_view);
+    AA_extent * dom_ext = AA_extent_new(ilo_val[idom], ihi_val[idom]);
+    SIDRE_datagroup_create_view_external(dom_gp, "ext", dom_ext);
+
+    AA_meshvar * zonemv = 
+      (AA_meshvar *) SIDRE_dataview_get_void_ptr(zone_mv_view);
     (void) SIDRE_datagroup_create_view_and_allocate_from_type(dom_gp, "zone_data",
                                                             SIDRE_INT_ID, 
                                                             AA_get_num_vals(zonemv, dom_ext));
 
-    AA_meshvar * nodemv = (AA_meshvar *)  SIDRE_dataview_get_void_ptr(node_mv_view);
+    AA_meshvar * nodemv = 
+      (AA_meshvar *)  SIDRE_dataview_get_void_ptr(node_mv_view);
     (void) SIDRE_datagroup_create_view_and_allocate_from_type(dom_gp, "node_data",
                                                             SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
 

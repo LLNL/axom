@@ -73,7 +73,7 @@ contains
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)
     real(C_DOUBLE), pointer :: ddata_chk(:)
-    integer, parameter :: len = 11
+    integer(C_LONG), parameter :: len = 11
     integer ii
 
     ds = datastore_new()
@@ -87,8 +87,10 @@ contains
        ddata(ii) = idata(ii) * 2.0
     enddo
 
-    iview = root%create_external_view("idata", c_loc(idata), SIDRE_INT_ID, len)
-    dview = root%create_external_view("ddata", c_loc(ddata), SIDRE_DOUBLE_ID, len)
+    iview = root%create_view_external("idata", c_loc(idata))
+    call iview%apply(SIDRE_INT_ID, len)
+    dview = root%create_view_external("ddata", c_loc(ddata))
+    call dview%apply(SIDRE_DOUBLE_ID, len)
     call assert_true(root%get_num_views() .eq. 2)
 
     call iview%print()
@@ -121,7 +123,7 @@ contains
     real(C_DOUBLE), allocatable, target :: ddata(:)
     integer(C_INT), pointer :: idata_chk(:)
     real(C_DOUBLE), pointer :: ddata_chk(:)
-    integer, parameter :: len = 11
+    integer(C_LONG), parameter :: len = 11
     integer ii
 
     ds = datastore_new()
@@ -135,8 +137,10 @@ contains
        ddata(ii) = idata(ii) * 2.0
     enddo
 
-    iview = root%create_external_view("idata", c_loc(idata), SIDRE_INT_ID, len)
-    dview = root%create_external_view("ddata", c_loc(ddata), SIDRE_DOUBLE_ID, len)
+    iview = root%create_view_external("idata", c_loc(idata))
+    call iview%apply_type_nelems(SIDRE_INT_ID, len)
+    dview = root%create_view_external("ddata", c_loc(ddata))
+    call dview%apply_type_nelems(SIDRE_DOUBLE_ID, len)
 
     call assert_true(root%get_num_views() .eq. 2)
     tmpbuff = iview%get_buffer()

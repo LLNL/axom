@@ -211,40 +211,22 @@ return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_view_into_buffer_bufferify
 }
 
-SIDRE_dataview * SIDRE_datagroup_create_opaque_view(SIDRE_datagroup * self, const char * name, void * opaque_ptr)
+SIDRE_dataview * SIDRE_datagroup_create_view_external(SIDRE_datagroup * self, const char * name, void * external_ptr)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_opaque_view
-DataView * rv = selfobj->createOpaqueView(name, opaque_ptr);
+// splicer begin class.DataGroup.method.create_view_external
+DataView * rv = selfobj->createView(name, external_ptr);
 return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_opaque_view
+// splicer end class.DataGroup.method.create_view_external
 }
 
-SIDRE_dataview * SIDRE_datagroup_create_opaque_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * opaque_ptr)
+SIDRE_dataview * SIDRE_datagroup_create_view_external_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_ptr)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_opaque_view_bufferify
-DataView * rv = selfobj->createOpaqueView(std::string(name, Lname), opaque_ptr);
+// splicer begin class.DataGroup.method.create_view_external_bufferify
+DataView * rv = selfobj->createView(std::string(name, Lname), external_ptr);
 return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_opaque_view_bufferify
-}
-
-SIDRE_dataview * SIDRE_datagroup_create_external_view(SIDRE_datagroup * self, const char * name, void * external_data, int type, SIDRE_SidreLength num_elems)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_external_view
-DataView * rv = selfobj->createExternalView(name, external_data, getTypeID(type), num_elems);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_external_view
-}
-
-SIDRE_dataview * SIDRE_datagroup_create_external_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_data, int type, SIDRE_SidreLength num_elems)
-{
-DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_external_view_bufferify
-DataView * rv = selfobj->createExternalView(std::string(name, Lname), external_data, getTypeID(type), num_elems);
-return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_external_view_bufferify
+// splicer end class.DataGroup.method.create_view_external_bufferify
 }
 
 SIDRE_dataview * SIDRE_datagroup_create_external_view_with_shape(SIDRE_datagroup * self, const char * name, void * external_data, int type, int ndims, SIDRE_SidreLength * shape)

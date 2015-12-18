@@ -43,7 +43,7 @@ public:
 
   void copyToGroup(DataGroup * gp)
   {
-    gp->createExternalView("idata", &m_idata[0], DataType::c_int(m_idata.size()));
+    gp->createView("idata", &m_idata[0])->apply(DataType::c_int(m_idata.size()));
   }
 
   void copyFromGroup(DataGroup * gp)
@@ -109,8 +109,12 @@ public:
 
   void copyToGroup(DataGroup * gp)
   {
-    gp->createExternalView("idata", &m_idata[0], DataType::c_int(m_idata.size()));
-    gp->createExternalView("ddata", &m_ddata[0], DataType::c_double(m_ddata.size()));
+    gp->createView("idata", &m_idata[0])->
+//     apply(DataType::c_int(m_idata.size()));
+       apply(asctoolkit::sidre::INT_ID, m_idata.size());
+    gp->createView("ddata", &m_ddata[0])->
+//     apply(DataType::c_double(m_ddata.size()));
+       apply(asctoolkit::sidre::DOUBLE_ID, m_ddata.size());
 
     DataGroup * gp1 = gp->createGroup("myclass1");
 

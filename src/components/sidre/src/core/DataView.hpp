@@ -284,15 +284,11 @@ public:
   }
 
   /*!
-   * \brief Return true if view is opaque (i.e., view has no knowledge 
-   *        of the data it holds and can only return a void* pointer to it);
-   *        false otherwise.
+   * \brief Return true if view holds external data; false otherwise.
    */
-  // TODO - this m_is_opaque flag should go away.  Instead we will have a state identifying whether a view holds data
-  // that is described.  Data will start off not described, then will be described when a schema or type info is set.
-  bool  isOpaque() const
+  bool isExternal() const
   {
-    return m_is_opaque;
+    return m_state == EXTERNAL;
   }
 
   /*!
@@ -302,6 +298,16 @@ public:
   bool isApplied() const
   {
     return m_is_applied;
+  }
+
+  /*!
+   * \brief Convenience function that returns true if view is opaque 
+   *        (i.e., has access to data but has no knowledge of the data 
+   *        type or structure); false otherwise.
+   */
+  bool  isOpaque() const
+  {
+    return m_state == EXTERNAL && !isApplied();
   }
 
   /*!
@@ -445,17 +451,14 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to the view's data.
-   * The returned pointer value will take into account any offsets or strides applied to described data.
+   * \brief Returns a void pointer to beginning of view's data.
    */
   void * getVoidPtr()
   {
-    // This needs to be changed to check if data is owned, not whether it's described (ie opaque or not)
-    if (isOpaque())
+    if ( isOpaque() )
     {
       return (void *)m_node.as_uint64();
     }
-    // else, view contains data store owned data so retrieve pointer to node's data.
     else
     {
       return m_node.element_ptr(0);
@@ -490,30 +493,8 @@ public:
   //!  @name Set methods for setting data in the view.  Set methods are provided for simple scalars, strings, and
   //!  void pointers for undescribed (opaque) data.
 
-  // Developer note: Strings, Scalars, and pointers to unowned described (external) or undescribed (opaque) data can
-  // all be handled by the view's conduit node.  Having a data buffer is unnecessary, so there is room for refactoring
-  // here.  (However, scalars will be refactored in the future to be in a scalar pool).
-
   /*!
-   * \brief Set view to point to undescribed data not owned by the data store (ie, opaque data).
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView* setVoidPtr(void * data_ptr);
-
-  /*!
-   * \brief Set the view's data (should be a string).
-   */
-  DataView* setString(const std::string& value)
-  {
-    // TODO: Will add check to verify that view holds a string in later commit (need enum set up first).
-    // TODO: Check with Cyrus that the set_string function is the right call (should be).
-    m_node.set_string(value);
-    return this;
-  }
-
-  /*!
-   * \brief Set the view's data ( should be a scalar ).
+   * \brief Set the view to hold the given scalar.
    */
   template<typename ScalarType>
   DataView* setScalar(ScalarType value)
@@ -526,8 +507,31 @@ public:
 #endif
 
     m_node.set(value);
+    m_state = SCALAR;
     return this;
   }
+
+  /*!
+   * \brief Set the to hold the give string.
+   */
+  DataView* setString(const std::string& value)
+  {
+    // TODO: Will add check to verify that view holds a string in later commit (need enum set up first).
+    // TODO: Check with Cyrus that the set_string function is the right call (should be).
+    m_node.set_string(value);
+    m_state = STRING;
+    return this;
+  };
+
+  /*!
+   * \brief Set view to hold external data.
+   *
+   * Data is undescribed (i.e., view is opaque) until one of the apply 
+   * methods is called on the view.
+   *
+   * \return pointer to this DataView object.
+   */
+  DataView* setExternalDataPtr(void * external_ptr);
 
   //@}
 
@@ -588,12 +592,12 @@ private:
             DataBuffer * const data_buffer );
 
   /*!
-   *  \brief Private ctor that creates an opaque DataView with given name
+   *  \brief Private ctor that creates an external DataView with given name
    *         in given parent group.
    */
   DataView( const std::string& name,
             DataGroup * const owning_group,
-            void * opaque_ptr);
+            void * external_ptr);
 
   /*!
    * \brief Private copy ctor.
@@ -607,12 +611,6 @@ private:
 
 //@}
 
-
-  /*!
-   *  \brief Private method returns true if data allocation on view is a
-   *         valid operation; else false
-   */
-  bool allocationIsValid() const; 
 
 //@{
 //!  @name Private DataView declaration methods.
@@ -660,20 +658,36 @@ private:
 
 //@}
 
-  /// Name of this DataView object.
-  std::string m_name;
 
-  /// DataGroup object that owns this DataView object.
-  DataGroup * m_owning_group;
+//@{
+//!  @name Private method that determine whether some view operations are valid.
 
-  /// DataBuffer associated with this DataView object.
-  DataBuffer * m_data_buffer;
+  /*!
+   *  \brief Private method returns true if data allocation on view is a
+   *         valid operation; else false
+   */
+  bool allocateIsValid() const; 
 
-  /// Data description (schema) that describes the view's data.
-  Schema m_schema;
+  /*!
+   *  \brief Private method returns true if attaching buffer to view is a
+   *         valid operation; else false
+   */
+  bool attachBufferIsValid() const; 
 
-  /// Conduit node used to access the data in this DataView.
-  Node m_node;
+  /*!
+   *  \brief Private method returns true if setting external data pointer is 
+             on view is a valid operation; else false
+   */
+  bool setExternalDataPtrIsValid() const;
+
+  /*!
+   *  \brief Private method returns true if apply is a valid operation on 
+   *         view; else false
+   */
+  bool applyIsValid() const; 
+
+//@}
+
 
   /// 
   /// Enum with constants that identify the state of a view.
@@ -700,17 +714,34 @@ private:
                      //    applied is true
   };
 
-  /// State of view.
-  State m_state;
+  /*!
+   *  \brief Private method returns string name of given view state enum value.
+   */
+  char const * getStateStringName(State state) const;
 
-  /// Is this DataView opaque?  Will get refactored.
-  bool m_is_opaque;
+  /// Name of this DataView object.
+  std::string m_name;
 
-  /// Has data description been applied to the view's data?
-  bool m_is_applied;
+  /// DataGroup object that owns this DataView object.
+  DataGroup * m_owning_group;
+
+  /// DataBuffer associated with this DataView object.
+  DataBuffer * m_data_buffer;
+
+  /// Data description (schema) that describes the view's data.
+  Schema m_schema;
+
+  /// Conduit node used to access the data in this DataView.
+  Node m_node;
 
   /// Shape information
   std::vector<SidreLength> * m_shape;
+
+  /// State of view.
+  State m_state;
+
+  /// Has data description been applied to the view's data?
+  bool m_is_applied;
 
   /*!
    *  Unimplemented ctors and copy-assignment operators.

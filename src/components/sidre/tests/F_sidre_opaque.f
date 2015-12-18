@@ -112,8 +112,10 @@ contains
     allocate(ext)
     ext = Extent(0, ihi_val)
 
-    ext_view = problem_gp%create_opaque_view("ext", c_loc(ext))
+    ext_view = problem_gp%create_view_external("ext", c_loc(ext))
 
+    call assert_equals(ext_view%is_external(), .true.)
+    call assert_equals(ext_view%is_applied(), .false.)
     call assert_equals(ext_view%is_opaque(), .true.)
 
     test_extent_ptr = ext_view%get_void_ptr()
@@ -128,7 +130,7 @@ contains
     ext2 = Extent(0, 2 * ihi_val)
 
     ext2_view = problem_gp%create_view_empty("ext2")
-    ext2_view = ext2_view%set_void_ptr( c_loc(ext2) )
+    ext2_view = ext2_view%set_external_data_ptr( c_loc(ext2) )
 
     call assert_equals(ext2_view%is_opaque(), .true.)
 
@@ -188,10 +190,10 @@ contains
     meshvar_gp = problem_gp%create_group("mesh_var")
     allocate(zone_mv)
     zone_mv = MeshVar(Zone_Centering, Int_Type, zone_var_depth)
-    zone_mv_view = meshvar_gp%create_opaque_view("zone_mv", c_loc(zone_mv))
+    zone_mv_view = meshvar_gp%create_view_external("zone_mv", c_loc(zone_mv))
     allocate(node_mv)
     node_mv = MeshVar(Node_Centering, Double_Type, node_var_depth)
-    node_mv_view = meshvar_gp%create_opaque_view("node_mv", c_loc(node_mv))
+    node_mv_view = meshvar_gp%create_view_external("node_mv", c_loc(node_mv))
 
     !
     ! Create domain groups, add extents
@@ -201,7 +203,7 @@ contains
        dom_gp = problem_gp%create_group(dom_name(idom))
        allocate(dom_ext)
        dom_ext = Extent(ilo_val(idom), ihi_val(idom))
-       ext_view = dom_gp%create_opaque_view("ext", c_loc(dom_ext))
+       ext_view = dom_gp%create_view_external("ext", c_loc(dom_ext))
 
        zonemv_ptr = zone_mv_view%get_void_ptr()
        call c_f_pointer(zonemv_ptr, zonemv)

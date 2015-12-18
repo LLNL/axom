@@ -48,7 +48,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_refdens(Real_t(1.0))
 {
   m_DataGroup = m_DataStore.getRoot()->createGroup("Domain");
-  m_DataGroup->createOpaqueView("LuleshDomain",this);
+  m_DataGroup->createView("LuleshDomain",this);
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;

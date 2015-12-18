@@ -43,8 +43,10 @@ TEST(sidre_external, declare_external_buffer)
   DataBuffer * dbuff_2 = ds->createBuffer();
 
   dbuff_0->allocate(asctoolkit::sidre::DOUBLE_ID, len);
+
   dbuff_1->declare(asctoolkit::sidre::INT_ID, len);
   dbuff_1->setExternalData(idata);
+
   dbuff_2->declare(asctoolkit::sidre::DOUBLE_ID, len);
   dbuff_2->setExternalData(ddata);
 
@@ -64,7 +66,7 @@ TEST(sidre_external, declare_external_buffer)
 }
 
 //------------------------------------------------------------------------------
-// Test DataGroup::createExternalView()
+// Test DataGroup::createView() -- external
 //------------------------------------------------------------------------------
 TEST(sidre_external, create_external_view)
 {
@@ -82,10 +84,8 @@ TEST(sidre_external, create_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  (void) root->createExternalView("idata", idata,
-                                  DataType::c_int(len));
-  (void) root->createExternalView("ddata", ddata,
-                                  DataType::c_double(len));
+  (void) root->createView("idata", idata)->apply(DataType::c_int(len));
+  (void) root->createView("ddata", ddata)->apply(DataType::c_double(len));
   EXPECT_EQ(root->getNumViews(), 2u);
 
   root->getView("idata")->print();
@@ -127,10 +127,8 @@ TEST(sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  (void) root->createExternalView("idata", idata,
-                                  DataType::c_int(len));
-  (void) root->createExternalView("ddata", ddata,
-                                  DataType::c_double(len));
+  (void) root->createView("idata", idata)->apply(DataType::c_int(len));
+  (void) root->createView("ddata", ddata)->apply(DataType::c_double(len));
   EXPECT_EQ(root->getNumViews(), 2u);
   EXPECT_EQ(root->getView("idata")->getBuffer()->isExternal(), true);
   EXPECT_EQ(root->getView("ddata")->getBuffer()->isExternal(), true);

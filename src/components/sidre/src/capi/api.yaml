@@ -136,18 +136,10 @@ classes:
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
        function_suffix: _into_buffer
 
-    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength num_elems )
-       function_suffix:
-       fortran_generic:
-         num_elems:
-         -  int
-         -  long
+    -  decl: DataView * createView( const std::string& name, void * external_ptr)
+       function_suffix: _external
     -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, int ndims, SidreLength * shape+dimension )
        function_suffix: _with_shape
-
-#    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, const DataType& dtype )
-#    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, const Schema& schema )
 
     -  decl: void destroyView( const std::string &name )
 #    -  decl: void destroyView( IndexType idx )
@@ -280,9 +272,10 @@ classes:
       return_this: True
 #    - decl: DataView* apply(const DataType& dtype)
 #    - decl: DataView* apply(const Schema& schema)
-    - decl: bool  hasBuffer() const
-    - decl: bool  isOpaque() const
-#    - decl: bool isApplied() const
+    - decl: bool hasBuffer() const
+    - decl: bool isExternal() const
+    - decl: bool isApplied() const
+    - decl: bool isOpaque() const
     - decl: const std::string& getName() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
@@ -300,6 +293,8 @@ classes:
         - float
         - double
 
+    -  decl: DataView * setExternalDataPtr(void * external_ptr)
+
 #           template<typename DataType>
     - decl: DataType getData()
       cpp_template:
@@ -309,7 +304,6 @@ classes:
         - float
         - double
 
-    -  decl: DataView * setVoidPtr(void * data_ptr)
 ##    - decl: const Schema& getSchema() const
     - decl: DataGroup* getOwningGroup()
 #    - decl: DataGroup const* getOwningGroup() const
