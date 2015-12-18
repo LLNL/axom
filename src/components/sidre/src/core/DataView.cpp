@@ -577,34 +577,6 @@ DataView::DataView( const std::string& name,
 /*
  *************************************************************************
  *
- * PRIVATE ctor for DataView associated with opaque data.
- *
- *************************************************************************
- */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group,
-                    void * external_ptr)
-  : m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(ATK_NULLPTR),
-  m_schema(),
-  m_node(),
-  m_shape(ATK_NULLPTR),
-  m_state(EXTERNAL),
-  m_is_applied(false)
-{
-  m_data_buffer = owning_group->getDataStore()->createBuffer();
-  m_data_buffer->setExternalData(external_ptr);
-  m_data_buffer->attachView(this);  
-
-  // todo, conduit should provide a check for if uint64 is a
-  // good enough type to rep void *
-  m_node.set((conduit::uint64)external_ptr);
-}
-
-/*
- *************************************************************************
- *
  * PRIVATE dtor.
  *
  *************************************************************************

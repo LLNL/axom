@@ -592,14 +592,6 @@ private:
             DataGroup * const owning_group );
 
   /*!
-   *  \brief Private ctor that creates an external DataView with given name
-   *         in given parent group.
-   */
-  DataView( const std::string& name,
-            DataGroup * const owning_group,
-            void * external_ptr);
-
-  /*!
    * \brief Private copy ctor.
    */
   DataView(const DataView& source);

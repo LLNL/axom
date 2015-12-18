@@ -275,7 +275,8 @@ DataView * DataGroup::createView( const std::string& name,
   }
   else
   {
-    DataView * const view = new DataView(name, this, external_ptr);
+    DataView * view = new DataView(name, this);
+    view->setExternalDataPtr(external_ptr);
 
     return attachView(view);
   }
