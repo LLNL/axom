@@ -95,7 +95,6 @@ module sidre_mod
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
         procedure :: create_view_external => datagroup_create_view_external
-        procedure :: create_external_view_with_shape => datagroup_create_external_view_with_shape
         procedure :: destroy_view => datagroup_destroy_view
         procedure :: destroy_view_and_data => datagroup_destroy_view_and_data
         procedure :: move_view => datagroup_move_view
@@ -230,6 +229,7 @@ module sidre_mod
         procedure :: apply_type_nelems => dataview_apply_type_nelems
         procedure :: apply_type_nelems_offset => dataview_apply_type_nelems_offset
         procedure :: apply_type_nelems_offset_stride => dataview_apply_type_nelems_offset_stride
+        procedure :: apply_type_shape => dataview_apply_type_shape
         procedure :: has_buffer => dataview_has_buffer
         procedure :: is_external => dataview_is_external
         procedure :: is_applied => dataview_is_applied
@@ -268,7 +268,8 @@ module sidre_mod
             apply_nelems_offset_stride,  &
             apply_type_nelems,  &
             apply_type_nelems_offset,  &
-            apply_type_nelems_offset_stride
+            apply_type_nelems_offset_stride,  &
+            apply_type_shape
         generic :: reallocate => &
             ! splicer begin class.DataView.generic.reallocate
             ! splicer end class.DataView.generic.reallocate
@@ -649,35 +650,6 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: external_ptr
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_external_bufferify
-        
-        function sidre_datagroup_create_external_view_with_shape(self, name, external_data, type, ndims, shape) &
-                result(rv) &
-                bind(C, name="SIDRE_datagroup_create_external_view_with_shape")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            type(C_PTR), value, intent(IN) :: external_data
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_INT), value, intent(IN) :: ndims
-            integer(C_LONG), intent(IN) :: shape(*)
-            type(C_PTR) :: rv
-        end function sidre_datagroup_create_external_view_with_shape
-        
-        function sidre_datagroup_create_external_view_with_shape_bufferify(self, name, Lname, external_data, type, ndims, shape) &
-                result(rv) &
-                bind(C, name="SIDRE_datagroup_create_external_view_with_shape_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
-            type(C_PTR), value, intent(IN) :: external_data
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_INT), value, intent(IN) :: ndims
-            integer(C_LONG), intent(IN) :: shape(*)
-            type(C_PTR) :: rv
-        end function sidre_datagroup_create_external_view_with_shape_bufferify
         
         subroutine sidre_datagroup_destroy_view(self, name) &
                 bind(C, name="SIDRE_datagroup_destroy_view")
@@ -1113,6 +1085,16 @@ module sidre_mod
             integer(C_LONG), value, intent(IN) :: offset
             integer(C_LONG), value, intent(IN) :: stride
         end subroutine sidre_dataview_apply_type_nelems_offset_stride
+        
+        subroutine sidre_dataview_apply_type_shape(self, type, ndims, shape) &
+                bind(C, name="SIDRE_dataview_apply_type_shape")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: type
+            integer(C_INT), value, intent(IN) :: ndims
+            integer(C_LONG), intent(IN) :: shape(*)
+        end subroutine sidre_dataview_apply_type_shape
         
         pure function sidre_dataview_has_buffer(self) &
                 result(rv) &
@@ -1675,28 +1657,6 @@ contains
         ! splicer end class.DataGroup.method.create_view_external
     end function datagroup_create_view_external
     
-    function datagroup_create_external_view_with_shape(obj, name, external_data, type, ndims, shape) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*), intent(IN) :: name
-        type(C_PTR), value, intent(IN) :: external_data
-        integer(C_INT), value, intent(IN) :: type
-        integer(C_INT), value, intent(IN) :: ndims
-        integer(C_LONG), intent(IN) :: shape(*)
-        type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_external_view_with_shape
-        rv%voidptr = sidre_datagroup_create_external_view_with_shape_bufferify(  &
-            obj%voidptr,  &
-            name,  &
-            len_trim(name),  &
-            external_data,  &
-            type,  &
-            ndims,  &
-            shape)
-        ! splicer end class.DataGroup.method.create_external_view_with_shape
-    end function datagroup_create_external_view_with_shape
-    
     subroutine datagroup_destroy_view(obj, name)
         use iso_c_binding
         implicit none
@@ -1906,8 +1866,9 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_int_scalar
     
     ! Generated by genfsidresplicer.py
@@ -1927,8 +1888,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_int_1d
     
     ! Generated by genfsidresplicer.py
@@ -1948,8 +1910,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_int_2d
     
     ! Generated by genfsidresplicer.py
@@ -1969,8 +1932,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_int_3d
     
     ! Generated by genfsidresplicer.py
@@ -1990,8 +1954,9 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_long_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2011,8 +1976,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_long_1d
     
     ! Generated by genfsidresplicer.py
@@ -2032,8 +1998,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_long_2d
     
     ! Generated by genfsidresplicer.py
@@ -2053,8 +2020,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_long_3d
     
     ! Generated by genfsidresplicer.py
@@ -2074,8 +2042,9 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_float_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2095,8 +2064,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_float_1d
     
     ! Generated by genfsidresplicer.py
@@ -2116,8 +2086,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_float_2d
     
     ! Generated by genfsidresplicer.py
@@ -2137,8 +2108,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_float_3d
     
     ! Generated by genfsidresplicer.py
@@ -2158,8 +2130,9 @@ contains
         lname = len_trim(name)
         extents(1) = 1_SIDRE_LENGTH
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 0, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 0, extents)
     end function datagroup_create_array_view_double_scalar
     
     ! Generated by genfsidresplicer.py
@@ -2179,8 +2152,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 1, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 1, extents)
     end function datagroup_create_array_view_double_1d
     
     ! Generated by genfsidresplicer.py
@@ -2200,8 +2174,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 2, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 2, extents)
     end function datagroup_create_array_view_double_2d
     
     ! Generated by genfsidresplicer.py
@@ -2221,8 +2196,9 @@ contains
         lname = len_trim(name)
         extents = shape(value, kind=SIDRE_LENGTH)
         call SHROUD_C_LOC(value, addr)
-        rv%voidptr = SIDRE_datagroup_create_external_view_with_shape_bufferify( &
-            group%voidptr, name, lname, addr, type, 3, extents)
+        rv%voidptr = SIDRE_datagroup_create_view_external_bufferify( &
+            group%voidptr, name, lname, addr)
+        call SIDRE_dataview_apply_type_shape(rv%voidptr, type, 3, extents)
     end function datagroup_create_array_view_double_3d
     ! splicer end class.DataGroup.additional_functions
     
@@ -2580,6 +2556,22 @@ contains
             stride)
         ! splicer end class.DataView.method.apply_type_nelems_offset_stride
     end subroutine dataview_apply_type_nelems_offset_stride
+    
+    subroutine dataview_apply_type_shape(obj, type, ndims, shape)
+        use iso_c_binding
+        implicit none
+        class(dataview) :: obj
+        integer(C_INT), value, intent(IN) :: type
+        integer(C_INT), value, intent(IN) :: ndims
+        integer(C_LONG), intent(IN) :: shape(*)
+        ! splicer begin class.DataView.method.apply_type_shape
+        call sidre_dataview_apply_type_shape(  &
+            obj%voidptr,  &
+            type,  &
+            ndims,  &
+            shape)
+        ! splicer end class.DataView.method.apply_type_shape
+    end subroutine dataview_apply_type_shape
     
     function dataview_has_buffer(obj) result(rv)
         use iso_c_binding

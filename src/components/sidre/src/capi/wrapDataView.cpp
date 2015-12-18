@@ -117,6 +117,15 @@ return;
 // splicer end class.DataView.method.apply_type_nelems_offset_stride
 }
 
+void SIDRE_dataview_apply_type_shape(SIDRE_dataview * self, int type, int ndims, SIDRE_SidreLength * shape)
+{
+DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.apply_type_shape
+selfobj->apply(getTypeID(type), ndims, shape);
+return;
+// splicer end class.DataView.method.apply_type_shape
+}
+
 bool SIDRE_dataview_has_buffer(SIDRE_dataview * self)
 {
 DataView *selfobj = static_cast<DataView *>(static_cast<void *>(self));

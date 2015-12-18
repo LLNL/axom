@@ -138,8 +138,6 @@ classes:
 
     -  decl: DataView * createView( const std::string& name, void * external_ptr)
        function_suffix: _external
-    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, int ndims, SidreLength * shape+dimension )
-       function_suffix: _with_shape
 
     -  decl: void destroyView( const std::string &name )
 #    -  decl: void destroyView( IndexType idx )
@@ -269,6 +267,9 @@ classes:
         -  _type_nelems
         -  _type_nelems_offset
         -  _type_nelems_offset_stride
+      return_this: True
+    - decl: DataView * apply( TypeID type, int ndims, SidreLength * shape+dimension )
+      function_suffix: _type_shape
       return_this: True
 #    - decl: DataView* apply(const DataType& dtype)
 #    - decl: DataView* apply(const Schema& schema)
