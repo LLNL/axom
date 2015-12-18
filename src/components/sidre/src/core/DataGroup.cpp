@@ -245,16 +245,11 @@ DataView * DataGroup::createView( const std::string& name,
   }
   else 
   {
-    DataView * view = ATK_NULLPTR;
-    if ( buff == ATK_NULLPTR ) 
+    DataView * view = new DataView( name, this );
+    if ( buff != ATK_NULLPTR )
     {
-       view = new DataView( name, this);
+       view->attachBuffer( buff );
     }
-    else 
-    {
-       view = new DataView( name, this, buff );
-       buff->attachView(view);
-    } 
     return attachView(view);
   }
 }
@@ -280,12 +275,14 @@ DataView * DataGroup::createView( const std::string& name,
   }
   else
   {
-    DataView * const view = new DataView(name, this, external_ptr);
+    DataView * view = new DataView(name, this);
+    view->setExternalDataPtr(external_ptr);
 
     return attachView(view);
   }
 }
 
+#if 1 // XXXXX -- Needs to be removed
 /*
  *************************************************************************
  *
@@ -322,12 +319,14 @@ DataView * DataGroup::createExternalView( const std::string& name,
     buff->declare(type, num_elems);
     buff->setExternalData(external_data);
 
-    DataView * const view = new DataView( name, this, buff);
+    DataView * view = new DataView( name, this );
+    view->attachBuffer( buff );
     view->apply(type, ndims, shape);
 
     return attachView(view);
   }
 }
+#endif
 
 /*
  *************************************************************************
@@ -893,20 +892,10 @@ DataGroup::~DataGroup()
  */
 DataView * DataGroup::createViewAndBuffer( const std::string& name )
 {
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-
-  if ( name.empty() || hasView(name) ) 
-  {
-    return ATK_NULLPTR;
-  }
-  else 
-  {
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-    return attachView(view);
-  }
+  DataView * view = new DataView( name, this );
+  DataBuffer * buff = this->getDataStore()->createBuffer();
+  view->attachBuffer( buff );
+  return attachView(view);
 }
 
 /*

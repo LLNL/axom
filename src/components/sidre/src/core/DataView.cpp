@@ -237,12 +237,17 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
                   "Cannot attach buffer to view that already has a buffer");
   SLIC_CHECK( buff != ATK_NULLPTR );
 
-  if ( attachBufferIsValid() )
+  if ( attachBufferIsValid() && buff != ATK_NULLPTR )
   {
+    buff->attachView(this);
     m_data_buffer = buff;
-    m_data_buffer->attachView(this);
     m_state = BUFFER_ATTACHED;
     m_is_applied = false;
+
+    if ( m_schema.total_bytes() <= m_data_buffer->getTotalBytes() )
+    {
+      apply(); 
+    }
   }
   return this;
 }
@@ -258,24 +263,26 @@ DataView * DataView::apply()
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
+  SLIC_CHECK_MSG( !m_schema.dtype().is_empty(),
+                  "View has no data description, apply() is a no-op");
 
   if ( applyIsValid() )
   {
-    if ( m_data_buffer == ATK_NULLPTR ) 
+    if ( m_data_buffer == ATK_NULLPTR || m_schema.dtype().is_empty() ) 
     {
-       m_is_applied = false;
+      m_is_applied = false;
     }
     else 
     {
-       if (m_state == EXTERNAL) 
-       { 
-          TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-          SidreLength num_elems = m_schema.dtype().number_of_elements();
-          m_data_buffer->declare(type, num_elems);
-       }
+      if (m_state == EXTERNAL) 
+      { 
+        TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+        SidreLength num_elems = m_schema.dtype().number_of_elements();
+        m_data_buffer->declare(type, num_elems);
+      }
         
-       m_node.set_external(m_schema, m_data_buffer->getVoidPtr());
-       m_is_applied = true;
+      m_node.set_external(m_schema, m_data_buffer->getVoidPtr());
+      m_is_applied = true;
     }
   }
   return this;
@@ -294,14 +301,24 @@ DataView * DataView::apply(SidreLength num_elems,
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
-  SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
+  SLIC_ASSERT_MSG( m_state != EXTERNAL || !m_schema.dtype().is_empty(), 
+                  "View state does not allow apply operation");
+  SLIC_ASSERT_MSG( m_data_buffer != ATK_NULLPTR,
+                  "View needs buffer to get type information");
   SLIC_ASSERT_MSG(num_elems >= 0, "Must give number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must give offset >= 0");
 
-  if ( applyIsValid() &&
-       m_data_buffer != ATK_NULLPTR && num_elems >= 0 && offset >= 0)
+  if ( applyIsValid() && 
+       (m_state != EXTERNAL || !m_schema.dtype().is_empty()) &&
+       m_data_buffer != ATK_NULLPTR &&
+       num_elems >= 0 && offset >= 0)
   {
-    DataType dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
+    DataType dtype(m_schema.dtype());
+    if ( dtype.is_empty() )
+    {
+      dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
+    }
+
     dtype.set_number_of_elements(num_elems);
     dtype.set_offset(offset * dtype.element_bytes() );
     dtype.set_stride(stride * dtype.element_bytes() );
@@ -356,10 +373,10 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
-  SLIC_ASSERT_MSG(m_data_buffer != ATK_NULLPTR, "View must have buffer to know data type");
   SLIC_ASSERT_MSG(ndims >= 1, "Must give number of dimensions >= 0");
+  SLIC_ASSERT_MSG(shape != ATK_NULLPTR, "Pointer to shape cannot be null");
 
-  if ( applyIsValid() && m_data_buffer != ATK_NULLPTR && ndims >= 0 )
+  if ( applyIsValid() && ndims >= 0 && shape != ATK_NULLPTR)
   {
     if (m_shape != ATK_NULLPTR)
     {
@@ -509,6 +526,11 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
     // good enough type to rep void *
     m_node.set((conduit::uint64)external_ptr);
 
+    // 
+    // If view has a data description, apply it.
+    //
+    apply();
+
     m_state = EXTERNAL;
   }
 
@@ -563,55 +585,6 @@ DataView::DataView( const std::string& name,
   m_state(EMPTY),
   m_is_applied(false)
 {
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE ctor for DataView associated with DataBuffer.
- *
- *************************************************************************
- */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group,
-                    DataBuffer * const data_buffer)
-  :   m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(data_buffer),
-  m_schema(),
-  m_node(),
-  m_shape(ATK_NULLPTR),
-  m_state(BUFFER_ATTACHED),
-  m_is_applied(false)
-{
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE ctor for DataView associated with opaque data.
- *
- *************************************************************************
- */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group,
-                    void * external_ptr)
-  : m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(ATK_NULLPTR),
-  m_schema(),
-  m_node(),
-  m_shape(ATK_NULLPTR),
-  m_state(EXTERNAL),
-  m_is_applied(false)
-{
-  m_data_buffer = owning_group->getDataStore()->createBuffer();
-  m_data_buffer->setExternalData(external_ptr);
-  m_data_buffer->attachView(this);  
-
-  // todo, conduit should provide a check for if uint64 is a
-  // good enough type to rep void *
-  m_node.set((conduit::uint64)external_ptr);
 }
 
 /*
