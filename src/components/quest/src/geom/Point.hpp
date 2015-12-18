@@ -135,6 +135,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Output the point's coordinates to the array
+   * \param arr The array that we are outputting to.
+   * \pre The user needs to make sure that the array has been allocated
+   * and has sufficient space for DIM coordinates.
+   *****************************************************************************
+   */
+  void to_array(T* arr) const;
+
+  /*!
+   *****************************************************************************
    * \brief Constructs a Point instance with the given coordinates.
    * \param [in] x the x--coordinate of the point.
    * \param [in] y the y--coordinate of the point.
@@ -288,6 +298,14 @@ inline T* Point< T, DIM >::data()
 {
     return m_components;
 }
+
+template < typename T, int DIM >
+void Point< T, DIM >::to_array(T* arr) const
+{
+    SLIC_ASSERT( arr != ATK_NULLPTR);
+    memcpy( arr, m_components, NBYTES );
+}
+
 
 
 } /* namespace quest*/

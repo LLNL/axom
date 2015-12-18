@@ -22,11 +22,10 @@
 namespace quest
 {
 
-template<int DIM>
+template<typename CoordType, int DIM>
 class BoundingBox
 {
 public:
-    typedef double CoordType;
     typedef Point<CoordType, DIM> PointType;
 public:
 
@@ -98,18 +97,16 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns const pointer to the min corner of the bounding box.
-   * \return ptr pointer to the min corner of the bounding box.
-   * \post ptr != ATK_NULLPTR
+   * \brief Returns const reference to the min corner of the bounding box.
+   * \return const reference to the min corner of the bounding box.
    *****************************************************************************
    */
   const PointType& getMin() const { return m_min; };
 
   /*!
    *****************************************************************************
-   * \brief Returns const pointer to the max corner of the bounding box.
-   * \return ptr pointer to the max corner of the bounding box.
-   * \post ptr != ATK_NULLPTR
+   * \brief Returns const reference to the max corner of the bounding box.
+   * \return sonct reference to the max corner of the bounding box.
    *****************************************************************************
    */
   const PointType& getMax() const { return m_max; };
@@ -135,14 +132,14 @@ public:
   /*!
    *****************************************************************************
    * \brief Checks whether the box contains the point
-   * @param [in] x the x--coordinate
-   * @param [in] y the y--coordinate
-   * @param [in] z the z--coordinate
-   * @return status true if point inside the box, else false.
+   * \param [in] x the x--coordinate
+   * \param [in] y the y--coordinate
+   * \param [in] z the z--coordinate
+   * \return status true if point inside the box, else false.
    *****************************************************************************
    */
-  template<typename T>
-  bool contains( const Point<T, DIM>& otherPt) const;
+  template<typename OtherType>
+  bool contains( const Point<OtherType, DIM>& otherPt) const;
 
 
   /*!
@@ -150,7 +147,7 @@ public:
    * \brief Checks that we have a valid bounding box.
    * A bounding box is valid when its extent in each dimension
    * (max coordinate minus min coordinate) is greater than or equal to zero
-   * @return status true if point inside the box, else false.
+   * \return status true if point inside the box, else false.
    *****************************************************************************
    */
   bool isValid() const;
@@ -183,8 +180,8 @@ namespace quest{
 
 
     //------------------------------------------------------------------------------
-    template<int DIM>
-    BoundingBox<DIM>& BoundingBox<DIM>::operator=(const BoundingBox& rhs )
+    template<typename CoordType, int DIM>
+    BoundingBox<CoordType, DIM>& BoundingBox<CoordType, DIM>::operator=(const BoundingBox& rhs )
     {
 
       if ( this != &rhs ) {
@@ -196,9 +193,9 @@ namespace quest{
     }
 
     //------------------------------------------------------------------------------
-    template<int DIM>
-    template<typename T>
-    bool BoundingBox<DIM>::contains(const Point<T,DIM>& otherPt) const
+    template<typename CoordType, int DIM>
+    template<typename OtherType>
+    bool BoundingBox<CoordType, DIM>::contains(const Point<OtherType,DIM>& otherPt) const
     {
         for(int dim = 0; dim < DIM; ++dim)
         {
@@ -210,8 +207,8 @@ namespace quest{
 
 
     //------------------------------------------------------------------------------
-    template<int DIM>
-    bool BoundingBox<DIM>::isValid() const
+    template<typename CoordType, int DIM>
+    bool BoundingBox<CoordType, DIM>::isValid() const
     {
       for(int dim = 0; dim < DIM; ++dim)
       {
@@ -223,8 +220,8 @@ namespace quest{
     }
 
     //------------------------------------------------------------------------------
-    template<int DIM>
-    void BoundingBox<DIM>::addPoint (const PointType& pt)
+    template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::addPoint (const PointType& pt)
     {
         for (int dim=0; dim < DIM; ++dim ) {
             if ( pt[dim] < m_min[dim] ) {
@@ -237,8 +234,8 @@ namespace quest{
     }
 
     //------------------------------------------------------------------------------
-    template<int DIM>
-    void BoundingBox<DIM>::checkAndFixBounds ()
+    template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
     {
         for (int dim=0; dim < DIM; ++dim ) {
             if ( m_min[dim] > m_max[dim] ) {

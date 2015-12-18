@@ -181,7 +181,7 @@ void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
    using namespace quest;
 
    int const DIM = 3;
-   BoundingBox<DIM> meshBB;
+   BoundingBox<double, DIM> meshBB;
    Point3D pt;
 
    for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
@@ -192,13 +192,9 @@ void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
 
    SLIC_ASSERT( meshBB.isValid() );
 
-   const Point3D& bbMin = meshBB.getMin();//toarray
-   const Point3D& bbMax = meshBB.getMax();
-   for(int i=0; i< DIM; ++i)
-   {
-       minPt[i] = bbMin[i];
-       maxPt[i] = bbMax[i];
-   }
+   // copy bounds out to function parameters
+   meshBB.getMin().to_array(minPt);
+   meshBB.getMax().to_array(maxPt);
 
 }
 
@@ -448,6 +444,11 @@ int main( int ATK_NOT_USED(argc), char** argv )
   // STEP 3: get surface mesh
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
+  // dump mesh info
+  std::cout<<"Mesh has "
+          << surface_mesh->getMeshNumberOfNodes() << " nodes and "
+          << surface_mesh->getMeshNumberOfCells() << " cells."
+          << std::endl;
 
   // STEP 4: Delete the reader
   delete reader;

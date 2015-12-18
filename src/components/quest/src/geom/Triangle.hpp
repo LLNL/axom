@@ -19,9 +19,12 @@
 namespace quest
 {
 
-template < typename T, int ndims >
+template < typename T, int DIM >
 class Triangle
 {
+public:
+    typedef Point<T,DIM> PointType;
+
 public:
 
   /*!
@@ -29,9 +32,9 @@ public:
    * \brief Constructor -- creates a triangle from the 3 points A,B,C.
    *****************************************************************************
    */
-  Triangle( const Point<T,ndims>& A,
-            const Point<T,ndims>& B,
-            const Point<T,ndims>& C )
+  Triangle( const PointType& A,
+            const PointType& B,
+            const PointType& C )
     {
       m_A = A;
       m_B = B;
@@ -44,7 +47,7 @@ public:
    * \brief Destructor
    *****************************************************************************
    */
-  virtual ~Triangle() { }
+   ~Triangle() { }
 
   /*!
    *****************************************************************************
@@ -52,7 +55,7 @@ public:
    * \return A
    *****************************************************************************
    */
-  const Point< T,ndims >& A() const { return m_A; };
+  const PointType& A() const { return m_A; };
 
   /*!
    *****************************************************************************
@@ -60,7 +63,7 @@ public:
    * \return B
    *****************************************************************************
    */
-  const Point< T,ndims >& B() const { return m_B; };
+  const PointType& B() const { return m_B; };
 
   /*!
    *****************************************************************************
@@ -68,7 +71,7 @@ public:
    * \return C
    *****************************************************************************
    */
-  const Point< T,ndims >& C() const { return m_C; };
+  const PointType& C() const { return m_C; };
 
 private:
 
@@ -80,9 +83,9 @@ private:
    */
   Triangle() { }
 
-  Point< T, ndims > m_A;
-  Point< T, ndims > m_B;
-  Point< T, ndims > m_C;
+  PointType m_A;
+  PointType m_B;
+  PointType m_C;
 };
 
 } /* namespace quest */
