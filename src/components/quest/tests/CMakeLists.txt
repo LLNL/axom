@@ -13,6 +13,7 @@ set(quest_tests
     test_quest_orient.cpp
     test_quest_squared_distance.cpp
     test_quest_point.cpp
+    test_quest_boundingBox.cpp
    )
 
 foreach(test ${quest_tests})

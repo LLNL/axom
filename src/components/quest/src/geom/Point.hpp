@@ -43,7 +43,14 @@ namespace quest
 // Forward declare the templated classes and operator functions
 template<typename T, int DIM> class Point;
 
+/*!
+ * \brief Equality comparison operator for points
+ */
 template<typename T, int DIM> bool operator==(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+
+/*!
+ * \brief Inequality comparison operator for points
+ */
 template<typename T, int DIM> bool operator!=(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
 
 
@@ -74,7 +81,7 @@ public:
    * If sz is greater than DIM, we set all coordinates to val
    *****************************************************************************
    */
-  Point(T val = T(), int sz = DIM);
+  explicit Point(T val = T(), int sz = DIM);
 
   /*!
    *****************************************************************************
@@ -329,9 +336,6 @@ void Point< T, DIM >::to_array(T* arr) const
 /// Free functions implementing comparison and arithmetic operators
 //------------------------------------------------------------------------------
 
-/*!
- * \brief Equality comparison operator for points
- */
 template<typename T, int DIM>
 bool operator==(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
 {
@@ -345,9 +349,6 @@ bool operator==(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
 
 //------------------------------------------------------------------------------
 
-/*!
- * \brief Inequality comparison operator for points
- */
 template<typename T, int DIM>
 bool operator!=(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
 {

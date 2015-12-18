@@ -22,6 +22,37 @@
 namespace quest
 {
 
+
+// Forward declare the templated classes and operator functions
+template<typename T, int DIM> class BoundingBox;
+
+/*!
+ * \brief Equality comparison operator for bounding boxes.
+ * Two bounding boxes are equal when they have the same bounds
+ */
+template<typename T, int DIM> bool operator==(const BoundingBox<T, DIM> & lhs, const BoundingBox<T, DIM>& rhs);
+
+/*!
+ * \brief Inequality comparison operator for bounding boxes.
+ * Two bounding boxes are unequal when they have different bounds
+ */
+template<typename T, int DIM> bool operator!=(const BoundingBox<T, DIM> & lhs, const BoundingBox<T, DIM>& rhs);
+
+/*!
+ *******************************************************************************
+ * \class
+ *
+ * \brief The bounding box represents and axis-aligned bounding box.
+ * It is defined by two points: its lowermost point and its uppermost point.
+ * A bounding box is considered to be closed on all sides
+ * -- it contains its min and max points.
+ * \note Do we need to consider half-open bounding boxes
+ * -- where the upper boundaries are not contained?
+ * \note Does user code have to set a tolerance, or should the bounding box support this?
+ * This would make it easier for user code to set this at the beginning and not have to worry
+ * about maintaining a fuzzy tolerance while adding the points.
+ *******************************************************************************
+ */
 template<typename CoordType, int DIM>
 class BoundingBox
 {
@@ -79,21 +110,14 @@ public:
    */
    ~BoundingBox() {}
 
-  /*!
-   *****************************************************************************
-   * \brief Sets the min corner of this bounding box instance.
-   * \param [in] min user-supplied min coordinates.
-   *****************************************************************************
-   */
-  void setMin(const PointType& pt) { m_min = pt; } ;
 
-  /*!
-   *****************************************************************************
-   * \brief Sets the max corner of this bounding box instance.
-   * \param [in] max user-supplied max coordinates.
-   *****************************************************************************
-   */
-  void setMax(const PointType& pt) { m_max = pt; } ;
+   /*!
+    *****************************************************************************
+    * \brief Resets the bounds to those of the default constructor
+    * \note This invalidates the bounding box (i.e. isValid() will be false)
+    *****************************************************************************
+    */
+   void clear();
 
   /*!
    *****************************************************************************
@@ -119,6 +143,16 @@ public:
    *****************************************************************************
    */
   void addPoint(const PointType& pt);
+
+  /*!
+   *****************************************************************************
+   * \brief Updates bounds to include the provided bounding box.
+   * Convenience function -- equivalent to adding the min and max point of bbox
+   * \param [in] bbox to include.
+   *****************************************************************************
+   */
+  void addBox(const BoundingBox& bbox);
+
 
   /*!
    *****************************************************************************
@@ -152,8 +186,7 @@ public:
    */
   bool isValid() const;
 
-static BoundingBox box_union( const BoundingBox& b1,
-                                const BoundingBox& b2 );
+
 private:
   /*!
    *****************************************************************************
@@ -235,6 +268,15 @@ namespace quest{
 
     //------------------------------------------------------------------------------
     template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::addBox (const BoundingBox& bbox)
+    {
+        addPoint(bbox.getMin());
+        addPoint(bbox.getMax());
+    }
+
+
+    //------------------------------------------------------------------------------
+    template<typename CoordType, int DIM>
     void BoundingBox<CoordType, DIM>::checkAndFixBounds ()
     {
         for (int dim=0; dim < DIM; ++dim ) {
@@ -244,23 +286,35 @@ namespace quest{
         }
     }
 
-template<int DIM>
-inline BoundingBox<DIM> BoundingBox<DIM>::box_union( const BoundingBox& b1,
-                                           const BoundingBox& b2 )
-{
-   BoundingBox bb;
+    //------------------------------------------------------------------------------
+    template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::clear()
+    {
+        m_min = PointType( std::numeric_limits< CoordType>::max() );
+        m_max = PointType( std::numeric_limits< CoordType>::min() );
+    }
 
-   double min[3];
-   double max[3];
-   for (int i=0; i < 3; ++i ) {
-      min[ i ] = std::min( b1.getMin()[i], b2.getMin()[i] );
-      max[ i ] = std::max( b1.getMax()[i], b2.getMax()[i] );
-   }
 
-   bb.setMin( min );
-   bb.setMax( max );
-   return( bb );
-}
+
+    //------------------------------------------------------------------------------
+    /// Free functions implementing comparison and arithmetic operators
+    //------------------------------------------------------------------------------
+
+    template<typename T, int DIM>
+    bool operator==(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
+    {
+        return lhs.getMin() == rhs.getMin() && lhs.getMax() == rhs.getMax();
+    }
+
+    //------------------------------------------------------------------------------
+
+    template<typename T, int DIM>
+    bool operator!=(const BoundingBox<T, DIM>& lhs, const BoundingBox<T, DIM>& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+
 
 } // end namespace quest
 

@@ -2,8 +2,6 @@
 #include "gtest/gtest.h"
 
 #include "quest/Point.hpp"
-#include "quest/SquaredDistance.hpp"
-#include "quest/Triangle.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_point, point_default_constructor)
