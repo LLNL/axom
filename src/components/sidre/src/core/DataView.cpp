@@ -162,6 +162,11 @@ DataView * DataView::reallocate(SidreLength num_elems)
   return this;
 }
 
+//
+// RDH -- Reallocation should check if the buffer has been declared. If not,
+//        then is should be a valid operation to declare it here amd 
+//        allocate it. 
+//
 /*
  *************************************************************************
  *
@@ -192,6 +197,11 @@ DataView * DataView::reallocate(const DataType& dtype)
   return this;
 }
 
+//
+// RDH -- Reallocation should check if the buffer has been declared. If not,
+//        then is should be a valid operation to declare it here amd 
+//        allocate it. 
+//
 /*
  *************************************************************************
  *
@@ -233,8 +243,6 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
 {
   SLIC_ASSERT_MSG( attachBufferIsValid(),
                   "View state does not allow attaching buffer");
-  SLIC_ASSERT_MSG( m_data_buffer == ATK_NULLPTR,
-                  "Cannot attach buffer to view that already has a buffer");
   SLIC_CHECK( buff != ATK_NULLPTR );
 
   if ( attachBufferIsValid() && buff != ATK_NULLPTR )
@@ -244,6 +252,10 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
     m_state = BUFFER_ATTACHED;
     m_is_applied = false;
 
+//
+// RDH -- What if the view is not described and the buffer is not 
+//        declared and allocated???
+//
     if ( m_schema.total_bytes() <= m_data_buffer->getTotalBytes() )
     {
       apply(); 
