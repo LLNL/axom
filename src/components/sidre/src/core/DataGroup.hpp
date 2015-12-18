@@ -418,13 +418,13 @@ public:
 
 //@{
 //!  @name DataView creation methods that attach view to existing data
-//!        (data buffer, opaque data, or external data).
+//!        buffer or external data.
 
   /*!
    * \brief Create DataView object with given name, attach it to given buffer,
    *        and attach new view to this group object.
    *
-   * Note that view cannot be used to access data in buffer until it
+   * Note that the view cannot be used to access data in buffer until it
    * is described by calling a DataView::apply() method. 
    *
    * If name is an empty string, or group already has a view with given
@@ -453,6 +453,7 @@ public:
   DataView * createView( const std::string& name,
                          void * external_ptr );
 
+#if 1 // XXXXX -- Needs to be removed
   /*!
    * \brief Create DataView with given name to hold external data referenced 
    *        with given pointer. View will be initialized with given data type
@@ -472,6 +473,7 @@ public:
                                  void * external_data,
                                  TypeID type, 
                                  int ndims, SidreLength * shape);
+#endif
 
 //@}
 

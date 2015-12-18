@@ -197,7 +197,7 @@ public:
   /*!
    * \brief Apply data description of a previously declared to data view.
    *
-   * If view is opaque, the method does nothing.
+   * If view holds a scalar or a string, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -214,11 +214,8 @@ public:
    * IMPORTANT: If view has been previously declared (or applied), this 
    *            operation will apply the new data description to the view.
    *
-   * IMPORTANT: If view has no data buffer object attached, this method 
-   *            does nothing because it doesn't know type information.
-   *
-   * If given number of elements < 0, offset < 0, or view is opaque, the
-   * method also does nothing.
+   * If view holds a scalar or a string, or given number of elements < 0, 
+   * or offset < 0, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -237,8 +234,8 @@ public:
    * IMPORTANT: If view has been previously declared (or applied), this 
    *            operation will apply the new data description to the view.
    *
-   * If given number of elements < 0, offset < 0, or view is opaque, the
-   * method does nothing.
+   * If view holds a scalar or a string, or given number of elements < 0, 
+   * or offset < 0, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -246,13 +243,26 @@ public:
                                  SidreLength offset = 0,
                                  SidreLength stride = 1);
 
+  /*!
+   * \brief Apply data description defined by type and shape information
+   *        to data view.
+   *
+   * NOTE: The units for the shape are in number of elements.
+   *
+   * IMPORTANT: If view has been previously declared (or applied), this
+   *            operation will apply the new data description to the view.
+   *
+   * If view holds a scalar or a string, or given number of dimensions < 0,
+   * or pointer to shape is null, the method does nothing.
+   *
+   * \return pointer to this DataView object.
+   */ 
   DataView * apply( TypeID type, int ndims, SidreLength * shape );
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
    *
-   * If view is opaque, the method does nothing.
-   * TODO: If the view has undescribed data, this should describe it ( not 'do nothing') ?
+   * If view holds a scalar or a string, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -261,8 +271,7 @@ public:
   /*!
    * \brief Apply data description (schema) to view's data.
    *
-   * If view is opaque, the method does nothing.
-   * TODO: If the view has undescribed data, this should describe it ( not 'do nothing') ?
+   * If view holds a scalar or a string, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -451,21 +460,6 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to beginning of view's data.
-   */
-  void * getVoidPtr()
-  {
-    if ( isOpaque() )
-    {
-      return (void *)m_node.as_uint64();
-    }
-    else
-    {
-      return m_node.element_ptr(0);
-    }
-  }
-
-  /*!
    * \brief Returns a copy of the scalar value contained in the view.
    */
   Node::Value getScalar()
@@ -487,11 +481,40 @@ public:
     return m_node.value();
   }
 
+  /*!
+   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(), but not
+   * assigning the return.
+   *
+   */
+  // TODO - Will a app code ever use this?  We are just using it for internal tests, so maybe we can move this function
+  // to a 'test helper' source file and remove it from the core API.
+  template<typename DataType>
+  DataType getData()
+  {
+    DataType data = m_node.value();
+    return data;
+  }
+
+  /*!
+   * \brief Returns a void pointer to data described by the view.
+   */
+  void * getVoidPtr()
+  {
+    if ( isOpaque() )
+    {
+      return (void *)m_node.as_uint64();
+    }
+    else
+    {
+      return m_node.element_ptr(0);
+    }
+  }
+
   //@}
 
   //@{
-  //!  @name Set methods for setting data in the view.  Set methods are provided for simple scalars, strings, and
-  //!  void pointers for undescribed (opaque) data.
+  //!  @name Set methods for setting data in the view (scalar, string, or
+  //!        ptr to external data).
 
   /*!
    * \brief Set the view to hold the given scalar.
@@ -512,7 +535,7 @@ public:
   }
 
   /*!
-   * \brief Set the to hold the give string.
+   * \brief Set the view to hold the give string.
    */
   DataView* setString(const std::string& value)
   {
@@ -534,20 +557,6 @@ public:
   DataView* setExternalDataPtr(void * external_ptr);
 
   //@}
-
-  /*!
-   * \brief Lightweight templated wrapper around getData() that can be used when you are calling getData(), but not
-   * assigning the return.
-   *
-   */
-  // TODO - Will a app code ever use this?  We are just using it for internal tests, so maybe we can move this function
-  // to a 'test helper' source file and remove it from the core API.
-  template<typename DataType>
-  DataType getData()
-  {
-    DataType data = m_node.value();
-    return data;
-  }
 
 //@{
 //!  @name DataView print methods.
@@ -572,7 +581,7 @@ public:
 private:
 
 //@{
-//!  @name Private DataView ctors and dtors 
+//!  @name Private DataView ctor and dtor 
 //!        (callable only by DataGroup and DataView methods).
 
   /*!
@@ -581,15 +590,6 @@ private:
    */
   DataView( const std::string& name,
             DataGroup * const owning_group );
-
-  /*!
-   *  \brief Private ctor that creates a DataView with given name
-   *         in given parent group and which is associated with given
-   *         DataBuffer object.
-   */
-  DataView( const std::string& name,
-            DataGroup * const owning_group,
-            DataBuffer * const data_buffer );
 
   /*!
    *  \brief Private ctor that creates an external DataView with given name
