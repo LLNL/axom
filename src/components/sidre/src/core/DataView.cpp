@@ -301,18 +301,24 @@ DataView * DataView::apply(SidreLength num_elems,
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
-  SLIC_ASSERT_MSG( m_state != EXTERNAL, 
+  SLIC_ASSERT_MSG( m_state != EXTERNAL || !m_schema.dtype().is_empty(), 
                   "View state does not allow apply operation");
   SLIC_ASSERT_MSG( m_data_buffer != ATK_NULLPTR,
                   "View needs buffer to get type information");
   SLIC_ASSERT_MSG(num_elems >= 0, "Must give number of elements >= 0");
   SLIC_ASSERT_MSG(offset >= 0, "Must give offset >= 0");
 
-  if ( applyIsValid() && m_state != EXTERNAL &&
+  if ( applyIsValid() && 
+       (m_state != EXTERNAL || !m_schema.dtype().is_empty()) &&
        m_data_buffer != ATK_NULLPTR &&
        num_elems >= 0 && offset >= 0)
   {
-    DataType dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
+    DataType dtype(m_schema.dtype());
+    if ( dtype.is_empty() )
+    {
+      dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
+    }
+
     dtype.set_number_of_elements(num_elems);
     dtype.set_offset(offset * dtype.element_bytes() );
     dtype.set_stride(stride * dtype.element_bytes() );
