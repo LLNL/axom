@@ -95,8 +95,6 @@ module sidre_mod
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
         procedure :: create_view_external => datagroup_create_view_external
-        procedure :: create_external_view_int => datagroup_create_external_view_int
-        procedure :: create_external_view_long => datagroup_create_external_view_long
         procedure :: create_external_view_with_shape => datagroup_create_external_view_with_shape
         procedure :: destroy_view => datagroup_destroy_view
         procedure :: destroy_view_and_data => datagroup_destroy_view_and_data
@@ -112,12 +110,6 @@ module sidre_mod
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
         procedure :: load => datagroup_load
-        generic :: create_external_view => &
-            ! splicer begin class.DataGroup.generic.create_external_view
-            ! splicer end class.DataGroup.generic.create_external_view
-            create_external_view_int,  &
-            create_external_view_long,  &
-            create_external_view_with_shape
         generic :: create_view => &
             ! splicer begin class.DataGroup.generic.create_view
             ! splicer end class.DataGroup.generic.create_view
@@ -657,33 +649,6 @@ module sidre_mod
             type(C_PTR), value, intent(IN) :: external_ptr
             type(C_PTR) :: rv
         end function sidre_datagroup_create_view_external_bufferify
-        
-        function sidre_datagroup_create_external_view(self, name, external_data, type, num_elems) &
-                result(rv) &
-                bind(C, name="SIDRE_datagroup_create_external_view")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            type(C_PTR), value, intent(IN) :: external_data
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: rv
-        end function sidre_datagroup_create_external_view
-        
-        function sidre_datagroup_create_external_view_bufferify(self, name, Lname, external_data, type, num_elems) &
-                result(rv) &
-                bind(C, name="SIDRE_datagroup_create_external_view_bufferify")
-            use iso_c_binding
-            implicit none
-            type(C_PTR), value, intent(IN) :: self
-            character(kind=C_CHAR), intent(IN) :: name(*)
-            integer(C_INT), value, intent(IN) :: Lname
-            type(C_PTR), value, intent(IN) :: external_data
-            integer(C_INT), value, intent(IN) :: type
-            integer(C_LONG), value, intent(IN) :: num_elems
-            type(C_PTR) :: rv
-        end function sidre_datagroup_create_external_view_bufferify
         
         function sidre_datagroup_create_external_view_with_shape(self, name, external_data, type, ndims, shape) &
                 result(rv) &
@@ -1709,46 +1674,6 @@ contains
             external_ptr)
         ! splicer end class.DataGroup.method.create_view_external
     end function datagroup_create_view_external
-    
-    function datagroup_create_external_view_int(obj, name, external_data, type, num_elems) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*), intent(IN) :: name
-        type(C_PTR), value, intent(IN) :: external_data
-        integer(C_INT), value, intent(IN) :: type
-        integer(C_INT), value, intent(IN) :: num_elems
-        type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_external_view_int
-        rv%voidptr = sidre_datagroup_create_external_view_bufferify(  &
-            obj%voidptr,  &
-            name,  &
-            len_trim(name),  &
-            external_data,  &
-            type,  &
-            int(num_elems, C_LONG))
-        ! splicer end class.DataGroup.method.create_external_view_int
-    end function datagroup_create_external_view_int
-    
-    function datagroup_create_external_view_long(obj, name, external_data, type, num_elems) result(rv)
-        use iso_c_binding
-        implicit none
-        class(datagroup) :: obj
-        character(*), intent(IN) :: name
-        type(C_PTR), value, intent(IN) :: external_data
-        integer(C_INT), value, intent(IN) :: type
-        integer(C_LONG), value, intent(IN) :: num_elems
-        type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_external_view_long
-        rv%voidptr = sidre_datagroup_create_external_view_bufferify(  &
-            obj%voidptr,  &
-            name,  &
-            len_trim(name),  &
-            external_data,  &
-            type,  &
-            int(num_elems, C_LONG))
-        ! splicer end class.DataGroup.method.create_external_view_long
-    end function datagroup_create_external_view_long
     
     function datagroup_create_external_view_with_shape(obj, name, external_data, type, ndims, shape) result(rv)
         use iso_c_binding

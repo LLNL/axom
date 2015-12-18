@@ -77,8 +77,12 @@ TEST(C_sidre_external, create_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  SIDRE_dataview * iview = SIDRE_datagroup_create_external_view(root, "idata", idata, SIDRE_INT_ID, len);
-  SIDRE_dataview * dview = SIDRE_datagroup_create_external_view(root, "ddata", ddata, SIDRE_DOUBLE_ID, len);
+  SIDRE_dataview * iview = 
+   SIDRE_datagroup_create_view_external(root, "idata", idata);
+  SIDRE_dataview_apply_type_nelems(iview, SIDRE_INT_ID, len);
+  SIDRE_dataview * dview = 
+   SIDRE_datagroup_create_view_external(root, "ddata", ddata);
+  SIDRE_dataview_apply_type_nelems(dview, SIDRE_DOUBLE_ID, len);
   EXPECT_EQ(SIDRE_datagroup_get_num_views(root), 2u);
 
   SIDRE_dataview_print(iview);
@@ -120,11 +124,16 @@ TEST(C_sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  SIDRE_dataview * iview = SIDRE_datagroup_create_external_view(root, "idata", idata, SIDRE_INT_ID, len);
-  SIDRE_dataview * dview = SIDRE_datagroup_create_external_view(root, "ddata", ddata, SIDRE_DOUBLE_ID, len);
+  SIDRE_dataview * iview = 
+    SIDRE_datagroup_create_view_external(root, "idata", idata);
+  SIDRE_dataview_apply_type_nelems(iview, SIDRE_INT_ID, len);
+  SIDRE_dataview * dview = 
+    SIDRE_datagroup_create_view_external(root, "ddata", ddata);
+  SIDRE_dataview_apply_type_nelems(dview, SIDRE_DOUBLE_ID, len);
+
   EXPECT_EQ(SIDRE_datagroup_get_num_views(root), 2u);
-  SIDRE_databuffer * tmpbuf;
-  tmpbuf = SIDRE_dataview_get_buffer(iview);
+
+  SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(iview);
   EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), true);
   tmpbuf = SIDRE_dataview_get_buffer(dview);
   EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), true);

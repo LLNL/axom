@@ -456,29 +456,6 @@ public:
   /*!
    * \brief Create DataView with given name to hold external data referenced 
    *        with given pointer. View will be initialized with given data type
-   *        and number of elements and, optionally, offset and stride. Attach 
-   *        new view to this group object.
-   *
-   * Note that the view will not own the data, but it can be used to
-   * access the data as though it owns it.
-   *
-   * If name is an empty string, group already has a view with given
-   * name, given data pointer is null, or given number of elements < 0, or 
-   * offset < 0, the method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createExternalView( const std::string& name,
-                                 void * external_data,
-                                 TypeID type, 
-                                 SidreLength num_elems,
-                                 SidreLength offset = 0,
-                                 SidreLength stride = 1 );
-
-  /*!
-   * \brief Create DataView with given name to hold external data referenced 
-   *        with given pointer. View will be initialized with given data type
    *        number of dimensions and shape. Attach new view to this group object.
    *
    * Note that the view will not own the data, but it can be used to
@@ -495,42 +472,6 @@ public:
                                  void * external_data,
                                  TypeID type, 
                                  int ndims, SidreLength * shape);
-
-  /*!
-   * \brief Create DataView with given name to hold data referenced with
-   *        given pointer. View will be initialized with given Conduit
-   *        DataType. Attach new view to this group object.
-   *
-   * Note that the view will not own the data, but it can be used to
-   * access the data as though it owns it.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createExternalView( const std::string& name,
-                                 void * external_data,
-                                 const DataType& dtype );
-
-  /*!
-   * \brief Create DataView with given name to hold data referenced with
-   *        given pointer. View will be initialized with given Conduit
-   *        Schema. Attach new view to this group object.
-   *
-   * Note that the view will not own the data, but it can be used to
-   * access the data as though it owns it.
-   *
-   * If name is an empty string, or group already has a view with given
-   * name, or given data pointer is null, method does nothing.
-   *
-   * \return pointer to created DataView object or ATK_NULLPTR if new
-   * view is not created.
-   */
-  DataView * createExternalView( const std::string& name,
-                                 void * external_data,
-                                 const Schema& schema );
 
 //@}
 

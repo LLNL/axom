@@ -281,44 +281,6 @@ DataView * DataGroup::createView( const std::string& name,
   else
   {
     DataView * const view = new DataView(name, this, external_ptr);
-    return attachView(view);
-  }
-}
-
-
-/*
- *************************************************************************
- *
- * Create external view with given data type and number of elements
- * then attach to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createExternalView( const std::string& name,
-                                          void * external_data,
-					  TypeID type, 
-                                          SidreLength num_elems,
-                                          SidreLength offset,
-                                          SidreLength stride )
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR ,
-                   "Cannot create external view with null data pointer" );
- 
-  if ( name.empty() || hasView(name) || external_data == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(type, num_elems);
-    buff->setExternalData(external_data);
-
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-    view->apply(type, num_elems, offset, stride);
 
     return attachView(view);
   }
@@ -361,80 +323,7 @@ DataView * DataGroup::createExternalView( const std::string& name,
     buff->setExternalData(external_data);
 
     DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
     view->apply(type, ndims, shape);
-
-    return attachView(view);
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create external view with given data type and attach to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createExternalView( const std::string& name,
-                                          void * external_data,
-                                          const DataType& dtype)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR ,
-                   "Cannot create external view with null data pointer" );
- 
-  if ( name.empty() || hasView(name) || external_data == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    TypeID type = static_cast<TypeID>(dtype.id());
-    SidreLength num_elems = dtype.number_of_elements();
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(type, num_elems);
-    buff->setExternalData(external_data);
-
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-    view->apply(dtype);
-
-    return attachView(view);
-  }
-}
-
-/*
- *************************************************************************
- *
- * Create external view with given schema and attach to group.
- *
- *************************************************************************
- */
-DataView * DataGroup::createExternalView( const std::string& name,
-                                          void * external_data,
-                                          const Schema& schema)
-{
-  SLIC_ASSERT( !name.empty() );
-  SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR ,
-                   "Cannot create external view with null data pointer" );
-
-  if ( name.empty() || hasView(name) || external_data == ATK_NULLPTR )
-  {
-    return ATK_NULLPTR;
-  }
-  else
-  {
-    TypeID type = static_cast<TypeID>(schema.dtype().id());
-    SidreLength num_elems = schema.dtype().number_of_elements();
-    DataBuffer * buff = this->getDataStore()->createBuffer();
-    buff->declare(type, num_elems);
-    buff->setExternalData(external_data);
-
-    DataView * const view = new DataView( name, this, buff);
-    buff->attachView(view);
-    view->apply(schema);
 
     return attachView(view);
   }

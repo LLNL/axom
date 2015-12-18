@@ -455,7 +455,7 @@ public:
    */
   void * getVoidPtr()
   {
-    if ( m_state == EXTERNAL )
+    if ( isOpaque() )
     {
       return (void *)m_node.as_uint64();
     }
@@ -658,11 +658,36 @@ private:
 
 //@}
 
+
+//@{
+//!  @name Private method that determine whether some view operations are valid.
+
   /*!
    *  \brief Private method returns true if data allocation on view is a
    *         valid operation; else false
    */
-  bool allocationIsValid() const; 
+  bool allocateIsValid() const; 
+
+  /*!
+   *  \brief Private method returns true if attaching buffer to view is a
+   *         valid operation; else false
+   */
+  bool attachBufferIsValid() const; 
+
+  /*!
+   *  \brief Private method returns true if setting external data pointer is 
+             on view is a valid operation; else false
+   */
+  bool setExternalDataPtrIsValid() const;
+
+  /*!
+   *  \brief Private method returns true if apply is a valid operation on 
+   *         view; else false
+   */
+  bool applyIsValid() const; 
+
+//@}
+
 
   /// 
   /// Enum with constants that identify the state of a view.

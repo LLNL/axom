@@ -525,8 +525,8 @@ TEST(C_sidre_view,simple_opaque)
 
   SIDRE_dataview * opq_view = SIDRE_datagroup_create_view_external(root, "my_opaque",src_ptr);
 
-  // we shouldn't have any buffers
-  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 0u);
+  // we have a buffer because an "external" view currently uses one
+  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);
 
   EXPECT_TRUE(SIDRE_dataview_is_external(opq_view));
   EXPECT_TRUE(!SIDRE_dataview_is_applied(opq_view));
