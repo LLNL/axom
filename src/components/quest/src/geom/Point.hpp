@@ -40,6 +40,13 @@ namespace {
 namespace quest
 {
 
+// Forward declare the templated classes and operator functions
+template<typename T, int DIM> class Point;
+
+template<typename T, int DIM> bool operator==(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+template<typename T, int DIM> bool operator!=(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+
+
 /*!
  *******************************************************************************
  * \class Point
@@ -52,10 +59,9 @@ template < typename T, int DIM >
 class Point
 {
 public:
-    enum {
-        NDIMS = DIM
-        , NBYTES = DIM * sizeof(T)
-    };
+    enum { NDIMS = DIM
+         , NBYTES = DIM * sizeof(T)
+         };
 
 public:
 
@@ -87,7 +93,7 @@ public:
    * \param [in] rhs
    *****************************************************************************
    */
-  Point( const Point<T,DIM>& rhs ) { *this = rhs; };
+  Point( const Point& rhs ) { *this = rhs; };
 
   /*!
    *****************************************************************************
@@ -111,7 +117,7 @@ public:
    * \param [in] rhs a point instance on the right hand side.
    *****************************************************************************
    */
-  Point<T,DIM>& operator=(const Point<T,DIM>& rhs);
+  Point& operator=(const Point& rhs);
 
   /*!
    *****************************************************************************
@@ -145,14 +151,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Constructs a Point instance with the given coordinates.
+   * \brief Utility function to constructs a Point with the given coordinates.
    * \param [in] x the x--coordinate of the point.
    * \param [in] y the y--coordinate of the point.
    * \param [in] z the z--coordinate of the point. Default is 0.0.
    * \return p a Point instance with the given coordinates.
    *****************************************************************************
    */
-  static Point<T,DIM> make_point( const T& x, const T& y, const T& z=0.0 );
+  static Point make_point( const T& x, const T& y, const T& z=0.0 );
 
   /*!
    *****************************************************************************
@@ -162,11 +168,24 @@ public:
    * \return p point at the midpoint A and B.
    *****************************************************************************
    */
-  static Point<T,DIM> midpoint( const Point<T,DIM>& A,
-                                  const Point<T,DIM>& B );
+  static Point midpoint( const Point& A, const Point& B );
 
 
+  /*!
+   *****************************************************************************
+   * \brief Helper function to return a point whose coordinates are all 0
+   *****************************************************************************
+   */
   static Point zero() { return Point(); }
+
+  /*!
+   *****************************************************************************
+   * \brief Helper function to return a point whose coordinates are all 1
+   * This is equivalent to using the single value constructor: Point(1)
+   * (with the appropriate casting) and is only valid for Points with
+   * a numerical type (i.e. where static_cast<T>(1) is valid.
+   *****************************************************************************
+   */
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:
@@ -236,7 +255,7 @@ inline Point<T,DIM>& Point< T,DIM >::operator=(const Point<T,DIM>& rhs )
   }
 
   // copy all the data
-  memcpy( m_components, rhs.m_components, DIM*sizeof( T ) );
+  memcpy( m_components, rhs.m_components, NBYTES);
   return *this;
 }
 
@@ -306,6 +325,34 @@ void Point< T, DIM >::to_array(T* arr) const
     memcpy( arr, m_components, NBYTES );
 }
 
+//------------------------------------------------------------------------------
+/// Free functions implementing comparison and arithmetic operators
+//------------------------------------------------------------------------------
+
+/*!
+ * \brief Equality comparison operator for points
+ */
+template<typename T, int DIM>
+bool operator==(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
+{
+    for(int dim=0;dim<DIM;++dim)
+    {
+        if( lhs[dim] != rhs[dim])
+            return false;
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------------
+
+/*!
+ * \brief Inequality comparison operator for points
+ */
+template<typename T, int DIM>
+bool operator!=(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
+{
+    return !(lhs == rhs);
+}
 
 
 } /* namespace quest*/
