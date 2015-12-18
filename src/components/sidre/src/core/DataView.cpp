@@ -243,6 +243,11 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
     m_data_buffer = buff;
     m_state = BUFFER_ATTACHED;
     m_is_applied = false;
+
+    if ( m_schema.total_bytes() <= m_data_buffer->getTotalBytes() )
+    {
+      apply(); 
+    }
   }
   return this;
 }
@@ -258,6 +263,8 @@ DataView * DataView::apply()
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
+  SLIC_CHECK_MSG( !m_schema.dtype().is_empty(),
+                  "View has no data description, apply() is a no-op");
 
   if ( applyIsValid() )
   {
