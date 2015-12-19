@@ -54,6 +54,8 @@ void SIDRE_dataview_apply_type_nelems_offset(SIDRE_dataview * self, int type, SI
 
 void SIDRE_dataview_apply_type_nelems_offset_stride(SIDRE_dataview * self, int type, SIDRE_SidreLength num_elems, SIDRE_SidreLength offset, SIDRE_SidreLength stride);
 
+void SIDRE_dataview_apply_type_shape(SIDRE_dataview * self, int type, int ndims, SIDRE_SidreLength * shape);
+
 bool SIDRE_dataview_has_buffer(SIDRE_dataview * self);
 
 bool SIDRE_dataview_is_external(SIDRE_dataview * self);

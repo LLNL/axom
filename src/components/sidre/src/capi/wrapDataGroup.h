@@ -80,10 +80,6 @@ SIDRE_dataview * SIDRE_datagroup_create_view_external(SIDRE_datagroup * self, co
 
 SIDRE_dataview * SIDRE_datagroup_create_view_external_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_ptr);
 
-SIDRE_dataview * SIDRE_datagroup_create_external_view_with_shape(SIDRE_datagroup * self, const char * name, void * external_data, int type, int ndims, SIDRE_SidreLength * shape);
-
-SIDRE_dataview * SIDRE_datagroup_create_external_view_with_shape_bufferify(SIDRE_datagroup * self, const char * name, int Lname, void * external_data, int type, int ndims, SIDRE_SidreLength * shape);
-
 void SIDRE_datagroup_destroy_view(SIDRE_datagroup * self, const char * name);
 
 void SIDRE_datagroup_destroy_view_bufferify(SIDRE_datagroup * self, const char * name, int Lname);
