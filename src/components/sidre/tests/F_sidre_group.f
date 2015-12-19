@@ -27,6 +27,8 @@ contains
     type(datagroup) root, group
     character(30) name
 
+    call set_case_name("get_name")
+
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("test")
@@ -44,6 +46,8 @@ contains
     type(datastore) ds
     type(datagroup) root, parent, child
 
+    call set_case_name("get_parent")
+
     ds = datastore_new()
     root = ds%get_root()
     parent = root%create_group("parent")
@@ -60,6 +64,8 @@ contains
   subroutine get_datastore
     type(datastore) ds, const_ds
     type(datagroup) root, group
+
+    call set_case_name("get_datastore")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -80,6 +86,8 @@ contains
     type(datastore) ds
     type(datagroup) root, parent, child
 
+    call set_case_name("has_group")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -99,6 +107,8 @@ contains
     type(datastore) ds
     type(datagroup) root,parent
     type(dataview) view
+
+    call set_case_name("has_view")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -123,6 +133,8 @@ contains
     integer idx1, idx2, idx3    ! IndexType
     character(len=30) name1, name2, name3
     character(len=30) tmpname
+
+    call set_case_name("get_view_name_index")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -167,6 +179,8 @@ contains
     character(len=30) name1, name2, name3
     character(len=30) tmpname
 
+    call set_case_name("get_group_name_index")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -210,6 +224,8 @@ contains
     type(datagroup) root,group
     type(dataview) view
 
+    call set_case_name("create_destroy_has_view")
+
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("parent")
@@ -236,6 +252,8 @@ contains
     type(datastore) ds
     type(datagroup) root, group
 
+    call set_case_name("create_destroy_has_group")
+
     ds = datastore_new()
     root = ds%get_root()
     group = root%create_group("group")
@@ -255,6 +273,8 @@ contains
     type(datagroup) root, flds
     type(dataview) view
 
+    call set_case_name("group_name_collisions")
+
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")
@@ -270,6 +290,8 @@ contains
     type(datastore) ds
     type(datagroup) root, flds, subgrp
     type(dataview) i0_view, f0_view, d0_view, tmpview
+
+    call set_case_name("view_copy_move")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -321,6 +343,8 @@ contains
     type(datagroup) subgrp, tmpgrp
     type(dataview) i0_view, f0_view, d0_view, tmpview
 
+    call set_case_name("groups_move_copy")
+
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")
@@ -369,6 +393,8 @@ contains
     character(len=30) view_name1, view_name2
 !XX    logical buffvalid
 
+    call set_case_name("create_destroy_view_and_data")
+
     ds = datastore_new()
     root = ds%get_root()
     grp = root%create_group("grp")
@@ -412,6 +438,8 @@ contains
     character(len=30) view_name1, view_name2
     integer(C_INT), pointer :: v1_vals(:)
 !--    real(C_DOUBLE), pointer :: v2_vals(:)
+
+    call set_case_name("create_destroy_alloc_view_and_data")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -465,6 +493,8 @@ contains
 !--    integer i
 !    integer(C_INT), pointer :: sub_a_vals(:)
 
+    call set_case_name("create_view_of_buffer_with_schema")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -501,6 +531,8 @@ contains
     type(datastore) ds, ds2
     type(datagroup) root, root2, flds, ga
     type(dataview) i0_view
+
+    call set_case_name("save_restore_simple")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -546,6 +578,8 @@ contains
     type(datagroup) ga, gb, gc
     type(dataview) i0_view, f0_view, d0_view
     
+    call set_case_name("save_restore_complex")
+
     ds = datastore_new()
     root = ds%get_root()
     flds = root%create_group("fields")

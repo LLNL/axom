@@ -27,6 +27,8 @@ contains
     integer, parameter :: len = 11
     integer ii
 
+    call set_case_name("declare_external_buffer")
+
     ds = datastore_new()
 
     allocate(idata(len))
@@ -75,6 +77,8 @@ contains
     real(C_DOUBLE), pointer :: ddata_chk(:)
     integer(C_LONG), parameter :: len = 11
     integer ii
+
+    call set_case_name("create_external_view")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -125,6 +129,8 @@ contains
     real(C_DOUBLE), pointer :: ddata_chk(:)
     integer(C_LONG), parameter :: len = 11
     integer ii
+
+    call set_case_name("save_load_external_view")
 
     ds = datastore_new()
     root = ds%get_root()

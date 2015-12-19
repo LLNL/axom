@@ -21,6 +21,8 @@ contains
     type(datastore) ds
     type(databuffer) dbuff_0, dbuff_1, dbuff_3
 
+    call set_case_name("create_buffers")
+
     ds = datastore_new()
 
     dbuff_0 = ds%create_buffer()
@@ -46,6 +48,8 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
     
+    call set_case_name("alloc_buffer_for_int_array")
+
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
@@ -78,6 +82,8 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("init_buffer_for_int_array")
+
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
@@ -108,6 +114,8 @@ contains
     type(C_PTR) data_ptr
     integer(C_LONG), pointer :: data(:)
     integer i
+
+    call set_case_name("realloc_buffer")
 
     ds = datastore_new()
 

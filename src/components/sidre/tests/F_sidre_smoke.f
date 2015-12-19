@@ -19,6 +19,8 @@ contains
   subroutine create_datastore
     type(datastore) ds
 
+    call set_case_name("create_datastore")
+
     ds = datastore_new()
     call ds%delete()
 
@@ -32,6 +34,8 @@ contains
     type(datagroup) root
     integer idx
     character(10) name
+
+    call set_case_name("valid_invalid")
 
     ds = datastore_new()
 

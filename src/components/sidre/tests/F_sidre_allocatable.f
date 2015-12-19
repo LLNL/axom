@@ -28,6 +28,8 @@ contains
     integer rank
     integer(SIDRE_LENGTH) extents(7)
 
+    call set_case_name("local_allocatable_int")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -76,6 +78,8 @@ contains
     integer i, j, k
     integer rank
     integer(SIDRE_LENGTH) extents(7)
+
+    call set_case_name("local_allocatable_int_3d")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -132,6 +136,8 @@ contains
     integer num_elements
     integer i
 
+    call set_case_name("local_static_int")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -168,6 +174,8 @@ contains
     integer num_elements
     integer type
     integer i
+
+    call set_case_name("local_allocatable_double")
 
     ds = datastore_new()
     root = ds%get_root()
