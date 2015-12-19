@@ -101,14 +101,12 @@ contains
     call dview%print()
 
     call iview%get_data(idata_chk)
-    do ii = 1, len
-       call assert_equals(idata_chk(ii), idata(ii))
-    enddo
+    call assert_true(size(idata_chk) == len, "idata_chk is wrong size")
+    call assert_true(all(idata_chk == idata), "idata_chk != idata")
 
     call dview%get_data(ddata_chk)
-    do ii = 1, len
-       call assert_equals(ddata_chk(ii), ddata(ii))
-    enddo
+    call assert_true(size(ddata_chk) == len, "ddata_chk is wrong size")
+    call assert_true(all(ddata_chk == ddata), "ddata_chk != ddata")
 
     call ds%delete()
     deallocate(idata)
@@ -181,14 +179,12 @@ contains
     call assert_equals(tmpbuff%is_external(), .false.)
 
     call iview%get_data(idata_chk)
-    do ii = 1, len
-       call assert_equals(idata_chk(ii), idata(ii))
-    enddo
+    call assert_true(size(idata_chk) == len, "idata_chk is wrong size")
+    call assert_true(all(idata_chk == idata), "idata_chk != idata")
 
     call dview%get_data(ddata_chk)
-    do ii = 1, len
-       call assert_equals(ddata_chk(ii), ddata(ii))
-    enddo
+    call assert_true(size(ddata_chk) == len, "ddata_chk is wrong size")
+    call assert_true(all(ddata_chk == ddata), "ddata_chk != ddata")
 
     call ds%delete()
     call ds2%delete()
