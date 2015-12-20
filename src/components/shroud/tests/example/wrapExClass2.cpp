@@ -55,6 +55,10 @@ return rv.c_str();
 
 // const int GetNameLength()
 // function_index=17
+/**
+ * \brief helper function for Fortran
+ *
+ */
 const int AA_exclass2_get_name_length(const AA_exclass2 * self)
 {
 const ExClass2 *selfobj = static_cast<const ExClass2 *>(static_cast<const void *>(self));

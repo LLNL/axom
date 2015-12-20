@@ -197,7 +197,7 @@ contains
     ! string_to_buffer_and_len
     ! function_index=0
     !>
-    !! \brief Short description
+    !! \brief constructor
     !!
     !! longer description
     !! usually multiple lines
@@ -260,6 +260,10 @@ contains
     
     ! int GetNameLength() const
     ! function_index=4
+    !>
+    !! \brief helper function for Fortran
+    !!
+    !<
     function exclass1_get_name_length(obj) result(rv)
         use iso_c_binding
         implicit none

@@ -14,7 +14,7 @@ namespace nested {
 // ExClass1 * new(const string * name+intent(in))+constructor
 // function_index=0
 /**
- * \brief Short description
+ * \brief constructor
  *
  * longer description
  * usually multiple lines
@@ -32,7 +32,7 @@ return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
 // ExClass1 * new(const string * name+intent(in)+len_trim)+constructor
 // function_index=13
 /**
- * \brief Short description
+ * \brief constructor
  *
  * longer description
  * usually multiple lines
@@ -88,6 +88,10 @@ return rv.c_str();
 
 // int GetNameLength() const
 // function_index=4
+/**
+ * \brief helper function for Fortran
+ *
+ */
 int AA_exclass1_get_name_length(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));

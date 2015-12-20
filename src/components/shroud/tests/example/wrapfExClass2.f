@@ -254,6 +254,10 @@ contains
     
     ! const int GetNameLength()
     ! function_index=17
+    !>
+    !! \brief helper function for Fortran
+    !!
+    !<
     function exclass2_get_name_length(obj) result(rv)
         use iso_c_binding
         implicit none

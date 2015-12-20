@@ -62,9 +62,8 @@
                         "constructor": true
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
-                    "docs": "constructor", 
                     "doxygen": {
-                        "brief": "Short description", 
+                        "brief": "constructor", 
                         "description": "longer description\nusually multiple lines\n", 
                         "return": "return new instance"
                     }, 
@@ -107,9 +106,8 @@
                         "constructor": true
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
-                    "docs": "constructor", 
                     "doxygen": {
-                        "brief": "Short description", 
+                        "brief": "constructor", 
                         "description": "longer description\nusually multiple lines\n", 
                         "return": "return new instance"
                     }, 
@@ -174,7 +172,6 @@
                     ], 
                     "attrs": {}, 
                     "decl": "int incrementCount(int incr)", 
-                    "docs": "blah blah", 
                     "fmt": {
                         "C_name": "AA_exclass1_increment_count", 
                         "F_C_name": "aa_exclass1_increment_count", 
@@ -231,7 +228,9 @@
                         "const": true
                     }, 
                     "decl": "int GetNameLength() const", 
-                    "docs": "helper function for Fortran", 
+                    "doxygen": {
+                        "brief": "helper function for Fortran"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_length", 
                         "F_C_name": "aa_exclass1_get_name_length", 
@@ -676,7 +675,9 @@
                     "_function_index": 17, 
                     "args": [], 
                     "attrs": {}, 
-                    "docs": "helper function for Fortran", 
+                    "doxygen": {
+                        "brief": "helper function for Fortran"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass2_get_name_length", 
                         "F_C_name": "aa_exclass2_get_name_length", 
