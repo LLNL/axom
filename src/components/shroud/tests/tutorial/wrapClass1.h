@@ -1,5 +1,9 @@
 // wrapClass1.h
 // This is generated code, do not edit
+/**
+ * \file wrapClass1.h
+ * \brief Shroud generated wrapper
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPCLASS1_H

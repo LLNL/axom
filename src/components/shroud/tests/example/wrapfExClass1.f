@@ -3,6 +3,10 @@
 ! blah blah
 ! yada yada
 !
+!>
+!! @file wrapfExClass1.f
+!! @brief Shroud generated wrapper
+!<
 module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2

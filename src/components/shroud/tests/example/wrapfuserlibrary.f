@@ -3,6 +3,10 @@
 ! blah blah
 ! yada yada
 !
+!>
+!! @file wrapfuserlibrary.f
+!! @brief Shroud generated wrapper
+!<
 module userlibrary_mod
     use fstr_mod
     ! splicer begin module_use

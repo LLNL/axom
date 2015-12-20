@@ -106,8 +106,16 @@ class Wrapc(util.WrapperMixin):
 
     def write_header(self, node, fname, cls=False):
         guard = fname.replace(".", "_").upper()
+        options = node['options']
 
         output = []
+
+        if options.doxygen:
+            output.append('/**')
+            output.append(' * \\file %s' % fname)
+            output.append(' * \\brief Shroud generated wrapper')
+            output.append(' */')
+
         output.extend([
                 '// For C users and C++ implementation',
                 '',

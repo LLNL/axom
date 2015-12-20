@@ -1,5 +1,9 @@
 // wrapTutorial.h
 // This is generated code, do not edit
+/**
+ * \file wrapTutorial.h
+ * \brief Shroud generated wrapper
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPTUTORIAL_H

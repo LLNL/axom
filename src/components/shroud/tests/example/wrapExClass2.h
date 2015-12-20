@@ -3,6 +3,10 @@
 // blah blah
 // yada yada
 //
+/**
+ * \file wrapExClass2.h
+ * \brief Shroud generated wrapper
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPEXCLASS2_H

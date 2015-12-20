@@ -755,6 +755,13 @@ class Wrapf(util.WrapperMixin):
         module_name = fmt_class.F_module_name
 
         output = []
+
+        if options.doxygen:
+            output.append('!>')
+            output.append('!! @file %s' % fname)
+            output.append('!! @brief Shroud generated wrapper')
+            output.append('!<')
+
         output.append('module %s' % module_name)
         output.append(1)
 

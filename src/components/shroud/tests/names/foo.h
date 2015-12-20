@@ -1,5 +1,9 @@
 // foo.h
 // This is generated code, do not edit
+/**
+ * \file foo.h
+ * \brief Shroud generated wrapper
+ */
 // For C users and C++ implementation
 
 #ifndef FOO_H

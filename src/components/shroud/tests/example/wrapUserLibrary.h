@@ -3,6 +3,10 @@
 // blah blah
 // yada yada
 //
+/**
+ * \file wrapUserLibrary.h
+ * \brief Shroud generated wrapper
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPUSERLIBRARY_H

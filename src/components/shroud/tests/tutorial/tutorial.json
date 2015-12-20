@@ -1676,6 +1676,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "tutorial.hpp", 
         "debug": true, 
+        "doxygen": true, 
         "library": "Tutorial", 
         "namespace": "tutorial", 
         "wrap_c": true, 
