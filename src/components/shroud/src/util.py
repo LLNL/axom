@@ -207,6 +207,21 @@ class WrapperMixin(object):
                     fp.write(subline)
                     fp.write('\n')
 
+    def write_doxygen_file(self, output, fname, node, cls):
+        """ Write a doxygen comment block for a file.
+        """
+        output.append(self.doxygen_begin)
+        output.append(self.doxygen_cont + ' \\file %s' % fname)
+        if cls:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s class'
+                          % node['name'])
+        else:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s library'
+                          % node['options'].library)
+        output.append(self.doxygen_end)
+
     def write_doxygen(self, output, docs):
         """Write a doxygen comment block for a function.
         Uses brief, description, and return from docs.

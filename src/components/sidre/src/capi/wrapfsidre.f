@@ -11,7 +11,7 @@
 !
 !>
 !! \file wrapfsidre.f
-!! \brief Shroud generated wrapper
+!! \brief Shroud generated wrapper for Sidre library
 !<
 module sidre_mod
     use fstr_mod

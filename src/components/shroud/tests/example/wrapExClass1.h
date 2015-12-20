@@ -5,7 +5,7 @@
 //
 /**
  * \file wrapExClass1.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for ExClass1 class
  */
 // For C users and C++ implementation
 

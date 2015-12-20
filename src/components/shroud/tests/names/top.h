@@ -2,7 +2,7 @@
 // This is generated code, do not edit
 /**
  * \file top.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for testnames library
  */
 // For C users and C++ implementation
 

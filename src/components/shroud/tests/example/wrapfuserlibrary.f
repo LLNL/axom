@@ -5,7 +5,7 @@
 !
 !>
 !! \file wrapfuserlibrary.f
-!! \brief Shroud generated wrapper
+!! \brief Shroud generated wrapper for UserLibrary library
 !<
 module userlibrary_mod
     use fstr_mod

@@ -11,7 +11,7 @@
 //
 /**
  * \file wrapSidre.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for Sidre library
  */
 // For C users and C++ implementation
 

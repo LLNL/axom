@@ -180,7 +180,7 @@ class Wrapf(util.WrapperMixin):
             self.wrap_class(node)
             if options.F_module_per_class:
                 self._end_output_file()
-                self.write_module(node)
+                self.write_module(node, cls=True)
                 self._begin_output_file()
         self._pop_splicer('class')
 
@@ -753,7 +753,7 @@ class Wrapf(util.WrapperMixin):
             F_code.append(parts[-1])
             F_code.append(-1)
 
-    def write_module(self, node):
+    def write_module(self, node, cls=False):
         options = node['options']
         fmt_class = node['fmt']
         fname = fmt_class.F_impl_filename
@@ -762,10 +762,7 @@ class Wrapf(util.WrapperMixin):
         output = []
 
         if options.doxygen:
-            output.append('!>')
-            output.append('!! \\file %s' % fname)
-            output.append('!! \\brief Shroud generated wrapper')
-            output.append('!<')
+            self.write_doxygen_file(output, fname, node, cls)
 
         output.append('module %s' % module_name)
         output.append(1)

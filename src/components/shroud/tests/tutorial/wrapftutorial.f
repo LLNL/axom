@@ -2,7 +2,7 @@
 ! This is generated code, do not edit
 !>
 !! \file wrapftutorial.f
-!! \brief Shroud generated wrapper
+!! \brief Shroud generated wrapper for Tutorial library
 !<
 module tutorial_mod
     use fstr_mod

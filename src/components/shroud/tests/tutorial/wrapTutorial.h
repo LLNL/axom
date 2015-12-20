@@ -2,7 +2,7 @@
 // This is generated code, do not edit
 /**
  * \file wrapTutorial.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for Tutorial library
  */
 // For C users and C++ implementation
 

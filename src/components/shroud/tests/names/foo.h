@@ -2,7 +2,7 @@
 // This is generated code, do not edit
 /**
  * \file foo.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for Names class
  */
 // For C users and C++ implementation
 

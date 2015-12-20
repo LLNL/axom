@@ -2,7 +2,7 @@
 ! This is generated code, do not edit
 !>
 !! \file top.f
-!! \brief Shroud generated wrapper
+!! \brief Shroud generated wrapper for testnames library
 !<
 module top_module
     use fstr_mod

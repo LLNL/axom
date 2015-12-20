@@ -5,7 +5,7 @@
 !
 !>
 !! \file wrapfExClass2.f
-!! \brief Shroud generated wrapper
+!! \brief Shroud generated wrapper for ExClass2 class
 !<
 module exclass2_mod
     use fstr_mod

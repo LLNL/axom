@@ -5,7 +5,7 @@
 //
 /**
  * \file wrapUserLibrary.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for UserLibrary library
  */
 // For C users and C++ implementation
 

@@ -11,7 +11,7 @@
 //
 /**
  * \file wrapDataStore.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for DataStore class
  */
 // For C users and C++ implementation
 

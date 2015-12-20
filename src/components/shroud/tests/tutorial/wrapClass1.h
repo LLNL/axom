@@ -2,7 +2,7 @@
 // This is generated code, do not edit
 /**
  * \file wrapClass1.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for Class1 class
  */
 // For C users and C++ implementation
 

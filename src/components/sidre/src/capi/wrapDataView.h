@@ -11,7 +11,7 @@
 //
 /**
  * \file wrapDataView.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for DataView class
  */
 // For C users and C++ implementation
 

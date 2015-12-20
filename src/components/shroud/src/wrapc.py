@@ -114,10 +114,7 @@ class Wrapc(util.WrapperMixin):
         output = []
 
         if options.doxygen:
-            output.append('/**')
-            output.append(' * \\file %s' % fname)
-            output.append(' * \\brief Shroud generated wrapper')
-            output.append(' */')
+            self.write_doxygen_file(output, fname, node, cls)
 
         output.extend([
                 '// For C users and C++ implementation',

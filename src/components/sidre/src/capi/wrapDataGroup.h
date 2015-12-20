@@ -11,7 +11,7 @@
 //
 /**
  * \file wrapDataGroup.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for DataGroup class
  */
 // For C users and C++ implementation
 

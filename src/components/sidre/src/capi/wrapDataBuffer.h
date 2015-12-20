@@ -11,7 +11,7 @@
 //
 /**
  * \file wrapDataBuffer.h
- * \brief Shroud generated wrapper
+ * \brief Shroud generated wrapper for DataBuffer class
  */
 // For C users and C++ implementation
 
