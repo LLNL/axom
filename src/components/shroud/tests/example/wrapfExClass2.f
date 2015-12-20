@@ -4,8 +4,8 @@
 ! yada yada
 !
 !>
-!! @file wrapfExClass2.f
-!! @brief Shroud generated wrapper
+!! \file wrapfExClass2.f
+!! \brief Shroud generated wrapper
 !<
 module exclass2_mod
     use fstr_mod

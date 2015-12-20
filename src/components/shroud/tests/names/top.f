@@ -1,8 +1,8 @@
 ! top.f
 ! This is generated code, do not edit
 !>
-!! @file top.f
-!! @brief Shroud generated wrapper
+!! \file top.f
+!! \brief Shroud generated wrapper
 !<
 module top_module
     use fstr_mod

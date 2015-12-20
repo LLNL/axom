@@ -741,11 +741,15 @@ Used to insert directives for doxygen.
 
 brief
 
-   Brief description
+   Brief description.
 
 description
 
-   Full description
+   Full description.
+
+return
+
+   Description of return value.
 
 
 Splicers

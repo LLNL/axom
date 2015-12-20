@@ -1,8 +1,8 @@
 ! wrapftutorial.f
 ! This is generated code, do not edit
 !>
-!! @file wrapftutorial.f
-!! @brief Shroud generated wrapper
+!! \file wrapftutorial.f
+!! \brief Shroud generated wrapper
 !<
 module tutorial_mod
     use fstr_mod

@@ -22,6 +22,9 @@ class Wrapc(util.WrapperMixin):
         self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '//'
+        self.doxygen_begin = '/**'
+        self.doxygen_cont = ' *'
+        self.doxygen_end = ' */'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -372,6 +375,8 @@ class Wrapc(util.WrapperMixin):
         if options.debug:
             impl.append('// %s' % node['_decl'])
             impl.append('// function_index=%d' % node['_function_index'])
+        if options.doxygen and 'doxygen' in node:
+            self.write_doxygen(impl, node['doxygen'])
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls:

@@ -63,6 +63,11 @@
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
                     "docs": "constructor", 
+                    "doxygen": {
+                        "brief": "Short description", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new", 
                         "F_C_name": "aa_exclass1_new", 
@@ -103,6 +108,11 @@
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
                     "docs": "constructor", 
+                    "doxygen": {
+                        "brief": "Short description", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new_bufferify", 
                         "F_C_name": "aa_exclass1_new_bufferify", 
@@ -129,6 +139,9 @@
                         "destructor": true
                     }, 
                     "decl": "void delete() +destructor", 
+                    "doxygen": {
+                        "description": "longer description joined with previous line"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_delete", 
                         "F_C_name": "aa_exclass1_delete", 

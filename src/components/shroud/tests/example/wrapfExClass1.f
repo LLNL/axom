@@ -4,8 +4,8 @@
 ! yada yada
 !
 !>
-!! @file wrapfExClass1.f
-!! @brief Shroud generated wrapper
+!! \file wrapfExClass1.f
+!! \brief Shroud generated wrapper
 !<
 module exclass1_mod
     use fstr_mod
@@ -196,6 +196,14 @@ contains
     ! ExClass1 * new(const string * name+intent(in))+constructor
     ! string_to_buffer_and_len
     ! function_index=0
+    !>
+    !! \brief Short description
+    !!
+    !! longer description
+    !! usually multiple lines
+    !!
+    !! \return return new instance
+    !<
     function exclass1_new(name) result(rv)
         use iso_c_binding
         implicit none
@@ -210,6 +218,9 @@ contains
     
     ! void delete()+destructor
     ! function_index=1
+    !>
+    !! longer description joined with previous line
+    !<
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none

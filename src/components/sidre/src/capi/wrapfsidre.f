@@ -10,8 +10,8 @@
 ! further review from Lawrence Livermore National Laboratory.
 !
 !>
-!! @file wrapfsidre.f
-!! @brief Shroud generated wrapper
+!! \file wrapfsidre.f
+!! \brief Shroud generated wrapper
 !<
 module sidre_mod
     use fstr_mod

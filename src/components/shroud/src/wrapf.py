@@ -54,6 +54,9 @@ class Wrapf(util.WrapperMixin):
         self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '!'
+        self.doxygen_begin = '!>'
+        self.doxygen_cont = '!!'
+        self.doxygen_end = '!<'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -717,6 +720,8 @@ class Wrapf(util.WrapperMixin):
                 if generated:
                     impl.append('! %s' % ' - '.join(generated))
                 impl.append('! function_index=%d' % node['_function_index'])
+                if options.doxygen and 'doxygen' in node:
+                    self.write_doxygen(impl, node['doxygen'])
             impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
             impl.append(1)
             impl.extend(arg_f_use)
@@ -758,8 +763,8 @@ class Wrapf(util.WrapperMixin):
 
         if options.doxygen:
             output.append('!>')
-            output.append('!! @file %s' % fname)
-            output.append('!! @brief Shroud generated wrapper')
+            output.append('!! \\file %s' % fname)
+            output.append('!! \\brief Shroud generated wrapper')
             output.append('!<')
 
         output.append('module %s' % module_name)

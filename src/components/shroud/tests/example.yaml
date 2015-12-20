@@ -69,8 +69,18 @@ classes:
     methods:
     - decl: ExClass1 *new ( const string *name ) +constructor
       docs: constructor
+      doxygen:
+        brief:  Short description
+        description: |
+           longer description
+           usually multiple lines
+        return: return new instance
 
     - decl: void delete() +destructor
+      doxygen:
+        description:
+           longer description
+           joined with previous line
 
     - decl: int incrementCount(int incr)
       docs: blah blah

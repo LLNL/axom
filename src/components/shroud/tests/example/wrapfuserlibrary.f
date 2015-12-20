@@ -4,8 +4,8 @@
 ! yada yada
 !
 !>
-!! @file wrapfuserlibrary.f
-!! @brief Shroud generated wrapper
+!! \file wrapfuserlibrary.f
+!! \brief Shroud generated wrapper
 !<
 module userlibrary_mod
     use fstr_mod

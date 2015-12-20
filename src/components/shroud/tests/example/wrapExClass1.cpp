@@ -13,6 +13,14 @@ namespace nested {
 
 // ExClass1 * new(const string * name+intent(in))+constructor
 // function_index=0
+/**
+ * \brief Short description
+ *
+ * longer description
+ * usually multiple lines
+ *
+ * \return return new instance
+ */
 AA_exclass1 * AA_exclass1_new(const char * name)
 {
 ExClass1 *selfobj = new ExClass1(name);
@@ -23,6 +31,14 @@ return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
 
 // ExClass1 * new(const string * name+intent(in)+len_trim)+constructor
 // function_index=13
+/**
+ * \brief Short description
+ *
+ * longer description
+ * usually multiple lines
+ *
+ * \return return new instance
+ */
 AA_exclass1 * AA_exclass1_new_bufferify(const char * name, int Lname)
 {
 ExClass1 *selfobj = new ExClass1(std::string(name, Lname));
@@ -33,6 +49,9 @@ return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
 
 // void delete()+destructor
 // function_index=1
+/**
+ * longer description joined with previous line
+ */
 void AA_exclass1_delete(AA_exclass1 * self)
 {
 ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
