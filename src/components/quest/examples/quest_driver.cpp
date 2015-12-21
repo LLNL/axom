@@ -29,12 +29,14 @@
 #include "quest/BoundingBox.hpp"
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
+#include "slam/FileUtilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <fstream>
 
 using namespace asctoolkit;
 
@@ -294,6 +296,44 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
 
 }
 
+/**
+ * \brief Try to find a valid input file.
+ * \return The file
+ */
+std::string getStlFileName(const std::string & inputFileName)
+{
+    std::string fileName = inputFileName;
+    const int MAX_ATTEMPTS= 3;
+
+    if( inputFileName == "")
+    {
+        // Try to use the default file name.
+        // HACK: If it doesn't work, try to access from a parent directory
+        //       Fix if/when we have better file utilities
+        //       and replace with path to the root of the data repo when available
+        const std::string defaultFileName = "plane.stl";
+        const std::string defaultDir = "src/components/quest/data/";
+        fileName = defaultDir + defaultFileName;
+
+        std::ifstream meshFile(fileName.c_str());
+        for(int attempts = 0; !meshFile && attempts < MAX_ATTEMPTS; ++attempts)
+        {
+          fileName = "../" + fileName;
+          meshFile.open( fileName.c_str());
+        }
+
+        SLIC_ERROR_IF( !meshFile
+            , "fstream error -- problem opening file: '"  << defaultDir + defaultFileName
+                                                          << "' (also tried several"
+                                                          << " ancestors up to '../" << fileName << "')."
+                                                          << "\nThe current working directory is: '"
+                                                          << asctoolkit::slam::util::getCWD() << "'");
+        meshFile.close();
+    }
+
+    return fileName;
+}
+
 //------------------------------------------------------------------------------
 quest::BoundingBox getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
 {
@@ -429,8 +469,10 @@ int main( int ATK_NOT_USED(argc), char** argv )
   slic::setLoggingLevel( asctoolkit::slic::message::Debug );
   slic::addStreamToAllLevels( new slic::GenericOutputStream(&std::cout) );
 
+  bool hasInputArgs = argc > 1;
+
   // STEP 1: get file from user or use default
-  std::string stlFile = std::string( argv[1] ) ;
+  std::string stlFile = getStlFileName(hasInputArgs ? std::string( argv[1] ) : "") ;
 
   // STEP 2: read file
   std::cout << "Reading file: " << stlFile << "...";
@@ -477,8 +519,16 @@ int main( int ATK_NOT_USED(argc), char** argv )
 
   // STEP 7: get dimensions from user
   int nx, ny, nz;
-  std::cout << "Enter Nx Ny Nz:";
-  std::cin >> nx >> ny >> nz;
+  if(hasInputArgs > 1)
+  {
+      std::cout << "Enter Nx Ny Nz:";
+      std::cin >> nx >> ny >> nz;
+  }
+  else
+  {
+      nx = ny = nz = 32;
+  }
+
   double h[3];
   h[0] = (max[0]-min[0]) / nx;
   h[1] = (max[1]-min[1]) / ny;
