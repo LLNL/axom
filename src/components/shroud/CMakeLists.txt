@@ -26,6 +26,28 @@ if(PYTHON_EXECUTABLE)
         message(STATUS "Unable to run shroud: ${MISSING_MODULES}")
         set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
     endif()
+
+#####
+# get info about Python
+#####
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_location.py
+        OUTPUT_VARIABLE PYCONFIG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    message(STATUS "Python Config ${PYCONFIG}")
+    message(STATUS "Python Config")
+
+    list(GET PYCONFIG 0  PYTHON_MAJOR_VERSION)
+    list(GET PYCONFIG 1  PYTHON_MINOR_VERSION)
+    list(GET PYCONFIG 2  PYTHON_MICRO_VERSION)
+    list(GET PYCONFIG 3  PYTHON_PREFIX)
+    message(STATUS "Python Version ${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}.${PYTHON_MICRO_VERSION}")
+    message(STATUS "Python Prefix ${PYTHON_PREFIX}")
+
+    set(PYTHON_INCLUDE ${PYTHON_PREFIX}/include/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
+
+
 else()
     message(STATUS "Unable to run shroud: Python not found")
     set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
