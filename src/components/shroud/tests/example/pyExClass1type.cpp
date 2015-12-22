@@ -282,9 +282,9 @@ PP_exclass1_get_value(
   PyObject *kwds)
 {
 // splicer begin class.ExClass1.get_value
-    int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);
-    int numArgs = PyTuple_GET_SIZE(args);
-    int totArgs = numArgs + numNamedArgs;
+    Py_ssize_t shroud_nargs = 0;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
     {
         rvobj = PP_exclass1_get_value_from_int(self, args, kwds);

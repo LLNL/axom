@@ -434,10 +434,20 @@ class GenFunctions(object):
         """ Look for functions with the same name.
         Return a new list with overloaded function inserted.
         """
+        cpp_overload = {}
         for function in functions:
             if 'function_suffix' in function:
                 function['fmt'].function_suffix = function['function_suffix']
             self.append_function_index(function)
+            cpp_overload. \
+                setdefault(function['result']['name'], []). \
+                append(function['_function_index'])
+
+        # keep track of which function are overloaded in C++.
+        for key, value in cpp_overload.items():
+            if len(value) > 1:
+                for index in value:
+                    self.function_index[index]['_cpp_overload'] = value
 
         # Create additional functions needed for wrapping
         ordered_functions = []

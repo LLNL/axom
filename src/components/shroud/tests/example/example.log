@@ -100,35 +100,35 @@ C-interface, Fortran function void testoptional(int i+default(1)+intent(in)+valu
 C-interface, Fortran function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 Close wrapfuserlibrary.f
 class ExClass1
-Python method ExClass1 *new ( const string *name ) +constructor
-Python method void delete() +destructor
-Python method int incrementCount(int incr)
-Python method const string& getName() const
+Python method ExClass1 * new(const string * name+intent(in))+constructor
+Python method void delete()+destructor
+Python method int incrementCount(int incr+intent(in)+value)
+Python method const string & getName() const
 Python method int GetNameLength() const
-Python method const string& getNameErrorCheck() const
-Python method const string& getNameArg() const
-Python method ExClass2 *getRoot()
-Python method int  getValue(int value)
-Python method long getValue(long value)
-Python method void *getAddr()
-Python method bool hasAddr(bool in)
-Python method void SplicerSpecial
+Python method const string & getNameErrorCheck() const
+Python method const string & getNameArg() const
+Python method ExClass2 * getRoot()
+Python method int getValue(int value+intent(in)+value)
+Python method long getValue(long value+intent(in)+value)
+Python method void * getAddr()
+Python method bool hasAddr(bool in+intent(in)+value)
+Python method void SplicerSpecial()
 Close pyExClass1type.cpp
 class ExClass2
-Python method ExClass2 *ExClass2 (const string *name) +constructor
-Python method void delete() +destructor
-Python method const string& getName const
-Python method GetNameLength
-Python method ExClass1 *get_class1(const ExClass1 *in)
-Python method void* declare(TypeID type, SidreLength len = 1)
+Python method ExClass2 * ExClass2(const string * name+intent(in))+constructor
+Python method void delete()+destructor
+Python method const string & getName() const
+Python method const int GetNameLength()
+Python method ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
+Python method void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)
 Python method void destroyall()
 Python method TypeID getTypeID() const
 Close pyExClass2type.cpp
-Python function void local_function1
-Python function bool isNameValid(const std::string& name)
-Python function void test_names(const std::string &name)
-Python function void test_names(const std::string &name, int flag)
-Python function void testoptional(int i = 1, long j=2)
+Python function void local_function1()
+Python function bool isNameValid(const std::string & name+intent(in))
+Python function void test_names(const std::string & name+intent(in))
+Python function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
+Python function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 Close pyUserLibrarymodule.hpp
 Close pyUserLibrarymodule.cpp
 Close pyUserLibraryhelper.cpp

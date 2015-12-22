@@ -611,6 +611,10 @@
         }, 
         {
             "_PTR_F_C_index": 34, 
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
@@ -648,6 +652,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim)", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
@@ -685,6 +693,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(int indx+intent(in)+value)", 
             "_function_index": 11, 
             "_overloaded": true, 
@@ -1025,6 +1037,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10()", 
             "_function_index": 15, 
             "_overloaded": true, 
@@ -1051,6 +1067,10 @@
         }, 
         {
             "_PTR_F_C_index": 35, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
@@ -1102,6 +1122,10 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
             "_function_index": 38, 
             "_generated": "fortran_generic", 
@@ -1147,6 +1171,10 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 39, 
             "_generated": "fortran_generic", 
@@ -1191,6 +1219,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)", 
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
@@ -1241,6 +1273,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value)", 
             "_function_index": 28, 
             "_generated": "has_default_arg", 
@@ -1282,6 +1318,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
             "_function_index": 29, 
             "_generated": "has_default_arg", 
@@ -1332,6 +1372,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
                 28, 
@@ -1394,6 +1438,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value)", 
             "_function_index": 30, 
             "_generated": "has_default_arg", 
@@ -1438,6 +1486,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
             "_function_index": 31, 
             "_generated": "has_default_arg", 
@@ -1491,6 +1543,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
                 30, 

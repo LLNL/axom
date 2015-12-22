@@ -230,10 +230,7 @@ return 1;""", fmt)
             cls_function = 'method'
         else:
             cls_function = 'function'
-        if 'decl' in node:
-            self.log.write("Python {0} {1[decl]}\n".format(cls_function, node))
-        else:
-            self.log.write("Python {0} {1[result][name]}\n".format(cls_function, node))
+        self.log.write("Python {0} {1[_decl]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
@@ -559,7 +556,7 @@ static PyObject *
 
     def multi_dispatch(self, cls, methods):
         """Look for overloaded methods.
-        When found, create a method will will call each of the
+        When found, create a method which will call each of the
         overloaded methods looking for the one which will accept
         the given arguments.
         """
@@ -582,9 +579,14 @@ static PyObject *
 
             body = []
             body.append(1)
-            body.append('int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);')
-            body.append('int numArgs = PyTuple_GET_SIZE(args);')
-            body.append('int totArgs = numArgs + numNamedArgs;')
+            body.append('Py_ssize_t shroud_nargs = 0;')
+            body.extend([
+                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    ])
+#            body.append('int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);')
+#            body.append('int numArgs = PyTuple_GET_SIZE(args);')
+#            body.append('int totArgs = numArgs + numNamedArgs;')
             body.append('PyObject *rvobj;')
 
 

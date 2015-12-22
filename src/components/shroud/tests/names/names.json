@@ -165,6 +165,10 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
+            "_cpp_overload": [
+                4, 
+                5
+            ], 
             "_decl": "void function3a(int i+intent(in)+value)", 
             "_function_index": 4, 
             "_overloaded": true, 
@@ -201,6 +205,10 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
+            "_cpp_overload": [
+                4, 
+                5
+            ], 
             "_decl": "void function3a(long i+intent(in)+value)", 
             "_function_index": 5, 
             "_overloaded": true, 
