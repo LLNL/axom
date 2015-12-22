@@ -143,6 +143,23 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Converts the given grid cell indices to a one-dimensional linear index.
+   * \param [in] i the grid cell index along the first dimension.
+   * \param [in] j the grid cell index along the second dimension.
+   * \param [in] k the grid cell index along the third dimension.
+   * \return linearIdx the linear index over the cells.
+   * \pre this->getDimension() > 1.
+   * \pre i >= 0 && i < this->size( 0 )-1
+   * \pre j >= 0 && j < this->size( 1 )-1
+   * \pre k >= 0 && k < this->size( 2 )-1
+   * \note i,j,k are local grid cell indices.
+   *****************************************************************************
+   */
+  IndexType getCellLinearIndex(IndexType i, IndexType j, IndexType k=0) const;
+
+
+  /*!
+   *****************************************************************************
    * \brief Given a one-dimensional linear index, this method computes the
    *  corresponding (i,j) grid indices.
    * \param [in] linearIdx local flat index.
@@ -290,6 +307,19 @@ IndexType Extent< IndexType >::getLinearIndex(
         IndexType i, IndexType j, IndexType k) const
 {
   IndexType index = i + j*m_jp + k*m_kp;
+  return( index );
+}
+
+
+//------------------------------------------------------------------------------
+template < typename IndexType >
+inline
+IndexType Extent< IndexType >::getCellLinearIndex(
+        IndexType i, IndexType j, IndexType k) const
+{
+  IndexType cell_jp = (size(0)-1);
+  IndexType cell_kp = getDimension() == 3? cell_jp * (size(1)-1) : 0;
+  IndexType index = i + j* cell_jp  + k*cell_kp;
   return( index );
 }
 

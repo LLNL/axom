@@ -39,6 +39,13 @@ template<typename T, int DIM> bool operator==(const BoundingBox<T, DIM> & lhs, c
 template<typename T, int DIM> bool operator!=(const BoundingBox<T, DIM> & lhs, const BoundingBox<T, DIM>& rhs);
 
 /*!
+ * \brief Overloaded output operator for bounding boxes
+ */
+template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & pt);
+
+
+
+/*!
  *******************************************************************************
  * \class
  *
@@ -187,6 +194,15 @@ public:
   bool isValid() const;
 
 
+  /*!
+   *****************************************************************************
+   * \brief Simple formatted print of a bounding box instance
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   *****************************************************************************
+   */
+  std::ostream& print(std::ostream& os) const;
+
 private:
   /*!
    *****************************************************************************
@@ -295,6 +311,14 @@ namespace quest{
     }
 
 
+    //------------------------------------------------------------------------------
+    template < typename T, int DIM >
+    std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
+    {
+        os <<"{ min:"<<m_min <<"; max:"<< m_max <<" }";
+        return os;
+    }
+
 
     //------------------------------------------------------------------------------
     /// Free functions implementing comparison and arithmetic operators
@@ -314,6 +338,13 @@ namespace quest{
         return !(lhs == rhs);
     }
 
+    //------------------------------------------------------------------------------
+    template<typename T, int DIM>
+    std::ostream& operator<<(std::ostream & os, const BoundingBox<T,DIM> & bb)
+    {
+        bb.print(os);
+        return os;
+    }
 
 
 } // end namespace quest

@@ -26,10 +26,9 @@
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
-#include "quest/BoundingBox.hpp"
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
-#include "slam/FileUtilities.hpp"
+//#include "slam/FileUtilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -219,81 +218,70 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    }
 
    // STEP 1: get uniform mesh origin & spacing
-   double origin[3];
-   umesh->getOrigin( origin );
+   typedef quest::Point3D Point3D;
+   Point3D origin;
+   umesh->getOrigin( origin.data() );
 
-   double h[3];
-   umesh->getSpacing( h );
+   Point3D h;
+   umesh->getSpacing( h.data() );
 
    // STEP 2: tag boundary elements
+   typedef quest::BoundingBox<int, 3> GridBounds;
+   typedef GridBounds::PointType GridPt;
+   GridBounds globalGridBounds;
    const int ncells = surface_mesh->getMeshNumberOfCells();
-   for ( int i=0; i < ncells; ++i ) {
+   for ( int i=0; i < ncells; ++i )
+   {
+      GridPt cellids;
+      surface_mesh->getMeshCell( i, cellids.data() );
 
-      int cellids[3];
-      surface_mesh->getMeshCell( i, cellids );
-
-      int ijkmin[3];
-      std::fill( ijkmin, ijkmin+3, std::numeric_limits<int>::max() );
-
-      int ijkmax[3];
-      std::fill( ijkmax, ijkmax+3, std::numeric_limits<int>::min() );
+      GridBounds ijkBounds;
 
       // find sub-extent that encapsulates the surface element
       for ( int cn=0; cn < 3; ++cn ) {
 
           const int nodeIdx = cellids[ cn ];
 
-          double pnt[3];
-          surface_mesh->getMeshNode( nodeIdx, pnt );
+          Point3D pnt;
+          surface_mesh->getMeshNode( nodeIdx, pnt.data() );
 
           const double dx = pnt[0]-origin[0];
           const double dy = pnt[1]-origin[1];
           const double dz = pnt[2]-origin[2];
 
-          const int i = std::floor( dx/h[0] );
-          const int j = std::floor( dy/h[1] );
-          const int k = std::floor( dz/h[2] );
+          const int i = std::floor( dx/h[0] ) ;
+          const int j = std::floor( dy/h[1] ) ;
+          const int k = std::floor( dz/h[2] ) ;
 
-          // i dimension
-          if ( i <= ijkmin[0] ) {
-             ijkmin[0] = i;
-          }
-          if ( i >= ijkmax[0] ) {
-             ijkmax[0] = i;
-          }
-
-          // j dimension
-          if ( j <= ijkmin[1] ) {
-              ijkmin[1] = j;
-          }
-          if ( j >= ijkmax[1] ) {
-              ijkmax[1] = j;
-          }
-
-          // k dimension
-          if ( k <= ijkmin[2] ) {
-              ijkmin[2] = k;
-          }
-          if ( k >= ijkmax[2] ) {
-              ijkmax[2] = k;
-          }
+          ijkBounds.addPoint( GridPt::make_point(i,j,k) );
+          globalGridBounds.addPoint( GridPt::make_point(i,j,k) );
 
       } // END for all cell nodes;
 
       // flag all elements within the sub-extend as boundary elements
+      const GridPt& ijkmin = ijkBounds.getMin();
+      const GridPt& ijkmax = ijkBounds.getMax();
+
+      // std::cout <<"\nGrid bounding box: " << ijkBounds << std::endl;
+
       for ( int ii=ijkmin[0]; ii <= ijkmax[0]; ++ii ) {
          for ( int jj=ijkmin[1]; jj <= ijkmax[1]; ++jj ) {
             for ( int kk=ijkmin[2]; kk <= ijkmax[2]; ++kk ) {
 
-                const int idx = umesh->getLinearIndex( ii, jj, kk );
-                bndry[ idx ] = 1;
+                const int idx_wrong = umesh->getCellLinearIndex( ii, jj, kk );
+                const int RES = 32;
+                const int idx = ii + RES * jj + RES*RES* kk;
+                ++bndry[ idx_wrong ];
+
+
             } // END for all kk
          } // END for all jj
       } // END for all ii
 
-
    } // END for all surface elements
 
+
+   std::cout<<"Overall grid bounds: " << globalGridBounds << std::endl;
 }
 
 /**
@@ -506,17 +494,6 @@ int main( int ATK_NOT_USED(argc), char** argv )
   std::cout << "min: " << min[0] << ", " << min[1] << ", " << min[2] << "\n";
   std::cout << "max: " << max[0] << ", " << max[1] << ", " << max[2] << "\n";
 
-  double f;
-  std::cout << "Inflate by N:";
-  std::cin >> f;
-  for (int i=0; i < 3; ++i ) {
-
-      min[ i ] -= f;
-      max[ i ] += f;
-  }
-  std::cout << "min: " << min[0] << ", " << min[1] << ", " << min[2] << "\n";
-  std::cout << "max: " << max[0] << ", " << max[1] << ", " << max[2] << "\n";
-
   // STEP 7: get dimensions from user
   int nx, ny, nz;
   if(hasInputArgs > 1)
@@ -530,26 +507,25 @@ int main( int ATK_NOT_USED(argc), char** argv )
   }
 
   double h[3];
-  h[0] = (max[0]-min[0]) / nx;
-  h[1] = (max[1]-min[1]) / ny;
-  h[2] = (max[2]-min[2]) / nz;
+  h[0] = (max[0]-min[0]) / (nx);
+  h[1] = (max[1]-min[1]) / (ny);
+  h[2] = (max[2]-min[2]) / (nz);
   std::cout << "h: " << h[0] << " " << h[1] << " " << h[2] << std::endl;
   std::cout.flush();
 
-  int ext[6];
-  ext[0] = 0;
-  ext[1] = nx-1;
-  ext[2] = 0;
-  ext[3] = ny-1;
-  ext[4] = 0;
-  ext[5] = nz-1;
+  int node_ext[6];
+  node_ext[0] = 0;
+  node_ext[1] = nx;
+  node_ext[2] = 0;
+  node_ext[3] = ny;
+  node_ext[4] = 0;
+  node_ext[5] = nz;
 
   // STEP 8: Construct uniform mesh
-  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,min,h,ext);
+  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,min,h,node_ext);
 
   // STEP 9: Flag boundary cells on uniform mesh
-//  flag_boundary( surface_mesh, umesh );
-  n2(surface_mesh,umesh);
+  flag_boundary( surface_mesh, umesh );
   write_vtk( umesh, "uniform_mesh.vtk" );
 
   // STEP 10: clean up

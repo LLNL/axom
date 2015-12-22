@@ -190,6 +190,18 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Returns the linear index corresponding to the given logical grid cell indices.
+   * \param [in] i logical cell index of the first dimension.
+   * \param [in] j logical cell index of the second dimension.
+   * \param [in] k logical cell index of the third dimension (optional)
+   * \return idx the corresponding linear index of the cell.
+   *****************************************************************************
+   */
+  int getCellLinearIndex( int i, int j, int k=0) const
+    { return m_extent->getCellLinearIndex(i,j,k); };
+
+  /*!
+   *****************************************************************************
    * \brief Returns the cell connectivity for the given cell.
    * \param [in] cellIdx the index of the cell in query.
    * \param [out] cell pointer to buffer to populate with the cell connectivity.

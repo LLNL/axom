@@ -14,6 +14,7 @@
 #ifndef POINT_HXX_
 #define POINT_HXX_
 
+#include <ostream>
 #include "slic/slic.hpp"
 
 
@@ -53,6 +54,10 @@ template<typename T, int DIM> bool operator==(const Point<T, DIM> & lhs, const P
  */
 template<typename T, int DIM> bool operator!=(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
 
+/*!
+ * \brief Overloaded output operator for points
+ */
+template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt);
 
 /*!
  *******************************************************************************
@@ -156,6 +161,15 @@ public:
    */
   void to_array(T* arr) const;
 
+
+  /*!
+   *****************************************************************************
+   * \brief Simple formatted print of a point instance
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   *****************************************************************************
+   */
+  std::ostream& print(std::ostream& os) const;
   /*!
    *****************************************************************************
    * \brief Utility function to constructs a Point with the given coordinates.
@@ -325,11 +339,24 @@ inline T* Point< T, DIM >::data()
     return m_components;
 }
 
+//------------------------------------------------------------------------------
 template < typename T, int DIM >
 void Point< T, DIM >::to_array(T* arr) const
 {
     SLIC_ASSERT( arr != ATK_NULLPTR);
     memcpy( arr, m_components, NBYTES );
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+std::ostream& Point< T, DIM >::print(std::ostream& os) const
+{
+    os <<"(";
+    for(int dim=0; dim < DIM -1; ++ dim)
+        os << m_components[dim] << ",";
+    os << m_components[DIM-1] << ")";
+
+    return os;
 }
 
 //------------------------------------------------------------------------------
@@ -354,6 +381,15 @@ bool operator!=(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
 {
     return !(lhs == rhs);
 }
+
+
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt)
+{
+    pt.print(os);
+    return os;
+}
+
 
 
 } /* namespace quest*/
