@@ -5,7 +5,6 @@
 #
 # make the library
 #
-set(BUILD_SHARED_LIBS TRUE)
 make_library(
     LIBRARY_NAME
         shroudrt
