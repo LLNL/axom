@@ -272,7 +272,16 @@ return 1;""", fmt)
         cpp_call_list = []
 
         # parse arguments
-        optional = []
+        # call function based on number of default arguments provided
+        default_calls = []   # each possible default call
+        found_default = False
+        if '_has_default_arg' in node:
+            PY_decl.append('Py_ssize_t shroud_nargs = 0;')
+            PY_code.extend([
+                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    ])
+
         post_parse = []
         args = node['args']
         if not args:
@@ -292,10 +301,12 @@ return 1;""", fmt)
 
                 attrs = arg['attrs']
                 if 'default' in attrs:
-                    fmt.default_value = attrs['default']
-                    if not optional:
+                    if not found_default:
                         format.append('|')  # add once
-                    append_format(optional, '{var} = {default_value};', fmt)
+                        found_default = True
+                    # call for default arguments  (num args, arg string)
+                    default_calls.append(
+                        (len(cpp_call_list),  ', '.join(cpp_call_list)))
 
                 format.append(arg_typedef.PY_format)
                 if arg_typedef.PY_PyTypeObject:
@@ -335,19 +346,15 @@ return 1;""", fmt)
                 PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
                 PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
-            PY_decl.append('')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
-            PY_code.extend(optional)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
             PY_code.append(1)
             PY_code.append(wformat('{PyArg_addrargs}))', fmt))
             PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
             PY_code.extend(post_parse)
-            
-        fmt.call_list = ', '.join(cpp_call_list)
 
         if cls:
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
@@ -356,21 +363,58 @@ return 1;""", fmt)
         else:
             fmt.PY_this_call = ''  # call function syntax
 
+        # call with all arguments
+        default_calls.append(
+            (len(cpp_call_list),  ', '.join(cpp_call_list)))
 
-        if is_dtor:
-            append_format(PY_code, 'delete self->{BBB};', fmt)
-            append_format(PY_code, 'self->{BBB} = NULL;', fmt)
-        elif result_type == 'void' and not result_is_ptr:
-            line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
-            PY_code.append(line)
+        # If multiple calls, declare return value once
+        # Else delare on call line.
+        if found_default:
+            fmt.rv_asgn = 'rv = '
+            PY_code.append('switch (shroud_nargs) {')
         else:
-            line = wformat('{rv_decl} = {PY_this_call}{method_name}({call_list});', fmt)
-            PY_code.append(line)
+            fmt.rv_asgn = fmt.rv_decl + ' = '
+        need_rv = False
 
-        if 'PY_error_pattern' in node:
-            lfmt = util.Options(fmt)
-            lfmt.var = fmt.rv
-            append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
+        for nargs, call_list in default_calls:
+            if found_default:
+                PY_code.append('case %d:' % nargs)
+                PY_code.append(1)
+
+            fmt.call_list = call_list
+
+            if is_dtor:
+                append_format(PY_code, 'delete self->{BBB};', fmt)
+                append_format(PY_code, 'self->{BBB} = NULL;', fmt)
+            elif result_type == 'void' and not result_is_ptr:
+                line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
+                PY_code.append(line)
+            else:
+                need_rv = True
+                line = wformat('{rv_asgn}{PY_this_call}{method_name}({call_list});', fmt)
+                PY_code.append(line)
+
+            if 'PY_error_pattern' in node:
+                lfmt = util.Options(fmt)
+                lfmt.var = fmt.rv
+                append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
+
+            if found_default:
+                PY_code.append('break;')
+                PY_code.append(-1)
+        if found_default:
+#            PY_code.append('default:')
+#            PY_code.append(1)
+#            PY_code.append('continue;')  # XXX raise internal error
+#            PY_code.append(-1)
+            PY_code.append('}')
+        else:
+            need_rv = False
+
+        if need_rv:
+            PY_decl.append(fmt.rv_decl + ';')
+        if len(PY_decl):
+            PY_decl.append('')
 
         # return Object
         if result_type == 'void' and not result_is_ptr:

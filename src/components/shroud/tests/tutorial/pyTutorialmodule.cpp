@@ -168,19 +168,31 @@ PY_function5_arg1_arg2(
   PyObject *kwds)
 {
 // splicer begin function.function5_arg1_arg2
+    Py_ssize_t shroud_nargs = 0;
     double arg1;
     bool arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
+    double rv;
     
-    arg1 = 3.1415;
-    arg2 = true;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|dO:Function5", kw_list,
         &arg1, &arg2))
     {
         return NULL;
     }
-    double rv = Function5(arg1, arg2);
+    switch (shroud_nargs) {
+    case 0:
+        rv = Function5();
+        break;
+    case 1:
+        rv = Function5(arg1);
+        break;
+    case 2:
+        rv = Function5(arg1, arg2);
+        break;
+    }
     return Py_BuildValue("d", rv);
 // splicer end function.function5_arg1_arg2
 }
@@ -313,20 +325,32 @@ PY_overload1_num_offset_stride(
   PyObject *kwds)
 {
 // splicer begin function.overload1_num_offset_stride
+    Py_ssize_t shroud_nargs = 0;
     int num;
     int offset;
     int stride;
     const char *kwcpp = "num\0offset\0stride";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+4,(char *) kwcpp+11, NULL };
+    int rv;
     
-    offset = 0;
-    stride = 1;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|ii:overload1", kw_list,
         &num, &offset, &stride))
     {
         return NULL;
     }
-    int rv = overload1(num, offset, stride);
+    switch (shroud_nargs) {
+    case 1:
+        rv = overload1(num);
+        break;
+    case 2:
+        rv = overload1(num, offset);
+        break;
+    case 3:
+        rv = overload1(num, offset, stride);
+        break;
+    }
     return Py_BuildValue("i", rv);
 // splicer end function.overload1_num_offset_stride
 }
@@ -342,21 +366,33 @@ PY_overload1_5(
   PyObject *kwds)
 {
 // splicer begin function.overload1_5
+    Py_ssize_t shroud_nargs = 0;
     double type;
     int num;
     int offset;
     int stride;
     const char *kwcpp = "type\0num\0offset\0stride";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5,(char *) kwcpp+9,(char *) kwcpp+16, NULL };
+    int rv;
     
-    offset = 0;
-    stride = 1;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "di|ii:overload1", kw_list,
         &type, &num, &offset, &stride))
     {
         return NULL;
     }
-    int rv = overload1(type, num, offset, stride);
+    switch (shroud_nargs) {
+    case 2:
+        rv = overload1(type, num);
+        break;
+    case 3:
+        rv = overload1(type, num, offset);
+        break;
+    case 4:
+        rv = overload1(type, num, offset, stride);
+        break;
+    }
     return Py_BuildValue("i", rv);
 // splicer end function.overload1_5
 }

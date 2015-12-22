@@ -230,18 +230,27 @@ PP_exclass2_declare_1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.declare_1
+    Py_ssize_t shroud_nargs = 0;
     int type;
     ATK_SidreLength len;
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    len = 1;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|l:declare", kw_list,
         &type, &len))
     {
         return NULL;
     }
-    self->BBB->declare(getTypeID(type), len);
+    switch (shroud_nargs) {
+    case 1:
+        self->BBB->declare(getTypeID(type));
+        break;
+    case 2:
+        self->BBB->declare(getTypeID(type), len);
+        break;
+    }
     Py_RETURN_NONE;
 // splicer end class.ExClass2.method.declare_1
 }

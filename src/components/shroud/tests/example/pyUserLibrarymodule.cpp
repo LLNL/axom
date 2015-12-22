@@ -118,19 +118,30 @@ PP_testoptional_2(
   PyObject *kwds)
 {
 // splicer begin function.testoptional_2
+    Py_ssize_t shroud_nargs = 0;
     int i;
     long j;
     const char *kwcpp = "i\0j";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
     
-    i = 1;
-    j = 2;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", kw_list,
         &i, &j))
     {
         return NULL;
     }
-    testoptional(i, j);
+    switch (shroud_nargs) {
+    case 0:
+        testoptional();
+        break;
+    case 1:
+        testoptional(i);
+        break;
+    case 2:
+        testoptional(i, j);
+        break;
+    }
     Py_RETURN_NONE;
 // splicer end function.testoptional_2
 }
