@@ -211,7 +211,7 @@ void compute_bounds( meshtk::Mesh* mesh, double min[3], double max[3] )
 
 
 //------------------------------------------------------------------------------
-quest::BoundingBox getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
+quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
 {
    // Sanity checks
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
@@ -219,37 +219,17 @@ quest::BoundingBox getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
 
    int cell[3];
    surface_mesh->getMeshCell( cellIdx, cell );
-
-   double min[3];
-   double max[3];
-   std::fill( min, min+3, std::numeric_limits<double>::max() );
-   std::fill( max, max+3, std::numeric_limits<double>::min() );
+   quest::BoundingBox<double,3> bb;
 
    for ( int i=0; i < 3; ++i ) {
 
       double pnt[3];
       surface_mesh->getMeshNode( cell[i], pnt );
 
-      for ( int j=0; j < 3; ++j ) {
-
-          if ( pnt[ j ] < min[ j ] ) {
-
-              min[ j ] = pnt[ j ];
-
-          }
-
-          if ( pnt[ j ] > max[ j ] ) {
-
-              max[ j ] = pnt[ j ];
-          }
-
-      } // END for each dimension
+      bb.addPoint( quest::Point<double,3>(pnt) );
 
    } // END for all cell nodes
 
-   quest::BoundingBox bb;
-   bb.setMin( min );
-   bb.setMax( max );
    return bb;
 }
 

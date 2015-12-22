@@ -14,9 +14,11 @@
 #ifndef POINT_HXX_
 #define POINT_HXX_
 
-#include <ostream>
 #include "slic/slic.hpp"
 
+// C/C++ includes
+#include <cstring> // For memcpy()
+#include <ostream> // For print() and operator <<
 
 namespace {
     /*!

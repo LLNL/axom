@@ -57,9 +57,10 @@ double squared_distance( const Point< T,ndims >& A, const Point< T,ndims >& B )
  */
 template < typename T, int ndims >
 inline
-double squared_distance( const Point< T,ndims >& P, const BoundingBox& B )
+double squared_distance( const Point< T,ndims >& P,
+                         const BoundingBox< T,ndims >& B )
 {
-   if ( B.hasPoint( P[0], P[1], P[2] ) ) {
+   if ( B.contains( P ) ) {
       /* short-circuit */
       return 0.0f;
    }
