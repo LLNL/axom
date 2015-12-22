@@ -52,7 +52,7 @@ endif()
 
 if(SPHINX_FOUND)
     add_custom_target(sphinx_docs)
-#    add_dependencies(docs sphinx_docs)
+    add_dependencies(docs sphinx_docs)
 endif()
 
 

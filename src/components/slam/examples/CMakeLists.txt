@@ -42,7 +42,7 @@ set(lulesh_exe_source
 
 
 ## Ignore omp pragmas when openMP is not defined
-if ( NOT ENABLE_OMP )
+if ( NOT ENABLE_OPENMP )
     set_source_files_properties(${lulesh_lib_sources} ${lulesh_exe_source} PROPERTIES COMPILE_FLAGS "${DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
@@ -50,7 +50,6 @@ endif()
 make_library( LIBRARY_NAME      slamLuleshLib
               LIBRARY_SOURCES   "${lulesh_lib_sources}" "${lulesh_lib_headers}"
               USE_OPENMP ${ENABLE_OMP} 
-              USE_MPI ${ENABLE_MPI}              
               ) 
 
 add_dependencies(slamLuleshLib slam)
@@ -63,7 +62,6 @@ make_executable( EXECUTABLE_NAME    slamLulesh
                     slam 
                     slamLuleshLib
                   USE_OPENMP ${ENABLE_OMP} 
-                  USE_MPI ${ENABLE_MPI}              
                   ) 
 
 
@@ -94,7 +92,7 @@ if ( ${buildOrigLulesh} )
     
     # Add some extra configuration flags for MPI, OpenMP and allowing unused parameters (in 3rd party source code)
     set(luleshExtraCompileFlags ${DISABLE_UNUSED_PARAMETER_WARNINGS})
-    if ( NOT ENABLE_OMP )
+    if ( NOT ENABLE_OPENMP )
         set(luleshExtraCompileFlags "${luleshExtraCompileFlags} ${DISABLE_OMP_PRAGMA_WARNINGS}")
     endif()
 
@@ -111,15 +109,13 @@ if ( ${buildOrigLulesh} )
     make_library( 
         LIBRARY_NAME slamLuleshOrigLib 
         LIBRARY_SOURCES "${lulesh_lib_sources}"  "${lulesh_lib_headers}"  
-        USE_OPENMP ${ENABLE_OMP} 
-        USE_MPI ${ENABLE_MPI}              
+        USE_OPENMP ${ENABLE_OPENMP} 
        ) 
     make_executable( 
         EXECUTABLE_NAME slamOrigLulesh 
         EXECUTABLE_SOURCE ${lulesh_exe_source} 
         DEPENDS_ON "slamLuleshOrigLib" 
-        USE_OPENMP ${ENABLE_OMP} 
-        USE_MPI ${ENABLE_MPI}              
+        USE_OPENMP ${ENABLE_OPENMP} 
        ) 
           
 endif()
@@ -166,13 +162,25 @@ make_library(
 #
 set(gtest_slam_tinyHydro_tests
     ${tinyHydro_dir}/tests/slam_tinyHydro_unitTests.cpp
-    ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
-    ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
 )
-
 foreach(test ${gtest_slam_tinyHydro_tests})
     add_gtest( TEST_SOURCE ${test} DEPENDS_ON slamTinyHydroLib slic)
 endforeach()
+
+make_executable( 
+    EXECUTABLE_NAME "slam_tinyHydro_sedov" 
+    EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sedovTwoPart.cpp
+    DEPENDS_ON slamTinyHydroLib
+)
+make_executable( 
+    EXECUTABLE_NAME "slam_tinyHydro_sod" 
+    EXECUTABLE_SOURCE ${tinyHydro_dir}/tests/slam_tinyHydro_sod1DTwoPart.cpp
+    DEPENDS_ON slamTinyHydroLib
+    ADD_CTEST
+)
+    
+
+
 
 
 # Add some extra flags to disable warnings about variables used only for SLIC_ASSERTS

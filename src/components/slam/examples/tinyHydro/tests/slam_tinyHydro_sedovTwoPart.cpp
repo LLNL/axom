@@ -14,8 +14,6 @@
 #include <cmath>
 #include <iostream>
 
-#include "gtest/gtest.h"
-
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
@@ -32,7 +30,7 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 }
 
 
-TEST(gtest_slam_tinyHydro,test_sedov_2_part)
+void tinyHydroSedov_2part()
 {
   std::cout << "\n****** Sedov cylindrical square grid test." << std::endl;
 
@@ -129,17 +127,14 @@ TEST(gtest_slam_tinyHydro,test_sedov_2_part)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main()
 {
   int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
+  tinyHydroSedov_2part();
 
   return result;
 }

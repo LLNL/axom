@@ -1,5 +1,5 @@
 ##################################################################################
-# SLAM component -- Set-theoretic Leightweight API for Meshes (low level mesh API) 
+# SLAM component -- Set-theoretic Lightweight API for Meshes (low level mesh API) 
 ##################################################################################
 project(slam)
 

@@ -14,8 +14,6 @@
 #include <cmath>
 #include <iostream>
 
-#include "gtest/gtest.h"
-
 #include "slic/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
@@ -31,7 +29,7 @@ std::ostream& operator<<(std::ostream& os, const VectorXY & vec)
 }
 
 
-TEST(gtest_slam_tinyHydro,test_sod1D_2_part)
+void tinyHydroSod1D_2part()
 {
   std::cout << "\n****** Sod 1D test, two parts." << std::endl;
 
@@ -164,17 +162,14 @@ TEST(gtest_slam_tinyHydro,test_sod1D_2_part)
 #include "slic/UnitTestLogger.hpp"
 using asctoolkit::slic::UnitTestLogger;
 
-int main(int argc, char * argv[])
+int main()
 {
   int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
+  tinyHydroSod1D_2part();
 
   return result;
 }

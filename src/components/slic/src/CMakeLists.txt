@@ -49,34 +49,15 @@ copy_headers_target( ${PROJECT_NAME}
 #
 # make the library
 #
-if ( ENABLE_MPI )
-
     make_library( LIBRARY_NAME
                       slic
 
                   LIBRARY_SOURCES
                       "${slic_sources}"
                       "${slic_headers}"
-
-                  DEPENDS_ON
-                      common
-
-                  WITH_MPI
-                  )
-
-else()
-
-    make_library( LIBRARY_NAME
-                      slic
-
-                  LIBRARY_SOURCES
-                      "${slic_sources}"
-                      "${slic_headers}"
-
                   DEPENDS_ON
                       common
                   )
 
-endif()
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
