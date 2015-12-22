@@ -579,21 +579,22 @@ static PyObject *
 
         output = []
 
-        output.append("""
-/*
- * This is generated code.
- * Any edits must be made between the splicer.begin and splicer.end blocks.
- * All other edits will be lost.
- * Once a block is edited remove the 'UNMODIFIED' on the splicer.begin
- * comment to allow the block to be preserved when it is regenerated.
- */
+        # add guard
+        guard = fname.replace(".", "_").upper()
+        output.extend([
+                '#ifndef %s' % guard,
+                '#define %s' % guard,
+                ])
 
-#ifndef HDR_BASISMODULE
-#define HDR_BASISMODULE
-#include <Python.h>
-#if PY_MAJOR_VERSION >= 3
-#define IS_PY3K
-#endif""")
+        if options.cpp_header:
+            for include in options.cpp_header.split():
+                output.append('#include "%s"' % include)
+
+        output.extend([
+                '#include <Python.h>',
+                '#if PY_MAJOR_VERSION >= 3',
+                '#define IS_PY3K',
+                '#endif'])
         
         self._push_splicer('header')
         self._create_splicer('include', output)
@@ -621,12 +622,12 @@ extern "C" {{
 #define MOD_INITBASIS init{PY_module_name}
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
-#endif
 #ifdef __cplusplus
 }}
 #endif
 """, fmt))
         self.namespace(node, 'end', output)
+        output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_module(self, node):
