@@ -31,9 +31,9 @@
 
 #include "common/CommonTypes.hpp"
 #include "common/ATKMacros.hpp"
+#include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cassert> // for assert()
 #include <cstddef> // for ATK_NULLPTR
 
 namespace meshtk
@@ -370,8 +370,8 @@ namespace meshtk {
 
 inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 {
-  assert( cell != ATK_NULLPTR );
-  assert( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
+  SLIC_ASSERT( cell != ATK_NULLPTR );
+  SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
 
   const int* offsets_table = m_extent->getCellOffSets();
   const int num_cell_nodes = this->getNumberOfCellNodes();
@@ -382,20 +382,20 @@ inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 
   if  ( this->getDimension() == 1 ) {
 
-      assert( num_cell_nodes==2 );
+      SLIC_ASSERT( num_cell_nodes==2 );
       ii = cellIdx;
 
   } else if ( this->getDimension() == 2 ) {
 
-     assert( num_cell_nodes==4 );
+     SLIC_ASSERT( num_cell_nodes==4 );
 
      ii = cellIdx % jp_minus_1;
      jj = cellIdx / jp_minus_1;
 
   } else {
 
-   assert( this->getDimension()==3 );
-   assert( num_cell_nodes==8 );
+   SLIC_ASSERT( this->getDimension()==3 );
+   SLIC_ASSERT( num_cell_nodes==8 );
 
    int kp_minus_1 = m_extent->size(1)-1;
    ii = cellIdx % jp_minus_1;
@@ -419,11 +419,11 @@ inline void StructuredMesh::getCell(int cellIdx, int* cell) const
 //------------------------------------------------------------------------------
 inline void StructuredMesh::getCell(int i, int j, int* cell) const
 {
-  assert( this->getDimension()==2 );
-  assert( cell != ATK_NULLPTR );
+  SLIC_ASSERT( this->getDimension()==2 );
+  SLIC_ASSERT( cell != ATK_NULLPTR );
 
   const int num_cell_nodes = this->getNumberOfCellNodes();
-  assert( num_cell_nodes == 4 );
+  SLIC_ASSERT( num_cell_nodes == 4 );
 
   const int* offsets_table = m_extent->getCellOffSets();
 
@@ -440,11 +440,11 @@ inline void StructuredMesh::getCell(int i, int j, int* cell) const
 //------------------------------------------------------------------------------
 inline void StructuredMesh::getCell(int i, int j, int k, int* cell) const
 {
-  assert( this->getDimension()==3 );
-  assert( cell != ATK_NULLPTR );
+  SLIC_ASSERT( this->getDimension()==3 );
+  SLIC_ASSERT( cell != ATK_NULLPTR );
 
   const int num_cell_nodes = this->getNumberOfCellNodes();
-  assert( num_cell_nodes == 8 );
+  SLIC_ASSERT( num_cell_nodes == 8 );
 
   const int* offsets_table = m_extent->getCellOffSets();
 

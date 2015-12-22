@@ -30,11 +30,11 @@
 #include "quest/CellType.hpp"
 #include "quest/CellConnectivity.hpp"
 #include "quest/MeshCoordinates.hpp"
+#include "slic/slic.hpp"
 
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 
-#include <cassert> // for assert()
 #include <cstring> // for memcpy()
 #include <fstream> // for fstream
 
@@ -168,7 +168,7 @@ public:
    */
   virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
   {
-    assert( dim >= 0 && dim < m_ndims );
+    SLIC_ASSERT( dim >= 0 && dim < m_ndims );
     return this->getMeshCoordinateArray( dim )[ nodeIdx ];
   }
 
@@ -343,9 +343,9 @@ inline
 void UnstructuredMesh< CellType >::insertCell(
     const int* cell, int cell_type, int num_nodes )
 {
-  assert( cell != ATK_NULLPTR );
-  assert( m_cell_connectivity != ATK_NULLPTR );
-  assert( cell::num_nodes[ cell_type ] == num_nodes );
+  SLIC_ASSERT( cell != ATK_NULLPTR );
+  SLIC_ASSERT( m_cell_connectivity != ATK_NULLPTR );
+  SLIC_ASSERT( cell::num_nodes[ cell_type ] == num_nodes );
 
   m_cell_connectivity->insertCell( cell, cell_type, num_nodes );
 }
@@ -355,8 +355,8 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y )
 {
-  assert( m_ndims==2 );
-  assert( m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( m_ndims==2 );
+  SLIC_ASSERT( m_node_coordinates != ATK_NULLPTR );
   m_node_coordinates->insertPoint( x, y );
 }
 
@@ -365,8 +365,8 @@ template < int CellType >
 inline
 void UnstructuredMesh< CellType >::insertNode( double x, double y, double z )
 {
-  assert( m_ndims==3 );
-  assert( m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( m_ndims==3 );
+  SLIC_ASSERT( m_node_coordinates != ATK_NULLPTR );
   m_node_coordinates->insertPoint( x, y, z );
 }
 
@@ -375,8 +375,8 @@ template < int CellType >
 inline
 const double* UnstructuredMesh< CellType >::getMeshCoordinateArray(int dim) const
 {
-  assert( m_node_coordinates != ATK_NULLPTR );
-  assert( dim < m_ndims );
+  SLIC_ASSERT( m_node_coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( dim < m_ndims );
   return m_node_coordinates->getCoordinateArray( dim );
 }
 
@@ -385,8 +385,8 @@ template < int CellType >
 inline
 const int* UnstructuredMesh< CellType >::getCell( int cellIdx ) const
 {
-  assert( m_cell_connectivity != ATK_NULLPTR );
-  assert( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+  SLIC_ASSERT( m_cell_connectivity != ATK_NULLPTR );
+  SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
   return (*m_cell_connectivity)[ cellIdx ];
 }
 

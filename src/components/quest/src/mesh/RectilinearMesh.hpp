@@ -31,7 +31,6 @@
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
 
-#include <cassert> // for assert()
 
 namespace meshtk
 {
@@ -192,8 +191,8 @@ namespace meshtk
 
 inline void RectilinearMesh::setCoordinate( int idim, int i, double coord )
 {
-  assert( idim >= 0 && idim < this->getDimension() );
-  assert( i >= 0 && i < m_coordinates->getCoordinateArraySize( idim ) );
+  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
+  SLIC_ASSERT( i >= 0 && i < m_coordinates->getCoordinateArraySize( idim ) );
 
   double* xc = m_coordinates->getCoordinateArray( idim );
   xc[ i ]    = coord;
@@ -202,8 +201,8 @@ inline void RectilinearMesh::setCoordinate( int idim, int i, double coord )
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const
 {
-  assert( coordinates != ATK_NULLPTR );
-  assert( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT( coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
 
   int ijk[3];
   m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
@@ -218,8 +217,8 @@ inline void RectilinearMesh::getNode( int nodeIdx, double* coordinates ) const
 //------------------------------------------------------------------------------
 inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const
 {
-  assert( coordinates != ATK_NULLPTR );
-  assert( this->getDimension()==2 );
+  SLIC_ASSERT( coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( this->getDimension()==2 );
 
   const double* xc = this->getCoordinateArray( 0 );
   const double* yc = this->getCoordinateArray( 1 );
@@ -231,8 +230,8 @@ inline void RectilinearMesh::getNode( int i, int j, double* coordinates ) const
 inline void RectilinearMesh::getNode(
     int i, int j, int k, double* coordinates ) const
 {
-  assert( coordinates != ATK_NULLPTR );
-  assert( this->getDimension()==3 );
+  SLIC_ASSERT( coordinates != ATK_NULLPTR );
+  SLIC_ASSERT( this->getDimension()==3 );
 
   const double* xc = this->getCoordinateArray( 0 );
   const double* yc = this->getCoordinateArray( 1 );
@@ -245,8 +244,8 @@ inline void RectilinearMesh::getNode(
 //------------------------------------------------------------------------------
 inline double RectilinearMesh::getNodeCoordinate( int nodeIdx, int idim  ) const
 {
-  assert( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
-  assert( idim >= 0 && idim < this->getDimension() );
+  SLIC_ASSERT( nodeIdx >= 0 && nodeIdx < this->getNumberOfNodes() );
+  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
 
   int ijk[3];
   m_extent->getGridIndex( nodeIdx, ijk[0], ijk[1], ijk[2] );
@@ -258,8 +257,8 @@ inline double RectilinearMesh::getNodeCoordinate( int nodeIdx, int idim  ) const
 //------------------------------------------------------------------------------
 inline double RectilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
 {
-  assert( this->getDimension()==2 );
-  assert( idim >= 0 && idim < 2 );
+  SLIC_ASSERT( this->getDimension()==2 );
+  SLIC_ASSERT( idim >= 0 && idim < 2 );
 
   int ijk[2] = { i, j };
 
@@ -271,8 +270,8 @@ inline double RectilinearMesh::getNodeCoordinate( int i, int j, int idim ) const
 inline double RectilinearMesh::getNodeCoordinate(
               int i, int j, int k, int idim ) const
 {
-  assert( this->getDimension()==3 );
-  assert( idim >= 0 && idim < 3 );
+  SLIC_ASSERT( this->getDimension()==3 );
+  SLIC_ASSERT( idim >= 0 && idim < 3 );
 
   int ijk[3] = { i, j, k };
 

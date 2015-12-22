@@ -24,7 +24,10 @@
 
 #include "CurvilinearMesh.hpp"
 
-#include <cassert> // for assert()
+// ATK includes
+#include "slic/slic.hpp"
+
+// C/C++ includes
 #include <cstddef> // for definition of ATK_NULLPTR
 
 namespace meshtk {

@@ -25,7 +25,7 @@
 
 #include "quest/MeshCoordinates.hpp"
 
-#include <cassert> // for assert()
+#include "slic/slic.hpp"
 
 namespace meshtk
 {
@@ -70,35 +70,35 @@ MeshCoordinates::~MeshCoordinates()
 //------------------------------------------------------------------------------
 void MeshCoordinates::insertPoint( double x, double y )
 {
-  assert( m_ndims == 2 );
+  SLIC_ASSERT( m_ndims == 2 );
 
   m_coordinates[ X_COORDINATE ].push_back( x );
   m_coordinates[ Y_COORDINATE ].push_back( y );
 
-  assert( m_coordinates[ X_COORDINATE ].size() ==
+  SLIC_ASSERT( m_coordinates[ X_COORDINATE ].size() ==
                      m_coordinates[ Y_COORDINATE ].size() );
 }
 
 //------------------------------------------------------------------------------
 void MeshCoordinates::insertPoint( double x, double y, double z )
 {
-  assert( m_ndims == 3 );
+  SLIC_ASSERT( m_ndims == 3 );
 
   m_coordinates[ X_COORDINATE ].push_back( x );
   m_coordinates[ Y_COORDINATE ].push_back( y );
   m_coordinates[ Z_COORDINATE ].push_back( z );
 
-  assert( m_coordinates[ X_COORDINATE ].size() ==
+  SLIC_ASSERT( m_coordinates[ X_COORDINATE ].size() ==
                      m_coordinates[ Y_COORDINATE ].size() );
-  assert( m_coordinates[ X_COORDINATE ].size() ==
+  SLIC_ASSERT( m_coordinates[ X_COORDINATE ].size() ==
                      m_coordinates[ Z_COORDINATE ].size() );
 }
 
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x, double y )
 {
-  assert( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
-  assert( m_ndims == 2 );
+  SLIC_ASSERT( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
+  SLIC_ASSERT( m_ndims == 2 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
   m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
@@ -107,8 +107,8 @@ void MeshCoordinates::setPoint( int pntIdx, double x, double y )
 //------------------------------------------------------------------------------
 void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
 {
-  assert( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
-  assert( m_ndims == 3 );
+  SLIC_ASSERT( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
+  SLIC_ASSERT( m_ndims == 3 );
 
   m_coordinates[ X_COORDINATE ][ pntIdx ] = x;
   m_coordinates[ Y_COORDINATE ][ pntIdx ] = y;
@@ -118,29 +118,29 @@ void MeshCoordinates::setPoint( int pntIdx, double x, double y, double z)
 //------------------------------------------------------------------------------
 double MeshCoordinates::getCoordinate( int pntIdx, int dim )
 {
-  assert( dim < m_ndims );
-  assert( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
+  SLIC_ASSERT( dim < m_ndims );
+  SLIC_ASSERT( (pntIdx >= 0) && (pntIdx < this->getNumberOfPoints()) );
   return m_coordinates[ dim ][ pntIdx ];
 }
 
 //------------------------------------------------------------------------------
 double* MeshCoordinates::getCoordinateArray(int dim)
 {
-  assert( dim < m_ndims );
+  SLIC_ASSERT( dim < m_ndims );
   return &(m_coordinates[ dim ][ 0 ]);
 }
 
 //------------------------------------------------------------------------------
 int MeshCoordinates::getNumberOfPoints() const
 {
-  assert( m_ndims >= 1 );
+  SLIC_ASSERT( m_ndims >= 1 );
   return m_coordinates[ X_COORDINATE ].size();
 }
 
 //------------------------------------------------------------------------------
 void MeshCoordinates::initialize()
 {
-  assert( m_ndims >= 1 );
+  SLIC_ASSERT( m_ndims >= 1 );
 
   m_coordinates.resize( m_ndims );
   for ( int i=0; i < m_ndims; ++i ) {
@@ -151,7 +151,7 @@ void MeshCoordinates::initialize()
 //------------------------------------------------------------------------------
 void MeshCoordinates::initialize( int npoints )
 {
-  assert( m_ndims >= 1 );
+  SLIC_ASSERT( m_ndims >= 1 );
 
   m_coordinates.resize( m_ndims );
   for ( int i=0; i < m_ndims; ++i ) {

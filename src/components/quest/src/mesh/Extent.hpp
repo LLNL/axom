@@ -25,7 +25,9 @@
 #ifndef EXTENT_HXX_
 #define EXTENT_HXX_
 
-#include <cassert> // for assert()
+#include "slic/slic.hpp"
+
+// C/C++ includes
 #include <cstring> // for memcpy()
 
 namespace meshtk
@@ -243,7 +245,7 @@ template < typename IndexType >
 Extent< IndexType >::Extent( int ndims, IndexType* ext ) :
     m_ndims( ndims )
 {
-  assert( ndims >= 1 && ndims <= 3 );
+  SLIC_ASSERT( ndims >= 1 && ndims <= 3 );
 
   // zero out all extents
   memset(m_extent, 0, 6*sizeof(IndexType) );
@@ -340,7 +342,7 @@ inline
 void Extent< IndexType >::getGridIndex(
         IndexType linearIdx, IndexType& i, IndexType& j) const
 {
-  assert( m_ndims==2 );
+  SLIC_ASSERT( m_ndims==2 );
 
   j = linearIdx / m_jp;
   i = linearIdx - j*m_jp;

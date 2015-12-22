@@ -26,16 +26,14 @@
 #ifndef CELLCONNECTIVITY_HXX_
 #define CELLCONNECTIVITY_HXX_
 
-#define NotUsed(x)
-
 #include <iostream>
 
-#include "quest/CellType.hpp"
-
+#include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "quest/CellType.hpp"
+#include "slic/slic.hpp"
 
 // C/C++ includes
-#include <cassert> // for assert()
 #include <cstring> // for memcpy()
 #include <vector>  // for STL vector
 
@@ -98,7 +96,7 @@ public:
    * \post nnodes >= 0
    *****************************************************************************
    */
-  int getNumberOfNodes( int NotUsed(cellIdx) ) const { return m_stride; };
+  int getNumberOfNodes( int ATK_NOT_USED(cellIdx) ) const { return m_stride; };
 
   /*!
    *****************************************************************************
@@ -109,7 +107,7 @@ public:
    * \post ctype >= meshtk::VERTEX && ctype < meshtk::NUM_CELL_TYPES.
    *****************************************************************************
    */
-  int getCellType( int NotUsed(cellIdx) ) const { return cell_type; }
+  int getCellType( int ATK_NOT_USED(cellIdx) ) const { return cell_type; }
 
   /*!
    *****************************************************************************
@@ -122,7 +120,7 @@ public:
    */
   const index_type* operator[]( int cellIdx )
   {
-    assert( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
+    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
     return &m_connectivity[ cellIdx*m_stride ];
   };
 
@@ -135,10 +133,10 @@ public:
    *****************************************************************************
    */
   void insertCell( const index_type* cell,
-                   int NotUsed(type),
-                   int NotUsed(nnodes) )
+                   int ATK_NOT_USED(type),
+                   int ATK_NOT_USED(nnodes) )
   {
-    assert( cell != ATK_NULLPTR );
+    SLIC_ASSERT( cell != ATK_NULLPTR );
 
     for ( int i=0; i < m_stride; ++i ) {
       m_connectivity.push_back( cell[ i ] );
@@ -157,8 +155,8 @@ public:
    */
   void setCell( int cellIdx, const index_type* cell )
   {
-    assert( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    assert( cell != ATK_NULLPTR );
+    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
+    SLIC_ASSERT( cell != ATK_NULLPTR );
 
     index_type* to         = &m_connectivity[ cellIdx*m_stride ];
     const index_type* from = cell;
@@ -241,7 +239,7 @@ public:
    */
   int getNumberOfNodes( int cellIdx ) const
   {
-    assert( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+    SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
     return m_offset[ cellIdx+1 ] - m_offset[ cellIdx ];
   };
 
@@ -256,7 +254,7 @@ public:
    */
   int getCellType( int cellIdx ) const
   {
-    assert( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
+    SLIC_ASSERT( cellIdx >= 0 && cellIdx < this->getNumberOfCells() );
     return m_cell_type[ cellIdx ];
   }
 
@@ -271,7 +269,7 @@ public:
    */
   const index_type* operator[]( int cellIdx )
   {
-    assert( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
+    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells() ) );
     return &m_connectivity[ m_offset[cellIdx] ];
   };
 
@@ -287,7 +285,7 @@ public:
    */
   void insertCell( const index_type* cell, int type, int nnodes )
   {
-    assert( cell != ATK_NULLPTR );
+    SLIC_ASSERT( cell != ATK_NULLPTR );
 
     // STEP 0: get the last cell index before inserting the new cell
     int last_cell_id = this->getNumberOfCells()-1;
@@ -323,8 +321,8 @@ public:
    */
   void setCell( int cellIdx, const index_type* cell )
   {
-    assert( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
-    assert( cell != ATK_NULLPTR );
+    SLIC_ASSERT( (cellIdx >= 0) && (cellIdx < this->getNumberOfCells()) );
+    SLIC_ASSERT( cell != ATK_NULLPTR );
 
     // STEP 0: get the number of nodes for the given cell type
     const int nnodes = this->getNumberOfNodes( cellIdx );

@@ -28,8 +28,8 @@
 #include "quest/Mesh.hpp"
 #include "quest/CellType.hpp"
 #include "quest/MeshCoordinates.hpp"
+#include "slic/slic.hpp"
 
-#include <cassert> // for assert()
 #include <cstddef> // for ATK_NULLPTR
 
 namespace meshtk
@@ -226,21 +226,21 @@ namespace meshtk
 
 inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
 {
-  assert( idim >= 0 && idim < this->getDimension() );
+  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
   return m_particle_coordinates->getCoordinateArray( idim );
 }
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::insertParticle( double x, double y )
 {
-  assert( this->getDimension()==2 );
+  SLIC_ASSERT( this->getDimension()==2 );
   m_particle_coordinates->insertPoint( x, y );
 }
 
 //------------------------------------------------------------------------------
 inline void ParticleMesh::insertParticle( double x, double y, double z )
 {
-  assert( this->getDimension()==3);
+  SLIC_ASSERT( this->getDimension()==3);
   m_particle_coordinates->insertPoint( x, y, z );
 }
 
@@ -248,7 +248,7 @@ inline void ParticleMesh::insertParticle( double x, double y, double z )
 inline void ParticleMesh::getParticleCoordinates(
       int partIdx, double part_coords[3] ) const
 {
-  assert( partIdx >= 0 && partIdx < this->getNumberOfParticles() );
+  SLIC_ASSERT( partIdx >= 0 && partIdx < this->getNumberOfParticles() );
 
   for ( int i=0; i < this->getDimension(); ++i ) {
     double* px       = this->getParticlesCoordinatesArray( i );
