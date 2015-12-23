@@ -214,7 +214,7 @@ class SidreGroup(unittest.TestCase):
 
         view = group.createView("view")
         self.assertTrue( group.getParent() == root )
-        self.assertTrue( view.hasBuffer() )
+        self.assertFalse( view.hasBuffer() )
 
         self.assertTrue( group.hasView("view") )
         # try creating view again, should be a no-op.
