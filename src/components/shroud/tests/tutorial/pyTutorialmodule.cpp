@@ -462,6 +462,120 @@ PY_last_function_called(
     return PyString_FromString(rv.c_str());
 // splicer end function.last_function_called
 }
+
+static char PY_function10__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function10(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function10
+    Py_ssize_t shroud_nargs = 0;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    PyObject *rvobj;
+    {
+        rvobj = PY_function10_0(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_function10_1(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end function.function10
+}
+
+static char PY_function6__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function6(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function6
+    Py_ssize_t shroud_nargs = 0;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    PyObject *rvobj;
+    {
+        rvobj = PY_function6_from_name(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_function6_from_index(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end function.function6
+}
+
+static char PY_overload1__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_overload1(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.overload1
+    Py_ssize_t shroud_nargs = 0;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    PyObject *rvobj;
+    {
+        rvobj = PY_overload1_num_offset_stride(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_overload1_5(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end function.overload1
+}
 static PyMethodDef PY_methods[] = {
 {"Function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"Function2", (PyCFunction)PY_function2, METH_VARARGS|METH_KEYWORDS, PY_function2__doc__},
@@ -470,16 +584,13 @@ static PyMethodDef PY_methods[] = {
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
 {"Function5_arg1_arg2", (PyCFunction)PY_function5_arg1_arg2, METH_VARARGS|METH_KEYWORDS, PY_function5_arg1_arg2__doc__},
-{"Function6_from_name", (PyCFunction)PY_function6_from_name, METH_VARARGS|METH_KEYWORDS, PY_function6_from_name__doc__},
-{"Function6_from_index", (PyCFunction)PY_function6_from_index, METH_VARARGS|METH_KEYWORDS, PY_function6_from_index__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
-{"Function10_0", (PyCFunction)PY_function10_0, METH_NOARGS, PY_function10_0__doc__},
-{"Function10_1", (PyCFunction)PY_function10_1, METH_VARARGS|METH_KEYWORDS, PY_function10_1__doc__},
-{"overload1_num_offset_stride", (PyCFunction)PY_overload1_num_offset_stride, METH_VARARGS|METH_KEYWORDS, PY_overload1_num_offset_stride__doc__},
-{"overload1_5", (PyCFunction)PY_overload1_5, METH_VARARGS|METH_KEYWORDS, PY_overload1_5__doc__},
 {"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
 {"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},
 {"LastFunctionCalled", (PyCFunction)PY_last_function_called, METH_NOARGS, PY_last_function_called__doc__},
+{"Function10", (PyCFunction)PY_function10, METH_VARARGS|METH_KEYWORDS, PY_function10__doc__},
+{"Function6", (PyCFunction)PY_function6, METH_VARARGS|METH_KEYWORDS, PY_function6__doc__},
+{"overload1", (PyCFunction)PY_overload1, METH_VARARGS|METH_KEYWORDS, PY_overload1__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

@@ -91,11 +91,48 @@ PY_function3a_1(
     Py_RETURN_NONE;
 // splicer end function.function3a_1
 }
+
+static char PY_function3a__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PY_function3a(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.function3a
+    Py_ssize_t shroud_nargs = 0;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    PyObject *rvobj;
+    {
+        rvobj = PY_function3a_0(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    {
+        rvobj = PY_function3a_1(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end function.function3a
+}
 static PyMethodDef PY_methods[] = {
 {"function1", (PyCFunction)PY_function1, METH_NOARGS, PY_function1__doc__},
 {"function2", (PyCFunction)PY_function2, METH_NOARGS, PY_function2__doc__},
-{"function3a_0", (PyCFunction)PY_function3a_0, METH_VARARGS|METH_KEYWORDS, PY_function3a_0__doc__},
-{"function3a_1", (PyCFunction)PY_function3a_1, METH_VARARGS|METH_KEYWORDS, PY_function3a_1__doc__},
+{"function3a", (PyCFunction)PY_function3a, METH_VARARGS|METH_KEYWORDS, PY_function3a__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

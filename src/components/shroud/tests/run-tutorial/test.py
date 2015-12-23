@@ -19,17 +19,24 @@ print rv_char
 #    call function4b("dog", "cat", rv_char)
 #    call assert_true( rv_char == "dogcat")
 #
-rv_double = tutorial.Function5()
+#rv_double = tutorial.Function5()
 # 13.1415
-rv_double = tutorial.Function5(1.0)
+#rv_double = tutorial.Function5(1.0)
 # 11.0
-rv_double = tutorial.Function5(1.0, False)
+#rv_double = tutorial.Function5(1.0, False)
 #, 1.d0)
 #
-#    call function6("name")
+tutorial.Function6("name")
 #    call assert_true(last_function_called() == "Function6(string)")
-#    call function6(1)
+tutorial.Function6(1)
 #    call assert_true(last_function_called() == "Function6(int)")
+
+try:
+    tutorial.Function6(1.)
+except TypeError as e:
+    print e
+
+
 #
 #    call function7(1)
 #    call assert_true(last_function_called() == "Function7<int>")

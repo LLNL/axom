@@ -107,8 +107,7 @@ class Wrapp(util.WrapperMixin):
         if self.tree['functions']:
             self._push_splicer('function')
             self._begin_class()
-            for node in self.tree['functions']:
-                self.wrap_function(None, node)
+            self.wrap_functions(None, self.tree['functions'])
             self._pop_splicer('function')
 
         self.write_header(self.tree)
@@ -152,8 +151,7 @@ class Wrapp(util.WrapperMixin):
 
         # wrap methods
         self._push_splicer('method')
-        for method in node['methods']:
-            self.wrap_function(node, method)
+        self.wrap_functions(node, node['methods'])
         self._pop_splicer('method')
 
     def create_class_helper_functions(self, node):
@@ -216,6 +214,26 @@ return 1;""", fmt)
         self.py_helper_functions.append('}')
 
         self._pop_splicer('helper')
+
+    def wrap_functions(self, cls, functions):
+        """Wrap functions for a library or class.
+        Compute overloading map.
+        """
+        overloaded_methods = {}
+        for function in functions:
+            flist = overloaded_methods. \
+                setdefault(function['result']['name'], [])
+            if '_cpp_overload' not in function:
+                continue
+            if not function['options'].wrap_python:
+                continue
+            flist.append(function)
+        self.overloaded_methods = overloaded_methods
+
+        for function in functions:
+            self.wrap_function(cls, function)
+
+        self.multi_dispatch(cls, functions)
 
     def wrap_function(self, cls, node):
         """
@@ -453,10 +471,20 @@ return 1;""", fmt)
         else:
             util.eval_template(node, 'PY_name_impl', '_function')
 
-        self.create_method(cls, fmt, PY_impl)
+        expose = True
+        if len(self.overloaded_methods[result['name']]) > 1:
+            # Only expose a multi-dispatch name, not each overload
+            expose = False
 
-    def create_method(self, cls, fmt, PY_impl):
-        """Format the function."""
+        self.create_method(cls, expose, fmt, PY_impl)
+
+    def create_method(self, cls, expose, fmt, PY_impl):
+        """Format the function.
+        cls     = True if class
+        expose  = True if expose to user
+        fmt     = dictionary of format values
+        PY_impl = list of implementation lines
+        """
         body = self.PyMethodBody
         body.append(wformat("""
 static char {PY_name_impl}__doc__[] =
@@ -480,7 +508,14 @@ static PyObject *
                              self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
-        self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+        if expose is True:
+            # default name
+            self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+#        elif expose is not False:
+#            # override name
+#            fmt = util.Options(fmt)
+#            fmt.expose = expose
+#            self.PyMethodDef.append( wformat('{{"{expose}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
     def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
@@ -533,7 +568,6 @@ static PyObject *
             cpp_class       = fmt.cpp_class,
             )
         self.write_tp_func(node, fmt, fmt_type, output)
-        self.multi_dispatch(node, node['methods'])
 
         output.extend(self.PyMethodBody)
 
@@ -553,22 +587,14 @@ static PyObject *
 
         self.write_output_file(fname, self.config.binary_dir, output)
 
-
     def multi_dispatch(self, cls, methods):
         """Look for overloaded methods.
         When found, create a method which will call each of the
         overloaded methods looking for the one which will accept
         the given arguments.
         """
-        options = cls['options']
-
-        overloaded_methods = {}
-        for method in methods:
-            if method['options'].wrap_python:
-                overloaded_methods.setdefault(method['result']['name'], []).append(method)
-
-        for method, methods in overloaded_methods.items():
-            if len(methods) == 1:
+        for method, methods in self.overloaded_methods.items():
+            if len(methods) < 2:
                 continue
 
             fmt_func = methods[0]['fmt']
@@ -616,7 +642,7 @@ static PyObject *
             else:
                 util.eval_template(methods[0], 'PY_name_impl', '_function', fmt)
 
-            self.create_method(cls, fmt, body)
+            self.create_method(cls, True, fmt, body)
 
     def write_header(self, node):
         options = node['options']

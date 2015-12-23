@@ -281,7 +281,7 @@ PP_exclass1_get_value(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass1.get_value
+// splicer begin class.ExClass1.method.get_value
     Py_ssize_t shroud_nargs = 0;
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
@@ -306,7 +306,7 @@ PP_exclass1_get_value(
     }
     PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
     return NULL;
-// splicer end class.ExClass1.get_value
+// splicer end class.ExClass1.method.get_value
 }
 // splicer begin class.ExClass1.impl.after_methods
 // splicer end class.ExClass1.impl.after_methods
@@ -318,8 +318,6 @@ static PyMethodDef PP_ExClass1_methods[] = {
 {"getNameErrorCheck", (PyCFunction)PP_exclass1_get_name_error_check, METH_NOARGS, PP_exclass1_get_name_error_check__doc__},
 {"getNameArg", (PyCFunction)PP_exclass1_get_name_arg, METH_NOARGS, PP_exclass1_get_name_arg__doc__},
 {"getRoot", (PyCFunction)PP_exclass1_get_root, METH_NOARGS, PP_exclass1_get_root__doc__},
-{"getValue_from_int", (PyCFunction)PP_exclass1_get_value_from_int, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_value_from_int__doc__},
-{"getValue_1", (PyCFunction)PP_exclass1_get_value_1, METH_VARARGS|METH_KEYWORDS, PP_exclass1_get_value_1__doc__},
 {"getAddr", (PyCFunction)PP_exclass1_get_addr, METH_NOARGS, PP_exclass1_get_addr__doc__},
 {"hasAddr", (PyCFunction)PP_exclass1_has_addr, METH_VARARGS|METH_KEYWORDS, PP_exclass1_has_addr__doc__},
 {"SplicerSpecial", (PyCFunction)PP_exclass1_splicer_special, METH_NOARGS, PP_exclass1_splicer_special__doc__},
