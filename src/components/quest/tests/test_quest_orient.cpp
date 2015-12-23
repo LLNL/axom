@@ -26,6 +26,7 @@
 
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
+#include "quest/Segment.hpp"
 #include "quest/Triangle.hpp"
 
 
@@ -59,4 +60,46 @@ TEST( quest_orientation, orient3D )
    EXPECT_EQ( quest::ON_POSITIVE_SIDE, orient );
 }
 
+//------------------------------------------------------------------------------
+TEST( quest_orientation, orient2D )
+{
+   // STEP 0: create test segment
+   quest::Point< double, 2 > A(0.0);
+   quest::Point< double, 2 > B(1.0);
+   quest::Segment< double, 2 > S( A, B );
 
+   // STEP 1: setup test points, q0, q1, q2 => boundary, positive, negative
+   quest::Point< double, 2 > q0( 0.5 );
+   quest::Point< double, 2 > q1 = quest::Point< double,2 >::make_point(-0.5,0.5);
+   quest::Point< double, 2 > q2 = quest::Point< double,2 >::make_point(2.0,0.5);
+
+   // STEP 2: test orientation
+   int orient = quest::orientation( q0,S );
+   EXPECT_EQ( quest::ON_BOUNDARY, orient );
+
+   orient = quest::orientation( q1,S );
+   EXPECT_EQ( quest::ON_NEGATIVE_SIDE, orient );
+
+   orient = quest::orientation( q2,S );
+   EXPECT_EQ( quest::ON_POSITIVE_SIDE, orient );
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+#include "slic/UnitTestLogger.hpp"
+using asctoolkit::slic::UnitTestLogger;
+
+int main(int argc, char * argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  UnitTestLogger logger;  // create & initialize test logger,
+
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
+}

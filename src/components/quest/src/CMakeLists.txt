@@ -11,14 +11,15 @@
 set( quest_headers
    
     ## Geometry Headers
-    geom/Vector.hpp
-    geom/Triangle.hpp
-    geom/SquaredDistance.hpp
+    geom/BoundingBox.hpp
+    geom/Determinants.hpp
     geom/HyperSphere.hpp
     geom/Orientation.hpp
     geom/Point.hpp
-    geom/Determinants.hpp
-    geom/BoundingBox.hpp
+    geom/Segment.hpp
+    geom/SquaredDistance.hpp
+    geom/Triangle.hpp
+    geom/Vector.hpp
     geom/fuzzy_compare.hpp
     
     ## Mesh Library Headers

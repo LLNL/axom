@@ -27,6 +27,8 @@
 #include "quest/Point.hpp"
 #include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
+#include "quest/Segment.hpp"
+
 
 //------------------------------------------------------------------------------
 TEST( quest_squared_distance, point_to_point )
@@ -42,7 +44,7 @@ TEST( quest_squared_distance, point_to_point )
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_squared_distanced, point_to_triangle )
+TEST( quest_squared_distance, point_to_triangle )
 {
 
   // STEP 0: Setup triangle ABC in 3D
@@ -105,4 +107,38 @@ TEST( quest_squared_distanced, point_to_triangle )
 
 }
 
+//------------------------------------------------------------------------------
+TEST( quest_squared_distance, point_to_segment )
+{
+  quest::Point< double,2 > A( 0.0 );
+  quest::Point< double,2 > B( 1.0 );
+  quest::Segment< double,2 > S( A, B );
+
+  double dist = 0.0;
+  quest::Point< double, 2 > Q;
+
+  // STEP 0: check source point
+  dist = quest::squared_distance( A, S );
+  EXPECT_DOUBLE_EQ( 0.0f, dist );
+
+  // STEP 1: check target point
+  dist = quest::squared_distance( B, S );
+  EXPECT_DOUBLE_EQ( 0.0f, dist );
+
+  // STEP 2: check midpoint
+  Q = quest::Point< double,2 >::midpoint( A, B );
+  dist = quest::squared_distance( Q, S );
+  EXPECT_DOUBLE_EQ( 0.0f, dist );
+
+  // STEP 3: check projection to target point
+  quest::Point< double,2 > q0(2.0);
+  dist = quest::squared_distance( q0,S );
+  EXPECT_DOUBLE_EQ( quest::squared_distance(q0,B), dist );
+
+  // STEP 4: check projection source point
+  quest::Point< double,2 > q1(-1.0);
+  dist = quest::squared_distance( q1,S );
+  EXPECT_DOUBLE_EQ( quest::squared_distance(q1,A), dist );
+
+}
 

@@ -30,15 +30,14 @@
 
 #include "quest/BoundingBox.hpp"
 #include "quest/Point.hpp"
+#include "quest/Segment.hpp"
 #include "quest/Triangle.hpp"
 #include "quest/Vector.hpp"
-
 
 #include "slic/slic.hpp"
 
 
-namespace quest
-{
+namespace quest {
 
 
 /*!
@@ -92,6 +91,46 @@ double squared_distance( const Point< T,ndims >& P,
 
    // return squared signed distance to the closest point
    return quest::squared_distance( P, cp );
+}
+
+/*!
+ *******************************************************************************
+ * \brief Computes the minimum squared distance from a query point, P, to the
+ *  given segment, S.
+ * \param [in] P the query point.
+ * \param [in] S the input segment.
+ * \return d the minimum distance from P on the
+ *******************************************************************************
+ */
+template < typename T, int ndims >
+inline
+double squared_distance( const Point< T,ndims >& P,
+                         const Segment< T,ndims >& S )
+{
+   Vector< T,ndims > ab( S.source(), S.target() );
+   Vector< T,ndims > ac( S.source(), P );
+   Vector< T,ndims > bc( S.target(), P );
+
+   const T e = Vector< T,ndims >::dot_product( ac, ab );
+
+   // outside segment, on the side of a
+   if ( e <= 0.0f ) {
+
+      return Vector< T,ndims >::dot_product( ac, ac );
+
+   }
+
+   // outside segment, on the side of b
+   const T f = Vector< T,ndims >::dot_product( ab, ab );
+   if ( e >= f ) {
+
+      return Vector< T,ndims >::dot_product( bc,bc );
+
+   }
+
+   // P projects onto the segment
+   const T dist = Vector< T,ndims >::dot_product( ac, ac ) - ( e*e/f );
+   return dist;
 }
 
 /*!
