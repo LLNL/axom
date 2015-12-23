@@ -78,7 +78,10 @@ make_library( LIBRARY_NAME
                   common
                   conduit
                   slic
+                  
              )
+  
+             
 set_target_properties(sidre  PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # XXX - would like to have shroudrt loaded automatically with sidre

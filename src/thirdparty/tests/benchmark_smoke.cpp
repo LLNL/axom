@@ -39,8 +39,9 @@ void benchmark_smoke_accum_loop(benchmark::State& state) {
   while (state.KeepRunning()) {
       int accum = 0;
       for (int i=0; i <  state.range_x(); ++i) {
-        benchmark::DoNotOptimize(accum += i);
+        accum += i;
       }
+      benchmark::DoNotOptimize(accum);
   }
   state.SetItemsProcessed(state.iterations() * state.range_x());
 

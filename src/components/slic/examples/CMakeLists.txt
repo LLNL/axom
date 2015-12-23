@@ -16,12 +16,10 @@ make_executable( EXECUTABLE_SOURCE multicode/driver.cpp DEPENDS_ON slic )
 ## Build MPI examples using slic
 if (ENABLE_MPI)
 
-   make_executable( WITH_MPI
-                    EXECUTABLE_SOURCE basic/parallel_logging_example.cc
+   make_executable( EXECUTABLE_SOURCE basic/parallel_logging_example.cc
                     DEPENDS_ON slic )
 
-   make_executable( WITH_MPI
-                    EXECUTABLE_SOURCE basic/seperate_file_per_rank.cc
+   make_executable( EXECUTABLE_SOURCE basic/seperate_file_per_rank.cc
                     DEPENDS_ON slic )
 
 endif()

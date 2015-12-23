@@ -33,7 +33,7 @@ namespace slic
  * \brief UnitTestLogger is a simple wrapper around the initialization and 
  * finalize operations of the slic::Logger class for CS Toolkit unit tests.
  *
- * To use, creste an instance of of this class before tests are run. This
+ * To use, create an instance of of this class before tests are run. This
  * initializes the slic logger. When the object is destroyed (e.g., goes out
  * of scope), the slic logger is finalized. For example, when using gtest,
  * a simple main program can be used in each test source file to do this:

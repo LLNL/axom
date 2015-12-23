@@ -67,6 +67,16 @@ do
         export CMAKE_OPTS="-G \"$CMAKE_ECLIPSE_GEN\" $CMAKE_OPTS"
         shift
         ;;
+        --with-warnings)
+        export CMAKE_OPTS="-DENABLE_WARNINGS:BOOL=ON $CMAKE_OPTS"
+        shift
+        ;;        
+        # option to dump a compilation database used by the clang tools such as clang-modernize.  
+        # This generates a file called compile_commands.json at the top of the build directory
+        --with-clang-tooling)
+        export CMAKE_OPTS="-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON $CMAKE_OPTS"
+        shift
+        ;;        
         *)
         # unknown option, skip
         shift

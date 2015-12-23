@@ -3,5 +3,8 @@ install-debug
 .cproject
 .project
 .settings
-build
+build-*
+install-*
+*.orig
+*.uncrustify
 *.pyc

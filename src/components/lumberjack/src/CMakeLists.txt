@@ -46,7 +46,6 @@ make_library( LIBRARY_NAME
               LIBRARY_SOURCES
                   "${lumberjack_sources}"
                   "${lumberjack_headers}"
-              WITH_MPI
               )
 
 add_dependencies(lumberjack copy_headers_lumberjack)

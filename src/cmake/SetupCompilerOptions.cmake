@@ -128,3 +128,19 @@ else()
     MESSAGE(STATUS  "Fortran support disabled.")
 endif()
  
+
+#####################################################
+# Some additional default values for compiler options
+# These write to the cmake cache without overwriting existing values
+# Typically, we can define the gcc/clang flags here, 
+# and overwrite then with the correct values for other compilers
+#####################################################
+ 
+set(DISABLE_OMP_PRAGMA_WARNINGS " -Wno-unknown-pragmas " CACHE STRING "Flag to disable warning about pragmas when omp is disabled")
+# message(STATUS "value of DISABLE_OMP_PRAGMA_WARNINGS is ${DISABLE_OMP_PRAGMA_WARNINGS} ")
+
+# The following can be useful when dealing with third-party sources (e.g. original lulesh) 
+set(DISABLE_UNUSED_PARAMETER_WARNINGS " -Wno-unused-parameter " CACHE STRING "Flag to disable warning about unused function parameters")
+ 
+ 
+ 

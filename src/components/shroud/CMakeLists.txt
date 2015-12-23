@@ -1,6 +1,7 @@
 #
 #
 #
+project(shroud)
 add_subdirectory(docs)
 
 if(ENABLE_FORTRAN)
@@ -71,3 +72,15 @@ if(ENABLE_FORTRAN AND ENABLE_SHROUD)
     )
 endif()
 
+################################
+# Create CMake importable
+# exports for all of our targets
+#
+# HACK 12/22/2015 -- KW: had to wrap with if(ENABLE_FORTRAN)
+#             to get working with clang compiler
+#             until merged with sprint/10
+#   TODO: Check if we can remove this after merging SLAM with sprint/10
+################################
+if(ENABLE_FORTRAN)
+  install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+endif()
