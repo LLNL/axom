@@ -120,4 +120,8 @@ if(ENABLE_PYTHON_MODULE)
         PROPERTIES
           PREFIX ""
     )
+    set_target_properties(sidre2 PROPERTIES OUTPUT_NAME sidre)
+
+#http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
+# object library to avoid compile files twice
 endif(ENABLE_PYTHON_MODULE)
