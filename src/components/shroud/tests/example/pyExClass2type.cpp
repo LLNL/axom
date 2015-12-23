@@ -201,18 +201,18 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    PP_ExClass1 * in;
-    const ExClass1 * in_ptr;
+    const AA_exclass1 * in;
+    PyObject * in_obj;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
-        &PP_ExClass1_Type, &in))
+        &PP_ExClass1_Type, &in_obj))
     {
         return NULL;
     }
-    in_ptr = (in ? in->BBB : NULL);
-    ExClass1 * rv = self->BBB->get_class1(in_ptr);
+    in = in_obj ? in_obj->BBB : NULL;
+    ExClass1 * rv = self->BBB->get_class1(in);
     PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;

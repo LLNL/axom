@@ -328,6 +328,7 @@ return 1;""", fmt)
                     # Expect object of given type
                     format.append('!')
                     addrargs.append('&' + arg_typedef.PY_PyTypeObject)
+                    arg_name = fmt.var + '_obj'
                 elif arg_typedef.PY_from_object:
                     # Use function to convert object
                     format.append('&')
@@ -337,20 +338,22 @@ return 1;""", fmt)
 
                 # argument for C++ function
                 if arg_typedef.PY_PyTypeObject:
-                    # A Python Object
-                    fmt.var_ptr = fmt.var + '_ptr'
-                    PY_decl.append(arg_typedef.PY_PyObject + ' * ' + arg_name + ';')
-                    PY_decl.append(self.std_c_decl('cpp_type', arg, name=fmt.var_ptr) + ';')
-                    append_format(post_parse, '{var_ptr} = ({var} ? {var}->{BBB} : NULL);', fmt)
-                    cpp_call_list.append(fmt.var_ptr)
+                    # A Python Object which must be converted to C++ type.
+                    fmt.var_obj = arg_name
+                    PY_decl.append(self.std_c_decl('c_type', arg) + ';')
+                    PY_decl.append('PyObject * ' + fmt.var_obj + ';')
+                    append_format(post_parse, arg_typedef.PY_post_parse, fmt)
+                    cpp_call_list.append(fmt.var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
                     PY_decl.append(self.std_c_decl('cpp_type', arg) + ';')
+                    post_parse.append(None)
                     cpp_call_list.append(fmt.var)
                 else:
                     # convert to C++ type
                     PY_decl.append(self.std_c_decl('c_type', arg) + ';')
                     fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+                    post_parse.append(None)
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
 
 
@@ -369,7 +372,6 @@ return 1;""", fmt)
             PY_code.append(wformat('{PyArg_addrargs}))', fmt))
             PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
-            PY_code.extend(post_parse)
 
         if cls:
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
@@ -397,6 +399,10 @@ return 1;""", fmt)
                 PY_code.append(1)
 
             fmt.call_list = call_list
+
+            for post in post_parse[:nargs]:
+                if post:
+                    PY_code.append(post)
 
             if is_dtor:
                 append_format(PY_code, 'delete self->{BBB};', fmt)

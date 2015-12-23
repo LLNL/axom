@@ -12,6 +12,10 @@ print rv_double
 
 rv_logical = tutorial.Function3(False)
 print rv_logical
+try:
+    rv_logical = tutorial.Function3(0)
+except TypeError as e:
+    print e
 
 rv_char = tutorial.Function4a("dog", "cat")
 print rv_char

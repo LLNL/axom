@@ -242,14 +242,16 @@ PP_exclass1_has_addr(
 {
 // splicer begin class.ExClass1.method.has_addr
     bool in;
+    PyObject * in_obj;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:hasAddr", kw_list,
-        &in))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:hasAddr", kw_list,
+        &PyBool_Type, &in_obj))
     {
         return NULL;
     }
+    in = PyObject_IsTrue(in_obj);
     bool rv = self->BBB->hasAddr(in);
     return PyBool_FromLong(rv);
 // splicer end class.ExClass1.method.has_addr

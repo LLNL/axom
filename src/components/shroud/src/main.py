@@ -213,8 +213,8 @@ class Schema(object):
                 f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
 
                 PY_ctor   = 'PyBool_FromLong({rv})',
-#                PY_PyTypeObject = 'PyBool_Type',
-#  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
+                PY_PyTypeObject = 'PyBool_Type',
+                PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
             # implies null terminated string
             string = util.Typedef('string',
@@ -818,6 +818,8 @@ class VerifyAttrs(object):
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
+
+                PY_post_parse = '{var} = {var_obj} ? {var_obj}->{BBB} : NULL;',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,
