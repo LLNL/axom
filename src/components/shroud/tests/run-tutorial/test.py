@@ -5,6 +5,12 @@
 
 import tutorial
 
+class NotTrue:
+    """Test bool arguments errors"""
+    def __bool__(self):
+        raise NotImplementedError
+
+
 tutorial.Function1()
 
 rv_double = tutorial.Function2(1.0, 4)
@@ -16,6 +22,7 @@ try:
     rv_logical = tutorial.Function3(0)
 except TypeError as e:
     print e
+#rv_logical = tutorial.Function3(NotTrue())
 
 rv_char = tutorial.Function4a("dog", "cat")
 print rv_char

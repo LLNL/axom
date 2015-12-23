@@ -25,6 +25,7 @@ options:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
+  wrap_python: True
 
 
 types:

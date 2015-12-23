@@ -212,6 +212,7 @@ class Schema(object):
                 f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
                 f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
 
+#XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
                 PY_PyTypeObject = 'PyBool_Type',
                 PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',

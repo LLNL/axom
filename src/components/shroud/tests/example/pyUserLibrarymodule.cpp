@@ -42,7 +42,7 @@ PP_is_name_valid(
   PyObject *kwds)
 {
 // splicer begin function.is_name_valid
-    const char * name;
+    char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -67,7 +67,7 @@ PP_test_names(
   PyObject *kwds)
 {
 // splicer begin function.test_names
-    const char * name;
+    char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -92,7 +92,7 @@ PP_test_names_flag(
   PyObject *kwds)
 {
 // splicer begin function.test_names_flag
-    const char * name;
+    char * name;
     int flag;
     const char *kwcpp = "name\0flag";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };

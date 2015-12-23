@@ -201,8 +201,8 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    const AA_exclass1 * in;
-    PyObject * in_obj;
+    ExClass1 * in;
+    PP_ExClass1 * in_obj;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -231,8 +231,8 @@ PP_exclass2_declare_1(
 {
 // splicer begin class.ExClass2.method.declare
     Py_ssize_t shroud_nargs = 0;
-    int type;
-    ATK_SidreLength len;
+    TypeID type;
+    SidreLength len;
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     

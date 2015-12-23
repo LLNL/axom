@@ -1,3 +1,6 @@
+if(ENABLE_PYTHON_MODULE)
+    set(BUILD_SHARED_LIBS TRUE)
+endif(ENABLE_PYTHON_MODULE)
 
 add_subdirectory(shroud)
 

@@ -118,8 +118,8 @@ PY_function4a(
   PyObject *kwds)
 {
 // splicer begin function.function4a
-    const char * arg1;
-    const char * arg2;
+    char * arg1;
+    char * arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -144,8 +144,8 @@ PY_function4b(
   PyObject *kwds)
 {
 // splicer begin function.function4b
-    const char * arg1;
-    const char * arg2;
+    char * arg1;
+    char * arg2;
     const char *kwcpp = "arg1\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
@@ -212,7 +212,7 @@ PY_function6_from_name(
   PyObject *kwds)
 {
 // splicer begin function.function6_from_name
-    const char * name;
+    char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -303,7 +303,7 @@ PY_function10_1(
   PyObject *kwds)
 {
 // splicer begin function.function10_1
-    const char * name;
+    char * name;
     double arg2;
     const char *kwcpp = "name\0arg2";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
@@ -412,7 +412,7 @@ PY_typefunc(
   PyObject *kwds)
 {
 // splicer begin function.typefunc
-    int arg;
+    TypeID arg;
     const char *kwcpp = "arg";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -437,7 +437,7 @@ PY_enumfunc(
   PyObject *kwds)
 {
 // splicer begin function.enumfunc
-    int arg;
+    EnumTypeID arg;
     const char *kwcpp = "arg";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
