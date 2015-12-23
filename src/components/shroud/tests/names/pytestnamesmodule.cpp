@@ -107,7 +107,7 @@ PY_function3a(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    {
+    if (shroud_nargs == 1) {
         rvobj = PY_function3a_0(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -116,7 +116,7 @@ PY_function3a(
         }
         PyErr_Clear();
     }
-    {
+    if (shroud_nargs == 1) {
         rvobj = PY_function3a_1(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;

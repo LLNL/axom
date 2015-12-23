@@ -482,7 +482,7 @@ PY_function10(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    {
+    if (shroud_nargs == 0) {
         rvobj = PY_function10_0(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -491,7 +491,7 @@ PY_function10(
         }
         PyErr_Clear();
     }
-    {
+    if (shroud_nargs == 2) {
         rvobj = PY_function10_1(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -520,7 +520,7 @@ PY_function6(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    {
+    if (shroud_nargs == 1) {
         rvobj = PY_function6_from_name(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -529,7 +529,7 @@ PY_function6(
         }
         PyErr_Clear();
     }
-    {
+    if (shroud_nargs == 1) {
         rvobj = PY_function6_from_index(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -558,7 +558,7 @@ PY_overload1(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    {
+    if (shroud_nargs >= 1 && shroud_nargs <= 3) {
         rvobj = PY_overload1_num_offset_stride(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -567,7 +567,7 @@ PY_overload1(
         }
         PyErr_Clear();
     }
-    {
+    if (shroud_nargs >= 2 && shroud_nargs <= 4) {
         rvobj = PY_overload1_5(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;

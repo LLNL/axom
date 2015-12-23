@@ -288,7 +288,7 @@ PP_exclass1_get_value(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    {
+    if (shroud_nargs == 1) {
         rvobj = PP_exclass1_get_value_from_int(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -297,7 +297,7 @@ PP_exclass1_get_value(
         }
         PyErr_Clear();
     }
-    {
+    if (shroud_nargs == 1) {
         rvobj = PP_exclass1_get_value_1(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;

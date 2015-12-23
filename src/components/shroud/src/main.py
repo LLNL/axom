@@ -592,8 +592,10 @@ class GenFunctions(object):
         default_arg_suffix = node.get('default_arg_suffix', [])
         ndefault = 0
 
+        min_args = 0
         for i, arg in enumerate(node['args']):
             if 'default' not in arg['attrs']:
+                min_args += 1
                 continue
             new = util.copy_function_node(node)
             new['_generated'] = 'has_default_arg'
@@ -619,6 +621,7 @@ class GenFunctions(object):
 
         # keep track of generated default value functions
         node['_default_funcs'] = default_funcs
+        node['_nargs'] = ( min_args, len(node['args']) )
         # The last name calls with all arguments (the original decl)
         try:
             node['fmt'].function_suffix = default_arg_suffix[ndefault]

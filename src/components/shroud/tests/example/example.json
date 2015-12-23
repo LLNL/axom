@@ -854,6 +854,10 @@
                     ], 
                     "_function_index": 19, 
                     "_has_default_arg": true, 
+                    "_nargs": [
+                        1, 
+                        2
+                    ], 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -911,6 +915,10 @@
                     "_function_index": 34, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
+                    "_nargs": [
+                        1, 
+                        2
+                    ], 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -962,6 +970,10 @@
                     "_function_index": 35, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
+                    "_nargs": [
+                        1, 
+                        2
+                    ], 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1738,6 +1750,10 @@
             ], 
             "_function_index": 40, 
             "_has_default_arg": true, 
+            "_nargs": [
+                0, 
+                2
+            ], 
             "_overloaded": true, 
             "args": [
                 {

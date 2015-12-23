@@ -161,7 +161,7 @@ PP_test_names(
     if (args != NULL) shroud_nargs += PyTuple_Size(args);
     if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     PyObject *rvobj;
-    {
+    if (shroud_nargs == 1) {
         rvobj = PP_test_names(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;
@@ -170,7 +170,7 @@ PP_test_names(
         }
         PyErr_Clear();
     }
-    {
+    if (shroud_nargs == 2) {
         rvobj = PP_test_names_flag(self, args, kwds);
         if (!PyErr_Occurred()) {
             return rvobj;

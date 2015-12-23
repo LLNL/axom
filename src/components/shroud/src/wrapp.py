@@ -340,6 +340,7 @@ return 1;""", fmt)
                 # argument for C++ function
                 lang = 'cpp_type'
                 if arg_typedef.base == 'string':
+                    # C++ will coerce char * to std::string
                     lang = 'c_type'
                 if arg['attrs'].get('reference', False):
                     # convert a reference to a pointer
@@ -640,7 +641,10 @@ static PyObject *
 
 
             for overload in methods:
-                body.append('{')
+                if '_nargs' in overload:
+                    body.append('if (shroud_nargs >= %d && shroud_nargs <= %d) {' % overload['_nargs'])
+                else:
+                    body.append('if (shroud_nargs == %d) {' % len(overload['args']))
                 body.append(1)
                 append_format(body, 'rvobj = {PY_name_impl}(self, args, kwds);', overload['fmt'])
                 body.append('if (!PyErr_Occurred()) {')
