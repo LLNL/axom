@@ -475,6 +475,11 @@ return 1;""", fmt)
         if len(self.overloaded_methods[result['name']]) > 1:
             # Only expose a multi-dispatch name, not each overload
             expose = False
+        elif found_default:
+            # Only one wrapper to deal with default arugments.
+            # [C creates a wrapper per default argument]
+            fmt = util.Options(fmt)
+            fmt.function_suffix = ''
 
         self.create_method(cls, expose, fmt, PY_impl)
 

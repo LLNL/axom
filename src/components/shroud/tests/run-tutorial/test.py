@@ -19,11 +19,15 @@ print rv_char
 #    call function4b("dog", "cat", rv_char)
 #    call assert_true( rv_char == "dogcat")
 #
-#rv_double = tutorial.Function5()
+rv_double = tutorial.Function5()
+print rv_double
 # 13.1415
-#rv_double = tutorial.Function5(1.0)
+rv_double = tutorial.Function5(1.0)
+print rv_double
 # 11.0
-#rv_double = tutorial.Function5(1.0, False)
+# XXX fix bool argument
+rv_double = tutorial.Function5(1.0, False)
+print rv_double
 #, 1.d0)
 #
 tutorial.Function6("name")

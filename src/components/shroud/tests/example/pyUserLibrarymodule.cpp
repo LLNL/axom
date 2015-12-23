@@ -117,7 +117,7 @@ PP_testoptional_2(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.testoptional_2
+// splicer begin function.testoptional
     Py_ssize_t shroud_nargs = 0;
     int i;
     long j;
@@ -143,7 +143,7 @@ PP_testoptional_2(
         break;
     }
     Py_RETURN_NONE;
-// splicer end function.testoptional_2
+// splicer end function.testoptional
 }
 
 static char PP_test_names__doc__[] =
@@ -186,7 +186,7 @@ PP_test_names(
 static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
-{"testoptional_2", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
+{"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };

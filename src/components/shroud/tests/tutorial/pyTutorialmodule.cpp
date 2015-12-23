@@ -167,7 +167,7 @@ PY_function5_arg1_arg2(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.function5_arg1_arg2
+// splicer begin function.function5
     Py_ssize_t shroud_nargs = 0;
     double arg1;
     bool arg2;
@@ -194,7 +194,7 @@ PY_function5_arg1_arg2(
         break;
     }
     return Py_BuildValue("d", rv);
-// splicer end function.function5_arg1_arg2
+// splicer end function.function5
 }
 
 static char PY_function6_from_name__doc__[] =
@@ -583,7 +583,7 @@ static PyMethodDef PY_methods[] = {
 {"Function3", (PyCFunction)PY_function3, METH_VARARGS|METH_KEYWORDS, PY_function3__doc__},
 {"Function4a", (PyCFunction)PY_function4a, METH_VARARGS|METH_KEYWORDS, PY_function4a__doc__},
 {"Function4b", (PyCFunction)PY_function4b, METH_VARARGS|METH_KEYWORDS, PY_function4b__doc__},
-{"Function5_arg1_arg2", (PyCFunction)PY_function5_arg1_arg2, METH_VARARGS|METH_KEYWORDS, PY_function5_arg1_arg2__doc__},
+{"Function5", (PyCFunction)PY_function5_arg1_arg2, METH_VARARGS|METH_KEYWORDS, PY_function5_arg1_arg2__doc__},
 {"Function9", (PyCFunction)PY_function9, METH_VARARGS|METH_KEYWORDS, PY_function9__doc__},
 {"typefunc", (PyCFunction)PY_typefunc, METH_VARARGS|METH_KEYWORDS, PY_typefunc__doc__},
 {"enumfunc", (PyCFunction)PY_enumfunc, METH_VARARGS|METH_KEYWORDS, PY_enumfunc__doc__},

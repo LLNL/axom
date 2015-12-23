@@ -229,7 +229,7 @@ PP_exclass2_declare_1(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.declare_1
+// splicer begin class.ExClass2.method.declare
     Py_ssize_t shroud_nargs = 0;
     int type;
     ATK_SidreLength len;
@@ -252,7 +252,7 @@ PP_exclass2_declare_1(
         break;
     }
     Py_RETURN_NONE;
-// splicer end class.ExClass2.method.declare_1
+// splicer end class.ExClass2.method.declare
 }
 
 static char PP_exclass2_destroyall__doc__[] =
@@ -293,7 +293,7 @@ static PyMethodDef PP_ExClass2_methods[] = {
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
-{"declare_1", (PyCFunction)PP_exclass2_declare_1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare_1__doc__},
+{"declare", (PyCFunction)PP_exclass2_declare_1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare_1__doc__},
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
 {"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
 // splicer begin class.ExClass2.PyMethodDef
