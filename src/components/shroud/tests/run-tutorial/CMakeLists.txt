@@ -22,8 +22,8 @@ set_target_properties(shroud-run-tutorial PROPERTIES LINKER_LANGUAGE Fortran)
 #
 # Make Python module library
 #
-if(PYTHON_EXECUTABLE)
-    include_directories(${PYTHON_INCLUDE})
+if(ENABLE_PYTHON_MODULE)
+    include_directories(${PYTHON_INCLUDE_DIRS})
 
     set(BUILD_SHARED_LIBS TRUE)
     make_library(
@@ -49,4 +49,4 @@ if(PYTHON_EXECUTABLE)
 #        COMMAND ln -sf libtutorial.so tutorial.so
 #    )
 
-endif(PYTHON_EXECUTABLE)
+endif(ENABLE_PYTHON_MODULE)

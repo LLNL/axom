@@ -1,6 +1,4 @@
 
-#add_definitions(-fPIC)  # used with testing Python module
-
 add_subdirectory(shroud)
 
 ## add components
