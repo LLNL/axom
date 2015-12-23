@@ -42,10 +42,6 @@ PY_function2(
 // splicer end function.function2
 }
 
-static char PY_function3a_0__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PY_function3a_0(
   PyObject *self,    /* not used */
@@ -66,10 +62,6 @@ PY_function3a_0(
     Py_RETURN_NONE;
 // splicer end function.function3a_0
 }
-
-static char PY_function3a_1__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PY_function3a_1(

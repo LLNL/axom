@@ -201,10 +201,6 @@ PY_function5_arg1_arg2(
 // splicer end function.function5
 }
 
-static char PY_function6_from_name__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PY_function6_from_name(
   PyObject *self,    /* not used */
@@ -225,10 +221,6 @@ PY_function6_from_name(
     Py_RETURN_NONE;
 // splicer end function.function6_from_name
 }
-
-static char PY_function6_from_index__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PY_function6_from_index(
@@ -276,10 +268,6 @@ PY_function9(
 // splicer end function.function9
 }
 
-static char PY_function10_0__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PY_function10_0(
   PyObject *self,    /* not used */
@@ -291,10 +279,6 @@ PY_function10_0(
     Py_RETURN_NONE;
 // splicer end function.function10_0
 }
-
-static char PY_function10_1__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PY_function10_1(
@@ -317,10 +301,6 @@ PY_function10_1(
     Py_RETURN_NONE;
 // splicer end function.function10_1
 }
-
-static char PY_overload1_num_offset_stride__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PY_overload1_num_offset_stride(
@@ -358,10 +338,6 @@ PY_overload1_num_offset_stride(
     return Py_BuildValue("i", rv);
 // splicer end function.overload1_num_offset_stride
 }
-
-static char PY_overload1_5__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PY_overload1_5(

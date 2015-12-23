@@ -164,10 +164,6 @@ PP_exclass1_get_root(
 // splicer end class.ExClass1.method.get_root
 }
 
-static char PP_exclass1_get_value_from_int__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PP_exclass1_get_value_from_int(
   PP_ExClass1 *self,
@@ -188,10 +184,6 @@ PP_exclass1_get_value_from_int(
     return Py_BuildValue("i", rv);
 // splicer end class.ExClass1.method.get_value_from_int
 }
-
-static char PP_exclass1_get_value_1__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PP_exclass1_get_value_1(

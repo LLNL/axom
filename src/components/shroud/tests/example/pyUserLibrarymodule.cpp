@@ -56,10 +56,6 @@ PP_is_name_valid(
 // splicer end function.is_name_valid
 }
 
-static char PP_test_names__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PP_test_names(
   PyObject *self,    /* not used */
@@ -80,10 +76,6 @@ PP_test_names(
     Py_RETURN_NONE;
 // splicer end function.test_names
 }
-
-static char PP_test_names_flag__doc__[] =
-"documentation"
-;
 
 static PyObject *
 PP_test_names_flag(

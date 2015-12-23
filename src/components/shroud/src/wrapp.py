@@ -510,13 +510,19 @@ return 1;""", fmt)
         PY_impl = list of implementation lines
         """
         body = self.PyMethodBody
-        body.append(wformat("""
-static char {PY_name_impl}__doc__[] =
-"{doc_string}"
-;
+        if expose:
+            body.extend([
+                    '',
+                    wformat('static char {PY_name_impl}__doc__[] =', fmt),
+                    '"%s"' % fmt.doc_string,
+                    ';',
+                    ])
 
-static PyObject *
-{PY_name_impl}(""", fmt))
+        body.extend([
+                '',
+                'static PyObject *',
+                wformat('{PY_name_impl}(', fmt)
+                ])
         if cls:
             body.append(wformat('  {PY_PyObject} *self,', fmt))
         else:
