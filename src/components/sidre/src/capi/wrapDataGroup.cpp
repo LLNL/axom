@@ -139,6 +139,24 @@ return rv.c_str();
 // splicer end class.DataGroup.method.get_view_name
 }
 
+SIDRE_IndexType SIDRE_datagroup_get_first_valid_view_index(SIDRE_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_first_valid_view_index
+IndexType rv = selfobj->getFirstValidViewIndex();
+return rv;
+// splicer end class.DataGroup.method.get_first_valid_view_index
+}
+
+SIDRE_IndexType SIDRE_datagroup_get_next_valid_view_index(SIDRE_datagroup * self, SIDRE_IndexType idx)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_next_valid_view_index
+IndexType rv = selfobj->getNextValidViewIndex(idx);
+return rv;
+// splicer end class.DataGroup.method.get_next_valid_view_index
+}
+
 SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
@@ -247,22 +265,31 @@ return;
 // splicer end class.DataGroup.method.destroy_view_bufferify
 }
 
-void SIDRE_datagroup_destroy_view_and_data(SIDRE_datagroup * self, const char * name)
+void SIDRE_datagroup_destroy_view_and_data_name(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.destroy_view_and_data
+// splicer begin class.DataGroup.method.destroy_view_and_data_name
 selfobj->destroyViewAndData(name);
 return;
-// splicer end class.DataGroup.method.destroy_view_and_data
+// splicer end class.DataGroup.method.destroy_view_and_data_name
 }
 
-void SIDRE_datagroup_destroy_view_and_data_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
+void SIDRE_datagroup_destroy_view_and_data_name_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.destroy_view_and_data_bufferify
+// splicer begin class.DataGroup.method.destroy_view_and_data_name_bufferify
 selfobj->destroyViewAndData(std::string(name, Lname));
 return;
-// splicer end class.DataGroup.method.destroy_view_and_data_bufferify
+// splicer end class.DataGroup.method.destroy_view_and_data_name_bufferify
+}
+
+void SIDRE_datagroup_destroy_view_and_data_index(SIDRE_datagroup * self, SIDRE_IndexType idx)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.destroy_view_and_data_index
+selfobj->destroyViewAndData(idx);
+return;
+// splicer end class.DataGroup.method.destroy_view_and_data_index
 }
 
 SIDRE_dataview * SIDRE_datagroup_move_view(SIDRE_datagroup * self, SIDRE_dataview * view)
@@ -350,6 +377,24 @@ return rv.c_str();
 // splicer end class.DataGroup.method.get_group_name
 }
 
+SIDRE_IndexType SIDRE_datagroup_get_first_valid_group_index(SIDRE_datagroup * self)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_first_valid_group_index
+IndexType rv = selfobj->getFirstValidGroupIndex();
+return rv;
+// splicer end class.DataGroup.method.get_first_valid_group_index
+}
+
+SIDRE_IndexType SIDRE_datagroup_get_next_valid_group_index(SIDRE_datagroup * self, SIDRE_IndexType idx)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_next_valid_group_index
+IndexType rv = selfobj->getNextValidGroupIndex(idx);
+return rv;
+// splicer end class.DataGroup.method.get_next_valid_group_index
+}
+
 SIDRE_datagroup * SIDRE_datagroup_create_group(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
@@ -368,22 +413,31 @@ return static_cast<SIDRE_datagroup *>(static_cast<void *>(rv));
 // splicer end class.DataGroup.method.create_group_bufferify
 }
 
-void SIDRE_datagroup_destroy_group(SIDRE_datagroup * self, const char * name)
+void SIDRE_datagroup_destroy_group_name(SIDRE_datagroup * self, const char * name)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.destroy_group
+// splicer begin class.DataGroup.method.destroy_group_name
 selfobj->destroyGroup(name);
 return;
-// splicer end class.DataGroup.method.destroy_group
+// splicer end class.DataGroup.method.destroy_group_name
 }
 
-void SIDRE_datagroup_destroy_group_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
+void SIDRE_datagroup_destroy_group_name_bufferify(SIDRE_datagroup * self, const char * name, int Lname)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.destroy_group_bufferify
+// splicer begin class.DataGroup.method.destroy_group_name_bufferify
 selfobj->destroyGroup(std::string(name, Lname));
 return;
-// splicer end class.DataGroup.method.destroy_group_bufferify
+// splicer end class.DataGroup.method.destroy_group_name_bufferify
+}
+
+void SIDRE_datagroup_destroy_group_index(SIDRE_datagroup * self, SIDRE_IndexType idx)
+{
+DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.destroy_group_index
+selfobj->destroyGroup(idx);
+return;
+// splicer end class.DataGroup.method.destroy_group_index
 }
 
 SIDRE_datagroup * SIDRE_datagroup_move_group(SIDRE_datagroup * self, SIDRE_datagroup * grp)

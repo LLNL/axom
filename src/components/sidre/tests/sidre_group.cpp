@@ -250,7 +250,7 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_TRUE( group->createView("view") == ATK_NULLPTR );
 
   group->destroyView("view");
-  //destroy already destroyed group.  Should be a no-op, not a failure
+  // destroy already destroyed group.  Should be a no-op, not a failure
   group->destroyView("view");
 
   EXPECT_FALSE( group->hasView("view") );
@@ -320,7 +320,7 @@ TEST(sidre_group,group_name_collisions)
   DataGroup * badGroup = ds->getRoot()->createGroup("fields");
   EXPECT_TRUE( badGroup == ATK_NULLPTR );
 
-  //check error condition
+  // check error condition
   // attempt to create duplicate view name.
   EXPECT_TRUE(flds->createView("a") == ATK_NULLPTR);
 
@@ -346,7 +346,7 @@ TEST(sidre_group,view_copy_move)
 
   // test moving a view from flds to sub
   flds->createGroup("sub")->moveView(flds->getView("d0"));
-  //flds->print();
+  // flds->print();
   EXPECT_FALSE(flds->hasView("d0"));
   EXPECT_TRUE(flds->hasGroup("sub"));
   EXPECT_TRUE(flds->getGroup("sub")->hasView("d0"));
@@ -358,7 +358,7 @@ TEST(sidre_group,view_copy_move)
   // test copying a view from flds to sub
   flds->getGroup("sub")->copyView(flds->getView("i0"));
 
-  //flds->print();
+  // flds->print();
 
   EXPECT_TRUE(flds->hasView("i0"));
   EXPECT_TRUE(flds->getGroup("sub")->hasView("i0"));
@@ -394,10 +394,10 @@ TEST(sidre_group,groups_move_copy)
   EXPECT_TRUE(flds->hasGroup("b"));
   EXPECT_TRUE(flds->hasGroup("c"));
 
-  //move "b" to a child of "sub"
+  // move "b" to a child of "sub"
   flds->createGroup("sub")->moveGroup(gb);
 
-  //flds->print();
+  // flds->print();
 
   EXPECT_TRUE(flds->hasGroup("a"));
   EXPECT_TRUE(flds->hasGroup("sub"));
@@ -442,7 +442,7 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   grp->destroyViewsAndData();
   // should be no-op
   grp->destroyViewsAndData();
-  //shut up compiler about unused variable
+  // shut up compiler about unused variable
   (void)view3;
 
   delete ds;
@@ -601,8 +601,8 @@ TEST(sidre_group,save_restore_complex)
   // Be careful on floats.  If you just hand it 100.0, the compiler will assume you want a double.
   // Either cast the value to float, or be explicit on the template argument.
   gb->getView("f0")->setScalar( 100.0f );
-  //this would have worked equally well also.
-  //gb->getView("f0")->setScalar<float>(100.0);
+  // this would have worked equally well also.
+  // gb->getView("f0")->setScalar<float>(100.0);
   gc->getView("d0")->setScalar(3000.00);
 
   // check that all sub groups exist

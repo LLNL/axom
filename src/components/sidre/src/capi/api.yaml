@@ -109,8 +109,8 @@ classes:
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
 
-#    -  decl: IndexType getFirstValidViewIndex() const
-#    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
+    -  decl: IndexType getFirstValidViewIndex() const
+    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
     -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
@@ -143,7 +143,9 @@ classes:
 #    -  decl: void destroyView( IndexType idx )
 #    -  decl: void destroyViews()
     -  decl: void destroyViewAndData(const std::string &name)
-#    -  decl: void destroyViewAndData(IndexType idx)
+       function_suffix: _name
+    -  decl: void destroyViewAndData(IndexType idx)
+       function_suffix: _index
 #    -  decl: void destroyViewsAndData()
     -  decl: DataView *moveView(DataView *view)
     -  decl: DataView *copyView(DataView *view)
@@ -159,12 +161,14 @@ classes:
     -  decl: const std::string& getGroupName(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
-#    -  decl: IndexType getFirstValidGroupIndex() const
-#    -  decl: IndexType getNextValidGroupIndex(IndexType idx) const
+    -  decl: IndexType getFirstValidGroupIndex() const
+    -  decl: IndexType getNextValidGroupIndex(IndexType idx) const
 
     -  decl: DataGroup *createGroup( const string& name )
     -  decl: void destroyGroup(const std::string &name)
-#    -  decl: void destroyGroup(IndexType idx)
+       function_suffix: _name
+    -  decl: void destroyGroup(IndexType idx)
+       function_suffix: _index
 #    -  decl: void destroyGroups()
     -  decl: DataGroup *moveGroup(DataGroup *grp)
 #    -  decl: DataGroup *copyGroup(DataGroup *grp)

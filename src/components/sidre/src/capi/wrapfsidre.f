@@ -88,6 +88,8 @@ module sidre_mod
         procedure :: get_view_from_index => datagroup_get_view_from_index
         procedure :: get_view_index => datagroup_get_view_index
         procedure :: get_view_name => datagroup_get_view_name
+        procedure :: get_first_valid_view_index => datagroup_get_first_valid_view_index
+        procedure :: get_next_valid_view_index => datagroup_get_next_valid_view_index
         procedure :: create_view_and_allocate_from_type_int => datagroup_create_view_and_allocate_from_type_int
         procedure :: create_view_and_allocate_from_type_long => datagroup_create_view_and_allocate_from_type_long
         procedure :: create_view_empty => datagroup_create_view_empty
@@ -96,15 +98,19 @@ module sidre_mod
         procedure :: create_view_into_buffer => datagroup_create_view_into_buffer
         procedure :: create_view_external => datagroup_create_view_external
         procedure :: destroy_view => datagroup_destroy_view
-        procedure :: destroy_view_and_data => datagroup_destroy_view_and_data
+        procedure :: destroy_view_and_data_name => datagroup_destroy_view_and_data_name
+        procedure :: destroy_view_and_data_index => datagroup_destroy_view_and_data_index
         procedure :: move_view => datagroup_move_view
         procedure :: copy_view => datagroup_copy_view
         procedure :: has_group => datagroup_has_group
         procedure :: get_group => datagroup_get_group
         procedure :: get_group_index => datagroup_get_group_index
         procedure :: get_group_name => datagroup_get_group_name
+        procedure :: get_first_valid_group_index => datagroup_get_first_valid_group_index
+        procedure :: get_next_valid_group_index => datagroup_get_next_valid_group_index
         procedure :: create_group => datagroup_create_group
-        procedure :: destroy_group => datagroup_destroy_group
+        procedure :: destroy_group_name => datagroup_destroy_group_name
+        procedure :: destroy_group_index => datagroup_destroy_group_index
         procedure :: move_group => datagroup_move_group
         procedure :: print => datagroup_print
         procedure :: save => datagroup_save
@@ -122,6 +128,16 @@ module sidre_mod
             ! splicer end class.DataGroup.generic.create_view_and_allocate
             create_view_and_allocate_from_type_int,  &
             create_view_and_allocate_from_type_long
+        generic :: destroy_group => &
+            ! splicer begin class.DataGroup.generic.destroy_group
+            ! splicer end class.DataGroup.generic.destroy_group
+            destroy_group_name,  &
+            destroy_group_index
+        generic :: destroy_view_and_data => &
+            ! splicer begin class.DataGroup.generic.destroy_view_and_data
+            ! splicer end class.DataGroup.generic.destroy_view_and_data
+            destroy_view_and_data_name,  &
+            destroy_view_and_data_index
         generic :: get_view => &
             ! splicer begin class.DataGroup.generic.get_view
             ! splicer end class.DataGroup.generic.get_view
@@ -534,6 +550,25 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_datagroup_get_view_name
         
+        pure function sidre_datagroup_get_first_valid_view_index(self) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_get_first_valid_view_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function sidre_datagroup_get_first_valid_view_index
+        
+        pure function sidre_datagroup_get_next_valid_view_index(self, idx) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_get_next_valid_view_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            integer(C_INT) :: rv
+        end function sidre_datagroup_get_next_valid_view_index
+        
         function sidre_datagroup_create_view_and_allocate_from_type(self, name, type, num_elems) &
                 result(rv) &
                 bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type")
@@ -668,22 +703,30 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine sidre_datagroup_destroy_view_bufferify
         
-        subroutine sidre_datagroup_destroy_view_and_data(self, name) &
-                bind(C, name="SIDRE_datagroup_destroy_view_and_data")
+        subroutine sidre_datagroup_destroy_view_and_data_name(self, name) &
+                bind(C, name="SIDRE_datagroup_destroy_view_and_data_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine sidre_datagroup_destroy_view_and_data
+        end subroutine sidre_datagroup_destroy_view_and_data_name
         
-        subroutine sidre_datagroup_destroy_view_and_data_bufferify(self, name, Lname) &
-                bind(C, name="SIDRE_datagroup_destroy_view_and_data_bufferify")
+        subroutine sidre_datagroup_destroy_view_and_data_name_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_datagroup_destroy_view_and_data_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine sidre_datagroup_destroy_view_and_data_bufferify
+        end subroutine sidre_datagroup_destroy_view_and_data_name_bufferify
+        
+        subroutine sidre_datagroup_destroy_view_and_data_index(self, idx) &
+                bind(C, name="SIDRE_datagroup_destroy_view_and_data_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+        end subroutine sidre_datagroup_destroy_view_and_data_index
         
         function sidre_datagroup_move_view(self, view) &
                 result(rv) &
@@ -778,6 +821,25 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_datagroup_get_group_name
         
+        pure function sidre_datagroup_get_first_valid_group_index(self) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_get_first_valid_group_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT) :: rv
+        end function sidre_datagroup_get_first_valid_group_index
+        
+        pure function sidre_datagroup_get_next_valid_group_index(self, idx) &
+                result(rv) &
+                bind(C, name="SIDRE_datagroup_get_next_valid_group_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            integer(C_INT) :: rv
+        end function sidre_datagroup_get_next_valid_group_index
+        
         function sidre_datagroup_create_group(self, name) &
                 result(rv) &
                 bind(C, name="SIDRE_datagroup_create_group")
@@ -799,22 +861,30 @@ module sidre_mod
             type(C_PTR) :: rv
         end function sidre_datagroup_create_group_bufferify
         
-        subroutine sidre_datagroup_destroy_group(self, name) &
-                bind(C, name="SIDRE_datagroup_destroy_group")
+        subroutine sidre_datagroup_destroy_group_name(self, name) &
+                bind(C, name="SIDRE_datagroup_destroy_group_name")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
-        end subroutine sidre_datagroup_destroy_group
+        end subroutine sidre_datagroup_destroy_group_name
         
-        subroutine sidre_datagroup_destroy_group_bufferify(self, name, Lname) &
-                bind(C, name="SIDRE_datagroup_destroy_group_bufferify")
+        subroutine sidre_datagroup_destroy_group_name_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_datagroup_destroy_group_name_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
-        end subroutine sidre_datagroup_destroy_group_bufferify
+        end subroutine sidre_datagroup_destroy_group_name_bufferify
+        
+        subroutine sidre_datagroup_destroy_group_index(self, idx) &
+                bind(C, name="SIDRE_datagroup_destroy_group_index")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+        end subroutine sidre_datagroup_destroy_group_index
         
         function sidre_datagroup_move_group(self, grp) &
                 result(rv) &
@@ -1539,6 +1609,29 @@ contains
         ! splicer end class.DataGroup.method.get_view_name
     end subroutine datagroup_get_view_name
     
+    function datagroup_get_first_valid_view_index(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataGroup.method.get_first_valid_view_index
+        rv = sidre_datagroup_get_first_valid_view_index(obj%voidptr)
+        ! splicer end class.DataGroup.method.get_first_valid_view_index
+    end function datagroup_get_first_valid_view_index
+    
+    function datagroup_get_next_valid_view_index(obj, idx) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT), value, intent(IN) :: idx
+        integer(C_INT) :: rv
+        ! splicer begin class.DataGroup.method.get_next_valid_view_index
+        rv = sidre_datagroup_get_next_valid_view_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.DataGroup.method.get_next_valid_view_index
+    end function datagroup_get_next_valid_view_index
+    
     function datagroup_create_view_and_allocate_from_type_int(obj, name, type, num_elems) result(rv)
         use iso_c_binding
         implicit none
@@ -1670,18 +1763,30 @@ contains
         ! splicer end class.DataGroup.method.destroy_view
     end subroutine datagroup_destroy_view
     
-    subroutine datagroup_destroy_view_and_data(obj, name)
+    subroutine datagroup_destroy_view_and_data_name(obj, name)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
-        ! splicer begin class.DataGroup.method.destroy_view_and_data
-        call sidre_datagroup_destroy_view_and_data_bufferify(  &
+        ! splicer begin class.DataGroup.method.destroy_view_and_data_name
+        call sidre_datagroup_destroy_view_and_data_name_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
-        ! splicer end class.DataGroup.method.destroy_view_and_data
-    end subroutine datagroup_destroy_view_and_data
+        ! splicer end class.DataGroup.method.destroy_view_and_data_name
+    end subroutine datagroup_destroy_view_and_data_name
+    
+    subroutine datagroup_destroy_view_and_data_index(obj, idx)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT), value, intent(IN) :: idx
+        ! splicer begin class.DataGroup.method.destroy_view_and_data_index
+        call sidre_datagroup_destroy_view_and_data_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.DataGroup.method.destroy_view_and_data_index
+    end subroutine datagroup_destroy_view_and_data_index
     
     function datagroup_move_view(obj, view) result(rv)
         use iso_c_binding
@@ -1766,6 +1871,29 @@ contains
         ! splicer end class.DataGroup.method.get_group_name
     end subroutine datagroup_get_group_name
     
+    function datagroup_get_first_valid_group_index(obj) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT) :: rv
+        ! splicer begin class.DataGroup.method.get_first_valid_group_index
+        rv = sidre_datagroup_get_first_valid_group_index(obj%voidptr)
+        ! splicer end class.DataGroup.method.get_first_valid_group_index
+    end function datagroup_get_first_valid_group_index
+    
+    function datagroup_get_next_valid_group_index(obj, idx) result(rv)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT), value, intent(IN) :: idx
+        integer(C_INT) :: rv
+        ! splicer begin class.DataGroup.method.get_next_valid_group_index
+        rv = sidre_datagroup_get_next_valid_group_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.DataGroup.method.get_next_valid_group_index
+    end function datagroup_get_next_valid_group_index
+    
     function datagroup_create_group(obj, name) result(rv)
         use iso_c_binding
         implicit none
@@ -1780,18 +1908,30 @@ contains
         ! splicer end class.DataGroup.method.create_group
     end function datagroup_create_group
     
-    subroutine datagroup_destroy_group(obj, name)
+    subroutine datagroup_destroy_group_name(obj, name)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
         character(*), intent(IN) :: name
-        ! splicer begin class.DataGroup.method.destroy_group
-        call sidre_datagroup_destroy_group_bufferify(  &
+        ! splicer begin class.DataGroup.method.destroy_group_name
+        call sidre_datagroup_destroy_group_name_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name))
-        ! splicer end class.DataGroup.method.destroy_group
-    end subroutine datagroup_destroy_group
+        ! splicer end class.DataGroup.method.destroy_group_name
+    end subroutine datagroup_destroy_group_name
+    
+    subroutine datagroup_destroy_group_index(obj, idx)
+        use iso_c_binding
+        implicit none
+        class(datagroup) :: obj
+        integer(C_INT), value, intent(IN) :: idx
+        ! splicer begin class.DataGroup.method.destroy_group_index
+        call sidre_datagroup_destroy_group_index(  &
+            obj%voidptr,  &
+            idx)
+        ! splicer end class.DataGroup.method.destroy_group_index
+    end subroutine datagroup_destroy_group_index
     
     function datagroup_move_group(obj, grp) result(rv)
         use iso_c_binding
