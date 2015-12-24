@@ -252,8 +252,8 @@ Point< T, DIM >::Point(T val, int sz)
   // NOTE (KW): This should be a static assert in the class
   SLIC_ASSERT( DIM >= 1 );
 
+  // Fill first nvals coordinates with val ( 0 <= nvals <= DIM )
   const int nvals = clamp(sz, 0, DIM);
-
   std::fill( m_components, m_components+nvals, val );
 
   // Fill any remaining coordinates with zero
@@ -271,6 +271,7 @@ Point< T, DIM >::Point(T* vals, int sz)
 
   const int nvals = clamp(sz, 0, DIM);
 
+  // Copy first nvals coordinates from vals array ( 0 <= nvals <= DIM )
   std::copy( vals, vals+nvals, m_components);
 
   // Fill any remaining coordinates with zero
@@ -300,11 +301,7 @@ inline Point< T, DIM > Point< T,DIM >::make_point( const T& x,
                                                    const T& y,
                                                    const T& z )
 {
-  T tmp_array[3];
-  tmp_array[0] = x;
-  tmp_array[1] = y;
-  tmp_array[2] = z;
-
+  T tmp_array[3] = { x, y, z};
   return Point(tmp_array, DIM);
 }
 

@@ -39,7 +39,7 @@
 #include "quest/Point.hpp"
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
-//#include "slam/FileUtilities.hpp"
+#include "slam/FileUtilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -279,12 +279,8 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
          for ( int jj=ijkmin[1]; jj <= ijkmax[1]; ++jj ) {
             for ( int kk=ijkmin[2]; kk <= ijkmax[2]; ++kk ) {
 
-                const int idx_wrong = umesh->getCellLinearIndex( ii, jj, kk );
-                const int RES = 32;
-                const int idx = ii + RES * jj + RES*RES* kk;
-                ++bndry[ idx_wrong ];
-
-
+                const int idx = umesh->getCellLinearIndex( ii, jj, kk );
+                ++bndry[ idx ];
             } // END for all kk
          } // END for all jj
       } // END for all ii
@@ -326,7 +322,7 @@ std::string getStlFileName(const std::string & inputFileName)
                                                           << "' (also tried several"
                                                           << " ancestors up to '../" << fileName << "')."
                                                           << "\nThe current working directory is: '"
-                                                          /*<< asctoolkit::slam::util::getCWD() << "'"*/);
+                                                          << asctoolkit::slam::util::getCWD() << "'");
         meshFile.close();
     }
 

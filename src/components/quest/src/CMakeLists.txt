@@ -81,7 +81,7 @@ make_library( LIBRARY_NAME
               DEPENDS_ON
                 common
                 slic
-                #slam
+                slam
              )
              
 install( TARGETS quest DESTINATION lib EXPORT ${PROJECT_NAME}-targets )

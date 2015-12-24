@@ -263,43 +263,36 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    // STEP 2: loop over uniform mesh nodes and compute distance field
    std::cout << "Calculating distance field...";
    std::cout.flush();
+   typedef quest::Point3D Point3D;
+   typedef quest::Point<int, 3> GridPt;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
 
       // get target node
-      double pnt[3];
-      umesh->getNode( i, pnt );
-      quest::Point< double, 3 > Q =
-              quest::Point< double,3 >::make_point(pnt[0],pnt[1],pnt[2]);
+      Point3D pnt;
+      umesh->getNode( i, pnt.data() );
+      Point3D Q = pnt;
 
       phi[ i ] = std::numeric_limits< double >::max();
-
 
       const int ncells = surface_mesh->getMeshNumberOfCells();
       for (int j=0; j < ncells; ++j ) {
 
           // compute exact distance to the cell
-          int closest_cell[3];
-          surface_mesh->getMeshCell( j, closest_cell );
+          GridPt closest_cell;
+          surface_mesh->getMeshCell( j, closest_cell.data() );
 
-          double a[3]; double b[3]; double c[3];
-          surface_mesh->getMeshNode( closest_cell[0], a );
-          surface_mesh->getMeshNode( closest_cell[1], b );
-          surface_mesh->getMeshNode( closest_cell[2], c );
-          quest::Point< double, 3 > A =
-                  quest::Point< double,3 >::make_point( a[0], a[1], a[2] );
-          quest::Point< double,3 > B =
-                  quest::Point< double,3 >::make_point( b[0], b[1], b[2] );
-          quest::Point< double,3 > C =
-                  quest::Point< double,3 >::make_point( c[0], c[1], c[2] );
-
-          quest::Triangle< double,3 > T( A,B,C );
+          Point3D a,b,c;
+          surface_mesh->getMeshNode( closest_cell[0], a.data() );
+          surface_mesh->getMeshNode( closest_cell[1], b.data() );
+          surface_mesh->getMeshNode( closest_cell[2], c.data() );
+          quest::Triangle< double,3 > T( a,b,c);
           const double dist = std::sqrt( quest::squared_distance( Q, T ) );
           if ( dist < std::abs( phi[i] ) )  {
 
-              double sign = 1.0f;
+              double sign = 1.0;
               if ( quest::orientation( Q, T ) == quest::ON_NEGATIVE_SIDE ) {
                   sign = -1.0f;
               }

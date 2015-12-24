@@ -10,10 +10,11 @@
 
 set(quest_tests
     test_extent.cpp
-    test_quest_orient.cpp
-    test_quest_squared_distance.cpp
-    test_quest_point.cpp
     test_quest_boundingBox.cpp
+    test_quest_orient.cpp
+    test_quest_point.cpp
+    test_quest_squared_distance.cpp
+    test_quest_vector.cpp
    )
 
 foreach(test ${quest_tests})

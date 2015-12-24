@@ -46,11 +46,7 @@ public:
   Triangle( const PointType& A,
             const PointType& B,
             const PointType& C )
-    {
-      m_A = A;
-      m_B = B;
-      m_C = C;
-    }
+        : m_A (A), m_B(B), m_C(C)    {}
 
 
   /*!

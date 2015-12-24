@@ -44,17 +44,44 @@ namespace quest {
  * \see Point
  *******************************************************************************
  */
-template < typename T, int ndims >
-class Vector : public Point< T, ndims >
+template < typename T, int DIM >
+class Vector : public Point< T, DIM >
 {
+public:
+    typedef Point<T,DIM> PointType;
+
 public:
 
   /*!
    *****************************************************************************
-   * \brief Default constructor
+   * \brief Fill vector with single value. Acts as default constructor
+   * Sets first sz components of the vector to val (default 0).
+   * \param [in] val The value to set the coordinates to.  Defaults to zero
+   * \param [in] sz The number of coordinates to set to val.
+   * The rest will be set to zero.  Defaults is DIM.
    *****************************************************************************
    */
-  Vector();
+  explicit Vector(T val = T(), int sz = DIM) : PointType(val, sz) {}
+
+  /*!
+   *****************************************************************************
+   * \brief Creates a vector from the first sz values of the input array.
+   * \param [in] vals An array containing at least sz values
+   * \param [in] sz The number of coordinates to take from the array.  Defaults
+   * to DIM.
+   * It sz is greater than DIM, we only take the first DIM values.
+   *****************************************************************************
+   */
+  Vector(T* vals, int sz = DIM) : PointType(vals, sz) {}
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor to create vector from a Point
+   * \param [in] pt The point containing the vector's coordinates.
+   * \note Equivalent to Vector( Point::zero(), pt)
+   *****************************************************************************
+   */
+  Vector(const Point<T,DIM> & pt) : PointType(pt) {}
 
   /*!
    *****************************************************************************
@@ -65,7 +92,7 @@ public:
    * \pre A.dimension() == ndims
    *****************************************************************************
    */
-  Vector( const Point< T,ndims >& A, const Point< T,ndims >& B );
+  Vector( const Point< T,DIM >& A, const Point< T,DIM >& B );
 
   /*!
    *****************************************************************************
@@ -81,7 +108,7 @@ public:
    * \return c the resulting vector after the multiplication.
    *****************************************************************************
    */
-  Vector< T,ndims > operator*(T scalar);
+  Vector< T,DIM > operator*(T scalar);
 
   /*!
    *****************************************************************************
@@ -90,7 +117,7 @@ public:
    * \return r the resulting vector after the sum operation.
    *****************************************************************************
    */
-  Vector< T,ndims > operator+( const Vector<T,ndims>& v );
+  Vector< T,DIM > operator+( const Vector<T,DIM>& v );
 
   /*!
    *****************************************************************************
@@ -99,7 +126,7 @@ public:
    * \return r the resulting vector after the subtraction operation.
    *****************************************************************************
    */
-  Vector< T,ndims > operator-( const Vector<T,ndims>& v );
+  Vector< T,DIM > operator-( const Vector<T,DIM>& v );
 
   /*!
    *****************************************************************************
@@ -121,6 +148,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Normalizes this vector instance.
+   * \note The zero vector becomes the unit vector (1,0,0,...) when normalized.
    * \post this->norm() == 1.0f
    *****************************************************************************
    */
@@ -135,8 +163,8 @@ public:
    * \pre u.dimension() == v.dimension().
    *****************************************************************************
    */
-  static T dot_product( const Vector< T,ndims >& u,
-                        const Vector< T,ndims >& v );
+  static T dot_product( const Vector< T,DIM >& u,
+                        const Vector< T,DIM >& v );
 
   /*!
    *****************************************************************************
@@ -167,21 +195,13 @@ typedef Vector< double, 3 > Vector3D;
 namespace quest {
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-Vector< T,ndims >::Vector()
-{
-  SLIC_ASSERT( ndims >= 1 );
-  std::fill( this->m_components, this->m_components+ndims, 1.0 );
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int ndims >
-Vector< T,ndims >::Vector( const Point< T,ndims >& A,
-                           const Point< T,ndims >& B )
+template < typename T, int DIM >
+Vector< T,DIM >::Vector( const Point< T,DIM >& A,
+                           const Point< T,DIM >& B )
 {
   SLIC_ASSERT( A.dimension() == B.dimension( ) );
 
-  for ( int i=0; i < ndims; ++i ) {
+  for ( int i=0; i < DIM; ++i ) {
       this->m_components[ i ] = B[ i ]-A[ i ];
   }
 
@@ -189,22 +209,22 @@ Vector< T,ndims >::Vector( const Point< T,ndims >& A,
 
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline Vector< T,ndims > Vector< T,ndims >::operator*( T scalar )
+template < typename T, int DIM >
+inline Vector< T,DIM > Vector< T,DIM >::operator*( T scalar )
 {
-  Vector< T, ndims > result;
-  for( int i=0; i < ndims; ++i ) {
+  Vector< T, DIM > result;
+  for( int i=0; i < DIM; ++i ) {
     result[ i ] = this->m_components[i] * scalar;
   }
   return( result );
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline Vector< T, ndims > Vector< T,ndims >::operator+(const Vector<T,ndims>& v)
+template < typename T, int DIM >
+inline Vector< T, DIM > Vector< T,DIM >::operator+(const Vector<T,DIM>& v)
 {
-  Vector< T, ndims > result;
-  for ( int i=0; i < ndims; ++i ) {
+  Vector< T, DIM > result;
+  for ( int i=0; i < DIM; ++i ) {
     result[ i ] = this->m_components[ i ] + v[ i ];
   }
 
@@ -212,11 +232,11 @@ inline Vector< T, ndims > Vector< T,ndims >::operator+(const Vector<T,ndims>& v)
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline Vector< T, ndims > Vector< T,ndims >::operator-(const Vector<T,ndims>& v)
+template < typename T, int DIM >
+inline Vector< T, DIM > Vector< T,DIM >::operator-(const Vector<T,DIM>& v)
 {
-  Vector< T, ndims > result;
-  for ( int i=0; i < ndims; ++i ) {
+  Vector< T, DIM > result;
+  for ( int i=0; i < DIM; ++i ) {
     result[ i ] = this->m_components[ i ] - v[ i ];
   }
 
@@ -224,51 +244,57 @@ inline Vector< T, ndims > Vector< T,ndims >::operator-(const Vector<T,ndims>& v)
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline double Vector< T, ndims >::squared_norm() const
+template < typename T, int DIM >
+inline double Vector< T, DIM >::squared_norm() const
 {
-  double sum = 0.0;
-  for ( int i=0; i < ndims; ++i ) {
-      sum += this->m_components[ i ] * this->m_components[ i ];
-  }
-  return( sum );
+   return dot_product( *this, *this);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline double Vector< T, ndims >::norm() const
+template < typename T, int DIM >
+inline double Vector< T, DIM >::norm() const
 {
   return std::sqrt( squared_norm() );
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline void Vector< T, ndims >::normalize()
+template < typename T, int DIM >
+inline void Vector< T, DIM >::normalize()
 {
+  static const double EPS  = 1.0e-100;
+
   const double length = this->norm();
-  for ( int i=0; i < ndims; ++i ) {
+  if(length <= EPS)
+  {
+      // normalizing the zero vector gives the unit vector
+      this->m_components[ 0 ] = static_cast<T>(1.);
+      std::fill( this->m_components+1, this->m_components+DIM, T());
+  }
+  else
+  {
+    for ( int i=0; i < DIM; ++i )
       this->m_components[ i ] /= length;
   }
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline T Vector< T,ndims >::dot_product( const Vector< T,ndims >& u,
-                                       const Vector< T,ndims >& v )
+template < typename T, int DIM >
+inline T Vector< T,DIM >::dot_product( const Vector< T,DIM >& u,
+                                       const Vector< T,DIM >& v )
 {
   SLIC_ASSERT( u.dimension() == v.dimension() );
   double dotprod = 0.0;
 
-  for ( int i=0; i < ndims; ++i ) {
+  for ( int i=0; i < DIM; ++i ) {
      dotprod += u[ i ]*v[ i ];
-  } // END for all ndims
+  } // END for all DIM
 
-  return dotprod;
+  return static_cast<T>(dotprod);
 }
 
 //------------------------------------------------------------------------------
-template < typename T, int ndims >
-inline Vector< T,3 > Vector< T,ndims >::cross_product(
+template < typename T, int DIM >
+inline Vector< T,3 > Vector< T,DIM >::cross_product(
         const Vector< T,3 >& u, const Vector< T,3 >& v )
 {
   Vector< T,3 > c;
