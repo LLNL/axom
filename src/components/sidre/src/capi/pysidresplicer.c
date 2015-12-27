@@ -13,6 +13,28 @@
 
 // splicer begin C_init_body
 PyModule_AddIntConstant(m, "InvalidIndex", -1);
+
+PyModule_AddIntConstant(m, "EMPTY_ID", SIDRE_EMPTY_ID);
+PyModule_AddIntConstant(m, "INT8_ID ", SIDRE_INT8_ID);
+PyModule_AddIntConstant(m, "INT16_ID", SIDRE_INT16_ID);
+PyModule_AddIntConstant(m, "INT32_ID", SIDRE_INT32_ID);
+PyModule_AddIntConstant(m, "INT64_ID", SIDRE_INT64_ID);
+    
+PyModule_AddIntConstant(m, "UINT8_ID ", SIDRE_UINT8_ID);
+PyModule_AddIntConstant(m, "UINT16_ID", SIDRE_UINT16_ID);
+PyModule_AddIntConstant(m, "UINT32_ID", SIDRE_UINT32_ID);
+PyModule_AddIntConstant(m, "UINT64_ID", SIDRE_UINT64_ID);
+    
+PyModule_AddIntConstant(m, "FLOAT32_ID  ", SIDRE_FLOAT32_ID);
+PyModule_AddIntConstant(m, "FLOAT64_ID  ", SIDRE_FLOAT64_ID);
+PyModule_AddIntConstant(m, "CHAR8_STR_ID", SIDRE_CHAR8_STR_ID);
+    
+PyModule_AddIntConstant(m, "INT_ID", SIDRE_INT_ID);
+PyModule_AddIntConstant(m, "UINT_ID", SIDRE_UINT_ID);
+PyModule_AddIntConstant(m, "LONG_ID", SIDRE_LONG_ID);
+PyModule_AddIntConstant(m, "ULONG_ID", SIDRE_ULONG_ID);
+PyModule_AddIntConstant(m, "FLOAT_ID", SIDRE_FLOAT_ID);
+PyModule_AddIntConstant(m, "DOUBLE_ID", SIDRE_DOUBLE_ID);
 // splicer end C_init_body
 
 // ----------------------------------------------------------------------
