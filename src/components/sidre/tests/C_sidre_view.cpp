@@ -20,11 +20,9 @@ TEST(C_sidre_view,create_views)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv_0 = 
-     SIDRE_datagroup_create_view_and_allocate(root, "field0",
-                                                      SIDRE_INT_ID, 1);
+     SIDRE_datagroup_create_view_and_allocate(root, "field0", SIDRE_INT_ID, 1);
   SIDRE_dataview * dv_1 = 
-     SIDRE_datagroup_create_view_and_allocate(root, "field1",
-                                                      SIDRE_INT_ID, 1);
+     SIDRE_datagroup_create_view_and_allocate(root, "field1", SIDRE_INT_ID, 1);
 
   SIDRE_databuffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
   SIDRE_databuffer * db_1 = SIDRE_dataview_get_buffer(dv_1);
@@ -42,8 +40,7 @@ TEST(C_sidre_view,int_buffer_from_view)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv = 
-     SIDRE_datagroup_create_view_and_allocate(root, "u0",
-                                                      SIDRE_INT_ID, 10);
+     SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
 
   EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
@@ -68,8 +65,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv = 
-     SIDRE_datagroup_create_view_and_allocate(root, "u0", 
-                                                      SIDRE_INT_ID, 10);
+     SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)

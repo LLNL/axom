@@ -112,7 +112,7 @@ classes:
     -  decl: IndexType getFirstValidViewIndex() const
     -  decl: IndexType getNextValidViewIndex(IndexType idx) const
     -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
-       function_suffix:
+#       function_suffix:
        fortran_generic:
          num_elems:
          -  int
