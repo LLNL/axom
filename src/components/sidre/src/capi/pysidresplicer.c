@@ -179,3 +179,24 @@ if (PyObject_IsInstance(other, (PyObject*) &PY_DataView_Type)) {
 Py_INCREF(rv);
 return rv;
 // splicer end class.DataView.type.richcompare
+
+
+// ----------------------------------------------------------------------
+
+// splicer begin function.name_is_valid
+// Allow any sort of object.  This will allow None to return False.
+    PyObject * name;
+    const char *kwcpp = "name";
+    char *kw_list[] = { (char *) kwcpp+0, NULL };
+    bool rv = false;
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:nameIsValid", kw_list,
+        &name))
+    {
+        return NULL;
+    }
+    if (PyString_Check(name)) {
+	rv = nameIsValid(PyString_AS_STRING(name));
+    }
+    return PyBool_FromLong(rv);
+// splicer end function.name_is_valid
