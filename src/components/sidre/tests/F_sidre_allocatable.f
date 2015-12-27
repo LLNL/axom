@@ -205,6 +205,57 @@ contains
   end subroutine external_allocatable_double
 
 !----------------------------------------------------------------------
+!----------------------------------------------------------------------
+! Datastore owns a multi-dimension array.
+
+  subroutine datastore_int_3d
+    integer, pointer :: ipointer(:,:,:)
+
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview)  view
+    integer type
+    integer num_elements
+    integer i, j, k
+    integer rank
+    integer(SIDRE_LENGTH) extents_in(3), extents(3)
+
+    call set_case_name("datastore_int_3d")
+
+    extents_in(1) = 2
+    extents_in(2) = 3
+    extents_in(3) = 4
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    view = root%create_view("iarray")
+    call view%apply(SIDRE_INT_ID, 3, extents_in)
+    call view%allocate()
+
+    call view%get_data(ipointer)
+
+    type = view%get_type_id()
+    call assert_equals(type, SIDRE_INT_ID)
+
+    num_elements = view%get_num_elements()
+    call assert_equals(num_elements, size(ipointer))
+
+    rank = view%get_num_dimensions()
+    call assert_equals(rank, 3)
+
+    rank = view%get_shape(7, extents)
+    call assert_equals(rank, 3)
+    call assert_true(extents(1) == size(ipointer, 1))
+    call assert_true(extents(2) == size(ipointer, 2))
+    call assert_true(extents(3) == size(ipointer, 3))
+
+    call ds%delete()
+
+  end subroutine datastore_int_3d
+
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
 
 end module sidre_allocatable
 
@@ -221,6 +272,8 @@ program fortran_test
   call external_allocatable_int_3d
   call external_static_int
   call external_allocatable_double
+
+  call datastore_int_3d
 
   call fruit_summary
   call fruit_finalize
