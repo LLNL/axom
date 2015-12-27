@@ -157,22 +157,22 @@ return rv;
 // splicer end class.DataGroup.method.get_next_valid_view_index
 }
 
-SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_view_and_allocate_from_type
+// splicer begin class.DataGroup.method.create_view_and_allocate
 DataView * rv = selfobj->createViewAndAllocate(name, getTypeID(type), num_elems);
 return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_view_and_allocate_from_type
+// splicer end class.DataGroup.method.create_view_and_allocate
 }
 
-SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems)
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems)
 {
 DataGroup *selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
-// splicer begin class.DataGroup.method.create_view_and_allocate_from_type_bufferify
+// splicer begin class.DataGroup.method.create_view_and_allocate_bufferify
 DataView * rv = selfobj->createViewAndAllocate(std::string(name, Lname), getTypeID(type), num_elems);
 return static_cast<SIDRE_dataview *>(static_cast<void *>(rv));
-// splicer end class.DataGroup.method.create_view_and_allocate_from_type_bufferify
+// splicer end class.DataGroup.method.create_view_and_allocate_bufferify
 }
 
 SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self, const char * name)

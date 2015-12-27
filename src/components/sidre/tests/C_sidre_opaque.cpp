@@ -191,14 +191,14 @@ TEST(C_sidre_opaque,meshvar)
 
     AA_meshvar * zonemv = 
       (AA_meshvar *) SIDRE_dataview_get_void_ptr(zone_mv_view);
-    (void) SIDRE_datagroup_create_view_and_allocate_from_type(dom_gp, "zone_data",
-                                                            SIDRE_INT_ID, 
-                                                            AA_get_num_vals(zonemv, dom_ext));
+    (void) SIDRE_datagroup_create_view_and_allocate(dom_gp, "zone_data",
+						    SIDRE_INT_ID, 
+						    AA_get_num_vals(zonemv, dom_ext));
 
     AA_meshvar * nodemv = 
       (AA_meshvar *)  SIDRE_dataview_get_void_ptr(node_mv_view);
-    (void) SIDRE_datagroup_create_view_and_allocate_from_type(dom_gp, "node_data",
-                                                            SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
+    (void) SIDRE_datagroup_create_view_and_allocate(dom_gp, "node_data",
+						    SIDRE_DOUBLE_ID, AA_get_num_vals(nodemv, dom_ext));
 
   }
 

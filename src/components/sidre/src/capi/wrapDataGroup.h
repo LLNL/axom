@@ -64,9 +64,9 @@ SIDRE_IndexType SIDRE_datagroup_get_first_valid_view_index(SIDRE_datagroup * sel
 
 SIDRE_IndexType SIDRE_datagroup_get_next_valid_view_index(SIDRE_datagroup * self, SIDRE_IndexType idx);
 
-SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems);
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate(SIDRE_datagroup * self, const char * name, int type, SIDRE_SidreLength num_elems);
 
-SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_from_type_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems);
+SIDRE_dataview * SIDRE_datagroup_create_view_and_allocate_bufferify(SIDRE_datagroup * self, const char * name, int Lname, int type, SIDRE_SidreLength num_elems);
 
 SIDRE_dataview * SIDRE_datagroup_create_view_empty(SIDRE_datagroup * self, const char * name);
 

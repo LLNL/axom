@@ -90,8 +90,8 @@ module sidre_mod
         procedure :: get_view_name => datagroup_get_view_name
         procedure :: get_first_valid_view_index => datagroup_get_first_valid_view_index
         procedure :: get_next_valid_view_index => datagroup_get_next_valid_view_index
-        procedure :: create_view_and_allocate_from_type_int => datagroup_create_view_and_allocate_from_type_int
-        procedure :: create_view_and_allocate_from_type_long => datagroup_create_view_and_allocate_from_type_long
+        procedure :: create_view_and_allocate_int => datagroup_create_view_and_allocate_int
+        procedure :: create_view_and_allocate_long => datagroup_create_view_and_allocate_long
         procedure :: create_view_empty => datagroup_create_view_empty
         procedure :: create_view_from_type_int => datagroup_create_view_from_type_int
         procedure :: create_view_from_type_long => datagroup_create_view_from_type_long
@@ -126,8 +126,8 @@ module sidre_mod
         generic :: create_view_and_allocate => &
             ! splicer begin class.DataGroup.generic.create_view_and_allocate
             ! splicer end class.DataGroup.generic.create_view_and_allocate
-            create_view_and_allocate_from_type_int,  &
-            create_view_and_allocate_from_type_long
+            create_view_and_allocate_int,  &
+            create_view_and_allocate_long
         generic :: destroy_group => &
             ! splicer begin class.DataGroup.generic.destroy_group
             ! splicer end class.DataGroup.generic.destroy_group
@@ -569,9 +569,9 @@ module sidre_mod
             integer(C_INT) :: rv
         end function sidre_datagroup_get_next_valid_view_index
         
-        function sidre_datagroup_create_view_and_allocate_from_type(self, name, type, num_elems) &
+        function sidre_datagroup_create_view_and_allocate(self, name, type, num_elems) &
                 result(rv) &
-                bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type")
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -579,11 +579,11 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function sidre_datagroup_create_view_and_allocate_from_type
+        end function sidre_datagroup_create_view_and_allocate
         
-        function sidre_datagroup_create_view_and_allocate_from_type_bufferify(self, name, Lname, type, num_elems) &
+        function sidre_datagroup_create_view_and_allocate_bufferify(self, name, Lname, type, num_elems) &
                 result(rv) &
-                bind(C, name="SIDRE_datagroup_create_view_and_allocate_from_type_bufferify")
+                bind(C, name="SIDRE_datagroup_create_view_and_allocate_bufferify")
             use iso_c_binding
             implicit none
             type(C_PTR), value, intent(IN) :: self
@@ -592,7 +592,7 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR) :: rv
-        end function sidre_datagroup_create_view_and_allocate_from_type_bufferify
+        end function sidre_datagroup_create_view_and_allocate_bufferify
         
         function sidre_datagroup_create_view_empty(self, name) &
                 result(rv) &
@@ -1632,7 +1632,7 @@ contains
         ! splicer end class.DataGroup.method.get_next_valid_view_index
     end function datagroup_get_next_valid_view_index
     
-    function datagroup_create_view_and_allocate_from_type_int(obj, name, type, num_elems) result(rv)
+    function datagroup_create_view_and_allocate_int(obj, name, type, num_elems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
@@ -1640,17 +1640,17 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_INT), value, intent(IN) :: num_elems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_allocate_from_type_int
-        rv%voidptr = sidre_datagroup_create_view_and_allocate_from_type_bufferify(  &
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_int
+        rv%voidptr = sidre_datagroup_create_view_and_allocate_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_and_allocate_from_type_int
-    end function datagroup_create_view_and_allocate_from_type_int
+        ! splicer end class.DataGroup.method.create_view_and_allocate_int
+    end function datagroup_create_view_and_allocate_int
     
-    function datagroup_create_view_and_allocate_from_type_long(obj, name, type, num_elems) result(rv)
+    function datagroup_create_view_and_allocate_long(obj, name, type, num_elems) result(rv)
         use iso_c_binding
         implicit none
         class(datagroup) :: obj
@@ -1658,15 +1658,15 @@ contains
         integer(C_INT), value, intent(IN) :: type
         integer(C_LONG), value, intent(IN) :: num_elems
         type(dataview) :: rv
-        ! splicer begin class.DataGroup.method.create_view_and_allocate_from_type_long
-        rv%voidptr = sidre_datagroup_create_view_and_allocate_from_type_bufferify(  &
+        ! splicer begin class.DataGroup.method.create_view_and_allocate_long
+        rv%voidptr = sidre_datagroup_create_view_and_allocate_bufferify(  &
             obj%voidptr,  &
             name,  &
             len_trim(name),  &
             type,  &
             int(num_elems, C_LONG))
-        ! splicer end class.DataGroup.method.create_view_and_allocate_from_type_long
-    end function datagroup_create_view_and_allocate_from_type_long
+        ! splicer end class.DataGroup.method.create_view_and_allocate_long
+    end function datagroup_create_view_and_allocate_long
     
     function datagroup_create_view_empty(obj, name) result(rv)
         use iso_c_binding

@@ -20,10 +20,10 @@ TEST(C_sidre_view,create_views)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv_0 = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(root, "field0",
+     SIDRE_datagroup_create_view_and_allocate(root, "field0",
                                                       SIDRE_INT_ID, 1);
   SIDRE_dataview * dv_1 = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(root, "field1",
+     SIDRE_datagroup_create_view_and_allocate(root, "field1",
                                                       SIDRE_INT_ID, 1);
 
   SIDRE_databuffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
@@ -42,7 +42,7 @@ TEST(C_sidre_view,int_buffer_from_view)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(root, "u0",
+     SIDRE_datagroup_create_view_and_allocate(root, "u0",
                                                       SIDRE_INT_ID, 10);
 
   EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
@@ -68,7 +68,7 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   SIDRE_dataview * dv = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(root, "u0", 
+     SIDRE_datagroup_create_view_and_allocate(root, "u0", 
                                                       SIDRE_INT_ID, 10);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
@@ -301,7 +301,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   SIDRE_datagroup * r_old = SIDRE_datagroup_create_group(root, "r_old");
   // create a view to hold the base buffer
   SIDRE_dataview * base_old = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(r_old, "base_data",
+     SIDRE_datagroup_create_view_and_allocate(r_old, "base_data",
                                                       SIDRE_INT_ID, 40);
 
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(base_old);
@@ -458,10 +458,10 @@ TEST(C_sidre_view,int_array_realloc)
 
   // create a view to hold the base buffer
   SIDRE_dataview * a1 = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(root, "a1", 
+     SIDRE_datagroup_create_view_and_allocate(root, "a1", 
                                                       SIDRE_FLOAT_ID, 5);
   SIDRE_dataview * a2 = 
-     SIDRE_datagroup_create_view_and_allocate_from_type(root, "a2", 
+     SIDRE_datagroup_create_view_and_allocate(root, "a2", 
                                                       SIDRE_INT_ID, 5);
 
   float * a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
