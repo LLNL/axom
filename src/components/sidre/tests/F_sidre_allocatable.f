@@ -15,7 +15,7 @@ contains
 ! Query metadata using datastore API.
 !----------------------------------------------------------------------
 
-  subroutine local_allocatable_int
+  subroutine external_allocatable_int
     integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
@@ -28,7 +28,7 @@ contains
     integer rank
     integer(SIDRE_LENGTH) extents(7)
 
-    call set_case_name("local_allocatable_int")
+    call set_case_name("external_allocatable_int")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -62,11 +62,11 @@ contains
 
     deallocate(iarray)
 
-  end subroutine local_allocatable_int
+  end subroutine external_allocatable_int
 
 !----------------------------------------------------------------------
 
-  subroutine local_allocatable_int_3d
+  subroutine external_allocatable_int_3d
     integer, allocatable :: iarray(:,:,:)
     integer, pointer :: ipointer(:,:,:)
 
@@ -79,7 +79,7 @@ contains
     integer rank
     integer(SIDRE_LENGTH) extents(7)
 
-    call set_case_name("local_allocatable_int_3d")
+    call set_case_name("external_allocatable_int_3d")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -119,13 +119,13 @@ contains
 
     deallocate(iarray)
 
-  end subroutine local_allocatable_int_3d
+  end subroutine external_allocatable_int_3d
 
 !----------------------------------------------------------------------
 !
 ! register a static (non-allocatable) array with the datastore as external view
 
-  subroutine local_static_int
+  subroutine external_static_int
     integer :: iarray(10)
     integer, pointer :: ipointer(:)
 
@@ -136,7 +136,7 @@ contains
     integer num_elements
     integer i
 
-    call set_case_name("local_static_int")
+    call set_case_name("external_static_int")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -159,12 +159,12 @@ contains
 
     call ds%delete()
 
-  end subroutine local_static_int
+  end subroutine external_static_int
 
 !----------------------------------------------------------------------
 !--- check other types
 
-  subroutine local_allocatable_double
+  subroutine external_allocatable_double
     real(C_DOUBLE), allocatable :: darray(:)
     real(C_DOUBLE), pointer :: dpointer(:)
 
@@ -175,7 +175,7 @@ contains
     integer type
     integer i
 
-    call set_case_name("local_allocatable_double")
+    call set_case_name("external_allocatable_double")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -202,7 +202,7 @@ contains
 
     deallocate(darray)
 
-  end subroutine local_allocatable_double
+  end subroutine external_allocatable_double
 
 !----------------------------------------------------------------------
 
@@ -217,10 +217,10 @@ program fortran_test
 
   call init_fruit
 
-  call local_allocatable_int
-  call local_allocatable_int_3d
-  call local_static_int
-  call local_allocatable_double
+  call external_allocatable_int
+  call external_allocatable_int_3d
+  call external_static_int
+  call external_allocatable_double
 
   call fruit_summary
   call fruit_finalize
