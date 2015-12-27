@@ -16,37 +16,38 @@ class SidreView(unittest.TestCase):
 
 #------------------------------------------------------------------------------
 
-    def XXtest_create_views(self):
+    def test_create_views(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
-
+        self.assertEqual(type(root), sidre.DataGroup)
+        
         dv_0 = root.createViewAndAllocate("field0", sidre.INT_ID, 1)
         dv_1 = root.createViewAndAllocate("field1", sidre.INT_ID, 1)
 
         db_0 = dv_0.getBuffer()
         db_1 = dv_1.getBuffer()
 
-        self.assertTrue(db_0.getIndex(), 0)
-        self.assertTrue(db_1.getIndex(), 1)
+        self.assertEqual(db_0.getIndex(), 0)
+        self.assertEqual(db_1.getIndex(), 1)
         del ds
 
 #------------------------------------------------------------------------------
 
-    def XXtest_int_buffer_from_view(self):
+    def test_int_buffer_from_view(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
-        root.createViewAndAllocate("u0", sidre.INT_ID, 10)
+        dv = root.createViewAndAllocate("u0", sidre.INT_ID, 10)
 
-        self.assertTrue(dv.getTypeID(), sidre.INT_ID)
+        self.assertEqual(dv.getTypeID(), sidre.INT_ID)
 #        int * data_ptr = dv.getData()
 
 #        foreach i range(10):
 #            data_ptr[i] = i*i
 
-        dv.print_()
+#        dv.print_()
 
-        self.assertTrue(dv.getTotalBytes(), sizeof(int) * 10)
+#        self.assertEqual(dv.getTotalBytes(), sizeof(int) * 10)
         del ds
 
 #------------------------------------------------------------------------------
@@ -63,7 +64,7 @@ class SidreView(unittest.TestCase):
 
         dv.print_()
 
-        self.assertTrue(dv.getTotalBytes(), sizeof(int) * 10)
+        self.assertEqual(dv.getTotalBytes(), sizeof(int) * 10)
         del ds
 
 #------------------------------------------------------------------------------
@@ -82,11 +83,11 @@ class SidreView(unittest.TestCase):
 
         dbuff.print_()
 
-        self.assertTrue(dbuff.getTotalBytes(), sizeof(int) * 10)
+        self.assertEqual(dbuff.getTotalBytes(), sizeof(int) * 10)
 
         dv_e = root.createView("even",dbuff)
         dv_o = root.createView("odd",dbuff)
-        self.assertTrue(dbuff.getNumViews(), 2)
+        self.assertEqual(dbuff.getNumViews(), 2)
 
         # c_int(num_elems, offset [in bytes], stride [in bytes])
         dv_e.apply(sidre.INT_ID, 5, 0, 8)
@@ -108,8 +109,8 @@ class SidreView(unittest.TestCase):
 #            << " om:" << v_o_ptr[i]  % 2
 #            << std::endl
 #
-#            self.assertTrue(v_e_ptr[i] % 2, 0)
-#            self.assertTrue(v_o_ptr[i] % 2, 1)
+#            self.assertEqual(v_e_ptr[i] % 2, 0)
+#            self.assertEqual(v_o_ptr[i] % 2, 1)
 
         # Check Conduit mem-map struct case:
 #        int_array dv_e_ptr = dv_e.getData()
@@ -122,13 +123,13 @@ class SidreView(unittest.TestCase):
 #            << " om:" << dv_o_ptr[i]  % 2
 #            << std::endl
 #
-#            self.assertTrue(dv_e_ptr[i] % 2, 0)
-#            self.assertTrue(dv_o_ptr[i] % 2, 1)
+#            self.assertEqual(dv_e_ptr[i] % 2, 0)
+#            self.assertEqual(dv_o_ptr[i] % 2, 1)
 
         # Run similar test to above with different view apply method
         dv_e1 = root.createView("even1",dbuff)
         dv_o1 = root.createView("odd1",dbuff)
-        self.assertTrue(dbuff.getNumViews(), 4)
+        self.assertEqual(dbuff.getNumViews(), 4)
 
         # (num_elems, offset [in # elems], stride [in # elems])
         dv_e1.apply(sidre.INT_ID, 5,0,2)
@@ -150,8 +151,8 @@ class SidreView(unittest.TestCase):
 #            << " om1:" << v_o1_ptr[i]  % 2
 #            << std::endl
 #
-#            self.assertTrue(v_e1_ptr[i], v_e_ptr[i])
-#            self.assertTrue(v_o1_ptr[i], v_o_ptr[i])
+#            self.assertEqual(v_e1_ptr[i], v_e_ptr[i])
+#            self.assertEqual(v_o1_ptr[i], v_o_ptr[i])
 
         # Check Conduit mem-map struct case:
 #        int_array dv_e1_ptr = dv_e1.getData()
@@ -164,8 +165,8 @@ class SidreView(unittest.TestCase):
 #            << " om1:" << dv_o1_ptr[i]  % 2
 #            << std::endl
 #
-#            self.assertTrue(dv_e1_ptr[i], dv_e_ptr[i])
-#            self.assertTrue(dv_o1_ptr[i], dv_o_ptr[i])
+#            self.assertEqual(dv_e1_ptr[i], dv_e_ptr[i])
+#            self.assertEqual(dv_o1_ptr[i], dv_o_ptr[i])
 
         ds.print_()
         del ds
@@ -189,7 +190,7 @@ class SidreView(unittest.TestCase):
 
         dbuff.print_()
 
-        self.assertTrue(dbuff.getNumElements(), 4 * depth_nelems)
+        self.assertEqual(dbuff.getNumElements(), 4 * depth_nelems)
 
         # create 4 "depth" views and apply offsets into buffer
         views      = [ None, None, None, None ]
@@ -203,7 +204,7 @@ class SidreView(unittest.TestCase):
 #            views[id] = root.createView(view_names[id], dbuff).apply(sidre.INT_ID, 
 #                                                                     depth_nelems, 
 #                                                                     id*depth_nelems)
-        self.assertTrue(dbuff.getNumViews(), 4)
+        self.assertEqual(dbuff.getNumViews(), 4)
 
         # print depth views...
         for view in views:
@@ -213,7 +214,7 @@ class SidreView(unittest.TestCase):
 #        for view in views:
 #            int* dv_ptr = view.getData()
 #            for (size_t i = 0 i < depth_nelems ++i):
-#                self.assertTrue(dv_ptr[i], id)
+#                self.assertEqual(dv_ptr[i], id)
 
         ds.print_()
         del ds
@@ -232,11 +233,11 @@ class SidreView(unittest.TestCase):
         elem_count += field0.getNumElements()
         field1 = root.createView("field1", sidre.INT_ID, field_nelems)
         elem_count += field1.getNumElements()
-        self.assertTrue(elem_count, 2 * field_nelems)
+        self.assertEqual(elem_count, 2 * field_nelems)
 
         # create buffer to hold data for fields and allocate
         dbuff = ds.createBuffer().allocate(sidre.INT_ID, elem_count)
-        self.assertTrue(dbuff.getNumElements(), elem_count)
+        self.assertEqual(dbuff.getNumElements(), elem_count)
 
         # Initilize buffer data for testing below.
 #        int* b_ptr = dbuff.getData()
@@ -248,7 +249,7 @@ class SidreView(unittest.TestCase):
         # attach field views to buffer and apply offsets into buffer
         field0.attachBuffer(dbuff).apply(field_nelems, 0 * field_nelems)
         field1.attachBuffer(dbuff).apply(field_nelems, 1 * field_nelems)
-        self.assertTrue(dbuff.getNumViews(), 2)
+        self.assertEqual(dbuff.getNumViews(), 2)
 
         # print field views...
         field0.print_()
@@ -257,10 +258,10 @@ class SidreView(unittest.TestCase):
         # check values in field views...
 #        int* f0_ptr = field0.getData()
 #        for (size_t i = 0 i < field_nelems ++i):
-#            self.assertTrue(f0_ptr[i], 0)
+#            self.assertEqual(f0_ptr[i], 0)
 #        int* f1_ptr = field1.getData()
 #        for (size_t i = 0 i < field_nelems ++i):
-#            self.assertTrue(f1_ptr[i], 1)
+#            self.assertEqual(f1_ptr[i], 1)
 
         ds.print_()
         del ds
@@ -328,15 +329,15 @@ class SidreView(unittest.TestCase):
         #
 #        int * r0_ptr = r0_old.getData()
 #        for(int i=0  i<10  i++):
-#            self.assertTrue(r0_ptr[i], 1)
+#            self.assertEqual(r0_ptr[i], 1)
 #            # check pointer relation
-#            self.assertTrue(&r0_ptr[i], &data_ptr[i])
+#            self.assertEqual(&r0_ptr[i], &data_ptr[i])
 
 #        int * r3_ptr = r3_old.getData()
 #        for(int i=0  i<10  i++):
-#            self.assertTrue(r3_ptr[i], 4)
+#            self.assertEqual(r3_ptr[i], 4)
 #            # check pointer relation
-#            self.assertTrue(&r3_ptr[i], &data_ptr[i+30])
+#            self.assertEqual(&r3_ptr[i], &data_ptr[i+30])
 
         # create a group to hold the "old" or data we want to copy into
         r_new = root.createGroup("r_new")
@@ -386,10 +387,10 @@ class SidreView(unittest.TestCase):
 #        int * r2_new_ptr = r2_new.getData()
 
 #        for(int i=0  i<10  i++):
-#            self.assertTrue(r2_new_ptr[i], 3)
+#            self.assertEqual(r2_new_ptr[i], 3)
 
 #        for(int i=10  i<12  i++):
-#            self.assertTrue(r2_new_ptr[i], 0)     # assumes zero-ed alloc
+#            self.assertEqual(r2_new_ptr[i], 0)     # assumes zero-ed alloc
 
         # update the other views
         r0_new.getNode().update(r0_old.getNode())
@@ -419,8 +420,8 @@ class SidreView(unittest.TestCase):
 #            a1_ptr[i] =  5.0
 #            a2_ptr[i] = -5
 
-        self.assertTrue(a1.getTotalBytes(), sizeof(float)*5)
-        self.assertTrue(a2.getTotalBytes(), sizeof(int)*5)
+        self.assertEqual(a1.getTotalBytes(), sizeof(float)*5)
+        self.assertEqual(a2.getTotalBytes(), sizeof(int)*5)
 
 
         a1.reallocate(sidre.FLOAT_ID, 10)
@@ -430,8 +431,8 @@ class SidreView(unittest.TestCase):
         a2_ptr = a2.getData()
 
 #        for(int i=0  i<5  i++):
-#            self.assertTrue(a1_ptr[i],5.0)
-#            self.assertTrue(a2_ptr[i],-5)
+#            self.assertEqual(a1_ptr[i],5.0)
+#            self.assertEqual(a2_ptr[i],-5)
 
 #        for(int i=5  i<10  i++):
 #            a1_ptr[i] = 10.0
@@ -440,8 +441,8 @@ class SidreView(unittest.TestCase):
 #        for(int i=10  i<15  i++):
 #            a2_ptr[i] = -15
 
-        self.assertTrue(a1.getTotalBytes(), sizeof(float)*10)
-        self.assertTrue(a2.getTotalBytes(), sizeof(int)*15)
+        self.assertEqual(a1.getTotalBytes(), sizeof(float)*10)
+        self.assertEqual(a2.getTotalBytes(), sizeof(int)*15)
 
         # Try some errors
         # XXX  a1.reallocate(sidre.INT_ID(20))
@@ -465,7 +466,7 @@ class SidreView(unittest.TestCase):
         opq_view = root.createView("my_opaque", src_ptr)
 
         # we have a buffer because an "external" view currently uses one
-        self.assertTrue(ds.getNumBuffers(), 1)
+        self.assertEqual(ds.getNumBuffers(), 1)
 
         self.assertTrue(opq_view.isExternal())
         self.assertTrue(not opq_view.isApplied())
@@ -474,8 +475,8 @@ class SidreView(unittest.TestCase):
 #        void * opq_ptr = opq_view.getVoidPtr()
 
 #        int * out_data = (int *)opq_ptr
-        self.assertTrue(opq_ptr,src_ptr)
-        self.assertTrue(out_data[0],42)
+        self.assertEqual(opq_ptr,src_ptr)
+        self.assertEqual(out_data[0],42)
 
         ds.print_()
         del ds
