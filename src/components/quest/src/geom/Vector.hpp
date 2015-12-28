@@ -33,6 +33,46 @@
 
 namespace quest {
 
+
+// Forward declare the templated classes and operator functions
+template<typename T, int DIM> class Vector;
+
+/*!
+ * \brief Forward declaration for vector addition
+ */
+template<typename T, int DIM> Vector<T,DIM> operator+(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+
+/*!
+ * \brief Forward declaration for vector subtraction
+ */
+template<typename T, int DIM> Vector<T,DIM> operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+
+/*!
+ * \brief Forward declaration for vector (unary) negation
+ */
+template<typename T, int DIM> Vector<T,DIM> operator-(const Vector<T, DIM> & vec1, const Vector<T, DIM> & vec2);
+
+/*!
+ * \brief Forward declaration for scalar multiplication of vector; Scalar on rhs.
+ */
+template<typename T, int DIM> Vector<T,DIM> operator*(const Vector<T, DIM> & vec, const T scalar);
+
+/*!
+ * \brief Forward declaration for scalar multiplication of vector; Scalar on lhs.
+ */
+template<typename T, int DIM> Vector<T,DIM> operator*(const T scalar, const Vector<T, DIM> & vec);
+
+/*!
+ * \brief Forward declaration for scalar multiplication of vector; Scalar on rhs.
+ */
+template<typename T, int DIM> Vector<T,DIM> operator/(const Vector<T, DIM> & vec, const T scalar);
+
+/*!
+ * \brief Overloaded output operator for vectors
+ */
+template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const Vector<T,DIM> & vec);
+
+
 /*!
  *******************************************************************************
  * \class Vector
@@ -101,32 +141,54 @@ public:
    */
    ~Vector() {}
 
+
+
+   /*!
+    *****************************************************************************
+    * \brief Adds the vector to the Vector instance \f$\vec{u} +=\vec{v}\f$
+    * \param [in] v the vector to add.
+    * \return A reference to the Vector instance after vector addition.
+    *****************************************************************************
+    */
+   Vector< T,DIM >& operator+=( const Vector<T,DIM>& v );
+
+   /*!
+    *****************************************************************************
+    * \brief Adds the vector ot the Vector instance \f$\vec{u} -=\vec{v}\f$
+    * \param [in] v the vector to subtract.
+    * \return A reference to the Vector instance after vector subtraction.
+    *****************************************************************************
+    */
+   Vector< T,DIM >& operator-=( const Vector<T,DIM>& v );
+
   /*!
    *****************************************************************************
-   * \brief Multiplies the scalar with this Vector instance.
+   * \brief Scalar multiplication on the Vector instance.
    * \param [in] scalar the scalar value to multiply with this vector.
-   * \return c the resulting vector after the multiplication.
+   * \return A reference to the vector instance after scalar multiplication.
    *****************************************************************************
    */
-  Vector< T,DIM > operator*(T scalar);
+  Vector< T,DIM>& operator*=(T scalar);
 
   /*!
    *****************************************************************************
-   * \brief Computes the vector sum \f$\vec{r}=\vec{u}+\vec{v}\f$
-   * \param [in] v the vector on the right hand side.
-   * \return r the resulting vector after the sum operation.
+   * \brief Scalar division on the Vector instance.
+   * \param [in] scalar the scalar value to divide with this vector.
+   * \pre scalar != 0
+   * \return A reference to the vector instance after scalar division.
    *****************************************************************************
    */
-  Vector< T,DIM > operator+( const Vector<T,DIM>& v );
+  Vector< T,DIM>& operator/=(T scalar);
 
   /*!
    *****************************************************************************
-   * \brief Computes the vector subtraction \f$\vec{r}=\vec{u}+\vec{v}\f$
-   * \param [in] v the vector on the right hand side.
-   * \return r the resulting vector after the subtraction operation.
+   * \brief Dot product of the Vector instance with another vector v
+   * \param [in] v the other vector in the dot product
+   * \return The dot product of the two vectors.
    *****************************************************************************
    */
-  Vector< T,DIM > operator-( const Vector<T,DIM>& v );
+  T dot(const Vector<T,DIM>& v ) const;
+
 
   /*!
    *****************************************************************************
@@ -145,6 +207,14 @@ public:
    */
   double norm() const;
 
+
+  /*!
+   *****************************************************************************
+   * \brief Component-wise negation of the vector.
+   *****************************************************************************
+   */
+  void negate();
+
   /*!
    *****************************************************************************
    * \brief Normalizes this vector instance.
@@ -153,6 +223,18 @@ public:
    *****************************************************************************
    */
   void normalize();
+
+
+  /*!
+   *****************************************************************************
+   * \brief Simple formatted print of a Vector instance
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   *****************************************************************************
+   */
+  std::ostream& print(std::ostream& os) const;
+
+
 
   /*!
    *****************************************************************************
@@ -177,6 +259,14 @@ public:
   static Vector< T,3 > cross_product( const Vector< T,3 >& u,
                                       const Vector< T,3 >& v );
 
+
+  /*!
+   *****************************************************************************
+   * \brief Creates a unit vector of dimension DIM.
+   * \return A unit vector whose first coordinate is 1 and all others are zero.
+   *****************************************************************************
+   */
+  static Vector unit_vector() { return Vector(1,1);}
 };
 
 /// \name Pre-defined Vector types
@@ -210,44 +300,51 @@ Vector< T,DIM >::Vector( const Point< T,DIM >& A,
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline Vector< T,DIM > Vector< T,DIM >::operator*( T scalar )
+inline Vector< T,DIM >& Vector< T,DIM >::operator*=( T scalar )
 {
-  Vector< T, DIM > result;
-  for( int i=0; i < DIM; ++i ) {
-    result[ i ] = this->m_components[i] * scalar;
-  }
-  return( result );
+    for ( int i=0; i < DIM; ++i )
+        this->m_components[ i ] *= scalar;
+
+    return *this;
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline Vector< T, DIM > Vector< T,DIM >::operator+(const Vector<T,DIM>& v)
+inline Vector< T,DIM >& Vector< T,DIM >::operator/=( T scalar )
 {
-  Vector< T, DIM > result;
+    SLIC_ASSERT(scalar != 0.);
+
+    return operator*=( 1./scalar );
+}
+
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline Vector< T, DIM >& Vector< T,DIM >::operator+=(const Vector<T,DIM>& v)
+{
   for ( int i=0; i < DIM; ++i ) {
-    result[ i ] = this->m_components[ i ] + v[ i ];
+      this->m_components[ i ] +=  v[ i ];
   }
 
-  return( result );
+  return *this;
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline Vector< T, DIM > Vector< T,DIM >::operator-(const Vector<T,DIM>& v)
+inline Vector< T, DIM >& Vector< T,DIM >::operator-=(const Vector<T,DIM>& v)
 {
-  Vector< T, DIM > result;
   for ( int i=0; i < DIM; ++i ) {
-    result[ i ] = this->m_components[ i ] - v[ i ];
+      this->m_components[ i ] -= v[ i ];
   }
 
-  return( result );
+  return *this;
 }
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
 inline double Vector< T, DIM >::squared_norm() const
 {
-   return dot_product( *this, *this);
+   return this->dot(*this);
 }
 
 //------------------------------------------------------------------------------
@@ -261,21 +358,47 @@ inline double Vector< T, DIM >::norm() const
 template < typename T, int DIM >
 inline void Vector< T, DIM >::normalize()
 {
-  static const double EPS  = 1.0e-100;
+  static const double EPS  = 1.0e-50;
 
-  const double length = this->norm();
-  if(length <= EPS)
+  const double len_sq = this->squared_norm();
+  if(len_sq >= EPS)
   {
-      // normalizing the zero vector gives the unit vector
-      this->m_components[ 0 ] = static_cast<T>(1.);
-      std::fill( this->m_components+1, this->m_components+DIM, T());
+    operator/=( std::sqrt(len_sq) );
   }
   else
   {
-    for ( int i=0; i < DIM; ++i )
-      this->m_components[ i ] /= length;
+    *this = Vector::unit_vector();
   }
 }
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline void Vector< T, DIM >::negate()
+{
+  for ( int i=0; i < DIM; ++i )
+    this->m_components[ i ] = -this->m_components[ i ];
+}
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+inline T Vector< T,DIM >::dot(const Vector<T,DIM>& vec) const
+{
+    return dot_product(*this,vec);
+}
+
+
+//------------------------------------------------------------------------------
+template < typename T, int DIM >
+std::ostream& Vector< T, DIM >::print(std::ostream& os) const
+{
+    os <<"[";
+    for(int dim=0; dim < DIM -1; ++ dim)
+        os << this->m_components[dim] << ",";
+    os << this->m_components[DIM-1] << "]";
+
+    return os;
+}
+
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
@@ -299,10 +422,81 @@ inline Vector< T,3 > Vector< T,DIM >::cross_product(
 {
   Vector< T,3 > c;
   c[ 0 ] = math::determinant( u[1],u[2], v[1],v[2] );
-  c[ 1 ] = math::determinant( u[0],u[2], v[0],v[2] ) * ( -1.0f );
+  c[ 1 ] = math::determinant( u[0],u[2], v[0],v[2] ) * ( -1.0 );
   c[ 2 ] = math::determinant( u[0],u[1], v[0],v[1] );
   return( c );
 }
+
+///  Free functions involving vectors
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+inline Vector<T,DIM> operator*(const Vector<T,DIM>& vec, const T scalar)
+{
+  Vector< T, DIM > result(vec);
+  result *=scalar;
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+inline Vector<T,DIM> operator*(const T scalar, const Vector<T,DIM>& vec)
+{
+  Vector< T, DIM > result(vec);
+  result *=scalar;
+
+  return result;
+}
+
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+inline Vector<T,DIM> operator+(const Vector<T,DIM>& vec1, const Vector<T,DIM>& vec2)
+{
+  Vector< T, DIM > result(vec1);
+  result +=vec2;
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+inline Vector<T,DIM> operator/(const Vector<T,DIM>& vec, const T scalar)
+{
+  Vector< T, DIM > result(vec);
+  result /=scalar;
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+inline Vector<T,DIM> operator-(const Vector<T,DIM>& vec1, const Vector<T,DIM>& vec2)
+{
+  Vector< T, DIM > result(vec1);
+  result -=vec2;
+
+  return result;
+}
+
+//------------------------------------------------------------------------------
+template<typename T, int DIM>
+inline Vector<T,DIM> operator-(const Vector<T,DIM>& vec1)
+{
+  Vector< T, DIM > result(vec1);
+  result.negate();
+
+  return result;
+}
+
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Vector<T,DIM> & vec)
+{
+    vec.print(os);
+    return os;
+}
+
 
 
 }

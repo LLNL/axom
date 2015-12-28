@@ -19,7 +19,6 @@ TEST( quest_vector, vector_constructors)
 {
   static const int DIM = 5;
   typedef double CoordType;
-  typedef quest::Point<CoordType, DIM> QPoint;
   typedef quest::Vector<CoordType, DIM> QVec;
 
   QVec vec1;
@@ -137,8 +136,100 @@ TEST( quest_vector, vector_norm)
   EXPECT_DOUBLE_EQ(vec.norm(), 5.0 );
 }
 
-///// Still to test
-///     arithmetic operators, outer and inner product
+//------------------------------------------------------------------------------
+TEST( quest_vector, vector_arithmetic)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef quest::Vector<CoordType, DIM> QVec;
+
+
+  QPoint p1 = QPoint::make_point(3,0, 1.2);
+  QPoint p2 = QPoint::make_point(0,4, 1.2);
+  QPoint pSum = QPoint::make_point(3,4, 2.4);
+  QPoint pDiff = QPoint::make_point(-3,4, 0);
+
+  CoordType scalar = 5.3;
+  QPoint pScalar = QPoint::make_point(scalar * 3, scalar * 4, scalar * 2.4);
+
+  QVec v1(p1);
+  QVec v2(p2);
+
+  // testing vector addition and subtraction
+  EXPECT_EQ( QVec(p1,p2), v2-v1);
+  EXPECT_EQ( QVec(pDiff), v2-v1);
+  EXPECT_EQ( QVec(pSum), v1+v2);
+  EXPECT_EQ( v1+v2, v2+v1);
+
+  QVec vSum(v1);
+  vSum += v2;
+  EXPECT_EQ(vSum, QVec(pSum));
+
+  QVec vDiff(v2);
+  vDiff -= v1;
+  EXPECT_EQ(vDiff, QVec(pDiff));
+
+
+  // Testing scalar multiplication
+  EXPECT_EQ( QVec(pScalar), QVec(pSum) * scalar  );
+  EXPECT_EQ( QVec(pScalar), scalar * QVec(pSum) );
+  EXPECT_EQ( QVec(pScalar), (v1+v2) * scalar);
+
+  // Testing unary negation
+  EXPECT_EQ( -v1, QVec(v1, QPoint::zero() ) );
+
+}
+
+
+
+//------------------------------------------------------------------------------
+TEST( quest_vector, vector_inner_product)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef quest::Vector<CoordType, DIM> QVec;
+
+
+  QPoint p1 = QPoint::make_point(3,0, 1.2);
+  QPoint p2 = QPoint::make_point(0,4, 1.2);
+
+  CoordType expDot = 1.2 * 1.2;
+
+  QVec v1(p1);
+  QVec v2(p2);
+  EXPECT_EQ( expDot, v1.dot(v2));
+  EXPECT_EQ( v2.dot(v1), v1.dot(v2));
+  EXPECT_EQ( v1.dot(v2), QVec::dot_product(v1,v2));
+  EXPECT_EQ( QVec::dot_product(v1,v2), QVec::dot_product(v2,v1));
+
+  QVec zer;
+  EXPECT_EQ( 0., zer.dot(zer));
+}
+
+//------------------------------------------------------------------------------
+TEST( quest_vector, vector_outer_product)
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef quest::Point<CoordType, DIM> QPoint;
+  typedef quest::Vector<CoordType, DIM> QVec;
+
+
+  QPoint p1 = QPoint::make_point(3,0);
+  QPoint p2 = QPoint::make_point(0,4);
+
+  QVec v1(p1);
+  QVec v2(p2);
+
+  QVec vRes;
+  vRes[2] = 12.;
+
+  EXPECT_EQ(QVec::cross_product(v1,v2), vRes);
+  EXPECT_EQ(QVec::cross_product(v2,v1), -vRes);
+  EXPECT_EQ(QVec::cross_product(v1,v2), -QVec::cross_product(v2,v1));
+}
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
