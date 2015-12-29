@@ -28,6 +28,7 @@
 #include <limits>
 
 #include "quest/Point.hpp"
+#include "quest/Vector.hpp"
 
 
 namespace quest
@@ -76,6 +77,7 @@ class BoundingBox
 {
 public:
     typedef Point<CoordType, DIM> PointType;
+    typedef Vector<CoordType, DIM> VectorType;
 public:
 
   /*!
@@ -153,6 +155,13 @@ public:
    */
   const PointType& getMax() const { return m_max; };
 
+  /*!
+   *****************************************************************************
+   * \brief Returns a vector from the min to the max points of the bounding box
+   * \return Vector from min point to max point of bounding box.
+   *****************************************************************************
+   */
+  VectorType range() const { return VectorType(getMin(), getMax()); };
 
   /*!
    *****************************************************************************
@@ -326,7 +335,7 @@ namespace quest{
     template < typename T, int DIM >
     std::ostream& BoundingBox< T, DIM >::print(std::ostream& os) const
     {
-        os <<"{ min:"<<m_min <<"; max:"<< m_max <<" }";
+        os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
         return os;
     }
 

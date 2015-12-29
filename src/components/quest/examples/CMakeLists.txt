@@ -11,3 +11,4 @@
 
 make_executable( EXECUTABLE_SOURCE quest_driver.cpp DEPENDS_ON quest slic)
 make_executable( EXECUTABLE_NAME quest_sphere EXECUTABLE_SOURCE sphere.cpp DEPENDS_ON quest slic )
+make_executable( EXECUTABLE_NAME quest_octree_driver EXECUTABLE_SOURCE octree_driver.cpp DEPENDS_ON quest slic slam)
