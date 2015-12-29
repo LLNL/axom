@@ -26,6 +26,20 @@ if(PYTHON_EXECUTABLE)
         message(STATUS "Unable to run shroud: ${MISSING_MODULES}")
         set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
     endif()
+
+####
+    # Run the develop command.
+    # The Python files are not installed directly, only an egg.
+    # So any changes to the source does not require a new install.
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} setup.py
+          develop
+          --install-dir ${CMAKE_Python_MODULE_DIRECTORY}
+          --script-dir  ${EXECUTABLE_OUTPUT_PATH}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+         OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/setup.log
+    )
+
 else()
     message(STATUS "Unable to run shroud: Python not found")
     set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
@@ -79,3 +93,31 @@ endif()
 # exports for all of our targets
 ################################
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION lib/cmake)
+
+
+################################
+
+#install(CODE "execute_process(COMMAND python setup.py install -f
+#--prefix=${CMAKE_INSTALL_PREFIX} WORKING_DIRECTORY
+#../source/libmoleculizer-1.1.2/python-src/language_parser)")
+
+#https://mail.python.org/pipermail/distutils-sig/2013-August/022184.html
+
+#https://bloerg.net/2012/11/10/cmake-and-distutils.html
+#if (PYTHON)
+#    set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
+#    set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
+#    set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/module/__init__.py")
+#    set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
+#
+#    configure_file(${SETUP_PY_IN} ${SETUP_PY})
+#
+#    add_custom_command(OUTPUT ${OUTPUT}
+#                       COMMAND ${PYTHON} ${SETUP_PY} build
+#                       COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
+#                       DEPENDS ${DEPS})
+#
+#    add_custom_target(target ALL DEPENDS ${OUTPUT})
+#
+#    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)")
+#endif()

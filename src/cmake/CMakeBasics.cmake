@@ -118,6 +118,15 @@ include (DartConfig)
      "Directory where all Fortran modules will go in the build tree"
      )
 
+ ## Set the Python module directory
+ set(CMAKE_Python_MODULE_DIRECTORY
+     ${PROJECT_BINARY_DIR}/lib/python
+     CACHE PATH
+     "Directory where all Python modules will go in the build tree"
+     )
+file(MAKE_DIRECTORY ${CMAKE_Python_MODULE_DIRECTORY})
+set(ENV{PYTHONPATH} ${CMAKE_Python_MODULE_DIRECTORY})
+
 ## Mark as advanced
 mark_as_advanced(
      LIBRARY_OUTPUT_PATH

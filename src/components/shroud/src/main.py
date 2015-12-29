@@ -978,7 +978,7 @@ class Namify(object):
             fmt_func.F_result = options.F_result
 
 
-if __name__ == '__main__':
+def main():
 
     appname = 'modulator3'
     appver = '0.1'
@@ -1094,3 +1094,6 @@ if __name__ == '__main__':
 #    sys.stderr.write("Some useful message")  # example error message
     sys.exit(0)  # set status for errors
 
+
+if __name__ == '__main__':
+    main()
