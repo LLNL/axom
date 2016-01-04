@@ -80,6 +80,7 @@ enum DataTypeId
     
     FLOAT32_ID   = SIDRE_FLOAT32_ID,
     FLOAT64_ID   = SIDRE_FLOAT64_ID,
+
     CHAR8_STR_ID = SIDRE_CHAR8_STR_ID,
     
     INT_ID = SIDRE_INT_ID,
@@ -91,15 +92,37 @@ enum DataTypeId
 };
 
 /*!
- * \brief Sidre Type traits to assist in converting compiler types to the appropriate sidre enum.
+ * \brief Typedefs for sidre types.
+ */
+typedef conduit_int8 sidre_int8;
+typedef conduit_int16 sidre_int16;
+typedef conduit_int32 sidre_int32;
+typedef conduit_int64 sidre_int64;
+
+typedef conduit_uint8 sidre_uint8;
+typedef conduit_uint16 sidre_uint16;
+typedef conduit_uint32 sidre_uint32;
+typedef conduit_uint64 sidre_uint64;
+
+typedef conduit_float32 sidre_float32;
+typedef conduit_float64 sidre_float64;
+
+/*!
+ * \brief Type traits to assist in converting compiler types to the appropriate data type ids.
  */
 template<typename T> struct SidreTT {};
-template<> struct SidreTT<int> {  static inline DataTypeId id() { return INT_ID; }; };
-template<> struct SidreTT<unsigned int> {  static inline DataTypeId id() { return UINT_ID; }; };
-template<> struct SidreTT<long> {  static inline DataTypeId id() { return LONG_ID; }; };
-template<> struct SidreTT<unsigned long> {  static inline DataTypeId id() { return ULONG_ID; }; };
-template<> struct SidreTT<float> {  static inline DataTypeId id() { return FLOAT_ID; }; };
-template<> struct SidreTT<double> {  static inline DataTypeId id() { return DOUBLE_ID; }; };
+template<> struct SidreTT<sidre_int8>  {  static inline DataTypeId id() { return INT8_ID; }; };
+template<> struct SidreTT<sidre_int16> {  static inline DataTypeId id() { return INT16_ID; }; };
+template<> struct SidreTT<sidre_int32> {  static inline DataTypeId id() { return INT32_ID; }; };
+template<> struct SidreTT<sidre_int64> {  static inline DataTypeId id() { return INT64_ID; }; };
+
+template<> struct SidreTT<sidre_uint8>  {  static inline DataTypeId id() { return UINT8_ID; }; };
+template<> struct SidreTT<sidre_uint16> {  static inline DataTypeId id() { return UINT16_ID; }; };
+template<> struct SidreTT<sidre_uint32> {  static inline DataTypeId id() { return UINT32_ID; }; };
+template<> struct SidreTT<sidre_uint64> {  static inline DataTypeId id() { return UINT64_ID; }; };
+
+template<> struct SidreTT<sidre_float32> {  static inline DataTypeId id() { return FLOAT32_ID; }; };
+template<> struct SidreTT<sidre_float64> {  static inline DataTypeId id() { return FLOAT64_ID; }; };
 
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
