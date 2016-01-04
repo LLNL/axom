@@ -171,7 +171,7 @@ void logErrorMessage( const std::string& message,
   std::ostringstream oss;
   oss << message << slic::stacktrace();
 
-  slic::logMessage( message::Fatal, message, fileName, line );
+  slic::logMessage( message::Fatal, oss.str(), fileName, line );
   if ( shouldAbort ) {
     asctoolkit::utilities::processAbort();
   }
