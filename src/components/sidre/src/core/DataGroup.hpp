@@ -91,8 +91,8 @@ class DataStore;
  *      DataGroup.
  *    - A DataGroup object maintains a pointer to its parent DataGroup.
  *    - A DataGroup object can be moved or copied to another DataGroup.
- *    - DataView objects are (only) created by DataGroup objects. The DataGroup
- *      that creates a DataView owns it.
+ *    - DataGroup objects can create DataView objects within them. The 
+ *      DataGroup that creates a DataView owns it.
  *    - A DataView object has a unique name (string) within the DataGroup
  *      that owns it.
  *    - A DataView object can be moved or copied to another DataGroup.
