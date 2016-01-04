@@ -40,10 +40,13 @@ namespace sidre
 /*
  *************************************************************************
  *
- * Allocate data for view, previously declared.
+ * Allocate data for view, previously described.
  *
  *************************************************************************
  */
+//
+// RDH -- What happens here if the buffer is already allocated?
+//
 DataView * DataView::allocate()
 {
   SLIC_ASSERT_MSG( allocateIsValid(), 
@@ -81,7 +84,7 @@ DataView * DataView::allocate( TypeID type, SidreLength num_elems)
 {
   SLIC_ASSERT_MSG( allocateIsValid(), 
                    "View state does not allow data allocation");
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must allocate number of elements >= 0");
+  SLIC_ASSERT(num_elems >= 0);
 
   if ( allocateIsValid() && num_elems >= 0 )
   {
@@ -137,6 +140,14 @@ DataView * DataView::allocate(const Schema& schema)
   return this;
 }
 
+//
+// RDH -- Reallocation methods should check if the buffer has been declared. 
+//        If so, then the view type should be checked to make sure it matches
+//        the buffer type. 
+//        If not, then it should be a valid operation to declare the buffer
+//        here amd allocate it. 
+//
+
 /*
  *************************************************************************
  *
@@ -148,7 +159,7 @@ DataView * DataView::reallocate(SidreLength num_elems)
 {
   SLIC_ASSERT_MSG( allocateIsValid(), 
                    "View state does not allow data allocation");
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must re-allocate number of elements >= 0");
+  SLIC_ASSERT(num_elems >= 0);
 
   if ( allocateIsValid() && num_elems >= 0 )
   {
@@ -162,11 +173,6 @@ DataView * DataView::reallocate(SidreLength num_elems)
   return this;
 }
 
-//
-// RDH -- Reallocation should check if the buffer has been declared. If not,
-//        then is should be a valid operation to declare it here amd 
-//        allocate it. 
-//
 /*
  *************************************************************************
  *
@@ -267,7 +273,7 @@ DataView * DataView::attachBuffer(DataBuffer * buff)
 /*
  *************************************************************************
  *
- * Apply a previously declared data description to data held in the buffer.
+ * Apply data description to data.
  *
  *************************************************************************
  */
@@ -290,6 +296,10 @@ DataView * DataView::apply()
       { 
         TypeID type = static_cast<TypeID>(m_schema.dtype().id());
         SidreLength num_elems = m_schema.dtype().number_of_elements();
+//
+// RDH -- Why is the buffer declared here? It only holds the pointer to 
+//        the data and cannot do anything with it.
+//
         m_data_buffer->declare(type, num_elems);
       }
         
@@ -300,6 +310,11 @@ DataView * DataView::apply()
   return this;
 }
 
+
+//
+// RDH -- Apply methods need to check that buffer is allocated if view
+//        has one.
+//
 /*
  *************************************************************************
  *
@@ -317,8 +332,8 @@ DataView * DataView::apply(SidreLength num_elems,
                   "View state does not allow apply operation");
   SLIC_ASSERT_MSG( m_data_buffer != ATK_NULLPTR,
                   "View needs buffer to get type information");
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must give number of elements >= 0");
-  SLIC_ASSERT_MSG(offset >= 0, "Must give offset >= 0");
+  SLIC_ASSERT(num_elems >= 0);
+  SLIC_ASSERT(offset >= 0);
 
   if ( applyIsValid() && 
        (m_state != EXTERNAL || !m_schema.dtype().is_empty()) &&
@@ -354,8 +369,8 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must give number of elements >= 0");
-  SLIC_ASSERT_MSG(offset >= 0, "Must give offset >= 0");
+  SLIC_ASSERT(num_elems >= 0);
+  SLIC_ASSERT(offset >= 0);
 
   if ( applyIsValid() &&
        num_elems >= 0 && offset >= 0)
@@ -385,8 +400,8 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 {
   SLIC_ASSERT_MSG( applyIsValid(),
                   "View state does not allow apply operation");
-  SLIC_ASSERT_MSG(ndims >= 1, "Must give number of dimensions >= 0");
-  SLIC_ASSERT_MSG(shape != ATK_NULLPTR, "Pointer to shape cannot be null");
+  SLIC_ASSERT(ndims >= 1);
+  SLIC_ASSERT(shape != ATK_NULLPTR);
 
   if ( applyIsValid() && ndims >= 0 && shape != ATK_NULLPTR)
   {
@@ -450,68 +465,6 @@ DataView * DataView::apply(const Schema& schema)
   return this;
 }
 
-int DataView::getNumDimensions() const
-{
-  if (m_shape == ATK_NULLPTR)
-  {
-    return 1;
-  }
-  else 
-  {
-    return m_shape->size();
-  }
-}
-
-int DataView::getShape(int ndims, SidreLength * shape) const
-{
-  if (m_shape == ATK_NULLPTR)
-  {
-    if (ndims > 0)
-    {
-      shape[0] = getNumElements();
-      return 1;
-    }
-    else
-    {
-      return -1;
-    }
-  }
-  else 
-  {
-      if (static_cast<unsigned>(ndims) < m_shape->size())
-    {
-      return -1;
-    }
-    else
-    {
-#if 0
-      for(std::vector<SidreLength>::iterator it = v.begin(); it != v.end(); ++it)
-      {
-          *shape++ = it.
-      }
-#else
-      for(std::vector<SidreLength>::size_type i = 0; i != m_shape->size(); i++)
-      {
-        shape[i] = (*m_shape)[i];
-      }
-#endif
-    }
-    return m_shape->size();
-  }
-}
-
-/*
- *************************************************************************
- *
- * Print JSON description of data view to stdout.
- *
- *************************************************************************
- */
-void DataView::print() const
-{
-  print(std::cout);
-}
-
 /*
  *************************************************************************
  *
@@ -547,6 +500,63 @@ DataView * DataView::setExternalDataPtr(void * external_ptr)
   }
 
   return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return number of dimensions and fill in shape information.
+ *
+ *************************************************************************
+ */
+int DataView::getShape(int ndims, SidreLength * shape) const
+{
+  if (m_shape == ATK_NULLPTR)
+  {
+    if (ndims > 0)
+    {
+      shape[0] = getNumElements();
+      return 1;
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  else 
+  {
+    if (static_cast<unsigned>(ndims) < m_shape->size())
+    {
+      return -1;
+    }
+    else
+    {
+#if 0
+      for(std::vector<SidreLength>::iterator it = v.begin(); it != v.end(); ++it)
+      {
+          *shape++ = it.
+      }
+#else
+      for(std::vector<SidreLength>::size_type i = 0; i != m_shape->size(); ++i)
+      {
+        shape[i] = (*m_shape)[i];
+      }
+#endif
+    }
+    return m_shape->size();
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * Print JSON description of data view to stdout.
+ *
+ *************************************************************************
+ */
+void DataView::print() const
+{
+  print(std::cout);
 }
 
 /*
