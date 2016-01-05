@@ -109,27 +109,30 @@ double squared_distance( const Point< T,ndims >& P,
 {
    Vector< T,ndims > ab( S.source(), S.target() );
    Vector< T,ndims > ac( S.source(), P );
-   Vector< T,ndims > bc( S.target(), P );
 
    const T e = Vector< T,ndims >::dot_product( ac, ab );
 
    // outside segment, on the side of a
+   // Testing if closest point is A
    if ( e <= 0.0f ) {
 
-      return Vector< T,ndims >::dot_product( ac, ac );
+      return ac.squared_norm();
 
    }
 
    // outside segment, on the side of b
-   const T f = Vector< T,ndims >::dot_product( ab, ab );
+   // Testing if closest point is B
+   const T f = ab.squared_norm();
    if ( e >= f ) {
 
-      return Vector< T,ndims >::dot_product( bc,bc );
+      Vector< T,ndims > bc( S.target(), P );
+      return bc.squared_norm();
 
    }
 
    // P projects onto the segment
-   const T dist = Vector< T,ndims >::dot_product( ac, ac ) - ( e*e/f );
+   // Otherwise, we are in between A,B, therefore we project inside A,B.
+   const T dist = ac.squared_norm() - ( e*e/f );
    return dist;
 }
 
