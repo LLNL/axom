@@ -9,6 +9,10 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
+/**
+ * \file wrapDataView.h
+ * \brief Shroud generated wrapper for DataView class
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPDATAVIEW_H

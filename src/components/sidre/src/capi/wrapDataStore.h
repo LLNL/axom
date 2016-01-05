@@ -9,6 +9,10 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
+/**
+ * \file wrapDataStore.h
+ * \brief Shroud generated wrapper for DataStore class
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPDATASTORE_H
