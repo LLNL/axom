@@ -3,6 +3,10 @@
 ! blah blah
 ! yada yada
 !
+!>
+!! \file wrapfExClass2.f
+!! \brief Shroud generated wrapper for ExClass2 class
+!<
 module exclass2_mod
     use fstr_mod
     use exclass1_mod, only : exclass1
@@ -250,6 +254,10 @@ contains
     
     ! const int GetNameLength()
     ! function_index=17
+    !>
+    !! \brief helper function for Fortran
+    !!
+    !<
     function exclass2_get_name_length(obj) result(rv)
         use iso_c_binding
         implicit none

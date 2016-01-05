@@ -271,6 +271,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
         "debug": true, 
+        "doxygen": true, 
         "library": "testnames", 
         "namespace": "", 
         "wrap_c": true, 

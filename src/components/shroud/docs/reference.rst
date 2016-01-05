@@ -739,6 +739,23 @@ len_trim
    For a string argument, pass the string address and the result of
    len_trim.
 
+Doxygen
+-------
+
+Used to insert directives for doxygen.
+
+brief
+
+   Brief description.
+
+description
+
+   Full description.
+
+return
+
+   Description of return value.
+
 
 Splicers
 --------

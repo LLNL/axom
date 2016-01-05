@@ -62,7 +62,11 @@
                         "constructor": true
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
-                    "docs": "constructor", 
+                    "doxygen": {
+                        "brief": "constructor", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new", 
                         "F_C_name": "aa_exclass1_new", 
@@ -102,7 +106,11 @@
                         "constructor": true
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
-                    "docs": "constructor", 
+                    "doxygen": {
+                        "brief": "constructor", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new_bufferify", 
                         "F_C_name": "aa_exclass1_new_bufferify", 
@@ -129,6 +137,9 @@
                         "destructor": true
                     }, 
                     "decl": "void delete() +destructor", 
+                    "doxygen": {
+                        "description": "longer description joined with previous line"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_delete", 
                         "F_C_name": "aa_exclass1_delete", 
@@ -161,7 +172,6 @@
                     ], 
                     "attrs": {}, 
                     "decl": "int incrementCount(int incr)", 
-                    "docs": "blah blah", 
                     "fmt": {
                         "C_name": "AA_exclass1_increment_count", 
                         "F_C_name": "aa_exclass1_increment_count", 
@@ -218,7 +228,9 @@
                         "const": true
                     }, 
                     "decl": "int GetNameLength() const", 
-                    "docs": "helper function for Fortran", 
+                    "doxygen": {
+                        "brief": "helper function for Fortran"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_length", 
                         "F_C_name": "aa_exclass1_get_name_length", 
@@ -671,7 +683,9 @@
                     "_function_index": 17, 
                     "args": [], 
                     "attrs": {}, 
-                    "docs": "helper function for Fortran", 
+                    "doxygen": {
+                        "brief": "helper function for Fortran"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass2_get_name_length", 
                         "F_C_name": "aa_exclass2_get_name_length", 
@@ -1826,6 +1840,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
         "debug": true, 
+        "doxygen": true, 
         "library": "UserLibrary", 
         "namespace": "example nested", 
         "wrap_c": true, 

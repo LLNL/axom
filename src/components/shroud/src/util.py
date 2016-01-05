@@ -207,6 +207,42 @@ class WrapperMixin(object):
                     fp.write(subline)
                     fp.write('\n')
 
+    def write_doxygen_file(self, output, fname, node, cls):
+        """ Write a doxygen comment block for a file.
+        """
+        output.append(self.doxygen_begin)
+        output.append(self.doxygen_cont + ' \\file %s' % fname)
+        if cls:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s class'
+                          % node['name'])
+        else:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s library'
+                          % node['options'].library)
+        output.append(self.doxygen_end)
+
+    def write_doxygen(self, output, docs):
+        """Write a doxygen comment block for a function.
+        Uses brief, description, and return from docs.
+        """
+        output.append(self.doxygen_begin)
+        if 'brief' in docs:
+            output.append(self.doxygen_cont + ' \\brief %s' % docs['brief'])
+            output.append(self.doxygen_cont)
+        if 'description' in docs:
+            desc = docs['description']
+            if desc.endswith('\n'):
+                lines = docs['description'].split('\n')
+                lines.pop()  # remove trailing newline
+            else:
+                lines = [desc]
+            for line in lines:
+                output.append(self.doxygen_cont + ' ' + line)
+        if 'return' in docs:
+            output.append(self.doxygen_cont)
+            output.append(self.doxygen_cont + ' \\return %s' % docs['return'])
+        output.append(self.doxygen_end)
 
 
 class Typedef(object):

@@ -94,6 +94,8 @@ class Schema(object):
             wrap_fortran = True,
             wrap_python  = False,
 
+            doxygen = True,       # create doxygen comments
+
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
 
