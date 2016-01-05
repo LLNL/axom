@@ -90,8 +90,6 @@ DataView * DataView::allocate( TypeID type, SidreLength num_elems)
   {
     declare(type, num_elems);
     allocate();
-    m_state = ALLOCATED;
-    apply();
   }
   return this;
 }
@@ -112,8 +110,6 @@ DataView * DataView::allocate(const DataType& dtype)
   {
     declare(dtype);
     allocate();
-    m_state = ALLOCATED;
-    apply();
   }
   return this;
 }
@@ -134,8 +130,6 @@ DataView * DataView::allocate(const Schema& schema)
   {
     declare(schema);
     allocate();
-    m_state = ALLOCATED;
-    apply();
   }
   return this;
 }
