@@ -68,9 +68,9 @@ enum OrientedSide {
  * </ul>
  *******************************************************************************
  */
-template < typename T, int NDIMS >
+template < typename T >
 inline
-int orientation( const Point< T,NDIMS >& p, const Triangle< T,NDIMS >& tri )
+int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
 {
 
    double det = math::determinant( tri.A()[0], tri.A()[1], tri.A()[2], 1.0,
