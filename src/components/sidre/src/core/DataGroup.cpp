@@ -56,7 +56,7 @@ DataView * DataGroup::createViewAndAllocate( const std::string& name,
 {
   SLIC_ASSERT( !name.empty() );
   SLIC_ASSERT_MSG( hasView(name) == false, "name == " << name );
-  SLIC_ASSERT_MSG(num_elems >= 0, "Must define view with number of elems >=0 ");
+  SLIC_ASSERT(num_elems >= 0);
 
   if ( name.empty() || hasView(name) || num_elems < 0 ) 
   {
@@ -353,7 +353,10 @@ void DataGroup::destroyViewAndData( const std::string& name )
   DataView * view = detachView(name);
   if ( view != ATK_NULLPTR ) 
   { 
-    // RDH TODO -- there should be a better way?
+//
+// RDH -- Should this check to see if there is only one view attached to 
+//        the buffer before destroying it?
+//
     DataBuffer * const buffer = view->getBuffer();
     delete view;
 
