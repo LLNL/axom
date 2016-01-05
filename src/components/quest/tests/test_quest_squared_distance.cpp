@@ -110,12 +110,13 @@ TEST( quest_squared_distance, point_to_triangle )
 //------------------------------------------------------------------------------
 TEST( quest_squared_distance, point_to_segment )
 {
-  quest::Point< double,2 > A( 0.0 );
-  quest::Point< double,2 > B( 1.0 );
-  quest::Segment< double,2 > S( A, B );
+   quest::Point< double,2 > A(0.0);
+   quest::Point< double,2 > B(1.0,1);
+   quest::Segment< double,2 > S( A,B );
 
-  double dist = 0.0;
-  quest::Point< double, 2 > Q;
+   quest::Point< double,2 > q0 = quest::Point< double,2 >::make_point( 0.5,10 );
+   double dist = quest::squared_distance( q0, S );
+   EXPECT_DOUBLE_EQ( 100.0f, dist );
 
   // STEP 0: check source point
   dist = quest::squared_distance( A, S );
@@ -126,19 +127,19 @@ TEST( quest_squared_distance, point_to_segment )
   EXPECT_DOUBLE_EQ( 0.0f, dist );
 
   // STEP 2: check midpoint
-  Q = quest::Point< double,2 >::midpoint( A, B );
+  quest::Point< double,2 > Q = quest::Point< double,2 >::midpoint( A, B );
   dist = quest::squared_distance( Q, S );
   EXPECT_DOUBLE_EQ( 0.0f, dist );
 
   // STEP 3: check projection to target point
-  quest::Point< double,2 > q0(2.0);
-  dist = quest::squared_distance( q0,S );
-  EXPECT_DOUBLE_EQ( quest::squared_distance(q0,B), dist );
+  quest::Point< double,2 > q1(2.0);
+  dist = quest::squared_distance( q1,S );
+  EXPECT_DOUBLE_EQ( quest::squared_distance(q1,B), dist );
 
   // STEP 4: check projection source point
-  quest::Point< double,2 > q1(-1.0);
-  dist = quest::squared_distance( q1,S );
-  EXPECT_DOUBLE_EQ( quest::squared_distance(q1,A), dist );
+  quest::Point< double,2 > q2(-1.0);
+  dist = quest::squared_distance( q2,S );
+  EXPECT_DOUBLE_EQ( quest::squared_distance(q2,A), dist );
 
 }
 
