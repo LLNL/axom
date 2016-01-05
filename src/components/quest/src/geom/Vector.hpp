@@ -105,6 +105,15 @@ public:
    */
   explicit Vector(T val = T(), int sz = DIM) : m_components(val, sz) {}
 
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor from a numeric array
+   * \param [in] arr The numeric array to copy from
+   *****************************************************************************
+   */
+  explicit Vector(const NumericArray<T,DIM>& arr) : m_components(arr) {}
+
   /*!
    *****************************************************************************
    * \brief Creates a vector from the first sz values of the input array.

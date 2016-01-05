@@ -139,6 +139,31 @@ TEST( quest_point, point_array_constructor)
 }
 
 
+//------------------------------------------------------------------------------
+TEST( quest_point, point_numericArray_constructor)
+{
+  static const int DIM = 5;
+  typedef int CoordType;
+  typedef quest::NumericArray<CoordType, DIM> QArray;
+  typedef quest::Point<CoordType, DIM> QPoint;
+
+  // Set elt i of input array to i
+  CoordType arr[DIM];
+  for(int dim=0; dim<DIM; ++dim)
+      arr[dim] = dim;
+
+  //
+  std::cout<<"\nQuest: testing constructor that copies entire array. "
+           << "Default second parameter of constructor is DIM."
+           << std::endl;
+  QArray arr1( arr );
+  QPoint pt(arr);
+
+  for(int dim=0; dim<DIM; ++dim)
+      EXPECT_EQ(pt[dim], arr[dim]);
+}
+
+
 TEST( quest_point, point_copy_and_assignment)
 {
   static const int DIM = 5;
@@ -266,6 +291,24 @@ TEST( quest_point, point_midpoint)
   QPoint p50(50);
 
   EXPECT_TRUE(p30 == QPoint::midpoint(p10,p50));
+
+}
+
+TEST( quest_point, point_linear_interpolation)
+{
+  static const int DIM = 3;
+  typedef int CoordType;
+  typedef quest::Point<CoordType, DIM> QPoint;
+
+  QPoint p0(0);
+  QPoint p1(100);
+
+  EXPECT_TRUE(QPoint::lerp(p0,p1, 0) == p0);
+  EXPECT_TRUE(QPoint::lerp(p0,p1, 1) == p1);
+  EXPECT_TRUE(QPoint::lerp(p0,p1, 0.5) == QPoint::midpoint(p0,p1));
+  EXPECT_TRUE(QPoint::lerp(p0,p1, .25) == QPoint(25));
+  EXPECT_TRUE(QPoint::lerp(p0,p1, .75) == QPoint(75));
+
 
 }
 //----------------------------------------------------------------------

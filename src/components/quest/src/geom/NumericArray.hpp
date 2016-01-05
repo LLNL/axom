@@ -83,12 +83,12 @@ template<typename T, int DIM> NumericArray<T,DIM> operator-(const NumericArray<T
 /*!
  * \brief Forward declaration for scalar multiplication of NumericArray's; Scalar on rhs.
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator*(const NumericArray<T, DIM> & arr, const T scalar);
+template<typename T, int DIM> NumericArray<T,DIM> operator*(const NumericArray<T, DIM> & arr, double scalar);
 
 /*!
  * \brief Forward declaration for scalar multiplication of NumericArray; Scalar on lhs.
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator*(const T scalar, const NumericArray<T, DIM> & arr);
+template<typename T, int DIM> NumericArray<T,DIM> operator*(double scalar, const NumericArray<T, DIM> & arr);
 
 /*!
  * \brief Forward declaration for component-wise multiplication of NumericArrays
@@ -104,7 +104,7 @@ template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T
 /*!
  * \brief Forward declaration for scalar division of NumericArray; Scalar on rhs.
  */
-template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T, DIM> & arr, const T scalar);
+template<typename T, int DIM> NumericArray<T,DIM> operator/(const NumericArray<T, DIM> & arr, double scalar);
 
 
 /*!
@@ -256,7 +256,7 @@ public:
   * \return A reference to the NumericArray instance after scalar multiplication.
   *****************************************************************************
   */
- NumericArray< T,DIM>& operator*=(T scalar);
+ NumericArray< T,DIM>& operator*=(double scalar);
 
  /*!
   *****************************************************************************
@@ -267,7 +267,7 @@ public:
   * \return A reference to the NumericArray instance after scalar division.
   *****************************************************************************
   */
- NumericArray< T,DIM>& operator/=(T scalar);
+ NumericArray< T,DIM>& operator/=(double scalar);
 
  /*!
   *****************************************************************************
@@ -441,7 +441,7 @@ std::ostream& NumericArray< T, DIM >::print(std::ostream& os) const
 //------------------------------------------------------------------------------
 
 template < typename T, int DIM >
-inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator*=( T scalar )
+inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator*=( double scalar )
 {
     for ( int i=0; i < DIM; ++i )
         this->m_components[ i ] *= scalar;
@@ -451,7 +451,7 @@ inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator*=( T scalar )
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator/=( T scalar )
+inline NumericArray< T,DIM >& NumericArray< T,DIM >::operator/=( double scalar )
 {
     SLIC_ASSERT(scalar != 0.);
 
@@ -599,7 +599,7 @@ std::ostream& operator<<(std::ostream & os, const NumericArray<T,DIM> & arr)
 
 //------------------------------------------------------------------------------
 template<typename T, int DIM>
-inline NumericArray<T,DIM> operator*(const NumericArray<T,DIM>& arr, const T scalar)
+inline NumericArray<T,DIM> operator*(const NumericArray<T,DIM>& arr, double scalar)
 {
   NumericArray< T, DIM > result(arr);
   result *=scalar;
@@ -609,7 +609,7 @@ inline NumericArray<T,DIM> operator*(const NumericArray<T,DIM>& arr, const T sca
 
 //------------------------------------------------------------------------------
 template<typename T, int DIM>
-inline NumericArray<T,DIM> operator*(const T scalar, const NumericArray<T,DIM>& arr)
+inline NumericArray<T,DIM> operator*(double scalar, const NumericArray<T,DIM>& arr)
 {
   NumericArray< T, DIM > result(arr);
   result *=scalar;
@@ -650,7 +650,7 @@ inline NumericArray<T,DIM> operator/(const NumericArray<T,DIM>& lhs, const Numer
 
 //------------------------------------------------------------------------------
 template<typename T, int DIM>
-inline NumericArray<T,DIM> operator/(const NumericArray<T,DIM>& arr, const T scalar)
+inline NumericArray<T,DIM> operator/(const NumericArray<T,DIM>& arr, double scalar)
 {
   NumericArray< T, DIM > result(arr);
   result /=scalar;

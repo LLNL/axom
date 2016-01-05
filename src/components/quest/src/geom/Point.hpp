@@ -74,6 +74,8 @@ public:
          , NBYTES = DIM * sizeof(T)
          };
 
+    typedef Point<T,DIM> PointType;
+
 public:
 
   /*!
@@ -86,6 +88,15 @@ public:
    *****************************************************************************
    */
   explicit Point(T val = T(), int sz = DIM) : m_components(val,sz) {}
+
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor from a numeric array
+   * \param [in] arr The numeric array to copy from
+   *****************************************************************************
+   */
+  explicit Point(const NumericArray<T,DIM>& arr) : m_components(arr) {}
 
   /*!
    *****************************************************************************
@@ -292,7 +303,7 @@ inline Point< T,DIM > Point< T,DIM >::lerp(
         const Point<T,DIM>& B,
         double alpha)
 {
-  return (1.-alpha)*A + alpha*B;
+  return PointType((1.-alpha)*A.array() + alpha*B.array());
 }
 
 

@@ -19,6 +19,7 @@ TEST( quest_vector, vector_constructors)
 {
   static const int DIM = 5;
   typedef double CoordType;
+  typedef quest::NumericArray<CoordType, DIM> QArray;
   typedef quest::Vector<CoordType, DIM> QVec;
 
   QVec vec1;
@@ -55,6 +56,15 @@ TEST( quest_vector, vector_constructors)
   {
       CoordType expVal=  i < halfPt ? valsArr[i] : CoordType();
       EXPECT_EQ(arrHalfVec[i], expVal );
+  }
+
+
+  // Construct from numeric array
+  QArray arr(valsArr);
+  QVec vFromNA(arr);
+  for(int i=0; i< DIM; ++i)
+  {
+      EXPECT_EQ(vFromNA[i], valsArr[i] );
   }
 
 }
