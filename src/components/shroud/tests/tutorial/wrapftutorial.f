@@ -1,5 +1,9 @@
 ! wrapftutorial.f
 ! This is generated code, do not edit
+!>
+!! \file wrapftutorial.f
+!! \brief Shroud generated wrapper for Tutorial library
+!<
 module tutorial_mod
     use fstr_mod
     use, intrinsic :: iso_c_binding, only : C_PTR

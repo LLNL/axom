@@ -9,6 +9,10 @@
 ! This source code cannot be distributed without permission and
 ! further review from Lawrence Livermore National Laboratory.
 !
+!>
+!! \file wrapfsidre.f
+!! \brief Shroud generated wrapper for Sidre library
+!<
 module sidre_mod
     use fstr_mod
     use, intrinsic :: iso_c_binding, only : C_PTR
