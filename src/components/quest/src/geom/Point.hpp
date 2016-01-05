@@ -60,17 +60,20 @@ template<typename T, int DIM> class Point;
 /*!
  * \brief Equality comparison operator for points
  */
-template<typename T, int DIM> bool operator==(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+template<typename T, int DIM>
+bool operator==(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
  */
-template<typename T, int DIM> bool operator!=(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
+template<typename T, int DIM>
+bool operator!=(const Point<T, DIM> & lhs, const Point<T, DIM>& rhs);
 
 /*!
  * \brief Overloaded output operator for points
  */
-template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt);
+template<typename T, int DIM>
+std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt);
 
 /*!
  *******************************************************************************
@@ -174,7 +177,6 @@ public:
    */
   void to_array(T* arr) const;
 
-
   /*!
    *****************************************************************************
    * \brief Simple formatted print of a point instance
@@ -203,7 +205,6 @@ public:
    *****************************************************************************
    */
   static Point midpoint( const Point& A, const Point& B );
-
 
   /*!
    *****************************************************************************
