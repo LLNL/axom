@@ -68,12 +68,20 @@ classes:
 
     methods:
     - decl: ExClass1 *new ( const string *name ) +constructor
-      docs: constructor
+      doxygen:
+        brief:  constructor
+        description: |
+           longer description
+           usually multiple lines
+        return: return new instance
 
     - decl: void delete() +destructor
+      doxygen:
+        description:
+           longer description
+           joined with previous line
 
     - decl: int incrementCount(int incr)
-      docs: blah blah
 
     - decl: const string& getName() const
       result:
@@ -83,7 +91,8 @@ classes:
       PY_error_pattern: PY_invalid_name
 
     - decl: int GetNameLength() const
-      docs: helper function for Fortran
+      doxygen:
+        brief: helper function for Fortran
       helper: True
       options:
          C_code: return selfobj->getName().length();
@@ -135,7 +144,8 @@ classes:
          attrs:
             len: aa_exclass2_get_name_length({F_instance_ptr})
 
-    - docs: helper function for Fortran
+    - doxygen:
+        brief: helper function for Fortran
       result:
          name: GetNameLength
          type: int

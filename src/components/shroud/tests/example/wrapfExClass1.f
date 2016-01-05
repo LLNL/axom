@@ -3,6 +3,10 @@
 ! blah blah
 ! yada yada
 !
+!>
+!! \file wrapfExClass1.f
+!! \brief Shroud generated wrapper for ExClass1 class
+!<
 module exclass1_mod
     use fstr_mod
     use exclass2_mod, only : exclass2
@@ -192,6 +196,14 @@ contains
     ! ExClass1 * new(const string * name+intent(in))+constructor
     ! string_to_buffer_and_len
     ! function_index=0
+    !>
+    !! \brief constructor
+    !!
+    !! longer description
+    !! usually multiple lines
+    !!
+    !! \return return new instance
+    !<
     function exclass1_new(name) result(rv)
         use iso_c_binding
         implicit none
@@ -206,6 +218,9 @@ contains
     
     ! void delete()+destructor
     ! function_index=1
+    !>
+    !! longer description joined with previous line
+    !<
     subroutine exclass1_delete(obj)
         use iso_c_binding
         implicit none
@@ -245,6 +260,10 @@ contains
     
     ! int GetNameLength() const
     ! function_index=4
+    !>
+    !! \brief helper function for Fortran
+    !!
+    !<
     function exclass1_get_name_length(obj) result(rv)
         use iso_c_binding
         implicit none

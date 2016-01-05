@@ -60,8 +60,6 @@ the memory but also contains meta-data such as the type, kind and shape of the a
 
 Fortran provides a **pointer** and **allocatable** attributes which are not
 directly supported by C.  Each vendor has their own pointer struct.
-The Chasm library from LANL can be used to write portable access to Fortran pointers.
-http://chasm-interop.sourceforge.net
 Eventually this will be supported in Fortran via the Further Interoperability of Fortran and C - Technical Specification ISO/IEC TS 29113:2012
 http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45136
 
@@ -74,3 +72,11 @@ Fortran wrappers are generated as free-form source and require a Fortran 2003 co
 Shroud is written in Python and requires the modules:
   * PyYAML https://pypi.python.org/pypi/PyYAML/3.11
   * Parsley https://pypi.python.org/pypi/Parsley
+
+
+XKCD
+----
+
+`XKCD <https://xkcd.com/1319>`_
+
+.. image:: automation.png

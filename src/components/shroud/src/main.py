@@ -94,6 +94,8 @@ class Schema(object):
             wrap_fortran = True,
             wrap_python  = False,
 
+            doxygen = True,       # create doxygen comments
+
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
 
@@ -212,9 +214,10 @@ class Schema(object):
                 f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
                 f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
 
+#XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
-#                PY_PyTypeObject = 'PyBool_Type',
-#  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
+                PY_PyTypeObject = 'PyBool_Type',
+                PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
             # implies null terminated string
             string = util.Typedef('string',
@@ -434,10 +437,20 @@ class GenFunctions(object):
         """ Look for functions with the same name.
         Return a new list with overloaded function inserted.
         """
+        cpp_overload = {}
         for function in functions:
             if 'function_suffix' in function:
                 function['fmt'].function_suffix = function['function_suffix']
             self.append_function_index(function)
+            cpp_overload. \
+                setdefault(function['result']['name'], []). \
+                append(function['_function_index'])
+
+        # keep track of which function are overloaded in C++.
+        for key, value in cpp_overload.items():
+            if len(value) > 1:
+                for index in value:
+                    self.function_index[index]['_cpp_overload'] = value
 
         # Create additional functions needed for wrapping
         ordered_functions = []
@@ -581,8 +594,10 @@ class GenFunctions(object):
         default_arg_suffix = node.get('default_arg_suffix', [])
         ndefault = 0
 
+        min_args = 0
         for i, arg in enumerate(node['args']):
             if 'default' not in arg['attrs']:
+                min_args += 1
                 continue
             new = util.copy_function_node(node)
             new['_generated'] = 'has_default_arg'
@@ -608,6 +623,7 @@ class GenFunctions(object):
 
         # keep track of generated default value functions
         node['_default_funcs'] = default_funcs
+        node['_nargs'] = ( min_args, len(node['args']) )
         # The last name calls with all arguments (the original decl)
         try:
             node['fmt'].function_suffix = default_arg_suffix[ndefault]
@@ -808,6 +824,8 @@ class VerifyAttrs(object):
                 # return from C function
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
+
+                PY_post_parse = '{var} = {var_obj} ? {var_obj}->{BBB} : NULL;',
 
                 # allow forward declarations to avoid recursive headers
                 forward = name,

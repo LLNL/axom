@@ -2,3 +2,4 @@ PROJECT_NAME  = MeshAPI
 PROJECT_BRIEF = "Reusable components for defining distributed meshes on simulation codes"
 INPUT = @PROJECT_SOURCE_DIR@/src
 GENERATE_XML = YES
+EXTENSION_MAPPING = f=FortranFree

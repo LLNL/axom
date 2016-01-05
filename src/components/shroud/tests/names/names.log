@@ -20,13 +20,13 @@ C-interface, Fortran function void function3a(int i+intent(in)+value)
 C-interface, Fortran function void function3a(long i+intent(in)+value)
 Close top.f
 class Names
-Python method void method1
-Python method void method2
+Python method void method1()
+Python method void method2()
 Close pyNamestype.cpp
-Python function void function1
-Python function void function2
-Python function void function3a(int i)
-Python function void function3a(long i)
+Python function void function1()
+Python function void function2()
+Python function void function3a(int i+intent(in)+value)
+Python function void function3a(long i+intent(in)+value)
 Close pytestnamesmodule.hpp
 Close pytestnamesmodule.cpp
 Close pytestnameshelper.cpp

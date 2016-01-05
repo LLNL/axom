@@ -118,11 +118,12 @@ class WrapperMixin(object):
 
 #####
 
-    def std_c_type(self, lang, arg, const=None):
+    def std_c_type(self, lang, arg, const=None, ptr=False):
         """
         Return the C type.
         pass-by-value default
 
+        lang = c_type or cpp_type
         if const is None, use const from arg.
 
         attributes:
@@ -143,7 +144,7 @@ class WrapperMixin(object):
             t.append('const')
 
         t.append(getattr(typedef, lang))
-        if arg['attrs'].get('ptr', False):
+        if arg['attrs'].get('ptr', ptr):
             t.append('*')
         elif arg['attrs'].get('reference', False):
             if lang == 'cpp_type':
@@ -152,16 +153,15 @@ class WrapperMixin(object):
                 t.append('*')
         return ' '.join(t)
 
-    def std_c_decl(self, lang, arg, name=None, const=None):
+    def std_c_decl(self, lang, arg,
+                   name=None, const=None, ptr=False):
         """
         Return the C declaration.
 
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
-#        if lang not in [ 'c_type', 'cpp_type' ]:
-#            raise RuntimeError
-        typ = self.std_c_type(lang, arg, const)
+        typ = self.std_c_type(lang, arg, const, ptr)
         return typ + ' ' + ( name or arg['name'] )
 
 #####
@@ -207,6 +207,42 @@ class WrapperMixin(object):
                     fp.write(subline)
                     fp.write('\n')
 
+    def write_doxygen_file(self, output, fname, node, cls):
+        """ Write a doxygen comment block for a file.
+        """
+        output.append(self.doxygen_begin)
+        output.append(self.doxygen_cont + ' \\file %s' % fname)
+        if cls:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s class'
+                          % node['name'])
+        else:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s library'
+                          % node['options'].library)
+        output.append(self.doxygen_end)
+
+    def write_doxygen(self, output, docs):
+        """Write a doxygen comment block for a function.
+        Uses brief, description, and return from docs.
+        """
+        output.append(self.doxygen_begin)
+        if 'brief' in docs:
+            output.append(self.doxygen_cont + ' \\brief %s' % docs['brief'])
+            output.append(self.doxygen_cont)
+        if 'description' in docs:
+            desc = docs['description']
+            if desc.endswith('\n'):
+                lines = docs['description'].split('\n')
+                lines.pop()  # remove trailing newline
+            else:
+                lines = [desc]
+            for line in lines:
+                output.append(self.doxygen_cont + ' ' + line)
+        if 'return' in docs:
+            output.append(self.doxygen_cont)
+            output.append(self.doxygen_cont + ' \\return %s' % docs['return'])
+        output.append(self.doxygen_end)
 
 
 class Typedef(object):
@@ -262,6 +298,7 @@ class Typedef(object):
                               # ex. PyBool_FromLong({rv})
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
+        PY_post_parse='KKK',  # Used if PY_PyTypeObject is set
         )
 
     def __init__(self, name, **kw):

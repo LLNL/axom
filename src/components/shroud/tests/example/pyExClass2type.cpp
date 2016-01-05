@@ -201,18 +201,18 @@ PP_exclass2_get_class1(
   PyObject *kwds)
 {
 // splicer begin class.ExClass2.method.get_class1
-    PP_ExClass1 * in;
-    const ExClass1 * in_ptr;
+    ExClass1 * in;
+    PP_ExClass1 * in_obj;
     const char *kwcpp = "in";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:get_class1", kw_list,
-        &PP_ExClass1_Type, &in))
+        &PP_ExClass1_Type, &in_obj))
     {
         return NULL;
     }
-    in_ptr = (in ? in->BBB : NULL);
-    ExClass1 * rv = self->BBB->get_class1(in_ptr);
+    in = in_obj ? in_obj->BBB : NULL;
+    ExClass1 * rv = self->BBB->get_class1(in);
     PP_ExClass1 * rv_obj = PyObject_New(PP_ExClass1, &PP_ExClass1_Type);
     rv_obj->BBB = rv;
     return (PyObject *) rv_obj;
@@ -229,21 +229,30 @@ PP_exclass2_declare_1(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin class.ExClass2.method.declare_1
-    int type;
-    ATK_SidreLength len;
+// splicer begin class.ExClass2.method.declare
+    Py_ssize_t shroud_nargs = 0;
+    TypeID type;
+    SidreLength len;
     const char *kwcpp = "type\0len";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
     
-    len = 1;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|l:declare", kw_list,
         &type, &len))
     {
         return NULL;
     }
-    self->BBB->declare(getTypeID(type), len);
+    switch (shroud_nargs) {
+    case 1:
+        self->BBB->declare(getTypeID(type));
+        break;
+    case 2:
+        self->BBB->declare(getTypeID(type), len);
+        break;
+    }
     Py_RETURN_NONE;
-// splicer end class.ExClass2.method.declare_1
+// splicer end class.ExClass2.method.declare
 }
 
 static char PP_exclass2_destroyall__doc__[] =
@@ -284,7 +293,7 @@ static PyMethodDef PP_ExClass2_methods[] = {
 {"getName", (PyCFunction)PP_exclass2_get_name, METH_NOARGS, PP_exclass2_get_name__doc__},
 {"GetNameLength", (PyCFunction)PP_exclass2_get_name_length, METH_NOARGS, PP_exclass2_get_name_length__doc__},
 {"get_class1", (PyCFunction)PP_exclass2_get_class1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_get_class1__doc__},
-{"declare_1", (PyCFunction)PP_exclass2_declare_1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare_1__doc__},
+{"declare", (PyCFunction)PP_exclass2_declare_1, METH_VARARGS|METH_KEYWORDS, PP_exclass2_declare_1__doc__},
 {"destroyall", (PyCFunction)PP_exclass2_destroyall, METH_NOARGS, PP_exclass2_destroyall__doc__},
 {"getTypeID", (PyCFunction)PP_exclass2_get_type_id, METH_NOARGS, PP_exclass2_get_type_id__doc__},
 // splicer begin class.ExClass2.PyMethodDef

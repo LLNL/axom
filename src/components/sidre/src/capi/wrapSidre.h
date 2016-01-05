@@ -9,6 +9,10 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
+/**
+ * \file wrapSidre.h
+ * \brief Shroud generated wrapper for Sidre library
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPSIDRE_H

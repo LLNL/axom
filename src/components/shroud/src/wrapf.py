@@ -54,6 +54,9 @@ class Wrapf(util.WrapperMixin):
         self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '!'
+        self.doxygen_begin = '!>'
+        self.doxygen_cont = '!!'
+        self.doxygen_end = '!<'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -177,7 +180,7 @@ class Wrapf(util.WrapperMixin):
             self.wrap_class(node)
             if options.F_module_per_class:
                 self._end_output_file()
-                self.write_module(node)
+                self.write_module(node, cls=True)
                 self._begin_output_file()
         self._pop_splicer('class')
 
@@ -717,6 +720,8 @@ class Wrapf(util.WrapperMixin):
                 if generated:
                     impl.append('! %s' % ' - '.join(generated))
                 impl.append('! function_index=%d' % node['_function_index'])
+                if options.doxygen and 'doxygen' in node:
+                    self.write_doxygen(impl, node['doxygen'])
             impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
             impl.append(1)
             impl.extend(arg_f_use)
@@ -748,13 +753,17 @@ class Wrapf(util.WrapperMixin):
             F_code.append(parts[-1])
             F_code.append(-1)
 
-    def write_module(self, node):
+    def write_module(self, node, cls=False):
         options = node['options']
         fmt_class = node['fmt']
         fname = fmt_class.F_impl_filename
         module_name = fmt_class.F_module_name
 
         output = []
+
+        if options.doxygen:
+            self.write_doxygen_file(output, fname, node, cls)
+
         output.append('module %s' % module_name)
         output.append(1)
 

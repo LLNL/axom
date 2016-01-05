@@ -42,7 +42,7 @@ PP_is_name_valid(
   PyObject *kwds)
 {
 // splicer begin function.is_name_valid
-    const char * name;
+    char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -56,10 +56,6 @@ PP_is_name_valid(
 // splicer end function.is_name_valid
 }
 
-static char PP_test_names__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PP_test_names(
   PyObject *self,    /* not used */
@@ -67,7 +63,7 @@ PP_test_names(
   PyObject *kwds)
 {
 // splicer begin function.test_names
-    const char * name;
+    char * name;
     const char *kwcpp = "name";
     char *kw_list[] = { (char *) kwcpp+0, NULL };
     
@@ -81,10 +77,6 @@ PP_test_names(
 // splicer end function.test_names
 }
 
-static char PP_test_names_flag__doc__[] =
-"documentation"
-;
-
 static PyObject *
 PP_test_names_flag(
   PyObject *self,    /* not used */
@@ -92,7 +84,7 @@ PP_test_names_flag(
   PyObject *kwds)
 {
 // splicer begin function.test_names_flag
-    const char * name;
+    char * name;
     int flag;
     const char *kwcpp = "name\0flag";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+5, NULL };
@@ -117,29 +109,77 @@ PP_testoptional_2(
   PyObject *args,
   PyObject *kwds)
 {
-// splicer begin function.testoptional_2
+// splicer begin function.testoptional
+    Py_ssize_t shroud_nargs = 0;
     int i;
     long j;
     const char *kwcpp = "i\0j";
     char *kw_list[] = { (char *) kwcpp+0,(char *) kwcpp+2, NULL };
     
-    i = 1;
-    j = 2;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|il:testoptional", kw_list,
         &i, &j))
     {
         return NULL;
     }
-    testoptional(i, j);
+    switch (shroud_nargs) {
+    case 0:
+        testoptional();
+        break;
+    case 1:
+        testoptional(i);
+        break;
+    case 2:
+        testoptional(i, j);
+        break;
+    }
     Py_RETURN_NONE;
-// splicer end function.testoptional_2
+// splicer end function.testoptional
+}
+
+static char PP_test_names__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_test_names(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.test_names
+    Py_ssize_t shroud_nargs = 0;
+    if (args != NULL) shroud_nargs += PyTuple_Size(args);
+    if (kwds != NULL) shroud_nargs += PyDict_Size(args);
+    PyObject *rvobj;
+    if (shroud_nargs == 1) {
+        rvobj = PP_test_names(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    if (shroud_nargs == 2) {
+        rvobj = PP_test_names_flag(self, args, kwds);
+        if (!PyErr_Occurred()) {
+            return rvobj;
+        } else if (! PyErr_ExceptionMatches(PyExc_TypeError)) {
+            return rvobj;
+        }
+        PyErr_Clear();
+    }
+    PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+    return NULL;
+// splicer end function.test_names
 }
 static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
+{"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
-{"test_names_flag", (PyCFunction)PP_test_names_flag, METH_VARARGS|METH_KEYWORDS, PP_test_names_flag__doc__},
-{"testoptional_2", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 
