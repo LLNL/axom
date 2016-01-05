@@ -66,7 +66,7 @@ class DataStore;
  *          DataBuffer. In this case, the data can be (re)allocated or 
  *          deallocated by the view if and only if it is the only view 
  *          attached to the buffer. 
- *        # A view can decsribe and allocate data using semantics similar 
+ *        # A view can describe and allocate data using semantics similar 
  *          to DataBuffer data declaration and allocation. In this case, no 
  *          other view is allowed to (re)allocate or deallocate the data held 
  *          by the associated data buffer.
@@ -267,7 +267,7 @@ public:
   /*!
    * \brief Allocate data for view given type and number of elements.
    *
-   * NOTE: The allocate() method above describes conditions where view 
+   * NOTE: The allocate() method describes conditions where view 
    *       allocation is allowed. If none of those is true, or given number 
    *       of elements is < 0, this method does nothing.
    *
@@ -278,7 +278,7 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
    *
-   * NOTE: The allocate() method above describes conditions where view 
+   * NOTE: The allocate() method describes conditions where view 
    *       allocation is allowed. If none of those is true, 
    *       this method does nothing.
    *
@@ -289,7 +289,7 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit schema object.
    *
-   * NOTE: The allocate() method above describes conditions where view 
+   * NOTE: The allocate() method describes conditions where view 
    *       allocation is allowed. If none of those is true, 
    *       this method does nothing.
    *
@@ -303,7 +303,7 @@ public:
    *         stays the same).
    *
    * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       for the allocate() method above. If none of those is true, 
+   *       for the allocate() method. If none of those is true, 
    *       or given number of elements is < 0, this method does nothing.
    *
    * \return pointer to this DataView object.
@@ -317,7 +317,7 @@ public:
    * \brief  Reallocate data for view as specified by Conduit data type object.
    *
    * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method above. If none of those is true, 
+   *       described by the allocate() method. If none of those is true, 
    *       or data type is undefined, this method does nothing.
    *
    * NOTE: The given data type object must match the view type, if it is 
@@ -331,7 +331,7 @@ public:
    * \brief  Reallocate data for view as specified by a Conduit schema object.
    *
    * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method above. If none of those is true,
+   *       described by the allocate() method. If none of those is true,
    *       or data type is undefined, this method does nothing.
    *
    * NOTE: The data type of the given schema object must match the view type, 
@@ -348,7 +348,7 @@ public:
    * \brief Attach DataBuffer object to data view.
    *
    * Note that, in general, the view cannot be used to access data in 
-   * buffer until it one of the apply() methods is called. However, if
+   * buffer until one of the apply() methods is called. However, if
    * the view has a valid data description with a total number of bytes
    * that is <= number of bytes held in the buffer, then apply() will
    * be called internally.

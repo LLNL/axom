@@ -139,7 +139,7 @@ DataView * DataView::allocate(const Schema& schema)
 //        If so, then the view type should be checked to make sure it matches
 //        the buffer type. 
 //        If not, then it should be a valid operation to declare the buffer
-//        here amd allocate it. 
+//        here and allocate it. 
 //
 
 /*
