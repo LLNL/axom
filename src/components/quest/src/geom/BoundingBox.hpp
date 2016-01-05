@@ -148,7 +148,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Returns const reference to the max corner of the bounding box.
-   * \return sonct reference to the max corner of the bounding box.
+   * \return const reference to the max corner of the bounding box.
    *****************************************************************************
    */
   const PointType& getMax() const { return m_max; };

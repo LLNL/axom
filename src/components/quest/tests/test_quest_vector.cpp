@@ -101,24 +101,20 @@ TEST( quest_vector, vector_normalize)
   typedef quest::Point<CoordType, DIM> QPoint;
   typedef quest::Vector<CoordType, DIM> QVec;
 
-  QVec vec;
-  vec.normalize();
-  EXPECT_DOUBLE_EQ(vec.norm(), 1.0 );
+  EXPECT_DOUBLE_EQ(QVec().unitVector().norm(), 1.0 );
 
   // Find the norm of an arbitrary point
   QPoint p = QPoint::make_point(543.5435, 1566.423532, -432.4);
   QVec vec2(QPoint(), p);
-  vec2.normalize();
-  EXPECT_DOUBLE_EQ(vec2.norm(), 1.0 );
+  EXPECT_DOUBLE_EQ(vec2.unitVector().norm(), 1.0 );
 
 
   // Find the norm of the zero vector
   // Zero vector should become the unit vector when normalized
   QVec vecZero;
   QVec unitVec(1,1);
-  vecZero.normalize();
-  EXPECT_DOUBLE_EQ(vecZero.norm(), 1.0 );
-  EXPECT_EQ(vecZero, unitVec );
+  EXPECT_DOUBLE_EQ(vecZero.unitVector().norm(), 1.0 );
+  EXPECT_EQ(vecZero.unitVector(), unitVec );
 }
 
 //------------------------------------------------------------------------------
@@ -177,7 +173,7 @@ TEST( quest_vector, vector_arithmetic)
   EXPECT_EQ( QVec(pScalar), (v1+v2) * scalar);
 
   // Testing unary negation
-  EXPECT_EQ( -v1, QVec(v1, QPoint::zero() ) );
+  EXPECT_EQ( -v1, QVec(p1, QPoint::zero()) );
 
 }
 

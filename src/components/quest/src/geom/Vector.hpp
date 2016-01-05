@@ -25,6 +25,8 @@
 #ifndef VECTOR_HXX_
 #define VECTOR_HXX_
 
+
+#include "quest/NumericArray.hpp"
 #include "quest/Point.hpp"
 #include "quest/Determinants.hpp" // For math::determinant()
 
@@ -63,7 +65,7 @@ template<typename T, int DIM> Vector<T,DIM> operator*(const Vector<T, DIM> & vec
 template<typename T, int DIM> Vector<T,DIM> operator*(const T scalar, const Vector<T, DIM> & vec);
 
 /*!
- * \brief Forward declaration for scalar multiplication of vector; Scalar on rhs.
+ * \brief Forward declaration for scalar division of vector; Scalar on rhs.
  */
 template<typename T, int DIM> Vector<T,DIM> operator/(const Vector<T, DIM> & vec, const T scalar);
 
@@ -85,7 +87,7 @@ template<typename T, int DIM> std::ostream& operator<<(std::ostream & os, const 
  *******************************************************************************
  */
 template < typename T, int DIM >
-class Vector : public Point< T, DIM >
+class Vector
 {
 public:
     typedef Point<T,DIM> PointType;
@@ -101,7 +103,7 @@ public:
    * The rest will be set to zero.  Defaults is DIM.
    *****************************************************************************
    */
-  explicit Vector(T val = T(), int sz = DIM) : PointType(val, sz) {}
+  explicit Vector(T val = T(), int sz = DIM) : m_components(val, sz) {}
 
   /*!
    *****************************************************************************
@@ -112,7 +114,7 @@ public:
    * It sz is greater than DIM, we only take the first DIM values.
    *****************************************************************************
    */
-  Vector(T* vals, int sz = DIM) : PointType(vals, sz) {}
+  Vector(T* vals, int sz = DIM) : m_components(vals, sz) {}
 
   /*!
    *****************************************************************************
@@ -121,7 +123,7 @@ public:
    * \note Equivalent to Vector( Point::zero(), pt)
    *****************************************************************************
    */
-  Vector(const Point<T,DIM> & pt) : PointType(pt) {}
+  Vector(const Point<T,DIM> & pt) : m_components( pt.array() ) {}
 
   /*!
    *****************************************************************************
@@ -142,6 +144,56 @@ public:
    ~Vector() {}
 
 
+   /*!
+    *****************************************************************************
+    * \brief Returns the dimension of this vector instance.
+    * \return d the dimension (size) of the vector
+    * \post d >= 1.
+    *****************************************************************************
+    */
+   int dimension() const { return DIM; };
+
+
+   /*!
+    *****************************************************************************
+    * \brief Access operator for individual components.
+    * \param [in] i the component index to access
+    * \return p[i] the value at the given component index.
+    * \pre (i >= 0) && (i < ndims)
+    *****************************************************************************
+    */
+   const T& operator[](int i) const { return m_components[i]; }
+   T& operator[](int i)             { return m_components[i]; }
+
+   /*!
+    *****************************************************************************
+    * \brief Returns a reference to the underlying NumericArray.
+    *****************************************************************************
+    */
+   const NumericArray<T,DIM> & array() const  { return m_components; }
+   NumericArray<T,DIM>& array()              { return m_components; }
+
+
+   /*!
+    *****************************************************************************
+    * \brief Returns a pointer to the underlying data.
+    *****************************************************************************
+    */
+   const T* data() const             { return m_components.data(); }
+   T* data()                         { return m_components.data(); }
+
+
+   /*!
+    * \brief Equality comparison operator for points
+    */
+   friend bool operator==(const Vector& lhs, const Vector& rhs)
+   { return lhs.m_components == rhs.m_components; }
+
+   /*!
+    * \brief Inequality operator for points
+    */
+   friend bool operator!=(const Vector& lhs, const Vector& rhs)
+   { return !(lhs == rhs); }
 
    /*!
     *****************************************************************************
@@ -217,12 +269,12 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Normalizes this vector instance.
-   * \note The zero vector becomes the unit vector (1,0,0,...) when normalized.
+   * \brief Creates a new unit vector in the direction of the vector instance.
+   * \note The unit vector of the zero vector is (1,0,0,...) when normalized.
    * \post this->norm() == 1.0f
    *****************************************************************************
    */
-  void normalize();
+  Vector unitVector() const ;
 
 
   /*!
@@ -260,13 +312,8 @@ public:
                                       const Vector< T,3 >& v );
 
 
-  /*!
-   *****************************************************************************
-   * \brief Creates a unit vector of dimension DIM.
-   * \return A unit vector whose first coordinate is 1 and all others are zero.
-   *****************************************************************************
-   */
-  static Vector unit_vector() { return Vector(1,1);}
+private:
+  NumericArray<T,DIM> m_components;
 };
 
 /// \name Pre-defined Vector types
@@ -289,12 +336,7 @@ template < typename T, int DIM >
 Vector< T,DIM >::Vector( const Point< T,DIM >& A,
                            const Point< T,DIM >& B )
 {
-  SLIC_ASSERT( A.dimension() == B.dimension( ) );
-
-  for ( int i=0; i < DIM; ++i ) {
-      this->m_components[ i ] = B[ i ]-A[ i ];
-  }
-
+    this->m_components = B.array() - A.array();
 }
 
 
@@ -302,9 +344,7 @@ Vector< T,DIM >::Vector( const Point< T,DIM >& A,
 template < typename T, int DIM >
 inline Vector< T,DIM >& Vector< T,DIM >::operator*=( T scalar )
 {
-    for ( int i=0; i < DIM; ++i )
-        this->m_components[ i ] *= scalar;
-
+    this->m_components *= scalar;
     return *this;
 }
 
@@ -312,9 +352,8 @@ inline Vector< T,DIM >& Vector< T,DIM >::operator*=( T scalar )
 template < typename T, int DIM >
 inline Vector< T,DIM >& Vector< T,DIM >::operator/=( T scalar )
 {
-    SLIC_ASSERT(scalar != 0.);
-
-    return operator*=( 1./scalar );
+    this->m_components /= scalar;
+    return *this;
 }
 
 
@@ -322,10 +361,7 @@ inline Vector< T,DIM >& Vector< T,DIM >::operator/=( T scalar )
 template < typename T, int DIM >
 inline Vector< T, DIM >& Vector< T,DIM >::operator+=(const Vector<T,DIM>& v)
 {
-  for ( int i=0; i < DIM; ++i ) {
-      this->m_components[ i ] +=  v[ i ];
-  }
-
+  this->m_components += v.array();
   return *this;
 }
 
@@ -333,9 +369,7 @@ inline Vector< T, DIM >& Vector< T,DIM >::operator+=(const Vector<T,DIM>& v)
 template < typename T, int DIM >
 inline Vector< T, DIM >& Vector< T,DIM >::operator-=(const Vector<T,DIM>& v)
 {
-  for ( int i=0; i < DIM; ++i ) {
-      this->m_components[ i ] -= v[ i ];
-  }
+  this->m_components -= v.array();
 
   return *this;
 }
@@ -356,19 +390,24 @@ inline double Vector< T, DIM >::norm() const
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline void Vector< T, DIM >::normalize()
+inline Vector< T, DIM > Vector< T, DIM >::unitVector() const
 {
   static const double EPS  = 1.0e-50;
+
+  Vector v( *this);
 
   const double len_sq = this->squared_norm();
   if(len_sq >= EPS)
   {
-    operator/=( std::sqrt(len_sq) );
+    v /= ( std::sqrt(len_sq) );
   }
   else
   {
-    *this = Vector::unit_vector();
+    // Create a vector whose first coordinate is 1 and all others are 0
+    v = Vector( static_cast<T>(1.), 1);
   }
+
+  return v;
 }
 
 //------------------------------------------------------------------------------
@@ -391,10 +430,10 @@ inline T Vector< T,DIM >::dot(const Vector<T,DIM>& vec) const
 template < typename T, int DIM >
 std::ostream& Vector< T, DIM >::print(std::ostream& os) const
 {
-    os <<"[";
+    os <<"<";
     for(int dim=0; dim < DIM -1; ++ dim)
         os << this->m_components[dim] << ",";
-    os << this->m_components[DIM-1] << "]";
+    os << this->m_components[DIM-1] << ">";
 
     return os;
 }

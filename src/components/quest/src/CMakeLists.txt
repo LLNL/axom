@@ -16,6 +16,7 @@ set( quest_headers
     geom/HyperSphere.hpp
     geom/Orientation.hpp
     geom/Point.hpp
+    geom/NumericArray.hpp
     geom/Segment.hpp
     geom/SquaredDistance.hpp
     geom/Triangle.hpp

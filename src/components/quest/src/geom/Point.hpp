@@ -27,28 +27,11 @@
 
 #include "slic/slic.hpp"
 
+#include "quest/NumericArray.hpp"
+
 // C/C++ includes
 #include <cstring> // For memcpy()
 #include <ostream> // For print() and operator <<
-
-namespace {
-    /*!
-     *****************************************************************************
-     * \brief Utility function that clamps an input val to a given range.
-     * \param [in] val  The value to clamp
-     * \param [in] lower The lower range
-     * \param [in] upper The upper range
-     * \return The clamped value.
-     * \post lower <= returned value <= upper.
-     *****************************************************************************
-     */
-    template<typename T>
-    T clamp(T val, T lower, T upper)
-    {
-        SLIC_ASSERT( lower <= upper);
-        return std::min( std::max( val, lower), upper);
-    }
-}
 
 
 namespace quest
@@ -102,7 +85,7 @@ public:
    * If sz is greater than DIM, we set all coordinates to val
    *****************************************************************************
    */
-  explicit Point(T val = T(), int sz = DIM);
+  explicit Point(T val = T(), int sz = DIM) : m_components(val,sz) {}
 
   /*!
    *****************************************************************************
@@ -113,7 +96,7 @@ public:
    * It sz is greater than DIM, we only take the first DIM values.
    *****************************************************************************
    */
-  Point(T* vals, int sz = DIM);
+  Point(T* vals, int sz = DIM) : m_components(vals,sz) {}
 
   /*!
    *****************************************************************************
@@ -121,7 +104,7 @@ public:
    * \param [in] rhs
    *****************************************************************************
    */
-  Point( const Point& rhs ) { *this = rhs; };
+  Point( const Point& rhs ) : m_components( rhs.m_components) {}
 
   /*!
    *****************************************************************************
@@ -145,7 +128,7 @@ public:
    * \param [in] rhs a point instance on the right hand side.
    *****************************************************************************
    */
-  Point& operator=(const Point& rhs);
+  Point& operator=(const Point& rhs) { m_components = rhs.m_components; return *this;}
 
   /*!
    *****************************************************************************
@@ -155,8 +138,8 @@ public:
    * \pre (i >= 0) && (i < ndims)
    *****************************************************************************
    */
-  const T& operator[](int i) const;
-  T& operator[](int i);
+  const T& operator[](int i) const { return m_components[i]; }
+  T& operator[](int i)             { return m_components[i]; }
 
 
   /*!
@@ -164,8 +147,17 @@ public:
    * \brief Returns a pointer to the underlying data.
    *****************************************************************************
    */
-  const T* data() const;
-  T* data();
+  const T* data() const             { return m_components.data(); }
+  T* data()                         { return m_components.data(); }
+
+  /*!
+   *****************************************************************************
+   * \brief Returns a reference to the underlying NumericArray.
+   *****************************************************************************
+   */
+  const NumericArray<T,DIM>& array() const  { return m_components; }
+  NumericArray<T,DIM>& array()              { return m_components; }
+
 
   /*!
    *****************************************************************************
@@ -175,7 +167,21 @@ public:
    * and has sufficient space for DIM coordinates.
    *****************************************************************************
    */
-  void to_array(T* arr) const;
+  void to_array(T* arr) const       { m_components.to_array(arr); }
+
+
+
+  /*!
+   * \brief Equality comparison operator for points
+   */
+  friend bool operator==(const Point& lhs, const Point& rhs)
+  { return lhs.m_components == rhs.m_components; }
+
+  /*!
+   * \brief Inequality operator for points
+   */
+  friend bool operator!=(const Point& lhs, const Point& rhs)
+  { return !(lhs == rhs); }
 
   /*!
    *****************************************************************************
@@ -208,6 +214,16 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Linearly interpolates two points.
+   * \param [in] A user-supplied point
+   * \param [in] B user-supplied point
+   * \param [in] alpha weight with with to interpolate
+   * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B..
+   *****************************************************************************
+   */
+  static Point lerp( const Point& A, const Point& B, double alpha);
+  /*!
+   *****************************************************************************
    * \brief Helper function to return a point whose coordinates are all 0
    *****************************************************************************
    */
@@ -224,10 +240,8 @@ public:
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:
-  void verifyIndex(int idx) const { SLIC_ASSERT(idx >= 0 && idx < DIM); }
+  NumericArray<T,DIM> m_components;
 
-protected:
-  T m_components[ DIM ];
 };
 
 /// \name Pre-defined point types
@@ -244,56 +258,6 @@ typedef Point<double,3> Point3D;
 //  Point implementation
 //------------------------------------------------------------------------------
 namespace quest {
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-Point< T, DIM >::Point(T val, int sz)
-{
-  // NOTE (KW): This should be a static assert in the class
-  SLIC_ASSERT( DIM >= 1 );
-
-  // Fill first nvals coordinates with val ( 0 <= nvals <= DIM )
-  const int nvals = clamp(sz, 0, DIM);
-  std::fill( m_components, m_components+nvals, val );
-
-  // Fill any remaining coordinates with zero
-  if(nvals < DIM)
-  {
-      std::fill( m_components+nvals, m_components+DIM, T() );
-  }
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-Point< T, DIM >::Point(T* vals, int sz)
-{
-  SLIC_ASSERT( DIM >= 1 );
-
-  const int nvals = clamp(sz, 0, DIM);
-
-  // Copy first nvals coordinates from vals array ( 0 <= nvals <= DIM )
-  std::copy( vals, vals+nvals, m_components);
-
-  // Fill any remaining coordinates with zero
-  if(nvals < DIM)
-  {
-      std::fill( m_components+nvals, m_components+DIM, T());
-  }
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline Point<T,DIM>& Point< T,DIM >::operator=(const Point<T,DIM>& rhs )
-{
-
-  if( this == &rhs ) {
-    return *this;
-  }
-
-  // copy all the data
-  memcpy( m_components, rhs.m_components, NBYTES);
-  return *this;
-}
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
@@ -323,40 +287,14 @@ inline Point< T,DIM > Point< T,DIM >::midpoint(
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
-inline T& Point< T, DIM >::operator[](int i)
+inline Point< T,DIM > Point< T,DIM >::lerp(
+        const Point<T,DIM>& A,
+        const Point<T,DIM>& B,
+        double alpha)
 {
-    verifyIndex(i);
-    return m_components[ i ];
+  return (1.-alpha)*A + alpha*B;
 }
 
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline const T& Point< T, DIM >::operator[](int i) const
-{
-  verifyIndex(i);
-  return m_components[ i ];
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline const T* Point< T, DIM >::data() const
-{
-  return m_components;
-}
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-inline T* Point< T, DIM >::data()
-{
-    return m_components;
-}
-
-//------------------------------------------------------------------------------
-template < typename T, int DIM >
-void Point< T, DIM >::to_array(T* arr) const
-{
-    SLIC_ASSERT( arr != ATK_NULLPTR);
-    memcpy( arr, m_components, NBYTES );
-}
 
 //------------------------------------------------------------------------------
 template < typename T, int DIM >
@@ -371,28 +309,8 @@ std::ostream& Point< T, DIM >::print(std::ostream& os) const
 }
 
 //------------------------------------------------------------------------------
-/// Free functions implementing comparison and arithmetic operators
+/// Free functions implementing Point's operators
 //------------------------------------------------------------------------------
-
-template<typename T, int DIM>
-bool operator==(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
-{
-    for(int dim=0;dim<DIM;++dim)
-    {
-        if( lhs[dim] != rhs[dim])
-            return false;
-    }
-    return true;
-}
-
-//------------------------------------------------------------------------------
-
-template<typename T, int DIM>
-bool operator!=(const Point<T, DIM>& lhs, const Point<T, DIM>& rhs)
-{
-    return !(lhs == rhs);
-}
-
 
 template<typename T, int DIM>
 std::ostream& operator<<(std::ostream & os, const Point<T,DIM> & pt)
