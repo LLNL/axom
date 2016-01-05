@@ -104,6 +104,8 @@ contains
     type(Extent), pointer :: ext, test_extent, ext2, test_extent2
     type(C_PTR) :: test_extent_ptr, test_extent2_ptr
 
+    call set_case_name("basic_inout")
+
     ds = datastore_new()
     root = ds%get_root()
 
@@ -180,6 +182,8 @@ contains
 
     type(MeshVar), pointer :: zonemv, nodemv
     type(C_PTR) zonemv_ptr, nodemv_ptr, dom_ext_ptr
+
+    call set_case_name("meshvar_test")
 
     ds   = datastore_new()
     root = ds%get_root()
