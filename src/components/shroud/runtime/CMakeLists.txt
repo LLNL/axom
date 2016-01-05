@@ -5,11 +5,12 @@
 #
 # make the library
 #
-make_library( LIBRARY_NAME
-                  shroudrt
-              LIBRARY_SOURCES
-                  shroudc.cpp
-                  fstr_mod.f
-             )
+make_library(
+    LIBRARY_NAME
+        shroudrt
+    LIBRARY_SOURCES
+        shroudc.cpp
+        fstr_mod.f
+)
 
 install(TARGETS shroudrt DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

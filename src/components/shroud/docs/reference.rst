@@ -544,6 +544,11 @@ PY_from_object
     PyArg_Parse - status = converter(object, address).
     Defaults to *None*.
 
+PY_post_parse
+
+   Used if PY_PyTypeObject is set.
+   A format expression to convert a *PyObject* into the type.
+   Ex. ``{var} = PyObject_IsTrue({var_obj});``
 
 Format dictionary for Type fields
 

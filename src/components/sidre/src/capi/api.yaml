@@ -25,6 +25,7 @@ options:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
+#  wrap_python: True
 
 
 types:
@@ -100,9 +101,11 @@ classes:
 #    -  decl: bool hasView( IndexType idx ) const
     -  decl: DataView *getView( const std::string& name )
        function_suffix: _from_name
+       PY_error_pattern: PY_null_to_none
 #    -  decl: DataView const * getView( const std::string& name ) const
     -  decl: DataView *getView( const IndexType idx )
        function_suffix: _from_index
+       PY_error_pattern: PY_null_to_none
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
@@ -117,27 +120,32 @@ classes:
          num_elems:
          -  int
          -  long
+       PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
 #    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
 
     -  decl: DataView *createView( const string& name )
        function_suffix: _empty
+       PY_error_pattern: PY_null_to_none
     -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems)
        function_suffix: _from_type
        fortran_generic:
          num_elems:
          -  int
          -  long
+       PY_error_pattern: PY_null_to_none
 
 #    -  decl: DataView *createView( const std::string& name, const DataType& dtype)
 #    -  decl: DataView *createView( const std::string& name, const Schema& schema)
 
     -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
        function_suffix: _into_buffer
+       PY_error_pattern: PY_null_to_none
 
     -  decl: DataView * createView( const std::string& name, void * external_ptr)
        function_suffix: _external
+       PY_error_pattern: PY_null_to_none
 
     -  decl: void destroyView( const std::string &name )
 #    -  decl: void destroyView( IndexType idx )

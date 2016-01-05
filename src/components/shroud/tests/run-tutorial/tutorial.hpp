@@ -2,6 +2,9 @@
 // tutorial.hpp - wrapped routines
 //
 
+#ifndef TUTORIAL_HPP
+#define TUTORIAL_HPP
+
 #include <string>
 
 namespace tutorial
@@ -60,3 +63,5 @@ public:
 };
 
 } /* end namespace tutorial */
+
+#endif // TUTORIAL_HPP
