@@ -11,3 +11,6 @@ required packages:
      https://github.com/python-parsley/parsley
      head of repository for Python 3 support
   yaml - https://pypi.python.org/pypi/PyYAML/3.11
+
+TODO:
+try ruamel.yaml 0.10.12

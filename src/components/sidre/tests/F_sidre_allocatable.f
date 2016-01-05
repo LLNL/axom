@@ -15,7 +15,7 @@ contains
 ! Query metadata using datastore API.
 !----------------------------------------------------------------------
 
-  subroutine local_allocatable_int
+  subroutine external_allocatable_int
     integer, allocatable :: iarray(:)
     integer, pointer :: ipointer(:)
 
@@ -27,6 +27,8 @@ contains
     integer i
     integer rank
     integer(SIDRE_LENGTH) extents(7)
+
+    call set_case_name("external_allocatable_int")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -60,11 +62,11 @@ contains
 
     deallocate(iarray)
 
-  end subroutine local_allocatable_int
+  end subroutine external_allocatable_int
 
 !----------------------------------------------------------------------
 
-  subroutine local_allocatable_int_3d
+  subroutine external_allocatable_int_3d
     integer, allocatable :: iarray(:,:,:)
     integer, pointer :: ipointer(:,:,:)
 
@@ -76,6 +78,8 @@ contains
     integer i, j, k
     integer rank
     integer(SIDRE_LENGTH) extents(7)
+
+    call set_case_name("external_allocatable_int_3d")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -115,13 +119,13 @@ contains
 
     deallocate(iarray)
 
-  end subroutine local_allocatable_int_3d
+  end subroutine external_allocatable_int_3d
 
 !----------------------------------------------------------------------
 !
 ! register a static (non-allocatable) array with the datastore as external view
 
-  subroutine local_static_int
+  subroutine external_static_int
     integer :: iarray(10)
     integer, pointer :: ipointer(:)
 
@@ -131,6 +135,8 @@ contains
     integer type
     integer num_elements
     integer i
+
+    call set_case_name("external_static_int")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -153,12 +159,12 @@ contains
 
     call ds%delete()
 
-  end subroutine local_static_int
+  end subroutine external_static_int
 
 !----------------------------------------------------------------------
 !--- check other types
 
-  subroutine local_allocatable_double
+  subroutine external_allocatable_double
     real(C_DOUBLE), allocatable :: darray(:)
     real(C_DOUBLE), pointer :: dpointer(:)
 
@@ -168,6 +174,8 @@ contains
     integer num_elements
     integer type
     integer i
+
+    call set_case_name("external_allocatable_double")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -194,8 +202,59 @@ contains
 
     deallocate(darray)
 
-  end subroutine local_allocatable_double
+  end subroutine external_allocatable_double
 
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
+! Datastore owns a multi-dimension array.
+
+  subroutine datastore_int_3d
+    integer, pointer :: ipointer(:,:,:)
+
+    type(datastore) ds
+    type(datagroup) root
+    type(dataview)  view
+    integer type
+    integer num_elements
+    integer i, j, k
+    integer rank
+    integer(SIDRE_LENGTH) extents_in(3), extents(3)
+
+    call set_case_name("datastore_int_3d")
+
+    extents_in(1) = 2
+    extents_in(2) = 3
+    extents_in(3) = 4
+
+    ds = datastore_new()
+    root = ds%get_root()
+
+    view = root%create_view("iarray")
+    call view%apply(SIDRE_INT_ID, 3, extents_in)
+    call view%allocate()
+
+    call view%get_data(ipointer)
+
+    type = view%get_type_id()
+    call assert_equals(type, SIDRE_INT_ID)
+
+    num_elements = view%get_num_elements()
+    call assert_equals(num_elements, size(ipointer))
+
+    rank = view%get_num_dimensions()
+    call assert_equals(rank, 3)
+
+    rank = view%get_shape(7, extents)
+    call assert_equals(rank, 3)
+    call assert_true(extents(1) == size(ipointer, 1))
+    call assert_true(extents(2) == size(ipointer, 2))
+    call assert_true(extents(3) == size(ipointer, 3))
+
+    call ds%delete()
+
+  end subroutine datastore_int_3d
+
+!----------------------------------------------------------------------
 !----------------------------------------------------------------------
 
 end module sidre_allocatable
@@ -209,10 +268,12 @@ program fortran_test
 
   call init_fruit
 
-  call local_allocatable_int
-  call local_allocatable_int_3d
-  call local_static_int
-  call local_allocatable_double
+  call external_allocatable_int
+  call external_allocatable_int_3d
+  call external_static_int
+  call external_allocatable_double
+
+  call datastore_int_3d
 
   call fruit_summary
   call fruit_finalize

@@ -291,25 +291,16 @@ contains
 
     ! check values in depth views...
     call view0%get_data(data)
-    do i = 1, depth_nelems
-       call assert_equals( data(i), 0, "data(i), 0" )
-    enddo
+    call assert_true(all(data == 0), "depth 0 does not compare")
 
     call view1%get_data(data)
-   do i = 1, depth_nelems
-      call assert_equals( data(i), 1, "data(i), 1" )
-   enddo
+    call assert_true(all(data == 1), "depth 1 does not compare")
+ 
+    call view2%get_data(data)
+    call assert_true(all(data == 2), "depth 2 does not compare")
 
-   call view2%get_data(data)
-   do i = 1, depth_nelems
-      call assert_equals( data(i), 2, "data(i), 2" )
-   enddo
-
-   call view3%get_data(data)
-   do i = 1, depth_nelems
-      call assert_equals( data(i), 3, "data(i), 3" )
-      call assert_true( data(i) ==  3, "data(i) == 3" )
-   enddo
+    call view3%get_data(data)
+    call assert_true(all(data == 3), "depth 3 does not compare")
 
     call ds%print()
     call ds%delete()
@@ -382,14 +373,14 @@ contains
 
     ! check values in field views...
     call field0%get_data(data)
-    do i = 1, field_nelems
-       call assert_equals( data(i), 0, "data(i), 0")
-    enddo
+    call assert_true(size(data) == field_nelems, &
+         "depth 0 is incorrect size")
+    call assert_true(all(data == 0), "depth 0 does not compare")
 
     call field1%get_data(data)
-    do i = 1, field_nelems
-       call assert_equals( data(i), 1, "data(i), 1" )
-    enddo
+    call assert_true(size(data) == field_nelems, &
+         "depth 1 is incorrect size")
+    call assert_true(all(data == 1), "depth 0 does not compare")
 
     call ds%print()
     call ds%delete()
@@ -434,18 +425,10 @@ contains
 
     ! init the buff with values that align with the
     ! 4 subsections.
-    do i = 1, 10
-       data(i) = 1
-    enddo
-    do i = 11, 20
-       data(i) = 2
-    enddo
-    do i = 21, 30
-       data(i) = 3
-    enddo
-    do i = 31, 40
-       data(i) = 4
-    enddo
+    data( 1:10) = 1
+    data(11:20) = 2
+    data(21:30) = 3
+    data(31:40) = 4
 
 !--#ifdef XXX
 !--  ! setup our 4 views
@@ -593,14 +576,16 @@ contains
     call a1%get_data(a1_data)
     call a2%get_data(a2_data)
 
-    do i = 1, 5
-       a1_data(i) =  5.0
-       a2_data(i) = -5
-    enddo
+    call assert_true(size(a1_data) == 5, &
+         "a1_data is incorrect size")
+    call assert_true(size(a2_data) == 5, &
+         "a2_data is incorrect size")
 
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*5)
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
 
+    a1_data(1:5) =  5.0
+    a2_data(1:5) = -5
 
     call a1%reallocate(10)
     call a2%reallocate(15)
@@ -608,10 +593,15 @@ contains
     call a1%get_data(a1_data)
     call a2%get_data(a2_data)
 
-    do i = 1, 5
-       call assert_equals(a1_data(i), 5.0)
-       call assert_equals(a2_data(i), -5)
-    enddo
+    call assert_true(size(a1_data) == 10, &
+         "a1_data is incorrect size after realloc")
+    call assert_true(size(a2_data) == 15, &
+         "a2_data is incorrect size after realloc")
+
+    call assert_true(all(a1_data(1:5) == 5.0), &
+         "a1_data does not compare after realloc")
+    call assert_true(all(a2_data(1:5) == -5), &
+         "a2_data does not compare after realloc")
 
     a1_data(6:10) = 10.0
     a2_data(6:10) = -10

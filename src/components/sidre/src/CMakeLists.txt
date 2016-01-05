@@ -36,7 +36,7 @@ if (ENABLE_FORTRAN)
         capi/wrapDataBuffer.h
         capi/wrapDataView.h
     )   
-    list(APPEND sidre_sources
+    set(sidre_fortran_sources
         # generated source
         capi/wrapSidre.cpp
         capi/wrapDataStore.cpp
@@ -68,7 +68,7 @@ make_library( LIBRARY_NAME
                   sidre
               LIBRARY_SOURCES
                   "${sidre_sources}"
-                  "${sidre_headers}"
+                  "${sidre_fortran_sources}"
               DEPENDS_ON
                   ${capi_depends_on}
                   common
@@ -87,3 +87,41 @@ install(TARGETS sidre DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 #if (ENABLE_FORTRAN)
 #    add_dependencies(copy_headers_sidre sidre_generate)
 #endif()
+
+
+if(ENABLE_PYTHON_MODULE)
+    set(sidre_python_sources
+        capi/pyDataStoretype.cpp
+        capi/pyDataGrouptype.cpp
+        capi/pyDataBuffertype.cpp
+        capi/pyDataViewtype.cpp
+        capi/pySidremodule.hpp
+        capi/pySidremodule.cpp
+        capi/pySidrehelper.cpp
+    )
+
+    include_directories(${PYTHON_INCLUDE_DIRS})
+
+    set(BUILD_SHARED_LIBS TRUE)
+    make_library(
+        LIBRARY_NAME
+            sidre2
+        LIBRARY_SOURCES
+            ${sidre_sources}
+            ${sidre_python_sources}
+        DEPENDS_ON
+            common
+            conduit
+            slic
+    )
+
+    # Python wants the name without leading 'lib'
+    set_target_properties(sidre2
+        PROPERTIES
+          PREFIX ""
+    )
+    set_target_properties(sidre2 PROPERTIES OUTPUT_NAME sidre)
+
+#http://stackoverflow.com/questions/2152077/is-it-possible-to-get-cmake-to-build-both-a-static-and-shared-version-of-the-sam
+# object library to avoid compile files twice
+endif(ENABLE_PYTHON_MODULE)

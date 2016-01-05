@@ -62,7 +62,11 @@
                         "constructor": true
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
-                    "docs": "constructor", 
+                    "doxygen": {
+                        "brief": "constructor", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new", 
                         "F_C_name": "aa_exclass1_new", 
@@ -102,7 +106,11 @@
                         "constructor": true
                     }, 
                     "decl": "ExClass1 *new ( const string *name ) +constructor", 
-                    "docs": "constructor", 
+                    "doxygen": {
+                        "brief": "constructor", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_new_bufferify", 
                         "F_C_name": "aa_exclass1_new_bufferify", 
@@ -129,6 +137,9 @@
                         "destructor": true
                     }, 
                     "decl": "void delete() +destructor", 
+                    "doxygen": {
+                        "description": "longer description joined with previous line"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_delete", 
                         "F_C_name": "aa_exclass1_delete", 
@@ -161,7 +172,6 @@
                     ], 
                     "attrs": {}, 
                     "decl": "int incrementCount(int incr)", 
-                    "docs": "blah blah", 
                     "fmt": {
                         "C_name": "AA_exclass1_increment_count", 
                         "F_C_name": "aa_exclass1_increment_count", 
@@ -218,7 +228,9 @@
                         "const": true
                     }, 
                     "decl": "int GetNameLength() const", 
-                    "docs": "helper function for Fortran", 
+                    "doxygen": {
+                        "brief": "helper function for Fortran"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_length", 
                         "F_C_name": "aa_exclass1_get_name_length", 
@@ -323,6 +335,10 @@
                     }
                 }, 
                 {
+                    "_cpp_overload": [
+                        8, 
+                        9
+                    ], 
                     "_decl": "int getValue(int value+intent(in)+value)", 
                     "_function_index": 8, 
                     "_overloaded": true, 
@@ -358,6 +374,10 @@
                     }
                 }, 
                 {
+                    "_cpp_overload": [
+                        8, 
+                        9
+                    ], 
                     "_decl": "long getValue(long value+intent(in)+value)", 
                     "_function_index": 9, 
                     "_overloaded": true, 
@@ -663,7 +683,9 @@
                     "_function_index": 17, 
                     "args": [], 
                     "attrs": {}, 
-                    "docs": "helper function for Fortran", 
+                    "doxygen": {
+                        "brief": "helper function for Fortran"
+                    }, 
                     "fmt": {
                         "C_name": "AA_exclass2_get_name_length", 
                         "F_C_name": "aa_exclass2_get_name_length", 
@@ -846,6 +868,10 @@
                     ], 
                     "_function_index": 19, 
                     "_has_default_arg": true, 
+                    "_nargs": [
+                        1, 
+                        2
+                    ], 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -903,6 +929,10 @@
                     "_function_index": 34, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
+                    "_nargs": [
+                        1, 
+                        2
+                    ], 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -954,6 +984,10 @@
                     "_function_index": 35, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
+                    "_nargs": [
+                        1, 
+                        2
+                    ], 
                     "_overloaded": true, 
                     "args": [
                         {
@@ -1478,6 +1512,10 @@
         }, 
         {
             "_PTR_F_C_index": 44, 
+            "_cpp_overload": [
+                38, 
+                39
+            ], 
             "_decl": "void test_names(const std::string & name+intent(in))", 
             "_function_index": 38, 
             "_overloaded": true, 
@@ -1515,6 +1553,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                38, 
+                39
+            ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim)", 
             "_function_index": 44, 
             "_generated": "string_to_buffer_and_len", 
@@ -1553,6 +1595,10 @@
         }, 
         {
             "_PTR_F_C_index": 45, 
+            "_cpp_overload": [
+                38, 
+                39
+            ], 
             "_decl": "void test_names(const std::string & name+intent(in), int flag+intent(in)+value)", 
             "_function_index": 39, 
             "_overloaded": true, 
@@ -1598,6 +1644,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                38, 
+                39
+            ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)", 
             "_function_index": 45, 
             "_generated": "string_to_buffer_and_len", 
@@ -1714,6 +1764,10 @@
             ], 
             "_function_index": 40, 
             "_has_default_arg": true, 
+            "_nargs": [
+                0, 
+                2
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -1786,6 +1840,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
         "debug": true, 
+        "doxygen": true, 
         "library": "UserLibrary", 
         "namespace": "example nested", 
         "wrap_c": true, 
@@ -1812,6 +1867,7 @@
             "PY_PyObject": "PP_ExClass1", 
             "PY_PyTypeObject": "PP_ExClass1_Type", 
             "PY_from_object": "PP_ExClass1_from_Object", 
+            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_ExClass1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -1834,6 +1890,7 @@
             "PY_PyObject": "PP_ExClass2", 
             "PY_PyTypeObject": "PP_ExClass2_Type", 
             "PY_from_object": "PP_ExClass2_from_Object", 
+            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_ExClass2_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -1883,7 +1940,9 @@
             "f_type": "integer(C_INT)"
         }, 
         "bool": {
+            "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 

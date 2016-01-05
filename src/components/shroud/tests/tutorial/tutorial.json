@@ -563,6 +563,10 @@
             ], 
             "_function_index": 9, 
             "_has_default_arg": true, 
+            "_nargs": [
+                0, 
+                2
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -611,6 +615,10 @@
         }, 
         {
             "_PTR_F_C_index": 34, 
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
@@ -648,6 +656,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim)", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
@@ -685,6 +697,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(int indx+intent(in)+value)", 
             "_function_index": 11, 
             "_overloaded": true, 
@@ -1025,6 +1041,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10()", 
             "_function_index": 15, 
             "_overloaded": true, 
@@ -1051,6 +1071,10 @@
         }, 
         {
             "_PTR_F_C_index": 35, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
@@ -1102,6 +1126,10 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
             "_function_index": 38, 
             "_generated": "fortran_generic", 
@@ -1147,6 +1175,10 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 39, 
             "_generated": "fortran_generic", 
@@ -1191,6 +1223,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)", 
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
@@ -1241,6 +1277,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value)", 
             "_function_index": 28, 
             "_generated": "has_default_arg", 
@@ -1282,6 +1322,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
             "_function_index": 29, 
             "_generated": "has_default_arg", 
@@ -1332,6 +1376,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
                 28, 
@@ -1339,6 +1387,10 @@
             ], 
             "_function_index": 17, 
             "_has_default_arg": true, 
+            "_nargs": [
+                1, 
+                3
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -1394,6 +1446,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value)", 
             "_function_index": 30, 
             "_generated": "has_default_arg", 
@@ -1438,6 +1494,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
             "_function_index": 31, 
             "_generated": "has_default_arg", 
@@ -1491,6 +1551,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
                 30, 
@@ -1498,6 +1562,10 @@
             ], 
             "_function_index": 18, 
             "_has_default_arg": true, 
+            "_nargs": [
+                2, 
+                4
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -1676,6 +1744,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "tutorial.hpp", 
         "debug": true, 
+        "doxygen": true, 
         "library": "Tutorial", 
         "namespace": "tutorial", 
         "wrap_c": true, 
@@ -1693,6 +1762,7 @@
             "PY_PyObject": "PY_Class1", 
             "PY_PyTypeObject": "PY_Class1_Type", 
             "PY_from_object": "PP_Class1_from_Object", 
+            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_Class1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -1744,7 +1814,9 @@
             "typedef": "int"
         }, 
         "bool": {
+            "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 
