@@ -352,19 +352,16 @@ return 1;""", fmt)
                 if arg_typedef.PY_PyTypeObject:
                     # A Python Object which must be converted to C++ type.
                     fmt.var_obj = arg_name
-#                    PY_decl.append(self.std_c_decl(lang, arg, const=False) + ';')
                     objtype = arg_typedef.PY_PyObject or 'PyObject'
                     PY_decl.append(objtype + ' * ' + fmt.var_obj + ';')
                     append_format(post_parse, arg_typedef.PY_post_parse, fmt)
                     cpp_call_list.append(fmt.var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
-#                    PY_decl.append(self.std_c_decl(lang, arg, const=False) + ';')
                     post_parse.append(None)
                     cpp_call_list.append(fmt.var)
                 else:
                     # convert to C++ type
-#                    PY_decl.append(self.std_c_decl(lang, arg, const=False) + ';')
                     fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
                     post_parse.append(None)
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
@@ -640,9 +637,6 @@ return 1;""", fmt)
                     'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
                     'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
                     ])
-#            body.append('int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);')
-#            body.append('int numArgs = PyTuple_GET_SIZE(args);')
-#            body.append('int totArgs = numArgs + numNamedArgs;')
             body.append('PyObject *rvobj;')
 
 
