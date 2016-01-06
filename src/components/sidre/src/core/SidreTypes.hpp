@@ -91,6 +91,9 @@ enum DataTypeId
     DOUBLE_ID = SIDRE_DOUBLE_ID
 };
 
+/*!
+ * \brief The detail namespace contains code that is either used internally by the sidre implementation or is under evaluation.
+ */
 namespace detail
 {
 /*!
