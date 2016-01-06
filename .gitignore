@@ -1,5 +1,5 @@
-build-debug
-install-debug
+build-
+install-
 .cproject
 .project
 .settings
