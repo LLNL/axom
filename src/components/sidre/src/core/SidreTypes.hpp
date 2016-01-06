@@ -92,6 +92,11 @@ enum DataTypeId
 };
 
 /*!
+ * \brief The detail namespace contains code that is either used internally by the sidre implementation or is under evaluation.
+ */
+namespace detail
+{
+/*!
  * \brief Typedefs for sidre types.
  */
 typedef conduit_int8 sidre_int8;
@@ -123,6 +128,8 @@ template<> struct SidreTT<sidre_uint64> {  static inline DataTypeId id() { retur
 
 template<> struct SidreTT<sidre_float32> {  static inline DataTypeId id() { return FLOAT32_ID; }; };
 template<> struct SidreTT<sidre_float64> {  static inline DataTypeId id() { return FLOAT64_ID; }; };
+
+}
 
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
