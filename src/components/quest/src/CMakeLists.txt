@@ -10,18 +10,20 @@
 
 set( quest_headers
    
-    ## Geometry Headers
+    ## Geometry Headers 
     geom/BoundingBox.hpp
     geom/Determinants.hpp
+    geom/fuzzy_compare.hpp
     geom/HyperSphere.hpp
+    geom/Intersection.hpp
+    geom/NumericArray.hpp
     geom/Orientation.hpp
     geom/Point.hpp
-    geom/NumericArray.hpp
+    geom/Ray.hpp
     geom/Segment.hpp
     geom/SquaredDistance.hpp
     geom/Triangle.hpp
     geom/Vector.hpp
-    geom/fuzzy_compare.hpp
     
     ## Mesh Library Headers
     mesh/CellConnectivity.hpp
