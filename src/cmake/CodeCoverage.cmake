@@ -162,4 +162,6 @@ ENDFUNCTION()
 
 # Add code coverage target
 add_code_coverage_target(coverage make test)
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}" )
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_COVERAGE}" )
 MESSAGE(STATUS "Code coverage: enabled via gcov.")
