@@ -47,30 +47,36 @@ class DataStore;
 /*!
  * \class DataView
  *
- * \brief DataView provides a "view" into data, which may be owned by a
- *        DataBuffer object or owned externally.
+ * \brief A DataView object describes a "view" into data, which may be 
+ *        owned by the view object (via an attached DataBuffer) or 
+ *        owned externally.
  *
  * The DataView class has the following properties:
  *
  *    - DataView objects can only be created via the DataGroup interface,
- *      not directly. The view object is owned by the DataGroup object that
- *      creates it.
+ *      not constructed directly. A view object is owned by the DataGroup 
+ *      object that creates it.
  *    - A DataView object has a unique name (string) within the DataGroup
  *      that owns it.
  *    - A DataView holds a pointer to the DataGroup that created it and which
  *      owns it.
- *    - A DataView object can refer to data in one of four ways:
- *        # It can decribe a view into data owned by a DataBuffer.
- *        # A view can be created to describe and allocate data, using 
- *          semantics similar to DataBuffer data declaration and allocation. 
- *          In this case, no other view is allowed to allocate, reallocate,
- *          or deallocate the buffer.
- *        # It can hold a pointer to an "external" data object. In this case,
- *          the view can describe the data as though it owns it and view
- *          operations are essentially the same as the previous two cases.
- *        # It can hold a pointer to an "opaque" data object. In this case,
- *          the view knows nothing about the structure of the data; the view
- *          is essentially a handle to the data.
+ *    - A DataView object can describe and provide access to data in one of 
+ *      four ways:
+ *        # A view can decribe (a subset of) data owned by an existing 
+ *          DataBuffer. In this case, the data can be (re)allocated or 
+ *          deallocated by the view if and only if it is the only view 
+ *          attached to the buffer. 
+ *        # A view can describe and allocate data using semantics similar 
+ *          to DataBuffer data declaration and allocation. In this case, no 
+ *          other view is allowed to (re)allocate or deallocate the data held 
+ *          by the associated data buffer.
+ *        # A view can describe data associated with a pointer to an 
+ *          "external" data object. In this case, the view cannot (re)allocate
+ *          or deallocate the data. However, all other view operations are 
+ *          essentially the same as the previous two cases.
+ *        # It can hold a pointer to an undescribed (i.e., "opaque") data 
+ *          object. In this case, the view knows nothing about the type or 
+ *          structure of the data; it is essentially just a handle to the data.
  *    - For any DataView object that is "external" or associated with a 
  *      DataBuffer, the data description of the view may be specified, or
  *      changed, by calling one of the apply() methods.  
@@ -86,27 +92,184 @@ public:
   //
   friend class DataGroup;
 
+
+//@{
+//!  @name DataView query and accessor methods methods
+
+  /*!
+   * \brief Return const reference to name of DataView.
+   */
+  const std::string& getName() const
+  {
+    return m_name;
+  }
+
+  /*!
+   * \brief Return pointer to non-const DataGroup that owns DataView object.
+   */
+  DataGroup * getOwningGroup()
+  {
+    return m_owning_group;
+  }
+
+  /*!
+   * \brief Return pointer to const DataGroup that owns DataView object.
+   */
+  const DataGroup * getOwningGroup() const
+  {
+    return m_owning_group;
+  }
+
+  /*!
+   * \brief Return true if view has a an associated DataBuffer object
+   *        (e.g., view is not opaque, it has been created with a buffer,
+   *         it has been allocated, etc.); false otherwise.
+   */
+  bool  hasBuffer() const
+  {
+    return m_data_buffer != ATK_NULLPTR;
+  }
+
+  /*!
+   * \brief Return pointer to non-const DataBuffer associated with DataView.
+   */
+  DataBuffer * getBuffer()
+  {
+    return m_data_buffer;
+  }
+
+  /*!
+   * \brief Return pointer to const DataBuffer associated with DataView.
+   */
+  const DataBuffer * getBuffer() const
+  {
+    return m_data_buffer;
+  }
+
+  /*!
+   * \brief Return true if view holds external data; false otherwise.
+   */
+  bool isExternal() const
+  {
+    return m_state == EXTERNAL;
+  }
+
+  /*!
+   * \brief Return true if data description (schema) has been applied to data
+   *        in buffer associated with view; false otherwise.
+   */
+  bool isApplied() const
+  {
+    return m_is_applied;
+  }
+
+  /*!
+   * \brief Convenience function that returns true if view is opaque 
+   *        (i.e., has access to data but has no knowledge of the data 
+   *        type or structure); false otherwise.
+   */
+  bool  isOpaque() const
+  {
+    return m_state == EXTERNAL && !isApplied();
+  }
+
+  /*!
+   * \brief Return type of data for this DataView object.
+   */
+  TypeID getTypeID() const
+  {
+    return static_cast<TypeID>(m_node.dtype().id());
+  }
+
+  /*!
+   * \brief Return total number of bytes associated with this DataView object.
+   *
+   * IMPORTANT: This is the total bytes described by the view; they may not 
+   *            yet be allocated.
+   */
+  size_t getTotalBytes() const
+  {
+    return m_schema.total_bytes();
+  }
+
+  /*!
+   * \brief Return total number of elements described by this DataView object.
+   *
+   * IMPORTANT: This is the number of elements described by the view; 
+   *            they may not yet be allocated.
+   */
+  size_t getNumElements() const
+  {
+    return m_schema.dtype().number_of_elements();
+  }
+
+  /*!
+   * \brief Return number of dimensions in data view.
+   */
+  int getNumDimensions() const
+  {
+    return ( m_shape == ATK_NULLPTR ? 1 : m_shape->size() ); 
+  }
+
+  /*!
+   * \brief Return number of dimensions in data view and fill in shape 
+   *        information of this data view object.
+   *
+   *  ndims - maximum number of dimensions to return.
+   */
+//
+// RDH -- who allocates shape? What are error conditions??
+//
+  int getShape(int ndims, SidreLength * shape) const;
+
+  /*!
+   * \brief Return const reference to schema describing data.
+   */
+  const Schema& getSchema() const
+  {
+    return m_schema;
+  }
+
+  /*!
+   * \brief Return non-const reference to Conduit node holding data.
+   */
+  Node& getNode()
+  {
+    return m_node;
+  }
+
+  /*!
+   * \brief Return const reference to Conduit node holding data.
+   */
+  const Node& getNode() const
+  {
+    return m_node;
+  }
+
+//@}
+
+
 //@{
 //!  @name DataView allocation methods
 
   /*!
-   * \brief Allocate data for a view, previously defined.
+   * \brief Allocate data for a view, previously described.
    *
-   * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, this method does nothing.
+   * NOTE: Allocation from a view is allowed only if it is the only
+   *       view associated with its buffer (when it has one), or the view
+   *       is not external, not a string view, or not a scalar view. 
+   *       If none of these condition is true, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
   DataView * allocate();
 
   /*!
-   * \brief Allocate data for view with given type and number of elements.
+   * \brief Allocate data for view given type and number of elements.
    *
-   * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, or given number of 
-   *       elements is < 0, this method does nothing.
+   * NOTE: The allocate() method describes conditions where view 
+   *       allocation is allowed. If none of those is true, or given number 
+   *       of elements is < 0, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -115,61 +278,64 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
    *
-   * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, this method does nothing.
+   * NOTE: The allocate() method describes conditions where view 
+   *       allocation is allowed. If none of those is true, 
+   *       this method does nothing.
    *
    * \return pointer to this DataView object.
    */
   DataView * allocate(const DataType& dtype);
 
   /*!
-   * \brief Allocate data for view described by a data description (schema) object.
+   * \brief Allocate data for view described by a Conduit schema object.
    *
-   * NOTE: Allocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, this method does nothing.
+   * NOTE: The allocate() method describes conditions where view 
+   *       allocation is allowed. If none of those is true, 
+   *       this method does nothing.
    *
    * \return pointer to this DataView object.
    */
   DataView * allocate(const Schema& schema);
 
+
   /*!
    * \brief  Reallocate data for view to given number of elements (type
    *         stays the same).
    *
-   * NOTE: Reallocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, or given number of 
-   *       elements is < 0, this method does nothing.
+   * NOTE: Reallocation from a view is only allowed under that same conditions
+   *       for the allocate() method. If none of those is true, 
+   *       or given number of elements is < 0, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
+//
+// RDH -- Should calling reallocate with 0 elems deallocate the data??
+//
   DataView * reallocate(SidreLength num_elems);
 
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
    *
-   * NOTE: Reallocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, this method does nothing.
+   * NOTE: Reallocation from a view is only allowed under that same conditions
+   *       described by the allocate() method. If none of those is true, 
+   *       or data type is undefined, this method does nothing.
    *
-   * NOTE: The current type of the view data must match that of the given 
-   *       data type object. If not, the method does nothing.
+   * NOTE: The given data type object must match the view type, if it is 
+   *       defined. If not, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
   DataView * reallocate(const DataType& dtype);
 
   /*!
-   * \brief  Reallocate data for view as specified by a data description (schema) object.
+   * \brief  Reallocate data for view as specified by a Conduit schema object.
    *
-   * NOTE: Reallocation from a view is only allowed if it is the only
-   *       view associated with its buffer, or if it is not opaque or
-   *       external. If either condition is true, this method does nothing.
+   * NOTE: Reallocation from a view is only allowed under that same conditions
+   *       described by the allocate() method. If none of those is true,
+   *       or data type is undefined, this method does nothing.
    *
-   * NOTE: The current type of the view data must match that of the given 
-   *       schema object. If not, the method does nothing.
+   * NOTE: The data type of the given schema object must match the view type, 
+   *       if it is defined. If not, the method does nothing.
    * 
    * \return pointer to this DataView object.
    */
@@ -177,14 +343,18 @@ public:
 
 //@}
 
+
   /*!
    * \brief Attach DataBuffer object to data view.
    *
-   * Note that view cannot be used to access data in buffer until it
-   * is described by calling an apply() method.
+   * Note that, in general, the view cannot be used to access data in 
+   * buffer until one of the apply() methods is called. However, if
+   * the view has a valid data description with a total number of bytes
+   * that is <= number of bytes held in the buffer, then apply() will
+   * be called internally.
    *
-   * If data view is opaque, already associated with a buffer, or given 
-   * buffer pointer is null, method does nothing.
+   * If data view already has a buffer, or it is an external view, 
+   * a scalar view, or a string view, this method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -192,10 +362,10 @@ public:
 
 
 //@{
-//!  @name DataView apply (data description) methods
+//!  @name Methods to apply DataView description to data.
 
   /*!
-   * \brief Apply data description of a previously declared to data view.
+   * \brief Apply view description to data.
    *
    * If view holds a scalar or a string, the method does nothing.
    *
@@ -208,14 +378,18 @@ public:
    *        optionally offset and stride to data view (type remains the same).
    *
    * NOTE: The units for offset and stride are in number of elements, which
-   *       is different than the DataType usage below where offset and stride
-   *       are in number of bytes.
+   *       is different than the Conduit DataType usage below where offset 
+   *       and stride are in number of bytes.
+//
+// RDH -- will this be changed for consistency?
+//
    *
    * IMPORTANT: If view has been previously declared (or applied), this 
    *            operation will apply the new data description to the view.
    *
-   * If view holds a scalar or a string, or given number of elements < 0, 
-   * or offset < 0, the method does nothing.
+   * If view holds a scalar or a string, is external and does not have a
+   * sufficient data description to get type information, or given number 
+   * of elements < 0, or offset < 0, the method does nothing.
    *
    * \return pointer to this DataView object.
    */
@@ -228,8 +402,8 @@ public:
    *        optionally offset and stride to data view.
    *
    * NOTE: The units for offset and stride are in number of elements, which
-   *       is different than the DataType usage below where offset and stride
-   *       are in number of bytes.
+   *       is different than the Conduit DataType usage below where offset 
+   *       and stride are in number of bytes.
    *
    * IMPORTANT: If view has been previously declared (or applied), this 
    *            operation will apply the new data description to the view.
@@ -279,168 +453,77 @@ public:
 
 //@}
 
+
 //@{
-//!  @name DataView query methods
+//!  @name Methods to set data in the view (scalar, string, or external data).
 
   /*!
-   * \brief Return true if view has a an associated DataBuffer object
-   *        (e.g., view is not opaque, it has been created with a buffer,
-   *         it has been allocated, etc.); false otherwise.
-   */
-  bool  hasBuffer() const
-  {
-    return m_data_buffer != ATK_NULLPTR;
-  }
-
-  /*!
-   * \brief Return true if view holds external data; false otherwise.
-   */
-  bool isExternal() const
-  {
-    return m_state == EXTERNAL;
-  }
-
-  /*!
-   * \brief Return true if data description (schema) has been applied to data
-   *        in buffer associated with view; false otherwise.
-   */
-  bool isApplied() const
-  {
-    return m_is_applied;
-  }
-
-  /*!
-   * \brief Convenience function that returns true if view is opaque 
-   *        (i.e., has access to data but has no knowledge of the data 
-   *        type or structure); false otherwise.
-   */
-  bool  isOpaque() const
-  {
-    return m_state == EXTERNAL && !isApplied();
-  }
-
-  /*!
-   * \brief Return total number of bytes associated with this DataView object.
+   * \brief Set the view to hold the given scalar.
    *
-   * IMPORTANT: This is the total bytes described by the view; they may not 
-   *            yet be allocated.
+   * \return pointer to this DataView object.
    */
-  size_t getTotalBytes() const
+  template<typename ScalarType>
+  DataView* setScalar(ScalarType value)
   {
-    return m_schema.total_bytes();
+//
+// RDH -- This will change when scalar pool is added. Also, the following
+//        check will not be needed because a scalar view will not have 
+//        allocated data.
+//
+    // Check that parameter type provided matches what type is stored in the node.
+#if defined(ATK_DEBUG)
+    DataTypeId arg_id = SidreTT<ScalarType>::id();
+    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
+      "Mismatch between setScalar()" << DataType::id_to_name( arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() << ").");
+#endif
+
+    m_node.set(value);
+    m_state = SCALAR;
+    return this;
   }
 
+//
+// RDH -- Add an overload of the following that takes a const char *.
+//
   /*!
-   * \brief Return total number of elements described by this DataView object.
+   * \brief Set the view to hold the given string.
    *
-   * IMPORTANT: This is the number of elements described by the view; 
-   *            they may not yet be allocated.
+   * \return pointer to this DataView object.
    */
-  size_t getNumElements() const
+  DataView* setString(const std::string& value)
   {
-    return m_schema.dtype().number_of_elements();
-  }
+    // TODO: Check with Cyrus that the set_string function is the right call (should be).
+    m_node.set_string(value);
+    m_state = STRING;
+    return this;
+  };
 
   /*!
-   * \brief Return number of dimensions in data view.
-   */
-  int getNumDimensions() const;
-
-  /*!
-   * \brief Return number of dimensions in data view and fill in shape of this data view object.
+   * \brief Set view to hold external data.
    *
-   *  ndims - maximum number of dimensions to return.
+   * Data is undescribed (i.e., view is opaque) until an apply methods 
+   * is called on the view.
+   *
+   * \return pointer to this DataView object.
    */
-  int getShape(int ndims, SidreLength * shape) const;
+  DataView* setExternalDataPtr(void * external_ptr);
 
 //@}
 
 
 //@{
-//!  @name Accessor methods
+//! @name Methods to retrieve data in a view.
 
   /*!
-   * \brief Return const reference to name of DataView.
-   */
-  const std::string& getName() const
-  {
-    return m_name;
-  }
-
-  /*!
-   * \brief Return pointer to non-const DataGroup that owns DataView object.
-   */
-  DataGroup * getOwningGroup()
-  {
-    return m_owning_group;
-  }
-
-  /*!
-   * \brief Return pointer to const DataGroup that owns DataView object.
-   */
-  const DataGroup * getOwningGroup() const
-  {
-    return m_owning_group;
-  }
-
-  /*!
-   * \brief Return type of data for this DataView object.
-   */
-  TypeID getTypeID() const
-  {
-    return static_cast<TypeID>(m_node.dtype().id());
-  }
-
-  /*!
-   * \brief Return pointer to non-const DataBuffer associated with DataView.
-   */
-  DataBuffer * getBuffer()
-  {
-    return m_data_buffer;
-  }
-
-  /*!
-   * \brief Return pointer to const DataBuffer associated with DataView.
-   */
-  const DataBuffer * getBuffer() const
-  {
-    return m_data_buffer;
-  }
-  /*!
-   * \brief Return const reference to schema describing data.
-   */
-  const Schema& getSchema() const
-  {
-    return m_schema;
-  }
-
-  /*!
-   * \brief Return non-const reference to Conduit node holding data.
-   */
-  Node& getNode()
-  {
-    return m_node;
-  }
-
-  /*!
-   * \brief Return const reference to Conduit node holding data.
-   */
-  const Node& getNode() const
-  {
-    return m_node;
-  }
-
-  //@}
-
-  //@{
-  //! @name Accessor methods for retrieving data from a view.  These require the caller to assign the return value
-  //! to a variable.
-  //! Examples:
-  //! int my_int = getData();
-  //! int* my_ptr = getData();
-
-  /*!
-   * \brief Return a pointer or conduit int_array object to the view's array data.
+   * \brief Return a pointer or conduit array object to the view's array data.
+   *
+   * Return value depends on variable type caller assigns it to. For example,
+   * if view holds an integer array, the following usage is possible:
+   * 
+   * \verbatim
+   *    int* a = view->getArray();      // Get array as int pointer
+   *    int_array a = view->getArray(); // Get array as Conduit array struct.
+   * \endverbatim
    */
   Node::Value getArray()
   {
@@ -451,7 +534,14 @@ public:
 
   /*!
    * \brief Returns a copy of the string contained in the view.
+//
+// RDH -- Should we also provide an overload that returns a const char *?
+//        It seems excessive to create copies of strings for most usage.
+//
    */
+//
+// RDH -- What happens if the view does not hold a scalar?
+//
   Node::Value getString()
   {
     //TODO add check that view holds array data.  Will be added in later commit.
@@ -462,22 +552,22 @@ public:
   /*!
    * \brief Returns a copy of the scalar value contained in the view.
    */
+//
+// RDH -- What happens if the view does not hold a scalar?
+//
   Node::Value getScalar()
   {
     return getData();
   }
 
   /*!
-   * \brief This is an advanced accessor function for retrieving the data in a view that allows a developer more
-   * flexibility with casting the data to another type.  It will allow a developer to cast held data to any compatible
-   * type allowed by the conduit Node::Value return overloading mechanism.
+   * \brief Return data held by view and cast it to any compatible type
+   *  allowed by Conduit (return type depends on type caller assigns it to).
    */
   Node::Value getData()
   {
-    //TODO - add check that data is described (not opaque)
-    SLIC_ASSERT_MSG( !isOpaque(), "This view contains data that is not described to the data store (opaque).  You "
-      << "must use getVoidPtr() to retrieve a pointer to opaque data.");
-
+    SLIC_ASSERT_MSG( m_is_applied, 
+                    "View description has not been applied to data");
     return m_node.value();
   }
 
@@ -496,7 +586,8 @@ public:
   }
 
   /*!
-   * \brief Returns a void pointer to data described by the view.
+   * \brief Returns a void pointer to data described by the view (with any
+   * offset, stride, schema, etc. applied).
    */
   void * getVoidPtr()
   {
@@ -510,53 +601,8 @@ public:
     }
   }
 
-  //@}
+//@}
 
-  //@{
-  //!  @name Set methods for setting data in the view (scalar, string, or
-  //!        ptr to external data).
-
-  /*!
-   * \brief Set the view to hold the given scalar.
-   */
-  template<typename ScalarType>
-  DataView* setScalar(ScalarType value)
-  {
-    // Check that parameter type provided matches what type is stored in the node.
-#if defined(ATK_DEBUG)
-    DataTypeId arg_id = SidreTT<ScalarType>::id();
-    SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
-      "Mismatch between setScalar()" << DataType::id_to_name( arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() << ").");
-#endif
-
-    m_node.set(value);
-    m_state = SCALAR;
-    return this;
-  }
-
-  /*!
-   * \brief Set the view to hold the give string.
-   */
-  DataView* setString(const std::string& value)
-  {
-    // TODO: Will add check to verify that view holds a string in later commit (need enum set up first).
-    // TODO: Check with Cyrus that the set_string function is the right call (should be).
-    m_node.set_string(value);
-    m_state = STRING;
-    return this;
-  };
-
-  /*!
-   * \brief Set view to hold external data.
-   *
-   * Data is undescribed (i.e., view is opaque) until one of the apply 
-   * methods is called on the view.
-   *
-   * \return pointer to this DataView object.
-   */
-  DataView* setExternalDataPtr(void * external_ptr);
-
-  //@}
 
 //@{
 //!  @name DataView print methods.

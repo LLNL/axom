@@ -91,8 +91,8 @@ class DataStore;
  *      DataGroup.
  *    - A DataGroup object maintains a pointer to its parent DataGroup.
  *    - A DataGroup object can be moved or copied to another DataGroup.
- *    - DataView objects are (only) created by DataGroup objects. The DataGroup
- *      that creates a DataView owns it.
+ *    - DataGroup objects can create DataView objects within them. The 
+ *      DataGroup that creates a DataView owns it.
  *    - A DataView object has a unique name (string) within the DataGroup
  *      that owns it.
  *    - A DataView object can be moved or copied to another DataGroup.
@@ -116,8 +116,9 @@ public:
   //
   friend class DataStore;
 
+
 //@{
-//!  @name Basic Accessor methods.
+//!  @name Basic query and accessor methods.
 
   /*!
    * \brief Return const reference to name of DataGroup instance.
@@ -181,7 +182,7 @@ public:
 
 
 //@{
-//!  @name DataView accessor methods.
+//!  @name DataView query methods.
 
   /*!
    * \brief Return true if DataGroup owns a DataView with given name;
@@ -200,6 +201,36 @@ public:
   {
     return m_view_coll.hasItem(idx);
   }
+
+  /*!
+   * \brief Return the index of DataView with given name.
+   *
+   *        If none, return sidre::InvalidIndex;
+   */
+  IndexType getViewIndex(const std::string& name) const
+  {
+    SLIC_CHECK_MSG( hasView(name), "no view found with name == " << name);
+
+    return m_view_coll.getItemIndex(name);
+  }
+
+  /*!
+   * \brief Return the name of DataView with given index.
+   *
+   *        If none, return sidre::InvalidName.
+   */
+  const std::string& getViewName(IndexType idx) const
+  {
+    SLIC_CHECK_MSG( hasView(idx), "no view found with idx == " << idx );
+
+    return m_view_coll.getItemName(idx);
+  }
+
+//@}
+
+
+//@{
+//!  @name DataView access and iteration methods.
 
   /*!
    * \brief Return (non-const) pointer to DataView with given name.
@@ -242,36 +273,6 @@ public:
   }
 
   /*!
-   * \brief Return the index of DataView with given name.
-   *
-   *        If none, return sidre::InvalidIndex;
-   */
-  IndexType getViewIndex(const std::string& name) const
-  {
-    SLIC_CHECK_MSG( hasView(name), "no view found with name == " << name);
-
-    return m_view_coll.getItemIndex(name);
-  }
-
-  /*!
-   * \brief Return the name of DataView with given index.
-   *
-   *        If none, return sidre::InvalidName.
-   */
-  const std::string& getViewName(IndexType idx) const
-  {
-    SLIC_CHECK_MSG( hasView(idx), "no view found with idx == " << idx );
-
-    return m_view_coll.getItemName(idx);
-  }
-
-//@}
-
-
-//@{
-//!  @name DataView iteration methods.
-
-  /*!
    * \brief Return first valid DataView index (i.e., smallest index
    *        over all DataViews).
    *
@@ -298,7 +299,7 @@ public:
 
 
 //@{
-//!  @name DataView creation methods that also allocate data.
+//!  @name DataView creation methods that also describe and allocate data.
 
   /*!
    * \brief Create DataView object with given name, data type, and 
@@ -314,7 +315,8 @@ public:
    * view is not created.
    */
   DataView * createViewAndAllocate( const std::string& name,
-                                    TypeID type, SidreLength num_elems );
+                                    TypeID type, 
+                                    SidreLength num_elems );
 
   /*!
    * \brief Create DataView object with given name and Conduit DataType,
@@ -350,15 +352,16 @@ public:
 
 
 //@{
-//!  @name Methods to create a DataView and possibly define it without 
+//!  @name Methods to create a DataView and possibly describe it without 
 //         data allocation.
 
   /*!
-   * \brief Create an uninitialized DataView object with given name and 
-   *        attach new view to this group object.
+   * \brief Create an undescribed (i.e., empty) DataView object with given 
+   *        name and attach new view to this group object.
    *
-   * To do anything useful with the view, it has to be attached to a buffer
-   * and have a data description applied, for example.
+   * IMPORTANT: To do anything useful with the view, it has to be described
+   * and associated with data; for example, attach it to a data buffer and 
+   * apply a data description, describe it and allocate it, etc.
    *
    * If name is an empty string, group already has a view with given
    * name, or given buffer pointer is null, method does nothing.
@@ -369,10 +372,11 @@ public:
   DataView * createView( const std::string& name ); 
 
   /*!
-   * \brief Create DataView object with given name, data type, and
-   *        number of elements, and attach new view to this group object.
+   * \brief Create DataView object with given name and described by data type 
+   *        and number of elements, and attach new view to this group object.
    *
-   * This method does not allocate data or attach the view to a data buffer.
+   * IMPORTANT: This method does not allocate data or associated the view 
+   * with data.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given number of elements is < 0 method does nothing.
@@ -381,13 +385,15 @@ public:
    * view is not created.
    */
   DataView * createView( const std::string& name,
-                         TypeID type, SidreLength num_elems );
+                         TypeID type, 
+                         SidreLength num_elems );
 
   /*!
-   * \brief Create DataView object with given name and Conduit DataType,
-   *        and attach new view to this group object.
+   * \brief Create DataView object with given name and described by 
+   *        Conduit DataType, and attach new view to this group object.
    *
-   * This method does not allocate data or attach the view to a data buffer.
+   * IMPORTANT: This method does not allocate data or associated the view 
+   * with data.
    *
    * If name is an empty string, or group already has a view with given
    * name, method does nothing.
@@ -399,10 +405,11 @@ public:
                          const DataType& dtype);
 
   /*!
-   * \brief Create DataView object with given name and Conduit Schema,
-   *        allocate the data, and attach new view to this group object.
+   * \brief Create DataView object with given name and described by
+   *        Conduit Schema, and attach new view to this group object.
    *
-   * This method does not allocate data or attach the view to a data buffer.
+   * IMPORTANT: This method does not allocate data or associated the view 
+   * with data.
    *
    * If name is an empty string, or group already has a view with given
    * name, method does nothing.
@@ -424,7 +431,9 @@ public:
    * \brief Create DataView object with given name, attach it to given buffer,
    *        and attach new view to this group object.
    *
-   * Note that the view cannot be used to access data in buffer until it
+   * This is equivalent to calling: createView(name)->attachBuffer(buff);
+   *
+   * IMPORTANT: The view cannot be used to access data in buffer until it
    * is described by calling a DataView::apply() method. 
    *
    * If name is an empty string, or group already has a view with given
@@ -438,14 +447,21 @@ public:
 
   /*!
    * \brief Create DataView object with given name to hold external data
-   *        referenced with given pointer. Attach new view to this group
-   *        object.
+   *        and attach new view to this group object.
    *
-   * Note that the view is "opaque"; i.e., it has no knowledge of the 
-   * type or structure of the data until a DataView::apply() method is called.
+   * This is equivalent to calling: 
+   * createView(name)->setExternalDataPtr(external_ptr);
+   *
+   * IMPORTANT: Note that the view is "opaque" (it has no knowledge of 
+   * the type or structure of the data) until a DataView::apply() method 
+   * is called.
    *
    * If name is an empty string, or group already has a view with given
    * name, or given data pointer is null, method does nothing.
+//
+// RDH -- If a null data ptr is passed, should this be the same as creating
+//        an empty view?
+//
    *
    * \return pointer to created DataView object or ATK_NULLPTR if new
    * view is not created.
@@ -461,37 +477,37 @@ public:
 
   /*!
    * \brief Destroy view in this DataGroup with given name and leave its
-   *        associated DataBuffer intact, if it has a buffer.
+   *        associated data intact.
    */
   void destroyView(const std::string& name);
 
   /*!
    * \brief Destroy view in this DataGroup with given index and leave its
-   *        associated DataBuffer intact, if it has a buffer.
+   *        associated data intact.
    */
   void destroyView(IndexType idx);
 
   /*!
    * \brief Destroy all views in this DataGroup and leave all associated
-   *        DataBuffers intact.
+   *        data intact.
    */
   void destroyViews();
 
   /*!
    * \brief Destroy view in this DataGroup with given name AND destroy
-   *        its associated data (i.e., its DataBuffer object).
+   *        its associated data, if it owns the data. 
    */
   void destroyViewAndData(const std::string& name);
 
   /*!
    * \brief Destroy view in this DataGroup with given index AND destroy
-   *        its associated data (i.e., its DataBuffer object).
+   *        its associated data, if it owns the data.
    */
   void destroyViewAndData(IndexType idx);
 
   /*!
    * \brief Destroy all views in this DataGroup AND destroy their
-   *        associated DataBuffer objects.
+   *        associated data.
    */
   void destroyViewsAndData();
 
@@ -533,7 +549,7 @@ public:
 
 
 //@{
-//!  @name (child) DataGroup accessor methods
+//!  @name (child) DataGroup query methods.
 
   bool hasGroup( const std::string& name ) const
   {
@@ -548,6 +564,36 @@ public:
   {
     return m_group_coll.hasItem(idx);
   }
+
+  /*!
+   * \brief Return the index of child DataGroup with given name.
+   *
+   *        If none, return sidre::InvalidIndex;
+   */
+  IndexType getGroupIndex(const std::string& name) const
+  {
+    SLIC_CHECK_MSG( hasGroup(name), "no group found with name == " << name);
+
+    return m_group_coll.getItemIndex(name);
+  }
+
+  /*!
+   * \brief Return the name of child DataGroup with given index.
+   *
+   *        If none, return sidre::InvalidName.
+   */
+  const std::string& getGroupName(IndexType idx) const
+  {
+    SLIC_CHECK_MSG( hasGroup(idx), "no group found with idx == " << idx );
+
+    return m_group_coll.getItemName(idx);
+  }
+
+//@}
+
+
+//@{
+//!  @name (child) DataGroup access and iteration methods.
 
   /*!
    * \brief Return (non-const) pointer to child DataGroup with given name.
@@ -588,36 +634,6 @@ public:
 
     return m_group_coll.getItem(idx);
   }
-
-  /*!
-   * \brief Return the index of child DataGroup with given name.
-   *
-   *        If none, return sidre::InvalidIndex;
-   */
-  IndexType getGroupIndex(const std::string& name) const
-  {
-    SLIC_CHECK_MSG( hasGroup(name), "no group found with name == " << name);
-
-    return m_group_coll.getItemIndex(name);
-  }
-
-  /*!
-   * \brief Return the name of child DataGroup with given index.
-   *
-   *        If none, return sidre::InvalidName.
-   */
-  const std::string& getGroupName(IndexType idx) const
-  {
-    SLIC_CHECK_MSG( hasGroup(idx), "no group found with idx == " << idx );
-
-    return m_group_coll.getItemName(idx);
-  }
-
-//@}
-
-
-//@{
-//!  @name (child) DataGroup iteration methods
 
   /*!
    * \brief Return first valid (child) DataGroup index (i.e., smallest
