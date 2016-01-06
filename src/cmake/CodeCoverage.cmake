@@ -69,38 +69,38 @@
 #
 #
 
-# Check prereqs
+# Check requirements
 
-# Will attempt to use lcov in uberenv first, then check for one in path.
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+   MESSAGE(FATAL_ERROR "Code coverage not enabled: Requires debug build type.")
+endif()
+
+if ( NOT (CMAKE_COMPILER_IS_GNUCXX) OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") ) 
+   MESSAGE(FATAL_ERROR "Code coverage: Not enabled, requires clang or gnu compiler.")
+endif()
+
+
+# Verify lcov found.  Will attempt to use lcov in uberenv first, then check for one in path.
 IF(NOT EXISTS ${LCOV_PATH})
+   MESSAGE(STATUS "Code coverage: LCOV_PATH is not set, attempting to find lcov in your path...")
    FIND_PROGRAM( LCOV_PATH lcov )
    IF(NOT EXISTS ${LCOV_PATH})
-      MESSAGE(STATUS "Code coverage: Unable to find lcov, report will unavailable.")
+      MESSAGE(FATAL_ERROR "Code coverage: Unable to find lcov, try setting LCOV_PATH in your host-config file.")
    ENDIF()
 ENDIF()
 
-# Will attempt to use genhtml in uberenv first, then check for one in path.
+# Verify genhtml found.  Will attempt to use genhtml in uberenv first, then check for one in path.
 IF(NOT EXISTS ${GENHTML_PATH})
+   MESSAGE(STATUS "Code coverage: GENHTML_PATH is not set, attempting to find genhtml in your path...")
    FIND_PROGRAM( GENHTML_PATH genhtml )
    IF(NOT EXISTS ${GENHTML_PATH})
-      MESSAGE(STATUS "Code coverage: Unable to find genhtml (lcov), report will be unavailable.")
+      MESSAGE(FATAL_ERROR "Code coverage: Unable to find genhtml, try setting GENHTML_PATH in your host-config file.")
    ENDIF()
 ENDIF()
 
-IF(NOT CMAKE_COMPILER_IS_GNUCXX)
-	# Clang version 3.0.0 and greater now supports gcov as well.  Go check for one in path.
-	IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-      FIND_PROGRAM( GCOV_PATH gcov )
-   # If neither gcc or clang, code coverage is not supported with gcov.
-	ELSE()
-		MESSAGE(FATAL_ERROR "Compiler is not GNU gcc or Clang! Aborting...")
-   ENDIF()
-ENDIF()
-
-# Verify gcov path was provided in host config file (or found in path if using clang).
-# If gnu, do NOT use gcov from path, as you want to match the gcov and gcc versions.  Clang appears to be less picky.
+# Verify gcov path was provided in host config file.  Do not try to locate it in path, as different versions of gcov and gcc do not work together.
 IF(NOT EXISTS ${GCOV_PATH})
-   MESSAGE( FATAL_ERROR "GCOV_PATH is not set in your host-config file (or was not found in your path if using clang).")
+   MESSAGE( FATAL_ERROR "Code coverage: GCOV_PATH is not set.  This must be set in your host-config file.")
 ENDIF()
 
 SET(CMAKE_CXX_FLAGS_COVERAGE
@@ -124,11 +124,6 @@ MARK_AS_ADVANCED(
     CMAKE_C_FLAGS_COVERAGE
     CMAKE_EXE_LINKER_FLAGS_COVERAGE
     CMAKE_SHARED_LINKER_FLAGS_COVERAGE )
-
-IF ( NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Coverage"))
-  MESSAGE( WARNING "Code coverage results with an optimized (non-Debug) build may be misleading" )
-ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
-
 
 # Param _targetname     The name of new the custom make target and output file name.
 # Param _testrunner     The name of the target which runs the tests.
@@ -164,3 +159,7 @@ FUNCTION(add_code_coverage_target _targetname _testrunner)
 	)
 
 ENDFUNCTION()
+
+# Add code coverage target
+add_code_coverage_target(coverage make test)
+MESSAGE(STATUS "Code coverage: enabled via gcov.")
