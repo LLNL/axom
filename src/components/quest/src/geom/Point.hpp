@@ -228,7 +228,7 @@ public:
    * \brief Linearly interpolates two points.
    * \param [in] A user-supplied point
    * \param [in] B user-supplied point
-   * \param [in] alpha weight with with to interpolate
+   * \param [in] alpha weight with which to interpolate
    * \return p Linearly interpolated point: p = (1-alpha)A + alpha*B..
    *****************************************************************************
    */
