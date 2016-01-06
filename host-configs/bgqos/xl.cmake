@@ -36,6 +36,9 @@ set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_i
 # Additional Compiler Flags
 ###############################################################################
 
+# additional flag to disable warnings about omp pragmas when omp is not enabled
+set(DISABLE_OMP_PRAGMA_WARNINGS " -qignprag=omp " CACHE STRING "Flag to disable warning about pragmas when omp is disabled")
+
 # additional flags for all configurations 
 #set(EXTRA_CXX_FLAGS "-DEXTRA_FLAGS_CXX_DEFINE" CACHE PATH "")
 

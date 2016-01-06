@@ -179,7 +179,7 @@ endif()
 ################################
 # OpenMP
 ################################
-if(ENABLE_OMP)
+if(ENABLE_OPENMP)
     find_package(OpenMP REQUIRED)
     if (OPENMP_FOUND)
         message(STATUS "Found OpenMP")
@@ -208,7 +208,7 @@ macro(add_component)
     set(singleValueArgs COMPONENT_NAME DEFAULT_STATE )
     set(multiValueArgs)
 
-    ## parse the arugments to the macro
+    ## parse the arguments to the macro
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -268,7 +268,8 @@ endmacro(add_target_definitions)
 
 ##------------------------------------------------------------------------------
 ## make_library( LIBRARY_NAME <libname> LIBRARY_SOURCES [source1 [source2 ...]]
-##               DEPENDS_ON [dep1 ...] [WITH_OPENMP])
+##               DEPENDS_ON [dep1 ...] 
+##               USE_OPENMP <TRUE or FALSE (default)> )
 ##
 ## Adds a library to the project composed by the given source files.
 ##
@@ -278,27 +279,30 @@ endmacro(add_target_definitions)
 ## library is generated.
 ##
 ## In addition, this macro will add the associated dependencies to the given
-## library target. Specifically, it will add a dependecy to the library's
+## library target. Specifically, it will add a dependency to the library's
 ## "copy_headers_target" if it exists and has been defined before the call to
 ## "make_library", as well as, the corresponding "copy_headers_target" of each
 ## of the supplied dependencies.
 ##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
+## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
-## and the -DUSE_MPI, will be included to the compiler definition.
 ##------------------------------------------------------------------------------
 macro(make_library)
 
-   set(options WITH_OPENMP)
-   set(singleValueArgs LIBRARY_NAME)
+   set(singleValueArgs LIBRARY_NAME USE_OPENMP)
    set(multiValueArgs LIBRARY_SOURCES DEPENDS_ON)
 
    ## parse the arguments
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-   ## sanity check OpenMP
-   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
+
+   # Check for the variable-based options for OpenMP and sanity check
+   if(NOT DEFINED arg_USE_OPENMP)
+      set(arg_USE_OPENMP FALSE)
+   endif()
+
+   if ( ${arg_USE_OPENMP} AND NOT ${ENABLE_OPENMP} )
       message( FATAL_ERROR "Building an OpenMP library, but OpenMP is disabled!" )
    endif()
 
@@ -329,7 +333,7 @@ macro(make_library)
 
    endif()
 
-   if ( ${arg_WITH_OPENMP} )
+   if ( ${arg_USE_OPENMP} )
 
       add_target_definitions( TO ${arg_LIBRARY_NAME}
                               TARGET_DEFINITIONS USE_OPENMP )
@@ -344,7 +348,7 @@ macro(make_library)
       set_property(TARGET ${arg_LIBRARY_NAME} PROPERTY CXX_STANDARD 11)
    endif()
 
-   foreach(src ${srcs})
+   foreach(src ${arg_LIBRARY_SOURCES})
        if(IS_ABSOLUTE)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
        else()
@@ -363,7 +367,9 @@ macro(make_library)
    endif()
 
    foreach(dependency ${arg_DEPENDS_ON})
-     target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
+     if (TARGET ${dependency})
+        target_link_libraries(${arg_LIBRARY_NAME} ${dependency})
+     endif()
      set(header_target "copy_headers_${dependency}")
      if (TARGET ${header_target})
         add_dependencies( ${arg_LIBRARY_NAME} ${header_target} )
@@ -374,7 +380,8 @@ endmacro(make_library)
 
 ##------------------------------------------------------------------------------
 ## make_executable( EXECUTABLE_SOURCE <source> DEPENDS_ON [dep1 ...]
-##                  [WITH_OPENMP] [ADD_CTEST])
+##                  USE_OPENMP < TRUE or FALSE (default)>
+##                  [ADD_CTEST])
 ##
 ## Adds an executable to the project.
 ##
@@ -385,9 +392,8 @@ endmacro(make_library)
 ## In addition, the target will be linked with the given list of library
 ## dependencies.
 ##
-## Optionally, "WITH_OPENMP" can be supplied as an argument. When this argument
+## Optionally, "USE_OPENMP" can be supplied as a boolean argument. When this argument
 ## is supplied, the openmp compiler flag will be added to the compiler command
-## and the -DUSE_MPI, will be included to the compiler definition.
 ##
 ## Optionally, "ADD_CTEST" can be supplied as an argument. When this argument
 ## is supplied, the executable is added as a ctest with no command line options.
@@ -395,19 +401,23 @@ endmacro(make_library)
 ##------------------------------------------------------------------------------
 macro(make_executable)
 
-   set(options WITH_OPENMP ADD_CTEST)
-   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE)
+   set(options ADD_CTEST)
+   set(singleValueArgs EXECUTABLE_NAME EXECUTABLE_SOURCE USE_OPENMP)
    set(multiValueArgs DEPENDS_ON)
 
    ## parse the arguments to the macro
    cmake_parse_arguments(arg
         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-   ## sanity check OpenMP
-   if ( ${arg_WITH_OPENMP} AND NOT ${ENABLE_OPENMP} )
+   # Check for the variable-based options for OpenMP and sanity check
+   if(NOT  DEFINED arg_USE_OPENMP)
+      set(arg_USE_OPENMP FALSE)
+   endif()
+   if ( ${arg_USE_OPENMP} AND NOT ${ENABLE_OPENMP} )
       message( FATAL_ERROR
                "Building an OpenMP executable, but OpenMP is disabled!" )
    endif()
+
 
    # Use the supplied name for the executable (if given), otherwise use the
    # source file's name
@@ -418,7 +428,23 @@ macro(make_executable)
    endif()
 
    add_executable( ${exe_name} ${arg_EXECUTABLE_SOURCE} )
-   target_link_libraries( ${exe_name} "${arg_DEPENDS_ON}" )
+
+   target_link_libraries(${exe_name} ${arg_DEPENDS_ON})
+
+   ## Add library and header dependencies
+   ##  Want to make this more general as in make_library above
+   ## Problem -- we want to add dependencies that are not targets -- e.g. lib rt
+   # foreach(dependency ${arg_DEPENDS_ON})
+   #  if (TARGET ${dependency})
+   #     target_link_libraries(${exe_name} ${dependency})
+   #  endif()
+   #  set(header_target "copy_headers_${dependency}")
+   #  if (TARGET ${header_target})
+   #     add_dependencies( ${exe_name} ${header_target} )
+   #  endif()
+   #endforeach()
+
+
 
    if ( ENABLE_CXX11 )
      ## Note, this requires cmake 3.1 and above
@@ -445,7 +471,7 @@ macro(make_executable)
       target_link_libraries( ${exe_name} ${MPI_C_LIBRARIES})
    endif()
 
-   if ( ${arg_WITH_OPENMP} )
+   if ( ${arg_USE_OPENMP} )
 
       add_target_definitions( TO ${exe_name} TARGET_DEFINITIONS USE_OPENMP )
 
