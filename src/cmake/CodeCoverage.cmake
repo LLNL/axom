@@ -76,7 +76,7 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if ( NOT (CMAKE_COMPILER_IS_GNUCXX) OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") ) 
-   MESSAGE(FATAL_ERROR "Code coverage: Not enabled, requires clang or gnu compiler.")
+   MESSAGE(FATAL_ERROR "Code coverage: Detected unsupported compiler.  Either set ENABLE_CODECOV=FALSE or change your compiler to gnu or clang.")
 endif()
 
 

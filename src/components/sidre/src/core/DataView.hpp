@@ -472,7 +472,7 @@ public:
 //
     // Check that parameter type provided matches what type is stored in the node.
 #if defined(ATK_DEBUG)
-    DataTypeId arg_id = SidreTT<ScalarType>::id();
+    DataTypeId arg_id = detail::SidreTT<ScalarType>::id();
     SLIC_ASSERT_MSG( arg_id == m_node.dtype().id(),
       "Mismatch between setScalar()" << DataType::id_to_name( arg_id ) << ") and type contained in the buffer (" << m_node.dtype().name() << ").");
 #endif
