@@ -26,6 +26,20 @@ if(PYTHON_EXECUTABLE)
         message(STATUS "Unable to run shroud: ${MISSING_MODULES}")
         set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
     endif()
+
+####
+    # Run the develop command.
+    # The Python files are not installed directly, only an egg.
+    # So any changes to the source does not require a new install.
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} setup.py
+          develop
+          --install-dir ${CMAKE_Python_MODULE_DIRECTORY}
+          --script-dir  ${EXECUTABLE_OUTPUT_PATH}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+         OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/setup.log
+    )
+
 else()
     message(STATUS "Unable to run shroud: Python not found")
     set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
