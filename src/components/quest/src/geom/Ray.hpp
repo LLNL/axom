@@ -52,7 +52,7 @@ public:
      * \brief Constructs a ray object with the given origin and direction.
      * \param [in] origin the origin of the ray.
      * \param [in] direction the direction of the ray.
-     * \pre direction.norm()==1
+     * \pre direction.squared_norm()!= 0.0
      ***************************************************************************
      */
     Ray( const PointType& origin, const VectorType& direction );
@@ -82,9 +82,10 @@ public:
 
     /*!
      ***************************************************************************
-     * \brief Returns a point along the ray at the
-     * \param [in] t the value at which to
-     * \return
+     * \brief Returns a point along the ray by evaluating \f$ R(t) \f$
+     * \param [in] t user-supplied value for R(t).
+     * \return p a point along the ray.
+     * \pre \f$ t \ge 0 \f$
      ***************************************************************************
      */
     PointType at( const T& t) const;
@@ -124,9 +125,9 @@ namespace quest {
 template < typename T, int NDIMS >
 Ray< T,NDIMS >::Ray( const PointType& origin, const VectorType& direction ) :
     m_origin( origin ),
-    m_direction( direction )
+    m_direction( direction.unitVector() )
 {
-   SLIC_ASSERT( direction.norm()==1.0 );
+   SLIC_ASSERT( m_direction.squared_norm() != 0.0 );
 }
 
 //------------------------------------------------------------------------------
