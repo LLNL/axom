@@ -13,7 +13,11 @@ add_subdirectory(src)
 # Add tests
 ################################
 if (BUILD_TESTING)
-  add_subdirectory(tests)
+#  No tests for common component yet.
+#  We'll have to uncomment the following line 
+#  if/when we add tests to common
+#
+#  add_subdirectory(tests)
 endif()
 
 
