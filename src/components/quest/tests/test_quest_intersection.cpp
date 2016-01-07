@@ -28,21 +28,25 @@
 
 TEST( quest_intersection, ray_segment_intersection )
 {
+  typedef quest::Point< double,2 >   PointType;
+  typedef quest::Segment< double,2 > SegmentType;
+  typedef quest::Vector< double,2 >  VectorType;
+  typedef quest::Ray< double,2 >     RayType;
+
   // STEP 0: construct segment
-  quest::Point< double,2 > A(0.0);
-  quest::Point< double,2 > B(1.0,1);
-  quest::Segment< double,2 > S( A, B );
+  PointType A(0.0);
+  PointType B(1.0,1);
+  SegmentType S( A, B );
 
   // STEP 1: construct ray
-  quest::Point< double,2 > origin =
-          quest::Point< double,2 >::make_point( 0.5,-0.5 );
-  quest::Vector< double,2 > direction;
+  PointType origin = PointType::make_point( 0.5,-0.5 );
+  VectorType direction;
   direction[0] = 0.0;
   direction[1] = 0.5;
-  quest::Ray< double,2 > R( origin,direction.unitVector() );
+  RayType R( origin,direction.unitVector() );
 
   // STEP 2: compute intersection
-  quest::Point< double,2 > ip;
+  PointType ip;
   bool intersects = quest::intersect( R, S, ip );
   EXPECT_TRUE( intersects );
   EXPECT_DOUBLE_EQ(0.5,ip[0]);
@@ -50,7 +54,7 @@ TEST( quest_intersection, ray_segment_intersection )
 
   // STEP 3: construct non-intersecting ray
   origin[1] = 0.5; // shift R up
-  quest::Ray< double,2 > R2( origin, direction.unitVector() );
+  RayType R2( origin, direction.unitVector() );
   bool intersects2 = quest::intersect( R2, S, ip );
   EXPECT_FALSE( intersects2 );
 }
