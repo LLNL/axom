@@ -42,6 +42,24 @@
 include(SetupCmakeOptions)
 
 ################################
+# Setup global target options.
+# These will apply to all targets created after this section.
+################################
+
+# Move these into their own cmake file if they start to grow.
+
+# Note: CMake supports adding the correct C++11 flags for gnu and clang (but not intel).
+# However, it adds -std=gnu++11 which includes gnu extensions, so let's just stick to
+# adding the same, tandard -std=c++11 flag manually for all three compilers..
+if ( ENABLE_CXX11 )
+	if ( (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") )
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 
+	else()
+		MESSAGE(FATAL_ERROR "C++11: This compiler has not yet had the correct C++11 compiler flags added to the build system.  Please add to CmakeBasics.cmake.")
+   endif()
+endif()
+
+################################
 # Prevent in-source builds
 ################################
 include(PreventInSourceBuilds)
@@ -343,11 +361,6 @@ macro(make_library)
 
    endif()
 
-   if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${arg_LIBRARY_NAME} PROPERTY CXX_STANDARD 11)
-   endif()
-
    foreach(src ${arg_LIBRARY_SOURCES})
        if(IS_ABSOLUTE)
            list(APPEND "${PROJECT_NAME}_ALL_SOURCES" "${src}")
@@ -444,13 +457,6 @@ macro(make_executable)
    #  endif()
    #endforeach()
 
-
-
-   if ( ENABLE_CXX11 )
-     ## Note, this requires cmake 3.1 and above
-     set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
-   endif()
-
    if ( ${ENABLE_MPI} )
       add_target_definitions( TO ${exe_name}
                               TARGET_DEFINITIONS USE_MPI )
@@ -499,11 +505,6 @@ macro(make_executable)
    set( "${PROJECT_NAME}_ALL_SOURCES" "${${PROJECT_NAME}_ALL_SOURCES}"
         CACHE STRING "" FORCE )
 
-    if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${exe_name} PROPERTY CXX_STANDARD 11)
-    endif()
-
 endmacro(make_executable)
 
 ##------------------------------------------------------------------------------
@@ -527,11 +528,6 @@ macro(add_gtest)
    target_include_directories(${test_name} PRIVATE "${GTEST_INCLUDES}")
    target_link_libraries( ${test_name} "${GTEST_LIBS}" )
    target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-   if ( ENABLE_CXX11 )
-      ## Note, this requires cmake 3.1 and above
-      set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-   endif()
 
    add_test( NAME ${test_name}
              COMMAND ${test_name}
@@ -580,11 +576,6 @@ macro(add_benchmark)
       target_include_directories(${test_name} PRIVATE "${GBENCHMARK_INCLUDES}")
       target_link_libraries( ${test_name} "${GBENCHMARK_LIBS}" )
       target_link_libraries( ${test_name} "${arg_DEPENDS_ON}" )
-
-      if ( ENABLE_CXX11 )
-         ## Note, this requires cmake 3.1 and above
-         set_property(TARGET ${test_name} PROPERTY CXX_STANDARD 11)
-      endif()
 
       # Add the command line arguments, if present
       set(test_command "${test_name}")
