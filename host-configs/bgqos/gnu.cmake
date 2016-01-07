@@ -27,7 +27,6 @@ set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.7.2/scripts/bggfortran"
 #set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/bgqos_0/gcc@4.4.7/uncrustify@0.61/bin/uncrustify" CACHE PATH "")
 
 # boost headers from uberenv
-set(ENABLE_BOOST ON CACHE PATH "")
 set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/chaos_5_x86_64_ib/gcc@4.4.7/boost-headers@1.58.0" CACHE PATH "")
 
 ###############################################################################

@@ -100,7 +100,6 @@ class UberenvAsctoolkit(Package):
         cfg.write('set(SPARSEHASH_DIR "%s" CACHE PATH "")\n\n' % spec['sparsehash-headers'].prefix)
 
         cfg.write("# boost headers from uberenv\n")
-        cfg.write('set(ENABLE_BOOST ON CACHE PATH "")\n')
         cfg.write('set(BOOST_ROOT "%s" CACHE PATH "")\n\n' % spec['boost-headers'].prefix)
 
         cfg.write("# lcov and genhtml from uberenv\n")
