@@ -8,24 +8,27 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-if (ENABLE_MPI)
-   make_executable( ADD_CTEST
-                    EXECUTABLE_SOURCE basic/parallel_logging_example.cc
-                    DEPENDS_ON slic )
+set(example_sources
+    basic/cpplogger_example.cc
+    basic/logging_example.cc
+    multicode/driver.cpp
+    )
 
-   make_executable( ADD_CTEST
-                    EXECUTABLE_SOURCE basic/seperate_file_per_rank.cc
-                    DEPENDS_ON slic )
+set(mpi_example_sources
+    basic/parallel_logging_example.cc
+    basic/seperate_file_per_rank.cc
+    )
+
+if (ENABLE_MPI)
+   list(APPEND  example_sources ${mpi_example_sources})
 endif()
 
-make_executable( ADD_CTEST
-                 EXECUTABLE_SOURCE basic/cpplogger_example.cc
-                 DEPENDS_ON slic )
+foreach(example_source ${example_sources})
+    get_filename_component(example_name ${example_source} NAME_WE)
+    make_executable(EXECUTABLE_NAME "slic_${example_name}" 
+                    EXECUTABLE_SOURCE ${example_source} 
+                    DEPENDS_ON slic
+                    ADD_CTEST
+                    )
+endforeach()
 
-make_executable( ADD_CTEST
-                 EXECUTABLE_SOURCE basic/logging_example.cc
-                 DEPENDS_ON slic )
-
-make_executable( ADD_CTEST
-                 EXECUTABLE_SOURCE multicode/driver.cpp
-                 DEPENDS_ON slic )
