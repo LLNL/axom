@@ -16,12 +16,9 @@ set(example_sources
 
 set(mpi_example_sources
     basic/parallel_logging_example.cc
-    basic/seperate_file_per_rank.cc
+    basic/separate_file_per_rank.cc
     )
 
-if (ENABLE_MPI)
-   list(APPEND  example_sources ${mpi_example_sources})
-endif()
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
@@ -31,4 +28,16 @@ foreach(example_source ${example_sources})
                     ADD_CTEST
                     )
 endforeach()
+
+
+if (ENABLE_MPI)
+    foreach(example_source ${mpi_example_sources})
+        get_filename_component(example_name ${example_source} NAME_WE)
+        make_executable(EXECUTABLE_NAME "slic_mpi_${example_name}" 
+                        EXECUTABLE_SOURCE ${example_source} 
+                        DEPENDS_ON slic
+                        ADD_CTEST
+                        )
+    endforeach()
+endif()
 
