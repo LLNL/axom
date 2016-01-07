@@ -9,14 +9,14 @@
 #-------------------------------------------------------------------------------
 
 set(quest_tests
-    test_extent.cpp
-    test_quest_boundingBox.cpp
-    test_quest_intersection.cpp
-    test_quest_numeric_array.cpp
-    test_quest_orient.cpp
-    test_quest_point.cpp
-    test_quest_squared_distance.cpp
-    test_quest_vector.cpp
+    quest_mesh_extent.cpp
+    quest_boundingBox.cpp
+    quest_intersection.cpp
+    quest_numeric_array.cpp
+    quest_orient.cpp
+    quest_point.cpp
+    quest_squared_distance.cpp
+    quest_vector.cpp
    )
 
 foreach(test ${quest_tests})
