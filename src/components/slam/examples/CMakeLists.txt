@@ -15,7 +15,11 @@ set(example_sources
 
 foreach(example_source ${example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
-    make_executable(EXECUTABLE_NAME "slam${example_name}" EXECUTABLE_SOURCE ${example_source} DEPENDS_ON slam slic)
+    make_executable(EXECUTABLE_NAME "slam_${example_name}" 
+                    EXECUTABLE_SOURCE ${example_source} 
+                    DEPENDS_ON slam slic
+                    ADD_CTEST
+                    )
 endforeach()
 
 
@@ -55,13 +59,14 @@ make_library( LIBRARY_NAME      slamLuleshLib
 add_dependencies(slamLuleshLib slam)
 target_link_libraries( slamLuleshLib  slam )
                   
-make_executable( EXECUTABLE_NAME    slamLulesh 
+make_executable( EXECUTABLE_NAME    slam_Lulesh 
                  EXECUTABLE_SOURCE  ${lulesh_exe_source}
                  DEPENDS_ON 
                     slic
                     slam 
                     slamLuleshLib
                   USE_OPENMP ${ENABLE_OMP} 
+                  ADD_CTEST
                   ) 
 
 

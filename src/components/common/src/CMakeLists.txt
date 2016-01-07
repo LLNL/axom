@@ -15,6 +15,12 @@ set(common_sources
     )
 
 #
+# custom target to copy header files in the "include" folder of the build tree.
+#
+copy_headers_target( ${PROJECT_NAME} "${common_headers}"
+                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
+
+#
 # make the library
 #
 make_library( LIBRARY_NAME
@@ -23,12 +29,5 @@ make_library( LIBRARY_NAME
                   "${common_sources}"
                   "${common_headers}" )
 
-add_dependencies(common copy_headers_common)
-
 install(TARGETS common DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
 
-#
-# custom target to copy header files in the "include" folder of the build tree.
-#
-copy_headers_target( ${PROJECT_NAME} "${common_headers}"
-                     ${HEADER_INCLUDES_DIRECTORY}/${PROJECT_NAME} )
