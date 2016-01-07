@@ -3,7 +3,7 @@
 # List of single source file examples
 #
 set(example_sources
-    StressGroups.cpp
+    sidre_stressgroups_example.cpp
     sidre_shocktube_example.cpp
 )
 
