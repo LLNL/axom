@@ -139,7 +139,7 @@ public:
    */
   size_t getNumElements() const
   {
-	  return m_schema.dtype().number_of_elements();
+    return m_schema.dtype().number_of_elements();
   }
 
   /*!
@@ -214,7 +214,7 @@ public:
    *
    *        Equivalent to calling declare(type), then allocate().
    *
-   * If buffer is already set to externally-owned data or given 
+   * If buffer is already set to externally-owned data or given
    * number of elements < 0, this method does nothing.
    *
    * \return pointer to this DataBuffer object.

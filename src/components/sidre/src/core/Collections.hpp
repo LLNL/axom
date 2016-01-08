@@ -480,7 +480,8 @@ IndexType NewMapCollection<TYPE, MAP_TYPE>::getFirstValidIndex() const
 }
 
 template <typename TYPE, typename MAP_TYPE>
-IndexType NewMapCollection<TYPE, MAP_TYPE>::getNextValidIndex(IndexType idx) const
+IndexType NewMapCollection<TYPE,
+                           MAP_TYPE>::getNextValidIndex(IndexType idx) const
 {
   idx++;
   while ( static_cast<unsigned>(idx) < m_items.size() &&

@@ -127,11 +127,12 @@ TEST(sidre_opaque,basic_inout)
 
   EXPECT_EQ(test_ihi, ihi_val);
 
-  // Similar test with different view methods 
+  // Similar test with different view methods
 
   Extent * ext2 = new Extent(0, 2 * ihi_val);
 
-  DataView * ext2_view = problem_gp->createView("ext2")->setExternalDataPtr(ext2);
+  DataView * ext2_view =
+    problem_gp->createView("ext2")->setExternalDataPtr(ext2);
 
   bool test_opaque2 = ext2_view->isOpaque();
   EXPECT_EQ(test_opaque2, true);

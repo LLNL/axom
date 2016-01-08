@@ -52,8 +52,8 @@ void DataStoreConduitErrorHandler( const std::string& message,
                                    const std::string& fileName,
                                    int line )
 {
-   slic::logErrorMessage( message, fileName, line,
-                          asctoolkit::slic::getAbortOnError() ); 
+  slic::logErrorMessage( message, fileName, line,
+                         asctoolkit::slic::getAbortOnError() );
 }
 
 /*
@@ -64,30 +64,30 @@ void DataStoreConduitErrorHandler( const std::string& message,
  *************************************************************************
  */
 DataStore::DataStore()
- : m_i_initialized_slic(false)
+  : m_i_initialized_slic(false)
 {
-  
+
   // Initialize SLIC loggin environement, if not initialized already.
-  if ( !slic::isInitialized() ) 
+  if ( !slic::isInitialized() )
   {
     slic::initialize();
 
     std::string format =
-    std::string("\n***********************************\n")+
-    std::string( "LEVEL=<LEVEL>\n" ) +
-    std::string( "MESSAGE=<MESSAGE>\n" ) +
-    std::string( "FILE=<FILE>\n" ) +
-    std::string( "LINE=<LINE>\n" ) +
-    std::string("***********************************\n");
+      std::string("\n***********************************\n")+
+      std::string( "LEVEL=<LEVEL>\n" ) +
+      std::string( "MESSAGE=<MESSAGE>\n" ) +
+      std::string( "FILE=<FILE>\n" ) +
+      std::string( "LINE=<LINE>\n" ) +
+      std::string("***********************************\n");
 
     slic::setLoggingMsgLevel( slic::message::Debug );
     slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout,
-                                                              format) );
+                                                                 format) );
 
     m_i_initialized_slic = true;
   }
 
-  // Provide SLIC error handler function to Conduit to log 
+  // Provide SLIC error handler function to Conduit to log
   // internal Conduit errors.
   conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
 
@@ -109,7 +109,7 @@ DataStore::~DataStore()
   delete m_RootGroup;
   destroyBuffers();
 
-  if ( m_i_initialized_slic ) 
+  if ( m_i_initialized_slic )
   {
     slic::finalize();
   }
@@ -127,12 +127,12 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
-  if ( hasBuffer(idx) ) 
-  { 
+  if ( hasBuffer(idx) )
+  {
     return m_data_buffers[idx];
   }
-  else 
-  { 
+  else
+  {
     return ATK_NULLPTR;
   }
 }
@@ -174,7 +174,7 @@ void DataStore::destroyBuffer( IndexType idx )
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
-  if ( hasBuffer(idx) ) 
+  if ( hasBuffer(idx) )
   {
     delete m_data_buffers[idx];
     m_data_buffers[idx] = ATK_NULLPTR;
@@ -215,7 +215,7 @@ DataBuffer * DataStore::detachBuffer( IndexType idx )
 
   DataBuffer * rval = ATK_NULLPTR;
 
-  if ( hasBuffer(idx) ) 
+  if ( hasBuffer(idx) )
   {
     rval = m_data_buffers[idx];
     m_data_buffers[idx] = ATK_NULLPTR;
@@ -252,8 +252,8 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
   {
     idx++;
   }
-  return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx 
-                                                               : InvalidIndex);
+  return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx
+          : InvalidIndex);
 }
 
 /*

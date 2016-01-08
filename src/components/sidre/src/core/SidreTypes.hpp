@@ -66,29 +66,29 @@ inline bool nameIsValid(const std::string& name)
  */
 
 enum DataTypeId
-{    
-    EMPTY_ID = SIDRE_EMPTY_ID,
-    INT8_ID  = SIDRE_INT8_ID,
-    INT16_ID = SIDRE_INT16_ID,
-    INT32_ID = SIDRE_INT32_ID,
-    INT64_ID = SIDRE_INT64_ID,
-    
-    UINT8_ID  = SIDRE_UINT8_ID,
-    UINT16_ID = SIDRE_UINT16_ID,
-    UINT32_ID = SIDRE_UINT32_ID,
-    UINT64_ID = SIDRE_UINT64_ID,
-    
-    FLOAT32_ID   = SIDRE_FLOAT32_ID,
-    FLOAT64_ID   = SIDRE_FLOAT64_ID,
+{
+  EMPTY_ID = SIDRE_EMPTY_ID,
+  INT8_ID  = SIDRE_INT8_ID,
+  INT16_ID = SIDRE_INT16_ID,
+  INT32_ID = SIDRE_INT32_ID,
+  INT64_ID = SIDRE_INT64_ID,
 
-    CHAR8_STR_ID = SIDRE_CHAR8_STR_ID,
-    
-    INT_ID = SIDRE_INT_ID,
-    UINT_ID = SIDRE_UINT_ID,
-    LONG_ID = SIDRE_LONG_ID,
-    ULONG_ID = SIDRE_ULONG_ID,
-    FLOAT_ID = SIDRE_FLOAT_ID,
-    DOUBLE_ID = SIDRE_DOUBLE_ID
+  UINT8_ID  = SIDRE_UINT8_ID,
+  UINT16_ID = SIDRE_UINT16_ID,
+  UINT32_ID = SIDRE_UINT32_ID,
+  UINT64_ID = SIDRE_UINT64_ID,
+
+  FLOAT32_ID   = SIDRE_FLOAT32_ID,
+  FLOAT64_ID   = SIDRE_FLOAT64_ID,
+
+  CHAR8_STR_ID = SIDRE_CHAR8_STR_ID,
+
+  INT_ID = SIDRE_INT_ID,
+  UINT_ID = SIDRE_UINT_ID,
+  LONG_ID = SIDRE_LONG_ID,
+  ULONG_ID = SIDRE_ULONG_ID,
+  FLOAT_ID = SIDRE_FLOAT_ID,
+  DOUBLE_ID = SIDRE_DOUBLE_ID
 };
 
 /*!
@@ -116,18 +116,28 @@ typedef conduit_float64 sidre_float64;
  * \brief Type traits to assist in converting compiler types to the appropriate data type ids.
  */
 template<typename T> struct SidreTT {};
-template<> struct SidreTT<sidre_int8>   {  static const DataTypeId id = INT8_ID; };
-template<> struct SidreTT<sidre_int16>  {  static const DataTypeId id = INT16_ID; };
-template<> struct SidreTT<sidre_int32>  {  static const DataTypeId id = INT32_ID; };
-template<> struct SidreTT<sidre_int64>  {  static const DataTypeId id = INT64_ID; };
+template<> struct SidreTT<sidre_int8>   {  static const DataTypeId id = INT8_ID;
+};
+template<> struct SidreTT<sidre_int16>  {  static const DataTypeId id =
+                                             INT16_ID; };
+template<> struct SidreTT<sidre_int32>  {  static const DataTypeId id =
+                                             INT32_ID; };
+template<> struct SidreTT<sidre_int64>  {  static const DataTypeId id =
+                                             INT64_ID; };
 
-template<> struct SidreTT<sidre_uint8>   {  static const DataTypeId id = UINT8_ID; };
-template<> struct SidreTT<sidre_uint16>  {  static const DataTypeId id = UINT16_ID; };
-template<> struct SidreTT<sidre_uint32>  {  static const DataTypeId id = UINT32_ID; };
-template<> struct SidreTT<sidre_uint64>  {  static const DataTypeId id = UINT64_ID; };
+template<> struct SidreTT<sidre_uint8>   {  static const DataTypeId id =
+                                              UINT8_ID; };
+template<> struct SidreTT<sidre_uint16>  {  static const DataTypeId id =
+                                              UINT16_ID; };
+template<> struct SidreTT<sidre_uint32>  {  static const DataTypeId id =
+                                              UINT32_ID; };
+template<> struct SidreTT<sidre_uint64>  {  static const DataTypeId id =
+                                              UINT64_ID; };
 
-template<> struct SidreTT<sidre_float32>  {  static const DataTypeId id = FLOAT32_ID; };
-template<> struct SidreTT<sidre_float64>  {  static const DataTypeId id = FLOAT64_ID; };
+template<> struct SidreTT<sidre_float32>  {  static const DataTypeId id =
+                                               FLOAT32_ID; };
+template<> struct SidreTT<sidre_float64>  {  static const DataTypeId id =
+                                               FLOAT64_ID; };
 
 }
 
