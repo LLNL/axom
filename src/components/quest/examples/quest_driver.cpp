@@ -444,8 +444,8 @@ int main( int argc, char** argv )
 {
   // STEP 0: Initialize SLIC Environment
   slic::initialize();
-  slic::setLoggingLevel( asctoolkit::slic::message::Debug );
-  slic::addStreamToAllLevels( new slic::GenericOutputStream(&std::cout) );
+  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
+  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
 
   bool hasInputArgs = argc > 1;
 

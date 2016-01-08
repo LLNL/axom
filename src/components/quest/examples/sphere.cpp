@@ -375,8 +375,8 @@ int main( int ATK_NOT_USED(argc), char** argv )
 {
   // STEP 0: Initialize SLIC Environment
   slic::initialize();
-  slic::setLoggingLevel( asctoolkit::slic::message::Debug );
-  slic::addStreamToAllLevels( new slic::GenericOutputStream(&std::cout) );
+  slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
+  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
 
   // STEP 1: get file from user or use default
   std::string stlFile = std::string( argv[1] ) ;
