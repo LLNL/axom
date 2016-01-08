@@ -9,6 +9,7 @@ add_component(COMPONENT_NAME common DEFAULT_STATE ON)
 add_component(COMPONENT_NAME slic DEFAULT_STATE ON)
 add_component(COMPONENT_NAME slam DEFAULT_STATE ON)
 add_component(COMPONENT_NAME sidre DEFAULT_STATE ON)
+add_component(COMPONENT_NAME quest DEFAULT_STATE ON)
 
 
 # Lumberjack is an extension to SLIC that supports message filtering and reduction capabilities for parallel (MPI) executables.
