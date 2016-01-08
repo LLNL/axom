@@ -310,6 +310,127 @@ TEST( quest_boundingBox, bb_add_box)
 
 }
 
+TEST( quest_boundingBox, bb_expand)
+{
+    static const int DIM = 3;
+    typedef double CoordType;
+    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+
+    //
+    std::cout <<"Testing bounding box inflate"<<std::endl;
+
+
+    QBBox bbox ( QPoint(1), QPoint(3) );
+    EXPECT_TRUE(bbox.isValid());
+
+
+    // Expansion by positive number 0.5
+    QBBox bbox1 ( bbox) ;
+    bbox1.expand(0.5);
+    EXPECT_TRUE(bbox1.isValid());
+    EXPECT_EQ(bbox1.getMin(), QPoint(.5));
+    EXPECT_EQ(bbox1.getMax(), QPoint(3.5));
+
+    // Expansion by negative number -0.5 is contraction
+    QBBox bbox2 ( bbox);
+    bbox2.expand(-0.5);
+    EXPECT_TRUE(bbox2.isValid());
+    EXPECT_EQ(bbox2.getMin(), QPoint(1.5));
+    EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
+
+
+    // Expand by too much 5 -- we are checking that bounds fix themselves
+    QBBox bbox3 ( bbox);
+    bbox3.expand(-5);
+    EXPECT_TRUE(bbox3.isValid());
+    EXPECT_EQ(bbox3.getMin(), QPoint(-2)); // 3 + -5 == -2
+    EXPECT_EQ(bbox3.getMax(), QPoint(6));  // 1 - -5 == 6
+
+}
+
+
+TEST( quest_boundingBox, bb_scale)
+{
+    static const int DIM = 3;
+    typedef double CoordType;
+    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+
+    //
+    std::cout <<"Testing bounding box scale"<<std::endl;
+
+
+    QBBox bbox ( QPoint(1), QPoint(3) );
+    EXPECT_TRUE(bbox.isValid());
+
+
+    // Expansion by positive number 0.5
+    QBBox bbox1 ( bbox) ;
+    bbox1.scale(1.5);
+    EXPECT_TRUE(bbox1.isValid());
+    EXPECT_EQ(bbox1.getMin(), QPoint(.5));
+    EXPECT_EQ(bbox1.getMax(), QPoint(3.5));
+
+    // scale by a number less than 1
+    QBBox bbox2 ( bbox);
+    bbox2.scale(0.5);
+    EXPECT_TRUE(bbox2.isValid());
+    EXPECT_EQ(bbox2.getMin(), QPoint(1.5));
+    EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
+
+
+    // Expand by too much 5 -- we are checking that bounds fix themselves
+
+#ifdef ATK_DEBUG
+  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  QBBox bbox3 ( bbox);
+  ASSERT_DEATH( bbox3.scale(-1.), "") << "Boundingbox::scale: parameter must be >= 0.";
+#else
+  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
+#endif
+
+
+
+}
+
+
+TEST( quest_boundingBox, bb_shift)
+{
+    static const int DIM = 3;
+    typedef double CoordType;
+    typedef quest::Point<CoordType, DIM> QPoint;
+    typedef quest::BoundingBox<CoordType, DIM> QBBox;
+
+    typedef quest::Vector<CoordType, DIM> QVec;
+
+    //
+    std::cout <<"Testing bounding box shift"<<std::endl;
+
+
+    QBBox bbox ( QPoint(1), QPoint(3) );
+    EXPECT_TRUE(bbox.isValid());
+
+
+    // Expansion by positive number 0.5
+    QBBox bbox1 ( bbox) ;
+    bbox1.shift(QVec(0.5));
+    EXPECT_TRUE(bbox1.isValid());
+    EXPECT_EQ(bbox1.getMin(), QPoint(1.5));
+    EXPECT_EQ(bbox1.getMax(), QPoint(3.5));
+
+    // Expansion by negative number -0.5 is contraction
+    QBBox bbox2 ( bbox);
+    bbox2.shift(QVec(-0.5));
+    EXPECT_TRUE(bbox2.isValid());
+    EXPECT_EQ(bbox2.getMin(), QPoint(0.5));
+    EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
+
+}
+
+
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

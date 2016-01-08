@@ -181,6 +181,39 @@ public:
   void addBox(const BoundingBox& bbox);
 
 
+
+  /*!
+   *****************************************************************************
+   * \brief Expands the lower and upper bounds by the given amount.
+   * \param [in] expansionAmount an absolute amount to expand
+   * Moves min point expansionAmount away from center and
+   * max point expansionAmount away from center (component-wise).
+   * If expansionAmount is negative, the bounding box will contract
+   * This function checks to ensure that the bounding box is valid after expansion.
+   *****************************************************************************
+   */
+  void expand(CoordType expansionAmount);
+
+  /*!
+   *****************************************************************************
+   * \brief Scales the bounding box by a fixed amount.
+   * \param [in] scaleFactor the multiplicative factor in which to scale
+   * If scaleFactor is less than 1, the bounding box will shrink
+   * \pre scaleFactor must be greater than or equal to 0
+   * This function checks to ensure that the bounding box is valid after inflation.
+   *****************************************************************************
+   */
+  void scale(double scaleFactor);
+
+  /*!
+   *****************************************************************************
+   * \brief Shifts the bounding box by a fixed amount.
+   * \param [in] displacement the amount with which to move the bounding box
+   *****************************************************************************
+   */
+  void shift(const VectorType& displacement);
+
+
   /*!
    *****************************************************************************
    * \brief Overloaded assignment operator.
@@ -310,6 +343,43 @@ namespace quest{
         addPoint(bbox.getMax());
     }
 
+
+    //------------------------------------------------------------------------------
+    template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::expand(CoordType expansionAmount)
+    {
+        for (int dim=0; dim < DIM; ++dim ) {
+            m_min[dim] -= expansionAmount;
+            m_max[dim] += expansionAmount;
+        }
+
+        checkAndFixBounds();
+    }
+
+
+    //------------------------------------------------------------------------------
+    template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
+    {
+        SLIC_ASSERT(scaleFactor >= 0.);
+
+        const PointType midpoint = PointType::midpoint(getMin(), getMax());
+        const VectorType r = scaleFactor * 0.5 * range();
+
+        m_min = PointType( midpoint.array() - r.array());
+        m_max = PointType( midpoint.array() + r.array());
+
+        checkAndFixBounds();
+    }
+
+
+    //------------------------------------------------------------------------------
+    template<typename CoordType, int DIM>
+    void BoundingBox<CoordType, DIM>::shift(const VectorType& displacement)
+    {
+        m_min.array() += displacement.array();
+        m_max.array() += displacement.array();
+    }
 
     //------------------------------------------------------------------------------
     template<typename CoordType, int DIM>
