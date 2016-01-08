@@ -2,6 +2,11 @@
 # Setup compiler options
 ############################
 
+# Basic helper modules.
+include(CheckCXXCompilerFlag)
+include(AddCXXCompilerFlag)
+include(CXXFeatureCheck)
+
 #############################################
 # Support extra compiler flags and defines
 #############################################
@@ -95,14 +100,15 @@ if (ENABLE_GLOBALCOMPILERWARNINGSASERRORS)
    MESSAGE(STATUS  "Treating compiler warnings as errors on all targets.")
 endif()
 
-
 ################################
 # Enable C++11 
 ################################
-## Enable ENABLE C++ 11 features
 if (ENABLE_CXX11)
-  # define a macro so the code can ifdef accordingly.
-  add_definitions("-DUSE_CXX11")
+   add_definitions("-DUSE_CXX11")
+   add_cxx_compiler_flag(-std=c++11)
+   if (NOT HAVE_CXX_FLAG_STD_CXX11)
+      MESSAGE(FATAL_ERROR "This compiler does not support the standard C++11 flag of '-std=c++11'.  Support for it must be added manually in SetupCompilerOptions.cmake.")
+   endif()
 endif()
 
 ################################

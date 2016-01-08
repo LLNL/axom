@@ -42,24 +42,6 @@
 include(SetupCmakeOptions)
 
 ################################
-# Setup global target options.
-# These will apply to all targets created after this section.
-################################
-
-# Move these into their own cmake file if they start to grow.
-
-# Note: CMake supports adding the correct C++11 flags for gnu and clang (but not intel).
-# However, it adds -std=gnu++11 which includes gnu extensions, so let's just stick to
-# adding the same, tandard -std=c++11 flag manually for all three compilers..
-if ( ENABLE_CXX11 )
-	if ( (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang") OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel") )
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 
-	else()
-		MESSAGE(FATAL_ERROR "C++11: This compiler has not yet had the correct C++11 compiler flags added to the build system.  Please add to CmakeBasics.cmake.")
-   endif()
-endif()
-
-################################
 # Prevent in-source builds
 ################################
 include(PreventInSourceBuilds)

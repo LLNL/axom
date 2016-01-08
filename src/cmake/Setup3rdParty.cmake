@@ -29,11 +29,13 @@ include(cmake/FindUncrustify.cmake)
 # Find boost headers
 ################################
 if (ENABLE_BOOST)
-  find_package(Boost
-                1.55
-                REQUIRED)
-  MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
-  MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )
+  if (DEFINED BOOST_ROOT)
+    find_package(Boost
+                 1.55
+                 REQUIRED)
+    MESSAGE(STATUS "Boost include dir: " ${Boost_INCLUDE_DIR})
+    MESSAGE(STATUS "Boost version: " ${Boost_VERSION} )
+  else()
+    MESSAGE(FATAL_ERROR "ENABLE_BOOST is true, but BOOST_ROOT was not set.  Check your host-config file.")
+  endif()
 endif()
-
-
