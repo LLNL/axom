@@ -80,7 +80,8 @@ TEST(C_sidre_group,get_group)
 
   EXPECT_TRUE( SIDRE_datagroup_has_group(parent, "child") );
   // check error condition
-  EXPECT_TRUE( SIDRE_datagroup_get_group(parent, "non-existant group") == NULL );
+  EXPECT_TRUE( SIDRE_datagroup_get_group(parent,
+                                         "non-existant group") == NULL );
 
   SIDRE_datastore_delete(ds);
 }
@@ -100,7 +101,9 @@ TEST(C_sidre_group,get_view)
   EXPECT_TRUE( SIDRE_datagroup_get_view_from_name(parent, "view") == view );
 
   // check error condition
-  EXPECT_TRUE( SIDRE_datagroup_get_view_from_name(parent, "non-existant view") == NULL );
+  EXPECT_TRUE( SIDRE_datagroup_get_view_from_name(parent,
+                                                  "non-existant view") ==
+               NULL );
 
   SIDRE_datastore_delete(ds);
 }
@@ -154,12 +157,14 @@ TEST(sidre_group,get_first_and_next_view_index)
   SIDRE_dataview * view1 = SIDRE_datagroup_create_view_empty(parent, "view1");
   SIDRE_dataview * view2 = SIDRE_datagroup_create_view_empty(parent, "view2");
 
-  SIDRE_datagroup * emptyGroup = SIDRE_datagroup_create_group(root, "emptyGroup");
+  SIDRE_datagroup * emptyGroup =
+    SIDRE_datagroup_create_group(root, "emptyGroup");
 
   EXPECT_EQ(SIDRE_datagroup_get_num_views(parent), 2u);
 
   SIDRE_IndexType idx1 = SIDRE_datagroup_get_first_valid_view_index(parent);
-  SIDRE_IndexType idx2 = SIDRE_datagroup_get_next_valid_view_index(parent, idx1);
+  SIDRE_IndexType idx2 =
+    SIDRE_datagroup_get_next_valid_view_index(parent, idx1);
 
   const char * name1 = SIDRE_datagroup_get_view_name(parent, idx1);
   const char * name2 = SIDRE_datagroup_get_view_name(parent, idx2);
@@ -171,8 +176,10 @@ TEST(sidre_group,get_first_and_next_view_index)
   EXPECT_TRUE(strcmp(SIDRE_dataview_get_name(view2), name2) == 0);
 
   // check error conditions
-  SIDRE_IndexType badidx1 = SIDRE_datagroup_get_first_valid_view_index(emptyGroup);
-  SIDRE_IndexType badidx2 = SIDRE_datagroup_get_next_valid_view_index(emptyGroup, badidx1);
+  SIDRE_IndexType badidx1 = SIDRE_datagroup_get_first_valid_view_index(
+    emptyGroup);
+  SIDRE_IndexType badidx2 = SIDRE_datagroup_get_next_valid_view_index(
+    emptyGroup, badidx1);
 
   EXPECT_TRUE(badidx1 == SIDRE_InvalidIndex);
   EXPECT_TRUE(badidx2 == SIDRE_InvalidIndex);
@@ -248,7 +255,8 @@ TEST(C_sidre_group,create_destroy_has_view)
 
   // try api call that specifies specific type and length
   SIDRE_datagroup_create_view_and_allocate( group,
-					    "viewWithLength1", SIDRE_FLOAT_ID, 50);
+                                            "viewWithLength1", SIDRE_FLOAT_ID,
+                                            50);
 
   // error condition check - try again with duplicate name, should be a no-op
   //XXX  EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength1", SIDRE_FLOAT64_ID, 50) );
@@ -261,7 +269,8 @@ TEST(C_sidre_group,create_destroy_has_view)
   //XXX SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2", SIDRE_FLOAT64_ID, 50 );
   //XXX EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2", SIDRE_FLOAT64_ID, 50 ) == NULL );
   // destroy this view using index
-  SIDRE_datagroup_destroy_view_and_data_index( group, SIDRE_datagroup_get_first_valid_view_index(group) );
+  SIDRE_datagroup_destroy_view_and_data_index( group, SIDRE_datagroup_get_first_valid_view_index(
+                                                 group) );
 
   SIDRE_datastore_delete(ds);
 }
@@ -286,7 +295,8 @@ TEST(C_sidre_group,create_destroy_has_group)
   SIDRE_datagroup * group2 = SIDRE_datagroup_create_group(root, "group2");
   // shut up compiler about unused variable
   (void)group2;
-  SIDRE_datagroup_destroy_group_index( root, SIDRE_datagroup_get_first_valid_group_index(root) );
+  SIDRE_datagroup_destroy_group_index( root, SIDRE_datagroup_get_first_valid_group_index(
+                                         root) );
 
   SIDRE_datastore_delete(ds);
 }
@@ -304,7 +314,7 @@ TEST(C_sidre_group,group_name_collisions)
   // attempt to create duplicate group name
 
 #if 0
-   setAbortOnAssert(false);
+  setAbortOnAssert(false);
   SIDRE_datagroup * badGroup = SIDRE_datagroup_create_group(root, "fields");
   EXPECT_TRUE( badGroup == NULL );
 
@@ -323,15 +333,15 @@ TEST(C_sidre_group,view_copy_move)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
   SIDRE_datagroup * flds = SIDRE_datagroup_create_group(root, "fields");
 
-  SIDRE_dataview * i0_view = 
-     SIDRE_datagroup_create_view_and_allocate(flds, "i0", 
-                                                      SIDRE_INT_ID, 1);
-  SIDRE_dataview * f0_view = 
-     SIDRE_datagroup_create_view_and_allocate(flds, "f0", 
-                                                      SIDRE_FLOAT_ID, 1);
-  SIDRE_dataview * d0_view = 
-     SIDRE_datagroup_create_view_and_allocate(flds, "d0", 
-                                                      SIDRE_DOUBLE_ID, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(flds, "i0",
+                                             SIDRE_INT_ID, 1);
+  SIDRE_dataview * f0_view =
+    SIDRE_datagroup_create_view_and_allocate(flds, "f0",
+                                             SIDRE_FLOAT_ID, 1);
+  SIDRE_dataview * d0_view =
+    SIDRE_datagroup_create_view_and_allocate(flds, "d0",
+                                             SIDRE_DOUBLE_ID, 1);
 
   SIDRE_dataview_set_scalar_int(i0_view, 1);
   SIDRE_dataview_set_scalar_float(f0_view, 100.0);
@@ -344,7 +354,8 @@ TEST(C_sidre_group,view_copy_move)
   // test moving a view form feds7 to sub
   // flds->createGroup("sub")->moveView(flds->getView("d0"));
   SIDRE_datagroup * sub = SIDRE_datagroup_create_group(flds, "sub");
-  SIDRE_datagroup_move_view(sub, SIDRE_datagroup_get_view_from_name(flds, "d0"));
+  SIDRE_datagroup_move_view(sub,
+                            SIDRE_datagroup_get_view_from_name(flds, "d0"));
   SIDRE_datagroup_print(flds);
   EXPECT_FALSE(SIDRE_datagroup_has_view(flds, "d0"));
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "sub"));
@@ -363,7 +374,8 @@ TEST(C_sidre_group,view_copy_move)
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds top sub
-  SIDRE_datagroup_copy_view(sub, SIDRE_datagroup_get_view_from_name(flds, "i0"));
+  SIDRE_datagroup_copy_view(sub,
+                            SIDRE_datagroup_get_view_from_name(flds, "i0"));
 
   SIDRE_datagroup_print(flds);
 
@@ -373,7 +385,8 @@ TEST(C_sidre_group,view_copy_move)
 #ifdef XXX
   // we expect the actual data  pointers to be the same
   EXPECT_EQ(SIDRE_datagroup_get_view(flds, "i0")->getNode().data_pointer(),
-            SIDRE_datagroup_get_group("sub")->get_view("i0")->getNode().data_pointer());
+            SIDRE_datagroup_get_group("sub")->get_view(
+              "i0")->getNode().data_pointer());
 #endif
 
   SIDRE_datastore_delete(ds);
@@ -391,14 +404,14 @@ TEST(C_sidre_group,groups_move_copy)
   SIDRE_datagroup * gc = SIDRE_datagroup_create_group(flds, "c");
 
   SIDRE_dataview * i0_view =
-     SIDRE_datagroup_create_view_and_allocate(ga, "i0",
-                                                      SIDRE_INT_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate(ga, "i0",
+                                             SIDRE_INT_ID, 1);
   SIDRE_dataview * f0_view =
-     SIDRE_datagroup_create_view_and_allocate(gb, "f0",
-                                                      SIDRE_FLOAT_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate(gb, "f0",
+                                             SIDRE_FLOAT_ID, 1);
   SIDRE_dataview * d0_view =
-     SIDRE_datagroup_create_view_and_allocate(gc, "d0",
-                                                      SIDRE_DOUBLE_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate(gc, "d0",
+                                             SIDRE_DOUBLE_ID, 1);
 
   SIDRE_dataview_set_scalar_int(i0_view, 1);
   SIDRE_dataview_set_scalar_float(f0_view, 100.0);
@@ -437,11 +450,11 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
 
   // XXX const
   SIDRE_dataview * view1 =
-     SIDRE_datagroup_create_view_and_allocate(grp, viewName1,
-                                                      SIDRE_INT_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName1,
+                                             SIDRE_INT_ID, 1);
   SIDRE_dataview * view2 =
-     SIDRE_datagroup_create_view_and_allocate(grp, viewName2,
-                                                      SIDRE_FLOAT_ID, 1);
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName2,
+                                             SIDRE_FLOAT_ID, 1);
 
   EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName1));
   EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName1), view1 );
@@ -482,14 +495,14 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  SIDRE_dataview * const view1 = 
-     SIDRE_datagroup_create_view_and_allocate(grp, viewName1, 
-                                                      SIDRE_INT_ID, 10);
+  SIDRE_dataview * const view1 =
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName1,
+                                             SIDRE_INT_ID, 10);
 
   // this one is the Schema & method
-  SIDRE_dataview * const view2 = 
-     SIDRE_datagroup_create_view_and_allocate(grp, viewName2, 
-                                                      SIDRE_DOUBLE_ID, 10);
+  SIDRE_dataview * const view2 =
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName2,
+                                             SIDRE_DOUBLE_ID, 10);
 
   EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName1));
   EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName1), view1 );
@@ -527,9 +540,9 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
   // use create + alloc convenience methods
   // this one is the DataType & method
-  SIDRE_dataview * base =  
-    SIDRE_datagroup_create_view_and_allocate(root, "base", 
-                                                     SIDRE_INT_ID, 10);
+  SIDRE_dataview * base =
+    SIDRE_datagroup_create_view_and_allocate(root, "base",
+                                             SIDRE_INT_ID, 10);
 #ifdef XXX
   int * base_vals = (int *) SIDRE_dataview_get_void_ptr(base);
   for(int i=0 ; i<10 ; i++)
@@ -554,8 +567,12 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   Schema s(DataType::uint32(5, 5*sizeof(int)));
   SIDRE_datagroup_create_view(root, "sub_b", base_buff, s);
 
-  int * sub_a_vals = (int *) SIDRE_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(root, "sub_a"));
-  int * sub_b_vals = (int *) SIDR_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(root, "sub_b"));
+  int * sub_a_vals = (int *) SIDRE_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(
+                                                           root,
+                                                           "sub_a"));
+  int * sub_b_vals = (int *) SIDR_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(
+                                                          root,
+                                                          "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -576,14 +593,19 @@ TEST(C_sidre_group,save_restore_simple)
 
   SIDRE_datagroup * ga = SIDRE_datagroup_create_group(flds, "a");
 
-  SIDRE_dataview * i0_view = 
-     SIDRE_datagroup_create_view_and_allocate(ga, "i0",
-                                                      SIDRE_INT_ID, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(ga, "i0",
+                                             SIDRE_INT_ID, 1);
   SIDRE_dataview_set_scalar_int(i0_view, 1);
 
   EXPECT_TRUE(SIDRE_datagroup_has_group(root, "fields"));
-  EXPECT_TRUE(SIDRE_datagroup_has_group(SIDRE_datagroup_get_group(root, "fields"), "a"));
-  EXPECT_TRUE(SIDRE_datagroup_has_view(SIDRE_datagroup_get_group(SIDRE_datagroup_get_group(root, "fields"), "a"), "i0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(SIDRE_datagroup_get_group(root,
+                                                                  "fields"),
+                                        "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(SIDRE_datagroup_get_group(
+                                         SIDRE_datagroup_get_group(root,
+                                                                   "fields"),
+                                         "a"), "i0"));
 
 
   SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_simple","conduit");
@@ -592,7 +614,9 @@ TEST(C_sidre_group,save_restore_simple)
 
   SIDRE_datastore * ds2 = SIDRE_datastore_new();
 
-  SIDRE_datagroup_load(SIDRE_datastore_get_root(ds2), "C_out_sidre_group_save_restore_simple","conduit");
+  SIDRE_datagroup_load(SIDRE_datastore_get_root(
+                         ds2), "C_out_sidre_group_save_restore_simple",
+                       "conduit");
 
   SIDRE_datastore_print(ds2);
 
@@ -623,15 +647,19 @@ TEST(C_sidre_group,save_restore_complex)
   SIDRE_datagroup * gb = SIDRE_datagroup_create_group(flds, "b");
   SIDRE_datagroup * gc = SIDRE_datagroup_create_group(flds, "c");
 
-  SIDRE_dataview * i0_view = 
-     SIDRE_datagroup_create_view_and_allocate(ga, "i0",
-                                                      SIDRE_INT_ID, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(ga, "i0",
+                                             SIDRE_INT_ID, 1);
   SIDRE_dataview_set_scalar_int(i0_view, 1);
 
-  SIDRE_dataview * f0_view = SIDRE_datagroup_create_view_and_allocate(gb, "f0", SIDRE_FLOAT_ID, 1);
+  SIDRE_dataview * f0_view = SIDRE_datagroup_create_view_and_allocate(gb, "f0",
+                                                                      SIDRE_FLOAT_ID,
+                                                                      1);
   SIDRE_dataview_set_scalar_float(f0_view, 100.0);
 
-  SIDRE_dataview * d0_view = SIDRE_datagroup_create_view_and_allocate(gc, "d0", SIDRE_DOUBLE_ID, 1);
+  SIDRE_dataview * d0_view = SIDRE_datagroup_create_view_and_allocate(gc, "d0",
+                                                                      SIDRE_DOUBLE_ID,
+                                                                      1);
   SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
@@ -639,14 +667,16 @@ TEST(C_sidre_group,save_restore_complex)
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "b"));
   EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "c"));
 
-  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_complex","conduit");
+  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_complex",
+                       "conduit");
 
   SIDRE_datastore_print(ds);
 
   SIDRE_datastore * ds2 = SIDRE_datastore_new();
   root = SIDRE_datastore_get_root(ds2);
 
-  SIDRE_datagroup_load(root, "C_out_sidre_group_save_restore_complex","conduit");
+  SIDRE_datagroup_load(root, "C_out_sidre_group_save_restore_complex",
+                       "conduit");
 
   flds = SIDRE_datagroup_get_group(root, "fields");
   // check that all sub groups exist

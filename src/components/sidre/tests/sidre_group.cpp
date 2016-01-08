@@ -256,21 +256,25 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_FALSE( group->hasView("view") );
 
   // try api call that specifies specific type and length
-  group->createViewAndAllocate( "viewWithLength1", 
+  group->createViewAndAllocate( "viewWithLength1",
                                 asctoolkit::sidre::FLOAT_ID, 50 );
 
   // error condition check - try again with duplicate name, should be a no-op
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", 
-                           asctoolkit::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1",
+                                             asctoolkit::sidre::FLOAT64_ID,
+                                             50 ) == ATK_NULLPTR );
   group->destroyViewAndData("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", 
-                           asctoolkit::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen",
+                                             asctoolkit::sidre::FLOAT64_ID,
+                                             -1 ) == ATK_NULLPTR );
 
   // try api call that specifies data type in another way
   group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) );
-  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
+  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2",
+                                             DataType::float64(
+                                               50) ) == ATK_NULLPTR );
   // destroy this view using index
   group->destroyViewAndData( group->getFirstValidViewIndex() );
 
@@ -417,7 +421,7 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   std::string viewName1("viewBuffer1");
   std::string viewName2("viewBuffer2");
 
-  DataView * view1 = grp->createViewAndAllocate(viewName1, 
+  DataView * view1 = grp->createViewAndAllocate(viewName1,
                                                 asctoolkit::sidre::INT_ID, 1);
   DataView * view2 = grp->createViewAndAllocate(viewName2,
                                                 asctoolkit::sidre::INT_ID, 1);
@@ -461,7 +465,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
   // use create + alloc convenience methods
   // this one is the DataType & method
   DataView * const view1 = grp->createViewAndAllocate(viewName1,
-                                                    DataType::c_int(10));
+                                                      DataType::c_int(10));
   // this one is the Schema & method
   conduit::Schema s;
   s.set(DataType::c_double(10));
@@ -519,7 +523,7 @@ TEST(sidre_group,create_view_of_buffer_with_schema)
   DataBuffer * base_buff = base->getBuffer();
 
   // create two views into this buffer
-  // 
+  //
   // view for the first 5 values
   root->createView("sub_a", base_buff)->apply(DataType::c_int(5));
   //
@@ -626,8 +630,10 @@ TEST(sidre_group,save_restore_complex)
   EXPECT_TRUE(flds->hasGroup("c"));
 
   EXPECT_EQ(flds->getGroup("a")->getView("i0")->getData<int>(),1);
-  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getData<float>(),100.0,  1e-12);
-  EXPECT_NEAR(flds->getGroup("c")->getView("d0")->getData<double>(),3000.0, 1e-12);
+  EXPECT_NEAR(flds->getGroup("b")->getView("f0")->getData<float>(),100.0,
+              1e-12);
+  EXPECT_NEAR(flds->getGroup("c")->getView(
+                "d0")->getData<double>(),3000.0, 1e-12);
 
   //ds2->print();
 

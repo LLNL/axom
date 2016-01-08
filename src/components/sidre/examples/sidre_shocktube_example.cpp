@@ -56,7 +56,8 @@ const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
 
 
-void CreateScalarIntViewAndSetVal( DataGroup * const grp, const std::string& name, int32 const value )
+void CreateScalarIntViewAndSetVal( DataGroup * const grp,
+                                   const std::string& name, int32 const value )
 {
   DataView * const view = grp->createViewAndAllocate(name, DataType::int32());
   view->setScalar(value);
@@ -64,7 +65,9 @@ void CreateScalarIntViewAndSetVal( DataGroup * const grp, const std::string& nam
 }
 
 
-void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp, const std::string& name, float64 const value )
+void CreateScalarFloatBufferViewAndSetVal( DataGroup * const grp,
+                                           const std::string& name,
+                                           float64 const value )
 {
   DataView * const view = grp->createViewAndAllocate(name, DataType::float64());
   view->setScalar(value);
@@ -150,7 +153,8 @@ void GetUserInput(DataGroup * const prob)
 
     CreateScalarIntViewAndSetVal( prob, "numCyclesPerDump", numCyclesPerDump );
 
-    CreateScalarIntViewAndSetVal( prob, "numTotalCycles", numUltraDumps * numCyclesPerDump );
+    CreateScalarIntViewAndSetVal( prob, "numTotalCycles",
+                                  numUltraDumps * numCyclesPerDump );
 
 
   }
@@ -209,7 +213,9 @@ void CreateShockTubeMesh(DataGroup * const prob)
   int32 numTubeElems = numElems - 2;
   DataGroup * const tube = elem->createGroup("tube");//->SetDataShape(DataStoreNS::DataShape(numTubeElems));
 
-  int32 * const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(numTubeElems))->getData();
+  int32 * const mapToElems = tube->createViewAndAllocate("mapToElems", DataType::int32(
+                                                           numTubeElems))->
+                             getData();
 
 
   for ( int k = 0u ; k < numTubeElems ; ++k)
@@ -221,7 +227,9 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each face connects to two elements */
 
-  int32 * const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(2*numFaces))->getData();
+  int32 * const faceToElem = face->createViewAndAllocate("faceToElem", DataType::int32(
+                                                           2*
+                                                           numFaces))->getData();
 
   for (i = 0 ; i < numFaces ; ++i)
   {
@@ -231,7 +239,8 @@ void CreateShockTubeMesh(DataGroup * const prob)
 
   /* Each element connects to two faces */ //
 //  Relation &elemToFace = *tube->relationCreate("elemToFace", 2);
-  int32 * elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(2*numElems))->getData();
+  int32 * elemToFace = tube->createViewAndAllocate("elemToFace", DataType::int32(
+                                                     2*numElems))->getData();
 
   for (i = 0 ; i < numElems ; ++i)
   {
@@ -260,14 +269,18 @@ void InitializeShockTube(DataGroup * const prob)
   int32 const numElems = prob->getView("numElems")->getData();
   int32 const numFaces = prob->getView("numFaces")->getData();
 
-  float64 * const mass = elem->createViewAndAllocate("mass", DataType::float64(numElems))->getData();
+  float64 * const mass =
+    elem->createViewAndAllocate("mass", DataType::float64(numElems))->getData();
 
 
-  float64 * const momentum = elem->createViewAndAllocate("momentum", DataType::float64(numElems))->getData();
+  float64 * const momentum = elem->createViewAndAllocate("momentum", DataType::float64(
+                                                           numElems))->getData();
 
-  float64 * const energy = elem->createViewAndAllocate("energy", DataType::float64(numElems))->getData();
+  float64 * const energy = elem->createViewAndAllocate("energy", DataType::float64(
+                                                         numElems))->getData();
 
-  float64 * const pressure = elem->createViewAndAllocate("pressure", DataType::float64(numElems))->getData();
+  float64 * const pressure = elem->createViewAndAllocate("pressure", DataType::float64(
+                                                           numElems))->getData();
 
   /* Create face centered quantities */
 
@@ -318,7 +331,8 @@ void InitializeShockTube(DataGroup * const prob)
   CreateScalarFloatBufferViewAndSetVal( prob, "time", 0.0 );
   CreateScalarIntViewAndSetVal( prob, "cycle", 0 );
 
-  CreateScalarFloatBufferViewAndSetVal( prob, "dx", (1.0 / ((double) endTube)) );
+  CreateScalarFloatBufferViewAndSetVal( prob, "dx",
+                                        (1.0 / ((double) endTube)) );
   double dx = prob->getView("dx")->getData();
   CreateScalarFloatBufferViewAndSetVal( prob, "dt", 0.4 * dx );
 
@@ -366,7 +380,8 @@ void ComputeFaceInfo(DataGroup * const prob)
     double massf = 0.5 * (mass[upWind] + mass[downWind]);
     double momentumf = 0.5 * (momentum[upWind] + momentum[downWind]);
     double energyf = 0.5 * (energy[upWind] + energy[downWind]);
-    double pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
+    double pressuref = (gammaa - 1.0) *
+                       (energyf - 0.5 * momentumf * momentumf / massf);
     double c = sqrt(gammaa * pressuref / massf);
     double v = momentumf / massf;
     double ev;
@@ -397,7 +412,8 @@ void ComputeFaceInfo(DataGroup * const prob)
     massf = mass[contributor];
     momentumf = momentum[contributor];
     energyf = energy[contributor];
-    pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
+    pressuref = (gammaa - 1.0) *
+                (energyf - 0.5 * momentumf * momentumf / massf);
     ev = 0.5 * (v + c);
     cLocal = sqrt(gammaa * pressuref / massf);
 
@@ -409,7 +425,8 @@ void ComputeFaceInfo(DataGroup * const prob)
     massf = mass[contributor];
     momentumf = momentum[contributor];
     energyf = energy[contributor];
-    pressuref = (gammaa - 1.0) * (energyf - 0.5 * momentumf * momentumf / massf);
+    pressuref = (gammaa - 1.0) *
+                (energyf - 0.5 * momentumf * momentumf / massf);
     ev = 0.5 * (v - c);
     cLocal = sqrt(gammaa * pressuref / massf);
 
@@ -472,7 +489,10 @@ void UpdateElemInfo(DataGroup * const prob)
     mass[elemIdx] -= gammaaInverse * (F0[downWind] - F0[upWind]) * dt / dx;
     momentum[elemIdx] -= gammaaInverse * (F1[downWind] - F1[upWind]) * dt / dx;
     energy[elemIdx] -= gammaaInverse * (F2[downWind] - F2[upWind]) * dt / dx;
-    pressure[elemIdx] = (gammaa - 1.0) * (energy[elemIdx] - 0.5 * momentum[elemIdx] * momentum[elemIdx] / mass[elemIdx]);
+    pressure[elemIdx] = (gammaa - 1.0) *
+                        (energy[elemIdx] - 0.5 * momentum[elemIdx] *
+                         momentum[elemIdx] /
+                         mass[elemIdx]);
   }
 
   /* update the time */

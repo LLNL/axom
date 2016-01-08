@@ -38,11 +38,14 @@ void processAbort()
 #else
   int mpi = 0;
   MPI_Initialized( &mpi );
-  if ( mpi ) {
+  if ( mpi )
+  {
 
     MPI_Abort( MPI_COMM_WORLD, -1 );
 
-  } else {
+  }
+  else
+  {
 
     exit( -1 );
 

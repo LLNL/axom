@@ -19,10 +19,10 @@ TEST(C_sidre_view,create_views)
   SIDRE_datastore * ds   = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  SIDRE_dataview * dv_0 = 
-     SIDRE_datagroup_create_view_and_allocate(root, "field0", SIDRE_INT_ID, 1);
-  SIDRE_dataview * dv_1 = 
-     SIDRE_datagroup_create_view_and_allocate(root, "field1", SIDRE_INT_ID, 1);
+  SIDRE_dataview * dv_0 =
+    SIDRE_datagroup_create_view_and_allocate(root, "field0", SIDRE_INT_ID, 1);
+  SIDRE_dataview * dv_1 =
+    SIDRE_datagroup_create_view_and_allocate(root, "field1", SIDRE_INT_ID, 1);
 
   SIDRE_databuffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
   SIDRE_databuffer * db_1 = SIDRE_dataview_get_buffer(dv_1);
@@ -39,8 +39,8 @@ TEST(C_sidre_view,int_buffer_from_view)
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  SIDRE_dataview * dv = 
-     SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
+  SIDRE_dataview * dv =
+    SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
 
   EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
@@ -64,8 +64,8 @@ TEST(C_sidre_view,int_buffer_from_view_conduit_value)
   SIDRE_datastore * ds = SIDRE_datastore_new();
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  SIDRE_dataview * dv = 
-     SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
+  SIDRE_dataview * dv =
+    SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)
@@ -102,8 +102,10 @@ TEST(C_sidre_view,int_array_strided_views)
   EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
-  SIDRE_dataview * dv_e = SIDRE_datagroup_create_view_into_buffer(root, "even", dbuff);
-  SIDRE_dataview * dv_o = SIDRE_datagroup_create_view_into_buffer(root, "odd", dbuff);
+  SIDRE_dataview * dv_e = SIDRE_datagroup_create_view_into_buffer(root, "even",
+                                                                  dbuff);
+  SIDRE_dataview * dv_o = SIDRE_datagroup_create_view_into_buffer(root, "odd",
+                                                                  dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
@@ -115,8 +117,8 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_dataview_print(dv_o);
 
   // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
-  int* dv_e_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e);
-  int* dv_o_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o);
+  int * dv_e_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e);
+  int * dv_o_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o);
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(dv_e_ptr[2*i], 2*i);
@@ -125,9 +127,9 @@ TEST(C_sidre_view,int_array_strided_views)
 
   // Run similar test to above with different view apply method
   SIDRE_dataview * dv_e1 =
-     SIDRE_datagroup_create_view_into_buffer(root, "even1", dbuff);
+    SIDRE_datagroup_create_view_into_buffer(root, "even1", dbuff);
   SIDRE_dataview * dv_o1 =
-     SIDRE_datagroup_create_view_into_buffer(root, "odd1", dbuff);
+    SIDRE_datagroup_create_view_into_buffer(root, "odd1", dbuff);
   EXPECT_TRUE(dv_e1 != NULL);
   EXPECT_TRUE(dv_o1 != NULL);
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
@@ -139,8 +141,8 @@ TEST(C_sidre_view,int_array_strided_views)
   SIDRE_dataview_print(dv_o1);
 
   // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
-  int* dv_e1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e1);
-  int* dv_o1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o1);
+  int * dv_e1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e1);
+  int * dv_o1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o1);
   for(int i=0 ; i<5 ; i++)
   {
     EXPECT_EQ(dv_e1_ptr[2*i], 2*i);
@@ -176,31 +178,33 @@ TEST(C_sidre_view,int_array_depth_view)
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
 
   // create 4 "depth" views and apply offsets into buffer
-  SIDRE_dataview* views[4];
-  const char* view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
+  SIDRE_dataview * views[4];
+  const char * view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
 
-  for (int id = 0; id < 4; ++id)
+  for (int id = 0 ; id < 4 ; ++id)
   {
-     views[id] = SIDRE_datagroup_create_view_into_buffer(root, view_names[id], dbuff);
-     SIDRE_dataview_apply_nelems_offset(views[id], depth_nelems, id*depth_nelems);
+    views[id] = SIDRE_datagroup_create_view_into_buffer(root, view_names[id],
+                                                        dbuff);
+    SIDRE_dataview_apply_nelems_offset(views[id], depth_nelems,
+                                       id*depth_nelems);
   }
   EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
 
   // print depth views...
-  for (int id = 0; id < 4; ++id)
+  for (int id = 0 ; id < 4 ; ++id)
   {
-     SIDRE_dataview_print(views[id]);
+    SIDRE_dataview_print(views[id]);
   }
 
   // check values in depth views...
-  for (int id = 0; id < 4; ++id)
+  for (int id = 0 ; id < 4 ; ++id)
   {
 // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
-     int* dv_ptr = (int *) SIDRE_dataview_get_void_ptr(views[id]);
-     for (size_t i = 0; i < depth_nelems; ++i)
-     {
-        EXPECT_EQ(dv_ptr[i], id);
-     }
+    int * dv_ptr = (int *) SIDRE_dataview_get_void_ptr(views[id]);
+    for (size_t i = 0 ; i < depth_nelems ; ++i)
+    {
+      EXPECT_EQ(dv_ptr[i], id);
+    }
   }
 
   SIDRE_datastore_print(ds);
@@ -219,11 +223,11 @@ TEST(sidre_view,int_array_view_attach_buffer)
 
   // create 2 "field" views with type and # elems
   size_t elem_count = 0;
-  SIDRE_dataview* field0 = 
+  SIDRE_dataview * field0 =
     SIDRE_datagroup_create_view_from_type(root,"field0",
                                           SIDRE_INT_ID, field_nelems);
   elem_count += SIDRE_dataview_get_num_elements(field0);
-  SIDRE_dataview* field1 = 
+  SIDRE_dataview * field1 =
     SIDRE_datagroup_create_view_from_type(root, "field1",
                                           SIDRE_INT_ID, field_nelems);
   elem_count += SIDRE_dataview_get_num_elements(field1);
@@ -236,7 +240,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
   EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
 
   // Initilize buffer data for testing below.
-  int* b_ptr = (int*) SIDRE_databuffer_get_void_ptr(dbuff);
+  int * b_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
   for(size_t i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
@@ -257,15 +261,15 @@ TEST(sidre_view,int_array_view_attach_buffer)
   SIDRE_dataview_print(field1);
 
   // check values in field views...
-  int* f0_ptr = (int *) SIDRE_dataview_get_void_ptr(field0); 
-  for (size_t i = 0; i < field_nelems; ++i)
+  int * f0_ptr = (int *) SIDRE_dataview_get_void_ptr(field0);
+  for (size_t i = 0 ; i < field_nelems ; ++i)
   {
-     EXPECT_EQ(f0_ptr[i], 0);
+    EXPECT_EQ(f0_ptr[i], 0);
   }
-  int* f1_ptr = (int *) SIDRE_dataview_get_void_ptr(field1); 
-  for (size_t i = 0; i < field_nelems; ++i)
+  int * f1_ptr = (int *) SIDRE_dataview_get_void_ptr(field1);
+  for (size_t i = 0 ; i < field_nelems ; ++i)
   {
-     EXPECT_EQ(f1_ptr[i], 1);
+    EXPECT_EQ(f1_ptr[i], 1);
   }
 
   SIDRE_datastore_print(ds);
@@ -296,9 +300,9 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // create a group to hold the "old" or data we want to copy
   SIDRE_datagroup * r_old = SIDRE_datagroup_create_group(root, "r_old");
   // create a view to hold the base buffer
-  SIDRE_dataview * base_old = 
-     SIDRE_datagroup_create_view_and_allocate(r_old, "base_data",
-                                                      SIDRE_INT_ID, 40);
+  SIDRE_dataview * base_old =
+    SIDRE_datagroup_create_view_and_allocate(r_old, "base_data",
+                                             SIDRE_INT_ID, 40);
 
   int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(base_old);
 
@@ -366,7 +370,8 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   // create a group to hold the "old" or data we want to copy into
   SIDRE_datagroup * r_new = SIDRE_datagroup_create_group(root, "r_new");
   // create a view to hold the base buffer
-  SIDRE_dataview * base_new = SIDRE_datagroup_create_view_and_buffer_simple(r_new, "base_data");
+  SIDRE_dataview * base_new = SIDRE_datagroup_create_view_and_buffer_simple(
+    r_new, "base_data");
 
   // alloc our buffer
   // create a buffer to hold larger subarrays
@@ -453,12 +458,12 @@ TEST(C_sidre_view,int_array_realloc)
   SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   // create a view to hold the base buffer
-  SIDRE_dataview * a1 = 
-     SIDRE_datagroup_create_view_and_allocate(root, "a1", 
-                                                      SIDRE_FLOAT_ID, 5);
-  SIDRE_dataview * a2 = 
-     SIDRE_datagroup_create_view_and_allocate(root, "a2", 
-                                                      SIDRE_INT_ID, 5);
+  SIDRE_dataview * a1 =
+    SIDRE_datagroup_create_view_and_allocate(root, "a1",
+                                             SIDRE_FLOAT_ID, 5);
+  SIDRE_dataview * a2 =
+    SIDRE_datagroup_create_view_and_allocate(root, "a2",
+                                             SIDRE_INT_ID, 5);
 
   float * a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
   int * a2_ptr = (int *)  SIDRE_dataview_get_void_ptr(a2);
@@ -519,7 +524,9 @@ TEST(C_sidre_view,simple_opaque)
 
   void * src_ptr = (void *)src_data;
 
-  SIDRE_dataview * opq_view = SIDRE_datagroup_create_view_external(root, "my_opaque",src_ptr);
+  SIDRE_dataview * opq_view = SIDRE_datagroup_create_view_external(root,
+                                                                   "my_opaque",
+                                                                   src_ptr);
 
   // we have a buffer because an "external" view currently uses one
   EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);

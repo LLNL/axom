@@ -42,7 +42,8 @@ void SIDRE_datastore_delete(SIDRE_datastore * self);
 
 SIDRE_datagroup * SIDRE_datastore_get_root(SIDRE_datastore * self);
 
-SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self, SIDRE_IndexType idx);
+SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self,
+                                              SIDRE_IndexType idx);
 
 SIDRE_databuffer * SIDRE_datastore_create_buffer(SIDRE_datastore * self);
 

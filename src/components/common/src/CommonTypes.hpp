@@ -25,7 +25,7 @@
 
 namespace asctoolkit
 {
- 
+
 namespace common
 {
 
