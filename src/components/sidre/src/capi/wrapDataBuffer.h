@@ -36,15 +36,19 @@ SIDRE_IndexType SIDRE_databuffer_get_index(SIDRE_databuffer * self);
 
 size_t SIDRE_databuffer_get_num_views(SIDRE_databuffer * self);
 
-void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type, SIDRE_SidreLength num_elems);
+void SIDRE_databuffer_declare(SIDRE_databuffer * self, int type,
+                              SIDRE_SidreLength num_elems);
 
 void SIDRE_databuffer_allocate_existing(SIDRE_databuffer * self);
 
-void SIDRE_databuffer_allocate_from_type(SIDRE_databuffer * self, int type, SIDRE_SidreLength num_elems);
+void SIDRE_databuffer_allocate_from_type(SIDRE_databuffer * self, int type,
+                                         SIDRE_SidreLength num_elems);
 
-void SIDRE_databuffer_reallocate(SIDRE_databuffer * self, SIDRE_SidreLength num_elems);
+void SIDRE_databuffer_reallocate(SIDRE_databuffer * self,
+                                 SIDRE_SidreLength num_elems);
 
-void SIDRE_databuffer_set_external_data(SIDRE_databuffer * self, void * external_data);
+void SIDRE_databuffer_set_external_data(SIDRE_databuffer * self,
+                                        void * external_data);
 
 bool SIDRE_databuffer_is_external(SIDRE_databuffer * self);
 

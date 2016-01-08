@@ -136,14 +136,16 @@ TEST(sidre_external, save_load_external_view)
   root->getView("idata")->print();
   root->getView("ddata")->print();
 
-  ds->getRoot()->save("out_sidre_external_save_restore_external_view", "conduit");
+  ds->getRoot()->save("out_sidre_external_save_restore_external_view",
+                      "conduit");
 
   ds->print();
 
 
   DataStore * ds2 = new DataStore();
 
-  ds2->getRoot()->load("out_sidre_external_save_restore_external_view","conduit");
+  ds2->getRoot()->load("out_sidre_external_save_restore_external_view",
+                       "conduit");
 
   ds2->print();
 

@@ -106,7 +106,7 @@ DataBuffer * DataBuffer::declare(TypeID type, SidreLength num_elems)
 DataBuffer * DataBuffer::allocate()
 {
   SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to allocate buffer holding external data");
+                   "Attempting to allocate buffer holding external data");
 
   if ( !m_is_data_external )
   {
@@ -131,7 +131,7 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 {
   SLIC_ASSERT_MSG(num_elems >= 0, "Must allocate number of elements >=0");
   SLIC_ASSERT_MSG( !m_is_data_external,
-                  "Attempting to allocate buffer holding external data");
+                   "Attempting to allocate buffer holding external data");
 
   if ( num_elems >= 0 && !m_is_data_external )
   {
@@ -152,8 +152,10 @@ DataBuffer * DataBuffer::allocate(TypeID type, SidreLength num_elems)
 DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 {
   SLIC_ASSERT_MSG(num_elems >= 0, "Must re-allocate number of elements >=0");
-  SLIC_ASSERT_MSG( !m_is_data_external, "Attempting to re-allocate buffer holding external data");
-  SLIC_ASSERT_MSG( m_data != ATK_NULLPTR, "Attempting to reallocate an unallocated buffer");
+  SLIC_ASSERT_MSG( !m_is_data_external,
+                   "Attempting to re-allocate buffer holding external data");
+  SLIC_ASSERT_MSG( m_data != ATK_NULLPTR,
+                   "Attempting to reallocate an unallocated buffer");
 
   std::size_t old_size = getTotalBytes();
   // update the buffer's Conduit Node
@@ -189,7 +191,8 @@ DataBuffer * DataBuffer::reallocate( SidreLength num_elems)
 DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
 {
   size_t buff_nbytes = getTotalBytes();
-  SLIC_ASSERT_MSG(nbytes <= buff_nbytes, "Must allocate number of elements >=0");
+  SLIC_ASSERT_MSG(nbytes <= buff_nbytes,
+                  "Must allocate number of elements >=0");
 
   if ( src != ATK_NULLPTR && nbytes <= buff_nbytes)
   {
@@ -208,8 +211,8 @@ DataBuffer * DataBuffer::update(const void * src, size_t nbytes)
  */
 DataBuffer * DataBuffer::setExternalData(void * external_data)
 {
-  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR, 
-                  "Attempting to set buffer to external data given null pointer" );
+  SLIC_ASSERT_MSG( external_data != ATK_NULLPTR,
+                   "Attempting to set buffer to external data given null pointer" );
 
   if ( external_data != ATK_NULLPTR )
   {
@@ -374,7 +377,7 @@ void DataBuffer::cleanup()
 void * DataBuffer::allocateBytes(std::size_t num_bytes)
 {
   SLIC_ASSERT_MSG(num_bytes > 0,
-                 "Attempting to allocate 0 bytes");
+                  "Attempting to allocate 0 bytes");
 
   char * data = new char[num_bytes];
   return ((void *)data);
