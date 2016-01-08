@@ -39,6 +39,7 @@ set(UNCRUSTIFY_EXECUTABLE "/home/taylor16/tpl/v2/spack/opt/spack/x86_64/gcc-4.9.
 set(SPARSEHASH_DIR "/home/taylor16/tpl/v2/spack/opt/spack/x86_64/gcc-4.9.3/sparsehash-headers-2.0.2-rkdejqec5amcvuorjml3qdcjtwazyvtk" CACHE PATH "")
 
 # boost headers from uberenv
+set(ENABLE_BOOST ON CACHE PATH "")
 set(BOOST_ROOT "/home/taylor16/tpl/v2/spack/opt/spack/x86_64/gcc-4.9.3/boost-headers-1.58.0-byjp3xy3xzpwwratltskqsuyxqlk2vem" CACHE PATH "")
 
 # lcov and genhtml from uberenv

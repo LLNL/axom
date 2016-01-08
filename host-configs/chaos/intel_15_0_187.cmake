@@ -44,6 +44,7 @@ set(UNCRUSTIFY_EXECUTABLE "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack
 set(SPARSEHASH_DIR "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.0/sparsehash-headers-2.0.2-xlswjzupyehycxjk2rwrwb325ykw5bux" CACHE PATH "")
 
 # boost headers from uberenv
+set(ENABLE_BOOST ON CACHE PATH "")
 set(BOOST_ROOT "/usr/gapps/asctoolkit/thirdparty_libs/spack/opt/spack/chaos_5_x86_64_ib/intel-15.0.0/boost-headers-1.58.0-vr4eozxiybr54uz54ovcx2ghwueqjov4" CACHE PATH "")
 
 # lcov and genhtml from uberenv
