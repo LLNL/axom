@@ -29,7 +29,7 @@ include(cmake/FindUncrustify.cmake)
 # Find boost headers
 ################################
 if (ENABLE_BOOST)
-  if defined(BOOST_ROOT)
+  if (DEFINED BOOST_ROOT)
     find_package(Boost
                  1.55
                  REQUIRED)
