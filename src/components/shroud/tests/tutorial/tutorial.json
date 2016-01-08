@@ -489,13 +489,18 @@
             "args": [], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
             "fmt": {
-                "C_name": "TUT_function5_0", 
-                "F_C_name": "tut_function5_0", 
+                "C_name": "TUT_function5", 
+                "F_C_name": "tut_function5", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5_0", 
-                "F_name_method": "function5_0", 
-                "function_suffix": "_0"
+                "F_name_impl": "function5", 
+                "F_name_method": "function5", 
+                "function_suffix": ""
             }, 
             "options": {
                 "wrap_c": true, 
@@ -526,13 +531,18 @@
             ], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
             "fmt": {
-                "C_name": "TUT_function5_1", 
-                "F_C_name": "tut_function5_1", 
+                "C_name": "TUT_function5_arg1", 
+                "F_C_name": "tut_function5_arg1", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5_1", 
-                "F_name_method": "function5_1", 
-                "function_suffix": "_1"
+                "F_name_impl": "function5_arg1", 
+                "F_name_method": "function5_arg1", 
+                "function_suffix": "_arg1"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -553,6 +563,10 @@
             ], 
             "_function_index": 9, 
             "_has_default_arg": true, 
+            "_nargs": [
+                0, 
+                2
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -576,14 +590,19 @@
             ], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
+            "default_arg_suffix": [
+                "", 
+                "_arg1", 
+                "_arg1_arg2"
+            ], 
             "fmt": {
-                "C_name": "TUT_function5_2", 
-                "F_C_name": "tut_function5_2", 
+                "C_name": "TUT_function5_arg1_arg2", 
+                "F_C_name": "tut_function5_arg1_arg2", 
                 "F_name_generic": "function5", 
-                "F_name_impl": "function5_2", 
-                "F_name_method": "function5_2", 
-                "PY_name_impl": "PY_function5_2", 
-                "function_suffix": "_2", 
+                "F_name_impl": "function5_arg1_arg2", 
+                "F_name_method": "function5_arg1_arg2", 
+                "PY_name_impl": "PY_function5_arg1_arg2", 
+                "function_suffix": "_arg1_arg2", 
                 "method_name": "Function5", 
                 "underscore_name": "function5"
             }, 
@@ -596,6 +615,10 @@
         }, 
         {
             "_PTR_F_C_index": 34, 
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
@@ -633,6 +656,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim)", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
@@ -670,6 +697,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                10, 
+                11
+            ], 
             "_decl": "void Function6(int indx+intent(in)+value)", 
             "_function_index": 11, 
             "_overloaded": true, 
@@ -1010,6 +1041,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10()", 
             "_function_index": 15, 
             "_overloaded": true, 
@@ -1036,6 +1071,10 @@
         }, 
         {
             "_PTR_F_C_index": 35, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
@@ -1087,6 +1126,10 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)", 
             "_function_index": 38, 
             "_generated": "fortran_generic", 
@@ -1132,6 +1175,10 @@
         }, 
         {
             "_PTR_F_C_index": 16, 
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 39, 
             "_generated": "fortran_generic", 
@@ -1176,6 +1223,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                15, 
+                16
+            ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)", 
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
@@ -1226,6 +1277,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value)", 
             "_function_index": 28, 
             "_generated": "has_default_arg", 
@@ -1242,13 +1297,18 @@
             ], 
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
             "fmt": {
-                "C_name": "TUT_overload1_0", 
-                "F_C_name": "tut_overload1_0", 
+                "C_name": "TUT_overload1_num", 
+                "F_C_name": "tut_overload1_num", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_0", 
-                "F_name_method": "overload1_0", 
-                "function_suffix": "_0"
+                "F_name_impl": "overload1_num", 
+                "F_name_method": "overload1_num", 
+                "function_suffix": "_num"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1262,6 +1322,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
             "_function_index": 29, 
             "_generated": "has_default_arg", 
@@ -1287,13 +1351,18 @@
             ], 
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
             "fmt": {
-                "C_name": "TUT_overload1_1", 
-                "F_C_name": "tut_overload1_1", 
+                "C_name": "TUT_overload1_num_offset", 
+                "F_C_name": "tut_overload1_num_offset", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_1", 
-                "F_name_method": "overload1_1", 
-                "function_suffix": "_1"
+                "F_name_impl": "overload1_num_offset", 
+                "F_name_method": "overload1_num_offset", 
+                "function_suffix": "_num_offset"
             }, 
             "options": {
                 "wrap_c": true, 
@@ -1307,6 +1376,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
                 28, 
@@ -1314,6 +1387,10 @@
             ], 
             "_function_index": 17, 
             "_has_default_arg": true, 
+            "_nargs": [
+                1, 
+                3
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -1345,14 +1422,19 @@
             ], 
             "attrs": {}, 
             "decl": "int overload1(int num, int offset = 0, int stride = 1)", 
+            "default_arg_suffix": [
+                "_num", 
+                "_num_offset", 
+                "_num_offset_stride"
+            ], 
             "fmt": {
-                "C_name": "TUT_overload1_2", 
-                "F_C_name": "tut_overload1_2", 
+                "C_name": "TUT_overload1_num_offset_stride", 
+                "F_C_name": "tut_overload1_num_offset_stride", 
                 "F_name_generic": "overload1", 
-                "F_name_impl": "overload1_2", 
-                "F_name_method": "overload1_2", 
-                "PY_name_impl": "PY_overload1_2", 
-                "function_suffix": "_2", 
+                "F_name_impl": "overload1_num_offset_stride", 
+                "F_name_method": "overload1_num_offset_stride", 
+                "PY_name_impl": "PY_overload1_num_offset_stride", 
+                "function_suffix": "_num_offset_stride", 
                 "method_name": "overload1", 
                 "underscore_name": "overload1"
             }, 
@@ -1364,6 +1446,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value)", 
             "_function_index": 30, 
             "_generated": "has_default_arg", 
@@ -1408,6 +1494,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value)", 
             "_function_index": 31, 
             "_generated": "has_default_arg", 
@@ -1461,6 +1551,10 @@
             }
         }, 
         {
+            "_cpp_overload": [
+                17, 
+                18
+            ], 
             "_decl": "int overload1(double type+intent(in)+value, int num+intent(in)+value, int offset+default(0)+intent(in)+value, int stride+default(1)+intent(in)+value)", 
             "_default_funcs": [
                 30, 
@@ -1468,6 +1562,10 @@
             ], 
             "_function_index": 18, 
             "_has_default_arg": true, 
+            "_nargs": [
+                2, 
+                4
+            ], 
             "_overloaded": true, 
             "args": [
                 {
@@ -1646,6 +1744,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "tutorial.hpp", 
         "debug": true, 
+        "doxygen": true, 
         "library": "Tutorial", 
         "namespace": "tutorial", 
         "wrap_c": true, 
@@ -1663,6 +1762,7 @@
             "PY_PyObject": "PY_Class1", 
             "PY_PyTypeObject": "PY_Class1_Type", 
             "PY_from_object": "PP_Class1_from_Object", 
+            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_Class1_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -1714,7 +1814,9 @@
             "typedef": "int"
         }, 
         "bool": {
+            "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 

@@ -48,7 +48,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    m_refdens(Real_t(1.0))
 {
   m_DataGroup = m_DataStore.getRoot()->createGroup("Domain");
-  m_DataGroup->createOpaqueView("LuleshDomain",this);
+  m_DataGroup->createView("LuleshDomain",this);
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;
@@ -380,7 +380,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_colLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmX = m_DataGroup->createViewAndAllocate("m_symmX",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getValue();
+    m_symmX = m_DataGroup->createViewAndAllocate("m_symmX",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmX.resize(edgeNodes*edgeNodes);
 #endif
@@ -388,7 +388,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_rowLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmY = m_DataGroup->createViewAndAllocate("m_symmY",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getValue();
+    m_symmY = m_DataGroup->createViewAndAllocate("m_symmY",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmY.resize(edgeNodes*edgeNodes);
 #endif
@@ -396,7 +396,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
   if (m_planeLoc == 0)
   {
 #if USE_SIDRE==1
-    m_symmZ = m_DataGroup->createViewAndAllocate("m_symmZ",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getValue();
+    m_symmZ = m_DataGroup->createViewAndAllocate("m_symmZ",asctoolkit::sidre::DataType::int32(edgeNodes*edgeNodes))->getData();
 #else
     m_symmZ.resize(edgeNodes*edgeNodes);
 #endif
@@ -520,9 +520,9 @@ void
 Domain::SetupSymmetryPlanes(Int_t edgeNodes)
 {
 #if USE_SIDRE==1
-  Index_t * const symmX = m_DataGroup->getView("m_symmX")->getValue();
-  Index_t * const symmY = m_DataGroup->getView("m_symmY")->getValue();
-  Index_t * const symmZ = m_DataGroup->getView("m_symmZ")->getValue();
+  Index_t * const symmX = m_DataGroup->getView("m_symmX")->getData();
+  Index_t * const symmY = m_DataGroup->getView("m_symmY")->getData();
+  Index_t * const symmZ = m_DataGroup->getView("m_symmZ")->getData();
 #else
   Index_t * const symmX = m_symmX.data();
   Index_t * const symmY = m_symmY.data();

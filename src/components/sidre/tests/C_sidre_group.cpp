@@ -21,14 +21,17 @@
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,get_name)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * group = ATK_datagroup_create_group(root, "test");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * group = SIDRE_datagroup_create_group(root, "test");
 
   //    EXPECT_TRUE(group->getName() == std::string("test") );
-  EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group), "test") == 0);
+  EXPECT_TRUE(strcmp(SIDRE_datagroup_get_name(group), "test") == 0);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datagroup * group2 = SIDRE_datagroup_get_group(root, "foo");
+  EXPECT_TRUE(group2 == NULL);
+
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
@@ -36,14 +39,14 @@ TEST(C_sidre_group,get_name)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,get_parent)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * parent = ATK_datagroup_create_group(root, "parent");
-  ATK_datagroup * child = ATK_datagroup_create_group(parent, "child");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * parent = SIDRE_datagroup_create_group(root, "parent");
+  SIDRE_datagroup * child = SIDRE_datagroup_create_group(parent, "child");
 
-  EXPECT_TRUE( ATK_datagroup_get_parent(child) == parent );
+  EXPECT_TRUE( SIDRE_datagroup_get_parent(child) == parent );
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
@@ -51,88 +54,137 @@ TEST(C_sidre_group,get_parent)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,get_datastore)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * group = ATK_datagroup_create_group(root, "parent");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * group = SIDRE_datagroup_create_group(root, "parent");
 
-  EXPECT_TRUE( ATK_datagroup_get_data_store(group) == ds );
+  EXPECT_TRUE( SIDRE_datagroup_get_data_store(group) == ds );
 
-  ATK_datastore const * const_ds = ATK_datagroup_get_data_store(group);
+  SIDRE_datastore const * const_ds = SIDRE_datagroup_get_data_store(group);
   EXPECT_TRUE( const_ds == ds );
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
-// Verify hasGroup()
+// Verify getGroup()
 //------------------------------------------------------------------------------
-TEST(C_sidre_group,has_group)
+TEST(C_sidre_group,get_group)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_datagroup * parent = ATK_datagroup_create_group(root, "parent");
-  ATK_datagroup * child = ATK_datagroup_create_group(parent, "child");
-  EXPECT_TRUE( ATK_datagroup_get_parent(child) == parent );
+  SIDRE_datagroup * parent = SIDRE_datagroup_create_group(root, "parent");
+  SIDRE_datagroup * child = SIDRE_datagroup_create_group(parent, "child");
+  EXPECT_TRUE( SIDRE_datagroup_get_parent(child) == parent );
 
-  EXPECT_TRUE( ATK_datagroup_has_group(parent, "child") );
+  EXPECT_TRUE( SIDRE_datagroup_has_group(parent, "child") );
+  // check error condition
+  EXPECT_TRUE( SIDRE_datagroup_get_group(parent,
+                                         "non-existant group") == NULL );
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
-// Verify hasView()
+// Verify getView()
 //------------------------------------------------------------------------------
-TEST(C_sidre_group,has_view)
+TEST(C_sidre_group,get_view)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_datagroup * parent = ATK_datagroup_create_group(root, "parent");
+  SIDRE_datagroup * parent = SIDRE_datagroup_create_group(root, "parent");
 
-  ATK_dataview * view = ATK_datagroup_create_view_empty(parent, "view");
+  SIDRE_dataview * view = SIDRE_datagroup_create_view_empty(parent, "view");
 
-  EXPECT_TRUE( ATK_dataview_get_owning_group(view) == parent );
+  EXPECT_TRUE( SIDRE_datagroup_get_view_from_name(parent, "view") == view );
 
-  EXPECT_TRUE( ATK_datagroup_has_view(parent, "view") );
+  // check error condition
+  EXPECT_TRUE( SIDRE_datagroup_get_view_from_name(parent,
+                                                  "non-existant view") ==
+               NULL );
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 // Verify getViewName(), getViewIndex()
 //------------------------------------------------------------------------------
-TEST(C_sidre_group,get_view_name_index)
+TEST(C_sidre_group,get_view_names_and_indicies)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_datagroup * parent = ATK_datagroup_create_group(root, "parent");
-  ATK_dataview * view1 = ATK_datagroup_create_view_empty(parent, "view1");
-  ATK_dataview * view2 = ATK_datagroup_create_view_empty(parent, "view2");
+  SIDRE_datagroup * parent = SIDRE_datagroup_create_group(root, "parent");
+  SIDRE_dataview * view1 = SIDRE_datagroup_create_view_empty(parent, "view1");
+  SIDRE_dataview * view2 = SIDRE_datagroup_create_view_empty(parent, "view2");
 
-  EXPECT_EQ(ATK_datagroup_get_num_views(parent), 2u);
+  EXPECT_EQ(SIDRE_datagroup_get_num_views(parent), 2u);
 
-  ATK_IndexType idx1 = ATK_datagroup_get_view_index(parent, "view1");
-  ATK_IndexType idx2 = ATK_datagroup_get_view_index(parent, "view2");
+  SIDRE_IndexType idx1 = SIDRE_datagroup_get_view_index(parent, "view1");
+  SIDRE_IndexType idx2 = SIDRE_datagroup_get_view_index(parent, "view2");
 
-  const char * name1 = ATK_datagroup_get_view_name(parent, idx1);
-  const char * name2 = ATK_datagroup_get_view_name(parent, idx2);
+  const char * name1 = SIDRE_datagroup_get_view_name(parent, idx1);
+  const char * name2 = SIDRE_datagroup_get_view_name(parent, idx2);
 
   EXPECT_TRUE(strcmp(name1, "view1") == 0);
-  EXPECT_TRUE(strcmp(ATK_dataview_get_name(view1), name1) == 0);
+  EXPECT_TRUE(strcmp(SIDRE_dataview_get_name(view1), name1) == 0);
 
   EXPECT_TRUE(strcmp(name2, "view2") == 0);
-  EXPECT_TRUE(strcmp(ATK_dataview_get_name(view2), name2) == 0);
+  EXPECT_TRUE(strcmp(SIDRE_dataview_get_name(view2), name2) == 0);
 
-  ATK_IndexType idx3 = ATK_datagroup_get_view_index(parent, "view3");
-  EXPECT_TRUE(idx3 == ATK_InvalidIndex);
+  // check error conditions
+  SIDRE_IndexType idx3 = SIDRE_datagroup_get_view_index(parent, "view3");
+  EXPECT_TRUE(idx3 == SIDRE_InvalidIndex);
 
-  const char * name3 = ATK_datagroup_get_view_name(parent, idx3);
+  const char * name3 = SIDRE_datagroup_get_view_name(parent, idx3);
   EXPECT_TRUE(name3 == NULL);
-  EXPECT_FALSE(ATK_name_is_valid(name3));
+  EXPECT_FALSE(SIDRE_name_is_valid(name3));
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
+}
+
+//------------------------------------------------------------------------------
+// Verify getFirstValidViewIndex, getNextValidGroupIndex
+//------------------------------------------------------------------------------
+TEST(sidre_group,get_first_and_next_view_index)
+{
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+
+  SIDRE_datagroup * parent = SIDRE_datagroup_create_group(root, "parent");
+  SIDRE_dataview * view1 = SIDRE_datagroup_create_view_empty(parent, "view1");
+  SIDRE_dataview * view2 = SIDRE_datagroup_create_view_empty(parent, "view2");
+
+  SIDRE_datagroup * emptyGroup =
+    SIDRE_datagroup_create_group(root, "emptyGroup");
+
+  EXPECT_EQ(SIDRE_datagroup_get_num_views(parent), 2u);
+
+  SIDRE_IndexType idx1 = SIDRE_datagroup_get_first_valid_view_index(parent);
+  SIDRE_IndexType idx2 =
+    SIDRE_datagroup_get_next_valid_view_index(parent, idx1);
+
+  const char * name1 = SIDRE_datagroup_get_view_name(parent, idx1);
+  const char * name2 = SIDRE_datagroup_get_view_name(parent, idx2);
+
+  EXPECT_TRUE(strcmp(name1, "view1") == 0);
+  EXPECT_TRUE(strcmp(SIDRE_dataview_get_name(view1), name1) == 0);
+
+  EXPECT_TRUE(strcmp(name2, "view2") == 0);
+  EXPECT_TRUE(strcmp(SIDRE_dataview_get_name(view2), name2) == 0);
+
+  // check error conditions
+  SIDRE_IndexType badidx1 = SIDRE_datagroup_get_first_valid_view_index(
+    emptyGroup);
+  SIDRE_IndexType badidx2 = SIDRE_datagroup_get_next_valid_view_index(
+    emptyGroup, badidx1);
+
+  EXPECT_TRUE(badidx1 == SIDRE_InvalidIndex);
+  EXPECT_TRUE(badidx2 == SIDRE_InvalidIndex);
+
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
@@ -140,59 +192,87 @@ TEST(C_sidre_group,get_view_name_index)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,get_group_name_index)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_datagroup * parent = ATK_datagroup_create_group(root, "parent");
-  ATK_datagroup * group1 = ATK_datagroup_create_group(parent, "group1");
-  ATK_datagroup * group2 = ATK_datagroup_create_group(parent, "group2");
+  SIDRE_datagroup * parent = SIDRE_datagroup_create_group(root, "parent");
+  SIDRE_datagroup * group1 = SIDRE_datagroup_create_group(parent, "group1");
+  SIDRE_datagroup * group2 = SIDRE_datagroup_create_group(parent, "group2");
 
-  EXPECT_EQ(ATK_datagroup_get_num_groups(parent), 2u);
+  EXPECT_EQ(SIDRE_datagroup_get_num_groups(parent), 2u);
 
-  ATK_IndexType idx1 = ATK_datagroup_get_group_index(parent, "group1");
-  ATK_IndexType idx2 = ATK_datagroup_get_group_index(parent, "group2");
+  SIDRE_IndexType idx1 = SIDRE_datagroup_get_group_index(parent, "group1");
+  SIDRE_IndexType idx2 = SIDRE_datagroup_get_group_index(parent, "group2");
 
-  const char * name1 = ATK_datagroup_get_group_name(parent, idx1);
-  const char * name2 = ATK_datagroup_get_group_name(parent, idx2);
+  const char * name1 = SIDRE_datagroup_get_group_name(parent, idx1);
+  const char * name2 = SIDRE_datagroup_get_group_name(parent, idx2);
 
   EXPECT_TRUE(strcmp(name1, "group1") == 0);
-  EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group1), name1) == 0);
+  EXPECT_TRUE(strcmp(SIDRE_datagroup_get_name(group1), name1) == 0);
 
   EXPECT_TRUE(strcmp(name2, "group2") == 0);
-  EXPECT_TRUE(strcmp(ATK_datagroup_get_name(group2), name2) == 0);
+  EXPECT_TRUE(strcmp(SIDRE_datagroup_get_name(group2), name2) == 0);
 
-  ATK_IndexType idx3 = ATK_datagroup_get_group_index(parent, "group3");
-  EXPECT_TRUE(idx3 == ATK_InvalidIndex);
+  // check error conditions
+  SIDRE_IndexType idx3 = SIDRE_datagroup_get_group_index(parent, "group3");
+  EXPECT_TRUE(idx3 == SIDRE_InvalidIndex);
 
-  const char * name3 = ATK_datagroup_get_group_name(parent, idx3);
+  const char * name3 = SIDRE_datagroup_get_group_name(parent, idx3);
   EXPECT_TRUE(name3 == NULL);
-  EXPECT_TRUE(ATK_name_is_valid(name3) == 0);
+  EXPECT_TRUE(SIDRE_name_is_valid(name3) == 0);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
-// createViewAndBuffer()
-// destroyViewAndBuffer()
+// createView()
+// createViewAndAllocate()
+// destroyView()
+// destroyViewAndData()
 // hasView()
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_has_view)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * group = ATK_datagroup_create_group(root, "parent");
+  // XXX setAbortOnAssert(false);
 
-  ATK_dataview * view = ATK_datagroup_create_view_empty(group, "view");
-  EXPECT_TRUE( ATK_datagroup_get_parent(group) == root );
-  EXPECT_FALSE( ATK_dataview_has_buffer(view) );
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * group = SIDRE_datagroup_create_group(root, "parent");
 
-  EXPECT_TRUE( ATK_datagroup_has_view(group, "view") );
+  SIDRE_dataview * view = SIDRE_datagroup_create_view_empty(group, "view");
+  EXPECT_TRUE( SIDRE_datagroup_get_parent(group) == root );
+  EXPECT_FALSE( SIDRE_dataview_has_buffer(view) );
 
-  ATK_datagroup_destroy_view(group, "view");
+  EXPECT_TRUE( SIDRE_datagroup_has_view(group, "view") );
+  // try creating view again, should be a no-op.
+  //XXX  EXPECT_TRUE( SIDRE_datagroup_create_view_empty(group, "view") == NULL );
 
-  EXPECT_FALSE( ATK_datagroup_has_view(group, "view") );
+  SIDRE_datagroup_destroy_view(group, "view");
+  // destroy already destroyed group.  Should be a no-op, not a failure
+  //XXX  SIDRE_datagroup_destroy_view(group, "view");
 
-  ATK_datastore_delete(ds);
+  EXPECT_FALSE( SIDRE_datagroup_has_view(group, "view") );
+
+  // try api call that specifies specific type and length
+  SIDRE_datagroup_create_view_and_allocate( group,
+                                            "viewWithLength1", SIDRE_FLOAT_ID,
+                                            50);
+
+  // error condition check - try again with duplicate name, should be a no-op
+  //XXX  EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength1", SIDRE_FLOAT64_ID, 50) );
+  SIDRE_datagroup_destroy_view_and_data_name( group, "viewWithLength1");
+  EXPECT_FALSE( SIDRE_datagroup_has_view( group, "viewWithLength1") );
+
+  //XXX EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1) == NULL );
+
+  // try api call that specifies data type in another way
+  //XXX SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2", SIDRE_FLOAT64_ID, 50 );
+  //XXX EXPECT_TRUE( SIDRE_datagroup_create_view_and_allocate( group, "viewWithLength2", SIDRE_FLOAT64_ID, 50 ) == NULL );
+  // destroy this view using index
+  SIDRE_datagroup_destroy_view_and_data_index( group, SIDRE_datagroup_get_first_valid_view_index(
+                                                 group) );
+
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
@@ -202,66 +282,84 @@ TEST(C_sidre_group,create_destroy_has_view)
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_has_group)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * group = ATK_datagroup_create_group(root, "group");
-  EXPECT_TRUE( ATK_datagroup_get_parent(group) == root );
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * group = SIDRE_datagroup_create_group(root, "group");
+  EXPECT_TRUE( SIDRE_datagroup_get_parent(group) == root );
 
-  EXPECT_TRUE( ATK_datagroup_has_group(root, "group") );
+  EXPECT_TRUE( SIDRE_datagroup_has_group(root, "group") );
 
+  SIDRE_datagroup_destroy_group_name(root, "group");
+  EXPECT_FALSE( SIDRE_datagroup_has_group(root, "group") );
 
-  ATK_datagroup_destroy_group(root, "group");
-  EXPECT_FALSE( ATK_datagroup_has_group(root, "group") );
+  SIDRE_datagroup * group2 = SIDRE_datagroup_create_group(root, "group2");
+  // shut up compiler about unused variable
+  (void)group2;
+  SIDRE_datagroup_destroy_group_index( root, SIDRE_datagroup_get_first_valid_group_index(
+                                         root) );
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,group_name_collisions)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
-  ATK_datagroup_create_view_empty(flds, "a");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * flds = SIDRE_datagroup_create_group(root, "fields");
+  SIDRE_datagroup_create_view_empty(flds, "a");
 
-  EXPECT_TRUE(ATK_datagroup_has_view(flds, "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "a"));
 
-  ATK_datastore_delete(ds);
+  // attempt to create duplicate group name
+
+#if 0
+  setAbortOnAssert(false);
+  SIDRE_datagroup * badGroup = SIDRE_datagroup_create_group(root, "fields");
+  EXPECT_TRUE( badGroup == NULL );
+
+  // check error condition
+  // attempt to create duplicate view name.
+  EXPECT_TRUE(SIDRE_datagroup_create_view(flds, "a") == NULL);
+#endif
+
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,view_copy_move)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * flds = SIDRE_datagroup_create_group(root, "fields");
 
-  ATK_dataview * i0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(flds, "i0", 
-                                                      SIDRE_INT_ID, 1);
-  ATK_dataview * f0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(flds, "f0", 
-                                                      SIDRE_FLOAT_ID, 1);
-  ATK_dataview * d0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(flds, "d0", 
-                                                      SIDRE_DOUBLE_ID, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(flds, "i0",
+                                             SIDRE_INT_ID, 1);
+  SIDRE_dataview * f0_view =
+    SIDRE_datagroup_create_view_and_allocate(flds, "f0",
+                                             SIDRE_FLOAT_ID, 1);
+  SIDRE_dataview * d0_view =
+    SIDRE_datagroup_create_view_and_allocate(flds, "d0",
+                                             SIDRE_DOUBLE_ID, 1);
 
-  ATK_dataview_set_value_int(i0_view, 1);
-  ATK_dataview_set_value_float(f0_view, 100.0);
-  ATK_dataview_set_value_double(d0_view, 3000.0);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
+  SIDRE_dataview_set_scalar_float(f0_view, 100.0);
+  SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
-  EXPECT_TRUE(ATK_datagroup_has_view(flds, "i0"));
-  EXPECT_TRUE(ATK_datagroup_has_view(flds, "f0"));
-  EXPECT_TRUE(ATK_datagroup_has_view(flds, "d0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "i0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "f0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "d0"));
 
   // test moving a view form feds7 to sub
   // flds->createGroup("sub")->moveView(flds->getView("d0"));
-  ATK_datagroup * sub = ATK_datagroup_create_group(flds, "sub");
-  ATK_datagroup_move_view(sub, ATK_datagroup_get_view_from_name(flds, "d0"));
-  ATK_datagroup_print(flds);
-  EXPECT_FALSE(ATK_datagroup_has_view(flds, "d0"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "sub"));
-  EXPECT_TRUE(ATK_datagroup_has_view(sub, "d0"));
+  SIDRE_datagroup * sub = SIDRE_datagroup_create_group(flds, "sub");
+  SIDRE_datagroup_move_view(sub,
+                            SIDRE_datagroup_get_view_from_name(flds, "d0"));
+  SIDRE_datagroup_print(flds);
+  EXPECT_FALSE(SIDRE_datagroup_has_view(flds, "d0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "sub"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(sub, "d0"));
 
   // check the data value
   // double *d0_data =  flds->getGroup("sub")
@@ -269,109 +367,111 @@ TEST(C_sidre_group,view_copy_move)
   //                        ->getNode().as_double_ptr();
   double * d0_data;
   {
-    ATK_dataview * tmpview = ATK_datagroup_get_view_from_name(sub, "d0");
-    ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(tmpview);
-    d0_data = (double *) ATK_databuffer_get_data(tmpbuf);
+    SIDRE_dataview * tmpview = SIDRE_datagroup_get_view_from_name(sub, "d0");
+    SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(tmpview);
+    d0_data = (double *) SIDRE_databuffer_get_void_ptr(tmpbuf);
   }
   EXPECT_NEAR(d0_data[0],3000.0,1e-12);
 
   // test copying a view from flds top sub
-  ATK_datagroup_copy_view(sub, ATK_datagroup_get_view_from_name(flds, "i0"));
+  SIDRE_datagroup_copy_view(sub,
+                            SIDRE_datagroup_get_view_from_name(flds, "i0"));
 
-  ATK_datagroup_print(flds);
+  SIDRE_datagroup_print(flds);
 
-  EXPECT_TRUE(ATK_datagroup_has_view(flds, "i0"));
-  EXPECT_TRUE(ATK_datagroup_has_view(sub, "i0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(flds, "i0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(sub, "i0"));
 
 #ifdef XXX
   // we expect the actual data  pointers to be the same
-  EXPECT_EQ(ATK_datagroup_get_view(flds, "i0")->getNode().data_pointer(),
-            ATK_datagroup_get_group("sub")->get_view("i0")->getNode().data_pointer());
+  EXPECT_EQ(SIDRE_datagroup_get_view(flds, "i0")->getNode().data_pointer(),
+            SIDRE_datagroup_get_group("sub")->get_view(
+              "i0")->getNode().data_pointer());
 #endif
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,groups_move_copy)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * flds = SIDRE_datagroup_create_group(root, "fields");
 
-  ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
-  ATK_datagroup * gb = ATK_datagroup_create_group(flds, "b");
-  ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
+  SIDRE_datagroup * ga = SIDRE_datagroup_create_group(flds, "a");
+  SIDRE_datagroup * gb = SIDRE_datagroup_create_group(flds, "b");
+  SIDRE_datagroup * gc = SIDRE_datagroup_create_group(flds, "c");
 
-  ATK_dataview * i0_view =
-     ATK_datagroup_create_view_and_allocate_from_type(ga, "i0",
-                                                      SIDRE_INT_ID, 1);
-  ATK_dataview * f0_view =
-     ATK_datagroup_create_view_and_allocate_from_type(gb, "f0",
-                                                      SIDRE_FLOAT_ID, 1);
-  ATK_dataview * d0_view =
-     ATK_datagroup_create_view_and_allocate_from_type(gc, "d0",
-                                                      SIDRE_DOUBLE_ID, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(ga, "i0",
+                                             SIDRE_INT_ID, 1);
+  SIDRE_dataview * f0_view =
+    SIDRE_datagroup_create_view_and_allocate(gb, "f0",
+                                             SIDRE_FLOAT_ID, 1);
+  SIDRE_dataview * d0_view =
+    SIDRE_datagroup_create_view_and_allocate(gc, "d0",
+                                             SIDRE_DOUBLE_ID, 1);
 
-  ATK_dataview_set_value_int(i0_view, 1);
-  ATK_dataview_set_value_float(f0_view, 100.0);
-  ATK_dataview_set_value_double(d0_view, 3000.0);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
+  SIDRE_dataview_set_scalar_float(f0_view, 100.0);
+  SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "b"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "c"));
 
   //move "b" to a child of "sub"
-  ATK_datagroup * sub = ATK_datagroup_create_group(flds, "sub");
-  ATK_datagroup_move_group(sub, gb);
+  SIDRE_datagroup * sub = SIDRE_datagroup_create_group(flds, "sub");
+  SIDRE_datagroup_move_group(sub, gb);
 
-  ATK_datagroup_print(flds);
+  SIDRE_datagroup_print(flds);
 
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "sub"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "sub"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "c"));
 
-  ATK_datagroup * tmpgrp = ATK_datagroup_get_group(flds, "sub");
-  EXPECT_EQ(ATK_datagroup_get_group(tmpgrp, "b"), gb);
+  SIDRE_datagroup * tmpgrp = SIDRE_datagroup_get_group(flds, "sub");
+  EXPECT_EQ(SIDRE_datagroup_get_group(tmpgrp, "b"), gb);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_view_and_buffer)
 {
-  ATK_datastore * const ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * const grp = ATK_datagroup_create_group(root, "grp");
+  SIDRE_datastore * const ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * const grp = SIDRE_datagroup_create_group(root, "grp");
 
   const char * viewName1 = "viewBuffer1";
   const char * viewName2 = "viewBuffer2";
 
   // XXX const
-  ATK_dataview * view1 =
-     ATK_datagroup_create_view_and_allocate_from_type(grp, viewName1,
-                                                      SIDRE_INT_ID, 1);
-  ATK_dataview * view2 =
-     ATK_datagroup_create_view_and_allocate_from_type(grp, viewName2,
-                                                      SIDRE_FLOAT_ID, 1);
+  SIDRE_dataview * view1 =
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName1,
+                                             SIDRE_INT_ID, 1);
+  SIDRE_dataview * view2 =
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName2,
+                                             SIDRE_FLOAT_ID, 1);
 
-  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
-  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName1), view1 );
+  EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName1));
+  EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName1), view1 );
 
-  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
-  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName2), view2 );
+  EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName2));
+  EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName2), view2 );
 
-  ATK_databuffer * tmpbuf = ATK_dataview_get_buffer(view1);
-  ATK_IndexType bufferId1 = ATK_databuffer_get_index(tmpbuf);
+  SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(view1);
+  SIDRE_IndexType bufferId1 = SIDRE_databuffer_get_index(tmpbuf);
 
-  ATK_datagroup_destroy_view_and_data(grp, viewName1);
+  SIDRE_datagroup_destroy_view_and_data_name(grp, viewName1);
 
 
-  EXPECT_FALSE(ATK_datagroup_has_view(grp, viewName1));
-  EXPECT_EQ(ATK_datastore_get_num_buffers(ds), 1u);
+  EXPECT_FALSE(SIDRE_datagroup_has_view(grp, viewName1));
+  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);
 
-  ATK_databuffer * buffer1 = ATK_datastore_get_buffer(ds, bufferId1);
+  SIDRE_databuffer * buffer1 = SIDRE_datastore_get_buffer(ds, bufferId1);
   bool buffValid = true;
   if( buffer1 == NULL )
   {
@@ -380,39 +480,39 @@ TEST(C_sidre_group,create_destroy_view_and_buffer)
 
   EXPECT_FALSE(buffValid);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
 {
-  ATK_datastore * const ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * const grp = ATK_datagroup_create_group(root, "grp");
+  SIDRE_datastore * const ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * const grp = SIDRE_datagroup_create_group(root, "grp");
 
   const char * viewName1 = "viewBuffer1";
   const char * viewName2 = "viewBuffer2";
 
   // use create + alloc convenience methods
   // this one is the DataType & method
-  ATK_dataview * const view1 = 
-     ATK_datagroup_create_view_and_allocate_from_type(grp, viewName1, 
-                                                      SIDRE_INT_ID, 10);
+  SIDRE_dataview * const view1 =
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName1,
+                                             SIDRE_INT_ID, 10);
 
   // this one is the Schema & method
-  ATK_dataview * const view2 = 
-     ATK_datagroup_create_view_and_allocate_from_type(grp, viewName2, 
-                                                      SIDRE_DOUBLE_ID, 10);
+  SIDRE_dataview * const view2 =
+    SIDRE_datagroup_create_view_and_allocate(grp, viewName2,
+                                             SIDRE_DOUBLE_ID, 10);
 
-  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName1));
-  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName1), view1 );
+  EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName1));
+  EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName1), view1 );
 
-  EXPECT_TRUE(ATK_datagroup_has_view(grp, viewName2));
-  EXPECT_EQ( ATK_datagroup_get_view_from_name(grp, viewName2), view2 );
+  EXPECT_TRUE(SIDRE_datagroup_has_view(grp, viewName2));
+  EXPECT_EQ( SIDRE_datagroup_get_view_from_name(grp, viewName2), view2 );
 
 #ifdef XXX
-  int * v1_vals = (int *) ATK_dataview_get_data(view1);
-  double * v2_vals = (double *)  ATK_dataview_get_data(view1);
+  int * v1_vals = (int *) SIDRE_dataview_get_void_ptr(view1);
+  double * v2_vals = (double *)  SIDRE_dataview_get_void_ptr(view1);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -421,30 +521,30 @@ TEST(C_sidre_group,create_destroy_alloc_view_and_buffer)
   }
 #endif
 
-  EXPECT_EQ(ATK_dataview_get_num_elements(view1), 10u);
-  EXPECT_EQ(ATK_dataview_get_num_elements(view2), 10u);
-  EXPECT_EQ(ATK_dataview_get_total_bytes(view1), 10 * sizeof(int));
-  EXPECT_EQ(ATK_dataview_get_total_bytes(view2), 10 * sizeof(double));
+  EXPECT_EQ(SIDRE_dataview_get_num_elements(view1), 10u);
+  EXPECT_EQ(SIDRE_dataview_get_num_elements(view2), 10u);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(view1), 10 * sizeof(int));
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(view2), 10 * sizeof(double));
 
-  ATK_datagroup_destroy_view_and_data(grp, viewName1);
-  ATK_datagroup_destroy_view_and_data(grp, viewName2);
+  SIDRE_datagroup_destroy_view_and_data_name(grp, viewName1);
+  SIDRE_datagroup_destroy_view_and_data_name(grp, viewName2);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 #ifdef XXX
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,create_view_of_buffer_with_schema)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
   // use create + alloc convenience methods
   // this one is the DataType & method
-  ATK_dataview * base =  
-    ATK_datagroup_create_view_and_allocate_from_type(root, "base", 
-                                                     SIDRE_INT_ID, 10);
+  SIDRE_dataview * base =
+    SIDRE_datagroup_create_view_and_allocate(root, "base",
+                                             SIDRE_INT_ID, 10);
 #ifdef XXX
-  int * base_vals = (int *) ATK_dataview_get_data(base);
+  int * base_vals = (int *) SIDRE_dataview_get_void_ptr(base);
   for(int i=0 ; i<10 ; i++)
   {
     if(i < 5)
@@ -458,17 +558,21 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
   }
 #endif
 
-  ATK_databuffer * base_buff = ATK_dataview_get_buffer(base);
+  SIDRE_databuffer * base_buff = SIDRE_dataview_get_buffer(base);
   // create two views into this buffer
   // view for the first 5 values
-  ATK_datagroup_createView(root, "sub_a", base_buff, ATK_C_INT_T, 5);
+  SIDRE_datagroup_create_view(root, "sub_a", base_buff, SIDRE_C_INT_T, 5);
   // view for the second 5 values
   //  (schema call path case)
   Schema s(DataType::uint32(5, 5*sizeof(int)));
-  ATK_datagroup_createView(root, "sub_b", base_buff, s);
+  SIDRE_datagroup_create_view(root, "sub_b", base_buff, s);
 
-  int * sub_a_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view_from_name(root, "sub_a"));
-  int * sub_b_vals = (int *) ATK_dataview_get_data(ATK_datagroup_get_view_from_name(root, "sub_b"));
+  int * sub_a_vals = (int *) SIDRE_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(
+                                                           root,
+                                                           "sub_a"));
+  int * sub_b_vals = (int *) SIDR_dataview_get_void_ptr(SIDRE_datagroup_get_view_from_name(
+                                                          root,
+                                                          "sub_b"));
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -476,116 +580,125 @@ TEST(C_sidre_group,create_view_of_buffer_with_schema)
     EXPECT_EQ(sub_b_vals[i], 20);
   }
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }
 #endif
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_simple)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * flds = SIDRE_datagroup_create_group(root, "fields");
 
-  ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
+  SIDRE_datagroup * ga = SIDRE_datagroup_create_group(flds, "a");
 
-  ATK_dataview * i0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(ga, "i0",
-                                                      SIDRE_INT_ID, 1);
-  ATK_dataview_set_value_int(i0_view, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(ga, "i0",
+                                             SIDRE_INT_ID, 1);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
 
-  EXPECT_TRUE(ATK_datagroup_has_group(root, "fields"));
-  EXPECT_TRUE(ATK_datagroup_has_group(ATK_datagroup_get_group(root, "fields"), "a"));
-  EXPECT_TRUE(ATK_datagroup_has_view(ATK_datagroup_get_group(ATK_datagroup_get_group(root, "fields"), "a"), "i0"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(root, "fields"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(SIDRE_datagroup_get_group(root,
+                                                                  "fields"),
+                                        "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_view(SIDRE_datagroup_get_group(
+                                         SIDRE_datagroup_get_group(root,
+                                                                   "fields"),
+                                         "a"), "i0"));
 
 
-  ATK_datagroup_save(root, "C_out_sidre_group_save_restore_simple","conduit");
+  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_simple","conduit");
 
-  ATK_datastore_print(ds);
+  SIDRE_datastore_print(ds);
 
-  ATK_datastore * ds2 = ATK_datastore_new();
+  SIDRE_datastore * ds2 = SIDRE_datastore_new();
 
-  ATK_datagroup_load(ATK_datastore_get_root(ds2), "C_out_sidre_group_save_restore_simple","conduit");
+  SIDRE_datagroup_load(SIDRE_datastore_get_root(
+                         ds2), "C_out_sidre_group_save_restore_simple",
+                       "conduit");
 
-  ATK_datastore_print(ds2);
+  SIDRE_datastore_print(ds2);
 
-  root = ATK_datastore_get_root(ds2);
-  flds = ATK_datagroup_get_group(root, "fields");
+  root = SIDRE_datastore_get_root(ds2);
+  flds = SIDRE_datagroup_get_group(root, "fields");
 
   // check that all sub groups exist
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
-  ga = ATK_datagroup_get_group(flds, "a");
-  i0_view = ATK_datagroup_get_view_from_name(ga, "i0");
-  EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
+  ga = SIDRE_datagroup_get_group(flds, "a");
+  i0_view = SIDRE_datagroup_get_view_from_name(ga, "i0");
+  EXPECT_EQ(SIDRE_dataview_get_data_int(i0_view), 1);
 
-  ATK_datastore_print(ds2);
+  SIDRE_datastore_print(ds2);
 
-  ATK_datastore_delete(ds);
-  ATK_datastore_delete(ds2);
+  SIDRE_datastore_delete(ds);
+  SIDRE_datastore_delete(ds2);
 
 }
 
 //------------------------------------------------------------------------------
 TEST(C_sidre_group,save_restore_complex)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_datagroup * flds = ATK_datagroup_create_group(root, "fields");
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_datagroup * flds = SIDRE_datagroup_create_group(root, "fields");
 
-  ATK_datagroup * ga = ATK_datagroup_create_group(flds, "a");
-  ATK_datagroup * gb = ATK_datagroup_create_group(flds, "b");
-  ATK_datagroup * gc = ATK_datagroup_create_group(flds, "c");
+  SIDRE_datagroup * ga = SIDRE_datagroup_create_group(flds, "a");
+  SIDRE_datagroup * gb = SIDRE_datagroup_create_group(flds, "b");
+  SIDRE_datagroup * gc = SIDRE_datagroup_create_group(flds, "c");
 
-  ATK_dataview * i0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(ga, "i0",
-                                                      SIDRE_INT_ID, 1);
-  ATK_dataview_set_value_int(i0_view, 1);
+  SIDRE_dataview * i0_view =
+    SIDRE_datagroup_create_view_and_allocate(ga, "i0",
+                                             SIDRE_INT_ID, 1);
+  SIDRE_dataview_set_scalar_int(i0_view, 1);
 
-  ATK_dataview * f0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(gb, "f0",
-                                                      SIDRE_FLOAT_ID, 1);
-  ATK_dataview_set_value_float(f0_view, 100.0);
+  SIDRE_dataview * f0_view = SIDRE_datagroup_create_view_and_allocate(gb, "f0",
+                                                                      SIDRE_FLOAT_ID,
+                                                                      1);
+  SIDRE_dataview_set_scalar_float(f0_view, 100.0);
 
-  ATK_dataview * d0_view = 
-     ATK_datagroup_create_view_and_allocate_from_type(gc, "d0",
-                                                      SIDRE_DOUBLE_ID, 1);
-  ATK_dataview_set_value_double(d0_view, 3000.0);
+  SIDRE_dataview * d0_view = SIDRE_datagroup_create_view_and_allocate(gc, "d0",
+                                                                      SIDRE_DOUBLE_ID,
+                                                                      1);
+  SIDRE_dataview_set_scalar_double(d0_view, 3000.0);
 
   // check that all sub groups exist
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "b"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "c"));
 
-  ATK_datagroup_save(root, "C_out_sidre_group_save_restore_complex","conduit");
+  SIDRE_datagroup_save(root, "C_out_sidre_group_save_restore_complex",
+                       "conduit");
 
-  ATK_datastore_print(ds);
+  SIDRE_datastore_print(ds);
 
-  ATK_datastore * ds2 = ATK_datastore_new();
-  root = ATK_datastore_get_root(ds2);
+  SIDRE_datastore * ds2 = SIDRE_datastore_new();
+  root = SIDRE_datastore_get_root(ds2);
 
-  ATK_datagroup_load(root, "C_out_sidre_group_save_restore_complex","conduit");
+  SIDRE_datagroup_load(root, "C_out_sidre_group_save_restore_complex",
+                       "conduit");
 
-  flds = ATK_datagroup_get_group(root, "fields");
+  flds = SIDRE_datagroup_get_group(root, "fields");
   // check that all sub groups exist
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "a"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "b"));
-  EXPECT_TRUE(ATK_datagroup_has_group(flds, "c"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "a"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "b"));
+  EXPECT_TRUE(SIDRE_datagroup_has_group(flds, "c"));
 
-  ga = ATK_datagroup_get_group(flds, "a");
-  gb = ATK_datagroup_get_group(flds, "b");
-  gc = ATK_datagroup_get_group(flds, "c");
+  ga = SIDRE_datagroup_get_group(flds, "a");
+  gb = SIDRE_datagroup_get_group(flds, "b");
+  gc = SIDRE_datagroup_get_group(flds, "c");
 
-  i0_view = ATK_datagroup_get_view_from_name(ga, "i0");
-  f0_view = ATK_datagroup_get_view_from_name(gb, "f0");
-  d0_view = ATK_datagroup_get_view_from_name(gc, "d0");
+  i0_view = SIDRE_datagroup_get_view_from_name(ga, "i0");
+  f0_view = SIDRE_datagroup_get_view_from_name(gb, "f0");
+  d0_view = SIDRE_datagroup_get_view_from_name(gc, "d0");
 
-  EXPECT_EQ(ATK_dataview_get_value_int(i0_view), 1);
-  EXPECT_NEAR(ATK_dataview_get_value_float(f0_view), 100.0, 1e-12);
-  EXPECT_NEAR(ATK_dataview_get_value_double(d0_view), 3000.0, 1e-12);
+  EXPECT_EQ(SIDRE_dataview_get_data_int(i0_view), 1);
+  EXPECT_NEAR(SIDRE_dataview_get_data_float(f0_view), 100.0, 1e-12);
+  EXPECT_NEAR(SIDRE_dataview_get_data_double(d0_view), 3000.0, 1e-12);
 
-  ATK_datastore_print(ds2);
+  SIDRE_datastore_print(ds2);
 
-  ATK_datastore_delete(ds);
-  ATK_datastore_delete(ds2);
+  SIDRE_datastore_delete(ds);
+  SIDRE_datastore_delete(ds2);
 
 }

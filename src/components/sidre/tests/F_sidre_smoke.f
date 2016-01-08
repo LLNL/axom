@@ -19,6 +19,8 @@ contains
   subroutine create_datastore
     type(datastore) ds
 
+    call set_case_name("create_datastore")
+
     ds = datastore_new()
     call ds%delete()
 
@@ -33,19 +35,22 @@ contains
     integer idx
     character(10) name
 
+    call set_case_name("valid_invalid")
+
     ds = datastore_new()
 
     idx = 3;
-    call assert_true(idx /= invalid_index)
+    call assert_true(idx /= invalid_index, "invalid_index does not compare")
 
     name = "foo"
-    call assert_true(name_is_valid(name))
+    call assert_true(name_is_valid(name), "name_is_valid")
 
     root = ds%get_root()
 
     call root%get_group_name(idx, name)
-    call assert_true(name == " ")
-    call assert_true(root%get_group_index(name) == invalid_index)
+    call assert_true(name == " ", "error return from get_group_name")
+    call assert_true(root%get_group_index(name) == invalid_index, &
+         "root%get_group_index(name) == invalid_index")
 
     call ds%delete()
   end subroutine valid_invalid

@@ -44,7 +44,7 @@ int main( int argc, char** argv )
   // STEP 0: Initialize logger
   //----------------------------------------------------------------------------
   slic::initialize();
-  slic::setLoggingLevel(slic::message::Debug);
+  slic::setLoggingMsgLevel(slic::message::Debug);
 
   //----------------------------------------------------------------------------
   // STEP 1: Create log streams
@@ -74,11 +74,11 @@ int main( int argc, char** argv )
   //----------------------------------------------------------------------------
   // STEP 2: add streams to logger
   //----------------------------------------------------------------------------
-  slic::addStreamToLevel(hspLogStream,slic::message::Fatal);
-  slic::addStreamToLevel(hspLogStream,slic::message::Error);
-  slic::addStreamToLevel(hspLogStream,slic::message::Warning);
+  slic::addStreamToMsgLevel(hspLogStream,slic::message::Fatal);
+  slic::addStreamToMsgLevel(hspLogStream,slic::message::Error);
+  slic::addStreamToMsgLevel(hspLogStream,slic::message::Warning);
 
-  slic::addStreamToAllLevels( console );
+  slic::addStreamToAllMsgLevels( console );
 
   //----------------------------------------------------------------------------
   // STEP 3: Loop N times and generate random logging events

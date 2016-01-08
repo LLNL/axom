@@ -129,6 +129,20 @@ namespace
 
   Blank delimited list of namespaces for **cpp_header**.
 
+wrap_c
+
+  If *true*, create C wrappers.
+  Defaults to *true*.
+
+wrap_fortran
+
+  If *true*, create Fortran wrappers.
+  Defaults to *true*.
+
+wrap_python
+
+  If *true*, create Python wrappers.
+  Defaults to *false*.
 
 
 
@@ -530,6 +544,11 @@ PY_from_object
     PyArg_Parse - status = converter(object, address).
     Defaults to *None*.
 
+PY_post_parse
+
+   Used if PY_PyTypeObject is set.
+   A format expression to convert a *PyObject* into the type.
+   Ex. ``{var} = PyObject_IsTrue({var_obj});``
 
 Format dictionary for Type fields
 
@@ -611,6 +630,13 @@ decl
 
    Function declaration.
    Parsed to extract function name, type and arguments descriptions.
+
+default_arg_suffix
+
+   A list of suffixes to apply to C and Fortran functions generated when
+   wrapping a C++ function with default arguments.  The first entry is for
+   the function with the fewest arguments and the final entry should be for
+   all of the arguments.
 
 function_suffix
 
@@ -712,6 +738,23 @@ len_trim
 
    For a string argument, pass the string address and the result of
    len_trim.
+
+Doxygen
+-------
+
+Used to insert directives for doxygen.
+
+brief
+
+   Brief description.
+
+description
+
+   Full description.
+
+return
+
+   Description of return value.
 
 
 Splicers

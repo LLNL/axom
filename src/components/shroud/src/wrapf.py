@@ -13,7 +13,8 @@ module {F_module_name}
 
   ! interface for C functions
   interface
-    {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &
+    {F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}) &
+        {F_C_result_clause} &
         bind(C, name="{C_name}")
       {arg_c_decl}
     end {F_C_subprogram} {F_C_name}
@@ -53,6 +54,9 @@ class Wrapf(util.WrapperMixin):
         self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '!'
+        self.doxygen_begin = '!>'
+        self.doxygen_cont = '!!'
+        self.doxygen_end = '!<'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -176,7 +180,7 @@ class Wrapf(util.WrapperMixin):
             self.wrap_class(node)
             if options.F_module_per_class:
                 self._end_output_file()
-                self.write_module(node)
+                self.write_module(node, cls=True)
                 self._begin_output_file()
         self._pop_splicer('class')
 
@@ -403,7 +407,7 @@ class Wrapf(util.WrapperMixin):
             fmt.F_C_subprogram = 'subroutine'
         else:
             fmt.F_C_subprogram = 'function'
-            fmt.F_C_result_clause = ' result(%s)' % fmt.F_result
+            fmt.F_C_result_clause = 'result(%s)' % fmt.F_result
             if is_pure or func_is_const:
                 fmt.F_C_pure_clause = 'pure '
 
@@ -456,9 +460,13 @@ class Wrapf(util.WrapperMixin):
         c_interface = self.c_interface
         c_interface.append('')
         c_interface.append(wformat(
-                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}){F_C_result_clause} &',
+                '{F_C_pure_clause}{F_C_subprogram} {F_C_name}({F_C_arguments}) &',
                 fmt))
         c_interface.append(2)  # extra indent for continued line
+        if fmt.F_C_result_clause:
+            c_interface.append(wformat(
+                    '{F_C_result_clause} &',
+                    fmt))
         c_interface.append(wformat(
                 'bind(C, name="{C_name}")',
                 fmt))
@@ -712,6 +720,8 @@ class Wrapf(util.WrapperMixin):
                 if generated:
                     impl.append('! %s' % ' - '.join(generated))
                 impl.append('! function_index=%d' % node['_function_index'])
+                if options.doxygen and 'doxygen' in node:
+                    self.write_doxygen(impl, node['doxygen'])
             impl.append(wformat('{F_subprogram} {F_name_impl}({F_arguments}){F_result_clause}', fmt))
             impl.append(1)
             impl.extend(arg_f_use)
@@ -743,13 +753,17 @@ class Wrapf(util.WrapperMixin):
             F_code.append(parts[-1])
             F_code.append(-1)
 
-    def write_module(self, node):
+    def write_module(self, node, cls=False):
         options = node['options']
         fmt_class = node['fmt']
         fname = fmt_class.F_impl_filename
         module_name = fmt_class.F_module_name
 
         output = []
+
+        if options.doxygen:
+            self.write_doxygen_file(output, fname, node, cls)
+
         output.append('module %s' % module_name)
         output.append(1)
 

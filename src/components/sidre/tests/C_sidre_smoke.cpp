@@ -16,8 +16,8 @@
 
 TEST(C_sidre_smoke,create_datastore)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datastore_delete(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datastore_delete(ds);
   EXPECT_TRUE( true );
 }
 
@@ -25,21 +25,22 @@ TEST(C_sidre_smoke,create_datastore)
 
 TEST(sidre_smoke,valid_invalid)
 {
-  ATK_datastore * ds = ATK_datastore_new();
+  SIDRE_datastore * ds = SIDRE_datastore_new();
 
-  ATK_IndexType idx = 3;
-  EXPECT_TRUE(idx != ATK_InvalidIndex);
+  SIDRE_IndexType idx = 3;
+  EXPECT_TRUE(idx != SIDRE_InvalidIndex);
 
   const char * name = "foo";
-  EXPECT_TRUE(ATK_name_is_valid(name));
+  EXPECT_TRUE(SIDRE_name_is_valid(name));
 
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  const char * gp_name = ATK_datagroup_get_group_name(root, idx);
+  const char * gp_name = SIDRE_datagroup_get_group_name(root, idx);
   EXPECT_TRUE(gp_name == NULL);
-  EXPECT_TRUE(gp_name == ATK_InvalidName);
-  EXPECT_FALSE(ATK_name_is_valid(gp_name));
-  EXPECT_TRUE(ATK_datagroup_get_group_index(root, name) == ATK_InvalidIndex);
+  EXPECT_TRUE(gp_name == SIDRE_InvalidName);
+  EXPECT_FALSE(SIDRE_name_is_valid(gp_name));
+  EXPECT_TRUE(SIDRE_datagroup_get_group_index(root,
+                                              name) == SIDRE_InvalidIndex);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
 }

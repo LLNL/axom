@@ -22,6 +22,8 @@ module fstr_mod
      end function strlen_ptr
   end interface
 
+  external shroud_c_loc
+
 contains
 
   ! Count the characters in a null-terminated array.

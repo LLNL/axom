@@ -3,11 +3,11 @@
 #
 
 set(gtest_slic_tests
-   testSlicAsserts.cpp
+   slic_asserts.cpp
    )
 
 set(bench_slic_tests
-    benchSlicAsserts.cpp
+    slic_benchAsserts.cpp
    )
 
 

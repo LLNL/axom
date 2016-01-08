@@ -165,6 +165,10 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_int", 
+            "_cpp_overload": [
+                4, 
+                5
+            ], 
             "_decl": "void function3a(int i+intent(in)+value)", 
             "_function_index": 4, 
             "_overloaded": true, 
@@ -201,6 +205,10 @@
         {
             "F_name_generic": "generic3", 
             "F_name_impl": "F_name_function3a_long", 
+            "_cpp_overload": [
+                4, 
+                5
+            ], 
             "_decl": "void function3a(long i+intent(in)+value)", 
             "_function_index": 5, 
             "_overloaded": true, 
@@ -263,6 +271,7 @@
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
         "cpp_header": "", 
         "debug": true, 
+        "doxygen": true, 
         "library": "testnames", 
         "namespace": "", 
         "wrap_c": true, 
@@ -275,6 +284,7 @@
             "PY_PyObject": "PY_Names", 
             "PY_PyTypeObject": "PY_Names_Type", 
             "PY_from_object": "PP_Names_from_Object", 
+            "PY_post_parse": "{var} = {var_obj} ? {var_obj}->{BBB} : NULL;", 
             "PY_to_object": "PP_Names_to_Object", 
             "base": "wrapped", 
             "c_fortran": "type(C_PTR)", 
@@ -294,7 +304,9 @@
             "forward": "Names"
         }, 
         "bool": {
+            "PY_PyTypeObject": "PyBool_Type", 
             "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
             "c_fortran": "logical(C_BOOL)", 
             "c_type": "bool", 
             "cpp_type": "bool", 

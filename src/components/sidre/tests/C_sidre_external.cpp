@@ -20,7 +20,7 @@
 
 TEST(C_sidre_external, declare_external_buffer)
 {
-  ATK_datastore * ds = ATK_datastore_new();
+  SIDRE_datastore * ds = SIDRE_datastore_new();
 
   const int len = 11;
 
@@ -33,27 +33,27 @@ TEST(C_sidre_external, declare_external_buffer)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_databuffer * dbuff_0 = ATK_datastore_create_buffer(ds);
-  ATK_databuffer * dbuff_1 = ATK_datastore_create_buffer(ds);
-  ATK_databuffer * dbuff_2 = ATK_datastore_create_buffer(ds);
+  SIDRE_databuffer * dbuff_0 = SIDRE_datastore_create_buffer(ds);
+  SIDRE_databuffer * dbuff_1 = SIDRE_datastore_create_buffer(ds);
+  SIDRE_databuffer * dbuff_2 = SIDRE_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff_0, SIDRE_DOUBLE_ID, len);
-  ATK_databuffer_declare(dbuff_1, SIDRE_INT_ID, len);
-  ATK_databuffer_set_external_data(dbuff_1, idata);
-  ATK_databuffer_declare(dbuff_2, SIDRE_DOUBLE_ID, len);
-  ATK_databuffer_set_external_data(dbuff_2, ddata);
+  SIDRE_databuffer_allocate_from_type(dbuff_0, SIDRE_DOUBLE_ID, len);
+  SIDRE_databuffer_declare(dbuff_1, SIDRE_INT_ID, len);
+  SIDRE_databuffer_set_external_data(dbuff_1, idata);
+  SIDRE_databuffer_declare(dbuff_2, SIDRE_DOUBLE_ID, len);
+  SIDRE_databuffer_set_external_data(dbuff_2, ddata);
 
-  EXPECT_EQ(ATK_databuffer_is_external(dbuff_0), false);
-  EXPECT_EQ(ATK_databuffer_is_external(dbuff_1), true);
-  EXPECT_EQ(ATK_databuffer_is_external(dbuff_2), true);
+  EXPECT_EQ(SIDRE_databuffer_is_external(dbuff_0), false);
+  EXPECT_EQ(SIDRE_databuffer_is_external(dbuff_1), true);
+  EXPECT_EQ(SIDRE_databuffer_is_external(dbuff_2), true);
 
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_0), sizeof(double)*len);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_1), sizeof(int)*len);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff_2), sizeof(double)*len);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff_0), sizeof(double)*len);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff_1), sizeof(int)*len);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff_2), sizeof(double)*len);
 
-  ATK_datastore_print(ds);
+  SIDRE_datastore_print(ds);
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
   free(idata);
   free(ddata);
 }
@@ -63,8 +63,8 @@ TEST(C_sidre_external, declare_external_buffer)
 //------------------------------------------------------------------------------
 TEST(C_sidre_external, create_external_view)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   const int len = 11;
 
@@ -77,26 +77,30 @@ TEST(C_sidre_external, create_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, SIDRE_INT_ID, len);
-  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, SIDRE_DOUBLE_ID, len);
-  EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
+  SIDRE_dataview * iview =
+    SIDRE_datagroup_create_view_external(root, "idata", idata);
+  SIDRE_dataview_apply_type_nelems(iview, SIDRE_INT_ID, len);
+  SIDRE_dataview * dview =
+    SIDRE_datagroup_create_view_external(root, "ddata", ddata);
+  SIDRE_dataview_apply_type_nelems(dview, SIDRE_DOUBLE_ID, len);
+  EXPECT_EQ(SIDRE_datagroup_get_num_views(root), 2u);
 
-  ATK_dataview_print(iview);
-  ATK_dataview_print(dview);
+  SIDRE_dataview_print(iview);
+  SIDRE_dataview_print(dview);
 
-  int * idata_chk = (int *) ATK_dataview_get_data_pointer(iview);
+  int * idata_chk = (int *) SIDRE_dataview_get_void_ptr(iview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = (double *) ATK_dataview_get_data_pointer(dview);
+  double * ddata_chk = (double *) SIDRE_dataview_get_void_ptr(dview);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
   }
 
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_delete(ds);
   free(idata);
   free(ddata);
 }
@@ -106,8 +110,8 @@ TEST(C_sidre_external, create_external_view)
 //------------------------------------------------------------------------------
 TEST(C_sidre_external, save_load_external_view)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   const int len = 11;
 
@@ -120,53 +124,60 @@ TEST(C_sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  ATK_dataview * iview = ATK_datagroup_create_external_view(root, "idata", idata, SIDRE_INT_ID, len);
-  ATK_dataview * dview = ATK_datagroup_create_external_view(root, "ddata", ddata, SIDRE_DOUBLE_ID, len);
-  EXPECT_EQ(ATK_datagroup_get_num_views(root), 2u);
-  ATK_databuffer * tmpbuf;
-  tmpbuf = ATK_dataview_get_buffer(iview);
-  EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), true);
-  tmpbuf = ATK_dataview_get_buffer(dview);
-  EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), true);
+  SIDRE_dataview * iview =
+    SIDRE_datagroup_create_view_external(root, "idata", idata);
+  SIDRE_dataview_apply_type_nelems(iview, SIDRE_INT_ID, len);
+  SIDRE_dataview * dview =
+    SIDRE_datagroup_create_view_external(root, "ddata", ddata);
+  SIDRE_dataview_apply_type_nelems(dview, SIDRE_DOUBLE_ID, len);
 
-  ATK_dataview_print(iview);
-  ATK_dataview_print(dview);
+  EXPECT_EQ(SIDRE_datagroup_get_num_views(root), 2u);
 
-  ATK_datagroup_save(root, "out_sidre_external_save_restore_external_view", "conduit");
+  SIDRE_databuffer * tmpbuf = SIDRE_dataview_get_buffer(iview);
+  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), true);
+  tmpbuf = SIDRE_dataview_get_buffer(dview);
+  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), true);
 
-  ATK_datastore_print(ds);
+  SIDRE_dataview_print(iview);
+  SIDRE_dataview_print(dview);
+
+  SIDRE_datagroup_save(root, "out_sidre_external_save_restore_external_view",
+                       "conduit");
+
+  SIDRE_datastore_print(ds);
 
 
-  ATK_datastore * ds2 = ATK_datastore_new();
-  ATK_datagroup * root2 = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds2 = SIDRE_datastore_new();
+  SIDRE_datagroup * root2 = SIDRE_datastore_get_root(ds);
 
-  ATK_datagroup_load(root, "out_sidre_external_save_restore_external_view","conduit");
+  SIDRE_datagroup_load(root, "out_sidre_external_save_restore_external_view",
+                       "conduit");
 
-  ATK_datastore_print(ds2);
+  SIDRE_datastore_print(ds2);
 
-  ATK_dataview * iview2 = ATK_datagroup_get_view_from_name(root2, "idata");
-  ATK_dataview * dview2 = ATK_datagroup_get_view_from_name(root2, "ddata");
+  SIDRE_dataview * iview2 = SIDRE_datagroup_get_view_from_name(root2, "idata");
+  SIDRE_dataview * dview2 = SIDRE_datagroup_get_view_from_name(root2, "ddata");
 
-  EXPECT_EQ(ATK_datagroup_get_num_views(root2), 2u);
-  tmpbuf = ATK_dataview_get_buffer(iview2);
-  EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), false);
-  tmpbuf = ATK_dataview_get_buffer(dview2);
-  EXPECT_EQ(ATK_databuffer_is_external(tmpbuf), false);
+  EXPECT_EQ(SIDRE_datagroup_get_num_views(root2), 2u);
+  tmpbuf = SIDRE_dataview_get_buffer(iview2);
+  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), false);
+  tmpbuf = SIDRE_dataview_get_buffer(dview2);
+  EXPECT_EQ(SIDRE_databuffer_is_external(tmpbuf), false);
 
-  int * idata_chk = (int *) ATK_dataview_get_data_pointer(iview2);
+  int * idata_chk = (int *) SIDRE_dataview_get_void_ptr(iview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double * ddata_chk = (double *) ATK_dataview_get_data_pointer(dview2);
+  double * ddata_chk = (double *) SIDRE_dataview_get_void_ptr(dview2);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
   }
 
-  ATK_datastore_delete(ds);
-  ATK_datastore_delete(ds2);
+  SIDRE_datastore_delete(ds);
+  SIDRE_datastore_delete(ds2);
   free(idata);
   free(ddata);
 }

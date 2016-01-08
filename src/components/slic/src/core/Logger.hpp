@@ -71,7 +71,7 @@ public:
    * \param [in] level the logging level.
    *****************************************************************************
    */
-  void setLoggingLevel( message::Level level );
+  void setLoggingMsgLevel( message::Level level );
 
   /*!
    *****************************************************************************
@@ -94,7 +94,7 @@ public:
    * \pre ls != NULL.
    *****************************************************************************
    */
-  void addStreamToLevel( LogStream* ls, message::Level level,
+  void addStreamToMsgLevel( LogStream* ls, message::Level level,
                          bool pass_ownership=true );
 
   /*!
@@ -105,7 +105,7 @@ public:
    * \pre ls != NULL.
    *****************************************************************************
    */
-  void addStreamToAllLevels( LogStream* ls );
+  void addStreamToAllMsgLevels( LogStream* ls );
 
   /*!
    *****************************************************************************
@@ -115,7 +115,7 @@ public:
    * \post N >= 0
    *****************************************************************************
    */
-  int getNumStreamsAtLevel( message::Level level );
+  int getNumStreamsAtMsgLevel( message::Level level );
 
   /*!
    *****************************************************************************

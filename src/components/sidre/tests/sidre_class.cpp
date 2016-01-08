@@ -43,7 +43,8 @@ public:
 
   void copyToGroup(DataGroup * gp)
   {
-    gp->createExternalView("idata", &m_idata[0], DataType::c_int(m_idata.size()));
+    gp->createView("idata",
+                   &m_idata[0])->apply(DataType::c_int(m_idata.size()));
   }
 
   void copyFromGroup(DataGroup * gp)
@@ -52,7 +53,7 @@ public:
     size_t ilen = iview->getNumElements();
     m_idata = std::vector<int>(ilen);
 
-    int * g_idata = iview->getValue();
+    int * g_idata = iview->getData();
     for (size_t ii = 0 ; ii < ilen ; ++ii)
     {
       m_idata[ii] = g_idata[ii];
@@ -67,7 +68,7 @@ public:
   void checkState(DataGroup * gp)
   {
     int * idata_chk =
-      gp->getView("idata")->getValue();
+      gp->getView("idata")->getData();
     checkState(idata_chk);
   }
 
@@ -109,8 +110,12 @@ public:
 
   void copyToGroup(DataGroup * gp)
   {
-    gp->createExternalView("idata", &m_idata[0], DataType::c_int(m_idata.size()));
-    gp->createExternalView("ddata", &m_ddata[0], DataType::c_double(m_ddata.size()));
+    gp->createView("idata", &m_idata[0])->
+//     apply(DataType::c_int(m_idata.size()));
+    apply(asctoolkit::sidre::INT_ID, m_idata.size());
+    gp->createView("ddata", &m_ddata[0])->
+//     apply(DataType::c_double(m_ddata.size()));
+    apply(asctoolkit::sidre::DOUBLE_ID, m_ddata.size());
 
     DataGroup * gp1 = gp->createGroup("myclass1");
 
@@ -124,7 +129,7 @@ public:
                   sizeof(CONDUIT_NATIVE_INT);
     m_idata = std::vector<int>(ilen);
 
-    int * g_idata = iview->getValue();
+    int * g_idata = iview->getData();
     for (size_t ii = 0 ; ii < ilen ; ++ii)
     {
       m_idata[ii] = g_idata[ii];
@@ -134,7 +139,7 @@ public:
     size_t dlen = dview->getNumElements();
     m_ddata = std::vector<double>(dlen);
 
-    double * g_ddata = dview->getValue();
+    double * g_ddata = dview->getData();
     for (size_t ii = 0 ; ii < dlen ; ++ii)
     {
       m_ddata[ii] = g_ddata[ii];
@@ -152,8 +157,8 @@ public:
 
   void checkState(DataGroup * gp)
   {
-    int * idata_chk = gp->getView("idata")->getValue();
-    double * ddata_chk = gp->getView("ddata")->getValue();
+    int * idata_chk = gp->getView("idata")->getData();
+    double * ddata_chk = gp->getView("ddata")->getData();
     checkState(idata_chk, ddata_chk);
 
     DataGroup * gp1 = gp->getGroup("myclass1");

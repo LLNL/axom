@@ -1,5 +1,9 @@
 ! foo.f
 ! This is generated code, do not edit
+!>
+!! \file foo.f
+!! \brief Shroud generated wrapper for Names class
+!<
 module name_module
     use fstr_mod
     ! splicer begin class.Names.module_use

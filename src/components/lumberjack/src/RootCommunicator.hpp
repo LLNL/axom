@@ -37,9 +37,9 @@ namespace lumberjack {
  * \brief A Communicator that all MPI nodes communicate with the root node. This class
  * does NOT scale and is provided for demonstration purposes only.
  *
- *  You will need to add your Communicator using Logger::initialize.
+ *  You will need to add your Communicator using Lumberjack::initialize.
  *
- * \see BinaryTreeCommunicator Communicator Logger
+ * \see BinaryTreeCommunicator Communicator Lumberjack
  *******************************************************************************
  */
 class RootCommunicator: public Communicator {
@@ -69,6 +69,13 @@ class RootCommunicator: public Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Returns the MPI rank of this node
+         *****************************************************************************
+         */
+        int rank();
+
+        /*!
+         *****************************************************************************
          * \brief Sets the rank limit.
          *
          * This is the limit on how many ranks generated a given message are individually tracked
@@ -93,44 +100,34 @@ class RootCommunicator: public Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Function used by the Lumberjack class to indicate how many individual pushes
+         *  fully flush all currently held Message classes to the root node. The Communicator
+         *  class's tree structure dictates this.
+         *****************************************************************************
+         */
+        int numPushesToFlush();
+
+        /*!
+         *****************************************************************************
          * \brief This pushes all messages to the root node.
          *
          * All messages are pushed to the root node. This is the same as 
          * RootCommunicator::pushMessagesFully for this Communicator.
          *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
+         * \param [in] packedMessagesToBeSent All of this rank's Message classes packed into a single buffer.
+         * \param [in,out] receivedPackedMessages Recieved packed message buffers from this nodes children.
          *****************************************************************************
          */
-        void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
+        void push(const char* packedMessagesToBeSent,
+                  std::vector<const char*>& receivedPackedMessages);
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages to the root node.
-         *
-         * All messages are pushed to the root node. This is the same as 
-         * RootCommunicator::pushMessagesOnce for this Communicator.
-         *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
-         *****************************************************************************
-         */
-        void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners);
-
-        /*!
-         *****************************************************************************
-         * \brief Function used by the Logger to indicate whether this node should be
+         * \brief Function used by the Lumberjack to indicate whether this node should be
          * outputting messages. Only the root node outputs messages.
          *****************************************************************************
          */
         bool shouldMessagesBeOutputted();
-
-        /*!
-         *****************************************************************************
-         * \brief Returns the MPI rank of this node
-         *****************************************************************************
-         */
-        int rank();
     private:
         MPI_Comm m_mpiComm;
         int m_mpiCommRank;

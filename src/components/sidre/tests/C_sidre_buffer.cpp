@@ -18,105 +18,105 @@
 
 TEST(C_sidre_buffer,create_buffers)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_databuffer * dbuff_0 = ATK_datastore_create_buffer(ds);
-  ATK_databuffer * dbuff_1 = ATK_datastore_create_buffer(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_databuffer * dbuff_0 = SIDRE_datastore_create_buffer(ds);
+  SIDRE_databuffer * dbuff_1 = SIDRE_datastore_create_buffer(ds);
 
-  EXPECT_EQ(ATK_databuffer_get_index(dbuff_0), 0);
-  EXPECT_EQ(ATK_databuffer_get_index(dbuff_1), 1);
-  ATK_datastore_destroy_buffer(ds, 0);
+  EXPECT_EQ(SIDRE_databuffer_get_index(dbuff_0), 0);
+  EXPECT_EQ(SIDRE_databuffer_get_index(dbuff_1), 1);
+  SIDRE_datastore_destroy_buffer(ds, 0);
 
-  ATK_databuffer * dbuff_3 = ATK_datastore_create_buffer(ds);
-  EXPECT_EQ(ATK_databuffer_get_index(dbuff_3), 0);
+  SIDRE_databuffer * dbuff_3 = SIDRE_datastore_create_buffer(ds);
+  EXPECT_EQ(SIDRE_databuffer_get_index(dbuff_3), 0);
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
-  ATK_databuffer_allocate_existing(dbuff);
+  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
+  SIDRE_databuffer_allocate_existing(dbuff);
 
-  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_INT_ID);
-  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 10u);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+  EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_INT_ID);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 10u);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
-  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  ATK_databuffer_print(dbuff);
+  SIDRE_databuffer_print(dbuff);
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_buffer,init_buffer_for_int_array)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff, SIDRE_INT_ID, 10);
+  SIDRE_databuffer_allocate_from_type(dbuff, SIDRE_INT_ID, 10);
 
-  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_INT_ID);
-  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 10u);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+  EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_INT_ID);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 10u);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
-  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  ATK_databuffer_print(dbuff);
+  SIDRE_databuffer_print(dbuff);
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_buffer,realloc_buffer)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, SIDRE_LONG_ID, 5);
-  ATK_databuffer_allocate_existing(dbuff);
+  SIDRE_databuffer_declare(dbuff, SIDRE_LONG_ID, 5);
+  SIDRE_databuffer_allocate_existing(dbuff);
 
-  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);
-  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 5u);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
+  EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 5u);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(long) * 5);
 
-  long * data_ptr = (long *) ATK_databuffer_get_data(dbuff);
+  long * data_ptr = (long *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {
     data_ptr[i] = 5;
   }
 
-  ATK_databuffer_print(dbuff);
+  SIDRE_databuffer_print(dbuff);
 
-  ATK_databuffer_reallocate(dbuff, 10);
+  SIDRE_databuffer_reallocate(dbuff, 10);
 
-  EXPECT_EQ(ATK_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);
-  EXPECT_EQ(ATK_databuffer_get_num_elements(dbuff), 10u);
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
+  EXPECT_EQ(SIDRE_databuffer_get_type_id(dbuff), SIDRE_LONG_ID);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 10u);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(long) * 10);
 
   // data buffer changes
-  data_ptr = (long *) ATK_databuffer_get_data(dbuff);
+  data_ptr = (long *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -128,8 +128,8 @@ TEST(C_sidre_buffer,realloc_buffer)
     data_ptr[i] = 10;
   }
 
-  ATK_databuffer_print(dbuff);
+  SIDRE_databuffer_print(dbuff);
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 }

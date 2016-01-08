@@ -20,7 +20,7 @@
 #define SIDREDATATYPEIDS_H_
 
 // Other CS Toolkit headers
-#include "conduit.hpp"
+#include "conduit.h"
 
 #define SIDRE_EMPTY_ID      CONDUIT_EMPTY_T
 #define SIDRE_INT8_ID       CONDUIT_INT8_T
@@ -43,4 +43,3 @@
 #define SIDRE_DOUBLE_ID  CONDUIT_NATIVE_DOUBLE_DATATYPE_ID
 
 #endif /* SIDREDATATYPEIDS_H_ */
-

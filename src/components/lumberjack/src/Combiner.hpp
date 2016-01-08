@@ -32,16 +32,23 @@ namespace lumberjack {
  * \brief Abstract base class defining the interface of all Combiner classes.
  *
  *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Combiner using Logger::addCombiner
+ *  You will need to add your Combiner using Lumberjack::addCombiner
  *
- * \see MessageEqualityCombiner Logger
+ * \see MessageEqualityCombiner Lumberjack
  *******************************************************************************
  */
 class Combiner {
     public:
         /*!
          *****************************************************************************
-         * \brief Returns the unique string identifier for this combiner. Used by Logger
+         * \brief Virtual destructor.
+         *****************************************************************************
+         */
+        virtual ~Combiner(){};
+        
+        /*!
+         *****************************************************************************
+         * \brief Returns the unique string identifier for this combiner. Used by Lumberjack
          *  to differentiate between other combiners.
          *****************************************************************************
          */
@@ -49,7 +56,7 @@ class Combiner {
 
         /*!
          *****************************************************************************
-         * \brief Function used by Logger to indicate whether two Message classes should be
+         * \brief Function used by Lumberjack to indicate whether two Message classes should be
          * combined.  They are not actually combined by this function.
          *
          * \param [in] leftMessage The left Message to be compared.
@@ -57,7 +64,7 @@ class Combiner {
          *****************************************************************************
          */
         virtual bool shouldMessagesBeCombined(const Message& leftMessage,
-                                                  const Message& rightMessage) = 0;
+                                              const Message& rightMessage) = 0;
 
         /*!
          *****************************************************************************

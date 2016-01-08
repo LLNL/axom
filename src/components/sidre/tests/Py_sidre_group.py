@@ -60,9 +60,9 @@ class SidreGroup(unittest.TestCase):
         ds.delete()
 
 #------------------------------------------------------------------------------
-# Verify hasGroup()
+# Verify getGroup()
 #------------------------------------------------------------------------------
-    def test_has_group(self):
+    def test_get_group(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
@@ -70,36 +70,39 @@ class SidreGroup(unittest.TestCase):
         child = parent.createGroup("child")
         self.assertTrue( child.getParent() == parent )
 
-        self.assertTrue( parent.hasGroup("child") )
+        self.assertTrue( parent.getGroup("child") )
+        # check error condition
+        # EXPECT_TRUE( parent.getGroup("non-existant group") is None
 
         ds.delete()
 
 #------------------------------------------------------------------------------
-# Verify hasView()
+# Verify getView()
 #------------------------------------------------------------------------------
-    def XXXtest_has_view(self):
+    def test_get_view(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
         parent = root.createGroup("parent")
-        view = parent.createViewAndBuffer("view")
+        view = parent.createView("view")
 
-        self.assertTrue( view.getOwningGroup() == parent )
+        self.assertTrue( parent.getView("view") == view )
 
-        self.assertTrue( parent.hasView("view") )
+        # check error condition
+        self.assertTrue( parent.getView("non-existant view") is None )
 
         ds.delete()
 
 #------------------------------------------------------------------------------
 # Verify getViewName(), getViewIndex()
 #------------------------------------------------------------------------------
-    def test_get_view_name_index(self):
+    def test_get_view_names_and_indicies(self):
         ds = sidre.DataStore()
         root = ds.getRoot()
 
         parent = root.createGroup("parent")
-        view1 = parent.createViewAndBuffer("view1")
-        view2 = parent.createViewAndBuffer("view2")
+        view1 = parent.createView("view1")
+        view2 = parent.createView("view2")
 
         self.assertEqual(parent.getNumViews(), 2)
 
@@ -115,6 +118,7 @@ class SidreGroup(unittest.TestCase):
         self.assertEqual(name2, "view2")
         self.assertEqual(view2.getName(), name2)
 
+        # check error conditions
         idx3 = parent.getViewIndex("view3")
         self.assertTrue(idx3 == InvalidIndex)
 
@@ -122,6 +126,43 @@ class SidreGroup(unittest.TestCase):
         self.assertTrue(name3 is None)
         self.assertFalse(nameIsValid(name3))
 
+        ds.delete()
+
+#------------------------------------------------------------------------------
+# Verify getFirstValidViewIndex, getNextValidGroupIndex
+#------------------------------------------------------------------------------
+
+    def get_first_and_next_view_index(self):
+        ds = sidre.DataStore()
+        root = ds.getRoot()
+
+#  DataGroup * parent = root->createGroup("parent")
+#  DataView * view1 = parent->createView("view1")
+#  DataView * view2 = parent->createView("view2")
+#
+#  DataGroup * emptyGroup = root->createGroup("emptyGroup")
+#
+#  EXPECT_EQ(parent->getNumViews(), 2u)
+#
+#  IndexType idx1 = parent->getFirstValidViewIndex()
+#  IndexType idx2 = parent->getNextValidViewIndex(idx1)
+#
+#  const std::string& name1 = parent->getViewName(idx1)
+#  const std::string& name2 = parent->getViewName(idx2)
+#
+#  EXPECT_EQ(name1, std::string("view1"))
+#  EXPECT_EQ(view1->getName(), name1)
+#
+#  EXPECT_EQ(name2, std::string("view2"))
+#  EXPECT_EQ(view2->getName(), name2)
+#
+#  // check error conditions
+#  IndexType badidx1 = emptyGroup->getFirstValidViewIndex()
+#  IndexType badidx2 = emptyGroup->getNextValidViewIndex(badidx1)
+#
+#  EXPECT_TRUE(badidx1 == InvalidIndex)
+#  EXPECT_TRUE(badidx2 == InvalidIndex)
+#
         ds.delete()
 
 #------------------------------------------------------------------------------
@@ -149,6 +190,7 @@ class SidreGroup(unittest.TestCase):
         self.assertEqual(name2, "group2")
         self.assertEqual(group2.getName(), name2)
 
+        # check error conditions
         idx3 = parent.getGroupIndex("group3")
         self.assertTrue(idx3 == InvalidIndex)
 
@@ -159,24 +201,51 @@ class SidreGroup(unittest.TestCase):
         ds.delete()
 
 #------------------------------------------------------------------------------
-# createViewAndBuffer()
-# destroyViewAndBuffer()
+# createView()
+# createViewAndAllocate()
+# destroyView()
+# destroyViewAndData()
 # hasView()
 #------------------------------------------------------------------------------
-    def test_create_destroy_has_viewbuffer(self):
+    def test_create_destroy_has_view(self):
+#XXX        slic.setAbortOnAssert(False)
+
         ds = sidre.DataStore()
         root = ds.getRoot()
         group = root.createGroup("parent")
 
-        view = group.createViewAndBuffer("view")
+        view = group.createView("view")
         self.assertTrue( group.getParent() == root )
-        self.assertTrue( view.hasBuffer() )
+        self.assertFalse( view.hasBuffer() )
 
         self.assertTrue( group.hasView("view") )
+        # try creating view again, should be a no-op.
+#XXX        self.assertTrue( group.createView("view") is None )
 
-        group.destroyViewAndBuffer("view")
+        group.destroyView("view")
+        # destroy already destroyed group.  Should be a no-op, not a failure
+        group.destroyView("view")
 
         self.assertFalse( group.hasView("view") )
+
+#  // try api call that specifies specific type and length
+#  group->createViewAndAllocate( "viewWithLength1", 
+#                                asctoolkit::sidre::FLOAT_ID, 50 );
+#
+#  // error condition check - try again with duplicate name, should be a no-op
+#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", 
+#                           asctoolkit::sidre::FLOAT64_ID, 50 ) == ATK_NULLPTR );
+#  group->destroyViewAndData("viewWithLength1");
+#  EXPECT_FALSE( group->hasView("viewWithLength1") );
+#
+#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", 
+#                           asctoolkit::sidre::FLOAT64_ID, -1 ) == ATK_NULLPTR );
+#
+#  // try api call that specifies data type in another way
+#  group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) );
+#  EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) ) == ATK_NULLPTR );
+#  // destroy this view using index
+#  group->destroyViewAndData( group->getFirstValidViewIndex() );
 
         ds.delete()
 
@@ -193,9 +262,14 @@ class SidreGroup(unittest.TestCase):
 
         self.assertTrue( root.hasGroup("group") )
 
-
         root.destroyGroup("group")
         self.assertFalse( root.hasGroup("group") )
+
+        # should be a no-op, not a failure
+        root.destroyGroup("group")
+
+        group2 = root.createGroup("group2")
+        root.destroyGroup( root.getFirstValidGroupIndex() )
 
         ds.delete()
 
@@ -203,9 +277,12 @@ class SidreGroup(unittest.TestCase):
     def test_group_name_collisions(self):
         ds = sidre.DataStore()
         flds = ds.getRoot().createGroup("fields")
-        flds.createViewAndBuffer("a")
+        flds.createView("a")
 
         self.assertTrue(flds.hasView("a"))
+
+        # XXX copy rest of test
+#        slic.setAbortOnAssert(False)
 
         ds.delete()
 
@@ -260,23 +337,23 @@ class SidreGroup(unittest.TestCase):
         gb = flds.createGroup("b")
         gc = flds.createGroup("c")
 
-        ga.createViewAndBuffer("i0").allocate(DataType.c_int())
-        gb.createViewAndBuffer("f0").allocate(DataType.c_float())
-        gc.createViewAndBuffer("d0").allocate(DataType.c_double())
+        ga.createViewAndAllocate("i0", DataType.c_int())
+        gb.createViewAndAllocate("f0", DataType.c_float())
+        gc.createViewAndAllocate("d0", DataType.c_double())
 
-        ga.getView("i0").setValue(1)
-        gb.getView("f0").setValue(100.0)
-        gc.getView("d0").setValue(3000.0)
+        ga.getView("i0").setScalar(1)
+        gb.getView("f0").setScalar(100.0)
+        gc.getView("d0").setScalar(3000.0)
 
         # check that all sub groups exist
         self.assertTrue(flds.hasGroup("a"))
         self.assertTrue(flds.hasGroup("b"))
         self.assertTrue(flds.hasGroup("c"))
 
-        #move "b" to a child of "sub"
+        # move "b" to a child of "sub"
         flds.createGroup("sub").moveGroup(gb)
 
-        flds.print_json()
+        # flds.print()
 
         self.assertTrue(flds.hasGroup("a"))
         self.assertTrue(flds.hasGroup("sub"))
@@ -287,15 +364,15 @@ class SidreGroup(unittest.TestCase):
         ds.delete()
 
 #------------------------------------------------------------------------------
-    def XXXtest_create_destroy_view_and_buffer(self):
+    def XXXtest_create_destroy_view_and_buffer2(self):
         ds = sidre.DataStore()
         grp = ds.getRoot().createGroup("grp")
 
         viewName1 = "viewBuffer1"
         viewName2 = "viewBuffer2"
 
-        view1 = grp.createViewAndBuffer(viewName1)
-        view2 = grp.createViewAndBuffer(viewName2)
+        view1 = grp.createViewAndAllocate(viewName1, INT_ID)
+        view2 = grp.createViewAndAllocate(viewName2, INT_ID)
 
         self.assertTrue(grp.hasView(viewName1))
         self.assertEqual( grp.getView(viewName1), view1 )
@@ -312,7 +389,12 @@ class SidreGroup(unittest.TestCase):
         self.assertEqual(ds.getNumBuffers(), 1)
 
         buffer1 = ds.getBuffer(bufferId1)
-        self.assertTrue( buffer1 == ATK_NULLPTR )
+        self.assertTrue( buffer1 is None )
+
+        view3 = grp.createView("viewBuffer3")
+        grp.destroyViewsAndData()
+        # should be no-op
+        grp.destroyViewsAndData()
 
         ds.delete()
 
@@ -326,11 +408,11 @@ class SidreGroup(unittest.TestCase):
 
         # use create + alloc convenience methods
         # this one is the DataType & method
-        view1 = grp.createViewAndBuffer(viewName1,DataType.c_int(10))
+        view1 = grp.createViewAndAllocate(viewName1,DataType.c_int(10))
   # this one is the Schema & method
 #--        Schema s
 #--        s.set(DataType.c_double(10))
-#--        view2 = grp.createViewAndBuffer(viewName2, s)
+#--        view2 = grp.createViewAndAllocate(viewName2, s)
 
         self.assertTrue(grp.hasView(viewName1))
         self.assertEqual( grp.getView(viewName1), view1 )
@@ -339,8 +421,8 @@ class SidreGroup(unittest.TestCase):
         self.assertEqual( grp.getView(viewName2), view2 )
 
 
-        v1_vals = view1.getValue()  # int
-        v2_vals = view2.getValue()  # double
+        v1_vals = view1.getData()  # int
+        v2_vals = view2.getData()  # double
 
         for i in range(10):
             v1_vals[i] = i
@@ -352,13 +434,14 @@ class SidreGroup(unittest.TestCase):
         self.assertEqual(view1.getTotalBytes(), 10 * sizeof(int))
         self.assertEqual(view2.getTotalBytes(), 10 * sizeof(double))
 
-        grp.destroyViewAndBuffer(viewName1)
-        grp.destroyViewAndBuffer(viewName2)
+        grp.destroyViewAndData(viewName1)
+        grp.destroyViewAndData(viewName2)
 
         ds.delete()
 
 #------------------------------------------------------------------------------
     def XXXtest_create_view_of_buffer_with_schema(self):
+        # XXX fill in
         ds = sidre.DataStore()
         root = ds.getRoot()
         # use create + alloc convenience methods
@@ -392,12 +475,13 @@ class SidreGroup(unittest.TestCase):
 
 #------------------------------------------------------------------------------
     def XXXtest_save_restore_simple(self):
+        # XXX fill in
         ds = sidre.DataStore()
         flds = ds.getRoot().createGroup("fields")
 
         ga = flds.createGroup("a")
 
-        ga.createViewAndBuffer("i0").allocate(DataType.c_int())
+        ga.createView("i0").allocate(DataType.c_int())
 
         ga.getView("i0").setValue(1)
 
@@ -408,13 +492,13 @@ class SidreGroup(unittest.TestCase):
 
         ds.getRoot().save("out_sidre_group_save_restore_simple","conduit")
 
-        ds.print_json()
+        # ds.print()
 
         ds2 = sidre.DataStore()
 
         ds2.getRoot().load("out_sidre_group_save_restore_simple","conduit")
 
-        ds2.print_json()
+        # ds2.print()
 
         flds = ds2.getRoot().getGroup("fields")
         # check that all sub groups exist
@@ -422,13 +506,14 @@ class SidreGroup(unittest.TestCase):
         testvalue = flds.getGroup("a").getView("i0").getValue()
         self.assertEqual(testvalue,1)
 
-        ds2.print_json()
+        # ds2.print()
 
         ds.delete()
         ds2.delete()
 
 #------------------------------------------------------------------------------
     def XXXtest_save_restore_complex(self):
+        # XXX fill in
         ds = sidre.DataStore()
         flds = ds.getRoot().createGroup("fields")
 

@@ -92,7 +92,9 @@ class Schema(object):
 
             wrap_c       = True,
             wrap_fortran = True,
-            wrap_python  = True,
+            wrap_python  = False,
+
+            doxygen = True,       # create doxygen comments
 
             C_header_filename_library_template = 'wrap{library}.h',
             C_impl_filename_library_template = 'wrap{library}.cpp',
@@ -212,9 +214,10 @@ class Schema(object):
                 f_argsdecl = ['logical(C_BOOL) {tmp_var}'],
                 f_pre_call = '{tmp_var} = {var}  ! coerce to C_BOOL',
 
+#XXX            PY_format = 'p',  # Python 3.3 or greater
                 PY_ctor   = 'PyBool_FromLong({rv})',
-#                PY_PyTypeObject = 'PyBool_Type',
-#  after parsearg, expectArgs = PyObject_IsTrue(py_expectArgs);
+                PY_PyTypeObject = 'PyBool_Type',
+                PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
             # implies null terminated string
             string = util.Typedef('string',
@@ -361,6 +364,13 @@ class Schema(object):
         if 'function_suffix' in node and node['function_suffix'] is None:
             # YAML turns blanks strings to None
             node['function_suffix'] = ''
+        if 'default_arg_suffix' in node:
+            default_arg_suffix = node['default_arg_suffix']
+            if not isinstance(default_arg_suffix, list):
+                raise RuntimeError('default_arg_suffix must be a list')
+            for i, value in enumerate(node['default_arg_suffix']):
+                if value is None:
+                    node['default_arg_suffix'][i] = '' # YAML turns blanks strings to None
         if 'result' not in node:
             raise RuntimeError("Missing result")
         result = node['result']
@@ -427,10 +437,20 @@ class GenFunctions(object):
         """ Look for functions with the same name.
         Return a new list with overloaded function inserted.
         """
+        cpp_overload = {}
         for function in functions:
             if 'function_suffix' in function:
                 function['fmt'].function_suffix = function['function_suffix']
             self.append_function_index(function)
+            cpp_overload. \
+                setdefault(function['result']['name'], []). \
+                append(function['_function_index'])
+
+        # keep track of which function are overloaded in C++.
+        for key, value in cpp_overload.items():
+            if len(value) > 1:
+                for index in value:
+                    self.function_index[index]['_cpp_overload'] = value
 
         # Create additional functions needed for wrapping
         ordered_functions = []
@@ -570,8 +590,14 @@ class GenFunctions(object):
           void func(int i, int j)
         """
         default_funcs = []
+
+        default_arg_suffix = node.get('default_arg_suffix', [])
+        ndefault = 0
+
+        min_args = 0
         for i, arg in enumerate(node['args']):
             if 'default' not in arg['attrs']:
+                min_args += 1
                 continue
             new = util.copy_function_node(node)
             new['_generated'] = 'has_default_arg'
@@ -586,12 +612,23 @@ class GenFunctions(object):
             options.wrap_fortran = True
             options.wrap_python = False
             fmt = new['fmt']
-#            fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+            try:
+                fmt.function_suffix = default_arg_suffix[ndefault]
+            except IndexError:
+#               fmt.function_suffix = fmt.function_suffix + '_nargs%d' % (i + 1)
+                pass
             default_funcs.append(new['_function_index'])
             ordered_functions.append(new)
+            ndefault += 1
 
         # keep track of generated default value functions
         node['_default_funcs'] = default_funcs
+        node['_nargs'] = ( min_args, len(node['args']) )
+        # The last name calls with all arguments (the original decl)
+        try:
+            node['fmt'].function_suffix = default_arg_suffix[ndefault]
+        except IndexError:
+            pass
 
     def string_to_buffer_and_len(self, node, ordered_functions):
         """ Check if function has any string arguments and will be wrapped by Fortran.
@@ -788,6 +825,8 @@ class VerifyAttrs(object):
 #                f_c_return_decl = 'type(CPTR)' % unname,
                 f_return_code = '{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})',
 
+                PY_post_parse = '{var} = {var_obj} ? {var_obj}->{BBB} : NULL;',
+
                 # allow forward declarations to avoid recursive headers
                 forward = name,
                 base = 'wrapped',
@@ -957,7 +996,7 @@ class Namify(object):
             fmt_func.F_result = options.F_result
 
 
-if __name__ == '__main__':
+def main():
 
     appname = 'modulator3'
     appver = '0.1'
@@ -1045,12 +1084,15 @@ if __name__ == '__main__':
                 log.write("Read splicer %s\n" % name)
                 splicer.get_splicers(fullname, subsplicer)
 
+                
+    if all['options'].wrap_c:
+        wrapc.Wrapc(all, config, splicers['c']).wrap_library()
 
-    wrapc.Wrapc(all, config, splicers['c']).wrap_library()
+    if all['options'].wrap_fortran:
+        wrapf.Wrapf(all, config, splicers['f']).wrap_library()
 
-    wrapf.Wrapf(all, config, splicers['f']).wrap_library()
-
-    wrapp.Wrapp(all, config, splicers['py']).wrap_library()
+    if all['options'].wrap_python:
+        wrapp.Wrapp(all, config, splicers['py']).wrap_library()
 
     # when dumping json, remove function_index to avoid duplication
     del all['function_index']
@@ -1070,3 +1112,6 @@ if __name__ == '__main__':
 #    sys.stderr.write("Some useful message")  # example error message
     sys.exit(0)  # set status for errors
 
+
+if __name__ == '__main__':
+    main()

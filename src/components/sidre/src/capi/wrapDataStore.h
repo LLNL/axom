@@ -9,6 +9,10 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
+/**
+ * \file wrapDataStore.h
+ * \brief Shroud generated wrapper for DataStore class
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPDATASTORE_H
@@ -22,31 +26,32 @@ extern "C" {
 #endif
 
 // declaration of wrapped types
-struct s_ATK_databuffer;
-typedef struct s_ATK_databuffer ATK_databuffer;
-struct s_ATK_datagroup;
-typedef struct s_ATK_datagroup ATK_datagroup;
-struct s_ATK_datastore;
-typedef struct s_ATK_datastore ATK_datastore;
+struct s_SIDRE_databuffer;
+typedef struct s_SIDRE_databuffer SIDRE_databuffer;
+struct s_SIDRE_datagroup;
+typedef struct s_SIDRE_datagroup SIDRE_datagroup;
+struct s_SIDRE_datastore;
+typedef struct s_SIDRE_datastore SIDRE_datastore;
 
 // splicer begin class.DataStore.C_definition
 // splicer end class.DataStore.C_definition
 
-ATK_datastore * ATK_datastore_new();
+SIDRE_datastore * SIDRE_datastore_new();
 
-void ATK_datastore_delete(ATK_datastore * self);
+void SIDRE_datastore_delete(SIDRE_datastore * self);
 
-ATK_datagroup * ATK_datastore_get_root(ATK_datastore * self);
+SIDRE_datagroup * SIDRE_datastore_get_root(SIDRE_datastore * self);
 
-ATK_databuffer * ATK_datastore_get_buffer(ATK_datastore * self, ATK_IndexType idx);
+SIDRE_databuffer * SIDRE_datastore_get_buffer(SIDRE_datastore * self,
+                                              SIDRE_IndexType idx);
 
-ATK_databuffer * ATK_datastore_create_buffer(ATK_datastore * self);
+SIDRE_databuffer * SIDRE_datastore_create_buffer(SIDRE_datastore * self);
 
-void ATK_datastore_destroy_buffer(ATK_datastore * self, ATK_IndexType id);
+void SIDRE_datastore_destroy_buffer(SIDRE_datastore * self, SIDRE_IndexType id);
 
-size_t ATK_datastore_get_num_buffers(ATK_datastore * self);
+size_t SIDRE_datastore_get_num_buffers(SIDRE_datastore * self);
 
-void ATK_datastore_print(ATK_datastore * self);
+void SIDRE_datastore_print(SIDRE_datastore * self);
 
 #ifdef __cplusplus
 }

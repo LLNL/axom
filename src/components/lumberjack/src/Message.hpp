@@ -27,6 +27,19 @@ namespace asctoolkit {
 namespace lumberjack {
 
 /*!
+ *****************************************************************************
+ * \brief Delimiter used for packing messages and separating their members.
+ *****************************************************************************
+ */
+const char memberDelimiter = '*';
+/*!
+ *****************************************************************************
+ * \brief Delimiter used for packing messages and separating their individual tracked ranks.
+ *****************************************************************************
+ */
+const char rankDelimiter = ',';
+
+/*!
  *******************************************************************************
  * \class Message
  *
@@ -35,19 +48,20 @@ namespace lumberjack {
  *  This class holds all the information about an individual message and where it
  *  came from, such as rank, file name, and line number.
  *
- * \see Combiner Logger
+ * \see Combiner Lumberjack
  *******************************************************************************
  */
 class Message {
     public:
         // Constructors
-          /*!
+        /*!
          *****************************************************************************
          * \brief Basic constructor where everything defaults to nothing.
          *****************************************************************************
          */
         Message()
         : m_text("")
+        , m_ranks()
         , m_ranksCount(0)
         , m_fileName("")
         , m_lineNumber(0) {}
@@ -66,12 +80,10 @@ class Message {
         Message(const std::string& text, int rank,
                     const std::string& fileName, int lineNumber)
         : m_text(text)
+        , m_ranks(1, rank)
         , m_ranksCount(1)
         , m_fileName(fileName)
-        , m_lineNumber(lineNumber)
-        {
-            m_ranks.push_back(rank);
-        }
+        , m_lineNumber(lineNumber) {}
 
         /*!
          *****************************************************************************
@@ -90,6 +102,7 @@ class Message {
                     int ranksCount, int ranksLimit,
                     const std::string& fileName, int lineNumber)
         : m_text(text)
+        , m_ranks()
         , m_ranksCount(0)
         , m_fileName(fileName)
         , m_lineNumber(lineNumber)
@@ -148,7 +161,7 @@ class Message {
          *****************************************************************************
          * \brief Sets a new text for this Message.
          *
-         * \param [in] newMessage The new text to be set for this Message.
+         * \param [in] newText The new text to be set for this Message.
          *****************************************************************************
          */
         void text(const std::string& newText);
@@ -200,7 +213,7 @@ class Message {
          * \brief Returns a string of all information about this Message packed into a string.
          *
          * The Message is packed into a string utilizing the following format:
-         *  <ranks delimited by ,>*<rank count>*<file name>*<line number>*<text>
+         *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
          *
          *****************************************************************************
          */
@@ -211,7 +224,7 @@ class Message {
          * \brief Overrides the information in this Message with the given packed string.
          *
          * The Message is unpacked from a string utilizing the following format:
-         *  <ranks delimited by ,>*<rank count>*<file name>*<line number>*<text>
+         *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
          *
          * \param [in] packedMessage Packed Message containing the new information.
          * \param [in] ranksLimit The delimiter used to separate the ranks in returned string.

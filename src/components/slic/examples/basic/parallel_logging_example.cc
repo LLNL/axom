@@ -56,8 +56,8 @@ int main( int argc, char** argv )
   slic::initialize();
 
 
-  slic::setLoggingLevel( slic::message::Debug );
-  slic::addStreamToAllLevels(
+  slic::setLoggingMsgLevel( slic::message::Debug );
+  slic::addStreamToAllMsgLevels(
       new slic::SynchronizedStream( &std::cout, MPI_COMM_WORLD, format ) );
 
   // STEP 3: loop N times and generate a random logging event

@@ -42,14 +42,6 @@ void RootCommunicator::finalize()
 
 }
 
-bool RootCommunicator::shouldMessagesBeOutputted()
-{
-    if (m_mpiCommRank == 0){
-        return true;
-    }
-    return false;
-}
-
 int RootCommunicator::rank()
 {
     return m_mpiCommRank;
@@ -65,34 +57,38 @@ int RootCommunicator::ranksLimit()
     return m_ranksLimit;
 }
 
-void RootCommunicator::pushMessagesOnce(std::vector<Message*>& messages,
-                                        std::vector<Combiner*>& combiners)
+int RootCommunicator::numPushesToFlush()
+{
+    return 1;
+}
+
+void RootCommunicator::push(const char* packedMessagesToBeSent,
+                            std::vector<const char*>& receivedPackedMessages)
 {
     MPI_Barrier(m_mpiComm);
     if (m_mpiCommRank == 0){
-        Message* message;
+        const char* currPackedMessages;
         int ranksDoneCount = 0;
         while(ranksDoneCount < (m_mpiCommSize-1)){
-            message = mpiBlockingRecieveAnyMessage(m_mpiComm, m_ranksLimit);
-            if (message == ATK_NULLPTR) {
-                ++ranksDoneCount;
+            currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
+            if (currPackedMessages != ATK_NULLPTR) {
+                receivedPackedMessages.push_back(currPackedMessages);
             }
-            else {
-                messages.push_back(message);
-            }
+            ++ranksDoneCount;
         }
-        combineMessages(messages, combiners, m_ranksLimit);
     }
     else {
-        mpiNonBlockingSendMessages(m_mpiComm, 0, messages);
+        mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent);
     }
     MPI_Barrier(m_mpiComm);
 }
 
-void RootCommunicator::pushMessagesFully(std::vector<Message*>& messages,
-                                         std::vector<Combiner*>& combiners)
+bool RootCommunicator::shouldMessagesBeOutputted()
 {
-    pushMessagesOnce(messages, combiners);
+    if (m_mpiCommRank == 0){
+        return true;
+    }
+    return false;
 }
 
 } // end namespace lumberjack

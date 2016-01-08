@@ -49,15 +49,15 @@ copy_headers_target( ${PROJECT_NAME}
 #
 # make the library
 #
-    make_library( LIBRARY_NAME
-                      slic
+make_library( LIBRARY_NAME
+                  slic
 
-                  LIBRARY_SOURCES
-                      "${slic_sources}"
-                      "${slic_headers}"
-                  DEPENDS_ON
-                      common
-                  )
+              LIBRARY_SOURCES
+                  "${slic_sources}"
+                  "${slic_headers}"
 
+              DEPENDS_ON
+                  common
+              )
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)
