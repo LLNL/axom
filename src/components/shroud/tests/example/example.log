@@ -41,6 +41,7 @@ Close wrapExClass2.cpp
 C function void local_function1()
 C function bool isNameValid(const std::string & name+intent(in))
 C function bool isNameValid(const std::string & name+intent(in)+len_trim)
+C function bool isInitialized()
 C function void test_names(const std::string & name+intent(in))
 C function void test_names(const std::string & name+intent(in)+len_trim)
 C function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
@@ -91,6 +92,7 @@ Close wrapfExClass2.f
 C-interface, Fortran function void local_function1()
 C-interface, Fortran function bool isNameValid(const std::string & name+intent(in))
 C-interface function bool isNameValid(const std::string & name+intent(in)+len_trim)
+C-interface, Fortran function bool isInitialized()
 C-interface, Fortran function void test_names(const std::string & name+intent(in))
 C-interface function void test_names(const std::string & name+intent(in)+len_trim)
 C-interface, Fortran function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
@@ -126,6 +128,7 @@ Python method TypeID getTypeID() const
 Close pyExClass2type.cpp
 Python function void local_function1()
 Python function bool isNameValid(const std::string & name+intent(in))
+Python function bool isInitialized()
 Python function void test_names(const std::string & name+intent(in))
 Python function void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
 Python function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)

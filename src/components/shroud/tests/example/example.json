@@ -1438,7 +1438,7 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 43, 
+            "_PTR_F_C_index": 44, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
             "_function_index": 37, 
             "args": [
@@ -1477,7 +1477,7 @@
         }, 
         {
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim)", 
-            "_function_index": 43, 
+            "_function_index": 44, 
             "_generated": "string_to_buffer_and_len", 
             "args": [
                 {
@@ -1511,13 +1511,36 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 44, 
+            "_decl": "bool isInitialized()", 
+            "_function_index": 38, 
+            "args": [], 
+            "attrs": {}, 
+            "decl": "bool isInitialized()", 
+            "fmt": {
+                "C_name": "AA_is_initialized", 
+                "F_C_name": "is_initialized", 
+                "F_name_generic": "is_initialized", 
+                "F_name_impl": "is_initialized", 
+                "F_name_method": "is_initialized", 
+                "PY_name_impl": "PP_is_initialized", 
+                "method_name": "isInitialized", 
+                "underscore_name": "is_initialized"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {}, 
+                "name": "isInitialized", 
+                "type": "bool"
+            }
+        }, 
+        {
+            "_PTR_F_C_index": 45, 
             "_cpp_overload": [
-                38, 
-                39
+                39, 
+                40
             ], 
             "_decl": "void test_names(const std::string & name+intent(in))", 
-            "_function_index": 38, 
+            "_function_index": 39, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1554,11 +1577,11 @@
         }, 
         {
             "_cpp_overload": [
-                38, 
-                39
+                39, 
+                40
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim)", 
-            "_function_index": 44, 
+            "_function_index": 45, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
@@ -1594,13 +1617,13 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 45, 
+            "_PTR_F_C_index": 46, 
             "_cpp_overload": [
-                38, 
-                39
+                39, 
+                40
             ], 
             "_decl": "void test_names(const std::string & name+intent(in), int flag+intent(in)+value)", 
-            "_function_index": 39, 
+            "_function_index": 40, 
             "_overloaded": true, 
             "args": [
                 {
@@ -1645,11 +1668,11 @@
         }, 
         {
             "_cpp_overload": [
-                38, 
-                39
+                39, 
+                40
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)", 
-            "_function_index": 45, 
+            "_function_index": 46, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "args": [
@@ -1694,7 +1717,7 @@
         }, 
         {
             "_decl": "void testoptional()", 
-            "_function_index": 41, 
+            "_function_index": 42, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "args": [], 
@@ -1721,7 +1744,7 @@
         }, 
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value)", 
-            "_function_index": 42, 
+            "_function_index": 43, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "args": [
@@ -1759,10 +1782,10 @@
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)", 
             "_default_funcs": [
-                41, 
-                42
+                42, 
+                43
             ], 
-            "_function_index": 40, 
+            "_function_index": 41, 
             "_has_default_arg": true, 
             "_nargs": [
                 0, 

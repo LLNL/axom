@@ -41,6 +41,14 @@ module userlibrary_mod
             logical(C_BOOL) :: rv
         end function aa_is_name_valid_bufferify
         
+        function is_initialized() &
+                result(rv) &
+                bind(C, name="AA_is_initialized")
+            use iso_c_binding
+            implicit none
+            logical(C_BOOL) :: rv
+        end function is_initialized
+        
         subroutine aa_test_names(name) &
                 bind(C, name="AA_test_names")
             use iso_c_binding
@@ -126,7 +134,7 @@ contains
     
     ! void test_names(const std::string & name+intent(in))
     ! string_to_buffer_and_len
-    ! function_index=38
+    ! function_index=39
     subroutine test_names(name)
         use iso_c_binding
         implicit none
@@ -140,7 +148,7 @@ contains
     
     ! void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
     ! string_to_buffer_and_len
-    ! function_index=39
+    ! function_index=40
     subroutine test_names_flag(name, flag)
         use iso_c_binding
         implicit none
@@ -156,7 +164,7 @@ contains
     
     ! void testoptional()
     ! has_default_arg
-    ! function_index=41
+    ! function_index=42
     subroutine testoptional_0()
         use iso_c_binding
         implicit none
@@ -167,7 +175,7 @@ contains
     
     ! void testoptional(int i+default(1)+intent(in)+value)
     ! has_default_arg
-    ! function_index=42
+    ! function_index=43
     subroutine testoptional_1(i)
         use iso_c_binding
         implicit none
@@ -178,7 +186,7 @@ contains
     end subroutine testoptional_1
     
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
-    ! function_index=40
+    ! function_index=41
     subroutine testoptional_2(i, j)
         use iso_c_binding
         implicit none

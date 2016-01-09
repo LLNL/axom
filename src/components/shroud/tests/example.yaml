@@ -202,6 +202,9 @@ functions:
        C_code:  "return name != NULL;"
        F_code:  rv = name .ne. " "
 
+  # return bool, no arguments.
+  # This needs to generate a Fortran wrapper to convert the bool to logical
+  -  decl: bool isInitialized()
 
   # overrides which each accept a string.
   # Test the name of generated 'bufferify' functions

@@ -56,6 +56,22 @@ PP_is_name_valid(
 // splicer end function.is_name_valid
 }
 
+static char PP_is_initialized__doc__[] =
+"documentation"
+;
+
+static PyObject *
+PP_is_initialized(
+  PyObject *self,    /* not used */
+  PyObject *args,
+  PyObject *kwds)
+{
+// splicer begin function.is_initialized
+    bool rv = isInitialized();
+    return PyBool_FromLong(rv);
+// splicer end function.is_initialized
+}
+
 static PyObject *
 PP_test_names(
   PyObject *self,    /* not used */
@@ -178,6 +194,7 @@ PP_test_names(
 static PyMethodDef PP_methods[] = {
 {"local_function1", (PyCFunction)PP_local_function1, METH_NOARGS, PP_local_function1__doc__},
 {"isNameValid", (PyCFunction)PP_is_name_valid, METH_VARARGS|METH_KEYWORDS, PP_is_name_valid__doc__},
+{"isInitialized", (PyCFunction)PP_is_initialized, METH_NOARGS, PP_is_initialized__doc__},
 {"testoptional", (PyCFunction)PP_testoptional_2, METH_VARARGS|METH_KEYWORDS, PP_testoptional_2__doc__},
 {"test_names", (PyCFunction)PP_test_names, METH_VARARGS|METH_KEYWORDS, PP_test_names__doc__},
 {NULL,   (PyCFunction)NULL, 0, NULL}            /* sentinel */
