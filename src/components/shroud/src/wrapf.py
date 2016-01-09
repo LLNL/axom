@@ -532,6 +532,10 @@ class Wrapf(util.WrapperMixin):
         else:
             result_string = False
 
+        # this catches stuff like a bool to logical conversion which requires the wrapper
+        if result_typedef.f_argsdecl:
+            need_wrapper = True
+
         fmt.F_instance_ptr = wformat('{F_this}%{F_derived_member}', fmt)
 
         arg_c_call = []      # arguments to C function

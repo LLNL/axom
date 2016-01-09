@@ -41,13 +41,13 @@ module userlibrary_mod
             logical(C_BOOL) :: rv
         end function aa_is_name_valid_bufferify
         
-        function is_initialized() &
+        function aa_is_initialized() &
                 result(rv) &
                 bind(C, name="AA_is_initialized")
             use iso_c_binding
             implicit none
             logical(C_BOOL) :: rv
-        end function is_initialized
+        end function aa_is_initialized
         
         subroutine aa_test_names(name) &
                 bind(C, name="AA_test_names")
@@ -131,6 +131,17 @@ contains
         rv = name .ne. " "
         ! splicer end is_name_valid
     end function is_name_valid
+    
+    ! bool isInitialized()
+    ! function_index=38
+    function is_initialized() result(rv)
+        use iso_c_binding
+        implicit none
+        logical :: rv
+        ! splicer begin is_initialized
+        rv = aa_is_initialized()
+        ! splicer end is_initialized
+    end function is_initialized
     
     ! void test_names(const std::string & name+intent(in))
     ! string_to_buffer_and_len

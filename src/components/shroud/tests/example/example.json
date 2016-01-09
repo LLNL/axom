@@ -1518,7 +1518,7 @@
             "decl": "bool isInitialized()", 
             "fmt": {
                 "C_name": "AA_is_initialized", 
-                "F_C_name": "is_initialized", 
+                "F_C_name": "aa_is_initialized", 
                 "F_name_generic": "is_initialized", 
                 "F_name_impl": "is_initialized", 
                 "F_name_method": "is_initialized", 
