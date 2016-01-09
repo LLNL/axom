@@ -30,7 +30,15 @@ options:
 
 functions:
   -  decl: void initialize()
+#     F_name_impl: slic_initialize
   -  decl: bool isInitialized()
+#     F_name_impl: slic_is_initialized
   -  decl: void finalize()
+#     F_name_impl: slic_finalize
+
+  -  decl: void setAbortOnAssert( bool willAbort )
+  -  decl: bool getAbortOnAssert()
+  -  decl: void setAbortOnError( bool willAbort )
+  -  decl: bool getAbortOnError()
   
   

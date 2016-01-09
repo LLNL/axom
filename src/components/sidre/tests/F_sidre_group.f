@@ -15,6 +15,7 @@ module sidre_group
   use iso_c_binding
   use fruit
   use sidre_mod
+  use slic_mod
   implicit none
 
 contains
@@ -286,7 +287,7 @@ contains
 
     call set_case_name("create_destroy_has_view")
 
-    ! XXX setAbortOnAssert(false);
+    call set_abort_on_assert(.false.)
 
     ds = datastore_new()
     root = ds%get_root()
@@ -298,12 +299,12 @@ contains
 
     call assert_true( group%has_view("view") )
     ! try creating view again, should be a no-op.
-    !XXX view1 = group%create_view("view")
-    !XXX call assert_false( c_associated(view1%voidptr) )
+    view1 = group%create_view("view")
+    call assert_false( c_associated(view1%voidptr) )
 
     call group%destroy_view("view")
 
-    call assert_false( group%has_view("view") )
+    call assert_false( group%has_view("view"), 'group%has_view("view")')
 
     ! try api call that specifies specific type and length
     view1 = group%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT_ID, 50 )
@@ -312,15 +313,17 @@ contains
 !XXX    view1 = group%create_view_and_allocate( "viewWithLength1", SIDRE_FLOAT64_ID, 50 )
 !XXX    call assert_true( c_associated(view1%voidptr) )
     call group%destroy_view_and_data("viewWithLength1")
-    call assert_false( group%has_view("viewWithLength1") )
+    call assert_false( group%has_view("viewWithLength1"), &
+         'group%has_view("viewWithLength1"' )
 
-!XXX    view1 = group%create_view_and_allocate( "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1 )
-!XXX    call assert_true( c_associated(view1%voidptr) )
+    view1 = group%create_view_and_allocate( "viewWithLengthBadLen", SIDRE_FLOAT64_ID, -1 )
+    call assert_false( c_associated(view1%voidptr), 'c_associated(view1%voidptr)' )
 
     ! try api call that specifies data type in another way
     view1 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
-!XXX    view2 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
-!XXX    call assert_true( c_associated(view2%voidptr) )
+    view2 = group%create_view_and_allocate( "viewWithLength2", SIDRE_FLOAT64_ID, 50 )
+    call assert_false( c_associated(view2%voidptr), &
+         'c_associated(view2%voidptr)')
     ! destroy this view using index
     call group%destroy_view_and_data( group%get_first_valid_view_index() )
 
@@ -372,14 +375,14 @@ contains
 
     ! attempt to create duplicate group name
 
-    ! setAbortOnAssert(false)
-    ! badGroup = root%create_group("fields")
-    !call assert_false( c_associated(badgroup%voidptr) )
+    call set_abort_on_assert(.false.)
+    badGroup = root%create_group("fields")
+    call assert_false( c_associated(badgroup%voidptr) )
 
     ! check error condition
     ! attempt to create duplicate view name.
-    ! view = flds%create_view("a")
-    ! call assert_false( c_associated(view%voidptr))
+    view = flds%create_view("a")
+    call assert_false( c_associated(view%voidptr))
 
     call ds%delete()
   end subroutine group_name_collisions

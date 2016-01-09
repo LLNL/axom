@@ -21,14 +21,14 @@
 ##
 ##------------------------------------------------------------------------------
 
-# Decide where the output files should be written.
-# For now all files are written into the source directory.
-# This allows them to be source controlled and does not require a library user
-# to generate them.  All they have to do is compile them.
-#set(SHROUD_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-set(SHROUD_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
 macro(add_shroud)
+
+    # Decide where the output files should be written.
+    # For now all files are written into the source directory.
+    # This allows them to be source controlled and does not require a library user
+    # to generate them.  All they have to do is compile them.
+    #set(SHROUD_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    set(SHROUD_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(options)
     set(singleValueArgs INPUT TIMESTAMP)

@@ -33,6 +33,14 @@ bool SLIC_is_initialized();
 
 void SLIC_finalize();
 
+void SLIC_set_abort_on_assert(bool willAbort);
+
+bool SLIC_get_abort_on_assert();
+
+void SLIC_set_abort_on_error(bool willAbort);
+
+bool SLIC_get_abort_on_error();
+
 #ifdef __cplusplus
 }
 #endif
