@@ -1,7 +1,7 @@
 #
 # Generate source
 #
-add_shroud( INPUT slic_api.yaml )
+add_shroud( YAML_INPUT_FILE slic_api.yaml )
 
 add_custom_target(slic_generate
     DEPENDS

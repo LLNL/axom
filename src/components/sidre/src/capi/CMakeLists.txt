@@ -7,7 +7,7 @@
 #
 # Generate source
 #
-add_shroud( INPUT api.yaml
+add_shroud( YAML_INPUT_FILE api.yaml
             TIMESTAMP capi.time
             DEPENDS_SOURCE csidresplicer.c fsidresplicer.f pysidresplicer.c
             DEPENDS_BINARY genfsidresplicer.f
