@@ -9,62 +9,44 @@
 ! This source code cannot be distributed without permission and
 ! further review from Lawrence Livermore National Laboratory.
 !
+!>
+!! \file wrapfslic.f
+!! \brief Shroud generated wrapper for SLIC library
+!<
 module slic_mod
     use fstr_mod
+    ! splicer begin module_use
+    ! splicer end module_use
     implicit none
     
     
     interface
         
-        subroutine atk_initialize() &
-                bind(C, name="ATK_initialize")
+        subroutine initialize() &
+                bind(C, name="SLIC_initialize")
             use iso_c_binding
             implicit none
-        end subroutine atk_initialize
+        end subroutine initialize
         
-        function atk_is_initialized() result(rv) &
-                bind(C, name="ATK_is_initialized")
+        function is_initialized() &
+                result(rv) &
+                bind(C, name="SLIC_is_initialized")
             use iso_c_binding
             implicit none
             logical(C_BOOL) :: rv
-        end function atk_is_initialized
+        end function is_initialized
         
-        subroutine atk_finalize() &
-                bind(C, name="ATK_finalize")
+        subroutine finalize() &
+                bind(C, name="SLIC_finalize")
             use iso_c_binding
             implicit none
-        end subroutine atk_finalize
+        end subroutine finalize
         
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
 
 contains
-    
-    subroutine initialize()
-        use iso_c_binding
-        implicit none
-        ! splicer begin initialize
-        call atk_initialize()
-        ! splicer end initialize
-    end subroutine initialize
-    
-    function is_initialized() result(rv)
-        use iso_c_binding
-        implicit none
-        logical :: rv
-        ! splicer begin is_initialized
-        rv = atk_is_initialized()
-        ! splicer end is_initialized
-    end function is_initialized
-    
-    subroutine finalize()
-        use iso_c_binding
-        implicit none
-        ! splicer begin finalize
-        call atk_finalize()
-        ! splicer end finalize
-    end subroutine finalize
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

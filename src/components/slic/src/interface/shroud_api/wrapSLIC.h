@@ -9,7 +9,10 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
-// wrapSLIC.h
+/**
+ * \file wrapSLIC.h
+ * \brief Shroud generated wrapper for SLIC library
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPSLIC_H
@@ -24,11 +27,11 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-void ATK_initialize();
+void SLIC_initialize();
 
-bool ATK_is_initialized();
+bool SLIC_is_initialized();
 
-void ATK_finalize();
+void SLIC_finalize();
 
 #ifdef __cplusplus
 }

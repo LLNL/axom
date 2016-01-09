@@ -17,7 +17,7 @@ extern "C" {
 namespace asctoolkit {
 namespace slic {
 
-void ATK_initialize()
+void SLIC_initialize()
 {
 // splicer begin function.initialize
 initialize();
@@ -25,7 +25,7 @@ return;
 // splicer end function.initialize
 }
 
-bool ATK_is_initialized()
+bool SLIC_is_initialized()
 {
 // splicer begin function.is_initialized
 bool rv = isInitialized();
@@ -33,7 +33,7 @@ return rv;
 // splicer end function.is_initialized
 }
 
-void ATK_finalize()
+void SLIC_finalize()
 {
 // splicer begin function.finalize
 finalize();
