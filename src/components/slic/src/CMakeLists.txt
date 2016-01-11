@@ -39,6 +39,26 @@ if (ENABLE_MPI)
    list(APPEND slic_sources streams/SynchronizedStream.cpp)
 endif()
 
+# XXX ENABLE_FORTRAN_WRAPPER
+if (ENABLE_FORTRAN)
+    list(APPEND slic_headers
+        interface/shroud_api/wrapSLIC.h
+    )   
+    set(slic_fortran_sources
+        interface/shroud_api/wrapSLIC.cpp
+        interface/shroud_api/wrapfslic.f
+    )
+    add_subdirectory(interface/shroud_api)
+
+    # wrappers depend on shroud runtime library
+    set(wrapper_depends_on
+        shroudrt
+    )
+
+    # Must tell fortran where to look for modules
+    include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+endif()
+
 #
 # custom target to copy header files in the "include" folder of the build tree.
 #
@@ -55,9 +75,11 @@ make_library( LIBRARY_NAME
               LIBRARY_SOURCES
                   "${slic_sources}"
                   "${slic_headers}"
+                  "${slic_fortran_sources}"
 
               DEPENDS_ON
                   common
+                  ${wrapper_depends_on}
               )
 
 install( TARGETS slic DESTINATION lib EXPORT ${PROJECT_NAME}-targets)

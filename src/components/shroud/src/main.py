@@ -923,7 +923,7 @@ class Namify(object):
 
     C_name - Name of C function
     F_C_name - Fortran function for C interface
-    F_name - Name of Fortran function
+    F_name_impl - Name of Fortran function implementation
     """
     def __init__(self, tree, config):
         self.tree = tree    # json tree

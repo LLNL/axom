@@ -1,0 +1,59 @@
+#
+# API for SLIC
+#
+copyright:
+  -
+  - Copyright (c) 2015, Lawrence Livermore National Security, LLC.
+  - Produced at the Lawrence Livermore National Laboratory.
+  - 
+  - All rights reserved.
+  -
+  - This source code cannot be distributed without permission and 
+  - further review from Lawrence Livermore National Laboratory.
+  -
+
+options:
+  library: SLIC
+  C_prefix: SLIC_
+  namespace: asctoolkit slic
+#  F_module_per_class: False
+
+  # header file for function, each class has its own header file
+  cpp_header: slic/slic.hpp
+
+  # Any C++ function which returns a string will be wrapped in
+  # Fortran as a subroutine with an additional character argument
+  # for the result.
+  F_string_result_as_arg: name
+  
+######################################################################
+
+types:
+  Level:
+    # enum
+    typedef  : int
+    cpp_type : message::Level
+    c_to_cpp : static_cast<message::Level>({var})
+    cpp_to_c : static_cast<int>({var})
+
+
+######################################################################
+
+functions:
+  -  decl: void initialize()
+#     F_name_impl: slic_initialize
+  -  decl: bool isInitialized()
+#     F_name_impl: slic_is_initialized
+  -  decl: void finalize()
+#     F_name_impl: slic_finalize
+
+  -  decl: void setAbortOnAssert( bool willAbort )
+  -  decl: bool getAbortOnAssert()
+  -  decl: void setAbortOnError( bool willAbort )
+  -  decl: bool getAbortOnError()
+#  -  decl: void createLogger( const std::string& name, char imask )
+  -  decl: void activateLogger( const std::string& name )
+#  -  decl: std::string getActiveLoggerName()
+  -  decl: void setLoggingMsgLevel( Level level )
+  -  decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
+  
