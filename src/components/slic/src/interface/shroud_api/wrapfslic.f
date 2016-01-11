@@ -87,14 +87,6 @@ module slic_mod
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine slic_activate_logger_bufferify
         
-        function slic_get_active_logger_name() &
-                result(rv) &
-                bind(C, name="SLIC_get_active_logger_name")
-            use iso_c_binding
-            implicit none
-            type(C_PTR) rv
-        end function slic_get_active_logger_name
-        
         subroutine set_logging_msg_level(level) &
                 bind(C, name="SLIC_set_logging_msg_level")
             use iso_c_binding
@@ -191,17 +183,6 @@ contains
             len_trim(name))
         ! splicer end activate_logger
     end subroutine activate_logger
-    
-    subroutine get_active_logger_name(name)
-        use iso_c_binding
-        implicit none
-        character(*), intent(OUT) :: name
-        type(C_PTR) :: rv
-        ! splicer begin get_active_logger_name
-        rv = slic_get_active_logger_name()
-        call FccCopyPtr(name, len(name), rv)
-        ! splicer end get_active_logger_name
-    end subroutine get_active_logger_name
     
     subroutine log_message(level, message, fileName, line, filter)
         use iso_c_binding

@@ -89,18 +89,10 @@ return;
 // splicer end function.activate_logger_bufferify
 }
 
-char SLIC_get_active_logger_name()
-{
-// splicer begin function.get_active_logger_name
-std::string rv = getActiveLoggerName();
-return rv.c_str();
-// splicer end function.get_active_logger_name
-}
-
 void SLIC_set_logging_msg_level(int level)
 {
 // splicer begin function.set_logging_msg_level
-setLoggingMsgLevel(level);
+setLoggingMsgLevel(static_cast<message::Level>(level));
 return;
 // splicer end function.set_logging_msg_level
 }
@@ -108,7 +100,7 @@ return;
 void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
 {
 // splicer begin function.log_message
-logMessage(level, message, fileName, line, filter);
+logMessage(static_cast<message::Level>(level), message, fileName, line, filter);
 return;
 // splicer end function.log_message
 }
@@ -116,7 +108,7 @@ return;
 void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter)
 {
 // splicer begin function.log_message_bufferify
-logMessage(level, std::string(message, Lmessage), std::string(fileName, LfileName), line, filter);
+logMessage(static_cast<message::Level>(level), std::string(message, Lmessage), std::string(fileName, LfileName), line, filter);
 return;
 // splicer end function.log_message_bufferify
 }

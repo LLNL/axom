@@ -28,6 +28,17 @@ options:
   
 ######################################################################
 
+types:
+  Level:
+    # enum
+    typedef  : int
+    cpp_type : message::Level
+    c_to_cpp : static_cast<message::Level>({var})
+    cpp_to_c : static_cast<int>({var})
+
+
+######################################################################
+
 functions:
   -  decl: void initialize()
 #     F_name_impl: slic_initialize
@@ -42,7 +53,7 @@ functions:
   -  decl: bool getAbortOnError()
 #  -  decl: void createLogger( const std::string& name, char imask )
   -  decl: void activateLogger( const std::string& name )
-  -  decl: std::string getActiveLoggerName()
-  -  decl: void setLoggingMsgLevel( int level )
-  -  decl: void logMessage( int level, const std::string& message, const std::string& fileName, int line, bool filter )
+#  -  decl: std::string getActiveLoggerName()
+  -  decl: void setLoggingMsgLevel( Level level )
+  -  decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
   
