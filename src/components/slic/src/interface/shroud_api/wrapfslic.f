@@ -72,6 +72,60 @@ module slic_mod
             logical(C_BOOL) :: rv
         end function slic_get_abort_on_error
         
+        subroutine slic_activate_logger(name) &
+                bind(C, name="SLIC_activate_logger")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+        end subroutine slic_activate_logger
+        
+        subroutine slic_activate_logger_bufferify(name, Lname) &
+                bind(C, name="SLIC_activate_logger_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine slic_activate_logger_bufferify
+        
+        function slic_get_active_logger_name() &
+                result(rv) &
+                bind(C, name="SLIC_get_active_logger_name")
+            use iso_c_binding
+            implicit none
+            type(C_PTR) rv
+        end function slic_get_active_logger_name
+        
+        subroutine set_logging_msg_level(level) &
+                bind(C, name="SLIC_set_logging_msg_level")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+        end subroutine set_logging_msg_level
+        
+        subroutine slic_log_message(level, message, fileName, line, filter) &
+                bind(C, name="SLIC_log_message")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: line
+            logical(C_BOOL), value, intent(IN) :: filter
+        end subroutine slic_log_message
+        
+        subroutine slic_log_message_bufferify(level, message, Lmessage, fileName, LfileName, line, filter) &
+                bind(C, name="SLIC_log_message_bufferify")
+            use iso_c_binding
+            implicit none
+            integer(C_INT), value, intent(IN) :: level
+            character(kind=C_CHAR), intent(IN) :: message(*)
+            integer(C_INT), value, intent(IN) :: Lmessage
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: LfileName
+            integer(C_INT), value, intent(IN) :: line
+            logical(C_BOOL), value, intent(IN) :: filter
+        end subroutine slic_log_message_bufferify
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
@@ -126,6 +180,50 @@ contains
         rv = slic_get_abort_on_error()
         ! splicer end get_abort_on_error
     end function get_abort_on_error
+    
+    subroutine activate_logger(name)
+        use iso_c_binding
+        implicit none
+        character(*), intent(IN) :: name
+        ! splicer begin activate_logger
+        call slic_activate_logger_bufferify(  &
+            name,  &
+            len_trim(name))
+        ! splicer end activate_logger
+    end subroutine activate_logger
+    
+    subroutine get_active_logger_name(name)
+        use iso_c_binding
+        implicit none
+        character(*), intent(OUT) :: name
+        type(C_PTR) :: rv
+        ! splicer begin get_active_logger_name
+        rv = slic_get_active_logger_name()
+        call FccCopyPtr(name, len(name), rv)
+        ! splicer end get_active_logger_name
+    end subroutine get_active_logger_name
+    
+    subroutine log_message(level, message, fileName, line, filter)
+        use iso_c_binding
+        implicit none
+        integer(C_INT), value, intent(IN) :: level
+        character(*), intent(IN) :: message
+        character(*), intent(IN) :: fileName
+        integer(C_INT), value, intent(IN) :: line
+        logical, value, intent(IN) :: filter
+        logical(C_BOOL) tmp_filter
+        tmp_filter = filter  ! coerce to C_BOOL
+        ! splicer begin log_message
+        call slic_log_message_bufferify(  &
+            level,  &
+            message,  &
+            len_trim(message),  &
+            fileName,  &
+            len_trim(fileName),  &
+            line,  &
+            tmp_filter)
+        ! splicer end log_message
+    end subroutine log_message
     
     ! splicer begin additional_functions
     ! splicer end additional_functions

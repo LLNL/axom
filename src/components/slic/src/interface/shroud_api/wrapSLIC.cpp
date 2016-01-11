@@ -73,6 +73,54 @@ return rv;
 // splicer end function.get_abort_on_error
 }
 
+void SLIC_activate_logger(const char * name)
+{
+// splicer begin function.activate_logger
+activateLogger(name);
+return;
+// splicer end function.activate_logger
+}
+
+void SLIC_activate_logger_bufferify(const char * name, int Lname)
+{
+// splicer begin function.activate_logger_bufferify
+activateLogger(std::string(name, Lname));
+return;
+// splicer end function.activate_logger_bufferify
+}
+
+char SLIC_get_active_logger_name()
+{
+// splicer begin function.get_active_logger_name
+std::string rv = getActiveLoggerName();
+return rv.c_str();
+// splicer end function.get_active_logger_name
+}
+
+void SLIC_set_logging_msg_level(int level)
+{
+// splicer begin function.set_logging_msg_level
+setLoggingMsgLevel(level);
+return;
+// splicer end function.set_logging_msg_level
+}
+
+void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter)
+{
+// splicer begin function.log_message
+logMessage(level, message, fileName, line, filter);
+return;
+// splicer end function.log_message
+}
+
+void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter)
+{
+// splicer begin function.log_message_bufferify
+logMessage(level, std::string(message, Lmessage), std::string(fileName, LfileName), line, filter);
+return;
+// splicer end function.log_message_bufferify
+}
+
 // splicer begin additional_functions
 // splicer end additional_functions
 
