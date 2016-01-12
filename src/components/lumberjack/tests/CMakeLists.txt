@@ -13,7 +13,7 @@
 #
 
 set(gtest_lumberjack_tests
-    lumberjack_Logger.cpp
+    lumberjack_Lumberjack.cpp
     lumberjack_Message.cpp
     lumberjack_TextEqualityCombiner.cpp
     lumberjack_RootCommunicator.cpp
@@ -25,3 +25,9 @@ set(gtest_lumberjack_tests
 foreach(test ${gtest_lumberjack_tests})
     add_gtest(TEST_SOURCE ${test} DEPENDS_ON lumberjack)
 endforeach()
+
+make_executable(ADD_CTEST
+                EXECUTABLE_SOURCE lumberjack_mpiBasicTest.cpp)
+
+make_executable(EXECUTABLE_SOURCE lumberjack_speedTest.cpp
+                DEPENDS_ON lumberjack )

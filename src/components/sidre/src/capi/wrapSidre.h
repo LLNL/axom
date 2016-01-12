@@ -9,6 +9,10 @@
 // This source code cannot be distributed without permission and
 // further review from Lawrence Livermore National Laboratory.
 //
+/**
+ * \file wrapSidre.h
+ * \brief Shroud generated wrapper for Sidre library
+ */
 // For C users and C++ implementation
 
 #ifndef WRAPSIDRE_H
@@ -23,7 +27,7 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
-bool ATK_is_name_valid(const char * name);
+bool SIDRE_name_is_valid(const char * name);
 
 #ifdef __cplusplus
 }

@@ -21,28 +21,31 @@ use conduit, only : &
     SIDRE_ULONG_ID      => CONDUIT_ULONG_T, &
     SIDRE_FLOAT_ID      => CONDUIT_FLOAT_T, &
     SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_T
+use, intrinsic :: iso_c_binding, only : C_LONG
 ! splicer end module_use
 
-
 ! splicer begin module_top
+integer, parameter :: SIDRE_LENGTH = C_LONG
+
 integer, parameter :: invalid_index = -1
 ! splicer end module_top
 
 
-# ATK_create_fortran_allocatable_view is not in api.yaml since it is not in src/core and
+# SIDRE_create_fortran_allocatable_view is not in api.yaml since it is not in src/core and
 # only required for the fortran interface.
 
 ! splicer begin additional_interfaces
-function ATK_create_fortran_allocatable_view(group, name, lname, addr, itype, rank) &
-   bind(C,name="ATK_create_fortran_allocatable_view") &
-   result(rv)
-      use iso_c_binding
-      type(C_PTR), value, intent(IN)    :: group
-      character(kind=C_CHAR), intent(IN) :: name(*)
-      integer(C_INT), value, intent(IN) :: lname
-      type(C_PTR), value                :: addr
-      integer(C_INT), value, intent(IN) :: itype
-      integer(C_INT), value, intent(IN) :: rank
-      type(C_PTR) rv
-end function ATK_create_fortran_allocatable_view
+function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
+      result(rv) bind(C,name="SIDRE_create_array_view")
+    use iso_c_binding
+    import SIDRE_LENGTH
+    type(C_PTR), value, intent(IN)     :: group
+    character(kind=C_CHAR), intent(IN) :: name(*)
+    integer(C_INT), value, intent(IN)  :: lname
+    type(C_PTR), value,     intent(IN) :: addr
+    integer(C_INT), value, intent(IN)  :: type
+    integer(C_INT), value, intent(IN)  :: rank
+    integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
+    type(C_PTR) rv
+end function SIDRE_create_array_view
 ! splicer end additional_interfaces

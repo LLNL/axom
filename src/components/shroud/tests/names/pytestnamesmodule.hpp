@@ -1,16 +1,7 @@
 // pytestnamesmodule.hpp
 // This is generated code, do not edit
-
-/*
- * This is generated code.
- * Any edits must be made between the splicer.begin and splicer.end blocks.
- * All other edits will be lost.
- * Once a block is edited remove the 'UNMODIFIED' on the splicer.begin
- * comment to allow the block to be preserved when it is regenerated.
- */
-
-#ifndef HDR_BASISMODULE
-#define HDR_BASISMODULE
+#ifndef PYTESTNAMESMODULE_HPP
+#define PYTESTNAMESMODULE_HPP
 #include <Python.h>
 #if PY_MAJOR_VERSION >= 3
 #define IS_PY3K
@@ -47,8 +38,8 @@ extern "C" {
 #define MOD_INITBASIS inittestnames
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
-#endif
 #ifdef __cplusplus
 }
 #endif
 
+#endif  /* PYTESTNAMESMODULE_HPP */

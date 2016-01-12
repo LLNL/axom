@@ -13,11 +13,13 @@ splicer:
 
 options:
 #  module_name: exclass1_mod
+  debug: True
   library: UserLibrary
   C_prefix: AA_
   namespace: example nested
   F_module_per_class: True
   # include files to add to module
+  wrap_python: True
 
   PY_prefix: PP_
 
@@ -66,12 +68,20 @@ classes:
 
     methods:
     - decl: ExClass1 *new ( const string *name ) +constructor
-      docs: constructor
+      doxygen:
+        brief:  constructor
+        description: |
+           longer description
+           usually multiple lines
+        return: return new instance
 
     - decl: void delete() +destructor
+      doxygen:
+        description:
+           longer description
+           joined with previous line
 
     - decl: int incrementCount(int incr)
-      docs: blah blah
 
     - decl: const string& getName() const
       result:
@@ -81,7 +91,8 @@ classes:
       PY_error_pattern: PY_invalid_name
 
     - decl: int GetNameLength() const
-      docs: helper function for Fortran
+      doxygen:
+        brief: helper function for Fortran
       helper: True
       options:
          C_code: return selfobj->getName().length();
@@ -133,12 +144,13 @@ classes:
          attrs:
             len: aa_exclass2_get_name_length({F_instance_ptr})
 
-    - docs: helper function for Fortran
+    - doxygen:
+        brief: helper function for Fortran
       result:
          name: GetNameLength
          type: int
-      qualifiers:
-         const: true
+         attrs:
+           const: true
       options:
           C_code: return selfobj->getName().length();
 
@@ -179,8 +191,6 @@ classes:
 #        - float
         - double
 
-    - decl: void testoptional(int i = 1, long j=2)
-
 
 functions:
   - decl: void local_function1
@@ -201,6 +211,21 @@ functions:
   -  decl: void test_names(const std::string &name, int flag)
      function_suffix: _flag
 
+  - decl: void testoptional(int i = 1, long j=2)
+
+# test cpp_template, fortran_generic, overload
+#  - decl: void Function10()
+#  - decl: void Function10(ArgType arg1, std::string &name, double arg2 = 0)
+#    options:
+#      F_string_len_trim: True
+#    cpp_template:
+#      ArgType:
+#      - int
+#      - double
+#    fortran_generic:
+#       arg2:
+#       - float
+#       - double
 
 
 ######################################################################

@@ -19,6 +19,8 @@ contains
   subroutine create_datastore
     type(datastore) ds
 
+    call set_case_name("create_datastore")
+
     ds = datastore_new()
     call ds%delete()
 
@@ -33,19 +35,22 @@ contains
     integer idx
     character(10) name
 
+    call set_case_name("valid_invalid")
+
     ds = datastore_new()
 
     idx = 3;
-    call assert_true(idx /= invalid_index)
+    call assert_true(idx /= invalid_index, "invalid_index does not compare")
 
     name = "foo"
-    call assert_true(is_name_valid(name))
+    call assert_true(name_is_valid(name), "name_is_valid")
 
     root = ds%get_root()
 
     call root%get_group_name(idx, name)
-    call assert_true(name == " ")
-    call assert_true(root%get_group_index(name) == invalid_index)
+    call assert_true(name == " ", "error return from get_group_name")
+    call assert_true(root%get_group_index(name) == invalid_index, &
+         "root%get_group_index(name) == invalid_index")
 
     call ds%delete()
   end subroutine valid_invalid
@@ -54,12 +59,12 @@ contains
 end module sidre_smoke
 !------------------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use iso_c_binding
   use fruit
   use sidre_smoke
   implicit none
-  integer(C_INT) fortran_test
+
   logical ok
 
   call init_fruit
@@ -71,9 +76,8 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
+

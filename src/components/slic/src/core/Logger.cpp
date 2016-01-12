@@ -78,7 +78,7 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
-void Logger::setLoggingLevel( message::Level level )
+void Logger::setLoggingMsgLevel( message::Level level )
 {
   for ( int i=message::Fatal; i < level; ++i ) {
     m_isEnabled[ i ] = true;
@@ -87,7 +87,7 @@ void Logger::setLoggingLevel( message::Level level )
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToLevel( LogStream* ls, message::Level level,
+void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
                                bool pass_ownership )
 {
   if ( ls == ATK_NULLPTR ) {
@@ -108,7 +108,7 @@ void Logger::addStreamToLevel( LogStream* ls, message::Level level,
 }
 
 //------------------------------------------------------------------------------
-void Logger::addStreamToAllLevels( LogStream* ls )
+void Logger::addStreamToAllMsgLevels( LogStream* ls )
 {
   if ( ls == ATK_NULLPTR ) {
 
@@ -119,14 +119,14 @@ void Logger::addStreamToAllLevels( LogStream* ls )
 
   for ( int level=message::Fatal; level < message::Num_Levels; ++level ) {
 
-    this->addStreamToLevel( ls, static_cast<message::Level>( level ) );
+    this->addStreamToMsgLevel( ls, static_cast<message::Level>( level ) );
 
   } // END for all levels
 
 }
 
 //------------------------------------------------------------------------------
-int Logger::getNumStreamsAtLevel( message::Level level )
+int Logger::getNumStreamsAtMsgLevel( message::Level level )
 {
   return m_logStreams[ level ].size( );
 }
@@ -252,7 +252,7 @@ bool Logger::createLogger( const std::string& name, char imask )
 
     message::Level current_level = static_cast< message::Level >( level );
 
-    int nstreams = rootLogger->getNumStreamsAtLevel( current_level );
+    int nstreams = rootLogger->getNumStreamsAtMsgLevel( current_level );
     if ( nstreams == 0 ) {
       continue;
     }
@@ -261,7 +261,7 @@ bool Logger::createLogger( const std::string& name, char imask )
 
       for ( int istream=0; istream < nstreams; ++istream ) {
 
-        s_loggers[ name ]->addStreamToLevel(
+        s_loggers[ name ]->addStreamToMsgLevel(
             rootLogger->getStream(current_level,istream),
             current_level,
             /* pass_ownership */ false );

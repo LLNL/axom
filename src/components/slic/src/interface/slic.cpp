@@ -20,6 +20,9 @@
 
 #include "slic/slic.hpp"
 
+#include "common/Utilities.hpp"   // for utilities::processAbort()
+
+#include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
 #include <execinfo.h> // for backtrace()
 
@@ -65,9 +68,9 @@ std::string getActiveLoggerName()
 }
 
 //------------------------------------------------------------------------------
-void setLoggingLevel( message::Level level )
+void setLoggingMsgLevel( message::Level level )
 {
-  Logger::getActiveLogger()->setLoggingLevel( level );
+  Logger::getActiveLogger()->setLoggingMsgLevel( level );
 }
 
 //------------------------------------------------------------------------------
@@ -96,15 +99,15 @@ bool getAbortOnError()
 }
 
 //------------------------------------------------------------------------------
-void addStreamToLevel( LogStream* ls, message::Level level )
+void addStreamToMsgLevel( LogStream* ls, message::Level level )
 {
-  Logger::getActiveLogger()->addStreamToLevel( ls, level );
+  Logger::getActiveLogger()->addStreamToMsgLevel( ls, level );
 }
 
 //------------------------------------------------------------------------------
-void addStreamToAllLevels( LogStream* ls )
+void addStreamToAllMsgLevels( LogStream* ls )
 {
-  Logger::getActiveLogger()->addStreamToAllLevels( ls );
+  Logger::getActiveLogger()->addStreamToAllMsgLevels( ls );
 }
 
 //------------------------------------------------------------------------------
@@ -168,7 +171,7 @@ void logErrorMessage( const std::string& message,
   std::ostringstream oss;
   oss << message << slic::stacktrace();
 
-  slic::logMessage( message::Fatal, message, fileName, line );
+  slic::logMessage( message::Fatal, oss.str(), fileName, line );
   if ( shouldAbort ) {
     asctoolkit::utilities::processAbort();
   }

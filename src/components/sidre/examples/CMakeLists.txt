@@ -4,7 +4,7 @@
 #
 set(example_sources
     StressGroups.cpp
-    sidre_shocktube_example.cpp
+    shocktube_example.cpp
 )
 
 
@@ -23,8 +23,12 @@ endif()
 # Build the example sources
 #
 foreach(example_source ${example_sources})
-    make_executable( EXECUTABLE_SOURCE ${example_source}
-        DEPENDS_ON sidre conduit conduit_io slic ${EXTRA_LIBS})
+    get_filename_component(exe_name ${example_source} NAME_WE)
+    make_executable(
+        EXECUTABLE_NAME   "sidre_${exe_name}"
+        EXECUTABLE_SOURCE ${example_source}
+        DEPENDS_ON sidre conduit conduit_io slic ${EXTRA_LIBS}
+        ADD_CTEST)
 endforeach()
 
 if(ENABLE_FORTRAN)
@@ -33,7 +37,8 @@ if(ENABLE_FORTRAN)
         make_executable(
             EXECUTABLE_NAME   ${exe_name}
             EXECUTABLE_SOURCE ${example_source}
-            DEPENDS_ON sidre conduit conduit_io slic shroudrt ${EXTRA_LIBS})
+            DEPENDS_ON sidre conduit conduit_io slic shroudrt ${EXTRA_LIBS}
+            ADD_CTEST)
     endforeach()
     set_target_properties(${exe_name} PROPERTIES LINKER_LANGUAGE Fortran)
 #   set_target_properties(${exe_name} PROPERTIES Fortran_FORMAT "FREE")

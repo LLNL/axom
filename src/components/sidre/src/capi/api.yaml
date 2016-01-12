@@ -14,7 +14,7 @@ copyright:
 
 options:
   library: Sidre
-  C_prefix: ATK_
+  C_prefix: SIDRE_
   namespace: asctoolkit sidre
   F_module_per_class: False
 
@@ -25,6 +25,7 @@ options:
   # Fortran as a subroutine with an additional character argument
   # for the result.
   F_string_result_as_arg: name
+#  wrap_python: True
 
 
 types:
@@ -32,24 +33,25 @@ types:
 # defined in SidreTypes.hpp
     typedef  : int
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_IndexType
+    c_type   : SIDRE_IndexType
     cpp_type : IndexType
 
   SidreLength:
 # defined in SidreTypes.hpp
     typedef  : long
     c_header : sidre/SidreTypes.h
-    c_type   : ATK_SidreLength
+    c_type   : SIDRE_SidreLength
     cpp_type : SidreLength
 
   TypeID:
     typedef  : int
     # enum for types
     c_header : sidre/SidreTypes.h
-    cpp_header : sidre/SidreWrapperHelpers.hpp
+    cpp_header : sidre/SidreTypes.hpp
     cpp_type : TypeID
     c_to_cpp : getTypeID({var})
 #    c_to_cpp : static_cast<TypeID>({var})
+    cpp_to_c : static_cast<int>({var})
 
 
 # XXX
@@ -89,69 +91,96 @@ classes:
 
     methods:
     -  decl: const std::string& getName() const
+#    -  decl: DataGroup* getParent()
     -  decl: const DataGroup* getParent() const
+#    -  decl: DataStore* getDataStore() const
     -  decl: const DataStore* getDataStore() const
     -  decl: size_t getNumViews() const
     -  decl: size_t getNumGroups() const
     -  decl: bool hasView( const string& name )
 #    -  decl: bool hasView( IndexType idx ) const
-    -  decl: DataView *createViewAndBuffer( const string& name )
-       function_suffix: _simple
-    -  decl: DataView *createViewAndBuffer( const std::string& name, TypeID type, SidreLength len)
-       function_suffix: _from_type
-       fortran_generic:
-         len:
-         -  int
-         -  long
-    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
-#    -  decl: DataView * createView( const std::string& name, DataBuffer * buff, TypeID type, SidreLength len )
-#    -  decl: DataView * createOpaqueView( const std::string& name, void * opaque_ptr)
-    -  decl:  DataView * createExternalView( const std::string& name, void * external_data, TypeID type, SidreLength len )
-       fortran_generic:
-         len:
-         -  int
-         -  long
-    -  decl: DataView *moveView(DataView *view)
-    -  decl: DataView *copyView(DataView *view)
-    -  decl: void destroyViewAndBuffer(const std::string &name)
-#    -  decl: void destroyViewAndBuffer(IndexType idx)
-#    -  decl: void destroyView(const std::string &name)
-#    -  decl: void destroyView(IndexType idx)
     -  decl: DataView *getView( const std::string& name )
        function_suffix: _from_name
+       PY_error_pattern: PY_null_to_none
 #    -  decl: DataView const * getView( const std::string& name ) const
     -  decl: DataView *getView( const IndexType idx )
        function_suffix: _from_index
+       PY_error_pattern: PY_null_to_none
 #    -  decl: DataView const *getView( const IndexType idx ) const
     -  decl: IndexType getViewIndex(const std::string &name) const
     -  decl: const std::string& getViewName(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
 
-#    -  decl: IndexType getFirstValidViewIndex() const
-#    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
+    -  decl: IndexType getFirstValidViewIndex() const
+    -  decl: IndexType getNextValidViewIndex(IndexType idx) const
+    -  decl: DataView *createViewAndAllocate( const std::string& name, TypeID type, SidreLength num_elems)
+#       function_suffix:
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
+#    -  decl: DataView *createViewAndAllocate( const std::string& name, const DataType& dtype)
+#    -  decl: DataView *createViewAndAllocate( const std::string& name, const Schema& schema)
+
+    -  decl: DataView *createView( const string& name )
+       function_suffix: _empty
+       PY_error_pattern: PY_null_to_none
+    -  decl: DataView *createView( const std::string& name, TypeID type, SidreLength num_elems)
+       function_suffix: _from_type
+       fortran_generic:
+         num_elems:
+         -  int
+         -  long
+       PY_error_pattern: PY_null_to_none
+
+#    -  decl: DataView *createView( const std::string& name, const DataType& dtype)
+#    -  decl: DataView *createView( const std::string& name, const Schema& schema)
+
+    -  decl: DataView *createView( const std::string& name, DataBuffer *buff)
+       function_suffix: _into_buffer
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: DataView * createView( const std::string& name, void * external_ptr)
+       function_suffix: _external
+       PY_error_pattern: PY_null_to_none
+
+    -  decl: void destroyView( const std::string &name )
+#    -  decl: void destroyView( IndexType idx )
 #    -  decl: void destroyViews()
-#    -  decl: void destroyViewsAndBuffers()
+    -  decl: void destroyViewAndData(const std::string &name)
+       function_suffix: _name
+    -  decl: void destroyViewAndData(IndexType idx)
+       function_suffix: _index
+#    -  decl: void destroyViewsAndData()
+    -  decl: DataView *moveView(DataView *view)
+    -  decl: DataView *copyView(DataView *view)
+
     -  decl: bool hasGroup( const string& name )
-#    -  decl: DataGroup* createGroup( const std::string& name )
-    -  decl: DataGroup *createGroup( const string& name )
-    -  decl: DataGroup *moveGroup(DataGroup *grp)
-#    -  decl: DataGroup *copyGroup(DataGroup *grp)
-    -  decl: void destroyGroup(const std::string &name)
-#    -  decl: void destroyGroup(IndexType idx)
-#    -  decl: DataGroup const * getGroup( const std::string& name ) const
+#    -  decl: bool hasGroup( IndexType idx )
     -  decl: DataGroup * getGroup( const std::string& name )
        PY_error_pattern: PY_null_to_none
-#    -  decl: DataGroup const * getGroup(IndexType idx) const
+#    -  decl: DataGroup const * getGroup( const std::string& name ) const
 #    -  decl: DataGroup * getGroup( IndexType idx)
+#    -  decl: DataGroup const * getGroup(IndexType idx) const
     -  decl: IndexType getGroupIndex(const std::string &name) const
-
     -  decl: const std::string& getGroupName(IndexType idx) const
        C_error_pattern: C_invalid_name
        PY_error_pattern: PY_invalid_name_idx
+    -  decl: IndexType getFirstValidGroupIndex() const
+    -  decl: IndexType getNextValidGroupIndex(IndexType idx) const
 
+    -  decl: DataGroup *createGroup( const string& name )
+    -  decl: void destroyGroup(const std::string &name)
+       function_suffix: _name
+    -  decl: void destroyGroup(IndexType idx)
+       function_suffix: _index
 #    -  decl: void destroyGroups()
+    -  decl: DataGroup *moveGroup(DataGroup *grp)
+#    -  decl: DataGroup *copyGroup(DataGroup *grp)
+
 #    -  decl: void info(Node &n) const
     -  decl: void print() const
 #    -  decl: void printTree( const int level ) const
@@ -168,10 +197,10 @@ classes:
     methods:
       - decl: IndexType getIndex() const
       - decl: size_t getNumViews() const
-      - decl: DataBuffer* declare(TypeID type, SidreLength len)
+      - decl: DataBuffer* declare(TypeID type, SidreLength num_elems)
         return_this: True
         fortran_generic:
-          len:
+          num_elems:
           -  int
           -  long
 #      - decl: DataBuffer* declare(const Schema& schema)
@@ -179,25 +208,25 @@ classes:
       - decl: DataBuffer* allocate()
         function_suffix: _existing
         return_this: True
-      - decl: DataBuffer* allocate(TypeID type, SidreLength len)
+      - decl: DataBuffer* allocate(TypeID type, SidreLength num_elems)
         function_suffix: _from_type
         return_this: True
         fortran_generic:
-          len:
+          num_elems:
           -  int
           -  long
-      - decl: DataBuffer * reallocate(SidreLength len)
+      - decl: DataBuffer * reallocate(SidreLength num_elems)
         return_this: True
         fortran_generic:
-          len:
+          num_elems:
           -  int
           -  long
       - decl: DataBuffer * setExternalData( void* external_data)
         return_this: True
       - decl: bool isExternal() const
-      - decl: void* getData()
+      - decl: void* getVoidPtr()
       - decl: TypeID getTypeID() const
-      - decl: size_t getNumberOfElements() const
+      - decl: size_t getNumElements() const
       - decl: size_t getTotalBytes() const
 #      - decl: Node& getNode()
 #      - decl: const Node& getNode() const
@@ -215,73 +244,87 @@ classes:
       cpp_header: sidre/DataView.hpp
 
     methods:
-    - decl: DataView* declare(TypeID type, SidreLength len)
-      return_this: True
-      fortran_generic:
-        len:
-        -  int
-        -  long
-#    - decl: DataView* declare(const Schema& schema)  
-#    - decl: DataView* declare(const DataType& dtype)
     - decl: DataView* allocate()
       function_suffix: _simple
       return_this: True
-    - decl: DataView* allocate(TypeID type, SidreLength len)
+    - decl: DataView* allocate(TypeID type, SidreLength num_elems)
       function_suffix: _from_type
       return_this: True
       fortran_generic:
-        len:
+        num_elems:
         -  int
         -  long
-#    - decl: DataView* allocate(const Schema& schema)
 #    - decl: DataView* allocate(const DataType& dtype)
-    - decl: DataView * reallocate(SidreLength len)
+#    - decl: DataView* allocate(const Schema& schema)
+    - decl: DataView * reallocate(SidreLength num_elems)
       return_this: True
       fortran_generic:
-        len:
+        num_elems:
         -  int
         -  long
-#    - decl: DataView* reallocate(const Schema& schema)
 #    - decl: DataView* reallocate(const DataType& dtype)
-#    - decl: DataView* apply()
-#    - decl: DataView* apply(const Schema& schema)
+#    - decl: DataView* reallocate(const Schema& schema)
+    - decl: DataView* apply()
+      return_this: True
+    - decl: DataView* attachBuffer(DataBuffer * buff)
+      return_this: True
+    - decl: DataView* apply(SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+      default_arg_suffix:
+        -  _nelems
+        -  _nelems_offset
+        -  _nelems_offset_stride
+      return_this: True
+    - decl: DataView* apply(TypeID type, SidreLength num_elems, SidreLength offset = 0, SidreLength stride = 1)
+      default_arg_suffix:
+        -  _type_nelems
+        -  _type_nelems_offset
+        -  _type_nelems_offset_stride
+      return_this: True
+    - decl: DataView * apply( TypeID type, int ndims, SidreLength * shape+dimension )
+      function_suffix: _type_shape
+      return_this: True
 #    - decl: DataView* apply(const DataType& dtype)
-    - decl: bool  hasBuffer() const
-    - decl: bool  isOpaque() const
-#    - decl: bool isApplied() const
+#    - decl: DataView* apply(const Schema& schema)
+    - decl: bool hasBuffer() const
+    - decl: bool isExternal() const
+    - decl: bool isApplied() const
+    - decl: bool isOpaque() const
     - decl: const std::string& getName() const
-    - decl: void* getOpaque() const
     - decl: DataBuffer* getBuffer()
 #    - decl: DataBuffer const* getBuffer() const
-    - decl: void * getDataPointer() const
+    - decl: void * getVoidPtr() const
 #    - decl: Node& getNode()
 #    - decl: const Node& getNode() const
 #    - decl: Node::Value getValue()
 
-#           template<typename ValueType>
-    - decl: void setValue(ValueType value)
+#           template<typename ScalarType>
+    - decl: void setScalar(ScalarType value)
       cpp_template:
-        ValueType:
+        ScalarType:
         - int
         - long
         - float
         - double
 
-#           template<typename ValueType>
-    - decl: ValueType getValue()
+    -  decl: DataView * setExternalDataPtr(void * external_ptr)
+
+#           template<typename DataType>
+    - decl: DataType getData()
       cpp_template:
-        ValueType:
+        DataType:
         - int
         - long
         - float
         - double
 
-#    - decl: const Schema& getSchema() const
+##    - decl: const Schema& getSchema() const
     - decl: DataGroup* getOwningGroup()
 #    - decl: DataGroup const* getOwningGroup() const
     - decl: TypeID getTypeID() const
     - decl: size_t getTotalBytes() const
-    - decl: size_t getNumberOfElements() const
+    - decl: size_t getNumElements() const
+    - decl: int getNumDimensions() const
+    - decl: int getShape(int ndims, SidreLength * shape+dimension) const
 #    - decl: void info(Node& n) const
     - decl: void print() const
 
@@ -291,7 +334,7 @@ classes:
 ######################################################################
 
 functions:
-  -  decl: bool isNameValid(const std::string& name)
+  -  decl: bool nameIsValid(const std::string& name)
      # The concept of a valid name is different for C++, C and Fortran
      options:
        C_code:  return name != NULL;
@@ -302,17 +345,17 @@ functions:
 ######################################################################
 patterns:
     C_invalid_name: >
-        if (! isNameValid({var})) {{
-            return ATK_InvalidName;
+        if (! nameIsValid({var})) {{
+            return SIDRE_InvalidName;
         }}
     PY_invalid_name: >
-        if (! isNameValid({var})) {{
+        if (! nameIsValid({var})) {{
             PyErr_SetString(PyExc_KeyError, "{var}");
             return NULL;
         }}
     # report the invalid index, assume local variable idx
     PY_invalid_name_idx: >
-        if (! isNameValid({var})) {{
+        if (! nameIsValid({var})) {{
             Py_RETURN_NONE;
         }}
 #            PyErr_SetObject(PyExc_KeyError, PyInt_FromLong(idx));

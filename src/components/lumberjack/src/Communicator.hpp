@@ -36,13 +36,20 @@ namespace lumberjack {
  * \brief Abstract base class defining the interface of all Communicator classes.
  *
  *  Concrete instances need to inherit from this class and implement these functions.
- *  You will need to add your Communicator using Logger::initialize
+ *  You will need to add your Communicator using Lumberjack::initialize
  *
- * \see BinaryTreeCommunicator RootCommunicator Logger
+ * \see BinaryTreeCommunicator RootCommunicator Lumberjack
  *******************************************************************************
  */
 class Communicator {
     public:
+        /*!
+         *****************************************************************************
+         * \brief Virtual destructor.
+         *****************************************************************************
+         */
+        virtual ~Communicator(){};
+        
         /*!
          *****************************************************************************
          * \brief Called to initialize the Communicator.
@@ -65,6 +72,13 @@ class Communicator {
          *****************************************************************************
          */
         virtual void finalize() = 0;
+
+        /*!
+         *****************************************************************************
+         * \brief Returns the MPI rank of this node
+         *****************************************************************************
+         */
+        virtual int rank() = 0;
 
         /*!
          *****************************************************************************
@@ -92,45 +106,35 @@ class Communicator {
 
         /*!
          *****************************************************************************
+         * \brief Function used by the Lumberjack class to indicate how many individual pushes
+         *  fully flush all currently held Message classes to the root node. The Communicator
+         *  class's tree structure dictates this.
+         *****************************************************************************
+         */
+        virtual int numPushesToFlush() = 0;
+
+        /*!
+         *****************************************************************************
          * \brief This pushes all messages once up the Communicator class's tree structure.
          *
          * All of the children push their Message classes to their parent node. This is
          * is helpful if you want to spread the work load of Lumberjack over a large
          * set of work.
          *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
+         * \param [in] packedMessagesToBeSent All of this rank's Message classes packed into a single buffer.
+         * \param [in,out] receivedPackedMessages Recieved packed message buffers from this nodes children.
          *****************************************************************************
          */
-        virtual void pushMessagesOnce(std::vector<Message*>& messages, std::vector<Combiner*>& combiners) = 0;
+        virtual void push(const char* packedMessagesToBeSent,
+                          std::vector<const char*>& receivedPackedMessages) = 0;
 
         /*!
          *****************************************************************************
-         * \brief This pushes all messages fully up the Communicator class's tree structure.
-         *
-         * All Message classes are continually pushed until all Message classes
-         * are pushed to the root node.
-         *
-         * \param [in,out] messages All of this rank's Message classes.
-         * \param [in,out] combiners All of currently active Combiner classes.
-         *****************************************************************************
-         */
-        virtual void pushMessagesFully(std::vector<Message*>& messages, std::vector<Combiner*>& combiners) = 0;
-
-        /*!
-         *****************************************************************************
-         * \brief Function used by the Logger to indicate whether this node should be
+         * \brief Function used by the Lumberjack class to indicate whether this node should be
          * outputting messages. The Communicator class's tree structure dictates this.
          *****************************************************************************
          */
         virtual bool shouldMessagesBeOutputted() = 0;
-
-        /*!
-         *****************************************************************************
-         * \brief Returns the MPI rank of this node
-         *****************************************************************************
-         */
-        virtual int rank() = 0;
 };
 
 } // end namespace lumberjack

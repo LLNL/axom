@@ -14,14 +14,16 @@
 #include "sidre/SidreTypes.hpp"
 
 extern "C" {
-namespace asctoolkit {
-namespace sidre {
-
-bool ATK_is_name_valid(const char * name)
+namespace asctoolkit
 {
-// splicer begin function.is_name_valid
-return name != NULL;
-// splicer end function.is_name_valid
+namespace sidre
+{
+
+bool SIDRE_name_is_valid(const char * name)
+{
+// splicer begin function.name_is_valid
+  return name != NULL;
+// splicer end function.name_is_valid
 }
 
 // splicer begin additional_functions

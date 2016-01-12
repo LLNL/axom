@@ -8,6 +8,5 @@
 # review from Lawrence Livermore National Laboratory.
 #-------------------------------------------------------------------------------
 
-make_executable(WITH_MPI
-                EXECUTABLE_SOURCE basicExample.cpp
+make_executable(EXECUTABLE_SOURCE basicExample.cpp
                 DEPENDS_ON lumberjack )

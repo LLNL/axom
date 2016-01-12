@@ -15,7 +15,7 @@
  *******************************************************************************
  */
 
-#include "lumberjack/Logger.hpp"
+#include "lumberjack/Lumberjack.hpp"
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 #include "lumberjack/Message.hpp"
 
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     communicator.initialize(MPI_COMM_WORLD, ranksLimit);
 
     // Initialize lumberjack logger
-    asctoolkit::lumberjack::Logger logger;
+    asctoolkit::lumberjack::Lumberjack logger;
     logger.initialize(&communicator, ranksLimit);
 
     // Queue messages into lumberjack

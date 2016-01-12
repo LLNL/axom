@@ -26,7 +26,6 @@
 #include "slic/MessageLevel.h"
 
 #include "common/CommonTypes.hpp" // for ATK_NULLPTR
-#include "common/Utilities.hpp"   // for utilities::processAbort()
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
@@ -323,7 +322,7 @@ std::string getActiveLoggerName();
  * \param [in] level user-supplied level to log.
  *******************************************************************************
  */
-void setLoggingLevel( message::Level level );
+void setLoggingMsgLevel( message::Level level );
 
 /*!
  *******************************************************************************
@@ -370,7 +369,7 @@ bool getAbortOnError();
  * \pre ls != ATK_NULLPTR
  *******************************************************************************
  */
-void addStreamToLevel( LogStream* ls, message::Level level);
+void addStreamToMsgLevel( LogStream* ls, message::Level level);
 
 /*!
  *******************************************************************************
@@ -379,7 +378,7 @@ void addStreamToLevel( LogStream* ls, message::Level level);
  * \pre ls != ATK_NULLPTR.
  *******************************************************************************
  */
-void addStreamToAllLevels( LogStream* ls );
+void addStreamToAllMsgLevels( LogStream* ls );
 
 /*!
  *******************************************************************************

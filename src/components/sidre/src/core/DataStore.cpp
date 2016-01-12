@@ -29,12 +29,32 @@
 #include "DataGroup.hpp"
 #include "SidreTypes.hpp"
 
+// Other CS Toolkit headers
+#include "slic/slic.hpp"
+#include "slic/GenericOutputStream.hpp"
+
+#include "conduit.hpp"
 
 namespace asctoolkit
 {
 namespace sidre
 {
 
+/*
+ *************************************************************************
+ *
+ * Function to map SLIC method for logging error message to Conduit
+ * error handler.
+ *
+ *************************************************************************
+ */
+void DataStoreConduitErrorHandler( const std::string& message,
+                                   const std::string& fileName,
+                                   int line )
+{
+  slic::logErrorMessage( message, fileName, line,
+                         asctoolkit::slic::getAbortOnError() );
+}
 
 /*
  *************************************************************************
@@ -44,8 +64,35 @@ namespace sidre
  *************************************************************************
  */
 DataStore::DataStore()
+  : m_i_initialized_slic(false)
 {
+
+  // Initialize SLIC loggin environement, if not initialized already.
+  if ( !slic::isInitialized() )
+  {
+    slic::initialize();
+
+    std::string format =
+      std::string("\n***********************************\n")+
+      std::string( "LEVEL=<LEVEL>\n" ) +
+      std::string( "MESSAGE=<MESSAGE>\n" ) +
+      std::string( "FILE=<FILE>\n" ) +
+      std::string( "LINE=<LINE>\n" ) +
+      std::string("***********************************\n");
+
+    slic::setLoggingMsgLevel( slic::message::Debug );
+    slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout,
+                                                                 format) );
+
+    m_i_initialized_slic = true;
+  }
+
+  // Provide SLIC error handler function to Conduit to log
+  // internal Conduit errors.
+  conduit::utils::set_error_handler( DataStoreConduitErrorHandler );
+
   m_RootGroup = new DataGroup("/", this);
+
 };
 
 
@@ -61,6 +108,11 @@ DataStore::~DataStore()
   // clean up groups and views before we destroy buffers
   delete m_RootGroup;
   destroyBuffers();
+
+  if ( m_i_initialized_slic )
+  {
+    slic::finalize();
+  }
 }
 
 
@@ -75,12 +127,12 @@ DataBuffer * DataStore::getBuffer( IndexType idx ) const
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
-  if ( hasBuffer(idx) ) 
-  { 
+  if ( hasBuffer(idx) )
+  {
     return m_data_buffers[idx];
   }
-  else 
-  { 
+  else
+  {
     return ATK_NULLPTR;
   }
 }
@@ -122,7 +174,7 @@ void DataStore::destroyBuffer( IndexType idx )
 {
   SLIC_CHECK_MSG(hasBuffer(idx), "no buffer exists with index == " << idx);
 
-  if ( hasBuffer(idx) ) 
+  if ( hasBuffer(idx) )
   {
     delete m_data_buffers[idx];
     m_data_buffers[idx] = ATK_NULLPTR;
@@ -163,7 +215,7 @@ DataBuffer * DataStore::detachBuffer( IndexType idx )
 
   DataBuffer * rval = ATK_NULLPTR;
 
-  if ( hasBuffer(idx) ) 
+  if ( hasBuffer(idx) )
   {
     rval = m_data_buffers[idx];
     m_data_buffers[idx] = ATK_NULLPTR;
@@ -200,8 +252,8 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
   {
     idx++;
   }
-  return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx 
-                                                               : InvalidIndex);
+  return ((static_cast<unsigned>(idx) < m_data_buffers.size()) ? idx
+          : InvalidIndex);
 }
 
 /*

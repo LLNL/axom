@@ -107,8 +107,7 @@ class Wrapp(util.WrapperMixin):
         if self.tree['functions']:
             self._push_splicer('function')
             self._begin_class()
-            for node in self.tree['functions']:
-                self.wrap_function(None, node)
+            self.wrap_functions(None, self.tree['functions'])
             self._pop_splicer('function')
 
         self.write_header(self.tree)
@@ -152,8 +151,7 @@ class Wrapp(util.WrapperMixin):
 
         # wrap methods
         self._push_splicer('method')
-        for method in node['methods']:
-            self.wrap_function(node, method)
+        self.wrap_functions(node, node['methods'])
         self._pop_splicer('method')
 
     def create_class_helper_functions(self, node):
@@ -217,6 +215,26 @@ return 1;""", fmt)
 
         self._pop_splicer('helper')
 
+    def wrap_functions(self, cls, functions):
+        """Wrap functions for a library or class.
+        Compute overloading map.
+        """
+        overloaded_methods = {}
+        for function in functions:
+            flist = overloaded_methods. \
+                setdefault(function['result']['name'], [])
+            if '_cpp_overload' not in function:
+                continue
+            if not function['options'].wrap_python:
+                continue
+            flist.append(function)
+        self.overloaded_methods = overloaded_methods
+
+        for function in functions:
+            self.wrap_function(cls, function)
+
+        self.multi_dispatch(cls, functions)
+
     def wrap_function(self, cls, node):
         """
         cls  - class node or None for functions
@@ -230,10 +248,7 @@ return 1;""", fmt)
             cls_function = 'method'
         else:
             cls_function = 'function'
-        if 'decl' in node:
-            self.log.write("Python {0} {1[decl]}\n".format(cls_function, node))
-        else:
-            self.log.write("Python {0} {1[result][name]}\n".format(cls_function, node))
+        self.log.write("Python {0} {1[_decl]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
@@ -272,7 +287,16 @@ return 1;""", fmt)
         cpp_call_list = []
 
         # parse arguments
-        optional = []
+        # call function based on number of default arguments provided
+        default_calls = []   # each possible default call
+        found_default = False
+        if '_has_default_arg' in node:
+            PY_decl.append('Py_ssize_t shroud_nargs = 0;')
+            PY_code.extend([
+                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    ])
+
         post_parse = []
         args = node['args']
         if not args:
@@ -292,39 +316,54 @@ return 1;""", fmt)
 
                 attrs = arg['attrs']
                 if 'default' in attrs:
-                    fmt.default_value = attrs['default']
-                    if not optional:
+                    if not found_default:
                         format.append('|')  # add once
-                    append_format(optional, '{var} = {default_value};', fmt)
+                        found_default = True
+                    # call for default arguments  (num args, arg string)
+                    default_calls.append(
+                        (len(cpp_call_list),  ', '.join(cpp_call_list)))
 
                 format.append(arg_typedef.PY_format)
                 if arg_typedef.PY_PyTypeObject:
                     # Expect object of given type
                     format.append('!')
                     addrargs.append('&' + arg_typedef.PY_PyTypeObject)
+                    arg_name = fmt.var + '_obj'
                 elif arg_typedef.PY_from_object:
                     # Use function to convert object
                     format.append('&')
                     addrargs.append(arg_typedef.PY_from_object)
+
+                # add argument
                 addrargs.append('&' + arg_name)
 
-
                 # argument for C++ function
+                lang = 'cpp_type'
+                if arg_typedef.base == 'string':
+                    # C++ will coerce char * to std::string
+                    lang = 'c_type'
+                if arg['attrs'].get('reference', False):
+                    # convert a reference to a pointer
+                    ptr = True
+                else:
+                    ptr = False
+                PY_decl.append(self.std_c_decl(lang, arg, const=False, ptr=ptr) + ';')
+                
                 if arg_typedef.PY_PyTypeObject:
-                    # A Python Object
-                    fmt.var_ptr = fmt.var + '_ptr'
-                    PY_decl.append(arg_typedef.PY_PyObject + ' * ' + arg_name + ';')
-                    PY_decl.append(self.std_c_decl('cpp_type', arg, name=fmt.var_ptr) + ';')
-                    append_format(post_parse, '{var_ptr} = ({var} ? {var}->{BBB} : NULL);', fmt)
-                    cpp_call_list.append(fmt.var_ptr)
+                    # A Python Object which must be converted to C++ type.
+                    fmt.var_obj = arg_name
+                    objtype = arg_typedef.PY_PyObject or 'PyObject'
+                    PY_decl.append(objtype + ' * ' + fmt.var_obj + ';')
+                    append_format(post_parse, arg_typedef.PY_post_parse, fmt)
+                    cpp_call_list.append(fmt.var)
                 elif arg_typedef.PY_from_object:
                     # already a C++ type
-                    PY_decl.append(self.std_c_decl('cpp_type', arg) + ';')
+                    post_parse.append(None)
                     cpp_call_list.append(fmt.var)
                 else:
                     # convert to C++ type
-                    PY_decl.append(self.std_c_decl('c_type', arg) + ';')
                     fmt.ptr=' *' if arg['attrs'].get('ptr', False) else ''
+                    post_parse.append(None)
                     append_format(cpp_call_list, arg_typedef.c_to_cpp, fmt)
 
 
@@ -335,19 +374,14 @@ return 1;""", fmt)
                 PY_decl.append('char *kw_list[] = { ' + ','.join(arg_offsets) + ', NULL };')
             else:
                 PY_decl.append('char * kw_list[] = { "' + '", "'.join(arg_names) + ', NULL" };')
-            PY_decl.append('')
             format.extend([ ':', fmt.method_name])
             fmt.PyArg_format = ''.join(format)
             fmt.PyArg_addrargs = ', '.join(addrargs)
-            PY_code.extend(optional)
             PY_code.append(wformat('if (!PyArg_ParseTupleAndKeywords(args, kwds, "{PyArg_format}", kw_list,', fmt))
             PY_code.append(1)
             PY_code.append(wformat('{PyArg_addrargs}))', fmt))
             PY_code.append(-1)
             PY_code.extend(['{', 1, 'return NULL;', -1, '}'])
-            PY_code.extend(post_parse)
-            
-        fmt.call_list = ', '.join(cpp_call_list)
 
         if cls:
 #                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
@@ -356,21 +390,62 @@ return 1;""", fmt)
         else:
             fmt.PY_this_call = ''  # call function syntax
 
+        # call with all arguments
+        default_calls.append(
+            (len(cpp_call_list),  ', '.join(cpp_call_list)))
 
-        if is_dtor:
-            append_format(PY_code, 'delete self->{BBB};', fmt)
-            append_format(PY_code, 'self->{BBB} = NULL;', fmt)
-        elif result_type == 'void' and not result_is_ptr:
-            line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
-            PY_code.append(line)
+        # If multiple calls, declare return value once
+        # Else delare on call line.
+        if found_default:
+            fmt.rv_asgn = 'rv = '
+            PY_code.append('switch (shroud_nargs) {')
         else:
-            line = wformat('{rv_decl} = {PY_this_call}{method_name}({call_list});', fmt)
-            PY_code.append(line)
+            fmt.rv_asgn = fmt.rv_decl + ' = '
+        need_rv = False
 
-        if 'PY_error_pattern' in node:
-            lfmt = util.Options(fmt)
-            lfmt.var = fmt.rv
-            append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
+        for nargs, call_list in default_calls:
+            if found_default:
+                PY_code.append('case %d:' % nargs)
+                PY_code.append(1)
+
+            fmt.call_list = call_list
+
+            for post in post_parse[:nargs]:
+                if post:
+                    PY_code.append(post)
+
+            if is_dtor:
+                append_format(PY_code, 'delete self->{BBB};', fmt)
+                append_format(PY_code, 'self->{BBB} = NULL;', fmt)
+            elif result_type == 'void' and not result_is_ptr:
+                line = wformat('{PY_this_call}{method_name}({call_list});', fmt)
+                PY_code.append(line)
+            else:
+                need_rv = True
+                line = wformat('{rv_asgn}{PY_this_call}{method_name}({call_list});', fmt)
+                PY_code.append(line)
+
+            if 'PY_error_pattern' in node:
+                lfmt = util.Options(fmt)
+                lfmt.var = fmt.rv
+                append_format(PY_code, self.patterns[node['PY_error_pattern']], lfmt)
+
+            if found_default:
+                PY_code.append('break;')
+                PY_code.append(-1)
+        if found_default:
+#            PY_code.append('default:')
+#            PY_code.append(1)
+#            PY_code.append('continue;')  # XXX raise internal error
+#            PY_code.append(-1)
+            PY_code.append('}')
+        else:
+            need_rv = False
+
+        if need_rv:
+            PY_decl.append(fmt.rv_decl + ';')
+        if len(PY_decl):
+            PY_decl.append('')
 
         # return Object
         if result_type == 'void' and not result_is_ptr:
@@ -412,18 +487,39 @@ return 1;""", fmt)
         else:
             util.eval_template(node, 'PY_name_impl', '_function')
 
-        self.create_method(cls, fmt, PY_impl)
+        expose = True
+        if len(self.overloaded_methods[result['name']]) > 1:
+            # Only expose a multi-dispatch name, not each overload
+            expose = False
+        elif found_default:
+            # Only one wrapper to deal with default arugments.
+            # [C creates a wrapper per default argument]
+            fmt = util.Options(fmt)
+            fmt.function_suffix = ''
 
-    def create_method(self, cls, fmt, PY_impl):
-        """Format the function."""
+        self.create_method(cls, expose, fmt, PY_impl)
+
+    def create_method(self, cls, expose, fmt, PY_impl):
+        """Format the function.
+        cls     = True if class
+        expose  = True if expose to user
+        fmt     = dictionary of format values
+        PY_impl = list of implementation lines
+        """
         body = self.PyMethodBody
-        body.append(wformat("""
-static char {PY_name_impl}__doc__[] =
-"{doc_string}"
-;
+        if expose:
+            body.extend([
+                    '',
+                    wformat('static char {PY_name_impl}__doc__[] =', fmt),
+                    '"%s"' % fmt.doc_string,
+                    ';',
+                    ])
 
-static PyObject *
-{PY_name_impl}(""", fmt))
+        body.extend([
+                '',
+                'static PyObject *',
+                wformat('{PY_name_impl}(', fmt)
+                ])
         if cls:
             body.append(wformat('  {PY_PyObject} *self,', fmt))
         else:
@@ -439,7 +535,14 @@ static PyObject *
                              self.PyMethodBody, default=PY_impl)
         self.PyMethodBody.append('}')
 
-        self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+        if expose is True:
+            # default name
+            self.PyMethodDef.append( wformat('{{"{method_name}{function_suffix}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
+#        elif expose is not False:
+#            # override name
+#            fmt = util.Options(fmt)
+#            fmt.expose = expose
+#            self.PyMethodDef.append( wformat('{{"{expose}", (PyCFunction){PY_name_impl}, {ml_flags}, {PY_name_impl}__doc__}},', fmt))
 
     def write_tp_func(self, node, fmt, fmt_type, output):
         # fmt is a dictiony here.
@@ -492,7 +595,6 @@ static PyObject *
             cpp_class       = fmt.cpp_class,
             )
         self.write_tp_func(node, fmt, fmt_type, output)
-        self.multi_dispatch(node, node['methods'])
 
         output.extend(self.PyMethodBody)
 
@@ -512,22 +614,14 @@ static PyObject *
 
         self.write_output_file(fname, self.config.binary_dir, output)
 
-
     def multi_dispatch(self, cls, methods):
         """Look for overloaded methods.
-        When found, create a method will will call each of the
+        When found, create a method which will call each of the
         overloaded methods looking for the one which will accept
         the given arguments.
         """
-        options = cls['options']
-
-        overloaded_methods = {}
-        for method in methods:
-            if method['options'].wrap_python:
-                overloaded_methods.setdefault(method['result']['name'], []).append(method)
-
-        for method, methods in overloaded_methods.items():
-            if len(methods) == 1:
+        for method, methods in self.overloaded_methods.items():
+            if len(methods) < 2:
                 continue
 
             fmt_func = methods[0]['fmt']
@@ -538,14 +632,19 @@ static PyObject *
 
             body = []
             body.append(1)
-            body.append('int numNamedArgs = (kwds ? PyDict_Size(kwds) : 0);')
-            body.append('int numArgs = PyTuple_GET_SIZE(args);')
-            body.append('int totArgs = numArgs + numNamedArgs;')
+            body.append('Py_ssize_t shroud_nargs = 0;')
+            body.extend([
+                    'if (args != NULL) shroud_nargs += PyTuple_Size(args);',
+                    'if (kwds != NULL) shroud_nargs += PyDict_Size(args);',
+                    ])
             body.append('PyObject *rvobj;')
 
 
             for overload in methods:
-                body.append('{')
+                if '_nargs' in overload:
+                    body.append('if (shroud_nargs >= %d && shroud_nargs <= %d) {' % overload['_nargs'])
+                else:
+                    body.append('if (shroud_nargs == %d) {' % len(overload['args']))
                 body.append(1)
                 append_format(body, 'rvobj = {PY_name_impl}(self, args, kwds);', overload['fmt'])
                 body.append('if (!PyErr_Occurred()) {')
@@ -570,7 +669,7 @@ static PyObject *
             else:
                 util.eval_template(methods[0], 'PY_name_impl', '_function', fmt)
 
-            self.create_method(cls, fmt, body)
+            self.create_method(cls, True, fmt, body)
 
     def write_header(self, node):
         options = node['options']
@@ -579,21 +678,22 @@ static PyObject *
 
         output = []
 
-        output.append("""
-/*
- * This is generated code.
- * Any edits must be made between the splicer.begin and splicer.end blocks.
- * All other edits will be lost.
- * Once a block is edited remove the 'UNMODIFIED' on the splicer.begin
- * comment to allow the block to be preserved when it is regenerated.
- */
+        # add guard
+        guard = fname.replace(".", "_").upper()
+        output.extend([
+                '#ifndef %s' % guard,
+                '#define %s' % guard,
+                ])
 
-#ifndef HDR_BASISMODULE
-#define HDR_BASISMODULE
-#include <Python.h>
-#if PY_MAJOR_VERSION >= 3
-#define IS_PY3K
-#endif""")
+        if options.cpp_header:
+            for include in options.cpp_header.split():
+                output.append('#include "%s"' % include)
+
+        output.extend([
+                '#include <Python.h>',
+                '#if PY_MAJOR_VERSION >= 3',
+                '#define IS_PY3K',
+                '#endif'])
         
         self._push_splicer('header')
         self._create_splicer('include', output)
@@ -621,12 +721,12 @@ extern "C" {{
 #define MOD_INITBASIS init{PY_module_name}
 #endif
 PyMODINIT_FUNC MOD_INITBASIS(void);
-#endif
 #ifdef __cplusplus
 }}
 #endif
 """, fmt))
         self.namespace(node, 'end', output)
+        output.append('#endif  /* %s */' % guard)
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_module(self, node):

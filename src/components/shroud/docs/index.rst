@@ -6,6 +6,11 @@
 Shroud
 ======
 
+*verb*
+    1. wrap or dress (a body) in a shroud for burial.
+    2. cover or envelop so as to conceal from view.
+
+
 Contents:
 
 .. toctree::

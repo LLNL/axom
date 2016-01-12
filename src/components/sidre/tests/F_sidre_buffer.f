@@ -21,17 +21,19 @@ contains
     type(datastore) ds
     type(databuffer) dbuff_0, dbuff_1, dbuff_3
 
+    call set_case_name("create_buffers")
+
     ds = datastore_new()
 
     dbuff_0 = ds%create_buffer()
     dbuff_1 = ds%create_buffer()
 
-    call assert_equals(dbuff_0%get_index(), 0)
-    call assert_equals(dbuff_1%get_index(), 1)
+    call assert_equals(dbuff_0%get_index(), 0, "dbuff_0%get_index()")
+    call assert_equals(dbuff_1%get_index(), 1, "dbuff_1%get_index()")
     call ds%destroy_buffer(0)
 
     dbuff_3 = ds%create_buffer()
-    call assert_equals(dbuff_3%get_index(), 0)
+    call assert_equals(dbuff_3%get_index(), 0, "dbuff_3%get_index()")
 
     call ds%print()
     call ds%delete()
@@ -46,17 +48,19 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
     
+    call set_case_name("alloc_buffer_for_int_array")
+
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
     call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID)
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_typeid()")
+    call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elements()")
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -78,16 +82,18 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("init_buffer_for_int_array")
+
     ds = datastore_new()
     dbuff = ds%create_buffer()
 
     call dbuff%allocate(SIDRE_INT_ID, 10_8)
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID)
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_equals(dbuff%get_type_id(), SIDRE_INT_ID, "dbuff%get_type_id()")
+    call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elements")
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(int) * 10)
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -109,17 +115,19 @@ contains
     integer(C_LONG), pointer :: data(:)
     integer i
 
+    call set_case_name("realloc_buffer")
+
     ds = datastore_new()
 
     dbuff = ds%create_buffer()
 
     call dbuff%allocate(SIDRE_LONG_ID, 5_8)
 
-    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
-    call assert_true(dbuff%get_number_of_elements() == 5)
+    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID, "dbuff%get_type_id()")
+    call assert_true(dbuff%get_num_elements() == 5, "dbuff%get_num_elements()")
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 5 ])
 
     data(:) = 5
@@ -128,21 +136,18 @@ contains
   
     call dbuff%reallocate(10)
 
-   call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID)
-    call assert_true(dbuff%get_number_of_elements() == 10)
+    call assert_equals(dbuff%get_type_id(), SIDRE_LONG_ID, "dbuff%get_type_id() after realloc")
+    call assert_true(dbuff%get_num_elements() == 10, "dbuff%get_num_elments() after realloc")
 !    call assert_equals(dbuff%get_total_bytes(), sizeof(long) * 10)
 
     ! data buffer changes
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
-    do i = 1, 5
-       call assert_equals(int(data(i)), 5)  ! XXX cast
-    enddo
+    call assert_true(size(data) == 10, "data_ptr is wrong size")
+    call assert_true(all(data(1:5) == 5), "data has wrong values")
 
-    do i = 6, 10
-       data(i) = 10
-    enddo
+    data(6:10) = 10
 
     call dbuff%print()
 
@@ -154,11 +159,10 @@ contains
 end module sidre_buffer
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_buffer
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -172,9 +176,7 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test

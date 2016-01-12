@@ -12,108 +12,57 @@
 
 #include "sidre/sidre.hpp"
 #include "sidre/SidreTypes.h"
-#include "sidre/SidreWrapperHelpers.hpp"
+#include "sidre/SidreTypes.hpp"
 
 using asctoolkit::sidre::DataType;
 using asctoolkit::sidre::TypeID;
 using asctoolkit::sidre::getTypeID;
 //------------------------------------------------------------------------------
-// This test verifies that the getTypeID C version and C++ (templated) version
-// returns the same types.
+// This test verifies that the Conduit, Sidre C++ and C use the same types.
 //------------------------------------------------------------------------------
 
 TEST(sidre_types,get_sidre_type)
 {
-#if 0
-  TypeID EMPTY_T = getTypeID<0>();
-  EXPECT_EQ(EMPTY_T, CONDUIT_EMPTY_T);
-  EMPTY_T = getTypeID(0);
-  EXPECT_EQ(EMPTY_T, CONDUIT_EMPTY_T);
+  EXPECT_EQ(SIDRE_EMPTY_ID,     CONDUIT_EMPTY_T);
+  EXPECT_EQ(SIDRE_INT8_ID,      CONDUIT_INT8_T);
+  EXPECT_EQ(SIDRE_INT16_ID,     CONDUIT_INT16_T);
+  EXPECT_EQ(SIDRE_INT32_ID,     CONDUIT_INT32_T);
+  EXPECT_EQ(SIDRE_INT64_ID,     CONDUIT_INT64_T);
+  EXPECT_EQ(SIDRE_UINT8_ID,     CONDUIT_UINT8_T);
+  EXPECT_EQ(SIDRE_UINT16_ID,    CONDUIT_UINT16_T);
+  EXPECT_EQ(SIDRE_UINT32_ID,    CONDUIT_UINT32_T);
+  EXPECT_EQ(SIDRE_UINT64_ID,    CONDUIT_UINT64_T);
+  EXPECT_EQ(SIDRE_FLOAT32_ID,   CONDUIT_FLOAT32_T);
+  EXPECT_EQ(SIDRE_FLOAT64_ID,   CONDUIT_FLOAT64_T);
+  EXPECT_EQ(SIDRE_CHAR8_STR_ID, CONDUIT_CHAR8_STR_T);
 
-  TypeID OBJECT_T = getTypeID<1>();
-  EXPECT_EQ(OBJECT_T, CONDUIT_OBJECT_T);
-  OBJECT_T = getTypeID(1);
-  EXPECT_EQ(OBJECT_T, CONDUIT_OBJECT_T);
+  EXPECT_EQ(SIDRE_INT_ID,    CONDUIT_NATIVE_INT_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_UINT_ID,   CONDUIT_NATIVE_UNSIGNED_INT_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_LONG_ID,   CONDUIT_NATIVE_LONG_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_ULONG_ID,  CONDUIT_NATIVE_UNSIGNED_LONG_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_FLOAT_ID,  CONDUIT_NATIVE_FLOAT_DATATYPE_ID);
+  EXPECT_EQ(SIDRE_DOUBLE_ID, CONDUIT_NATIVE_DOUBLE_DATATYPE_ID);
 
-  TypeID LIST_T = getTypeID<2>();
-  EXPECT_EQ(LIST_T, CONDUIT_LIST_T);
-  LIST_T = getTypeID(2);
-  EXPECT_EQ(LIST_T, CONDUIT_LIST_T);
-#endif
+  EXPECT_EQ(asctoolkit::sidre::EMPTY_ID,  getTypeID(SIDRE_EMPTY_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT8_ID,   getTypeID(SIDRE_INT8_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT16_ID,  getTypeID(SIDRE_INT16_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT32_ID,  getTypeID(SIDRE_INT32_ID));
+  EXPECT_EQ(asctoolkit::sidre::INT64_ID,  getTypeID(SIDRE_INT64_ID));
 
-  TypeID INT8_T = getTypeID<ATK_INT8_T>();
-  EXPECT_EQ(INT8_T, CONDUIT_INT8_T);
-  INT8_T = getTypeID(ATK_INT8_T);
-  EXPECT_EQ(INT8_T, CONDUIT_INT8_T);
+  EXPECT_EQ(asctoolkit::sidre::UINT8_ID,   getTypeID(SIDRE_UINT8_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT16_ID,  getTypeID(SIDRE_UINT16_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT32_ID,  getTypeID(SIDRE_UINT32_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT64_ID,  getTypeID(SIDRE_UINT64_ID));
 
-  TypeID INT16_T = getTypeID<ATK_INT16_T>();
-  EXPECT_EQ(INT16_T, CONDUIT_INT16_T);
-  INT16_T = getTypeID(ATK_INT16_T);
-  EXPECT_EQ(INT16_T, CONDUIT_INT16_T);
+  EXPECT_EQ(asctoolkit::sidre::FLOAT32_ID,    getTypeID(SIDRE_FLOAT32_ID));
+  EXPECT_EQ(asctoolkit::sidre::FLOAT64_ID,    getTypeID(SIDRE_FLOAT64_ID));
+  EXPECT_EQ(asctoolkit::sidre::CHAR8_STR_ID,  getTypeID(SIDRE_CHAR8_STR_ID));
 
-  TypeID INT32_T = getTypeID<ATK_INT32_T>();
-  EXPECT_EQ(INT32_T, CONDUIT_INT32_T);
-  INT32_T = getTypeID(ATK_INT32_T);
-  EXPECT_EQ(INT32_T, CONDUIT_INT32_T);
+  EXPECT_EQ(asctoolkit::sidre::INT_ID,  getTypeID(SIDRE_INT_ID));
+  EXPECT_EQ(asctoolkit::sidre::UINT_ID,  getTypeID(SIDRE_UINT_ID));
+  EXPECT_EQ(asctoolkit::sidre::LONG_ID,  getTypeID(SIDRE_LONG_ID));
+  EXPECT_EQ(asctoolkit::sidre::ULONG_ID,  getTypeID(SIDRE_ULONG_ID));
+  EXPECT_EQ(asctoolkit::sidre::FLOAT_ID,  getTypeID(SIDRE_FLOAT_ID));
+  EXPECT_EQ(asctoolkit::sidre::DOUBLE_ID,  getTypeID(SIDRE_DOUBLE_ID));
 
-  TypeID INT64_T = getTypeID<ATK_INT64_T>();
-  EXPECT_EQ(INT64_T, CONDUIT_INT64_T);
-  INT64_T = getTypeID(ATK_INT64_T);
-  EXPECT_EQ(INT64_T, CONDUIT_INT64_T);
-
-  TypeID UINT8_T = getTypeID<ATK_UINT8_T>();
-  EXPECT_EQ(UINT8_T, CONDUIT_UINT8_T);
-  UINT8_T = getTypeID(ATK_UINT8_T);
-  EXPECT_EQ(UINT8_T, CONDUIT_UINT8_T);
-
-  TypeID UINT16_T = getTypeID<ATK_UINT16_T>();
-  EXPECT_EQ(UINT16_T, CONDUIT_UINT16_T);
-  UINT16_T = getTypeID(ATK_UINT16_T);
-  EXPECT_EQ(UINT16_T, CONDUIT_UINT16_T);
-
-  TypeID UINT32_T = getTypeID<ATK_UINT32_T>();
-  EXPECT_EQ(UINT32_T, CONDUIT_UINT32_T);
-  UINT32_T = getTypeID(ATK_UINT32_T);
-  EXPECT_EQ(UINT32_T, CONDUIT_UINT32_T);
-
-  TypeID UINT64_T = getTypeID<ATK_UINT64_T>();
-  EXPECT_EQ(UINT64_T, CONDUIT_UINT64_T);
-  UINT64_T = getTypeID(ATK_UINT64_T);
-  EXPECT_EQ(UINT64_T, CONDUIT_UINT64_T);
-
-  TypeID FLOAT32_T = getTypeID<ATK_FLOAT32_T>();
-  EXPECT_EQ(FLOAT32_T, CONDUIT_FLOAT32_T);
-  FLOAT32_T = getTypeID(ATK_FLOAT32_T);
-  EXPECT_EQ(FLOAT32_T, CONDUIT_FLOAT32_T);
-
-  TypeID FLOAT64_T = getTypeID<ATK_FLOAT64_T>();
-  EXPECT_EQ(FLOAT64_T, CONDUIT_FLOAT64_T);
-  FLOAT64_T = getTypeID(ATK_FLOAT64_T);
-  EXPECT_EQ(FLOAT64_T, CONDUIT_FLOAT64_T);
-
-  TypeID CHAR8_STR_T = getTypeID<ATK_CHAR8_STR_T>();
-  EXPECT_EQ(CHAR8_STR_T, CONDUIT_CHAR8_STR_T);
-  CHAR8_STR_T = getTypeID(ATK_CHAR8_STR_T);
-  EXPECT_EQ(CHAR8_STR_T, CONDUIT_CHAR8_STR_T);
-
-
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

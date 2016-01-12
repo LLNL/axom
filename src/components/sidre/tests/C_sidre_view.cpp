@@ -16,43 +16,44 @@
 
 TEST(C_sidre_view,create_views)
 {
-  ATK_datastore * ds   = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds   = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_dataview * dv_0 = ATK_datagroup_create_view_and_buffer_simple(root, "field0");
-  ATK_dataview * dv_1 = ATK_datagroup_create_view_and_buffer_simple(root, "field1");
+  SIDRE_dataview * dv_0 =
+    SIDRE_datagroup_create_view_and_allocate(root, "field0", SIDRE_INT_ID, 1);
+  SIDRE_dataview * dv_1 =
+    SIDRE_datagroup_create_view_and_allocate(root, "field1", SIDRE_INT_ID, 1);
 
+  SIDRE_databuffer * db_0 = SIDRE_dataview_get_buffer(dv_0);
+  SIDRE_databuffer * db_1 = SIDRE_dataview_get_buffer(dv_1);
 
-  ATK_databuffer * db_0 = ATK_dataview_get_buffer(dv_0);
-  ATK_databuffer * db_1 = ATK_dataview_get_buffer(dv_1);
-
-  EXPECT_EQ(ATK_databuffer_get_index(db_0), 0);
-  EXPECT_EQ(ATK_databuffer_get_index(db_1), 1);
-  ATK_datastore_delete(ds);
+  EXPECT_EQ(SIDRE_databuffer_get_index(db_0), 0);
+  EXPECT_EQ(SIDRE_databuffer_get_index(db_1), 1);
+  SIDRE_datastore_delete(ds);
 }
 
 //------------------------------------------------------------------------------
 
 TEST(C_sidre_view,int_buffer_from_view)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_simple(root, "u0");
+  SIDRE_dataview * dv =
+    SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
 
-  ATK_dataview_allocate_from_type(dv, ATK_C_INT_T, 10);
-  EXPECT_EQ(ATK_dataview_get_type_id(dv), ATK_INT32_T);  // XXX NATIVE TYPE
-  int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
+  EXPECT_EQ(SIDRE_dataview_get_type_id(dv), SIDRE_INT_ID);
+  int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  ATK_dataview_print(dv);
+  SIDRE_dataview_print(dv);
 
-  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10);
-  ATK_datastore_delete(ds);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(dv), sizeof(int) * 10);
+  SIDRE_datastore_delete(ds);
 
 }
 
@@ -60,135 +61,219 @@ TEST(C_sidre_view,int_buffer_from_view)
 
 TEST(C_sidre_view,int_buffer_from_view_conduit_value)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
-  ATK_dataview * dv = ATK_datagroup_create_view_and_buffer_from_type(root, "u0", ATK_C_INT_T, 10);
-  int * data_ptr = (int *) ATK_dataview_get_data_pointer(dv);
+  SIDRE_dataview * dv =
+    SIDRE_datagroup_create_view_and_allocate(root, "u0", SIDRE_INT_ID, 10);
+  int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(dv);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i*i;
   }
 
-  ATK_dataview_print(dv);
+  SIDRE_dataview_print(dv);
 
-  EXPECT_EQ(ATK_dataview_get_total_bytes(dv), sizeof(int) * 10);
-  ATK_datastore_delete(ds);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(dv), sizeof(int) * 10);
+  SIDRE_datastore_delete(ds);
 
 }
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,int_array_multi_view)
+TEST(C_sidre_view,int_array_strided_views)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
 
-  ATK_databuffer_declare(dbuff, ATK_C_INT_T, 10);
-  ATK_databuffer_allocate_existing(dbuff);
-  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 10);
+  SIDRE_databuffer_allocate_existing(dbuff);
+  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
 
   for(int i=0 ; i<10 ; i++)
   {
     data_ptr[i] = i;
   }
 
-  ATK_databuffer_print(dbuff);
+  SIDRE_databuffer_print(dbuff);
 
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+  EXPECT_EQ(SIDRE_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
 
 
-  ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even", dbuff);
-  ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd", dbuff);
+  SIDRE_dataview * dv_e = SIDRE_datagroup_create_view_into_buffer(root, "even",
+                                                                  dbuff);
+  SIDRE_dataview * dv_o = SIDRE_datagroup_create_view_into_buffer(root, "odd",
+                                                                  dbuff);
   EXPECT_TRUE(dv_e != NULL);
   EXPECT_TRUE(dv_o != NULL);
-  EXPECT_EQ(ATK_databuffer_get_num_views(dbuff), 2u);
+  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
 
-#ifdef XXX
-  dv_e->apply(DataType::uint32(5,0,8));
+  SIDRE_dataview_apply_nelems_offset_stride(dv_e, 5, 0, 2);
+  SIDRE_dataview_apply_nelems_offset_stride(dv_o, 5, 1, 2);
 
-  dv_o->apply(DataType::uint32(5,4,8));
+  SIDRE_dataview_print(dv_e);
+  SIDRE_dataview_print(dv_o);
 
-  ATK_dataview_print(dv_e);
-  ATK_dataview_print(dv_o);
-
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
+  // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
+  int * dv_e_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e);
+  int * dv_o_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o);
   for(int i=0 ; i<5 ; i++)
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+    EXPECT_EQ(dv_e_ptr[2*i], 2*i);
+    EXPECT_EQ(dv_o_ptr[2*i], 2*i+1);
   }
-#endif
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+
+  // Run similar test to above with different view apply method
+  SIDRE_dataview * dv_e1 =
+    SIDRE_datagroup_create_view_into_buffer(root, "even1", dbuff);
+  SIDRE_dataview * dv_o1 =
+    SIDRE_datagroup_create_view_into_buffer(root, "odd1", dbuff);
+  EXPECT_TRUE(dv_e1 != NULL);
+  EXPECT_TRUE(dv_o1 != NULL);
+  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
+
+  SIDRE_dataview_apply_type_nelems_offset_stride(dv_e1, SIDRE_INT_ID, 5, 0, 2);
+  SIDRE_dataview_apply_type_nelems_offset_stride(dv_o1, SIDRE_INT_ID, 5, 1, 2);
+
+  SIDRE_dataview_print(dv_e1);
+  SIDRE_dataview_print(dv_o1);
+
+  // Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
+  int * dv_e1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_e1);
+  int * dv_o1_ptr = (int *) SIDRE_dataview_get_void_ptr(dv_o1);
+  for(int i=0 ; i<5 ; i++)
+  {
+    EXPECT_EQ(dv_e1_ptr[2*i], 2*i);
+    EXPECT_EQ(dv_o1_ptr[2*i], 2*i+1);
+  }
+
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 
 }
 
 //------------------------------------------------------------------------------
 
-TEST(C_sidre_view,init_int_array_multi_view)
+TEST(C_sidre_view,int_array_depth_view)
 {
-  ATK_datastore * ds = ATK_datastore_new();
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
-  ATK_databuffer * dbuff = ATK_datastore_create_buffer(ds);
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
 
-  ATK_databuffer_allocate_from_type(dbuff, ATK_C_INT_T, 10);
-  int * data_ptr = (int *) ATK_databuffer_get_data(dbuff);
+  const size_t depth_nelems = 10;
 
-  for(int i=0 ; i<10 ; i++)
+  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 4 * depth_nelems);
+  SIDRE_databuffer_allocate_existing(dbuff);
+  int * data_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
+
+  for(size_t i=0 ; i < 4 * depth_nelems ; i++)
   {
-    data_ptr[i] = i;
+    data_ptr[i] = i / depth_nelems;
   }
 
-  ATK_databuffer_print(dbuff);
+  SIDRE_databuffer_print(dbuff);
 
-  EXPECT_EQ(ATK_databuffer_get_total_bytes(dbuff), sizeof(int) * 10);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), 4 * depth_nelems);
 
+  // create 4 "depth" views and apply offsets into buffer
+  SIDRE_dataview * views[4];
+  const char * view_names[4] = { "depth_0", "depth_1", "depth_2", "depth_3" };
 
-  ATK_dataview * dv_e = ATK_datagroup_create_view(root, "even",dbuff);
-  ATK_dataview * dv_o = ATK_datagroup_create_view(root, "odd",dbuff);
-  EXPECT_TRUE(dv_e != NULL);
-  EXPECT_TRUE(dv_o != NULL);
-
-#ifdef XXX
-  // uint32(num_elems, offset, stride)
-  dv_e->apply(DataType::uint32(5,0,8));
-
-
-  // uint32(num_elems, offset, stride)
-  dv_o->apply(DataType::uint32(5,4,8));
-
-  ATK_dataview_print(dv_e);
-  ATK_dataview_print(dv_o);
-
-  uint32_array dv_e_ptr = dv_e->getNode().as_uint32_array();
-  uint32_array dv_o_ptr = dv_o->getNode().as_uint32_array();
-  for(int i=0 ; i<5 ; i++)
+  for (int id = 0 ; id < 4 ; ++id)
   {
-    std::cout << "idx:" <<  i
-              << " e:" << dv_e_ptr[i]
-              << " o:" << dv_o_ptr[i]
-              << " em:" << dv_e_ptr[i]  % 2
-              << " om:" << dv_o_ptr[i]  % 2
-              << std::endl;
-
-    EXPECT_EQ(dv_e_ptr[i] % 2, 0u);
-    EXPECT_EQ(dv_o_ptr[i] % 2, 1u);
+    views[id] = SIDRE_datagroup_create_view_into_buffer(root, view_names[id],
+                                                        dbuff);
+    SIDRE_dataview_apply_nelems_offset(views[id], depth_nelems,
+                                       id*depth_nelems);
   }
-#endif
+  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 4u);
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  // print depth views...
+  for (int id = 0 ; id < 4 ; ++id)
+  {
+    SIDRE_dataview_print(views[id]);
+  }
+
+  // check values in depth views...
+  for (int id = 0 ; id < 4 ; ++id)
+  {
+// Note: The view offset works in C, but striding must be done manually as it needs the conduit int_array class.
+    int * dv_ptr = (int *) SIDRE_dataview_get_void_ptr(views[id]);
+    for (size_t i = 0 ; i < depth_nelems ; ++i)
+    {
+      EXPECT_EQ(dv_ptr[i], id);
+    }
+  }
+
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
+
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view,int_array_view_attach_buffer)
+{
+  SIDRE_datastore * ds = SIDRE_datastore_new();
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
+
+  const size_t field_nelems = 10;
+
+  // create 2 "field" views with type and # elems
+  size_t elem_count = 0;
+  SIDRE_dataview * field0 =
+    SIDRE_datagroup_create_view_from_type(root,"field0",
+                                          SIDRE_INT_ID, field_nelems);
+  elem_count += SIDRE_dataview_get_num_elements(field0);
+  SIDRE_dataview * field1 =
+    SIDRE_datagroup_create_view_from_type(root, "field1",
+                                          SIDRE_INT_ID, field_nelems);
+  elem_count += SIDRE_dataview_get_num_elements(field1);
+  EXPECT_EQ(elem_count, 2 * field_nelems);
+
+  // create buffer to hold data for all fields and allocate
+  SIDRE_databuffer * dbuff = SIDRE_datastore_create_buffer(ds);
+  SIDRE_databuffer_declare(dbuff, SIDRE_INT_ID, 2 * field_nelems);
+  SIDRE_databuffer_allocate_existing(dbuff);
+  EXPECT_EQ(SIDRE_databuffer_get_num_elements(dbuff), elem_count);
+
+  // Initilize buffer data for testing below.
+  int * b_ptr = (int *) SIDRE_databuffer_get_void_ptr(dbuff);
+  for(size_t i = 0 ; i < elem_count ; ++i)
+  {
+    b_ptr[i] = i / field_nelems;
+  }
+
+  SIDRE_databuffer_print(dbuff);
+
+  // attach field views to buffer and apply offsets into buffer
+  SIDRE_dataview_attach_buffer(field0, dbuff);
+  SIDRE_dataview_apply_nelems_offset(field0, field_nelems, 0 * field_nelems);
+  SIDRE_dataview_attach_buffer(field1, dbuff);
+  SIDRE_dataview_apply_nelems_offset(field1, field_nelems, 1 * field_nelems);
+
+  EXPECT_EQ(SIDRE_databuffer_get_num_views(dbuff), 2u);
+
+  // print field views...
+  SIDRE_dataview_print(field0);
+  SIDRE_dataview_print(field1);
+
+  // check values in field views...
+  int * f0_ptr = (int *) SIDRE_dataview_get_void_ptr(field0);
+  for (size_t i = 0 ; i < field_nelems ; ++i)
+  {
+    EXPECT_EQ(f0_ptr[i], 0);
+  }
+  int * f1_ptr = (int *) SIDRE_dataview_get_void_ptr(field1);
+  for (size_t i = 0 ; i < field_nelems ; ++i)
+  {
+    EXPECT_EQ(f1_ptr[i], 1);
+  }
+
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 
 }
 
@@ -208,19 +293,18 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   ///
 
   // create our main data store
-  ATK_datastore * ds = ATK_datastore_new();
+  SIDRE_datastore * ds = SIDRE_datastore_new();
   // get access to our root data Group
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   // create a group to hold the "old" or data we want to copy
-  ATK_datagroup * r_old = ATK_datagroup_create_group(root, "r_old");
+  SIDRE_datagroup * r_old = SIDRE_datagroup_create_group(root, "r_old");
   // create a view to hold the base buffer
-  ATK_dataview * base_old = ATK_datagroup_create_view_and_buffer_simple(r_old, "base_data");
+  SIDRE_dataview * base_old =
+    SIDRE_datagroup_create_view_and_allocate(r_old, "base_data",
+                                             SIDRE_INT_ID, 40);
 
-  // alloc our buffer
-  // we will create 4 sub views of this array
-  ATK_dataview_allocate_from_type(base_old, ATK_C_INT_T, 40);
-  int * data_ptr = (int *) ATK_dataview_get_data_pointer(base_old);
+  int * data_ptr = (int *) SIDRE_dataview_get_void_ptr(base_old);
 
 
   // init the buff with values that align with the
@@ -244,12 +328,12 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 #ifdef XXX
   /// setup our 4 views
-  ATK_databuffer * buff_old = ATK_dataview_get_buffer(base_old);
+  SIDRE_databuffer * buff_old = SIDRE_dataview_get_buffer(base_old);
   buff_old->getNode().print();
-  ATK_dataview * r0_old = ATK_dataview_create_view(r_old, "r0",buff_old);
-  ATK_dataview * r1_old = ATK_dataview_create_view(r_old, "r1",buff_old);
-  ATK_dataview * r2_old = ATK_dataview_create_view(r_old, "r2",buff_old);
-  ATK_dataview * r3_old = ATK_dataview_create_view(r_old, "r3",buff_old);
+  SIDRE_dataview * r0_old = SIDRE_dataview_create_view(r_old, "r0",buff_old);
+  SIDRE_dataview * r1_old = SIDRE_dataview_create_view(r_old, "r1",buff_old);
+  SIDRE_dataview * r2_old = SIDRE_dataview_create_view(r_old, "r2",buff_old);
+  SIDRE_dataview * r3_old = SIDRE_dataview_create_view(r_old, "r3",buff_old);
 
   // each view is offset by 10 * the # of bytes in a uint32
   // uint32(num_elems, offset)
@@ -284,27 +368,28 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   }
 
   // create a group to hold the "old" or data we want to copy into
-  ATK_datagroup * r_new = ATK_datagroup_create_group(root, "r_new");
+  SIDRE_datagroup * r_new = SIDRE_datagroup_create_group(root, "r_new");
   // create a view to hold the base buffer
-  ATK_dataview * base_new = ATK_datagroup_create_view_and_buffer_simple(r_new, "base_data");
+  SIDRE_dataview * base_new = SIDRE_datagroup_create_view_and_buffer_simple(
+    r_new, "base_data");
 
   // alloc our buffer
   // create a buffer to hold larger subarrays
   base_new->allocate_from_type(base_new, DataType::uint32(4 * 12));
-  int * base_new_data = (int *) ATK_databuffer_det_data(base_new);
+  int * base_new_data = (int *) SIDRE_databuffer_det_data(base_new);
   for (int i = 0 ; i < 4 * 12 ; ++i)
   {
     base_new_data[i] = 0;
   }
 
-  ATK_databuffer * buff_new = ATK_dataview_get_buffer(base_new);
+  SIDRE_databuffer * buff_new = SIDRE_dataview_get_buffer(base_new);
   buff_new->getNode().print();
 
   // create the 4 sub views of this array
-  ATK_dataview * r0_new = ATK_datagroup_create_view(r_new, "r0",buff_new);
-  ATK_dataview * r1_new = ATK_datagroup_create_view(r_new, "r1",buff_new);
-  ATK_dataview * r2_new = ATK_datagroup_create_view(r_new, "r2",buff_new);
-  ATK_dataview * r3_new = ATK_datagroup_create_view(r_new, "r3",buff_new);
+  SIDRE_dataview * r0_new = SIDRE_datagroup_create_view(r_new, "r0",buff_new);
+  SIDRE_dataview * r1_new = SIDRE_datagroup_create_view(r_new, "r1",buff_new);
+  SIDRE_dataview * r2_new = SIDRE_datagroup_create_view(r_new, "r2",buff_new);
+  SIDRE_dataview * r3_new = SIDRE_datagroup_create_view(r_new, "r3",buff_new);
 
   // apply views to r0,r1,r2,r3
   // each view is offset by 12 * the # of bytes in a uint32
@@ -333,7 +418,7 @@ TEST(C_sidre_view,int_array_multi_view_resize)
 
 
   /// check pointer values
-  int * r2_new_ptr = (int *) ATK_dataview_get_data_pointer(r2_new);
+  int * r2_new_ptr = (int *) SIDRE_dataview_get_void_ptr(r2_new);
 
   for(int i=0 ; i<10 ; i++)
   {
@@ -354,8 +439,8 @@ TEST(C_sidre_view,int_array_multi_view_resize)
   buff_new->getNode().print();
 #endif
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 
 }
 
@@ -368,16 +453,20 @@ TEST(C_sidre_view,int_array_realloc)
   ///
 
   // create our main data store
-  ATK_datastore * ds = ATK_datastore_new();
+  SIDRE_datastore * ds = SIDRE_datastore_new();
   // get access to our root data Group
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
 
   // create a view to hold the base buffer
-  ATK_dataview * a1 = ATK_datagroup_create_view_and_buffer_from_type(root, "a1", ATK_C_FLOAT_T, 5);
-  ATK_dataview * a2 = ATK_datagroup_create_view_and_buffer_from_type(root, "a2", ATK_C_INT_T, 5);
+  SIDRE_dataview * a1 =
+    SIDRE_datagroup_create_view_and_allocate(root, "a1",
+                                             SIDRE_FLOAT_ID, 5);
+  SIDRE_dataview * a2 =
+    SIDRE_datagroup_create_view_and_allocate(root, "a2",
+                                             SIDRE_INT_ID, 5);
 
-  float * a1_ptr = (float *) ATK_dataview_get_data_pointer(a1);
-  int * a2_ptr = (int *)  ATK_dataview_get_data_pointer(a2);
+  float * a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
+  int * a2_ptr = (int *)  SIDRE_dataview_get_void_ptr(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -385,15 +474,15 @@ TEST(C_sidre_view,int_array_realloc)
     a2_ptr[i] = -5;
   }
 
-  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*5);
-  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*5);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*5);
 
 
-  ATK_dataview_reallocate(a1, 10);
-  ATK_dataview_reallocate(a2, 15);
+  SIDRE_dataview_reallocate(a1, 10);
+  SIDRE_dataview_reallocate(a2, 15);
 
-  a1_ptr = (float *) ATK_dataview_get_data_pointer(a1);
-  a2_ptr = (int *) ATK_dataview_get_data_pointer(a2);
+  a1_ptr = (float *) SIDRE_dataview_get_void_ptr(a1);
+  a2_ptr = (int *) SIDRE_dataview_get_void_ptr(a2);
 
   for(int i=0 ; i<5 ; i++)
   {
@@ -412,12 +501,12 @@ TEST(C_sidre_view,int_array_realloc)
     a2_ptr[i] = -15;
   }
 
-  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*10);
-  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*15);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a1), sizeof(float)*10);
+  EXPECT_EQ(SIDRE_dataview_get_total_bytes(a2), sizeof(int)*15);
 
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
 
 }
 
@@ -426,48 +515,33 @@ TEST(C_sidre_view,int_array_realloc)
 TEST(C_sidre_view,simple_opaque)
 {
   // create our main data store
-  ATK_datastore * ds = ATK_datastore_new();
+  SIDRE_datastore * ds = SIDRE_datastore_new();
   // get access to our root data Group
-  ATK_datagroup * root = ATK_datastore_get_root(ds);
+  SIDRE_datagroup * root = SIDRE_datastore_get_root(ds);
   int * src_data = (int *) malloc(sizeof(int));
 
   src_data[0] = 42;
 
   void * src_ptr = (void *)src_data;
 
-  ATK_dataview * opq_view = ATK_datagroup_create_opaque_view(root, "my_opaque",src_ptr);
+  SIDRE_dataview * opq_view = SIDRE_datagroup_create_view_external(root,
+                                                                   "my_opaque",
+                                                                   src_ptr);
 
-  // we shouldn't have any buffers
-  EXPECT_EQ(ATK_datastore_get_num_buffers(ds), 0u);
+  // we have a buffer because an "external" view currently uses one
+  EXPECT_EQ(SIDRE_datastore_get_num_buffers(ds), 1u);
 
-  EXPECT_TRUE(ATK_dataview_is_opaque(opq_view));
+  EXPECT_TRUE(SIDRE_dataview_is_external(opq_view));
+  EXPECT_TRUE(!SIDRE_dataview_is_applied(opq_view));
+  EXPECT_TRUE(SIDRE_dataview_is_opaque(opq_view));
 
-  void * opq_ptr = ATK_dataview_get_opaque(opq_view);
+  void * opq_ptr = SIDRE_dataview_get_void_ptr(opq_view);
 
   int * out_data = (int *)opq_ptr;
   EXPECT_EQ(opq_ptr,src_ptr);
   EXPECT_EQ(out_data[0],42);
 
-  ATK_datastore_print(ds);
-  ATK_datastore_delete(ds);
+  SIDRE_datastore_print(ds);
+  SIDRE_datastore_delete(ds);
   free(src_data);
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
-using asctoolkit::slic::UnitTestLogger;
-
-int main(int argc, char * argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;   // create & initialize test logger,
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

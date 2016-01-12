@@ -22,6 +22,9 @@ class Wrapc(util.WrapperMixin):
         self.typedef = tree['types']
         self._init_splicer(splicers)
         self.comment = '//'
+        self.doxygen_begin = '/**'
+        self.doxygen_cont = ' *'
+        self.doxygen_end = ' */'
 
     def _begin_output_file(self):
         """Start a new class for output"""
@@ -106,8 +109,13 @@ class Wrapc(util.WrapperMixin):
 
     def write_header(self, node, fname, cls=False):
         guard = fname.replace(".", "_").upper()
+        options = node['options']
 
         output = []
+
+        if options.doxygen:
+            self.write_doxygen_file(output, fname, node, cls)
+
         output.extend([
                 '// For C users and C++ implementation',
                 '',
@@ -212,10 +220,7 @@ class Wrapc(util.WrapperMixin):
             cls_function = 'method'
         else:
             cls_function = 'function'
-        if 'decl' in node:
-            self.log.write("C {0} {1[decl]}\n".format(cls_function, node))
-        else:
-            self.log.write("C {0} {1[result][name]}\n".format(cls_function, node))
+        self.log.write("C {0} {1[_decl]}\n".format(cls_function, node))
 
         fmt_func = node['fmt']
         fmt = util.Options(fmt_func)
@@ -364,6 +369,11 @@ class Wrapc(util.WrapperMixin):
 
         impl = self.impl
         impl.append('')
+        if options.debug:
+            impl.append('// %s' % node['_decl'])
+            impl.append('// function_index=%d' % node['_function_index'])
+        if options.doxygen and 'doxygen' in node:
+            self.write_doxygen(impl, node['doxygen'])
         impl.append(wformat('{C_return_type} {C_name}({C_prototype})', fmt))
         impl.append('{')
         if cls:

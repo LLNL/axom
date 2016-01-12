@@ -81,6 +81,10 @@ Options control the behavior of shroud.  They are nested so that
 options applied at the outer most level apply to inner groups.
 Options set on a class apply to all methods in that class.
 
+debug
+
+  Print additional comments in generated files that may 
+  be useful for debugging.
 
 library
 
@@ -99,7 +103,8 @@ cpp_header
 
 F_string_result_as_arg
 
-  Function with return a ``char *`` will instead by converted to
+  The name of the output argument.
+  Function which return a ``char *`` will instead by converted to a
   subroutine which require an additional argument for the result.
 
 F_string_len_trim
@@ -110,10 +115,34 @@ F_string_len_trim
   creating a ``NULL`` terminated string using ``trim``.  This avoids
   copying the string in the Fortran wrapper.
 
+F_force_wrapper
+
+  If *true*, always create an explicit Fortran wrapper.
+  If *false*, only create the wrapper when there is work for it to do;
+  otherwise, call the C function directly.
+  For example, a function which only deals with native
+  numeric types does not need a wrapper since it can be called
+  directly by defining the correct interface.
+  The default is *false*.
+
 namespace
 
   Blank delimited list of namespaces for **cpp_header**.
 
+wrap_c
+
+  If *true*, create C wrappers.
+  Defaults to *true*.
+
+wrap_fortran
+
+  If *true*, create Fortran wrappers.
+  Defaults to *true*.
+
+wrap_python
+
+  If *true*, create Python wrappers.
+  Defaults to *false*.
 
 
 
@@ -250,15 +279,23 @@ C_this
 
 F_this
 
-    Name of the Fortran object argument.  Defaults to ``obj``.
+   Name of the Fortran argument which is the derived type
+   which represents a C++ class.
+   It must not be the same as any of the routines arguments.
+   Defaults to ``obj``.
 
 F_result
 
-    pass
+    The name of the Fortran wrapper's result variable.
+    It must not be the same as any of the routines arguments.
+    It defaults to *rv*  (return value).
 
 F_derived_member
 
-    pass
+    The name of the member of the Fortran derived type which
+    wraps a C++ class.  It will contain a ``type(C_PTR)`` which
+    points to the C++ instance.
+    Defaults to *voidptr*.
 
 
 Top Level
@@ -279,6 +316,9 @@ types
    Each type is a dictionary for members describing how to
    map a type between languages.
 
+patterns:
+
+   Code blocks to insert into generated code.
 
 C_header_filename
 
@@ -303,15 +343,253 @@ F_impl_filename
 Types
 -----
 
+Types describe how to handle arguments from Fortran to C to C++.  Then
+how to convert return values from C++ to C to Fortran.
+
+Since Fortran 2003 (ISO/IEC 1539-1:2004(E)) there is a standardized
+way to generate procedure and derived-type declarations and global
+variables which are interoperable with C (ISO/IEC 9899:1999). The
+bind(C) attribute has been added to inform the compiler that a symbol
+shall be interoperable with C; also, some constraints are added. Note,
+however, that not all C features have a Fortran equivalent or vice
+versa. For instance, neither C's unsigned integers nor C's functions
+with variable number of arguments have an equivalent in
+Fortran. [#f1]_
+
+
+.. list from util.py class Typedef
+
+base
+
+    Base type.
+    For example, string and string_from_buffer both have a 
+    base time of *string*.
+    Defaults to *unknown*
+
+forward
+
+    Forward declaration.
+    Defaults to *None*.
+
 typedef
-c_header
-cpp_header
-c_type
+
+    Initialize from existing type
+    Defaults to *None*.
+
 cpp_type
+
+    Name of type in C++.
+    Defaults to *None*.
+
+cpp_to_c
+
+    Expression to convert from C++ to C.
+    Defaults to *{var}*.
+
+cpp_header
+
+    Name of C++ header file required for implementation.
+    For example, if cpp_to_c was a function.
+    Defaults to *None*.
+
+c_type
+
+    name of type in C.
+    Defaults to *None*.
+
+c_header
+
+    Name of C header file required for type.
+    Defaults to *None*.
+
 c_to_cpp
+
+    Expression to convert from C to C++.
+    Defaults to *{var}*.
+
 c_fortran
+
+    Expression to convert from C to Fortran.
+    Defaults to *None*.
+
+c_argdecl
+
+    List of argument declarations for C wrapper, *None*=match declaration.
+    Used with string_from_buffer .
+    Defaults to *None*.
+
+f_c_args
+
+    List of argument names to F_C routine.
+    Defaults to *None*.
+
+f_c_argdecl
+
+    List of declarations to F_C routine.
+    By default, only a single argument is passed for each dummy argument.
+    Defaults to *None*.
+
 f_type
+
+    Name of type in Fortran.
+    Defaults to *None*.
+
+f_derived_type
+
+    Fortran derived type name.
+    Defaults to *None* i.e. use C++ class name.
+
+f_args
+
+    Arguments in the Fortran wrapper to pass to the C function.
+    This can pass multiple arguments to C for a single
+    argument to the wrapper; for example, an address and length
+    for a ``character(*)`` argument.
+    Or it may be intermediate values.
+    For example, a Fortran character variable can be converted
+    to a ``NULL`` terminated string with
+    ``trim({var}) // C_NULL_CHAR``.
+    Defaults to *None*  i.e. pass argument unchanged.
+
+f_argsdecl
+
+    A list of declarations needed by *f_args*, *f_pre_call* or
+    *f_post_call*.
+    Defaults to *None* i.e. no additional declarations.
+
 f_module
+
+    Fortran modules needed for type  (dictionary).
+    Defaults to *None*.
+
+f_return_code
+
+    Fortran code used to call function and assign the return value.
+    Defaults to *None*.
+
+.. f_kind
+
+..    Fortran kind of type.
+..    Defaults to *None*.
+
+f_cast
+
+    Expression to convert Fortran type to C type.
+    This is used when creating a Fortran generic functions which
+    accept several type but call a single C function which expects
+    a specific type.
+    For example, type ``int`` is defined as ``int({var}, C_INT)``.
+    This expression converts *var* to a ``integer(C_INT)``.
+    Defaults to *{var}*  i.e. no conversion.
+
+f_use_tmp
+
+    If *true*, pass {tmp_var} to C routine instead of {var}.
+    This can be used with *f_pre_call* to convert Fortran values
+    to values.  For example, to cast or map values.
+    Defaults to *False*.
+
+f_pre_call
+
+    Statement to execute before call, often to coerce types
+    when *f_cast* cannot be used.  If this involves the temporary
+    variable then *f_use_tmp* should be set to *True*.
+    Defaults to *None*.
+
+f_post_call
+
+    Statement to execute after call.
+    Can be use to cleanup after *f_pre_call*
+    or to coerce the return value.
+    Defaults to *None*.
+
+..  XXX - maybe later.  For not in wrapping routines
+..         f_attr_len_trim = None,
+..         f_attr_len = None,
+..         f_attr_size = None,
+
+result_as_arg
+
+    Override fields when result should be treated as an argument.
+    Defaults to *None*.
+
+PY_format
+
+    'format unit' for PyArg_Parse.
+    Defaults to *O*
+
+PY_PyTypeObject
+
+    Variable name of PyTypeObject instance.
+    Defaults to *None*.
+
+PY_PyObject
+
+    Typedef name of PyObject instance.
+    Defaults to *None*.
+
+PY_ctor
+
+    Expression to create object.
+    ex. PyBool_FromLong({rv})
+    Defaults to *None*.
+
+PY_to_object
+
+    PyBuild - object = converter(address).
+    Defaults to *None*.
+
+PY_from_object
+
+    PyArg_Parse - status = converter(object, address).
+    Defaults to *None*.
+
+PY_post_parse
+
+   Used if PY_PyTypeObject is set.
+   A format expression to convert a *PyObject* into the type.
+   Ex. ``{var} = PyObject_IsTrue({var_obj});``
+
+Format dictionary for Type fields
+
+  * var - name of variable, defaults to argument name.
+  * tmp_var - temporary variable.  defaults to *tmp_{var}*.
+  * result_arg - name of result variable from *F_string_result_as_arg*.
+  * F_result - name of result variable
+  * F_C_name - name of BIND(C) interface
+  * F_arg_c_call
+  * F_arg_c_call_tab
+  * F_arguments
+
+
+arg_f_decl._f_decl(arg)
+
+Example for each type::
+
+   subroutine name({var})
+       {f_argsdecl}
+
+       ! arguments
+       foreach argument:
+          F_arg_c_call += f_args or f_cast or '{var}'
+
+       {f_pre_call}
+       {f_return_code}     ! call C code
+       {f_post_call}
+
+
+
+Predefined types
+
+  * void
+  * int
+  * long
+  * size_t
+  * float
+  * double
+  * bool
+  * string
+  * string_from_buffer
 
 
 Classes
@@ -352,6 +630,13 @@ decl
 
    Function declaration.
    Parsed to extract function name, type and arguments descriptions.
+
+default_arg_suffix
+
+   A list of suffixes to apply to C and Fortran functions generated when
+   wrapping a C++ function with default arguments.  The first entry is for
+   the function with the fewest arguments and the final entry should be for
+   all of the arguments.
 
 function_suffix
 
@@ -442,14 +727,44 @@ default
 
    If set the ``optional`` keyword is added to the Fortran interface.
 
+len
+
+   An expression for the length of string result variable.
+   If not set then the function will be called to compute the string
+   result and len will be computed using ``strlen``.
+   The function is then called again to fill in the result variable.
+ 
 len_trim
 
    For a string argument, pass the string address and the result of
    len_trim.
+
+Doxygen
+-------
+
+Used to insert directives for doxygen.
+
+brief
+
+   Brief description.
+
+description
+
+   Full description.
+
+return
+
+   Description of return value.
 
 
 Splicers
 --------
 
 Describe splicers.
+
+
+
+.. rubric:: Footnotes
+
+.. [#f1] https://gcc.gnu.org/onlinedocs/gfortran/Interoperability-with-C.html
 

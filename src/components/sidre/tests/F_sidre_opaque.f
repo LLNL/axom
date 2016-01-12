@@ -92,15 +92,19 @@ contains
 ! Simple test that adds an opaque data object, retrieves it and checks if
 ! the retrieved object is in the expected state.
 !
-  subroutine inout
+  subroutine basic_inout
     use dsopaquetest
     type(datastore) ds
     type(datagroup) root, problem_gp
     type(dataview) ext_view
+    type(dataview) ext2_view
     integer, parameter :: ihi_val = 9
     integer(C_INT) test_ihi
-    type(Extent), pointer :: ext, test_extent
-    type(C_PTR) :: test_extent_ptr
+    integer(C_INT) test_ihi2
+    type(Extent), pointer :: ext, test_extent, ext2, test_extent2
+    type(C_PTR) :: test_extent_ptr, test_extent2_ptr
+
+    call set_case_name("basic_inout")
 
     ds = datastore_new()
     root = ds%get_root()
@@ -110,40 +114,38 @@ contains
     allocate(ext)
     ext = Extent(0, ihi_val)
 
-    ext_view = problem_gp%create_opaque_view("ext", c_loc(ext))
+    ext_view = problem_gp%create_view_external("ext", c_loc(ext))
 
-    !  problem_gp%CreateViewAndBuffer("ext")
-    !  problem_gp%CreateOpaqueView("ext", ext)
-    !  problem_gp%CreateView("ext", 0)
-    !  problem_gp%MoveView(0)
-    !  problem_gp%MoveView(problem_gp%GetView("ext"))
-    !  problem_gp%CopyView(0)
-    !  problem_gp%CopyView(problem_gp%GetView("ext"))
-    !  problem_gp%AttachView(0)
-    !  problem_gp%CopyView(problem_gp%GetView("ext"))
-    !  Can't do following: method is private...
-    !  DataView* v = problem_gp%DetachView("ext")
-    !  std::cout << "view name = " << v%GetName() << std::endl
-    !  problem_gp%DestroyView("foo")
-    !  root%MoveGroup(problem_gp)
-    !  root%CopyGroup(problem_gp)
-    !  Can't do following: method is private...
-    !  root%DetachGroup("bar")
-    !  root%DestroyGroup("bar")
-    !  problem_gp%get_view(2)
-
+    call assert_equals(ext_view%is_external(), .true.)
+    call assert_equals(ext_view%is_applied(), .false.)
     call assert_equals(ext_view%is_opaque(), .true.)
 
-    test_extent_ptr = ext_view%get_opaque()
+    test_extent_ptr = ext_view%get_void_ptr()
     call c_f_pointer(test_extent_ptr, test_extent)
 
     test_ihi = test_extent%m_ihi
     call assert_equals(test_extent%m_ihi, ihi_val)
 
+    ! Similar test with different view methods
+    
+    allocate(ext2)
+    ext2 = Extent(0, 2 * ihi_val)
+
+    ext2_view = problem_gp%create_view_empty("ext2")
+    ext2_view = ext2_view%set_external_data_ptr( c_loc(ext2) )
+
+    call assert_equals(ext2_view%is_opaque(), .true.)
+
+    test_extent2_ptr = ext2_view%get_void_ptr()
+    call c_f_pointer(test_extent2_ptr, test_extent2)
+
+    test_ihi2 = test_extent2%m_ihi
+    call assert_equals(test_extent2%m_ihi, 2 * ihi_val)
+
     ! clean up...
     deallocate(ext)
     call ds%delete()
-  end subroutine inout
+  end subroutine basic_inout
 
   !------------------------------------------------------------------------------
   !
@@ -181,6 +183,8 @@ contains
     type(MeshVar), pointer :: zonemv, nodemv
     type(C_PTR) zonemv_ptr, nodemv_ptr, dom_ext_ptr
 
+    call set_case_name("meshvar_test")
+
     ds   = datastore_new()
     root = ds%get_root()
 
@@ -190,10 +194,10 @@ contains
     meshvar_gp = problem_gp%create_group("mesh_var")
     allocate(zone_mv)
     zone_mv = MeshVar(Zone_Centering, Int_Type, zone_var_depth)
-    zone_mv_view = meshvar_gp%create_opaque_view("zone_mv", c_loc(zone_mv))
+    zone_mv_view = meshvar_gp%create_view_external("zone_mv", c_loc(zone_mv))
     allocate(node_mv)
     node_mv = MeshVar(Node_Centering, Double_Type, node_var_depth)
-    node_mv_view = meshvar_gp%create_opaque_view("node_mv", c_loc(node_mv))
+    node_mv_view = meshvar_gp%create_view_external("node_mv", c_loc(node_mv))
 
     !
     ! Create domain groups, add extents
@@ -203,18 +207,18 @@ contains
        dom_gp = problem_gp%create_group(dom_name(idom))
        allocate(dom_ext)
        dom_ext = Extent(ilo_val(idom), ihi_val(idom))
-       ext_view = dom_gp%create_opaque_view("ext", c_loc(dom_ext))
+       ext_view = dom_gp%create_view_external("ext", c_loc(dom_ext))
 
-       zonemv_ptr = zone_mv_view%get_opaque()
+       zonemv_ptr = zone_mv_view%get_void_ptr()
        call c_f_pointer(zonemv_ptr, zonemv)
 
-       dom_zone_view = dom_gp%create_view_and_buffer("zone_data")
+       dom_zone_view = dom_gp%create_view_empty("zone_data")
        call dom_zone_view%allocate(SIDRE_INT_ID, zone_mv%getNumVals(dom_ext))
 
-       nodemv_ptr = node_mv_view%get_opaque()
+       nodemv_ptr = node_mv_view%get_void_ptr()
        call c_f_pointer(nodemv_ptr, nodemv)
 
-       dom_node_view = dom_gp%create_view_and_buffer("node_data")
+       dom_node_view = dom_gp%create_view_empty("node_data")
        call dom_node_view%allocate(SIDRE_DOUBLE_ID, nodemv%getNumVals(dom_ext))
     enddo
 
@@ -231,23 +235,23 @@ contains
        dom_gp = problem_gp%get_group(dom_name(idom))
 
        tmpview = dom_gp%get_view("ext")
-       dom_ext_ptr = tmpview%get_opaque()
+       dom_ext_ptr = tmpview%get_void_ptr()
        call c_f_pointer(dom_ext_ptr, dom_ext)
 
-       zonemv_ptr = zone_mv_view%get_opaque()
+       zonemv_ptr = zone_mv_view%get_void_ptr()
        call c_f_pointer(zonemv_ptr, zonemv)
 
-       nodemv_ptr = node_mv_view%get_opaque()
+       nodemv_ptr = node_mv_view%get_void_ptr()
        call c_f_pointer(nodemv_ptr, nodemv)
 
        num_zone_vals = zonemv%getNumVals(dom_ext)
        tmpview = dom_gp%get_view("zone_data")
-       test_num_zone_vals = tmpview%get_number_of_elements()
+       test_num_zone_vals = tmpview%get_num_elements()
        call assert_equals(num_zone_vals, test_num_zone_vals)
 
        num_node_vals = nodemv%getNumVals(dom_ext)
        tmpview = dom_gp%get_view("node_data")
-       test_num_node_vals = tmpview%get_number_of_elements()
+       test_num_node_vals = tmpview%get_num_elements()
        call assert_equals(num_node_vals, test_num_node_vals)
     enddo
 
@@ -257,7 +261,7 @@ contains
     do idom = 1, 2
        tmpgroup = problem_gp%get_group(dom_name(idom))
        tmpview = tmpgroup%get_view("ext")
-       dom_ext_ptr = tmpview%get_opaque()
+       dom_ext_ptr = tmpview%get_void_ptr()
        call c_f_pointer(dom_ext_ptr, dom_ext)
        deallocate(dom_ext)
     enddo
@@ -268,25 +272,23 @@ contains
 end module sidre_opaque
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_opaque
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
 
-  call inout
+  call basic_inout
   call meshvar_test
 
   call fruit_summary
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
+

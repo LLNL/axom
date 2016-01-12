@@ -22,7 +22,7 @@ Useful links
   * `Stash <https://lc.llnl.gov/stash/projects/ATK>`_
   * `Bamboo <https://lc.llnl.gov/bamboo/browse/ASC>`_
   * `ASCTOOLKIT-USERS mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-USERS>`_
-  * `ASCTOOLKIT_DEV mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-DEV>`_
+  * `ASCTOOLKIT-DEV mailing list <https://listserv.llnl.gov/Scripts/wa.exe?A0=ASCTOOLKIT-DEV>`_
   * `Coding Guidelines <https://lc.llnl.gov/toolkit/docs/sphinx/coding_guidlines_docs/html/index.html>`_
 
 Components
@@ -32,7 +32,14 @@ Components
   *  `SiDRe: Simulation Data Repository (formerly known as Datastore) <https://lc.llnl.gov/toolkit/docs/sphinx/sidre_docs/html/index.html>`_
   *  SLAM (Set-theoretic Lightweight API for Meshes)
   *  SLIC (Simple Logging Interface Code)
-  *  `Shroud (Fortran wrapping utility)  <https://lc.llnl.gov/toolkit/docs/sphinx/shroud_docs/html/index.html>`_
+  *  `Shroud (C++ API to C/Fortran)  <https://lc.llnl.gov/toolkit/docs/sphinx/shroud_docs/html/index.html>`_
+
+Doxygen
+
+  *  `SLAM <https://lc.llnl.gov/toolkit/docs/doxygen/meshapi_doxygen/html/index.html>`_
+  *  `SiDRe <https://lc.llnl.gov/toolkit/docs/doxygen/sidre_doxygen/html/index.html>`_
+  *  `SLIC <https://lc.llnl.gov/toolkit/docs/doxygen/slic_doxygen/html/index.html>`_
+  
 
 
 

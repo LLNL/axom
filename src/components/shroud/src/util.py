@@ -118,11 +118,12 @@ class WrapperMixin(object):
 
 #####
 
-    def std_c_type(self, lang, arg, const=None):
+    def std_c_type(self, lang, arg, const=None, ptr=False):
         """
         Return the C type.
         pass-by-value default
 
+        lang = c_type or cpp_type
         if const is None, use const from arg.
 
         attributes:
@@ -143,7 +144,7 @@ class WrapperMixin(object):
             t.append('const')
 
         t.append(getattr(typedef, lang))
-        if arg['attrs'].get('ptr', False):
+        if arg['attrs'].get('ptr', ptr):
             t.append('*')
         elif arg['attrs'].get('reference', False):
             if lang == 'cpp_type':
@@ -152,16 +153,15 @@ class WrapperMixin(object):
                 t.append('*')
         return ' '.join(t)
 
-    def std_c_decl(self, lang, arg, name=None, const=None):
+    def std_c_decl(self, lang, arg,
+                   name=None, const=None, ptr=False):
         """
         Return the C declaration.
 
         If name is not supplied, use name in arg.
         This makes it easy to reproduce the arguments.
         """
-#        if lang not in [ 'c_type', 'cpp_type' ]:
-#            raise RuntimeError
-        typ = self.std_c_type(lang, arg, const)
+        typ = self.std_c_type(lang, arg, const, ptr)
         return typ + ' ' + ( name or arg['name'] )
 
 #####
@@ -207,6 +207,42 @@ class WrapperMixin(object):
                     fp.write(subline)
                     fp.write('\n')
 
+    def write_doxygen_file(self, output, fname, node, cls):
+        """ Write a doxygen comment block for a file.
+        """
+        output.append(self.doxygen_begin)
+        output.append(self.doxygen_cont + ' \\file %s' % fname)
+        if cls:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s class'
+                          % node['name'])
+        else:
+            output.append(self.doxygen_cont +
+                          ' \\brief Shroud generated wrapper for %s library'
+                          % node['options'].library)
+        output.append(self.doxygen_end)
+
+    def write_doxygen(self, output, docs):
+        """Write a doxygen comment block for a function.
+        Uses brief, description, and return from docs.
+        """
+        output.append(self.doxygen_begin)
+        if 'brief' in docs:
+            output.append(self.doxygen_cont + ' \\brief %s' % docs['brief'])
+            output.append(self.doxygen_cont)
+        if 'description' in docs:
+            desc = docs['description']
+            if desc.endswith('\n'):
+                lines = docs['description'].split('\n')
+                lines.pop()  # remove trailing newline
+            else:
+                lines = [desc]
+            for line in lines:
+                output.append(self.doxygen_cont + ' ' + line)
+        if 'return' in docs:
+            output.append(self.doxygen_cont)
+            output.append(self.doxygen_cont + ' \\return %s' % docs['return'])
+        output.append(self.doxygen_end)
 
 
 class Typedef(object):
@@ -216,38 +252,37 @@ class Typedef(object):
     """
     # valid fields
     defaults = dict(
-        base='unknown',       # base type: 'string'
-        forward=None,         # forward declaration
+        base='unknown',       # Base type: 'string'
+        forward=None,         # Forward declaration
         typedef=None,         # Initialize from existing type
 
-        cpp_type=None,        # name of type in C++
-        cpp_to_c='{var}',     # expression to convert from C++ to C
+        cpp_type=None,        # Name of type in C++
+        cpp_to_c='{var}',     # Expression to convert from C++ to C
         cpp_header=None,      # Name of C++ header file required for implementation
                               # For example, if cpp_to_c was a function
 
-        c_type=None,          # name of type in C
+        c_type=None,          # Name of type in C
         c_header=None,        # Name of C header file required for type
-        c_to_cpp='{var}',     # expression to convert from C to C++
-        c_fortran=None,       # expression to convert from C to Fortran
-        c_argdecl=None,       # list of argument declarations for C wrapper, None=match declaration
+        c_to_cpp='{var}',     # Expression to convert from C to C++
+        c_fortran=None,       # Expression to convert from C to Fortran
+        c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer 
 
-        f_c_args=None,        # list of argument names to F_C routine
-        f_c_argdecl=None,     # list of declarations to F_C routine
+        f_c_args=None,        # List of argument names to F_C routine
+        f_c_argdecl=None,     # List of declarations to F_C routine
 
-        f_type=None,         # name of type in Fortran
-        fortran_derived=None,    # Fortran derived type name
-        fortran_to_c='{var}', # expression to convert Fortran to C
+        f_type=None,          # Name of type in Fortran
+        f_derived_type=None,  # Fortran derived type name
+        f_args=None,          # Argument in Fortran wrapper to call C.
         f_module=None,        # Fortran modules needed for type  (dictionary)
-        f_return_code='{F_result} = {F_C_name}({F_arg_c_call_tab})',
+        f_return_code=None,
         f_kind = None,        # Fortran kind of type
         f_cast = '{var}',     # Expression to convert to type
                               # e.g. intrinsics such as int and real
-        f_use_tmp = None,     # pass {tmp_var} to C routine instead of {var}
-        f_pre_decl = None,    # declarations needed by f_pre_call
-        f_pre_call = None,    # statement to execute before call, often to coerce types
-        f_post_call = None,   # statement to execute before call - cleanup, coerce result
-        f_rv_decl = None,     # how to declare return variable - when C and Fortran return different types
+        f_use_tmp = False,    # Pass {tmp_var} to C routine instead of {var}
+        f_argsdecl = None,    # List of declarations need by argument.
+        f_pre_call = None,    # Statement to execute before call, often to coerce types
+        f_post_call = None,   # Statement to execute after call - cleanup, coerce result
 
 # XXX - maybe later.  For not in wrapping routines
 #        f_attr_len_trim = None,
@@ -263,6 +298,7 @@ class Typedef(object):
                               # ex. PyBool_FromLong({rv})
         PY_to_object=None,    # PyBuild - object = converter(address)
         PY_from_object=None,  # PyArg_Parse - status = converter(object, address);
+        PY_post_parse='KKK',  # Used if PY_PyTypeObject is set
         )
 
     def __init__(self, name, **kw):
@@ -371,6 +407,12 @@ class Options(object):
             elif not hasattr(self, key):
                 setattr(self, key, value)
 
+    def inlocal(self, key):
+        """ Return true if key is defined locally
+        i.e. does not check parent.
+        """
+        return key in self.__dict__
+
     def _to_dict(self):
         d = {}
         skip = '_' + self.__class__.__name__ + '__'   # __name is skipped
@@ -392,23 +434,17 @@ class Options(object):
 def copy_function_node(node):
     """Create a copy of a function node to use with C++ template.
     """
-    known = {}   # known fields
-    new = {}
+    # Shallow copy everything
+    new = node.copy()
 
     # Deep copy dictionaries
     for field in [ 'args', 'attrs', 'result' ]:
         new[field] = copy.deepcopy(node[field])
-        known[field] = True
 
     # Add new Options in chain
     for field in [ 'fmt', 'options' ]:
         new[field] = Options(node[field])
-        known[field] = True
 
-    # Shallow copy any unknown fields
-    for key, value in node.items():
-        if key not in known:
-            new[key] = value
     return new
 
 class XXXClassNode(object):

@@ -37,115 +37,59 @@ namespace asctoolkit
 namespace sidre
 {
 
-
 /*
  *************************************************************************
  *
- * Declare a data view from sidre type and length.
+ * Allocate data for view, previously described.
  *
  *************************************************************************
  */
-DataView * DataView::declare(TypeID type, SidreLength len)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-  SLIC_ASSERT_MSG(len >= 0, "Must declare number of elements in view >=0");
-
-  if ( !isOpaque() && len >= 0 ) 
-  {
-    DataType dtype = conduit::DataType::default_dtype(type);
-    dtype.set_number_of_elements(len);
-
-    m_schema.set(dtype);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare a data view as a Conduit schema.
- *
- *************************************************************************
- */
-DataView * DataView::declare(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-
-  if ( !isOpaque() ) 
-  {
-    m_schema.set(schema);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare a data view as a pre-defined Conduit data type.
- *
- *************************************************************************
- */
-DataView * DataView::declare(const DataType& dtype)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call declare on an opaque view");
-
-  if ( !isOpaque() ) 
-  {
-    m_schema.set(dtype);
-    m_is_applied = false;
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Allocate data for a DataView, previously declared.
- *
- *************************************************************************
- */
+//
+// RDH -- What happens here if the buffer is already allocated?
+//
 DataView * DataView::allocate()
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call allocate on an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocateIsValid() )
   {
-    TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-    SidreLength numelems = m_schema.dtype().number_of_elements();
-    m_data_buffer->allocate(type, numelems);
-    apply();
+    if ( m_data_buffer == ATK_NULLPTR )
+    {
+      m_data_buffer = m_owning_group->getDataStore()->createBuffer();
+      m_data_buffer->attachView(this);
+    }
+
+    if ( m_data_buffer->getNumViews() == 1 )
+    {
+      TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+      SidreLength num_elems = m_schema.dtype().number_of_elements();
+      m_data_buffer->allocate(type, num_elems);
+      m_state = ALLOCATED;
+      apply();
+    }
   }
+
   return this;
 }
 
 /*
  *************************************************************************
  *
- * Declare a data view using sidre type and length.
+ * Allocate data for view with type and number of elements.
  *
  *************************************************************************
  */
-DataView * DataView::allocate( TypeID type, SidreLength len)
+DataView * DataView::allocate( TypeID type, SidreLength num_elems)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an opaque view");
-  SLIC_ASSERT_MSG(len >= 0, "Must allocate number of elements in view >=0");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
+  SLIC_ASSERT(num_elems >= 0);
 
-  if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 ) 
+  if ( allocateIsValid() && num_elems >= 0 )
   {
-    declare(type, len);
+    declare(type, num_elems);
     allocate();
-    apply();
   }
   return this;
 }
@@ -153,45 +97,19 @@ DataView * DataView::allocate( TypeID type, SidreLength len)
 /*
  *************************************************************************
  *
- * Declare a data view as a Conduit schema and allocate the data.
- *
- *************************************************************************
- */
-DataView * DataView::allocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
-
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
-  {
-    declare(schema);
-    allocate();
-    apply();
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Declare a data view as a Conduit pre-defined data type and allocate the data.
+ * Allocate data for view described by a Conduit data type object.
  *
  *************************************************************************
  */
 DataView * DataView::allocate(const DataType& dtype)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to allocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data allocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocateIsValid() )
   {
     declare(dtype);
     allocate();
-    apply();
   }
   return this;
 }
@@ -199,24 +117,51 @@ DataView * DataView::allocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a length.
+ * Allocate data for view described by a Conduit schema object.
  *
  *************************************************************************
  */
-DataView * DataView::reallocate(SidreLength len)
+DataView * DataView::allocate(const Schema& schema)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an opaque view");
-  SLIC_ASSERT_MSG(len >= 0, "Must re-allocate number of elements in view >=0");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data reallocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
 
-  if ( !isOpaque() && len >= 0 && m_data_buffer->getNumViews() == 1 )
+  if ( allocateIsValid() )
+  {
+    declare(schema);
+    allocate();
+  }
+  return this;
+}
+
+//
+// RDH -- Reallocation methods should check if the buffer has been declared.
+//        If so, then the view type should be checked to make sure it matches
+//        the buffer type.
+//        If not, then it should be a valid operation to declare the buffer
+//        here and allocate it.
+//
+
+/*
+ *************************************************************************
+ *
+ * Reallocate data for view to given number of elements.
+ *
+ *************************************************************************
+ */
+DataView * DataView::reallocate(SidreLength num_elems)
+{
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
+  SLIC_ASSERT(num_elems >= 0);
+
+  if ( allocateIsValid() && num_elems >= 0 )
   {
     // preserve current type
     TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
-    declare(vtype, len);
-    m_data_buffer->reallocate(len);
+    declare(vtype, num_elems);
+    m_data_buffer->reallocate(num_elems);
+    m_state = ALLOCATED;
     apply();
   }
   return this;
@@ -225,59 +170,62 @@ DataView * DataView::reallocate(SidreLength len)
 /*
  *************************************************************************
  *
- * Reallocate the data view's buffer according to a Conduit schema.
- *
- *************************************************************************
- */
-DataView * DataView::reallocate(const Schema& schema)
-{
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data reallocation on a view allowed only if it's the only view associated with its buffer");
-
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
-  {
-    TypeID type = static_cast<TypeID>(schema.dtype().id());
-    TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
-    SLIC_ASSERT_MSG( type == view_type,
-		     "Attempting to reallocate with a different type");
-    if (type == view_type)
-    {
-      declare(schema);
-      SidreLength numelems = schema.dtype().number_of_elements();
-      m_data_buffer->reallocate(numelems);
-      apply();
-    }
-  }
-  return this;
-}
-
-/*
- *************************************************************************
- *
- * Reallocate the data view's buffer according to a Conduit data type.
+ * Reallocate data for view using a Conduit data type object.
  *
  *************************************************************************
  */
 DataView * DataView::reallocate(const DataType& dtype)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Attempting to reallocate an opaque view");
-  SLIC_ASSERT_MSG( m_data_buffer->getNumViews() == 1, \
-                  "Data reallocation on a view allowed only if it's the only view associated with its buffer");
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
 
-  if ( !isOpaque() && m_data_buffer->getNumViews() == 1 )
+  if ( allocateIsValid() )
   {
     TypeID type = static_cast<TypeID>(dtype.id());
     TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
     SLIC_ASSERT_MSG( type == view_type,
-		     "Attempting to reallocate with a different type");
+                     "Attempting to reallocate with a different type");
     if (type == view_type)
     {
       declare(dtype);
-      SidreLength numelems = dtype.number_of_elements();
-      m_data_buffer->reallocate(numelems);
+      SidreLength num_elems = dtype.number_of_elements();
+      m_data_buffer->reallocate(num_elems);
+      m_state = ALLOCATED;
+      apply();
+    }
+  }
+  return this;
+}
+
+//
+// RDH -- Reallocation should check if the buffer has been declared. If not,
+//        then is should be a valid operation to declare it here amd
+//        allocate it.
+//
+/*
+ *************************************************************************
+ *
+ * Reallocate data for view using a Conduit schema object.
+ *
+ *************************************************************************
+ */
+DataView * DataView::reallocate(const Schema& schema)
+{
+  SLIC_ASSERT_MSG( allocateIsValid(),
+                   "View state does not allow data allocation");
+
+  if ( allocateIsValid() )
+  {
+    TypeID type = static_cast<TypeID>(schema.dtype().id());
+    TypeID view_type = static_cast<TypeID>(m_schema.dtype().id());
+    SLIC_ASSERT_MSG( type == view_type,
+                     "Attempting to reallocate with a different type");
+    if (type == view_type)
+    {
+      declare(schema);
+      SidreLength num_elems = schema.dtype().number_of_elements();
+      m_data_buffer->reallocate(num_elems);
+      m_state = ALLOCATED;
       apply();
     }
   }
@@ -287,19 +235,31 @@ DataView * DataView::reallocate(const DataType& dtype)
 /*
  *************************************************************************
  *
- * Apply a previously declared data view to data held in the buffer.
+ * Attach buffer to view.
  *
  *************************************************************************
  */
-DataView * DataView::apply()
+DataView * DataView::attachBuffer(DataBuffer * buff)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call apply() on an opaque view");
- 
-  if ( !isOpaque() )
-  { 
-    m_node.set_external(m_schema, m_data_buffer->getData());
-    m_is_applied = true;
+  SLIC_ASSERT_MSG( attachBufferIsValid(),
+                   "View state does not allow attaching buffer");
+  SLIC_CHECK( buff != ATK_NULLPTR );
+
+  if ( attachBufferIsValid() && buff != ATK_NULLPTR )
+  {
+    buff->attachView(this);
+    m_data_buffer = buff;
+    m_state = BUFFER_ATTACHED;
+    m_is_applied = false;
+
+//
+// RDH -- What if the view is not described and the buffer is not
+//        declared and allocated???
+//
+    if ( m_schema.total_bytes() <= m_data_buffer->getTotalBytes() )
+    {
+      apply();
+    }
   }
   return this;
 }
@@ -307,17 +267,192 @@ DataView * DataView::apply()
 /*
  *************************************************************************
  *
- * Apply a Conduit Schema to data held in the buffer.
+ * Apply data description to data.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply()
+{
+  SLIC_ASSERT_MSG( applyIsValid(),
+                   "View state does not allow apply operation");
+  SLIC_CHECK_MSG( !m_schema.dtype().is_empty(),
+                  "View has no data description, apply() is a no-op");
+
+  if ( applyIsValid() )
+  {
+    if ( m_data_buffer == ATK_NULLPTR || m_schema.dtype().is_empty() )
+    {
+      m_is_applied = false;
+    }
+    else
+    {
+      if (m_state == EXTERNAL)
+      {
+        TypeID type = static_cast<TypeID>(m_schema.dtype().id());
+        SidreLength num_elems = m_schema.dtype().number_of_elements();
+//
+// RDH -- Why is the buffer declared here? It only holds the pointer to
+//        the data and cannot do anything with it.
+//
+        m_data_buffer->declare(type, num_elems);
+      }
+
+      m_node.set_external(m_schema, m_data_buffer->getVoidPtr());
+      m_is_applied = true;
+    }
+  }
+  return this;
+}
+
+
+//
+// RDH -- Apply methods need to check that buffer is allocated if view
+//        has one.
+//
+/*
+ *************************************************************************
+ *
+ * Apply given # elems, offset, stride description to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(SidreLength num_elems,
+                           SidreLength offset,
+                           SidreLength stride)
+{
+  SLIC_ASSERT_MSG( applyIsValid(),
+                   "View state does not allow apply operation");
+  SLIC_ASSERT_MSG( m_state != EXTERNAL || !m_schema.dtype().is_empty(),
+                   "View state does not allow apply operation");
+  SLIC_ASSERT_MSG( m_data_buffer != ATK_NULLPTR,
+                   "View needs buffer to get type information");
+  SLIC_ASSERT(num_elems >= 0);
+  SLIC_ASSERT(offset >= 0);
+
+  if ( applyIsValid() &&
+       (m_state != EXTERNAL || !m_schema.dtype().is_empty()) &&
+       m_data_buffer != ATK_NULLPTR &&
+       num_elems >= 0 && offset >= 0)
+  {
+    DataType dtype(m_schema.dtype());
+    if ( dtype.is_empty() )
+    {
+      dtype = conduit::DataType::default_dtype(m_data_buffer->getTypeID());
+    }
+
+    dtype.set_number_of_elements(num_elems);
+    dtype.set_offset(offset * dtype.element_bytes() );
+    dtype.set_stride(stride * dtype.element_bytes() );
+
+    declare(dtype);
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Apply given type, # elems, offset, stride desscription to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(TypeID type, SidreLength num_elems,
+                           SidreLength offset,
+                           SidreLength stride)
+{
+  SLIC_ASSERT_MSG( applyIsValid(),
+                   "View state does not allow apply operation");
+  SLIC_ASSERT(num_elems >= 0);
+  SLIC_ASSERT(offset >= 0);
+
+  if ( applyIsValid() &&
+       num_elems >= 0 && offset >= 0)
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+
+    size_t bytes_per_elem = dtype.element_bytes();
+
+    dtype.set_number_of_elements(num_elems);
+    dtype.set_offset(offset * bytes_per_elem);
+    dtype.set_stride(stride * bytes_per_elem);
+
+    declare(dtype);
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Apply given type, number of dimensions and shape to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
+{
+  SLIC_ASSERT_MSG( applyIsValid(),
+                   "View state does not allow apply operation");
+  SLIC_ASSERT(ndims >= 1);
+  SLIC_ASSERT(shape != ATK_NULLPTR);
+
+  if ( applyIsValid() && ndims >= 0 && shape != ATK_NULLPTR)
+  {
+    if (m_shape != ATK_NULLPTR)
+    {
+      m_shape->resize(ndims);
+    }
+    else
+    {
+      m_shape = new std::vector<SidreLength>(ndims);
+    }
+
+    SidreLength num_elems = 1;
+    for (int i=0 ; i < ndims ; i++)
+    {
+      num_elems *= shape[i];
+      (*m_shape)[i] = shape[i];
+    }
+    apply(type, num_elems );
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Apply a Consuit data type description to data view.
+ *
+ *************************************************************************
+ */
+DataView * DataView::apply(const DataType &dtype)
+{
+  SLIC_ASSERT_MSG( applyIsValid(),
+                   "View state does not allow apply operation");
+
+  if ( applyIsValid() )
+  {
+    declare(dtype);
+    apply();
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Apply a Conduit Schema to data view.
  *
  *************************************************************************
  */
 DataView * DataView::apply(const Schema& schema)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call apply() on an opaque view");
- 
-  if ( !isOpaque() )
-  { 
+  SLIC_ASSERT_MSG( applyIsValid(),
+                   "View state does not allow apply operation");
+
+  if ( applyIsValid() )
+  {
     declare(schema);
     apply();
   }
@@ -327,75 +462,86 @@ DataView * DataView::apply(const Schema& schema)
 /*
  *************************************************************************
  *
- * Apply a Conduit pre-defined data type description to data held in the buffer.
+ * Set data view to hold external data.
  *
  *************************************************************************
  */
-DataView * DataView::apply(const DataType &dtype)
+DataView * DataView::setExternalDataPtr(void * external_ptr)
 {
-  SLIC_ASSERT_MSG( !isOpaque(),
-                  "Cannot call apply() on an opaque view");
- 
-  if ( !isOpaque() )
-  { 
-    declare(dtype);
+  SLIC_ASSERT_MSG( setExternalDataPtrIsValid(),
+                   "View state does not allow setting external data pointer");
+
+  if ( setExternalDataPtrIsValid() )
+  {
+
+    if ( m_data_buffer == ATK_NULLPTR )
+    {
+      m_data_buffer = m_owning_group->getDataStore()->createBuffer();
+      m_data_buffer->setExternalData(external_ptr);
+      m_data_buffer->attachView(this);
+    }
+
+    // todo, conduit should provide a check for if uint64 is a
+    // good enough type to rep void *
+    m_node.set((conduit::uint64)external_ptr);
+
+    //
+    // If view has a data description, apply it.
+    //
     apply();
+
+    m_state = EXTERNAL;
   }
+
   return this;
 }
 
 /*
  *************************************************************************
  *
- * Return void* pointer to buffer data.
+ * Return number of dimensions and fill in shape information.
  *
  *************************************************************************
  */
-void * DataView::getDataPointer() const
+int DataView::getShape(int ndims, SidreLength * shape) const
 {
-  if ( isOpaque() ) {
-      return (void *)(getNode().as_uint64());
-  } else {
-      return m_data_buffer->getData();
+  if (m_shape == ATK_NULLPTR)
+  {
+    if (ndims > 0)
+    {
+      shape[0] = getNumElements();
+      return 1;
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  else
+  {
+    if (static_cast<unsigned>(ndims) < m_shape->size())
+    {
+      return -1;
+    }
+    else
+    {
+#if 0
+      for(std::vector<SidreLength>::iterator it = v.begin() ; it != v.end() ;
+          ++it)
+      {
+        *shape++ = it.
+      }
+#else
+      for(std::vector<SidreLength>::size_type i = 0 ; i != m_shape->size() ;
+          ++i)
+      {
+        shape[i] = (*m_shape)[i];
+      }
+#endif
+    }
+    return m_shape->size();
   }
 }
-
-/*
- *************************************************************************
- *
- * Return void* pointer to opaque data.
- *
- *************************************************************************
- */
-void * DataView::getOpaque() const
-{
-  if ( isOpaque() ) 
-  {
-    return (void *)(getNode().as_uint64());
-  } 
-  else 
-  {
-    return ATK_NULLPTR; 
-  }
-}
-
-
-/*
- *************************************************************************
- *
- * Copy data view description to given Conduit node.
- *
- *************************************************************************
- */
-void DataView::info(Node &n) const
-{
-  n["name"] = m_name;
-  n["schema"] = m_schema.to_json();
-  n["node"] = m_node.to_json();
-  n["is_opaque"] = m_is_opaque;
-  n["is_applied"] = m_is_applied;
-}
-
 
 /*
  *************************************************************************
@@ -426,44 +572,37 @@ void DataView::print(std::ostream& os) const
 /*
  *************************************************************************
  *
- * PRIVATE ctor for DataView associated with DataBuffer.
+ * Copy data view description to given Conduit node.
  *
  *************************************************************************
  */
-DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group,
-                    DataBuffer * const data_buffer)
-  :   m_name(name),
-  m_owning_group(owning_group),
-  m_data_buffer(data_buffer),
-  m_schema(),
-  m_node(),
-  m_is_opaque(false),
-  m_is_applied(false)
-{}
+void DataView::info(Node &n) const
+{
+  n["name"] = m_name;
+  n["schema"] = m_schema.to_json();
+  n["node"] = m_node.to_json();
+  n["state"] = getStateStringName(m_state);
+  n["is_applied"] = m_is_applied;
+}
 
 /*
  *************************************************************************
  *
- * PRIVATE ctor for DataView associated with opaque data.
+ * PRIVATE ctor for DataView not associated with any data.
  *
  *************************************************************************
  */
 DataView::DataView( const std::string& name,
-                    DataGroup * const owning_group,
-                    void * opaque_ptr)
-  : m_name(name),
+                    DataGroup * const owning_group)
+  :   m_name(name),
   m_owning_group(owning_group),
   m_data_buffer(ATK_NULLPTR),
   m_schema(),
   m_node(),
-  m_is_opaque(true),
+  m_shape(ATK_NULLPTR),
+  m_state(EMPTY),
   m_is_applied(false)
-{
-  // todo, conduit should provide a check for if uint64 is a
-  // good enough type to rep void *
-  m_node.set((conduit::uint64)opaque_ptr);
-}
+{}
 
 /*
  *************************************************************************
@@ -478,6 +617,201 @@ DataView::~DataView()
   {
     m_data_buffer->detachView(this);
   }
+  if (m_shape != ATK_NULLPTR)
+  {
+    delete m_shape;
+  }
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with type and number of elements.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(TypeID type, SidreLength num_elems)
+{
+  SLIC_ASSERT_MSG(num_elems >= 0, "Must give number of elements >= 0");
+
+  if ( num_elems >= 0 )
+  {
+    DataType dtype = conduit::DataType::default_dtype(type);
+    dtype.set_number_of_elements(num_elems);
+    m_schema.set(dtype);
+
+    if ( m_state != EXTERNAL )
+    {
+      m_state = DESCRIBED;
+    }
+
+    m_is_applied = false;
+  }
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with a Conduit data type object.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(const DataType& dtype)
+{
+  m_schema.set(dtype);
+
+  if ( m_state != EXTERNAL )
+  {
+    m_state = DESCRIBED;
+  }
+
+  m_is_applied = false;
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to declare data view with a Conduit schema object.
+ *
+ *************************************************************************
+ */
+DataView * DataView::declare(const Schema& schema)
+{
+  m_schema.set(schema);
+
+  if ( m_state != EXTERNAL )
+  {
+    m_state = DESCRIBED;
+  }
+
+  m_is_applied = false;
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns true if view can allocate data; else false.
+ *
+ *************************************************************************
+ */
+bool DataView::allocateIsValid() const
+{
+  bool alloc_is_valid = false;
+  if ( m_state != EXTERNAL && m_state != SCALAR && m_state != STRING )
+  {
+    alloc_is_valid = ( m_data_buffer == ATK_NULLPTR ||
+                       (!m_data_buffer->isExternal() &&
+                        m_data_buffer->getNumViews() == 1 ) );
+  }
+  return alloc_is_valid;
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns true if attaching buffer to view is valid;
+ * else false.
+ *
+ *************************************************************************
+ */
+bool DataView::attachBufferIsValid() const
+{
+  return ( m_state == EMPTY || m_state == DESCRIBED );
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns true if setting external data pointer on view
+ * is valid; else false.
+ *
+ *************************************************************************
+ */
+bool DataView::setExternalDataPtrIsValid() const
+{
+  return ( m_state == EMPTY || m_state == DESCRIBED || m_state == EXTERNAL );
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns true if apply ia a valid operation on view;
+ * else false.
+ *
+ *************************************************************************
+ */
+bool DataView::applyIsValid() const
+{
+  return ( m_state != SCALAR && m_state != STRING );
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method returns string name of given view state enum value.
+ *
+ *************************************************************************
+ */
+char const * DataView::getStateStringName(State state) const
+{
+  char const * ret_string = NULL;
+
+  switch ( state )
+  {
+  case EMPTY:
+  {
+    ret_string = "EMPTY";
+    break;
+  }
+
+  case DESCRIBED:
+  {
+    ret_string = "DESCRIBED";
+    break;
+  }
+
+  case ALLOCATED:
+  {
+    ret_string = "ALLOCATED";
+    break;
+  }
+
+  case BUFFER_ATTACHED:
+  {
+    ret_string = "BUFFER_ATTACHED";
+    break;
+  }
+
+  case EXTERNAL:
+  {
+    ret_string = "EXTERNAL";
+    break;
+  }
+
+  case SCALAR:
+  {
+    ret_string = "SCALAR";
+    break;
+  }
+
+  case STRING:
+  {
+    ret_string = "STRING";
+    break;
+  }
+
+  default:
+  {
+    ret_string = "/0";
+  }
+  }
+
+  return( ret_string );
 }
 
 

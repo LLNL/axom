@@ -18,9 +18,14 @@
 #ifndef COMMONTYPES_HPP_
 #define COMMONTYPES_HPP_
 
+#ifndef USE_CXX11
+   #include <cstddef>       // brings in NULL
+#endif
+
+
 namespace asctoolkit
 {
- 
+
 namespace common
 {
 

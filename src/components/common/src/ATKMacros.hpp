@@ -34,7 +34,7 @@
  *    // my implementation
  *  }
  *
- * \endcode 
+ * \endcode
  *******************************************************************************
  */
 #define ATK_NOT_USED(x)
@@ -65,11 +65,11 @@
  */
 #ifdef USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
-  className( const className& ) = delete;                                     \
+  className( const className & ) = delete;                                     \
   className& operator=(const className&) = delete;
 #else
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                \
-  className( const className& );                                              \
+  className( const className & );                                              \
   className& operator=( const className& );
 #endif
 

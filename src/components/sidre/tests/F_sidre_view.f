@@ -23,17 +23,19 @@ contains
     type(dataview) dv_0, dv_1
     type(databuffer) db_0, db_1
 
+    call set_case_name("create_views")
+
     ds = datastore_new()
     root = ds%get_root()
 
-    dv_0 = root%create_view_and_buffer("field0")
-    dv_1 = root%create_view_and_buffer("field1")
+    dv_0 = root%create_view_and_allocate("field0", SIDRE_INT_ID, 1)
+    dv_1 = root%create_view_and_allocate("field1", SIDRE_INT_ID, 1)
 
     db_0 = dv_0%get_buffer()
     db_1 = dv_1%get_buffer()
 
-    call assert_equals(db_0%get_index(), 0)
-    call assert_equals(db_1%get_index(), 1)
+    call assert_equals(db_0%get_index(), 0, "db_0%get_index(), 0")
+    call assert_equals(db_1%get_index(), 1, "db_1%get_index(), 1")
     call ds%delete()
   end subroutine create_views
 
@@ -46,13 +48,14 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_buffer_from_view")
+
     ds = datastore_new()
     root = ds%get_root()
 
-    dv = root%create_view_and_buffer("u0")
-    call dv%allocate(SIDRE_INT_ID, 10_8)
-    call assert_equals(dv%get_type_id(), SIDRE_INT_ID)
-    call dv%get_value(data)
+    dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
+    call assert_equals(dv%get_type_id(), SIDRE_INT_ID, "dv%get_type_id(), SIDRE_INT_ID")
+    call dv%get_data(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -74,11 +77,13 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_buffer_from_view_conduit")
+
     ds = datastore_new()
     root = ds%get_root()
 
-    dv = root%create_view_and_buffer("u0", SIDRE_INT_ID, 10_8)
-    call dv%get_value(data)
+    dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
+    call dv%get_data(data)
 
     do i = 1, 10
        data(i) = i * i
@@ -101,13 +106,15 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_array_multi_view")
+
     ds = datastore_new()
     root = ds%get_root()
     dbuff = ds%create_buffer()
 
     call dbuff%declare(SIDRE_INT_ID, 10_8)
     call dbuff%allocate()
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -123,7 +130,7 @@ contains
 
     dv_e = root%create_view("even", dbuff)
     dv_o = root%create_view("odd", dbuff)
-    call assert_true(dbuff%get_num_views() == 2)
+    call assert_true(dbuff%get_num_views() == 2, "dbuff%get_num_views() == 2")
 
 !--#ifdef XXX
 !--  dv_e->apply(DataType::uint32(5,0,8))
@@ -163,12 +170,14 @@ contains
     integer, pointer :: data(:)
     integer i
     
+    call set_case_name("init_int_array_multi_view")
+
     ds = datastore_new()
     root = ds%get_root()
     dbuff = ds%create_buffer()
     
     call dbuff%allocate(SIDRE_INT_ID, 10_8)
-    data_ptr = dbuff%get_data()
+    data_ptr = dbuff%get_void_ptr()
     call c_f_pointer(data_ptr, data, [ 10 ])
 
     do i = 1, 10
@@ -219,6 +228,167 @@ contains
 
 !------------------------------------------------------------------------------
 
+  subroutine int_array_depth_view()
+    type(datastore) ds
+    type(datagroup) root
+    type(databuffer) dbuff
+    type(dataview) view0
+    type(dataview) view1
+    type(dataview) view2
+    type(dataview) view3
+    integer(C_INT), pointer :: data(:)
+    type(C_PTR) data_ptr
+    integer i
+    integer(C_LONG) depth_nelems
+    integer(C_LONG) total_nelems
+
+    call set_case_name("int_array_depth_view")
+
+    ! create our main data store
+    ds = datastore_new()
+    dbuff = ds%create_buffer()
+
+    ! get access to our root data Group
+    root = ds%get_root()
+
+    depth_nelems = 10 
+    total_nelems = 4 * depth_nelems
+
+    ! Allocate buffer to hold data for 4 "depth" views
+    call dbuff%declare(SIDRE_INT_ID, total_nelems)
+    call dbuff%allocate()
+
+    data_ptr = dbuff%get_void_ptr()
+    call c_f_pointer(data_ptr, data, [ total_nelems ])
+
+    do i = 1, total_nelems
+       data(i) = (i - 1) / depth_nelems
+    enddo
+
+    call dbuff%print()
+
+    call assert_true( dbuff%get_num_elements() == 4 * depth_nelems, "dbuff%get_num_elements() == 4 * depth_nelems" )
+
+    ! create 4 "depth" views and apply offsets into buffer
+    view0 = root%create_view_into_buffer("view0", dbuff)
+    call view0%apply_nelems_offset(depth_nelems, 0 * depth_nelems)
+
+    view1 = root%create_view_into_buffer("view1", dbuff)
+    call view1%apply_nelems_offset(depth_nelems, 1 * depth_nelems)
+
+    view2 = root%create_view_into_buffer("view2", dbuff)
+    call view2%apply_nelems_offset(depth_nelems, 2 * depth_nelems)
+
+    view3 = root%create_view_into_buffer("view3", dbuff)
+    call view3%apply_nelems_offset(depth_nelems, 3 * depth_nelems)
+
+    call assert_true( dbuff%get_num_views() == 4, "dbuff%get_num_views() == 4" )
+
+    call view0%print()
+    call view1%print()
+    call view2%print()
+    call view3%print()
+
+    ! check values in depth views...
+    call view0%get_data(data)
+    call assert_true(all(data == 0), "depth 0 does not compare")
+
+    call view1%get_data(data)
+    call assert_true(all(data == 1), "depth 1 does not compare")
+ 
+    call view2%get_data(data)
+    call assert_true(all(data == 2), "depth 2 does not compare")
+
+    call view3%get_data(data)
+    call assert_true(all(data == 3), "depth 3 does not compare")
+
+    call ds%print()
+    call ds%delete()
+
+  end subroutine int_array_depth_view
+
+!------------------------------------------------------------------------------
+
+  subroutine int_array_view_attach_buffer()
+    type(datastore) ds
+    type(datagroup) root
+    type(databuffer) dbuff
+    type(dataview) field0
+    type(dataview) field1
+    integer(C_INT), pointer :: data(:)
+    type(C_PTR) data_ptr
+    integer i
+    integer(C_LONG) field_nelems
+    integer(C_LONG) elem_count
+
+    call set_case_name("int_array_view_attach_buffer")
+
+    ! create our main data store
+    ds = datastore_new()
+
+    ! get access to our root data Group
+    root = ds%get_root()
+
+    field_nelems = 10 
+
+    ! create 2 "field" views with type and # elems
+    elem_count = 0
+    field0 = root%create_view("field0", SIDRE_INT_ID, field_nelems)
+    elem_count = elem_count + field0%get_num_elements()
+    print*,"elem_count field0",elem_count
+    field1 = root%create_view("field1", SIDRE_INT_ID, field_nelems)
+    elem_count = elem_count + field1%get_num_elements()
+    print*,"elem_count field1",elem_count
+
+    call assert_true( elem_count == 2 * field_nelems, "elem_count == 2 * field_nelems" )
+
+    ! Create buffer to hold data for all fields and allocate
+    dbuff = ds%create_buffer()
+    call dbuff%declare(SIDRE_INT_ID, elem_count)
+    call dbuff%allocate()
+
+    call assert_true( dbuff%get_num_elements() == elem_count, "dbuff%get_num_elements() == elem_count" ) 
+
+    ! Initilize buffer data for testing below
+    data_ptr = dbuff%get_void_ptr()
+    call c_f_pointer(data_ptr, data, [ elem_count ])
+
+    do i = 1, elem_count
+       data(i) = (i - 1) / field_nelems
+    enddo
+
+    call dbuff%print()
+
+    ! attach field views to buffer and apply offsets into buffer
+    call field0%attach_buffer(dbuff)
+    call field0%apply_nelems_offset(field_nelems, 0 * field_nelems);
+    call field1%attach_buffer(dbuff)
+    call field1%apply_nelems_offset(field_nelems, 1 * field_nelems);
+
+    call assert_true( dbuff%get_num_views() == 2, "dbuff%get_num_views() == 2" )
+
+    ! print field views...
+    call field0%print()
+    call field1%print()
+
+    ! check values in field views...
+    call field0%get_data(data)
+    call assert_true(size(data) == field_nelems, &
+         "depth 0 is incorrect size")
+    call assert_true(all(data == 0), "depth 0 does not compare")
+
+    call field1%get_data(data)
+    call assert_true(size(data) == field_nelems, &
+         "depth 1 is incorrect size")
+    call assert_true(all(data == 1), "depth 0 does not compare")
+
+    call ds%print()
+    call ds%delete()
+
+  end subroutine int_array_view_attach_buffer
+
+!------------------------------------------------------------------------------
+
   subroutine int_array_multi_view_resize()
      !
      ! This example creates a 4 * 10 buffer of ints,
@@ -236,6 +406,8 @@ contains
     integer(C_INT), pointer :: data(:)
     integer i
 
+    call set_case_name("int_array_multi_view_resize")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -244,28 +416,19 @@ contains
 
     ! create a group to hold the "old" or data we want to copy
     r_old = root%create_group("r_old")
-    ! create a view to hold the base buffer
-    base_old = r_old%create_view_and_buffer("base_data")
 
-    ! alloc our buffer
+    ! create a view to hold the base buffer and allocate
     ! we will create 4 sub views of this array
-    call base_old%allocate(SIDRE_INT_ID, 40)
-    call base_old%get_value(data)
+    base_old = r_old%create_view_and_allocate("base_data", SIDRE_INT_ID, 40)
+
+    call base_old%get_data(data)
 
     ! init the buff with values that align with the
     ! 4 subsections.
-    do i = 1, 10
-       data(i) = 1
-    enddo
-    do i = 11, 20
-       data(i) = 2
-    enddo
-    do i = 21, 30
-       data(i) = 3
-    enddo
-    do i = 31, 40
-       data(i) = 4
-    enddo
+    data( 1:10) = 1
+    data(11:20) = 2
+    data(21:30) = 3
+    data(31:40) = 4
 
 !--#ifdef XXX
 !--  ! setup our 4 views
@@ -398,6 +561,8 @@ contains
     integer(C_INT), pointer :: a2_data(:)
     integer i
 
+    call set_case_name("int_array_realloc")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -405,31 +570,38 @@ contains
     root = ds%get_root()
 
     ! create a view to hold the base buffer
-    a1 = root%create_view_and_buffer("a1", SIDRE_FLOAT_ID, 5)
-    a2 = root%create_view_and_buffer("a2", SIDRE_INT_ID, 5)
+    a1 = root%create_view_and_allocate("a1", SIDRE_FLOAT_ID, 5)
+    a2 = root%create_view_and_allocate("a2", SIDRE_FLOAT_ID, 5)
 
-    call a1%get_value(a1_data)
-    call a2%get_value(a2_data)
+    call a1%get_data(a1_data)
+    call a2%get_data(a2_data)
 
-    do i = 1, 5
-       a1_data(i) =  5.0
-       a2_data(i) = -5
-    enddo
+    call assert_true(size(a1_data) == 5, &
+         "a1_data is incorrect size")
+    call assert_true(size(a2_data) == 5, &
+         "a2_data is incorrect size")
 
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a1), sizeof(float)*5)
 !--  EXPECT_EQ(ATK_dataview_get_total_bytes(a2), sizeof(int)*5)
 
+    a1_data(1:5) =  5.0
+    a2_data(1:5) = -5
 
     call a1%reallocate(10)
     call a2%reallocate(15)
 
-    call a1%get_value(a1_data)
-    call a2%get_value(a2_data)
+    call a1%get_data(a1_data)
+    call a2%get_data(a2_data)
 
-    do i = 1, 5
-       call assert_equals(a1_data(i), 5.0)
-       call assert_equals(a2_data(i), -5)
-    enddo
+    call assert_true(size(a1_data) == 10, &
+         "a1_data is incorrect size after realloc")
+    call assert_true(size(a2_data) == 15, &
+         "a2_data is incorrect size after realloc")
+
+    call assert_true(all(a1_data(1:5) == 5.0), &
+         "a1_data does not compare after realloc")
+    call assert_true(all(a2_data(1:5) == -5), &
+         "a2_data does not compare after realloc")
 
     a1_data(6:10) = 10.0
     a2_data(6:10) = -10
@@ -454,6 +626,8 @@ contains
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr
 
+    call set_case_name("simple_opaque")
+
     ! create our main data store
     ds = datastore_new()
 
@@ -464,18 +638,20 @@ contains
    
     src_ptr = c_loc(src_data)
 
-    opq_view = root%create_opaque_view("my_opaque", src_ptr)
+    opq_view = root%create_view_external("my_opaque", src_ptr)
 
-    ! we shouldn't have any buffers
-    call assert_true(ds%get_num_buffers() == 0)
+    ! we have a buffer because an "external" view currently uses one
+    call assert_true(ds%get_num_buffers() == 1)
 
-    call assert_true(opq_view%is_opaque())
+    call assert_true(opq_view%is_external(), "opq_view%is_external()")
+    call assert_true(opq_view%is_applied() .eqv. .false., "opq_view%is_applied()")
+    call assert_true(opq_view%is_opaque(), "opq_view%is_opaque()")
 
-    opq_ptr = opq_view%get_opaque()
+    opq_ptr = opq_view%get_void_ptr()
     call c_f_pointer(opq_ptr, out_data)
 
-    call assert_true(c_associated(opq_ptr, src_ptr))
-    call assert_equals(out_data, 42)
+    call assert_true(c_associated(opq_ptr, src_ptr), "c_associated(opq_ptr,src_ptr)")
+    call assert_equals(out_data, 42, "out_data, 42")
 
     call ds%print()
     call ds%delete()
@@ -486,11 +662,10 @@ contains
 end module sidre_view
 !----------------------------------------------------------------------
 
-function fortran_test() bind(C,name="fortran_test")
+program fortran_test
   use fruit
   use sidre_view
   implicit none
-  integer(C_INT) fortran_test
   logical ok
 
   call init_fruit
@@ -500,6 +675,8 @@ function fortran_test() bind(C,name="fortran_test")
   call int_buffer_from_view_conduit_value
   call int_array_multi_view
   call init_int_array_multi_view
+  call int_array_depth_view
+  call int_array_view_attach_buffer
   call int_array_multi_view_resize
   call int_array_realloc
   call simple_opaque
@@ -508,9 +685,8 @@ function fortran_test() bind(C,name="fortran_test")
   call fruit_finalize
 
   call is_all_successful(ok)
-  if (ok) then
-     fortran_test = 0
-  else
-     fortran_test = 1
+  if (.not. ok) then
+     call exit(1)
   endif
-end function fortran_test
+end program fortran_test
+
