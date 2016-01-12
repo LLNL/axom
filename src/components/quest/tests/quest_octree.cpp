@@ -16,7 +16,7 @@
 #include "quest/Octree.hpp"
 
 //------------------------------------------------------------------------------
-TEST( quest_octree, octree_parent_child)
+TEST( quest_octree, topological_octree_parent_child)
 {
   static const int DIM = 2;
   typedef int CoordType;
@@ -62,7 +62,7 @@ TEST( quest_octree, octree_parent_child)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_octree, octree_refine)
+TEST( quest_octree, topological_octree_refine)
 {
   static const int DIM = 3;
   typedef int LeafNodeType;
@@ -87,6 +87,62 @@ TEST( quest_octree, octree_refine)
 
 }
 
+
+TEST( quest_octree, spatial_octree_point_location)
+{
+    static const int DIM = 3;
+    typedef int LeafNodeType;
+
+    typedef quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
+    typedef OctreeType::BlockIndex BlockIndex;
+    typedef OctreeType::SpacePt SpacePt;
+    typedef OctreeType::GeometricBoundingBox GeometricBoundingBox;
+
+
+    GeometricBoundingBox bb(SpacePt(10), SpacePt(20));
+
+    double alpha = 2./3.;
+    SpacePt queryPt = SpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
+    EXPECT_TRUE( bb.contains(queryPt));
+
+    OctreeType octree(bb);
+
+    BlockIndex leafBlock = octree.findLeafBlock(queryPt);
+    EXPECT_TRUE( octree.isLeaf(leafBlock));
+
+    GeometricBoundingBox leafBB = octree.blockBoundingBox(leafBlock);
+    EXPECT_TRUE( leafBB.contains( queryPt ));
+    EXPECT_TRUE( bb.contains(leafBB));
+
+    std::cout <<"Query pt: " << queryPt
+              <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was NOT" )
+              <<" contained in bounding box " << leafBB
+              <<"\n\t of leaf { pt: " << leafBlock.pt()
+              <<"; level: " << leafBlock.level() <<"}"
+              <<" in the octree. "
+              << std::endl;
+
+    for(int i=0; i< 10; ++i)
+    {
+        octree.refineLeaf( leafBlock );
+        leafBlock = octree.findLeafBlock(queryPt);
+        EXPECT_TRUE( octree.isLeaf(leafBlock));
+
+        leafBB = octree.blockBoundingBox(leafBlock);
+        EXPECT_TRUE( leafBB.contains( queryPt ));
+        EXPECT_TRUE( bb.contains(leafBB));
+
+        std::cout <<"Query pt: " << queryPt
+                  <<"\n\t" << ( leafBB.contains(queryPt) ? " was" : " was not")
+                  <<" contained in bounding box " << leafBB
+                  <<"\n\t of leaf { pt: " << leafBlock.pt()
+                  <<"; level: " << leafBlock.level() <<"}"
+                  <<" in the octree. "
+                  << std::endl;
+    }
+
+
+}
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"

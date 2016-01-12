@@ -361,67 +361,11 @@ public:
   }
 
 
-//private:
-//
-//
-//  /**
-//   * \brief Finds the leaf associate with pt.
-//   *
-//   * We can optionally provide .
-//   * \param [in] pt The grid point whose leaf block we are seeking
-//   * \param [in] startingLevel The level at which to initialize the query (optional, default = 0)
-//   * \return The BlockIndex of the leaf block coverting this point. An invalid leaf block otherwise.
-//   */
-//  BlockIndex findLeaf(const GridPt& pt, int startingLevel = 0)
-//  {
-//    bool found = false;
-//
-//    BlockIndex block = BlockIndex::invalid_index(); ;
-//
-//    // (linear) search through levels to find the pt
-//    // TODO: If we retain the non-leafs in the tree, we can use a binary search
-//    for(int lev=startingLevel; !found && lev < m_levels.size(); ++lev)
-//    {
-//        found = getLeafNodeAtLevel(pt,lev, block);
-//    }
-//
-//    return block;
-//  }
-//
-//  /**
-//   * \brief Helper function to query leaves at a given level.
-//   * \param [in] pt The point to check
-//   * \param [in] level The level at which we are checking
-//   * \param [out] leafBlock The BlockIndex of the leaf block, if it is found
-//   * \return true if the leaf block exists, false otherwise
-//   */
-//  bool getLeafNodeAtLevel(const GridPt& pt, int level, BlockIndex& leafBlock) const
-//  {
-//    const MapType& leavesMap = m_leavesLevelMap[level];
-//    typename MapType::const_iterator leafIt;
-//
-//    // Find the quantized grid point at this level of resolution
-//    GridPt gridPt = findGridCellAtLevel(pt, level);
-//
-//    if( (leafIt = leavesMap.find(gridPt)) != leavesMap.end())
-//    {
-//        leafBlock = BlockIndex(gridPt, level);
-//        return true;
-//    }
-//
-//    return false;
-//  }
-//  bool isValidLeafNode(const LeafNodeType& leaf)
-//  {
-//    return isLeaf(leaf.first,leaf.second);
-//  }
-
-
 
 private:
   DISABLE_COPY_AND_ASSIGNMENT(TopologicalOctree)
 
-private:
+protected:
   OctreeLevels            m_levels;
   LeafIndicesLevelMap     m_leavesLevelMap;
 };
@@ -429,6 +373,170 @@ private:
 
 
 
+
+/**
+ * \class
+ * \brief Adds spatial extents to a topological octree, allowing point location
+ */
+template<int DIM, typename LeafNodeType>
+class SpatialOctree : public TopologicalOctree<DIM, LeafNodeType>
+{
+public:
+
+    typedef quest::BoundingBox<double,DIM> GeometricBoundingBox;
+    typedef quest::Point<double,DIM> SpacePt;
+    typedef quest::Vector<double,DIM> SpaceVector;
+
+    typedef typename TopologicalOctree<DIM, LeafNodeType>::GridPt GridPt;
+    typedef typename TopologicalOctree<DIM, LeafNodeType>::MapType MapType;
+    typedef typename TopologicalOctree<DIM, LeafNodeType>::BlockIndex BlockIndex;
+
+//    typedef typename TopologicalOctree<DIM, LeafNodeType>::OctreeLevels OctreeLevels;
+
+    typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
+
+public:
+    /**
+     * \brief Construct a spatial octree from a spatial bounding box
+     * \param [in] bb The spatial extent to be indexed by the octree
+     */
+    SpatialOctree(const GeometricBoundingBox& bb)
+        : TopologicalOctree<DIM,LeafNodeType>()
+        , m_deltaLevelMap(& this->m_levels)
+        , m_boundingBox(bb)
+    {
+        SpaceVector bbRange = bb.range();
+        for(int lev = 0; lev < this->m_levels.size(); ++lev)
+        {
+            m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
+        }
+
+    }
+
+    /**
+     * \brief Return the spatial bounding box of a grid cell at the given level or resolution
+     */
+    GeometricBoundingBox blockBoundingBox(const BlockIndex & block)
+    {
+        return blockBoundingBox( block.pt(), block.level() );
+    }
+
+    /**
+     * \brief Return the spatial bounding box of a grid cell at the given level or resolution
+     */
+    GeometricBoundingBox blockBoundingBox(const GridPt & gridPt, int level)
+    {
+        const SpaceVector& deltaVec = m_deltaLevelMap[ level];
+
+        SpacePt lower(m_boundingBox.getMin());
+        SpacePt upper(m_boundingBox.getMin());
+        for(int i=0; i< DIM; ++i)
+        {
+            lower[i] +=  gridPt[i]   * deltaVec[i];
+            upper[i] += (gridPt[i]+1)* deltaVec[i];
+        }
+
+        return GeometricBoundingBox( lower,upper );
+    }
+
+
+    /**
+     * Returns the width of an octree block at level of resolution level
+     */
+    const SpaceVector& spacingAtLevel(int level) const
+    {
+        return m_deltaLevelMap[level];
+    }
+
+    /**
+     * \brief Finds the index of the leaf block covering the query point pt
+     * \param [in] pt The query point in space
+     * \param [in] startingLevel Optional starting level for the query
+     * \pre pt must be in the bounding box of the octree (i.e. boundingBox.contains(pt) == true )
+     * \note The collection of leaves covers the bounding box, and the interiors of the leaves do not
+     * intersect, so every point in the bounding box should be located in a unique leaf block.
+     * \note We are assuming a half-open interval on the bounding boxes.
+     * \return The block index (i.e. grid point and level) of the leaf block containing the query point
+     */
+    BlockIndex findLeafBlock(const SpacePt& pt, int startingLevel = 0) const
+    {
+        bool found = false;
+        BlockIndex leafBlock = BlockIndex::invalid_index();
+
+        SLIC_ASSERT( m_boundingBox.contains(pt) );
+
+        for(int lev=startingLevel; !found && lev < this->m_levels.size(); ++lev)
+        {
+            GridPt gridPt = findGridCellAtLevel(pt, lev);
+            found = this->isLeaf(gridPt, lev);
+
+            if(found)
+                leafBlock = BlockIndex(gridPt, lev);
+        }
+
+        SLIC_ASSERT_MSG(found, "Point " << pt << " not found "
+                        <<"in a leaf block of the octree");
+
+        return leafBlock;
+    }
+
+    /**
+     * \brief Utility function to find the quantized level lev grid cell of Point pt
+     * \param [in] pt The point at which we are querying.
+     * \param [in] level The level or resolution.
+     * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
+     * \return The grid point of the block covering this point at this level
+     * \todo KW: Should this function be protected? Is it generally useful?
+     */
+    GridPt findGridCellAtLevel(const SpacePt& pt, int level) const
+    {
+        SpaceVector ptVec(m_boundingBox.getMin(), pt);
+        const SpaceVector& deltaVec = m_deltaLevelMap[ level];
+
+        // Find the octree block that covers us at this level
+        // Note: we are assuming a half-open interval for all blocks
+        //       that are not on the upper boundary of the domain
+        GridPt quantizedPt = elementwiseQuantizedRatio( ptVec, deltaVec);
+
+        // Fix for when we are on the upper boundary of the domain
+        for(int i=0; i< DIM; ++i)
+        {
+            if( quantizedPt[i] == 1<<level )
+                --quantizedPt[i];
+        }
+
+        return quantizedPt;
+    }
+
+private:
+    /**
+     * \brief Helper function to quantize to the integer grid
+     */
+    GridPt elementwiseQuantizedRatio(const SpaceVector& ptFromBBMin, const SpaceVector&  cellWidth) const
+    {
+        GridPt gridPt;
+        for(int i=0; i< DIM; ++i)
+            gridPt[i] = std::floor( ptFromBBMin[i] / cellWidth[i]);
+
+        return gridPt;
+    }
+
+private:
+  DISABLE_COPY_AND_ASSIGNMENT(SpatialOctree)
+
+protected:
+    SpaceVectorLevelMap     m_deltaLevelMap;
+    GeometricBoundingBox    m_boundingBox;
+};
+
+
+namespace junkyard {
+    // The code here was written quickly in an initial implementation.
+    // It is currently being refactored into classes that better separate
+    // the concerns:
+    //      TopologicalOctree
+    //      SpatialOctree
+    //      Point and triangle mesh instantiations...
 
     /**
      * \class
@@ -544,208 +652,212 @@ private:
     };
 
 
-    /**
-     * \class
-     * \brief A pointerless octree to aid in inside/outside point queries relative to a surface
-     */
-    template<int DIM>
-    class Octree
-    {
-    public:
+/**
+ * \class
+ * \brief A pointerless octree to aid in inside/outside point queries relative to a surface
+ */
+template<int DIM>
+class Octree
+{
+public:
 
-        enum{ MAX_LEV = 30
-            };
-
-        typedef quest::BoundingBox<double,DIM> GeometricBoundingBox;
-        typedef quest::Point<double,DIM> SpacePt;
-        typedef quest::Vector<double,DIM> SpaceVector;
-        typedef quest::Point<int,DIM> GridPt;
-
-        typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, MAX_LEV> MAX_LEVEL_SIZE;
-        typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
-        typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
-
-
-        typedef int VertexIndex;
-        typedef int TriangleIndex;
-
-        typedef LeafNode<DIM> LeafNodeType;
-
-        #if defined(USE_CXX11)
-          typedef std::unordered_map<GridPt, LeafNodeType, PointHash<int> > MapType;
-        #else
-          typedef boost::unordered_map<GridPt, LeafNodeType, PointHash<int> > MapType;
-        #endif
-          typedef asctoolkit::slam::Map<MapType> LeafIndicesLevelMap;
-
-    public:
-        Octree(const GeometricBoundingBox& bb)
-            : m_boundingBox(bb)
-            , m_deltaLevelMap(&m_levels)
-            , m_leavesLevelMap(&m_levels)
-        {
-            SpaceVector bbRange = bb.range();
-            for(int lev = 0; lev < m_levels.size(); ++lev)
-            {
-                m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
-            }
-
-            m_leavesLevelMap[0][GridPt()] = LeafNodeType(GridPt(), 0);
-        }
-
-        /**
-         * \brief Utility function to find the quantized level lev grid cell of Point pt
-         * \param [in] pt The point at which we are querying.
-         * \param [in] level The level or resolution.
-         * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
-         */
-        GridPt findGridCellAtLevel(const SpacePt& pt, int level)
-        {
-            SpaceVector ptVec(m_boundingBox.getMin(), pt);
-            const SpaceVector& deltaVec = m_deltaLevelMap[ level];
-
-            return elementwiseQuantizedRatio( ptVec, deltaVec);
-        }
-
-        /**
-         * \brief Find the spatial bounding box of a grid cell at the given level or resolution
-         */
-        GeometricBoundingBox leafCellBoundingBox(const GridPt & gridPt, int level)
-        {
-            const SpaceVector& deltaVec = m_deltaLevelMap[ level];
-            SpaceVector lower(m_boundingBox.getMin());
-            SpaceVector upper(m_boundingBox.getMin());
-            for(int i=0; i< DIM; ++i)
-            {
-                lower[i] +=  gridPt[i]   * deltaVec[i];
-                upper[i] += (gridPt[i]+1)* deltaVec[i];
-            }
-
-            return GeometricBoundingBox(lower,upper);
-        }
-
-        /**
-         * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
-         * \param [in] The level or resolution.
-         * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
-         */
-        GridPt maxGridCellAtLevel(int level) const
-        {
-            return GridPt(1<< m_levels[level] );
-        }
-
-        const SpaceVector& spacingAtLevel(int level) const
-        {
-            return m_deltaLevelMap[level];
-        }
-
-        void insertPoint(const SpacePt& pt, int level = 0)
-        {
-            // 1. Find leaf node
-            LeafNodeType ln = findLeafNode(pt);
-
-            // 2. Check if we can add the point directly
-            //    e.g. it has no vertex, or the current vertex
-            //    there can be melded with the one we are adding
-            bool canAddVertex = false;
-            bool hasVertex = ln.hasVertexId();
-            if(hasVertex)
-            {
-                //canAddVertex = attemptMeldVertices( ln.vertexIndex());
-                // needs an absolute and relative epsilon here!
-            }
-            else
-            {
-                canAddVertex = false;
-            }
-
-            // 3. If not,
-            if(!canAddVertex )
-            {
-                // 3.a refine the leaf
-               refineLeaf(ln);
-
-               //  3.b. and try to add the vertex to the child
-               insertPoint(pt, ln.level+1);
-            }
-
-        }
-
-        void refineLeaf(const LeafNodeType & node)
-        {
-            // 1. Find the leaf node
-            // 2. Remove it from the tree (at the appropriate level
-            // 3. Add its children to the tree
-            // 4. Add its geometry to the appropriate children
-            //      e.g. its vertex and triangle indices
-
-        }
-
-        LeafNodeType findLeafNode(const GridPt& pt, int startingLevel = 0)
-        {
-            bool found = false;
-            LeafNodeType foundNode;
-            for(int lev=startingLevel; !found && lev < m_levels.size(); ++lev)
-            {
-                foundNode = findLeafNodeAtLevel(pt,lev);
-                found = isValidLeafNode( foundNode );
-            }
-
-            return foundNode;
-        }
-
-        LeafNodeType findLeafNodeAtLevel(const GridPt& pt, int level) const
-        {
-            const MapType& leavesMap = m_leavesLevelMap[level];
-            typename MapType::const_iterator leafIt;
-
-            // Find the quantized grid point at this level of resolution
-            GridPt gridPt = findGridCellAtLevel(pt, level);
-
-            if( (leafIt = leavesMap.find(gridPt)) == leavesMap.end())
-            {
-                return LeafNodeType::make_invalid_leaf();
-            }
-
-            return leafIt->second;;
-        }
-
-        bool isValidLeafNode(const LeafNodeType& leaf)
-        {
-            return leaf.isValue();
-        }
-
-        void addTriangle(TriangleIndex triInd)
-        {
-            // 1. Find the bounding box of the triangle
-            // 2. Descend the tree
-            //    Starting at root, recursively check the children that overlap the bounding box
-            //    For each such child, check if the associated leaf exists and if the triangle actually
-            //    intersects the bounding box.
-            // 3. Try to insert the triangle into each of these, with octree refinement, when necessary
-        }
-
-
-    private:
-        Octree(){}
-
-        /**
-         * \brief Helper function to quantize to the integer grid
-         */
-        GridPt elementwiseQuantizedRatio(const SpaceVector& num, const SpaceVector&  denom) const
-        {
-            GridPt gridPt;
-            for(int i=0; i< GridPt::NDIMS; ++i)
-                gridPt[i] = std::floor( num[i] / denom[i]);
-            return gridPt;
-        }
-
-    private:
-        OctreeLevels            m_levels;
-        GeometricBoundingBox    m_boundingBox;
-        SpaceVectorLevelMap     m_deltaLevelMap;
-        LeafIndicesLevelMap     m_leavesLevelMap;
+    enum{ MAX_LEV = 30
     };
+
+
+    typedef quest::BoundingBox<double,DIM> GeometricBoundingBox;
+    typedef quest::Point<double,DIM> SpacePt;
+    typedef quest::Vector<double,DIM> SpaceVector;
+
+    typedef Point<int,DIM> GridPt;
+
+    typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, MAX_LEV> MAX_LEVEL_SIZE;
+    typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
+    typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
+
+
+    typedef int VertexIndex;
+    typedef int TriangleIndex;
+
+    typedef LeafNode<DIM> LeafNodeType;
+
+    #if defined(USE_CXX11)
+      typedef std::unordered_map<GridPt, LeafNodeType, PointHash<int> > MapType;
+    #else
+      typedef boost::unordered_map<GridPt, LeafNodeType, PointHash<int> > MapType;
+    #endif
+      typedef asctoolkit::slam::Map<MapType> LeafIndicesLevelMap;
+
+public:
+    Octree(const GeometricBoundingBox& bb)
+        : m_boundingBox(bb)
+        , m_deltaLevelMap(&m_levels)
+        , m_leavesLevelMap(&m_levels)
+    {
+        SpaceVector bbRange = bb.range();
+        for(int lev = 0; lev < m_levels.size(); ++lev)
+        {
+            m_deltaLevelMap[lev] = bbRange / static_cast<double>(1<<lev);
+        }
+
+        m_leavesLevelMap[0][GridPt()] = LeafNodeType(GridPt(), 0);
+    }
+
+    /**
+     * \brief Utility function to find the quantized level lev grid cell of Point pt
+     * \param [in] pt The point at which we are querying.
+     * \param [in] level The level or resolution.
+     * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
+     */
+    GridPt findGridCellAtLevel(const SpacePt& pt, int level)
+    {
+        SpaceVector ptVec(m_boundingBox.getMin(), pt);
+        const SpaceVector& deltaVec = m_deltaLevelMap[ level];
+
+        return elementwiseQuantizedRatio( ptVec, deltaVec);
+    }
+
+    /**
+     * \brief Find the spatial bounding box of a grid cell at the given level or resolution
+     */
+    GeometricBoundingBox leafCellBoundingBox(const GridPt & gridPt, int level)
+    {
+        const SpaceVector& deltaVec = m_deltaLevelMap[ level];
+        SpaceVector lower(m_boundingBox.getMin());
+        SpaceVector upper(m_boundingBox.getMin());
+        for(int i=0; i< DIM; ++i)
+        {
+            lower[i] +=  gridPt[i]   * deltaVec[i];
+            upper[i] += (gridPt[i]+1)* deltaVec[i];
+        }
+
+        return GeometricBoundingBox(lower,upper);
+    }
+
+    /**
+     * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
+     * \param [in] The level or resolution.
+     * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
+     */
+    GridPt maxGridCellAtLevel(int level) const
+    {
+        return GridPt(1<< m_levels[level] );
+    }
+
+    const SpaceVector& spacingAtLevel(int level) const
+    {
+        return m_deltaLevelMap[level];
+    }
+
+    void insertPoint(const SpacePt& pt, int level = 0)
+    {
+        // 1. Find leaf node
+        LeafNodeType ln = findLeafNode(pt);
+
+        // 2. Check if we can add the point directly
+        //    e.g. it has no vertex, or the current vertex
+        //    there can be melded with the one we are adding
+        bool canAddVertex = false;
+        bool hasVertex = ln.hasVertexId();
+        if(hasVertex)
+        {
+            //canAddVertex = attemptMeldVertices( ln.vertexIndex());
+            // needs an absolute and relative epsilon here!
+        }
+        else
+        {
+            canAddVertex = false;
+        }
+
+        // 3. If not,
+        if(!canAddVertex )
+        {
+            // 3.a refine the leaf
+           refineLeaf(ln);
+
+           //  3.b. and try to add the vertex to the child
+           insertPoint(pt, ln.level+1);
+        }
+
+    }
+
+    void refineLeaf(const LeafNodeType & node)
+    {
+        // 1. Find the leaf node
+        // 2. Remove it from the tree (at the appropriate level
+        // 3. Add its children to the tree
+        // 4. Add its geometry to the appropriate children
+        //      e.g. its vertex and triangle indices
+
+    }
+
+    LeafNodeType findLeafNode(const GridPt& pt, int startingLevel = 0)
+    {
+        bool found = false;
+        LeafNodeType foundNode;
+        for(int lev=startingLevel; !found && lev < m_levels.size(); ++lev)
+        {
+            foundNode = findLeafNodeAtLevel(pt,lev);
+            found = isValidLeafNode( foundNode );
+        }
+
+        return foundNode;
+    }
+
+    LeafNodeType findLeafNodeAtLevel(const GridPt& pt, int level) const
+    {
+        const MapType& leavesMap = m_leavesLevelMap[level];
+        typename MapType::const_iterator leafIt;
+
+        // Find the quantized grid point at this level of resolution
+        GridPt gridPt = findGridCellAtLevel(pt, level);
+
+        if( (leafIt = leavesMap.find(gridPt)) == leavesMap.end())
+        {
+            return LeafNodeType::make_invalid_leaf();
+        }
+
+        return leafIt->second;;
+    }
+
+    bool isValidLeafNode(const LeafNodeType& leaf)
+    {
+        return leaf.isValue();
+    }
+
+    void addTriangle(TriangleIndex triInd)
+    {
+        // 1. Find the bounding box of the triangle
+        // 2. Descend the tree
+        //    Starting at root, recursively check the children that overlap the bounding box
+        //    For each such child, check if the associated leaf exists and if the triangle actually
+        //    intersects the bounding box.
+        // 3. Try to insert the triangle into each of these, with octree refinement, when necessary
+    }
+
+
+private:
+    Octree(){}
+
+    /**
+     * \brief Helper function to quantize to the integer grid
+     */
+    GridPt elementwiseQuantizedRatio(const SpaceVector& num, const SpaceVector&  denom) const
+    {
+        GridPt gridPt;
+        for(int i=0; i< GridPt::NDIMS; ++i)
+            gridPt[i] = std::floor( num[i] / denom[i]);
+        return gridPt;
+    }
+
+private:
+    OctreeLevels            m_levels;
+    GeometricBoundingBox    m_boundingBox;
+    SpaceVectorLevelMap     m_deltaLevelMap;
+    LeafIndicesLevelMap     m_leavesLevelMap;
+};
+
+} // end namespace junkyard
 
 
 } // end namespace quest

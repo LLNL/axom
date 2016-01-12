@@ -281,6 +281,7 @@ TEST( quest_boundingBox, bb_add_box)
             << "After addBox() we should now contain points in between the two bounding boxes";
     EXPECT_FALSE(bbox1.contains(QPoint(10)))
             << "Points outside both ranges are still outside";
+    EXPECT_TRUE(bbox1.contains(bbox2));
 
 
     //
@@ -298,6 +299,7 @@ TEST( quest_boundingBox, bb_add_box)
     EXPECT_TRUE(bbox3.contains(QPoint::make_point(2,3,1)));
     EXPECT_TRUE(bbox3.contains(QPoint::make_point(6,6,7)));
     EXPECT_TRUE(bbox3.contains(QPoint(4)));
+    EXPECT_TRUE(bbox3.contains(bbox4));
 
 
     //
@@ -307,9 +309,54 @@ TEST( quest_boundingBox, bb_add_box)
     EXPECT_NE(bbox5, bbox1);
     bbox5.addBox(bbox1);
     EXPECT_EQ( bbox5, bbox1);
+    EXPECT_TRUE(bbox5.contains(bbox1));
+
+
+    std::cout <<"Testing addBox() and contains with different types"<<std::endl;
+    typedef quest::BoundingBox<int,DIM> IntBBox;
+    //IntBBox
+    //QBBox bbox5;
+
 
 }
 
+
+TEST( quest_boundingBox, bb_different_coord_types)
+{
+    static const int DIM = 3;
+    typedef quest::Point<double, DIM> PointD;
+    typedef quest::BoundingBox<double, DIM> BBoxD;
+
+    typedef quest::Point<int, DIM> PointI;
+    typedef quest::BoundingBox<int, DIM> BBoxI;
+
+    // checking that an integer point is in the double bounding box
+    BBoxD dBox( PointD(1.), PointD(3.));
+    EXPECT_TRUE( dBox.contains( PointI(2)));
+    EXPECT_FALSE( dBox.contains( PointI(4)));
+
+    // Adding an integer point and testing
+    EXPECT_FALSE( dBox.contains( PointD(3.5)));
+    dBox.addPoint( PointI(4) );
+    EXPECT_TRUE( dBox.contains( PointD(3.5)));
+
+
+    BBoxI iBox(PointI(1), PointI(3));
+    EXPECT_TRUE( iBox.contains( PointD(2.5)));
+    EXPECT_TRUE( iBox.contains( PointD(1.)));
+    EXPECT_TRUE( iBox.contains( PointD(3.)));
+    EXPECT_FALSE( iBox.contains( PointD(4.)));
+
+    // Comparisons to double should be fine.
+    EXPECT_FALSE( iBox.contains( PointD(3.5)));
+
+    // TRICKY --- 4.5 will get rounded to 4,
+    //    so 3.5 will be in the box, but 4.25 will not !!
+    iBox.addPoint( PointD(4.5) );
+    EXPECT_TRUE( iBox.contains( PointD(3.5)));
+    EXPECT_FALSE( iBox.contains( PointD(4.25)));
+
+}
 TEST( quest_boundingBox, bb_expand)
 {
     static const int DIM = 3;
@@ -384,6 +431,12 @@ TEST( quest_boundingBox, bb_scale)
 
 #ifdef ATK_DEBUG
   // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
+
+  std::cout<<"\n**********************"
+           <<"\n*** Testing that scale fails when the number is negative."
+           <<"\n    -- We are expecting the code to fail here \n ***"
+           <<"\n**********************"
+           << std::endl;
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   QBBox bbox3 ( bbox);

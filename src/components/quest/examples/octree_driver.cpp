@@ -48,13 +48,13 @@ using namespace asctoolkit;
 
 typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
 
-typedef quest::Octree<3> Octree3D;
-typedef quest::TopologicalOctree<3,int> TopoOctree3D;
+typedef quest::SpatialOctree<3, int> SpaceOctree3D;
 
-typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
-typedef Octree3D::SpacePt SpacePt;
-typedef Octree3D::SpaceVector SpaceVector;
-typedef Octree3D::GridPt GridPt;
+typedef SpaceOctree3D::GeometricBoundingBox GeometricBoundingBox;
+typedef SpaceOctree3D::SpacePt SpacePt;
+typedef SpaceOctree3D::SpaceVector SpaceVector;
+typedef SpaceOctree3D::GridPt GridPt;
+typedef SpaceOctree3D::BlockIndex BlockIndex;
 
 
 //------------------------------------------------------------------------------
@@ -172,6 +172,27 @@ void print_surface_stats( meshtk::Mesh* mesh)
 }
 
 
+void refineAndPrint(SpaceOctree3D& octree, const SpacePt& queryPt, bool shouldRefine = true)
+{
+    BlockIndex leafBlock = octree.findLeafBlock(queryPt);
+
+    if(shouldRefine)
+    {
+        octree.refineLeaf( leafBlock );
+        leafBlock = octree.findLeafBlock(queryPt);
+    }
+
+    GeometricBoundingBox blockBB = octree.blockBoundingBox( leafBlock);
+    bool containsPt = blockBB.contains(queryPt);
+
+    std::cout<<"\t{gridPt: " << leafBlock.pt()
+            <<"; lev: " << leafBlock.level()
+            <<"} "
+            <<" with bounds " << blockBB
+            << (containsPt? " contains " : "does not contain ") << "query point."
+            << std::endl;
+}
+
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
@@ -230,35 +251,26 @@ int main( int argc, char** argv )
   // STEP 6: Find grid point
   double alpha = 2./3.;
 
-  Octree3D octree(meshBB);
+  SpaceOctree3D octree(meshBB);
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);
   std::cout<<"\n"<<"Finding associated grid point for query point: " << queryPt << std::endl;
 
-  for(int lev = 0; lev < Octree3D::MAX_LEV; ++lev)
+  for(int lev = 0; lev < SpaceOctree3D::MAX_LEV; ++lev)
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
-      std::cout << "\t@level " << lev
-              <<":\t" <<  gridPt
-              <<"\t[max gridPt: " << octree. maxGridCellAtLevel(lev)
+      std::cout << "  @level " << lev
+              <<":\n\t" <<  gridPt
+              <<"\n\t[max gridPt: " << octree. maxGridCellAtLevel(lev)
               <<"; spacing" << octree.spacingAtLevel(lev)
+              <<";\n\t bounding box " << octree.blockBoundingBox(gridPt, lev)
               <<"]\n";
   }
-  std::cout << std::endl;
 
 
-  // --
-
-  TopoOctree3D topoOctree;
-  std::cout<<"\n Topological octree.\n";
-  for(int lev = 0; lev < TopoOctree3D::MAX_LEV; ++lev)
-  {
-      std::cout << "\t@level " << lev
-              <<":\t[max gridPt: " << topoOctree.maxGridCellAtLevel(lev)
-              <<"]\n";
-  }
-  std::cout << std::endl;
-
-
+  std::cout << "Recursively refining around query point: " << queryPt << std::endl;
+  refineAndPrint(octree, queryPt, false);
+  for(int i=0; i< 10; ++i)
+      refineAndPrint(octree, queryPt);
 
 
   return 0;

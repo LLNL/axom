@@ -176,7 +176,8 @@ public:
    * \param [in] pt to include.
    *****************************************************************************
    */
-  void addPoint(const PointType& pt);
+  template<typename OtherType>
+  void addPoint(const Point<OtherType,DIM>& pt);
 
   /*!
    *****************************************************************************
@@ -185,7 +186,8 @@ public:
    * \param [in] bbox to include.
    *****************************************************************************
    */
-  void addBox(const BoundingBox& bbox);
+  template<typename OtherType>
+  void addBox(const BoundingBox<OtherType,DIM>& bbox);
 
 
 
@@ -239,6 +241,19 @@ public:
    */
   template<typename OtherType>
   bool contains( const Point<OtherType, DIM>& otherPt) const;
+
+  /*!
+   *****************************************************************************
+   * \brief Checks whether the box contains another bounding box
+   * \param [in] otherBB the bounding box that we are checking
+   * \return status true if bb is inside the box, else false.
+   * \note We are allowing the other bounding box to have a different coordinate
+   *       type.  This should work as long as the two CoordTypes are comperable
+   *       with operator<().
+   *****************************************************************************
+   */
+  template<typename OtherType>
+  bool contains( const BoundingBox<OtherType, DIM>& otherBB) const;
 
 
   /*!
@@ -301,8 +316,8 @@ namespace quest{
 
     //------------------------------------------------------------------------------
     template<typename CoordType, int DIM>
-    template<typename OtherType>
-    bool BoundingBox<CoordType, DIM>::contains(const Point<OtherType,DIM>& otherPt) const
+    template<typename OtherCoordType>
+    bool BoundingBox<CoordType, DIM>::contains(const Point<OtherCoordType,DIM>& otherPt) const
     {
         for(int dim = 0; dim < DIM; ++dim)
         {
@@ -312,6 +327,13 @@ namespace quest{
         return true;
     }
 
+    //------------------------------------------------------------------------------
+    template<typename CoordType, int DIM>
+    template<typename OtherCoordType>
+    bool BoundingBox<CoordType, DIM>::contains(const BoundingBox<OtherCoordType,DIM>& otherBB) const
+    {
+        return this->contains(otherBB.getMin()) && this->contains(otherBB.getMax());
+    }
 
     //------------------------------------------------------------------------------
     template<typename CoordType, int DIM>
@@ -328,21 +350,26 @@ namespace quest{
 
     //------------------------------------------------------------------------------
     template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::addPoint (const PointType& pt)
+    template<typename OtherCoordType>
+    void BoundingBox<CoordType, DIM>::addPoint (const Point<OtherCoordType,DIM>& pt)
     {
-        for (int dim=0; dim < DIM; ++dim ) {
-            if ( pt[dim] < m_min[dim] ) {
-                m_min[dim] = pt[dim];
+        for (int dim=0; dim < DIM; ++dim )
+        {
+            CoordType coord = static_cast<CoordType>(pt[dim]);
+
+            if ( coord < m_min[dim] ) {
+                m_min[dim] = coord;
             }
-            if ( pt[dim] > m_max[dim] ) {
-                m_max[dim] = pt[dim];
+            if ( coord > m_max[dim] ) {
+                m_max[dim] = coord;
             }
         }
     }
 
     //------------------------------------------------------------------------------
     template<typename CoordType, int DIM>
-    void BoundingBox<CoordType, DIM>::addBox (const BoundingBox& bbox)
+    template<typename OtherCoordType>
+    void BoundingBox<CoordType, DIM>::addBox (const BoundingBox<OtherCoordType,DIM>& bbox)
     {
         addPoint(bbox.getMin());
         addPoint(bbox.getMax());
