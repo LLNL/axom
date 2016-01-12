@@ -28,6 +28,7 @@
 #include "sidre/DataGroup.hpp"
 #include "sidre/SidreTypes.hpp"
 
+#include "conduit_mpi.hpp"
 
 namespace asctoolkit
 {
@@ -43,13 +44,14 @@ namespace spio
  *************************************************************************
  */
 IOManager::IOManager(MPI_Comm comm,
-  std::vector<sidre::DataGroup *>& groups,
+  sidre::DataGroup ** groups,
+  int num_datagroups,
   int num_files)
 : m_comm_size(1),
   m_my_rank(0),
   m_baton(comm, num_files),
-  m_datagroups(groups)
-//  m_mpi_tag(378)
+  m_datagroups(groups),
+  m_num_datagroups(num_datagroups)
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
@@ -81,10 +83,19 @@ void IOManager::write(const std::string& file_string, int cycle, const std::stri
   std::ostringstream oss;
   oss << file_string << "_" << group_id << "_" << cycle;
   std::string file_name = oss.str();
-  for (std::vector<sidre::DataGroup *>::const_iterator itr = m_datagroups.begin();
-       itr != m_datagroups.end(); ++itr) {  
-    (*itr)->save(file_name, protocol);
+//  conduit::mpi::send();
+  for (int i = 0; i < m_num_datagroups; ++i) {
+    m_datagroups[i]->save(file_name, protocol);
   }
+//  if (m_num_datagroups == 1) {
+//    if (m_baton.groupSize() == 1) {
+//      m_datagroups[0]->save(file_name, protocol);
+//    } else if (m_baton.isLastInGroup()) {
+//    } else {
+//      conduit::Node n;
+//      m_datagroups[0]->copyToNode(n);
+//    }
+//  }   
   (void)m_baton.finishMyTurn();
 }
 
@@ -101,9 +112,8 @@ void IOManager::read(const std::string& file_string, int cycle, const std::strin
   std::ostringstream oss;
   oss << file_string << "_" <<  group_id << "_" << cycle;
   std::string file_name = oss.str();
-  for (std::vector<sidre::DataGroup *>::iterator itr = m_datagroups.begin();
-       itr != m_datagroups.end(); ++itr) {
-    (*itr)->load(file_name, protocol);
+  for (int i = 0; i < m_num_datagroups; ++i) {
+    m_datagroups[i]->load(file_name, protocol);
   }
   (void)m_baton.finishMyTurn();
 }

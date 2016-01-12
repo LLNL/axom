@@ -46,7 +46,7 @@ int main(int argc, char * argv[])
   std::vector<DataGroup *> groups;
   groups.push_back(root);
 
-  IOManager reader(MPI_COMM_WORLD, groups, num_files);
+  IOManager reader(MPI_COMM_WORLD, &(groups[0]), groups.size(), num_files);
   reader.read(file_base, 0, "conduit");
 
   delete ds;

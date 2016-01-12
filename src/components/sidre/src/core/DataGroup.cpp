@@ -866,7 +866,8 @@ void DataGroup::save(const std::string& obase,
     Node n;
     copyToNode(n);
     // for debugging call: n.print();
-    n.save(obase);
+//    n.save(obase);
+    conduit::io::save(n, obase);
   }
 }
 
@@ -888,7 +889,8 @@ void DataGroup::load(const std::string& obase,
     destroyGroups();
     destroyViews();
     Node n;
-    n.load(obase);
+    conduit::io::load(obase, n);
+    //n.load(obase);
     // for debugging call: n.print();
     copyFromNode(n);
   }

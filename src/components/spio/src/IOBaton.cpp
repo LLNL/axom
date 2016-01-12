@@ -73,7 +73,6 @@ IOBaton::IOBaton(MPI_Comm comm,
   if (m_rank_within_group > 0) {
     m_rank_before_me = m_my_rank - 1;
   }
-
 }
 
 

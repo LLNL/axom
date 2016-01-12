@@ -21,6 +21,7 @@
 
 // Other CS Toolkit headers
 #include "conduit.hpp"
+#include "conduit_io.hpp"
 
 namespace asctoolkit
 {

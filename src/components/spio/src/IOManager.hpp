@@ -55,8 +55,9 @@ public:
    * \brief Default ctor initializes IOManager
    */
   IOManager(MPI_Comm com,
-             std::vector<sidre::DataGroup *>& groups,
-             int num_files);
+            sidre::DataGroup ** groups,
+            int num_datagroups,
+            int num_files);
 
   /*!
    * \brief Dtor destroys
@@ -86,7 +87,8 @@ private:
 
   IOBaton m_baton;
 
-  std::vector<sidre::DataGroup *> m_datagroups;
+  sidre::DataGroup ** m_datagroups;
+  int m_num_datagroups;
 
 };
 
