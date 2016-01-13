@@ -232,7 +232,7 @@ public:
   /**
    * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
    * \param [in] level The level or resolution.
-   * \pre \f$ 0 \le lev < \text{TopologicalOctree::MAX_LEV}  \f$
+   * \pre \f$ 0 \le lev < \f$ OctreeBase::MAX_LEV
    * \todo Convert this to a static class function.
    */
   GridPt maxGridCellAtLevel(int level) const
