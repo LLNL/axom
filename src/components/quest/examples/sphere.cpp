@@ -35,6 +35,7 @@
 #include "quest/Mesh.hpp"
 #include "quest/Orientation.hpp"
 #include "quest/Point.hpp"
+#include "quest/Vector.hpp"
 #include "quest/STLReader.hpp"
 #include "quest/SquaredDistance.hpp"
 #include "quest/Triangle.hpp"
@@ -52,7 +53,15 @@
 
 using namespace asctoolkit;
 
+static const int DIM = 3;
 typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+
+
+typedef quest::Point<int, DIM> GridPoint;
+typedef quest::Point<double, DIM> SpacePoint;;
+typedef quest::Vector<double, DIM> SpaceVector;
+
+typedef quest::BoundingBox<double, DIM> SpatialBoundingBox;;
 
 //------------------------------------------------------------------------------
 void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
@@ -188,36 +197,22 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
-void compute_bounds( meshtk::Mesh* mesh, double min[3], double max[3] )
+SpatialBoundingBox compute_bounds( meshtk::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
-   std::fill( min, min+3, std::numeric_limits< double >::max() );
-   std::fill( max, max+3, std::numeric_limits< double >::min() );
+   SpatialBoundingBox meshBB;
+   SpacePoint pt;
 
-   for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i ) {
-
-       double pnt[3];
-       mesh->getMeshNode( i, pnt );
-
-       for (int dim=0; dim < 3; ++dim ) {
-
-           if ( pnt[dim] < min[dim] ) {
-
-               min[dim] = pnt[dim];
-
-           } else if ( pnt[dim] > max[dim] ) {
-
-               max[dim] = pnt[dim];
-
-           }
-
-       } // END for all dims
-
-
+   for ( int i=0; i < mesh->getMeshNumberOfNodes(); ++i )
+   {
+       mesh->getMeshNode( i, pt.data() );
+       meshBB.addPoint( pt );
    } // END for all nodes
 
+   SLIC_ASSERT( meshBB.isValid() );
 
+   return meshBB;
 }
 
 
@@ -228,16 +223,19 @@ quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surfa
    SLIC_ASSERT( surface_mesh != ATK_NULLPTR );
    SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
 
-   int cell[3];
-   surface_mesh->getMeshCell( cellIdx, cell );
-   quest::BoundingBox<double,3> bb;
+   using namespace quest;
+
+   int const DIM = 3;
+
+   Point<int,DIM> cell;
+   surface_mesh->getMeshCell( cellIdx, cell.data() );
+
+   BoundingBox<double,DIM> bb;
+   Point<double,DIM> pt;
 
    for ( int i=0; i < 3; ++i ) {
-
-      double pnt[3];
-      surface_mesh->getMeshNode( cell[i], pnt );
-
-      bb.addPoint( quest::Point<double,3>(pnt) );
+      surface_mesh->getMeshNode( cell[i], pt.data() );
+      bb.addPoint( pt );
 
    } // END for all cell nodes
 
@@ -263,45 +261,44 @@ void n2( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    // STEP 2: loop over uniform mesh nodes and compute distance field
    std::cout << "Calculating distance field...";
    std::cout.flush();
-   typedef quest::Point3D Point3D;
-   typedef quest::Point<int, 3> GridPt;
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
    for ( int i=0; i < nnodes; ++i ) {
 
       // get target node
-      Point3D pnt;
+      SpacePoint pnt;
       umesh->getNode( i, pnt.data() );
-      Point3D Q = pnt;
+      SpacePoint Q = pnt;
 
-      phi[ i ] = std::numeric_limits< double >::max();
+      double unsignedMinDistSQ = std::numeric_limits< double >::max();
+      int sign = 0;
 
       const int ncells = surface_mesh->getMeshNumberOfCells();
       for (int j=0; j < ncells; ++j ) {
 
-          // compute exact distance to the cell
-          GridPt closest_cell;
+          // find minimum distance from query point to triangle
+          GridPoint closest_cell;
           surface_mesh->getMeshCell( j, closest_cell.data() );
 
-          Point3D a,b,c;
+          SpacePoint a,b,c;
           surface_mesh->getMeshNode( closest_cell[0], a.data() );
           surface_mesh->getMeshNode( closest_cell[1], b.data() );
           surface_mesh->getMeshNode( closest_cell[2], c.data() );
           quest::Triangle< double,3 > T( a,b,c);
-          const double dist = std::sqrt( quest::squared_distance( Q, T ) );
-          if ( dist < std::abs( phi[i] ) )  {
+          const double sqDist = quest::squared_distance( Q, T );
+          if ( sqDist < unsignedMinDistSQ)  {
 
-              double sign = 1.0;
-              if ( quest::orientation( Q, T ) == quest::ON_NEGATIVE_SIDE ) {
-                  sign = -1.0f;
-              }
-
-              phi[ i ] = sign*dist;
+              bool negSide = quest::orientation( Q, T ) == quest::ON_NEGATIVE_SIDE;
+              sign = negSide? -1: 1;
+              unsignedMinDistSQ = sqDist;
 
           } // END if
 
       } // END for all cells on the surface mesh
+
+      phi[i] = sign * std::sqrt( unsignedMinDistSQ );
 
    } // END for all nodes on the uniform mesh
    std::cout << "[DONE]" << std::endl;
@@ -402,44 +399,38 @@ int main( int ATK_NOT_USED(argc), char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 6: compute bounds
-  double min[3];
-  double max[3];
-  compute_bounds( surface_mesh, min, max );
-  std::cout << "min: " << min[0] << ", " << min[1] << ", " << min[2] << "\n";
-  std::cout << "max: " << max[0] << ", " << max[1] << ", " << max[2] << "\n";
+  SpatialBoundingBox meshBounds = compute_bounds( surface_mesh);
+
+  std::cout << "Mesh bounding  box: " << meshBounds << "\n";
 
   double f;
   std::cout << "Inflate by N: ";
   std::cin >> f;
-  for (int i=0; i < 3; ++i ) {
 
-      min[ i ] -= f;
-      max[ i ] += f;
-  }
-  std::cout << "min: " << min[0] << ", " << min[1] << ", " << min[2] << "\n";
-  std::cout << "max: " << max[0] << ", " << max[1] << ", " << max[2] << "\n";
+  meshBounds.expand(f);
+  std::cout << "Bounding  box after inflating: " << meshBounds << "\n";
 
   // STEP 7: get dimensions from user
-  int nx, ny, nz;
+  GridPoint gridRes;
   std::cout << "Enter Nx Ny Nz: ";
-  std::cin >> nx >> ny >> nz;
-  double h[3];
-  h[0] = (max[0]-min[0]) / nx;
-  h[1] = (max[1]-min[1]) / ny;
-  h[2] = (max[2]-min[2]) / nz;
-  std::cout << "h: " << h[0] << " " << h[1] << " " << h[2] << std::endl;
+  std::cin >> gridRes[0] >> gridRes[1] >> gridRes[2];
+
+  SpaceVector h( meshBounds.getMin(), meshBounds.getMax());
+  for(int i=0; i<DIM; ++i)
+      h[i] /= gridRes[i];
+  std::cout << "h: " << h << std::endl;
   std::cout.flush();
 
   int ext[6];
   ext[0] = 0;
-  ext[1] = nx;
+  ext[1] = gridRes[0];
   ext[2] = 0;
-  ext[3] = ny;
+  ext[3] = gridRes[1];
   ext[4] = 0;
-  ext[5] = nz;
+  ext[5] = gridRes[2];
 
   // STEP 8: Construct uniform mesh
-  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,min,h,ext);
+  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,meshBounds.getMin().data(),h.data(),ext);
 
   // STEP 9: Flag boundary cells on uniform mesh
   //  flag_boundary( surface_mesh, umesh );
