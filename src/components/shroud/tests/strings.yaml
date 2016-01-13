@@ -1,0 +1,17 @@
+#
+# Test the many variations of strings
+#
+
+options:
+  debug: True
+  library: strings
+  wrap_python: False
+
+functions:
+
+- decl: const string& getName() const
+  doxygen:
+    brief: return a string as argument
+  options:
+    F_string_result_as_arg: output
+

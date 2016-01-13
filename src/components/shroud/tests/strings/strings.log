@@ -1,0 +1,6 @@
+Read yaml strings.yaml
+C function const string & getName() const
+Close wrapstrings.h
+Close wrapstrings.cpp
+C-interface, Fortran function const string & getName() const
+Close wrapfstrings.f

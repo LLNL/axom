@@ -1,0 +1,323 @@
+{
+    "F_module_dependencies": [], 
+    "classes": [], 
+    "fmt": {
+        "C_const": "", 
+        "C_header_filename": "wrapstrings.h", 
+        "C_impl_filename": "wrapstrings.cpp", 
+        "C_prefix": "STR_", 
+        "C_this": "self", 
+        "F_C_pure_clause": "", 
+        "F_C_result_clause": "", 
+        "F_derived_member": "voidptr", 
+        "F_impl_filename": "wrapfstrings.f", 
+        "F_module_name": "strings_mod", 
+        "F_pure_clause": "", 
+        "F_result": "rv", 
+        "F_result_clause": "", 
+        "F_this": "obj", 
+        "function_suffix": "", 
+        "library": "strings", 
+        "lower_library": "strings", 
+        "overloaded": false, 
+        "rv": "rv", 
+        "upper_library": "STRINGS"
+    }, 
+    "functions": [
+        {
+            "_decl": "const string & getName() const", 
+            "_function_index": 0, 
+            "args": [], 
+            "attrs": {
+                "const": true
+            }, 
+            "decl": "const string& getName() const", 
+            "doxygen": {
+                "brief": "return a string as argument"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_name", 
+                "F_C_name": "str_get_name", 
+                "F_name_generic": "get_name", 
+                "F_name_impl": "get_name", 
+                "F_name_method": "get_name", 
+                "method_name": "getName", 
+                "underscore_name": "get_name"
+            }, 
+            "options": {
+                "F_string_result_as_arg": "output"
+            }, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "getName", 
+                "type": "string"
+            }
+        }
+    ], 
+    "options": {
+        "C_header_filename_class_template": "wrap{cpp_class}.h", 
+        "C_header_filename_library_template": "wrap{library}.h", 
+        "C_impl_filename_class_template": "wrap{cpp_class}.cpp", 
+        "C_impl_filename_library_template": "wrap{library}.cpp", 
+        "C_name_function_template": "{C_prefix}{underscore_name}{function_suffix}", 
+        "C_name_method_template": "{C_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "F_force_wrapper": false, 
+        "F_impl_filename_class_template": "wrapf{cpp_class}.f", 
+        "F_impl_filename_library_template": "wrapf{lower_library}.f", 
+        "F_module_name_class_template": "{lower_class}_mod", 
+        "F_module_name_library_template": "{lower_library}_mod", 
+        "F_module_per_class": true, 
+        "F_name_generic_template": "{underscore_name}", 
+        "F_name_impl_function_template": "{underscore_name}{function_suffix}", 
+        "F_name_impl_method_template": "{lower_class}_{underscore_name}{function_suffix}", 
+        "F_name_method_template": "{underscore_name}{function_suffix}", 
+        "F_string_len_trim": true, 
+        "PY_PyObject_template": "{PY_prefix}{cpp_class}", 
+        "PY_PyTypeObject_template": "{PY_prefix}{cpp_class}_Type", 
+        "PY_header_filename_template": "py{library}module.hpp", 
+        "PY_helper_filename_template": "py{library}helper.cpp", 
+        "PY_module_filename_template": "py{library}module.cpp", 
+        "PY_name_impl_function_template": "{PY_prefix}{underscore_name}{function_suffix}", 
+        "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
+        "PY_type_filename_template": "py{cpp_class}type.cpp", 
+        "cpp_header": "", 
+        "debug": true, 
+        "doxygen": true, 
+        "library": "strings", 
+        "namespace": "", 
+        "wrap_c": true, 
+        "wrap_fortran": true, 
+        "wrap_python": false
+    }, 
+    "patterns": [], 
+    "types": {
+        "bool": {
+            "PY_PyTypeObject": "PyBool_Type", 
+            "PY_ctor": "PyBool_FromLong({rv})", 
+            "PY_post_parse": "{var} = PyObject_IsTrue({var_obj});", 
+            "c_fortran": "logical(C_BOOL)", 
+            "c_type": "bool", 
+            "cpp_type": "bool", 
+            "f_argsdecl": [
+                "logical(C_BOOL) {tmp_var}"
+            ], 
+            "f_kind": "C_BOOL", 
+            "f_pre_call": "{tmp_var} = {var}  ! coerce to C_BOOL", 
+            "f_type": "logical", 
+            "f_use_tmp": true
+        }, 
+        "double": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "float": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "int": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_INT)": {
+            "PY_format": "i", 
+            "c_fortran": "integer(C_INT)", 
+            "c_type": "int", 
+            "cpp_type": "int", 
+            "f_cast": "int({var}, C_INT)", 
+            "f_kind": "C_INT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_INT"
+                ]
+            }, 
+            "f_type": "integer(C_INT)"
+        }, 
+        "integer(C_LONG)": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "long": {
+            "PY_format": "l", 
+            "c_fortran": "integer(C_LONG)", 
+            "c_type": "long", 
+            "cpp_type": "long", 
+            "f_cast": "int({var}, C_LONG)", 
+            "f_kind": "C_LONG", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_LONG"
+                ]
+            }, 
+            "f_type": "integer(C_LONG)"
+        }, 
+        "real(C_DOUBLE)": {
+            "PY_format": "d", 
+            "c_fortran": "real(C_DOUBLE)", 
+            "c_type": "double", 
+            "cpp_type": "double", 
+            "f_cast": "real({var}, C_DOUBLE)", 
+            "f_kind": "C_DOUBLE", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_DOUBLE"
+                ]
+            }, 
+            "f_type": "real(C_DOUBLE)"
+        }, 
+        "real(C_FLOAT)": {
+            "PY_format": "f", 
+            "c_fortran": "real(C_FLOAT)", 
+            "c_type": "float", 
+            "cpp_type": "float", 
+            "f_cast": "real({var}, C_FLOAT)", 
+            "f_kind": "C_FLOAT", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_FLOAT"
+                ]
+            }, 
+            "f_type": "real(C_FLOAT)"
+        }, 
+        "size_t": {
+            "PY_ctor": "PyInt_FromLong({rv})", 
+            "c_fortran": "integer(C_SIZE_T)", 
+            "c_header": "stdlib.h", 
+            "c_type": "size_t", 
+            "cpp_type": "size_t", 
+            "f_cast": "int({var}, C_SIZE_T)", 
+            "f_kind": "C_SIZE_T", 
+            "f_module": {
+                "iso_c_binding": [
+                    "C_SIZE_T"
+                ]
+            }, 
+            "f_type": "integer(C_SIZE_T)"
+        }, 
+        "std::string": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)"
+        }, 
+        "string": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)"
+        }, 
+        "string_from_buffer": {
+            "base": "string", 
+            "c_argdecl": [
+                "const char *{var}", 
+                "int len_{var}"
+            ], 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_to_cpp": "std::string({var}, len_{var})", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_args": "{var}, len_trim({var})", 
+            "f_c_argdecl": [
+                "type(C_PTR), intent(IN), value :: {var}", 
+                "integer(C_INT), intent(IN), value :: len_{var}"
+            ], 
+            "f_c_args": [
+                "{var}", 
+                "len_{var}"
+            ], 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
+            "f_type": "character(*)"
+        }, 
+        "string_result_as_arg": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_post_call": "FccCopy({f_string}, {f_string_len}, {c_string});", 
+            "c_type": "char", 
+            "cpp_to_c": "{var}.c_str()", 
+            "cpp_type": "std::string", 
+            "f_args": "trim({var}) // C_NULL_CHAR", 
+            "f_argsdecl": [
+                "character(*), intent(OUT) :: {result_arg}", 
+                "type(C_PTR) :: {F_result}"
+            ], 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
+            "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_type": "character(*)"
+        }, 
+        "void": {
+            "c_fortran": "type(C_PTR)", 
+            "c_type": "void", 
+            "cpp_type": "void", 
+            "f_type": "type(C_PTR)"
+        }
+    }
+}
