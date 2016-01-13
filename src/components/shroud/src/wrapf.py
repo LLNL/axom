@@ -370,6 +370,7 @@ class Wrapf(util.WrapperMixin):
 
     def wrap_function_interface(self, cls, node):
         """
+        Write Fortran interface for C function
         cls  - class node or None for functions
         node - function/method node
 

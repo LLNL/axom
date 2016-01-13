@@ -264,7 +264,7 @@ class Schema(object):
         # result_as_arg
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
-#                c_post_call   = 'FFFFFF',
+                c_post_call   = 'FccCopy({f_string}, {f_string_len}, {c_string});',
                 f_argsdecl    = [
                     'character(*), intent(OUT) :: {result_arg}',
                     'type(C_PTR) :: {F_result}'],
@@ -696,7 +696,7 @@ class GenFunctions(object):
             result_as_string['name'] = result_arg_name
             result_as_string['type'] = result_typedef.name + '_result_as_arg'
             result_as_string['attrs']['const'] = False
-            result_as_string['attrs']['len'] = True      # pass result down
+            result_as_string['attrs']['len'] = 'L' + result_arg_name
             new['_result_arg'] = result_as_string
 
             # convert to subroutine

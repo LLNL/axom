@@ -2016,6 +2016,7 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_post_call": "FccCopy({f_string}, {f_string_len}, {c_string});", 
             "c_type": "char", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 

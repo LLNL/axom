@@ -32,4 +32,20 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
   *out = addr;
 }
 
+/*--------------------------------------------------------------------------*/
+
+/* copy a C-string into a Fortran character variable
+ * blank-fill result
+ */
+void FccCopy(char *a, int la, const char *s)
+{
+   int ls,nm;
+   ls = strlen(s);
+   nm = ls < la ? ls : la;
+   memcpy(a,s,nm);
+   if(la > nm) { memset(a+nm,' ',la-nm);}
+}
+
+/*--------------------------------------------------------------------------*/
+
 }  // extern "C"

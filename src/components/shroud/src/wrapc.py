@@ -209,6 +209,7 @@ class Wrapc(util.WrapperMixin):
 
     def wrap_function(self, cls, node):
         """
+        Wrap a C++ function with C
         cls  - class node or None for functions
         node - function/method node
         """
@@ -386,9 +387,13 @@ class Wrapc(util.WrapperMixin):
                 else:
                     return_line = 'return ' + wformat(result_typedef.cpp_to_c, fmt) + ';'
 
-            if result_arg_typedef.c_post_call:
+            if result_arg and result_arg_typedef.c_post_call:
                 # adjust return value or cleanup
+                fmt.f_string = result_arg['name']
+                fmt.f_string_len = result_arg['attrs'].get('len', '')
+                fmt.c_string = wformat(result_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
                 append_format(C_code, result_arg_typedef.c_post_call, fmt)
+            # XXX release rv is necessary
 
             if return_line:
                 C_code.append(return_line)
