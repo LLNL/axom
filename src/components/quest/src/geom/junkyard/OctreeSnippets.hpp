@@ -5,7 +5,7 @@
 // The code here was written quickly in an initial implementation of quest's octree.
 // It is currently being refactored into classes that better separate
 // the concerns:
-//      TopologicalOctree
+//      OctreeBase
 //      SpatialOctree
 //      Point and triangle mesh instantiations...
 

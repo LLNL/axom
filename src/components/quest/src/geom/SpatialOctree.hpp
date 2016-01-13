@@ -31,7 +31,7 @@ namespace quest
 
 /**
  * \class
- * \brief Adds spatial extents to a topological octree, allowing point location
+ * \brief Adds spatial extents to an OctreeBase, allowing point location
  */
 template<int DIM, typename LeafNodeType>
 class SpatialOctree : public OctreeBase<DIM, LeafNodeType>
@@ -46,7 +46,7 @@ public:
     typedef typename OctreeBase<DIM, LeafNodeType>::MapType MapType;
     typedef typename OctreeBase<DIM, LeafNodeType>::BlockIndex BlockIndex;
 
-//    typedef typename TopologicalOctree<DIM, LeafNodeType>::OctreeLevels OctreeLevels;
+//    typedef typename OctreeBase<DIM, LeafNodeType>::OctreeLevels OctreeLevels;
 
     typedef asctoolkit::slam::Map<SpaceVector> SpaceVectorLevelMap;
 
