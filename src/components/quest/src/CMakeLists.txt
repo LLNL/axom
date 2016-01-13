@@ -15,13 +15,14 @@ set( quest_headers
     geom/BoundingBox.hpp
     geom/Determinants.hpp
     geom/HyperSphere.hpp
-    geom/Octree.hpp
     geom/Intersection.hpp
     geom/NumericArray.hpp
+    geom/OctreeBase.hpp
     geom/Orientation.hpp
     geom/Point.hpp
     geom/Ray.hpp
     geom/Segment.hpp
+    geom/SpatialOctree.hpp
     geom/SquaredDistance.hpp
     geom/Triangle.hpp
     geom/Vector.hpp

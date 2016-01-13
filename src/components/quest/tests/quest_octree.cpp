@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "quest/Point.hpp"
-#include "quest/Octree.hpp"
+#include "quest/SpatialOctree.hpp"
 
 //------------------------------------------------------------------------------
 TEST( quest_octree, topological_octree_parent_child)
@@ -22,7 +22,7 @@ TEST( quest_octree, topological_octree_parent_child)
   typedef int CoordType;
   typedef int LeafNodeType;
 
-  typedef quest::TopologicalOctree<DIM, LeafNodeType> OctreeType;
+  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::GridPt GridPt;
   typedef OctreeType::BlockIndex BlockIndex;
   typedef BlockIndex::ChildIndexSet OctreeChildIndexSet;
@@ -67,7 +67,7 @@ TEST( quest_octree, topological_octree_refine)
   static const int DIM = 3;
   typedef int LeafNodeType;
 
-  typedef quest::TopologicalOctree<DIM, LeafNodeType> OctreeType;
+  typedef quest::OctreeBase<DIM, LeafNodeType> OctreeType;
   typedef OctreeType::BlockIndex BlockIndex;
 
 

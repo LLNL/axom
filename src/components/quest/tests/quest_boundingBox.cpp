@@ -59,7 +59,6 @@ TEST( quest_boundingBox, bb_ctor_from_singlePt)
 
 }
 
-
 TEST( quest_boundingBox, bb_ctor_from_twoPoints)
 {
   static const int DIM = 3;
@@ -174,7 +173,6 @@ TEST( quest_boundingBox, bb_test_clear)
           << "After clear() the bounding box should not contain any points";
 
 }
-
 
 TEST( quest_boundingBox, bb_copy_and_assignment)
 {
@@ -311,15 +309,7 @@ TEST( quest_boundingBox, bb_add_box)
     EXPECT_EQ( bbox5, bbox1);
     EXPECT_TRUE(bbox5.contains(bbox1));
 
-
-    std::cout <<"Testing addBox() and contains with different types"<<std::endl;
-    typedef quest::BoundingBox<int,DIM> IntBBox;
-    //IntBBox
-    //QBBox bbox5;
-
-
 }
-
 
 TEST( quest_boundingBox, bb_different_coord_types)
 {
@@ -357,6 +347,7 @@ TEST( quest_boundingBox, bb_different_coord_types)
     EXPECT_FALSE( iBox.contains( PointD(4.25)));
 
 }
+
 TEST( quest_boundingBox, bb_expand)
 {
     static const int DIM = 3;
@@ -396,7 +387,6 @@ TEST( quest_boundingBox, bb_expand)
 
 }
 
-
 TEST( quest_boundingBox, bb_scale)
 {
     static const int DIM = 3;
@@ -426,29 +416,19 @@ TEST( quest_boundingBox, bb_scale)
     EXPECT_EQ(bbox2.getMin(), QPoint(1.5));
     EXPECT_EQ(bbox2.getMax(), QPoint(2.5));
 
+    // Show that scaling by zero set the bounds to its midpoint
+    QBBox bbox3 ( bbox);
+    bbox3.scale( 0.);
+    EXPECT_EQ( bbox3.getMin(), bbox3.getMax());
+    QPoint midpoint = QPoint::midpoint(bbox.getMin(), bbox.getMax());
+    EXPECT_EQ( bbox3.getMin(), midpoint);
 
-    // Expand by too much 5 -- we are checking that bounds fix themselves
-
-#ifdef ATK_DEBUG
-  // NOTE: ATK_ASSSERT is disabled in release mode, so this test will only fail in debug mode
-
-  std::cout<<"\n**********************"
-           <<"\n*** Testing that scale fails when the number is negative."
-           <<"\n    -- We are expecting the code to fail here \n ***"
-           <<"\n**********************"
-           << std::endl;
-
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-  QBBox bbox3 ( bbox);
-  ASSERT_DEATH( bbox3.scale(-1.), "") << "Boundingbox::scale: parameter must be >= 0.";
-#else
-  std::cout << "Did not check for assertion failure since assertions are compiled out in release mode." << std::endl;
-#endif
-
-
+    // Show that scaling by a negative is the same as a positive value
+    QBBox bbox4 ( bbox);
+    bbox4.scale(-1.);
+    EXPECT_EQ( bbox, bbox4);
 
 }
-
 
 TEST( quest_boundingBox, bb_shift)
 {

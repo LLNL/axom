@@ -76,14 +76,10 @@ template<typename CoordType, int DIM>
 class BoundingBox
 {
 public:
-    /**
-     * \brief The underlying Point type of the bounding box
-     */
+    /*! \brief The underlying Point type of the bounding box */
     typedef Point<CoordType, DIM> PointType;
 
-    /**
-     * \brief The underlying Vector type of the bounding box
-     */
+    /*! \brief The underlying Vector type of the bounding box */
     typedef Vector<CoordType, DIM> VectorType;
 public:
 
@@ -197,26 +193,28 @@ public:
    * \param [in] expansionAmount an absolute amount to expand
    * Moves min point expansionAmount away from center and
    * max point expansionAmount away from center (component-wise).
-   * If expansionAmount is negative, the bounding box will contract
    * This function checks to ensure that the bounding box is valid after expansion.
+   * \note If expansionAmount is negative, the bounding box will contract
    *****************************************************************************
    */
   void expand(CoordType expansionAmount);
 
   /*!
    *****************************************************************************
-   * \brief Scales the bounding box by a fixed amount.
-   * \param [in] scaleFactor the multiplicative factor in which to scale
-   * If scaleFactor is less than 1, the bounding box will shrink
-   * \pre scaleFactor must be greater than or equal to 0
+   * \brief Scales the bounding box towards its center by a given amount.
+   * \param [in] scaleFactor the multiplicative factor by which to scale
    * This function checks to ensure that the bounding box is valid after inflation.
+   * \note If scaleFactor is less than 1, the bounding box will shrink.
+   * \note If scaleFactor is 0, the bounding box will shrink to its midpoint
+   * \note The sign of the shrinkFactor has no effect since we are shrinking
+   *       towards the center, and we fix the bounds after shrinking
    *****************************************************************************
    */
   void scale(double scaleFactor);
 
   /*!
    *****************************************************************************
-   * \brief Shifts the bounding box by a fixed amount.
+   * \brief Shifts the bounding box by a fixed displacement.
    * \param [in] displacement the amount with which to move the bounding box
    *****************************************************************************
    */
@@ -393,8 +391,6 @@ namespace quest{
     template<typename CoordType, int DIM>
     void BoundingBox<CoordType, DIM>::scale(double scaleFactor)
     {
-        SLIC_ASSERT(scaleFactor >= 0.);
-
         const PointType midpoint = PointType::midpoint(getMin(), getMax());
         const VectorType r = scaleFactor * 0.5 * range();
 

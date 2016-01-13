@@ -29,7 +29,7 @@
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
-#include "quest/Octree.hpp"
+#include "quest/SpatialOctree.hpp"
 
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
