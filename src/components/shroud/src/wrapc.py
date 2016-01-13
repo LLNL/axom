@@ -227,10 +227,13 @@ class Wrapc(util.WrapperMixin):
         if 'CPP_template' not in fmt:
             fmt.CPP_template = ''
 
-        # return type
+        # C++ return type
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
+        wrapper_result = node.get('_result_wrapper', result)
+        wrapper_result_type = wrapper_result['type']
+        wrapper_result_is_ptr = wrapper_result['attrs'].get('ptr', False)
 
         # C++ functions which return 'this', are easier to call from Fortran if they are subroutines.
         # There is no way to chain in Fortran:  obj->doA()->doB();
@@ -276,11 +279,13 @@ class Wrapc(util.WrapperMixin):
             fmt.CPP_this_call = ''  # call function syntax
 
 
-        result_as_string = node.get('_result_arg', None)
-        if result_as_string:
-            extra_args = [ result_as_string ]
+        result_arg = node.get('_result_arg', None)
+        if result_arg:
+            extra_args = [ result_arg ]
+            result_arg_typedef = self.typedef[  result_arg['type'] ]
         else:
             extra_args = []
+            result_arg_typedef = result_typedef
 
         for arg in node['args'] + extra_args:
             arg_typedef = self.typedef[arg['type']]
@@ -329,7 +334,7 @@ class Wrapc(util.WrapperMixin):
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
         else:
-            fmt.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
+            fmt.C_return_type = options.get('C_return_type', self._c_type('c_type', wrapper_result))
 
         if cls:
             if 'C_object' in options:
@@ -352,7 +357,9 @@ class Wrapc(util.WrapperMixin):
         else:
             # generate the C body
             C_code = []
+            return_line = ''
             if is_ctor:
+                # XXXX needs to call new!
                 fmt.var = '%sobj' % fmt_func.C_this
                 C_code.append('return ' + 
                     wformat(result_typedef.cpp_to_c, fmt) + ';')
@@ -362,7 +369,7 @@ class Wrapc(util.WrapperMixin):
                 line = wformat('{CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
-                C_code.append('return;')
+                return_line = 'return;'
             else:
                 line = wformat('{rv_decl} = {CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
@@ -373,18 +380,18 @@ class Wrapc(util.WrapperMixin):
                     lfmt.var = fmt.rv
                     append_format(C_code, self.patterns[node['C_error_pattern']], lfmt)
 
-                line = 'return ' + \
-                    wformat(result_typedef.cpp_to_c, fmt) + ';'
-                C_code.append(line)
+                if wrapper_result_type == 'void' and not wrapper_result_is_ptr:
+                    # function result is returned as an argument
+                    return_line = 'return;'
+                else:
+                    return_line = 'return ' + wformat(result_typedef.cpp_to_c, fmt) + ';'
 
-            if '_result_arg' in node:
-                # XXX move up...
-                result = node['_result_arg']
-                result_type = result['type']
-                result_typedef = self.typedef[result_type]
-            if result_typedef.c_post_call:
+            if result_arg_typedef.c_post_call:
                 # adjust return value or cleanup
-                append_format(C_code, result_typedef.c_post_call, fmt)
+                append_format(C_code, result_arg_typedef.c_post_call, fmt)
+
+            if return_line:
+                C_code.append(return_line)
 
 
         self.header_proto_c.append('')

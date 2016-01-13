@@ -700,11 +700,12 @@ class GenFunctions(object):
             new['_result_arg'] = result_as_string
 
             # convert to subroutine
-#            result = new['result']
-#            result['type'] = 'void'
-#            result['attrs']['ptr'] = False
-#            result['attrs']['reference'] = False
-            new['attrs']['result_arg_name'] = result_arg_name
+            result = copy.deepcopy(result)
+            result['type'] = 'void'
+            result['attrs']['const'] = False
+            result['attrs']['ptr'] = False
+            result['attrs']['reference'] = False
+            new['_result_wrapper'] = result
             
     def check_class_dependencies(self, node):
         """
