@@ -246,7 +246,17 @@ int main( int argc, char** argv )
   std::cout << std::endl;
 
 
+  // --
+
   TopoOctree3D topoOctree;
+  std::cout<<"\n Topological octree.\n";
+  for(int lev = 0; lev < TopoOctree3D::MAX_LEV; ++lev)
+  {
+      std::cout << "\t@level " << lev
+              <<":\t[max gridPt: " << topoOctree.maxGridCellAtLevel(lev)
+              <<"]\n";
+  }
+  std::cout << std::endl;
 
 
 

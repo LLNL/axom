@@ -76,7 +76,14 @@ template<typename CoordType, int DIM>
 class BoundingBox
 {
 public:
+    /**
+     * \brief The underlying Point type of the bounding box
+     */
     typedef Point<CoordType, DIM> PointType;
+
+    /**
+     * \brief The underlying Vector type of the bounding box
+     */
     typedef Vector<CoordType, DIM> VectorType;
 public:
 
@@ -166,7 +173,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Updates bounds to include the provided point.
-   * \param [in] point to include.
+   * \param [in] pt to include.
    *****************************************************************************
    */
   void addPoint(const PointType& pt);
@@ -226,9 +233,7 @@ public:
   /*!
    *****************************************************************************
    * \brief Checks whether the box contains the point
-   * \param [in] x the x--coordinate
-   * \param [in] y the y--coordinate
-   * \param [in] z the z--coordinate
+   * \param [in] otherPt the point that we are checking
    * \return status true if point inside the box, else false.
    *****************************************************************************
    */

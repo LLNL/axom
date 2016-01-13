@@ -267,6 +267,17 @@ namespace slam {
 
     bool                isSubset() const { return SubsettingPolicy::isSubset(); }
 
+    /**
+     * \brief checks whether the given position (index) is valid.
+     *
+     * An index pos is valid when \f$ 0 \le pos < size() \f$
+     * \return true if the position is valid, false otherwise
+     */
+    bool                isValidIndex(PositionType pos) const
+    {
+        return pos >= 0 && pos < size();
+    }
+
   private:
 
     inline void         verifyPosition(PositionType pos)       const
@@ -275,7 +286,7 @@ namespace slam {
     }
     inline void         verifyPositionImpl(PositionType pos)       const
     {
-      SLIC_ASSERT_MSG( pos >= 0 && pos < size()
+      SLIC_ASSERT_MSG( isValidIndex(pos)
           , "SLAM::OrderedSet -- requested out-of-range element at position "
           << pos << ", but set only has " << size() << " elements." );
     }
