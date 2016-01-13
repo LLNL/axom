@@ -97,6 +97,14 @@ C_prefix
   Prefix added to name of generated C routines.
   The prefix helps to ensure unique global names.
 
+C_proto_type
+
+   XXX  override prototype of generated C function
+
+C_return_type
+
+   XXX   override return type of function
+
 cpp_header
 
   C++ header file name.
@@ -114,6 +122,8 @@ F_string_len_trim
   the ``std::string`` constructor, instead of the Fortran wrapper
   creating a ``NULL`` terminated string using ``trim``.  This avoids
   copying the string in the Fortran wrapper.
+  Defaults to *true*.
+.. bufferify
 
 F_force_wrapper
 
@@ -416,6 +426,22 @@ c_argdecl
 
     List of argument declarations for C wrapper, *None*=match declaration.
     Used with string_from_buffer .
+    Defaults to *None*.
+
+c_pre_call
+
+    Statement to execute before call.
+
+c_post_call
+
+    Statement to execute after call.
+    Can be use to cleanup after *c_pre_call*
+    or to coerce the return value.
+    Defaults to *None*.
+
+c_return_code
+
+    Fortran code used to call function and assign the return value.
     Defaults to *None*.
 
 f_c_args

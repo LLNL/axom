@@ -264,6 +264,7 @@ class Schema(object):
         # result_as_arg
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
+#                c_post_call   = 'FFFFFF',
                 f_argsdecl    = [
                     'character(*), intent(OUT) :: {result_arg}',
                     'type(C_PTR) :: {F_result}'],
@@ -642,6 +643,20 @@ class GenFunctions(object):
             return
 
         has_strings = False
+
+        # is result a string argument?
+        result = node['result']
+        result_type = result['type']
+        result_typedef = self.typedef[result_type]
+        result_arg_name = options.get('F_string_result_as_arg', '')
+        if result_typedef.base == 'string' and result_arg_name:
+            has_strings = True
+        else:
+            result_arg_name = ''
+        # XXX dummy out for now
+        has_strings = False
+        result_arg_name = ''
+
         for arg in node['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
@@ -675,6 +690,22 @@ class GenFunctions(object):
                 # Add len_trim attribute
                 arg['attrs']['len_trim'] = True
 
+        if result_arg_name:
+            # cache the result argument
+            result_as_string = copy.deepcopy(result)
+            result_as_string['name'] = result_arg_name
+            result_as_string['type'] = result_typedef.name + '_result_as_arg'
+            result_as_string['attrs']['const'] = False
+            result_as_string['attrs']['len'] = True      # pass result down
+            new['_result_arg'] = result_as_string
+
+            # convert to subroutine
+#            result = new['result']
+#            result['type'] = 'void'
+#            result['attrs']['ptr'] = False
+#            result['attrs']['reference'] = False
+            new['attrs']['result_arg_name'] = result_arg_name
+            
     def check_class_dependencies(self, node):
         """
         Check used_types and find which header and module files

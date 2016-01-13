@@ -276,7 +276,13 @@ class Wrapc(util.WrapperMixin):
             fmt.CPP_this_call = ''  # call function syntax
 
 
-        for arg in node['args']:
+        result_as_string = node.get('_result_arg', None)
+        if result_as_string:
+            extra_args = [ result_as_string ]
+        else:
+            extra_args = []
+
+        for arg in node['args'] + extra_args:
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
             fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
@@ -287,13 +293,21 @@ class Wrapc(util.WrapperMixin):
                 proto_list.append(self._c_decl('c_type', arg))
 
             # convert C argument to C++
-            len_trim = arg['attrs'].get('len_trim', None)
+            len_arg  = arg['attrs'].get('len', False)
+            len_trim = arg['attrs'].get('len_trim', False)
             if len_trim:
-                if len_trim is True:
+                if len_trim is True:  # generate name
                     len_trim = 'L' + arg['name']
                 fmt.len_trim = len_trim
                 append_format(proto_list, 'int {len_trim}', fmt)
                 append_format(call_list, 'std::string({var}, {len_trim})', fmt)
+            elif len_arg:
+                if len_arg is True:  # generate name
+                    len_arg = 'L' + arg['name']
+                fmt.len_arg = len_arg
+                append_format(proto_list, 'int {len_arg}', fmt)
+                # XXX - this is assuming len is on result
+#                append_format(call_list, 'std::string({var}, {len_trim})', fmt)
             else:
                 append_format(call_list, arg_typedef.c_to_cpp, fmt)
 
@@ -362,6 +376,16 @@ class Wrapc(util.WrapperMixin):
                 line = 'return ' + \
                     wformat(result_typedef.cpp_to_c, fmt) + ';'
                 C_code.append(line)
+
+            if '_result_arg' in node:
+                # XXX move up...
+                result = node['_result_arg']
+                result_type = result['type']
+                result_typedef = self.typedef[result_type]
+            if result_typedef.c_post_call:
+                # adjust return value or cleanup
+                append_format(C_code, result_typedef.c_post_call, fmt)
+
 
         self.header_proto_c.append('')
         self.header_proto_c.append(wformat('{C_return_type} {C_name}({C_prototype});',

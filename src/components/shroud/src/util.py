@@ -267,6 +267,9 @@ class Typedef(object):
         c_fortran=None,       # Expression to convert from C to Fortran
         c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer 
+        c_pre_call = None,    # Statement to execute before call
+        c_post_call = None,   # Statement to execute after call
+        c_return_code=None,
 
         f_c_args=None,        # List of argument names to F_C routine
         f_c_argdecl=None,     # List of declarations to F_C routine
