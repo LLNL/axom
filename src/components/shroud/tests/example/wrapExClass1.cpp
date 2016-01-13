@@ -29,7 +29,7 @@ return static_cast<AA_exclass1 *>(static_cast<void *>(selfobj));
 // splicer end class.ExClass1.method.new
 }
 
-// ExClass1 * new(const string * name+intent(in)+len_trim)+constructor
+// ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor
 // function_index=13
 /**
  * \brief constructor

@@ -302,14 +302,10 @@ class Wrapc(util.WrapperMixin):
             len_arg  = arg['attrs'].get('len', False)
             len_trim = arg['attrs'].get('len_trim', False)
             if len_trim:
-                if len_trim is True:  # generate name
-                    len_trim = 'L' + arg['name']
                 fmt.len_trim = len_trim
                 append_format(proto_list, 'int {len_trim}', fmt)
                 append_format(call_list, 'std::string({var}, {len_trim})', fmt)
             elif len_arg:
-                if len_arg is True:  # generate name
-                    len_arg = 'L' + arg['name']
                 fmt.len_arg = len_arg
                 append_format(proto_list, 'int {len_arg}', fmt)
                 # XXX - this is assuming len is on result

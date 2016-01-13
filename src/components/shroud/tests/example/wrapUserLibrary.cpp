@@ -29,7 +29,7 @@ return name != NULL;
 // splicer end function.is_name_valid
 }
 
-// bool isNameValid(const std::string & name+intent(in)+len_trim)
+// bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))
 // function_index=44
 bool AA_is_name_valid_bufferify(const char * name, int Lname)
 {
@@ -58,7 +58,7 @@ return;
 // splicer end function.test_names
 }
 
-// void test_names(const std::string & name+intent(in)+len_trim)
+// void test_names(const std::string & name+intent(in)+len_trim(Lname))
 // function_index=45
 void AA_test_names_bufferify(const char * name, int Lname)
 {
@@ -78,7 +78,7 @@ return;
 // splicer end function.test_names_flag
 }
 
-// void test_names(const std::string & name+intent(in)+len_trim, int flag+intent(in)+value)
+// void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)
 // function_index=46
 void AA_test_names_flag_bufferify(const char * name, int Lname, int flag)
 {

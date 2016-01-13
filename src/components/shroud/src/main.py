@@ -688,7 +688,7 @@ class GenFunctions(object):
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
                 # Add len_trim attribute
-                arg['attrs']['len_trim'] = True
+                arg['attrs']['len_trim'] = 'L' + arg['name']
 
         if result_arg_name:
             # cache the result argument
@@ -942,6 +942,15 @@ class VerifyAttrs(object):
                 node['_has_default_arg'] = True
             elif found_default is True:
                 raise RuntimeError("Expected default value for %s" % argname)
+
+            # compute argument names for some attributes
+            # XXX make sure they don't conflict with other names
+            len_name = attrs.get('len', False)
+            if len_name is True:
+                attrs['len'] = 'L' + argname
+            len_name = attrs.get('len_trim', False)
+            if len_name is True:
+                attrs['len'] = 'L' + argname
 #        if typedef.base == 'string':
 
 

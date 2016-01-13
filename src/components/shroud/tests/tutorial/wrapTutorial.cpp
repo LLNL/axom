@@ -57,7 +57,7 @@ return rv.c_str();
 // splicer end function.function4a
 }
 
-// const std::string & Function4a(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)+pure
+// const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
 // function_index=32
 const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
 {
@@ -77,7 +77,7 @@ return rv.c_str();
 // splicer end function.function4b
 }
 
-// const std::string & Function4b(const std::string & arg1+intent(in)+len_trim, const std::string & arg2+intent(in)+len_trim)
+// const std::string & Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))
 // function_index=33
 const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
 {
@@ -127,7 +127,7 @@ return;
 // splicer end function.function6_from_name
 }
 
-// void Function6(const std::string & name+intent(in)+len_trim)
+// void Function6(const std::string & name+intent(in)+len_trim(Lname))
 // function_index=34
 void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
@@ -217,7 +217,7 @@ return;
 // splicer end function.function10_1
 }
 
-// void Function10(const std::string & name+intent(in)+len_trim, double arg2+intent(in)+value)
+// void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)
 // function_index=35
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {

@@ -441,8 +441,6 @@ class Wrapf(util.WrapperMixin):
 
             len_trim = arg['attrs'].get('len_trim', None)
             if len_trim:
-                if len_trim is True:
-                    len_trim = 'L' + arg['name']
                 arg_c_names.append(len_trim)
                 arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_trim)
 
@@ -621,10 +619,10 @@ class Wrapf(util.WrapperMixin):
             if len_trim:
                 need_wrapper = True
 #                fmt.len_trim_var = 'L' + arg['name']
-                if len_trim is True:
-                    len_trim = 'len_trim({var})'
+#                if len_trim is True:
+#                    len_trim = 'len_trim({var})'
                 append_format(arg_c_call, '{var}', fmt)
-                append_format(arg_c_call, len_trim, fmt)
+                append_format(arg_c_call, 'len_trim({var})', fmt)
             elif arg_typedef.f_args:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt)
