@@ -3,6 +3,16 @@
 """
 generate language bindings
 """
+
+#
+# Annotate the YAML tree with additional internal fields
+#  _decl            - generated declaration.  Includes computed attributes
+#  _function_index  - sequence number function, used in lieu of a pointer
+#  _generated       - who generated this function
+#  _PTR_F_C_index   - Used by fortran wrapper to find index of C function to call
+#  _PTR_C_CPP_index - Used by C wrapper to find index of C++ function to call
+#
+#
 from __future__ import print_function
 
 import argparse
@@ -654,8 +664,8 @@ class GenFunctions(object):
         else:
             result_arg_name = ''
         # XXX dummy out for now
-        has_strings = False
-        result_arg_name = ''
+        has_strings = False  # UUU
+        result_arg_name = ''  # UUU
 
         for arg in node['args']:
             argtype = arg['type']
@@ -675,13 +685,15 @@ class GenFunctions(object):
 
         options = new['options']
         options.wrap_c = True
-        options.wrap_fortran = False
+        options.wrap_fortran = False  # UU
         options.wrap_python = False
+#        options.F_string_result_as_arg = False
+#        new['_PTR_C_CPP_index'] = node['_function_index']  # UUU
 
         options = node['options']
-        #        options.wrap_fortran = False
+#        options.wrap_fortran = False # UUU
 #        # Current Fortran function should use this new C function
-        node['_PTR_F_C_index'] = new['_function_index']
+        node['_PTR_F_C_index'] = new['_function_index']  # UUU
 
         newargs = []
         for arg in new['args']:
@@ -697,15 +709,15 @@ class GenFunctions(object):
             result_as_string['type'] = result_typedef.name + '_result_as_arg'
             result_as_string['attrs']['const'] = False
             result_as_string['attrs']['len'] = 'L' + result_arg_name
-            new['_result_arg'] = result_as_string
+            new['args'].append(result_as_string)
 
             # convert to subroutine
             result = copy.deepcopy(result)
+            result = new['result']
             result['type'] = 'void'
             result['attrs']['const'] = False
             result['attrs']['ptr'] = False
             result['attrs']['reference'] = False
-            new['_result_wrapper'] = result
             
     def check_class_dependencies(self, node):
         """

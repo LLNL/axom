@@ -7,8 +7,10 @@ from __future__ import print_function
 
 import util
 from util import append_format
+import itertools
 
 wformat = util.wformat
+zip_longest = itertools.izip_longest
 
 class Wrapc(util.WrapperMixin):
     """Generate C bindings for C++ classes
@@ -228,13 +230,24 @@ class Wrapc(util.WrapperMixin):
         if 'CPP_template' not in fmt:
             fmt.CPP_template = ''
 
-        # C++ return type
+        # Look for C++ routine to wrap
+        # Usually the same node unless it is bufferified
+        CPP_node = node
+        generated = []
+        if '_generated' in CPP_node:
+            generated.append(CPP_node['_generated'])
+        while '_PTR_C_CPP_index' in CPP_node:
+            CPP_node = self.tree['function_index'][CPP_node['_PTR_C_CPP_index']]
+            if '_generated' in CPP_node:
+                generated.append(CPP_node['_generated'])
+        CPP_result = CPP_node['result']
+        CPP_result_type = CPP_result['type']
+        CPP_result_is_ptr = CPP_result['attrs'].get('ptr', False)
+
+        # C return type
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
-        wrapper_result = node.get('_result_wrapper', result)
-        wrapper_result_type = wrapper_result['type']
-        wrapper_result_is_ptr = wrapper_result['attrs'].get('ptr', False)
 
         # C++ functions which return 'this', are easier to call from Fortran if they are subroutines.
         # There is no way to chain in Fortran:  obj->doA()->doB();
@@ -261,7 +274,7 @@ class Wrapc(util.WrapperMixin):
         if is_const:
             fmt.C_const = 'const '
         fmt.CPP_this = fmt_func.C_this + 'obj'
-        fmt.rv_decl = self._c_decl('cpp_type', result, name='rv')  # return value
+        fmt.rv_decl = self._c_decl('cpp_type', CPP_result, name='rv')  # return value
 
         proto_list = []
         call_list = []
@@ -279,16 +292,13 @@ class Wrapc(util.WrapperMixin):
         else:
             fmt.CPP_this_call = ''  # call function syntax
 
+        result_arg = None  # indicate which argument contains function result, usually none
 
-        result_arg = node.get('_result_arg', None)
-        if result_arg:
-            extra_args = [ result_arg ]
-            result_arg_typedef = self.typedef[  result_arg['type'] ]
-        else:
-            extra_args = []
-            result_arg_typedef = result_typedef
+        for arg, arg_call in zip_longest(node['args'], CPP_node['args']):
+            if arg_call is None:
+                # more arguments to wrapper than C++ function, assume result
+                result_arg = arg
 
-        for arg in node['args'] + extra_args:
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
             fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
@@ -299,18 +309,13 @@ class Wrapc(util.WrapperMixin):
                 proto_list.append(self._c_decl('c_type', arg))
 
             # convert C argument to C++
-            len_arg  = arg['attrs'].get('len', False)
-            len_trim = arg['attrs'].get('len_trim', False)
-            if len_trim:
-                fmt.len_trim = len_trim
-                append_format(proto_list, 'int {len_trim}', fmt)
-                append_format(call_list, 'std::string({var}, {len_trim})', fmt)
-            elif len_arg:
+            len_arg = arg['attrs'].get('len', False) or  arg['attrs'].get('len_trim', False)
+            if len_arg:
                 fmt.len_arg = len_arg
                 append_format(proto_list, 'int {len_arg}', fmt)
-                # XXX - this is assuming len is on result
-#                append_format(call_list, 'std::string({var}, {len_trim})', fmt)
-            else:
+                if arg_call:
+                    append_format(call_list, 'std::string({var}, {len_arg})', fmt)
+            elif arg_call:
                 append_format(call_list, arg_typedef.c_to_cpp, fmt)
 
             if arg_typedef.c_header:
@@ -331,7 +336,7 @@ class Wrapc(util.WrapperMixin):
         if node.get('return_this', False):
             fmt.C_return_type = 'void'
         else:
-            fmt.C_return_type = options.get('C_return_type', self._c_type('c_type', wrapper_result))
+            fmt.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
         if cls:
             if 'C_object' in options:
@@ -362,6 +367,7 @@ class Wrapc(util.WrapperMixin):
                     wformat(result_typedef.cpp_to_c, fmt) + ';')
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
+#            elif CPP_result_type == 'void' and not CPP_result_is_ptr: # UUU
             elif result_type == 'void' and not result_is_ptr:
                 line = wformat('{CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
@@ -377,19 +383,21 @@ class Wrapc(util.WrapperMixin):
                     lfmt.var = fmt.rv
                     append_format(C_code, self.patterns[node['C_error_pattern']], lfmt)
 
-                if wrapper_result_type == 'void' and not wrapper_result_is_ptr:
+                if result_type == 'void' and not result_is_ptr:
                     # function result is returned as an argument
                     return_line = 'return;'
                 else:
                     return_line = 'return ' + wformat(result_typedef.cpp_to_c, fmt) + ';'
 
-            if result_arg and result_arg_typedef.c_post_call:
-                # adjust return value or cleanup
-                fmt.f_string = result_arg['name']
-                fmt.f_string_len = result_arg['attrs'].get('len', '')
-                fmt.c_string = wformat(result_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
-                append_format(C_code, result_arg_typedef.c_post_call, fmt)
-            # XXX release rv is necessary
+            if result_arg:
+                c_post_call = self.typedef[ result_arg['type'] ].c_post_call
+                if c_post_call:
+                    # adjust return value or cleanup
+                    fmt.f_string = result_arg['name']
+                    fmt.f_string_len = result_arg['attrs'].get('len', '')
+                    fmt.c_string = wformat(result_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
+                    append_format(C_code, c_post_call, fmt)
+                # XXX release rv is necessary
 
             if return_line:
                 C_code.append(return_line)

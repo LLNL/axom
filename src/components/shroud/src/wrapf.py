@@ -41,6 +41,9 @@ from __future__ import print_function
 
 import util
 from util import wformat, append_format
+import itertools
+
+zip_longest = itertools.izip_longest
 
 class Wrapf(util.WrapperMixin):
     """Generate Fortran bindings.
@@ -439,10 +442,10 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_c_decl.append(self._c_decl(arg))
 
-            len_trim = arg['attrs'].get('len_trim', None)
-            if len_trim:
-                arg_c_names.append(len_trim)
-                arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_trim)
+            len_arg = arg['attrs'].get('len', None) or arg['attrs'].get('len_trim', None)
+            if len_arg:
+                arg_c_names.append(len_arg)
+                arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_arg)
 
         fmt.F_C_arguments = options.get('F_C_arguments', ', '.join(arg_c_names))
 
@@ -488,8 +491,8 @@ class Wrapf(util.WrapperMixin):
         # If the wrapper does any work, then set need_wraper to True
         need_wrapper = options['F_force_wrapper']
 
-        # look for C routine to wrap
-        # usually the same node unless it is a generic function
+        # Look for C routine to wrap
+        # Usually the same node unless it is a generic function
         C_node = node
         generated = []
         if '_generated' in C_node:
@@ -498,13 +501,15 @@ class Wrapf(util.WrapperMixin):
             C_node = self.tree['function_index'][C_node['_PTR_F_C_index']]
             if '_generated' in C_node:
                 generated.append(C_node['_generated'])
-        if len(node['args']) != len(C_node['args']):
-            raise RuntimeError("Argument mismatch between Fortran and C functions")
+#  #This is no longer true with the result as an argument
+#        if len(node['args']) != len(C_node['args']):
+#            raise RuntimeError("Argument mismatch between Fortran and C functions")
 
         fmt.F_C_name = C_node['fmt'].F_C_name
 
         func_is_const = node['attrs'].get('const', False)
 
+        # Fortran return type
         result = node['result']
         result_type = result['type']
         result_is_ptr = result['attrs'].get('ptr', False)
@@ -530,6 +535,8 @@ class Wrapf(util.WrapperMixin):
             fmt.result_arg = options.F_string_result_as_arg
         else:
             result_string = False
+
+#        result_string = False  ## HACKISH  # UUU
 
         # this catches stuff like a bool to logical conversion which requires the wrapper
         if result_typedef.f_argsdecl:
@@ -566,34 +573,19 @@ class Wrapf(util.WrapperMixin):
                         'class({F_derived_name}) :: {F_this}',
                         fmt))
 
+        result_arg = None  # indicate which argument contains function result, usually none
         optional = []
-        c_args = C_node['args']
-        for i, arg in enumerate(node['args']):
-            # process Fortran function arguments first
-            # default argument's intent
-            # XXX look at const, ptr
+        for arg, arg_call in zip_longest(node['args'], C_node['args']):
+            if arg_call is None:
+                # more arguments to wrapper than C function, assume result
+                result_arg = arg
+
             attrs = arg['attrs']
 
             fmt.var = arg['name']
             fmt.tmp_var = 'tmp_' + fmt.var
             arg_f_names.append(fmt.var)
             arg_f_decl.append(self._f_decl(arg))
-
-#--            if 'default' in attrs:
-#--                need_wrapper = True
-#--                arg_f_decl.append(self._f_decl(arg, name=fmt.tmp_var, default='', local=True))
-#--                fmt.default_value = attrs['default']
-#--                optional.extend([
-#--                        wformat('if (present({var})) then', fmt),
-#--                        1,
-#--                        wformat('{tmp_var} = {var}', fmt),
-#--                        -1,
-#--                        'else',
-#--                        1,
-#--                        wformat('{tmp_var} = {default_value}', fmt),
-#--                        -1,
-#--                        'endif'])
-#--                fmt.var = fmt.tmp_var  # pass tmp to C function
 
             arg_typedef = self.typedef[arg['type']]
 
@@ -611,18 +603,21 @@ class Wrapf(util.WrapperMixin):
             # match to corresponding C argument -- must have same number of args.
             # may have different types, like generic
             # or different attributes, like adding +len to string args
-            c_arg = c_args[i]
+#            c_arg = c_args[i]
+            c_arg = arg_call  # XXXX shortcut
             arg_typedef = self.typedef[c_arg['type']]
 
             # Attributes   None=skip, True=use default, else use value
             len_trim = c_arg['attrs'].get('len_trim', None)
+            len_arg = c_arg['attrs'].get('len', None)
             if len_trim:
                 need_wrapper = True
-#                fmt.len_trim_var = 'L' + arg['name']
-#                if len_trim is True:
-#                    len_trim = 'len_trim({var})'
                 append_format(arg_c_call, '{var}', fmt)
                 append_format(arg_c_call, 'len_trim({var})', fmt)
+            elif len_arg:
+                need_wrapper = True
+                append_format(arg_c_call, '{var}', fmt)
+                append_format(arg_c_call, 'len({var})', fmt)
             elif arg_typedef.f_args:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt)
