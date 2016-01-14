@@ -6,14 +6,11 @@
 
 ##------------------------------------------------------------------------------
 ## add_shroud( YAML_INPUT_FILE file
-##             TIMESTAMP file
 ##             DEPENDS_SOURCE file1 ... filen
 ##             DEPENDS_BINARY file1 ... filen
 ## )
 ##
 ##  YAML_INPUT_FILE - yaml input file to shroud. Required.
-##  TIMESTAMP       - output file touched to mark when shroud was last run.
-##                    may be used as a dependency on other targets
 ##  DEPENDS_SOURCE  - splicer files in the source directory
 ##  DEPENDS_BINARY  - splicer files in the binary directory
 ##
@@ -31,7 +28,7 @@ macro(add_shroud)
     set(SHROUD_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(options)
-    set(singleValueArgs YAML_INPUT_FILE TIMESTAMP)
+    set(singleValueArgs YAML_INPUT_FILE )
     set(multiValueArgs DEPENDS_SOURCE DEPENDS_BINARY )
 
     ## parse the arguments to the macro
@@ -43,11 +40,6 @@ macro(add_shroud)
       message(FATAL_ERROR "add_shroud macro must define YAML_INPUT_FILE")
     endif()
 
-    # default name of TIMESTAMP
-    if(NOT arg_TIMESTAMP)
-      set(arg_TIMESTAMP ${arg_YAML_INPUT_FILE}.time)
-    endif()
-
     # convert DEPENDS to full paths
     set(shroud_depends)
     foreach (_file ${arg_DEPENDS_SOURCE})
@@ -57,16 +49,24 @@ macro(add_shroud)
         list(APPEND shroud_depends "${CMAKE_CURRENT_BINARY_DIR}/${_file}")
     endforeach ()
 
+    set(_timestamp  ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.time)
+    set(_uncrustify ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.uncrustify)
+    set(_cfiles     ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.cfiles)
+    set(_ffiles     ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.ffiles)
+
     add_custom_command(
-        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${arg_TIMESTAMP}
+        OUTPUT  ${_timestamp}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE} ${shroud_depends}
         COMMAND ${EXECUTABLE_OUTPUT_PATH}/shroud
                 --logdir ${CMAKE_CURRENT_BINARY_DIR}
                 # path controls where to search for splicer files listed in YAML_INPUT_FILE
                 --path ${CMAKE_CURRENT_BINARY_DIR}
                 --path ${CMAKE_CURRENT_SOURCE_DIR}
+                --cfiles ${_cfiles}
+                --ffiles ${_ffiles}
                 ${CMAKE_CURRENT_SOURCE_DIR}/${arg_YAML_INPUT_FILE}
-        COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/${arg_TIMESTAMP}
+        COMMAND touch ${_timestamp}
+        COMMAND rm -f ${_uncrustify}
         COMMENT "Running shroud ${arg_YAML_INPUT_FILE}"
         WORKING_DIRECTORY ${SHROUD_OUTPUT_DIR}
     )
@@ -74,16 +74,27 @@ macro(add_shroud)
     # Create target to process this Shroud file
     set(_shroud_target shroud_${arg_YAML_INPUT_FILE})
     add_custom_target(${_shroud_target}
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${arg_TIMESTAMP}
+        DEPENDS ${_timestamp}
     )
 
-#    if(UNCRUSTIFY_FOUND)
-#        add_custom_target("uncrustify_inplace_${PROJECT_NAME}"
-#	    DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/${arg_TIMESTAMP}
-#            ${UNCRUSTIFY_EXECUTABLE}
-#            -c ${CMAKE_CURRENT_SOURCE_DIR}/${arg_CFG_FILE} --no-backup ${arg_SRC_FILES}
-#             COMMENT "Running uncrustify to apply code formatting settings.")
-#    endif(UNCRUSTIFY_FOUND)
+    # Only run uncrustify if shroud has just run
+    # XXX uncrustify.cfg is hardwired
+    set(_cfg ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
+    if(UNCRUSTIFY_FOUND AND (EXISTS ${_cfg}))
+        add_custom_command(
+            OUTPUT ${_uncrustify}
+	    DEPENDS  ${_timestamp}
+            COMMAND ${UNCRUSTIFY_EXECUTABLE}
+                    -c ${_cfg} --no-backup `cat ${_cfiles}`
+            COMMAND touch ${_uncrustify}
+            COMMENT "Running uncrustify for ${arg_YAML_INPUT_FILE}."
+            WORKING_DIRECTORY ${SHROUD_OUTPUT_DIR}
+        )
+        add_custom_target(${_shroud_target}_uncrustify
+            DEPENDS ${_uncrustify}
+        )
+        add_dependencies(generate ${_shroud_target}_uncrustify)
+    endif()
 
     add_dependencies(generate ${_shroud_target})
 endmacro(add_shroud)
