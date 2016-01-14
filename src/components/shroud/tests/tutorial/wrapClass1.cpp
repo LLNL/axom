@@ -11,8 +11,9 @@ namespace tutorial {
 // function_index=0
 TUT_class1 * TUT_class1_new()
 {
-Class1 *selfobj = new Class1();
+
 // splicer begin class.Class1.method.new
+Class1 *selfobj = new Class1();
 return static_cast<TUT_class1 *>(static_cast<void *>(selfobj));
 // splicer end class.Class1.method.new
 }

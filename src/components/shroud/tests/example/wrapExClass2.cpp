@@ -16,8 +16,9 @@ namespace nested {
 // function_index=14
 AA_exclass2 * AA_exclass2_ex_class2(const char * name)
 {
-ExClass2 *selfobj = new ExClass2(name);
+
 // splicer begin class.ExClass2.method.ex_class2
+ExClass2 *selfobj = new ExClass2(name);
 return static_cast<AA_exclass2 *>(static_cast<void *>(selfobj));
 // splicer end class.ExClass2.method.ex_class2
 }
@@ -26,8 +27,9 @@ return static_cast<AA_exclass2 *>(static_cast<void *>(selfobj));
 // function_index=31
 AA_exclass2 * AA_exclass2_ex_class2_bufferify(const char * name, int Lname)
 {
-ExClass2 *selfobj = new ExClass2(std::string(name, Lname));
+
 // splicer begin class.ExClass2.method.ex_class2_bufferify
+ExClass2 *selfobj = new ExClass2(std::string(name, Lname));
 return static_cast<AA_exclass2 *>(static_cast<void *>(selfobj));
 // splicer end class.ExClass2.method.ex_class2_bufferify
 }

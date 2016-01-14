@@ -338,17 +338,13 @@ class Wrapc(util.WrapperMixin):
         else:
             fmt.C_return_type = options.get('C_return_type', self._c_type('c_type', result))
 
+        fmt.C_object = ''
         if cls:
             if 'C_object' in options:
                 fmt.C_object = options.C_object
-            else:
-                if is_ctor:
-                    template = '{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});'
-                else:
-                    template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
+            elif not is_ctor:
+                template = '{C_const}{cpp_class} *{C_this}obj = static_cast<{C_const}{cpp_class} *>(static_cast<{C_const}void *>({C_this}));'
                 fmt.C_object = wformat(template, fmt)
-        else:
-            fmt.C_object = ''
 
         # body of function
         splicer_code = self.splicer_stack[-1].get(fmt_func.method_name, None)
@@ -361,7 +357,8 @@ class Wrapc(util.WrapperMixin):
             C_code = []
             return_line = ''
             if is_ctor:
-                # XXXX needs to call new!
+                line = wformat('{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});', fmt)
+                C_code.append(line)
                 fmt.var = '%sobj' % fmt_func.C_this
                 C_code.append('return ' + 
                     wformat(result_typedef.cpp_to_c, fmt) + ';')
