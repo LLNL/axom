@@ -70,6 +70,22 @@ macro(add_shroud)
         COMMENT "Running shroud ${arg_YAML_INPUT_FILE}"
         WORKING_DIRECTORY ${SHROUD_OUTPUT_DIR}
     )
+
+    # Create target to process this Shroud file
+    set(_shroud_target shroud_${arg_YAML_INPUT_FILE})
+    add_custom_target(${_shroud_target}
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${arg_TIMESTAMP}
+    )
+
+#    if(UNCRUSTIFY_FOUND)
+#        add_custom_target("uncrustify_inplace_${PROJECT_NAME}"
+#	    DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/${arg_TIMESTAMP}
+#            ${UNCRUSTIFY_EXECUTABLE}
+#            -c ${CMAKE_CURRENT_SOURCE_DIR}/${arg_CFG_FILE} --no-backup ${arg_SRC_FILES}
+#             COMMENT "Running uncrustify to apply code formatting settings.")
+#    endif(UNCRUSTIFY_FOUND)
+
+    add_dependencies(generate ${_shroud_target})
 endmacro(add_shroud)
 
 
