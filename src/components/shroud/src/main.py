@@ -11,6 +11,7 @@ generate language bindings
 #  _generated       - who generated this function
 #  _PTR_F_C_index   - Used by fortran wrapper to find index of C function to call
 #  _PTR_C_CPP_index - Used by C wrapper to find index of C++ function to call
+#  _subprogram      - subroutine or function
 #
 #
 from __future__ import print_function
@@ -712,6 +713,7 @@ class GenFunctions(object):
             new['args'].append(result_as_string)
 
             # convert to subroutine
+            new['_subprogram'] = 'subroutine'
             result = copy.deepcopy(result)
             result = new['result']
             result['type'] = 'void'
@@ -820,8 +822,8 @@ class GenFunctions(object):
 
 class VerifyAttrs(object):
     """
-    This must be called after GenFunctions has generated typedefs
-    for classes.
+    Check attributes and set some defaults.
+    Generate types for classes.
     """
     def __init__(self, tree, config):
         self.tree = tree    # json tree
@@ -888,6 +890,16 @@ class VerifyAttrs(object):
         options = node['options']
         if not options.wrap_fortran and not options.wrap_c:
             return
+
+        # cache subprogram type
+        result = node['result']
+        result_type = result['type']
+        result_is_ptr = result['attrs'].get('ptr', False)
+        #  'void'=subroutine   'void *'=function
+        if result_type == 'void' and not result_is_ptr:
+            node['_subprogram'] = 'subroutine'
+        else:
+            node['_subprogram'] = 'function'
 
         found_default = False
         for arg in node['args']:

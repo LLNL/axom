@@ -389,11 +389,11 @@ class Wrapf(util.WrapperMixin):
 
         result = node['result']
         result_type = result['type']
-        result_is_ptr = result['attrs'].get('ptr', False)
+        subprogram = node['_subprogram']
 
         if node.get('return_this', False):
             result_type = 'void'
-            result_is_ptr = False
+            subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
         is_ctor  = node['attrs'].get('constructor', False)
@@ -406,8 +406,7 @@ class Wrapf(util.WrapperMixin):
         # find subprogram type
         # compute first to get order of arguments correct.
         # Add 
-        if result_type == 'void' and not result_is_ptr:
-            #  void=subroutine   void *=function
+        if subprogram == 'subroutine':
             fmt.F_C_subprogram = 'subroutine'
         else:
             fmt.F_C_subprogram = 'function'
@@ -512,11 +511,11 @@ class Wrapf(util.WrapperMixin):
         # Fortran return type
         result = node['result']
         result_type = result['type']
-        result_is_ptr = result['attrs'].get('ptr', False)
+        subprogram = node['_subprogram']
 
         if node.get('return_this', False):
             result_type = 'void'
-            result_is_ptr = False
+            subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
         is_ctor  = node['attrs'].get('constructor', False)
@@ -550,16 +549,9 @@ class Wrapf(util.WrapperMixin):
         arg_f_decl = [ ]
         arg_f_use  = [ 'use iso_c_binding' ]  # XXX totally brain dead for now
 
-        # find subprogram type
-        # compute first to get order of arguments correct.
-        # Add 
-        if result_type == 'void' and not result_is_ptr:
-            #  void=subroutine   void *=function
+        if result_string:
             subprogram = 'subroutine'
-        elif result_string:
-            subprogram = 'subroutine'
-        else:
-            subprogram = 'function'
+        elif subprogram == 'function':
             fmt.F_result_clause = ' result(%s)' % fmt.F_result
         fmt.F_subprogram    = subprogram
 

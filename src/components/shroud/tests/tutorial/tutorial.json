@@ -29,6 +29,7 @@
                 {
                     "_decl": "Class1 * new()+constructor", 
                     "_function_index": 0, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "constructor": true
@@ -55,6 +56,7 @@
                 {
                     "_decl": "void delete()+destructor", 
                     "_function_index": 1, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -80,6 +82,7 @@
                 {
                     "_decl": "void Method1()", 
                     "_function_index": 2, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void Method1()", 
@@ -138,6 +141,7 @@
         {
             "_decl": "void Function1()", 
             "_function_index": 3, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void Function1()", 
@@ -161,6 +165,7 @@
         {
             "_decl": "double Function2(double arg1+intent(in)+value, int arg2+intent(in)+value)", 
             "_function_index": 4, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -201,6 +206,7 @@
         {
             "_decl": "void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))", 
             "_function_index": 5, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -252,6 +258,7 @@
         {
             "_decl": "bool Function3(bool arg+intent(in)+value)", 
             "_function_index": 6, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -285,6 +292,7 @@
             "_PTR_F_C_index": 32, 
             "_decl": "const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure", 
             "_function_index": 7, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -335,6 +343,7 @@
             "_decl": "const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure", 
             "_function_index": 32, 
             "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -386,6 +395,7 @@
             "_PTR_F_C_index": 33, 
             "_decl": "const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))", 
             "_function_index": 8, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -436,6 +446,7 @@
             "_decl": "const std::string & Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))", 
             "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -486,6 +497,7 @@
             "_function_index": 22, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "double Function5(double arg1 = 3.1415, bool arg2 = true)", 
@@ -518,6 +530,7 @@
             "_function_index": 23, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -568,6 +581,7 @@
                 2
             ], 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -622,6 +636,7 @@
             "_decl": "void Function6(const std::string & name+intent(in))", 
             "_function_index": 10, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -664,6 +679,7 @@
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -704,6 +720,7 @@
             "_decl": "void Function6(int indx+intent(in)+value)", 
             "_function_index": 11, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -739,6 +756,7 @@
             "_decl": "void Function7(ArgType arg+intent(in)+value)", 
             "_function_index": 12, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -777,6 +795,7 @@
             "_function_index": 24, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -814,6 +833,7 @@
             "_function_index": 25, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -850,6 +870,7 @@
             "_decl": "RetType Function8()", 
             "_function_index": 13, 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "cpp_template": {
@@ -879,6 +900,7 @@
             "_function_index": 26, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "RetType Function8()", 
@@ -908,6 +930,7 @@
             "_function_index": 27, 
             "_generated": "cpp_template", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "RetType Function8()", 
@@ -936,6 +959,7 @@
             "_decl": "void Function9(double arg+intent(in)+value)", 
             "_function_index": 14, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -976,6 +1000,7 @@
             "_function_index": 36, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1011,6 +1036,7 @@
             "_function_index": 37, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1048,6 +1074,7 @@
             "_decl": "void Function10()", 
             "_function_index": 15, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void Function10()", 
@@ -1078,6 +1105,7 @@
             "_decl": "void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)", 
             "_function_index": 16, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1134,6 +1162,7 @@
             "_function_index": 38, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1183,6 +1212,7 @@
             "_function_index": 39, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1231,6 +1261,7 @@
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1285,6 +1316,7 @@
             "_function_index": 28, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1330,6 +1362,7 @@
             "_function_index": 29, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1392,6 +1425,7 @@
                 3
             ], 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1454,6 +1488,7 @@
             "_function_index": 30, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1502,6 +1537,7 @@
             "_function_index": 31, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1567,6 +1603,7 @@
                 4
             ], 
             "_overloaded": true, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1626,6 +1663,7 @@
         {
             "_decl": "TypeID typefunc(TypeID arg+intent(in)+value)", 
             "_function_index": 19, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1658,6 +1696,7 @@
         {
             "_decl": "EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)", 
             "_function_index": 20, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1690,6 +1729,7 @@
         {
             "_decl": "const std::string & LastFunctionCalled()+pure", 
             "_function_index": 21, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {
                 "pure": true

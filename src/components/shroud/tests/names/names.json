@@ -33,6 +33,7 @@
                     "F_name_method": "type_method1", 
                     "_decl": "void method1()", 
                     "_function_index": 0, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method1", 
@@ -56,6 +57,7 @@
                 {
                     "_decl": "void method2()", 
                     "_function_index": 1, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void method2", 
@@ -116,6 +118,7 @@
         {
             "_decl": "void function1()", 
             "_function_index": 2, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void function1", 
@@ -142,6 +145,7 @@
             "F_name_impl": "f_name_special", 
             "_decl": "void function2()", 
             "_function_index": 3, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void function2", 
@@ -172,6 +176,7 @@
             "_decl": "void function3a(int i+intent(in)+value)", 
             "_function_index": 4, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -212,6 +217,7 @@
             "_decl": "void function3a(long i+intent(in)+value)", 
             "_function_index": 5, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {

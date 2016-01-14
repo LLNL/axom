@@ -242,18 +242,18 @@ class Wrapc(util.WrapperMixin):
                 generated.append(CPP_node['_generated'])
         CPP_result = CPP_node['result']
         CPP_result_type = CPP_result['type']
-        CPP_result_is_ptr = CPP_result['attrs'].get('ptr', False)
+        CPP_subprogram = node['_subprogram']
 
         # C return type
         result = node['result']
         result_type = result['type']
-        result_is_ptr = result['attrs'].get('ptr', False)
+        subprogram = node['_subprogram']
 
         # C++ functions which return 'this', are easier to call from Fortran if they are subroutines.
         # There is no way to chain in Fortran:  obj->doA()->doB();
         if node.get('return_this', False):
             result_type = 'void'
-            result_is_ptr = False
+            subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
         is_const = result['attrs'].get('const', False)
@@ -367,8 +367,8 @@ class Wrapc(util.WrapperMixin):
                     wformat(result_typedef.cpp_to_c, fmt) + ';')
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
-#            elif CPP_result_type == 'void' and not CPP_result_is_ptr: # UUU
-            elif result_type == 'void' and not result_is_ptr:
+#            elif CPP_subprogram == 'subroutine':   # UUU
+            elif subprogram == 'subroutine':
                 line = wformat('{CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
@@ -383,7 +383,7 @@ class Wrapc(util.WrapperMixin):
                     lfmt.var = fmt.rv
                     append_format(C_code, self.patterns[node['C_error_pattern']], lfmt)
 
-                if result_type == 'void' and not result_is_ptr:
+                if subprogram == 'subroutine':
                     # function result is returned as an argument
                     return_line = 'return;'
                 else:

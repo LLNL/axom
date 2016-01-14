@@ -46,6 +46,7 @@
                     "_PTR_F_C_index": 13, 
                     "_decl": "ExClass1 * new(const string * name+intent(in))+constructor", 
                     "_function_index": 0, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -89,6 +90,7 @@
                     "_decl": "ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor", 
                     "_function_index": 13, 
                     "_generated": "string_to_buffer_and_len", 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -132,6 +134,7 @@
                 {
                     "_decl": "void delete()+destructor", 
                     "_function_index": 1, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -160,6 +163,7 @@
                 {
                     "_decl": "int incrementCount(int incr+intent(in)+value)", 
                     "_function_index": 2, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -194,6 +198,7 @@
                     "PY_error_pattern": "PY_invalid_name", 
                     "_decl": "const string & getName() const", 
                     "_function_index": 3, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -223,6 +228,7 @@
                 {
                     "_decl": "int GetNameLength() const", 
                     "_function_index": 4, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -254,6 +260,7 @@
                 {
                     "_decl": "const string & getNameErrorCheck() const", 
                     "_function_index": 5, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -282,6 +289,7 @@
                 {
                     "_decl": "const string & getNameArg() const", 
                     "_function_index": 6, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -312,6 +320,7 @@
                 {
                     "_decl": "ExClass2 * getRoot()", 
                     "_function_index": 7, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "ExClass2 *getRoot()", 
@@ -342,6 +351,7 @@
                     "_decl": "int getValue(int value+intent(in)+value)", 
                     "_function_index": 8, 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -381,6 +391,7 @@
                     "_decl": "long getValue(long value+intent(in)+value)", 
                     "_function_index": 9, 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -414,6 +425,7 @@
                 {
                     "_decl": "void * getAddr()", 
                     "_function_index": 10, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void *getAddr()", 
@@ -439,6 +451,7 @@
                 {
                     "_decl": "bool hasAddr(bool in+intent(in)+value)", 
                     "_function_index": 11, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -471,6 +484,7 @@
                 {
                     "_decl": "void SplicerSpecial()", 
                     "_function_index": 12, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void SplicerSpecial", 
@@ -551,6 +565,7 @@
                     "_PTR_F_C_index": 31, 
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in))+constructor", 
                     "_function_index": 14, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -589,6 +604,7 @@
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor", 
                     "_function_index": 31, 
                     "_generated": "string_to_buffer_and_len", 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -627,6 +643,7 @@
                 {
                     "_decl": "void delete()+destructor", 
                     "_function_index": 15, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {
                         "destructor": true
@@ -652,6 +669,7 @@
                 {
                     "_decl": "const string & getName() const", 
                     "_function_index": 16, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -681,6 +699,7 @@
                 {
                     "_decl": "const int GetNameLength()", 
                     "_function_index": 17, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
                     "doxygen": {
@@ -710,6 +729,7 @@
                 {
                     "_decl": "ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)", 
                     "_function_index": 18, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -748,6 +768,7 @@
                     "_function_index": 24, 
                     "_generated": "has_default_arg", 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -791,6 +812,7 @@
                     "_function_index": 32, 
                     "_generated": "fortran_generic", 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -829,6 +851,7 @@
                     "_function_index": 33, 
                     "_generated": "fortran_generic", 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -873,6 +896,7 @@
                         2
                     ], 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -934,6 +958,7 @@
                         2
                     ], 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -989,6 +1014,7 @@
                         2
                     ], 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [
                         {
                             "attrs": {
@@ -1033,6 +1059,7 @@
                 {
                     "_decl": "void destroyall()", 
                     "_function_index": 20, 
+                    "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "void destroyall()", 
@@ -1056,6 +1083,7 @@
                 {
                     "_decl": "TypeID getTypeID() const", 
                     "_function_index": 21, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
                         "const": true
@@ -1082,6 +1110,7 @@
                     "_decl": "void setValue(ValueType value+intent(in)+value)", 
                     "_function_index": 22, 
                     "_overloaded": true, 
+                    "_subprogram": "subroutine", 
                     "args": [
                         {
                             "attrs": {
@@ -1122,6 +1151,7 @@
                     "_function_index": 25, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
+                    "_subprogram": "subroutine", 
                     "args": [
                         {
                             "attrs": {
@@ -1159,6 +1189,7 @@
                     "_function_index": 26, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
+                    "_subprogram": "subroutine", 
                     "args": [
                         {
                             "attrs": {
@@ -1196,6 +1227,7 @@
                     "_function_index": 27, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
+                    "_subprogram": "subroutine", 
                     "args": [
                         {
                             "attrs": {
@@ -1233,6 +1265,7 @@
                     "_function_index": 28, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
+                    "_subprogram": "subroutine", 
                     "args": [
                         {
                             "attrs": {
@@ -1269,6 +1302,7 @@
                     "_decl": "ValueType getValue()", 
                     "_function_index": 23, 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
                     "cpp_template": {
@@ -1298,6 +1332,7 @@
                     "_function_index": 29, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "ValueType getValue()", 
@@ -1327,6 +1362,7 @@
                     "_function_index": 30, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
+                    "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
                     "decl": "ValueType getValue()", 
@@ -1416,6 +1452,7 @@
         {
             "_decl": "void local_function1()", 
             "_function_index": 36, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void local_function1", 
@@ -1441,6 +1478,7 @@
             "_PTR_F_C_index": 44, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
             "_function_index": 37, 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1479,6 +1517,7 @@
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
             "_function_index": 44, 
             "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "function", 
             "args": [
                 {
                     "attrs": {
@@ -1513,6 +1552,7 @@
         {
             "_decl": "bool isInitialized()", 
             "_function_index": 38, 
+            "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
             "decl": "bool isInitialized()", 
@@ -1542,6 +1582,7 @@
             "_decl": "void test_names(const std::string & name+intent(in))", 
             "_function_index": 39, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1584,6 +1625,7 @@
             "_function_index": 45, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1625,6 +1667,7 @@
             "_decl": "void test_names(const std::string & name+intent(in), int flag+intent(in)+value)", 
             "_function_index": 40, 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1675,6 +1718,7 @@
             "_function_index": 46, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1720,6 +1764,7 @@
             "_function_index": 42, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
             "decl": "void testoptional(int i = 1, long j=2)", 
@@ -1747,6 +1792,7 @@
             "_function_index": 43, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
@@ -1792,6 +1838,7 @@
                 2
             ], 
             "_overloaded": true, 
+            "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
