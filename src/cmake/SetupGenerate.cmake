@@ -49,10 +49,11 @@ macro(add_shroud)
         list(APPEND shroud_depends "${CMAKE_CURRENT_BINARY_DIR}/${_file}")
     endforeach ()
 
-    set(_timestamp  ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.time)
-    set(_uncrustify ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.uncrustify)
-    set(_cfiles     ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.cfiles)
-    set(_ffiles     ${CMAKE_CURRENT_BINARY_DIR}/${arg_YAML_INPUT_FILE}.ffiles)
+    get_filename_component(_basename ${arg_YAML_INPUT_FILE} NAME_WE)
+    set(_timestamp  ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.time)
+    set(_uncrustify ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.uncrustify)
+    set(_cfiles     ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cfiles)
+    set(_ffiles     ${CMAKE_CURRENT_BINARY_DIR}/${_basename}.ffiles)
 
     add_custom_command(
         OUTPUT  ${_timestamp}
@@ -72,7 +73,7 @@ macro(add_shroud)
     )
 
     # Create target to process this Shroud file
-    set(_shroud_target shroud_${arg_YAML_INPUT_FILE})
+    set(_shroud_target shroud_${_basename})
     add_custom_target(${_shroud_target}
         DEPENDS ${_timestamp}
     )
