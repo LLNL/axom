@@ -18,8 +18,8 @@ AA_exclass2 * AA_exclass2_ex_class2(const char * name)
 {
 
 // splicer begin class.ExClass2.method.ex_class2
-ExClass2 *selfobj = new ExClass2(name);
-return static_cast<AA_exclass2 *>(static_cast<void *>(selfobj));
+ExClass2 * rv = new ExClass2(name);
+return static_cast<AA_exclass2 *>(static_cast<void *>(rv));
 // splicer end class.ExClass2.method.ex_class2
 }
 
@@ -29,8 +29,8 @@ AA_exclass2 * AA_exclass2_ex_class2_bufferify(const char * name, int Lname)
 {
 
 // splicer begin class.ExClass2.method.ex_class2_bufferify
-ExClass2 *selfobj = new ExClass2(std::string(name, Lname));
-return static_cast<AA_exclass2 *>(static_cast<void *>(selfobj));
+ExClass2 * rv = new ExClass2(std::string(name, Lname));
+return static_cast<AA_exclass2 *>(static_cast<void *>(rv));
 // splicer end class.ExClass2.method.ex_class2_bufferify
 }
 

@@ -357,11 +357,9 @@ class Wrapc(util.WrapperMixin):
             C_code = []
             return_line = ''
             if is_ctor:
-                line = wformat('{C_const}{cpp_class} *{C_this}obj = new {cpp_class}({C_call_list});', fmt)
+                line = wformat('{rv_decl} = new {cpp_class}({C_call_list});', fmt)
                 C_code.append(line)
-                fmt.var = '%sobj' % fmt_func.C_this
-                C_code.append('return ' + 
-                    wformat(result_typedef.cpp_to_c, fmt) + ';')
+                C_code.append('return ' + wformat(result_typedef.cpp_to_c, fmt) + ';')
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
 #            elif CPP_subprogram == 'subroutine':   # UUU
