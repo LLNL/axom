@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "quest/Point.hpp"
-#include "quest/BitTwiddle.hpp"
+#include "quest/MortonIndex.hpp"
 
 #include <cstdlib>
 #include <limits>

@@ -2,8 +2,8 @@
 #ifndef OCTREE_BASE__HXX_
 #define OCTREE_BASE__HXX_
 
-#include "quest/BitTwiddle.hpp"
 #include "quest/BoundingBox.hpp"
+#include "quest/MortonIndex.hpp"
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 
