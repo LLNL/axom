@@ -250,6 +250,17 @@ contains
     call assert_true(extents(2) == size(ipointer, 2))
     call assert_true(extents(3) == size(ipointer, 3))
 
+    ! reshape as 1-d using shape
+    extents_in(1) = size(ipointer)
+    call view%apply(SIDRE_INT_ID, 1, extents_in(1:1))
+    num_elements = view%get_num_elements()
+    call assert_equals(num_elements, size(ipointer))
+
+    ! reshape as 1-d using length
+    call view%apply(SIDRE_INT_ID, extents_in(1))
+    num_elements = view%get_num_elements()
+    call assert_equals(num_elements, size(ipointer))
+
     call ds%delete()
 
   end subroutine datastore_int_3d

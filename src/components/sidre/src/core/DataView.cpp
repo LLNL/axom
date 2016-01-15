@@ -387,6 +387,7 @@ DataView * DataView::apply(TypeID type, SidreLength num_elems,
  *************************************************************************
  *
  * Apply given type, number of dimensions and shape to data view.
+ * If ndims is 1 then do not save in m_shape.
  *
  *************************************************************************
  */
@@ -399,20 +400,34 @@ DataView * DataView::apply(TypeID type, int ndims, SidreLength * shape)
 
   if ( applyIsValid() && ndims >= 0 && shape != ATK_NULLPTR)
   {
-    if (m_shape != ATK_NULLPTR)
+    if (ndims == 1)
     {
-      m_shape->resize(ndims);
+      if (m_shape != ATK_NULLPTR)
+      {
+        delete m_shape;
+        m_shape = ATK_NULLPTR;
+      }
     }
     else
     {
-      m_shape = new std::vector<SidreLength>(ndims);
+      if (m_shape != ATK_NULLPTR)
+      {
+        m_shape->resize(ndims);
+      }
+      else
+      {
+        m_shape = new std::vector<SidreLength>(ndims);
+      }
     }
 
     SidreLength num_elems = 1;
     for (int i=0 ; i < ndims ; i++)
     {
       num_elems *= shape[i];
-      (*m_shape)[i] = shape[i];
+      if (m_shape != ATK_NULLPTR)
+      {
+        (*m_shape)[i] = shape[i];
+      }
     }
     apply(type, num_elems );
   }
