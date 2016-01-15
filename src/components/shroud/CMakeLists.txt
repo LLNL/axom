@@ -27,18 +27,10 @@ if(PYTHON_EXECUTABLE)
     endif()
 
 ####
-    # Run the develop command.
-    # The Python files are not installed directly, only an egg.
-    # So any changes to the source does not require a new install.
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} setup.py
-          develop
-          --install-dir ${CMAKE_Python_MODULE_DIRECTORY}
-          --script-dir  ${EXECUTABLE_OUTPUT_PATH}
-         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-         OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/setup.log
-    )
-
+   PYTHON_ADD_DISTUTILS_SETUP(shroud_python setup.py
+     src/__init__.py  src/parse_decl.py  src/util.py   src/wrapf.py
+     src/main.py      src/splicer.py     src/wrapc.py  src/wrapp.py
+   )
 else()
     message(STATUS "Unable to run shroud: Python not found")
     set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
