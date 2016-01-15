@@ -1,27 +1,16 @@
 #ifndef SPATIAL_OCTREE__HXX_
 #define SPATIAL_OCTREE__HXX_
 
-#include "quest/BitTwiddle.hpp"
 #include "quest/BoundingBox.hpp"
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
 
 #include "slic/slic.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
 
 #include "quest/Mesh.hpp"
 #include "quest/OctreeBase.hpp"
-
-#if defined(USE_CXX11)
-#include <unordered_map>
-#else
-#include "boost/unordered_map.hpp"
-#endif
-
-#include <utility>      // for std::pair's operator==()
 
 
 namespace quest

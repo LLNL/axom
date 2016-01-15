@@ -122,7 +122,7 @@ TEST( quest_octree, spatial_octree_point_location)
               <<" in the octree. "
               << std::endl;
 
-    for(int i=0; i< 10; ++i)
+    for(int i=0; i< 20; ++i)
     {
         octree.refineLeaf( leafBlock );
         leafBlock = octree.findLeafBlock(queryPt);

@@ -38,7 +38,7 @@ class OctreeBase
 {
 public:
 
-  enum{ MAX_LEV = 30
+  enum{ MAX_LEV = Mortonizer<int,DIM>::MAX_BITS
       , NUM_CHILDREN = 1 << DIM
   };
 
