@@ -256,16 +256,13 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
           Point3D pnt;
           surface_mesh->getMeshNode( nodeIdx, pnt.data() );
 
-          const double dx = pnt[0]-origin[0];
-          const double dy = pnt[1]-origin[1];
-          const double dz = pnt[2]-origin[2];
+          const quest::Vector3D delta(origin, pnt);
+          const GridPt gridPt = GridPt::make_point( std::floor( delta[0] / h[0])
+                                                  , std::floor( delta[1] / h[1])
+                                                  , std::floor( delta[2] / h[2]));
 
-          const int i = std::floor( dx/h[0] ) ;
-          const int j = std::floor( dy/h[1] ) ;
-          const int k = std::floor( dz/h[2] ) ;
-
-          ijkBounds.addPoint( GridPt::make_point(i,j,k) );
-          globalGridBounds.addPoint( GridPt::make_point(i,j,k) );
+          ijkBounds.addPoint( gridPt );
+          globalGridBounds.addPoint( gridPt );
 
       } // END for all cell nodes;
 
@@ -291,43 +288,6 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    std::cout<<"Overall grid bounds: " << globalGridBounds << std::endl;
 }
 
-/**
- * \brief Try to find a valid input file.
- * \return The file
- */
-std::string getStlFileName(const std::string & inputFileName)
-{
-    std::string fileName = inputFileName;
-    const int MAX_ATTEMPTS= 3;
-
-    if( inputFileName == "")
-    {
-        // Try to use the default file name.
-        // HACK: If it doesn't work, try to access from a parent directory
-        //       Fix if/when we have better file utilities
-        //       and replace with path to the root of the data repo when available
-        const std::string defaultFileName = "plane.stl";
-        const std::string defaultDir = "src/components/quest/data/";
-        fileName = defaultDir + defaultFileName;
-
-        std::ifstream meshFile(fileName.c_str());
-        for(int attempts = 0; !meshFile && attempts < MAX_ATTEMPTS; ++attempts)
-        {
-          fileName = "../" + fileName;
-          meshFile.open( fileName.c_str());
-        }
-
-        SLIC_ERROR_IF( !meshFile
-            , "fstream error -- problem opening file: '"  << defaultDir + defaultFileName
-                                                          << "' (also tried several"
-                                                          << " ancestors up to '../" << fileName << "')."
-                                                          << "\nThe current working directory is: '"
-                                                          << asctoolkit::slam::util::getCWD() << "'");
-        meshFile.close();
-    }
-
-    return fileName;
-}
 
 //------------------------------------------------------------------------------
 quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
@@ -450,7 +410,19 @@ int main( int argc, char** argv )
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
-  std::string stlFile = getStlFileName(hasInputArgs ? std::string( argv[1] ) : "") ;
+  std::string inputFile;
+  if(hasInputArgs)
+  {
+      inputFile = std::string( argv[1] );
+  }
+  else
+  {
+      const std::string defaultFileName = "plane_simp.stl";
+      const std::string defaultDir = "src/components/quest/data/";
+      inputFile = defaultDir + defaultFileName;
+  }
+  std::string stlFile = asctoolkit::slam::util::findFileRecursive(inputFile);
+
 
   // STEP 2: read file
   std::cout << "Reading file: " << stlFile << "...";
@@ -486,7 +458,7 @@ int main( int argc, char** argv )
 
   // STEP 7: get dimensions from user
   int nx, ny, nz;
-  if(hasInputArgs > 1)
+  if(hasInputArgs)
   {
       std::cout << "Enter Nx Ny Nz:";
       std::cin >> nx >> ny >> nz;

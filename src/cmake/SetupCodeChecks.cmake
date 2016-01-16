@@ -21,22 +21,22 @@ endif()
 ##------------------------------------------------------------------------------
 macro(add_code_check_targets cfg_file)
 
-    # Only run uncrustify on C and C++ files
-    # Note, we can later extend this by passing in a list of valid types to the macro
-    set(_fileTypes ".cpp" ".hpp" ".c" ".h")
-    
-    # generate the filtered list of source files
-    set(_filt_sources)
-    foreach(_file ${${PROJECT_NAME}_ALL_SOURCES})
-      get_filename_component(_ext ${_file} EXT)
-      list(FIND _fileTypes "${_ext}" _index)
-      
-      if(_index GREATER -1)
-         list(APPEND _filt_sources ${_file})
-      endif()
-    endforeach()
-
     if(UNCRUSTIFY_FOUND)
+        # Only run uncrustify on C and C++ files
+        # Note, we can later extend this by passing in a list of valid types to the macro
+        set(_fileTypes ".cpp" ".hpp" ".c" ".h")
+    
+        # generate the filtered list of source files
+        set(_filt_sources)
+        foreach(_file ${${PROJECT_NAME}_ALL_SOURCES})
+          get_filename_component(_ext ${_file} EXT)
+          list(FIND _fileTypes "${_ext}" _index)
+      
+          if(_index GREATER -1)
+             list(APPEND _filt_sources ${_file})
+          endif()
+        endforeach()
+
         add_uncrustify_check(CFG_FILE ${cfg_file}   SRC_FILES ${_filt_sources})
         add_uncrustify_inplace(CFG_FILE ${cfg_file} SRC_FILES ${_filt_sources})
     endif()

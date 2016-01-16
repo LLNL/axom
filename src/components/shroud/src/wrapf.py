@@ -814,6 +814,7 @@ class Wrapf(util.WrapperMixin):
         output.append('')
         output.append('end module %s' % module_name)
 
+        self.config.ffiles.append(fname)
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_c_helper(self):

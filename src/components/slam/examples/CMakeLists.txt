@@ -117,7 +117,7 @@ if ( ${buildOrigLulesh} )
         USE_OPENMP ${ENABLE_OPENMP} 
        ) 
     make_executable( 
-        EXECUTABLE_NAME slamOrigLulesh 
+        EXECUTABLE_NAME slam_OrigLulesh 
         EXECUTABLE_SOURCE ${lulesh_exe_source} 
         DEPENDS_ON "slamLuleshOrigLib" 
         USE_OPENMP ${ENABLE_OPENMP} 
