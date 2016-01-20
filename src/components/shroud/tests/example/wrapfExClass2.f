@@ -213,9 +213,9 @@ module exclass2_mod
 
 contains
     
-    ! ExClass2 * ExClass2(const string * name+intent(in))+constructor
-    ! string_to_buffer_and_len
-    ! function_index=14
+    ! ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=35
     function exclass2_ex_class2(name) result(rv)
         use iso_c_binding
         implicit none
@@ -229,7 +229,7 @@ contains
     end function exclass2_ex_class2
     
     ! void delete()+destructor
-    ! function_index=15
+    ! function_index=18
     subroutine exclass2_delete(obj)
         use iso_c_binding
         implicit none
@@ -241,7 +241,7 @@ contains
     end subroutine exclass2_delete
     
     ! const string & getName() const
-    ! function_index=16
+    ! function_index=19
     function exclass2_get_name(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -253,7 +253,7 @@ contains
     end function exclass2_get_name
     
     ! const int GetNameLength()
-    ! function_index=17
+    ! function_index=20
     !>
     !! \brief helper function for Fortran
     !!
@@ -269,7 +269,7 @@ contains
     end function exclass2_get_name_length
     
     ! ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)
-    ! function_index=18
+    ! function_index=21
     function exclass2_get_class1(obj, in) result(rv)
         use iso_c_binding
         implicit none
@@ -285,7 +285,7 @@ contains
     
     ! void * declare(TypeID type+intent(in)+value)
     ! fortran_generic - has_default_arg
-    ! function_index=32
+    ! function_index=36
     subroutine exclass2_declare_0_int(obj, type)
         use iso_c_binding
         implicit none
@@ -300,7 +300,7 @@ contains
     
     ! void * declare(TypeID type+intent(in)+value)
     ! fortran_generic - has_default_arg
-    ! function_index=33
+    ! function_index=37
     subroutine exclass2_declare_0_long(obj, type)
         use iso_c_binding
         implicit none
@@ -315,7 +315,7 @@ contains
     
     ! void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)
     ! fortran_generic
-    ! function_index=34
+    ! function_index=38
     subroutine exclass2_declare_1_int(obj, type, len)
         use iso_c_binding
         implicit none
@@ -332,7 +332,7 @@ contains
     
     ! void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)
     ! fortran_generic
-    ! function_index=35
+    ! function_index=39
     subroutine exclass2_declare_1_long(obj, type, len)
         use iso_c_binding
         implicit none
@@ -348,7 +348,7 @@ contains
     end subroutine exclass2_declare_1_long
     
     ! void destroyall()
-    ! function_index=20
+    ! function_index=23
     subroutine exclass2_destroyall(obj)
         use iso_c_binding
         implicit none
@@ -359,7 +359,7 @@ contains
     end subroutine exclass2_destroyall
     
     ! TypeID getTypeID() const
-    ! function_index=21
+    ! function_index=24
     function exclass2_get_type_id(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -372,7 +372,7 @@ contains
     
     ! void setValue(int value+intent(in)+value)
     ! cpp_template
-    ! function_index=25
+    ! function_index=28
     subroutine exclass2_set_value_int(obj, value)
         use iso_c_binding
         implicit none
@@ -387,7 +387,7 @@ contains
     
     ! void setValue(long value+intent(in)+value)
     ! cpp_template
-    ! function_index=26
+    ! function_index=29
     subroutine exclass2_set_value_long(obj, value)
         use iso_c_binding
         implicit none
@@ -402,7 +402,7 @@ contains
     
     ! void setValue(float value+intent(in)+value)
     ! cpp_template
-    ! function_index=27
+    ! function_index=30
     subroutine exclass2_set_value_float(obj, value)
         use iso_c_binding
         implicit none
@@ -417,7 +417,7 @@ contains
     
     ! void setValue(double value+intent(in)+value)
     ! cpp_template
-    ! function_index=28
+    ! function_index=31
     subroutine exclass2_set_value_double(obj, value)
         use iso_c_binding
         implicit none
@@ -432,7 +432,7 @@ contains
     
     ! int getValue()
     ! cpp_template
-    ! function_index=29
+    ! function_index=32
     function exclass2_get_value_int(obj) result(rv)
         use iso_c_binding
         implicit none
@@ -445,7 +445,7 @@ contains
     
     ! double getValue()
     ! cpp_template
-    ! function_index=30
+    ! function_index=33
     function exclass2_get_value_double(obj) result(rv)
         use iso_c_binding
         implicit none

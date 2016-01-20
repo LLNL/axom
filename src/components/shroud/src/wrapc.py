@@ -244,7 +244,7 @@ class Wrapc(util.WrapperMixin):
                 generated.append(CPP_node['_generated'])
         CPP_result = CPP_node['result']
         CPP_result_type = CPP_result['type']
-        CPP_subprogram = node['_subprogram']
+        CPP_subprogram = CPP_node['_subprogram']
 
         # C return type
         result = node['result']
@@ -364,8 +364,7 @@ class Wrapc(util.WrapperMixin):
                 C_code.append('return ' + wformat(result_typedef.cpp_to_c, fmt) + ';')
             elif is_dtor:
                 C_code.append('delete %sobj;' % fmt_func.C_this)
-#            elif CPP_subprogram == 'subroutine':   # UUU
-            elif subprogram == 'subroutine':
+            elif CPP_subprogram == 'subroutine':
                 line = wformat('{CPP_this_call}{method_name}{CPP_template}({C_call_list});',
                                fmt)
                 C_code.append(line)
@@ -392,7 +391,7 @@ class Wrapc(util.WrapperMixin):
                     # adjust return value or cleanup
                     fmt.f_string = result_arg['name']
                     fmt.f_string_len = result_arg['attrs'].get('len', '')
-                    fmt.c_string = wformat(result_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
+                    fmt.c_string = wformat(arg_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
                     append_format(C_code, c_post_call, fmt)
                 # XXX release rv is necessary
 

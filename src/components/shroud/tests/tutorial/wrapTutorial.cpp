@@ -2,6 +2,7 @@
 // This is generated code, do not edit
 // wrapTutorial.cpp
 #include "wrapTutorial.h"
+#include "shroud/shroudrt.hpp"
 #include "tutorial.hpp"
 
 extern "C" {
@@ -77,13 +78,14 @@ return rv.c_str();
 // splicer end function.function4b
 }
 
-// const std::string & Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))
-// function_index=33
-const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2)
+// void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+// function_index=34
+void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput)
 {
 // splicer begin function.function4b_bufferify
 const std::string & rv = Function4b(std::string(arg1, Larg1), std::string(arg2, Larg2));
-return rv.c_str();
+asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+return;
 // splicer end function.function4b_bufferify
 }
 
@@ -128,7 +130,7 @@ return;
 }
 
 // void Function6(const std::string & name+intent(in)+len_trim(Lname))
-// function_index=34
+// function_index=36
 void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
 // splicer begin function.function6_from_name_bufferify
@@ -218,7 +220,7 @@ return;
 }
 
 // void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)
-// function_index=35
+// function_index=38
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {
 // splicer begin function.function10_1_bufferify

@@ -522,21 +522,6 @@ class Wrapf(util.WrapperMixin):
         is_dtor  = node['attrs'].get('destructor', False)
         is_const = result['attrs'].get('const', False)
 
-        # Special case some string handling
-        if result_typedef.base == 'string' and \
-                options.get('F_string_result_as_arg', False):
-            need_wrapper = True
-            # convert function into subroutine with argument for result
-            result_string = True
-
-            # Use the result_as_arg typedef
-            result_typedef = self.typedef[result_typedef.name + '_result_as_arg']
-            fmt.result_arg = options.F_string_result_as_arg
-        else:
-            result_string = False
-
-#        result_string = False  ## HACKISH  # UUU
-
         # this catches stuff like a bool to logical conversion which requires the wrapper
         if result_typedef.f_argsdecl:
             need_wrapper = True
@@ -549,9 +534,7 @@ class Wrapf(util.WrapperMixin):
         arg_f_decl = [ ]
         arg_f_use  = [ 'use iso_c_binding' ]  # XXX totally brain dead for now
 
-        if result_string:
-            subprogram = 'subroutine'
-        elif subprogram == 'function':
+        if subprogram == 'function':
             fmt.F_result_clause = ' result(%s)' % fmt.F_result
         fmt.F_subprogram    = subprogram
 
@@ -566,11 +549,13 @@ class Wrapf(util.WrapperMixin):
                         fmt))
 
         result_arg = None  # indicate which argument contains function result, usually none
+        fmt.result_arg = 'UUU_result_arg'
         optional = []
         for arg, arg_call in zip_longest(node['args'], C_node['args']):
             if arg_call is None:
                 # more arguments to wrapper than C function, assume result
                 result_arg = arg
+                fmt.result_arg = arg['name']
 
             attrs = arg['attrs']
 
@@ -579,7 +564,11 @@ class Wrapf(util.WrapperMixin):
             arg_f_names.append(fmt.var)
             arg_f_decl.append(self._f_decl(arg))
 
-            arg_typedef = self.typedef[arg['type']]
+            arg_type = arg['type']
+            arg_typedef = self.typedef[arg_type]
+
+            if arg_type == 'string_result_as_arg':
+                fmt.result_arg = arg['name']
 
             if arg_typedef.f_argsdecl:
                 need_wrapper = True
@@ -618,13 +607,6 @@ class Wrapf(util.WrapperMixin):
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
                 append_format(arg_c_call, '{var}', fmt)
-
-        if result_string:
-            arg_f_names.append(fmt.result_arg)
-            if result_typedef.f_argsdecl:
-                need_wrapper = True
-                for argdecl in result_typedef.f_argsdecl:
-                    append_format(arg_f_decl, argdecl, fmt)
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
         fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
@@ -678,10 +660,6 @@ class Wrapf(util.WrapperMixin):
             F_code = []
             if is_ctor:
                 line1 = wformat('{F_result}%{F_derived_member} = {F_C_name}({F_arg_c_call_tab})', fmt)
-                self.append_method_arguments(F_code, line1)
-            elif result_string:
-                need_wrapper = True
-                line1 = wformat(result_typedef.f_return_code, fmt)
                 self.append_method_arguments(F_code, line1)
             elif subprogram == 'function':
                 f_return_code = result_typedef.f_return_code

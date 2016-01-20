@@ -119,9 +119,9 @@ module userlibrary_mod
 
 contains
     
-    ! bool isNameValid(const std::string & name+intent(in))
-    ! string_to_buffer_and_len
-    ! function_index=37
+    ! bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=49
     function is_name_valid(name) result(rv)
         use iso_c_binding
         implicit none
@@ -133,7 +133,7 @@ contains
     end function is_name_valid
     
     ! bool isInitialized()
-    ! function_index=38
+    ! function_index=42
     function is_initialized() result(rv)
         use iso_c_binding
         implicit none
@@ -143,9 +143,9 @@ contains
         ! splicer end is_initialized
     end function is_initialized
     
-    ! void test_names(const std::string & name+intent(in))
-    ! string_to_buffer_and_len
-    ! function_index=39
+    ! void test_names(const std::string & name+intent(in)+len_trim(Lname))
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=51
     subroutine test_names(name)
         use iso_c_binding
         implicit none
@@ -157,9 +157,9 @@ contains
         ! splicer end test_names
     end subroutine test_names
     
-    ! void test_names(const std::string & name+intent(in), int flag+intent(in)+value)
-    ! string_to_buffer_and_len
-    ! function_index=40
+    ! void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=53
     subroutine test_names_flag(name, flag)
         use iso_c_binding
         implicit none
@@ -175,7 +175,7 @@ contains
     
     ! void testoptional()
     ! has_default_arg
-    ! function_index=42
+    ! function_index=46
     subroutine testoptional_0()
         use iso_c_binding
         implicit none
@@ -186,7 +186,7 @@ contains
     
     ! void testoptional(int i+default(1)+intent(in)+value)
     ! has_default_arg
-    ! function_index=43
+    ! function_index=47
     subroutine testoptional_1(i)
         use iso_c_binding
         implicit none
@@ -197,7 +197,7 @@ contains
     end subroutine testoptional_1
     
     ! void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
-    ! function_index=41
+    ! function_index=45
     subroutine testoptional_2(i, j)
         use iso_c_binding
         implicit none

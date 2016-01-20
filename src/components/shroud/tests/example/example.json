@@ -43,7 +43,6 @@
             }, 
             "methods": [
                 {
-                    "_PTR_F_C_index": 13, 
                     "_decl": "ExClass1 * new(const string * name+intent(in))+constructor", 
                     "_function_index": 0, 
                     "_subprogram": "function", 
@@ -71,13 +70,12 @@
                     "fmt": {
                         "C_name": "AA_exclass1_new", 
                         "F_C_name": "aa_exclass1_new", 
-                        "F_name_generic": "new", 
-                        "F_name_impl": "exclass1_new", 
-                        "F_name_method": "new", 
                         "method_name": "new", 
                         "underscore_name": "new"
                     }, 
-                    "options": {}, 
+                    "options": {
+                        "wrap_fortran": false
+                    }, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -87,6 +85,7 @@
                     }
                 }, 
                 {
+                    "_PTR_C_CPP_index": 0, 
                     "_decl": "ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor", 
                     "_function_index": 13, 
                     "_generated": "string_to_buffer_and_len", 
@@ -121,6 +120,54 @@
                     "options": {
                         "wrap_c": true, 
                         "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "new", 
+                        "type": "ExClass1"
+                    }
+                }, 
+                {
+                    "_PTR_C_CPP_index": 0, 
+                    "_PTR_F_C_index": 13, 
+                    "_decl": "ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor", 
+                    "_function_index": 14, 
+                    "_generated": "string_to_buffer_and_len", 
+                    "_subprogram": "function", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "len_trim": "Lname", 
+                                "ptr": true, 
+                                "value": false
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass1 *new ( const string *name ) +constructor", 
+                    "doxygen": {
+                        "brief": "constructor", 
+                        "description": "longer description\nusually multiple lines\n", 
+                        "return": "return new instance"
+                    }, 
+                    "fmt": {
+                        "F_name_generic": "new", 
+                        "F_name_impl": "exclass1_new", 
+                        "F_name_method": "new", 
+                        "function_suffix": ""
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
                         "wrap_python": false
                     }, 
                     "result": {
@@ -298,15 +345,13 @@
                     "fmt": {
                         "C_name": "AA_exclass1_get_name_arg", 
                         "F_C_name": "aa_exclass1_get_name_arg", 
-                        "F_name_generic": "get_name_arg", 
-                        "F_name_impl": "exclass1_get_name_arg", 
-                        "F_name_method": "get_name_arg", 
                         "PY_name_impl": "PP_exclass1_get_name_arg", 
                         "method_name": "getNameArg", 
                         "underscore_name": "get_name_arg"
                     }, 
                     "options": {
-                        "F_string_result_as_arg": "name"
+                        "F_string_result_as_arg": "name", 
+                        "wrap_fortran": false
                     }, 
                     "result": {
                         "attrs": {
@@ -315,6 +360,92 @@
                         }, 
                         "name": "getNameArg", 
                         "type": "string"
+                    }
+                }, 
+                {
+                    "_PTR_C_CPP_index": 6, 
+                    "_decl": "void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const", 
+                    "_function_index": 15, 
+                    "_generated": "string_to_buffer_and_len", 
+                    "_subprogram": "subroutine", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": false, 
+                                "intent": "out", 
+                                "len": "Lname", 
+                                "reference": true
+                            }, 
+                            "name": "name", 
+                            "type": "string_result_as_arg"
+                        }
+                    ], 
+                    "attrs": {
+                        "const": true
+                    }, 
+                    "decl": "const string& getNameArg() const", 
+                    "fmt": {
+                        "C_name": "AA_exclass1_get_name_arg_bufferify", 
+                        "F_C_name": "aa_exclass1_get_name_arg_bufferify", 
+                        "function_suffix": "_bufferify"
+                    }, 
+                    "options": {
+                        "wrap_c": true, 
+                        "wrap_fortran": false, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": false, 
+                            "ptr": false, 
+                            "reference": false
+                        }, 
+                        "name": "getNameArg", 
+                        "type": "void"
+                    }
+                }, 
+                {
+                    "_PTR_C_CPP_index": 6, 
+                    "_PTR_F_C_index": 15, 
+                    "_decl": "void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const", 
+                    "_function_index": 16, 
+                    "_generated": "string_to_buffer_and_len", 
+                    "_subprogram": "subroutine", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": false, 
+                                "intent": "out", 
+                                "len": "Lname", 
+                                "reference": true
+                            }, 
+                            "name": "name", 
+                            "type": "string_result_as_arg"
+                        }
+                    ], 
+                    "attrs": {
+                        "const": true
+                    }, 
+                    "decl": "const string& getNameArg() const", 
+                    "fmt": {
+                        "F_name_generic": "get_name_arg", 
+                        "F_name_impl": "exclass1_get_name_arg", 
+                        "F_name_method": "get_name_arg", 
+                        "function_suffix": ""
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "const": false, 
+                            "ptr": false, 
+                            "reference": false
+                        }, 
+                        "name": "getNameArg", 
+                        "type": "void"
                     }
                 }, 
                 {
@@ -562,9 +693,8 @@
             }, 
             "methods": [
                 {
-                    "_PTR_F_C_index": 31, 
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in))+constructor", 
-                    "_function_index": 14, 
+                    "_function_index": 17, 
                     "_subprogram": "function", 
                     "args": [
                         {
@@ -585,13 +715,12 @@
                     "fmt": {
                         "C_name": "AA_exclass2_ex_class2", 
                         "F_C_name": "aa_exclass2_ex_class2", 
-                        "F_name_generic": "ex_class2", 
-                        "F_name_impl": "exclass2_ex_class2", 
-                        "F_name_method": "ex_class2", 
                         "method_name": "ExClass2", 
                         "underscore_name": "ex_class2"
                     }, 
-                    "options": {}, 
+                    "options": {
+                        "wrap_fortran": false
+                    }, 
                     "result": {
                         "attrs": {
                             "ptr": true
@@ -601,8 +730,9 @@
                     }
                 }, 
                 {
+                    "_PTR_C_CPP_index": 17, 
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor", 
-                    "_function_index": 31, 
+                    "_function_index": 34, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "function", 
                     "args": [
@@ -641,8 +771,51 @@
                     }
                 }, 
                 {
+                    "_PTR_C_CPP_index": 17, 
+                    "_PTR_F_C_index": 34, 
+                    "_decl": "ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor", 
+                    "_function_index": 35, 
+                    "_generated": "string_to_buffer_and_len", 
+                    "_subprogram": "function", 
+                    "args": [
+                        {
+                            "attrs": {
+                                "const": true, 
+                                "intent": "in", 
+                                "len_trim": "Lname", 
+                                "ptr": true, 
+                                "value": false
+                            }, 
+                            "name": "name", 
+                            "type": "string"
+                        }
+                    ], 
+                    "attrs": {
+                        "constructor": true
+                    }, 
+                    "decl": "ExClass2 *ExClass2 (const string *name) +constructor", 
+                    "fmt": {
+                        "F_name_generic": "ex_class2", 
+                        "F_name_impl": "exclass2_ex_class2", 
+                        "F_name_method": "ex_class2", 
+                        "function_suffix": ""
+                    }, 
+                    "options": {
+                        "wrap_c": false, 
+                        "wrap_fortran": true, 
+                        "wrap_python": false
+                    }, 
+                    "result": {
+                        "attrs": {
+                            "ptr": true
+                        }, 
+                        "name": "ExClass2", 
+                        "type": "ExClass2"
+                    }
+                }, 
+                {
                     "_decl": "void delete()+destructor", 
-                    "_function_index": 15, 
+                    "_function_index": 18, 
                     "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {
@@ -668,7 +841,7 @@
                 }, 
                 {
                     "_decl": "const string & getName() const", 
-                    "_function_index": 16, 
+                    "_function_index": 19, 
                     "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
@@ -698,7 +871,7 @@
                 }, 
                 {
                     "_decl": "const int GetNameLength()", 
-                    "_function_index": 17, 
+                    "_function_index": 20, 
                     "_subprogram": "function", 
                     "args": [], 
                     "attrs": {}, 
@@ -728,7 +901,7 @@
                 }, 
                 {
                     "_decl": "ExClass1 * get_class1(const ExClass1 * in+intent(in)+value)", 
-                    "_function_index": 18, 
+                    "_function_index": 21, 
                     "_subprogram": "function", 
                     "args": [
                         {
@@ -765,7 +938,7 @@
                 }, 
                 {
                     "_decl": "void * declare(TypeID type+intent(in)+value)", 
-                    "_function_index": 24, 
+                    "_function_index": 27, 
                     "_generated": "has_default_arg", 
                     "_overloaded": true, 
                     "_subprogram": "function", 
@@ -807,9 +980,9 @@
                     "return_this": true
                 }, 
                 {
-                    "_PTR_F_C_index": 24, 
+                    "_PTR_F_C_index": 27, 
                     "_decl": "void * declare(TypeID type+intent(in)+value)", 
-                    "_function_index": 32, 
+                    "_function_index": 36, 
                     "_generated": "fortran_generic", 
                     "_overloaded": true, 
                     "_subprogram": "function", 
@@ -846,9 +1019,9 @@
                     "return_this": true
                 }, 
                 {
-                    "_PTR_F_C_index": 24, 
+                    "_PTR_F_C_index": 27, 
                     "_decl": "void * declare(TypeID type+intent(in)+value)", 
-                    "_function_index": 33, 
+                    "_function_index": 37, 
                     "_generated": "fortran_generic", 
                     "_overloaded": true, 
                     "_subprogram": "function", 
@@ -887,9 +1060,9 @@
                 {
                     "_decl": "void * declare(TypeID type+intent(in)+value, SidreLength len+default(1)+intent(in)+value)", 
                     "_default_funcs": [
-                        24
+                        27
                     ], 
-                    "_function_index": 19, 
+                    "_function_index": 22, 
                     "_has_default_arg": true, 
                     "_nargs": [
                         1, 
@@ -945,12 +1118,12 @@
                     "return_this": true
                 }, 
                 {
-                    "_PTR_F_C_index": 19, 
+                    "_PTR_F_C_index": 22, 
                     "_decl": "void * declare(TypeID type+intent(in)+value, int len+default(1)+intent(in)+value)", 
                     "_default_funcs": [
-                        24
+                        27
                     ], 
-                    "_function_index": 34, 
+                    "_function_index": 38, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
                     "_nargs": [
@@ -1001,12 +1174,12 @@
                     "return_this": true
                 }, 
                 {
-                    "_PTR_F_C_index": 19, 
+                    "_PTR_F_C_index": 22, 
                     "_decl": "void * declare(TypeID type+intent(in)+value, long len+default(1)+intent(in)+value)", 
                     "_default_funcs": [
-                        24
+                        27
                     ], 
-                    "_function_index": 35, 
+                    "_function_index": 39, 
                     "_generated": "fortran_generic", 
                     "_has_default_arg": true, 
                     "_nargs": [
@@ -1058,7 +1231,7 @@
                 }, 
                 {
                     "_decl": "void destroyall()", 
-                    "_function_index": 20, 
+                    "_function_index": 23, 
                     "_subprogram": "subroutine", 
                     "args": [], 
                     "attrs": {}, 
@@ -1082,7 +1255,7 @@
                 }, 
                 {
                     "_decl": "TypeID getTypeID() const", 
-                    "_function_index": 21, 
+                    "_function_index": 24, 
                     "_subprogram": "function", 
                     "args": [], 
                     "attrs": {
@@ -1108,7 +1281,7 @@
                 }, 
                 {
                     "_decl": "void setValue(ValueType value+intent(in)+value)", 
-                    "_function_index": 22, 
+                    "_function_index": 25, 
                     "_overloaded": true, 
                     "_subprogram": "subroutine", 
                     "args": [
@@ -1148,7 +1321,7 @@
                 }, 
                 {
                     "_decl": "void setValue(int value+intent(in)+value)", 
-                    "_function_index": 25, 
+                    "_function_index": 28, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "_subprogram": "subroutine", 
@@ -1186,7 +1359,7 @@
                 }, 
                 {
                     "_decl": "void setValue(long value+intent(in)+value)", 
-                    "_function_index": 26, 
+                    "_function_index": 29, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "_subprogram": "subroutine", 
@@ -1224,7 +1397,7 @@
                 }, 
                 {
                     "_decl": "void setValue(float value+intent(in)+value)", 
-                    "_function_index": 27, 
+                    "_function_index": 30, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "_subprogram": "subroutine", 
@@ -1262,7 +1435,7 @@
                 }, 
                 {
                     "_decl": "void setValue(double value+intent(in)+value)", 
-                    "_function_index": 28, 
+                    "_function_index": 31, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "_subprogram": "subroutine", 
@@ -1300,7 +1473,7 @@
                 }, 
                 {
                     "_decl": "ValueType getValue()", 
-                    "_function_index": 23, 
+                    "_function_index": 26, 
                     "_overloaded": true, 
                     "_subprogram": "function", 
                     "args": [], 
@@ -1329,7 +1502,7 @@
                 }, 
                 {
                     "_decl": "int getValue()", 
-                    "_function_index": 29, 
+                    "_function_index": 32, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "_subprogram": "function", 
@@ -1359,7 +1532,7 @@
                 }, 
                 {
                     "_decl": "double getValue()", 
-                    "_function_index": 30, 
+                    "_function_index": 33, 
                     "_generated": "cpp_template", 
                     "_overloaded": true, 
                     "_subprogram": "function", 
@@ -1451,7 +1624,7 @@
     "functions": [
         {
             "_decl": "void local_function1()", 
-            "_function_index": 36, 
+            "_function_index": 40, 
             "_subprogram": "subroutine", 
             "args": [], 
             "attrs": {}, 
@@ -1475,9 +1648,8 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 44, 
             "_decl": "bool isNameValid(const std::string & name+intent(in))", 
-            "_function_index": 37, 
+            "_function_index": 41, 
             "_subprogram": "function", 
             "args": [
                 {
@@ -1496,16 +1668,14 @@
             "fmt": {
                 "C_name": "AA_is_name_valid", 
                 "F_C_name": "aa_is_name_valid", 
-                "F_name_generic": "is_name_valid", 
-                "F_name_impl": "is_name_valid", 
-                "F_name_method": "is_name_valid", 
                 "PY_name_impl": "PP_is_name_valid", 
                 "method_name": "isNameValid", 
                 "underscore_name": "is_name_valid"
             }, 
             "options": {
                 "C_code": "return name != NULL;", 
-                "F_code": "rv = name .ne. \" \""
+                "F_code": "rv = name .ne. \" \"", 
+                "wrap_fortran": false
             }, 
             "result": {
                 "attrs": {}, 
@@ -1514,8 +1684,9 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 41, 
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
-            "_function_index": 44, 
+            "_function_index": 48, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
             "args": [
@@ -1550,8 +1721,47 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 41, 
+            "_PTR_F_C_index": 48, 
+            "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_function_index": 49, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "function", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Lname", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "bool isNameValid(const std::string& name)", 
+            "fmt": {
+                "F_name_generic": "is_name_valid", 
+                "F_name_impl": "is_name_valid", 
+                "F_name_method": "is_name_valid", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "isNameValid", 
+                "type": "bool"
+            }
+        }, 
+        {
             "_decl": "bool isInitialized()", 
-            "_function_index": 38, 
+            "_function_index": 42, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {}, 
@@ -1574,13 +1784,12 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 45, 
             "_cpp_overload": [
-                39, 
-                40
+                43, 
+                44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in))", 
-            "_function_index": 39, 
+            "_function_index": 43, 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
             "args": [
@@ -1600,16 +1809,15 @@
             "fmt": {
                 "C_name": "AA_test_names", 
                 "F_C_name": "aa_test_names", 
-                "F_name_generic": "test_names", 
-                "F_name_impl": "test_names", 
-                "F_name_method": "test_names", 
                 "PY_name_impl": "PP_test_names", 
                 "function_suffix": "", 
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_suffix": "", 
-            "options": {}, 
+            "options": {
+                "wrap_fortran": false
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "test_names", 
@@ -1617,12 +1825,13 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 43, 
             "_cpp_overload": [
-                39, 
-                40
+                43, 
+                44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname))", 
-            "_function_index": 45, 
+            "_function_index": 50, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1659,13 +1868,57 @@
             }
         }, 
         {
-            "_PTR_F_C_index": 46, 
+            "_PTR_C_CPP_index": 43, 
+            "_PTR_F_C_index": 50, 
             "_cpp_overload": [
-                39, 
-                40
+                43, 
+                44
+            ], 
+            "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_function_index": 51, 
+            "_generated": "string_to_buffer_and_len", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Lname", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void test_names(const std::string &name)", 
+            "fmt": {
+                "F_name_generic": "test_names", 
+                "F_name_impl": "test_names", 
+                "F_name_method": "test_names", 
+                "function_suffix": ""
+            }, 
+            "function_suffix": "", 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "test_names", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_cpp_overload": [
+                43, 
+                44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in), int flag+intent(in)+value)", 
-            "_function_index": 40, 
+            "_function_index": 44, 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
             "args": [
@@ -1693,16 +1946,15 @@
             "fmt": {
                 "C_name": "AA_test_names_flag", 
                 "F_C_name": "aa_test_names_flag", 
-                "F_name_generic": "test_names", 
-                "F_name_impl": "test_names_flag", 
-                "F_name_method": "test_names_flag", 
                 "PY_name_impl": "PP_test_names_flag", 
                 "function_suffix": "_flag", 
                 "method_name": "test_names", 
                 "underscore_name": "test_names"
             }, 
             "function_suffix": "_flag", 
-            "options": {}, 
+            "options": {
+                "wrap_fortran": false
+            }, 
             "result": {
                 "attrs": {}, 
                 "name": "test_names", 
@@ -1710,12 +1962,13 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 44, 
             "_cpp_overload": [
-                39, 
-                40
+                43, 
+                44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)", 
-            "_function_index": 46, 
+            "_function_index": 52, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1760,8 +2013,61 @@
             }
         }, 
         {
+            "_PTR_C_CPP_index": 44, 
+            "_PTR_F_C_index": 52, 
+            "_cpp_overload": [
+                43, 
+                44
+            ], 
+            "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)", 
+            "_function_index": 53, 
+            "_generated": "string_to_buffer_and_len", 
+            "_overloaded": true, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Lname", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "name", 
+                    "type": "std::string"
+                }, 
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "value": true
+                    }, 
+                    "name": "flag", 
+                    "type": "int"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void test_names(const std::string &name, int flag)", 
+            "fmt": {
+                "F_name_generic": "test_names", 
+                "F_name_impl": "test_names_flag", 
+                "F_name_method": "test_names_flag", 
+                "function_suffix": "_flag"
+            }, 
+            "function_suffix": "_flag", 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "test_names", 
+                "type": "void"
+            }
+        }, 
+        {
             "_decl": "void testoptional()", 
-            "_function_index": 42, 
+            "_function_index": 46, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1789,7 +2095,7 @@
         }, 
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value)", 
-            "_function_index": 43, 
+            "_function_index": 47, 
             "_generated": "has_default_arg", 
             "_overloaded": true, 
             "_subprogram": "subroutine", 
@@ -1828,10 +2134,10 @@
         {
             "_decl": "void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)", 
             "_default_funcs": [
-                42, 
-                43
+                46, 
+                47
             ], 
-            "_function_index": 41, 
+            "_function_index": 45, 
             "_has_default_arg": true, 
             "_nargs": [
                 0, 
@@ -2215,20 +2521,16 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_post_call": "FccCopy({f_string}, {f_string_len}, {c_string});", 
+            "c_post_call": "asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});", 
             "c_type": "char", 
+            "cpp_header": "shroud/shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 
-            "f_argsdecl": [
-                "character(*), intent(OUT) :: {result_arg}", 
-                "type(C_PTR) :: {F_result}"
-            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
-            "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "void": {

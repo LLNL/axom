@@ -32,7 +32,7 @@ const char * TUT_function4a_bufferify(const char * arg1, int Larg1, const char *
 
 const char * TUT_function4b(const char * arg1, const char * arg2);
 
-const char * TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2);
+void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput);
 
 double TUT_function5();
 

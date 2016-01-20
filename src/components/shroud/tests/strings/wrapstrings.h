@@ -20,6 +20,8 @@ extern "C" {
 
 const char * STR_get_name();
 
+void STR_get_name_bufferify(char * output, int Loutput);
+
 #ifdef __cplusplus
 }
 #endif

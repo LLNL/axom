@@ -6,6 +6,7 @@
 // wrapExClass1.cpp
 #include "wrapExClass1.h"
 #include "ExClass1.hpp"
+#include "shroud/shroudrt.hpp"
 
 extern "C" {
 namespace example {
@@ -122,6 +123,18 @@ const ExClass1 *selfobj = static_cast<const ExClass1 *>(static_cast<const void *
 const std::string & rv = selfobj->getNameArg();
 return rv.c_str();
 // splicer end class.ExClass1.method.get_name_arg
+}
+
+// void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+// function_index=15
+void AA_exclass1_get_name_arg_bufferify(AA_exclass1 * self, char * name, int Lname)
+{
+ExClass1 *selfobj = static_cast<ExClass1 *>(static_cast<void *>(self));
+// splicer begin class.ExClass1.method.get_name_arg_bufferify
+const std::string & rv = selfobj->getNameArg();
+asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+return;
+// splicer end class.ExClass1.method.get_name_arg_bufferify
 }
 
 // ExClass2 * getRoot()

@@ -132,8 +132,7 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4b
         
-        function tut_function4b_bufferify(arg1, Larg1, arg2, Larg2) &
-                result(rv) &
+        subroutine tut_function4b_bufferify(arg1, Larg1, arg2, Larg2, output, Loutput) &
                 bind(C, name="TUT_function4b_bufferify")
             use iso_c_binding
             implicit none
@@ -141,8 +140,9 @@ module tutorial_mod
             integer(C_INT), value, intent(IN) :: Larg1
             character(kind=C_CHAR), intent(IN) :: arg2(*)
             integer(C_INT), value, intent(IN) :: Larg2
-            type(C_PTR) rv
-        end function tut_function4b_bufferify
+            character(kind=C_CHAR), intent(OUT) :: output(*)
+            integer(C_INT), value, intent(IN) :: Loutput
+        end subroutine tut_function4b_bufferify
         
         function tut_function5() &
                 result(rv) &
@@ -439,9 +439,9 @@ contains
         ! splicer end function3
     end function function3
     
-    ! const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
-    ! string_to_buffer_and_len
-    ! function_index=7
+    ! const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=33
     function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
@@ -457,23 +457,23 @@ contains
         ! splicer end function4a
     end function function4a
     
-    ! const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-    ! string_to_buffer_and_len
-    ! function_index=8
+    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=35
     subroutine function4b(arg1, arg2, output)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
         character(*), intent(OUT) :: output
-        type(C_PTR) :: rv
         ! splicer begin function4b
-        rv = tut_function4b_bufferify(  &
+        call tut_function4b_bufferify(  &
             arg1,  &
             len_trim(arg1),  &
             arg2,  &
-            len_trim(arg2))
-        call FccCopyPtr(output, len(output), rv)
+            len_trim(arg2),  &
+            output,  &
+            len(output))
         ! splicer end function4b
     end subroutine function4b
     
@@ -519,9 +519,9 @@ contains
         ! splicer end function5_arg1_arg2
     end function function5_arg1_arg2
     
-    ! void Function6(const std::string & name+intent(in))
-    ! string_to_buffer_and_len
-    ! function_index=10
+    ! void Function6(const std::string & name+intent(in)+len_trim(Lname))
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=37
     subroutine function6_from_name(name)
         use iso_c_binding
         implicit none
@@ -594,7 +594,7 @@ contains
     
     ! void Function9(float arg+intent(in)+value)
     ! fortran_generic
-    ! function_index=36
+    ! function_index=40
     subroutine function9_float(arg)
         use iso_c_binding
         implicit none
@@ -606,7 +606,7 @@ contains
     
     ! void Function9(double arg+intent(in)+value)
     ! fortran_generic
-    ! function_index=37
+    ! function_index=41
     subroutine function9_double(arg)
         use iso_c_binding
         implicit none
@@ -626,9 +626,9 @@ contains
         ! splicer end function10_0
     end subroutine function10_0
     
-    ! void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
-    ! fortran_generic - string_to_buffer_and_len
-    ! function_index=38
+    ! void Function10(const std::string & name+intent(in)+len_trim(Lname), float arg2+intent(in)+value)
+    ! fortran_generic - string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=42
     subroutine function10_1_float(name, arg2)
         use iso_c_binding
         implicit none
@@ -642,9 +642,9 @@ contains
         ! splicer end function10_1_float
     end subroutine function10_1_float
     
-    ! void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
-    ! fortran_generic - string_to_buffer_and_len
-    ! function_index=39
+    ! void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)
+    ! fortran_generic - string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=43
     subroutine function10_1_double(name, arg2)
         use iso_c_binding
         implicit none

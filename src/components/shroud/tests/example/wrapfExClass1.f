@@ -132,6 +132,15 @@ module exclass1_mod
             type(C_PTR) rv
         end function aa_exclass1_get_name_arg
         
+        subroutine aa_exclass1_get_name_arg_bufferify(self, name, Lname) &
+                bind(C, name="AA_exclass1_get_name_arg_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine aa_exclass1_get_name_arg_bufferify
+        
         function aa_exclass1_get_root(self) &
                 result(rv) &
                 bind(C, name="AA_exclass1_get_root")
@@ -193,9 +202,9 @@ module exclass1_mod
 
 contains
     
-    ! ExClass1 * new(const string * name+intent(in))+constructor
-    ! string_to_buffer_and_len
-    ! function_index=0
+    ! ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=14
     !>
     !! \brief constructor
     !!
@@ -286,17 +295,19 @@ contains
         ! splicer end class.ExClass1.method.get_name_error_check
     end function exclass1_get_name_error_check
     
-    ! const string & getNameArg() const
-    ! function_index=6
+    ! void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=16
     subroutine exclass1_get_name_arg(obj, name)
         use iso_c_binding
         implicit none
         class(exclass1) :: obj
         character(*), intent(OUT) :: name
-        type(C_PTR) :: rv
         ! splicer begin class.ExClass1.method.get_name_arg
-        rv = aa_exclass1_get_name_arg(obj%voidptr)
-        call FccCopyPtr(name, len(name), rv)
+        call aa_exclass1_get_name_arg_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len(name))
         ! splicer end class.ExClass1.method.get_name_arg
     end subroutine exclass1_get_name_arg
     

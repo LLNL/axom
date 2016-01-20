@@ -275,12 +275,13 @@ class Schema(object):
         # result_as_arg
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
-                c_post_call   = 'FccCopy({f_string}, {f_string_len}, {c_string});',
-                f_argsdecl    = [
-                    'character(*), intent(OUT) :: {result_arg}',
-                    'type(C_PTR) :: {F_result}'],
-                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
-                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
+                cpp_header = 'shroud/shroudrt.hpp',
+                c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
+#                f_argsdecl    = [
+#                    'character(*), intent(OUT) :: {result_arg}',
+#                    'type(C_PTR) :: {F_result}'],
+#                f_return_code = '{F_result} = {F_C_name}({F_arg_c_call_tab})',
+#                f_post_call   = 'call FccCopyPtr({result_arg}, len({result_arg}), {F_result})',
                 ))
         def_types[tmp.name] = tmp
 
@@ -612,13 +613,13 @@ class GenFunctions(object):
                 min_args += 1
                 continue
             new = util.copy_function_node(node)
+            self.append_function_index(new)
             new['_generated'] = 'has_default_arg'
             del new['args'][i:]  # remove trailing arguments
 #            try:
             del new['_has_default_arg']
 #            except:
 #                pass
-            self.append_function_index(new)
             options = new['options']
             options.wrap_c = True
             options.wrap_fortran = True
@@ -664,9 +665,6 @@ class GenFunctions(object):
             has_strings = True
         else:
             result_arg_name = ''
-        # XXX dummy out for now
-        has_strings = False  # UUU
-        result_arg_name = ''  # UUU
 
         for arg in node['args']:
             argtype = arg['type']
@@ -676,50 +674,65 @@ class GenFunctions(object):
         if has_strings is False:
             return
 
-        new = util.copy_function_node(node)
-        ordered_functions.append(new)
-        self.append_function_index(new)
+        options = node['options']
+        options.wrap_fortran = False
+        # Preserve wrap_c.  This keep a version which accepts char * arguments.
 
-        new['_generated'] = 'string_to_buffer_and_len'
-        fmt = new['fmt']
+        # Create a new C function and change arguments to add len_trim attribute
+        C_new = util.copy_function_node(node)
+        ordered_functions.append(C_new)
+        self.append_function_index(C_new)
+
+        C_new['_generated'] = 'string_to_buffer_and_len'
+        fmt = C_new['fmt']
         fmt.function_suffix = fmt.function_suffix + '_bufferify'
 
-        options = new['options']
+        options = C_new['options']
         options.wrap_c = True
-        options.wrap_fortran = False  # UU
+        options.wrap_fortran = False
         options.wrap_python = False
-#        options.F_string_result_as_arg = False
-#        new['_PTR_C_CPP_index'] = node['_function_index']  # UUU
-
-        options = node['options']
-#        options.wrap_fortran = False # UUU
-#        # Current Fortran function should use this new C function
-        node['_PTR_F_C_index'] = new['_function_index']  # UUU
+        C_new['_PTR_C_CPP_index'] = node['_function_index']
 
         newargs = []
-        for arg in new['args']:
+        for arg in C_new['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
                 # Add len_trim attribute
                 arg['attrs']['len_trim'] = 'L' + arg['name']
 
         if result_arg_name:
-            # cache the result argument
+            # Add additional argument to hold result
             result_as_string = copy.deepcopy(result)
             result_as_string['name'] = result_arg_name
             result_as_string['type'] = result_typedef.name + '_result_as_arg'
             result_as_string['attrs']['const'] = False
             result_as_string['attrs']['len'] = 'L' + result_arg_name
-            new['args'].append(result_as_string)
+            result_as_string['attrs']['intent'] = 'out'
+            C_new['args'].append(result_as_string)
 
             # convert to subroutine
-            new['_subprogram'] = 'subroutine'
+            C_new['_subprogram'] = 'subroutine'
             result = copy.deepcopy(result)
-            result = new['result']
+            result = C_new['result']
             result['type'] = 'void'
             result['attrs']['const'] = False
             result['attrs']['ptr'] = False
             result['attrs']['reference'] = False
+
+        # Create Fortran function without bufferify function_suffix but
+        # with len attributes on string arguments.
+        F_new = util.copy_function_node(C_new)
+        ordered_functions.append(F_new)
+        self.append_function_index(F_new)
+
+        # Fortran function should wrap the new C function
+        F_new['_PTR_F_C_index'] = C_new['_function_index']
+        options = F_new['options']
+        options.wrap_c       = False
+        options.wrap_fortran = True
+        options.wrap_python = False
+        # Do not add '_bufferify'
+        F_new['fmt'].function_suffix = node['fmt'].function_suffix
             
     def check_class_dependencies(self, node):
         """

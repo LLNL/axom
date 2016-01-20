@@ -21,14 +21,23 @@ module strings_mod
             type(C_PTR) rv
         end function str_get_name
         
+        subroutine str_get_name_bufferify(output, Loutput) &
+                bind(C, name="STR_get_name_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: output(*)
+            integer(C_INT), value, intent(IN) :: Loutput
+        end subroutine str_get_name_bufferify
+        
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces
     end interface
 
 contains
     
-    ! const string & getName() const
-    ! function_index=0
+    ! void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
+    ! string_to_buffer_and_len - string_to_buffer_and_len
+    ! function_index=2
     !>
     !! \brief return a string as argument
     !!
@@ -37,10 +46,10 @@ contains
         use iso_c_binding
         implicit none
         character(*), intent(OUT) :: output
-        type(C_PTR) :: rv
         ! splicer begin get_name
-        rv = str_get_name()
-        call FccCopyPtr(output, len(output), rv)
+        call str_get_name_bufferify(  &
+            output,  &
+            len(output))
         ! splicer end get_name
     end subroutine get_name
     

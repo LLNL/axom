@@ -39,14 +39,12 @@
             "fmt": {
                 "C_name": "STR_get_name", 
                 "F_C_name": "str_get_name", 
-                "F_name_generic": "get_name", 
-                "F_name_impl": "get_name", 
-                "F_name_method": "get_name", 
                 "method_name": "getName", 
                 "underscore_name": "get_name"
             }, 
             "options": {
-                "F_string_result_as_arg": "output"
+                "F_string_result_as_arg": "output", 
+                "wrap_fortran": false
             }, 
             "result": {
                 "attrs": {
@@ -55,6 +53,98 @@
                 }, 
                 "name": "getName", 
                 "type": "string"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 0, 
+            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const", 
+            "_function_index": 1, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "reference": true
+                    }, 
+                    "name": "output", 
+                    "type": "string_result_as_arg"
+                }
+            ], 
+            "attrs": {
+                "const": true
+            }, 
+            "decl": "const string& getName() const", 
+            "doxygen": {
+                "brief": "return a string as argument"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_name_bufferify", 
+                "F_C_name": "str_get_name_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getName", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 0, 
+            "_PTR_F_C_index": 1, 
+            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const", 
+            "_function_index": 2, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": false, 
+                        "intent": "out", 
+                        "len": "Loutput", 
+                        "reference": true
+                    }, 
+                    "name": "output", 
+                    "type": "string_result_as_arg"
+                }
+            ], 
+            "attrs": {
+                "const": true
+            }, 
+            "decl": "const string& getName() const", 
+            "doxygen": {
+                "brief": "return a string as argument"
+            }, 
+            "fmt": {
+                "F_name_generic": "get_name", 
+                "F_name_impl": "get_name", 
+                "F_name_method": "get_name", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {
+                    "const": false, 
+                    "ptr": false, 
+                    "reference": false
+                }, 
+                "name": "getName", 
+                "type": "void"
             }
         }
     ], 
@@ -298,20 +388,16 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_post_call": "FccCopy({f_string}, {f_string_len}, {c_string});", 
+            "c_post_call": "asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});", 
             "c_type": "char", 
+            "cpp_header": "shroud/shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 
-            "f_argsdecl": [
-                "character(*), intent(OUT) :: {result_arg}", 
-                "type(C_PTR) :: {F_result}"
-            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
-            "f_post_call": "call FccCopyPtr({result_arg}, len({result_arg}), {F_result})", 
-            "f_return_code": "{F_result} = {F_C_name}({F_arg_c_call_tab})", 
+            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
             "f_type": "character(*)"
         }, 
         "void": {

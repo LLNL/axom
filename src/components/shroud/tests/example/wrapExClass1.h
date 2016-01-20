@@ -41,6 +41,8 @@ const char * AA_exclass1_get_name_error_check(const AA_exclass1 * self);
 
 const char * AA_exclass1_get_name_arg(const AA_exclass1 * self);
 
+void AA_exclass1_get_name_arg_bufferify(AA_exclass1 * self, char * name, int Lname);
+
 AA_exclass2 * AA_exclass1_get_root(AA_exclass1 * self);
 
 int AA_exclass1_get_value_from_int(AA_exclass1 * self, int value);
