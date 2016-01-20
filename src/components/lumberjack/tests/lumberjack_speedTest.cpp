@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     }
     communicator->initialize(MPI_COMM_WORLD, ranksLimit);
 
-    // Initialize lumberjack logger
+    // Initialize lumberjack
     asctoolkit::lumberjack::Lumberjack lj;
     lj.initialize(communicator, ranksLimit);
 
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
        outFile.close();
    }
 
-    // Finalize the lumberjack 
+    // Finalize lumberjack 
     lj.finalize();
     // Finalize the lumberjack communicator
     communicator->finalize();
