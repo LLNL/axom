@@ -61,7 +61,7 @@
             "_PTR_C_CPP_index": 0, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 1, 
+            "_function_index": 2, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -106,10 +106,10 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
-            "_PTR_F_C_index": 1, 
+            "_PTR_F_C_index": 2, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 2, 
+            "_function_index": 3, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -149,6 +149,126 @@
                     "reference": false
                 }, 
                 "name": "getName", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in))", 
+            "_function_index": 1, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringConstReference(const std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a const string reference"
+            }, 
+            "fmt": {
+                "C_name": "STR_accept_string_const_reference", 
+                "F_C_name": "str_accept_string_const_reference", 
+                "method_name": "acceptStringConstReference", 
+                "underscore_name": "accept_string_const_reference"
+            }, 
+            "options": {
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringConstReference", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 1, 
+            "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 4, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringConstReference(const std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a const string reference"
+            }, 
+            "fmt": {
+                "C_name": "STR_accept_string_const_reference_bufferify", 
+                "F_C_name": "str_accept_string_const_reference_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringConstReference", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 1, 
+            "_PTR_F_C_index": 4, 
+            "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 5, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringConstReference(const std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a const string reference"
+            }, 
+            "fmt": {
+                "F_name_generic": "accept_string_const_reference", 
+                "F_name_impl": "accept_string_const_reference", 
+                "F_name_method": "accept_string_const_reference", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringConstReference", 
                 "type": "void"
             }
         }

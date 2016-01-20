@@ -22,6 +22,10 @@ const char * STR_get_name();
 
 void STR_get_name_bufferify(char * output, int Loutput);
 
+void STR_accept_string_const_reference(const char * arg1);
+
+void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1);
+
 #ifdef __cplusplus
 }
 #endif

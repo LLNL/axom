@@ -15,3 +15,19 @@ const std::string& getName()
 {
     return static_str;
 }
+
+void acceptStringConstReference(const std::string & arg1)
+{
+    global_str = arg1;
+}
+
+void acceptStringReference(std::string & arg1)
+{
+    global_str = arg1;
+}
+
+void acceptStringPointer(std::string * arg1)
+{
+    global_str = *arg1;
+}
+

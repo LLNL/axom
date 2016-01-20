@@ -17,7 +17,19 @@ functions:
   options:
     F_string_result_as_arg: output
 
-#- decl: void  acceptName_instance(string arg1)
+- decl: void acceptStringConstReference(const std::string & arg1)
+  doxygen:
+    brief: Accept a const string reference
+
+#- decl: void acceptStringReference(std::string & arg1)
+#  doxygen:
+#    brief: Accept a string reference
+
+#- decl: void acceptStringPointer(std::string * arg1)
+#  doxygen:
+#    brief: Accept a string pointer
+
+#- decl: void acceptStringInstance(std::string arg1)
 #  doxygen:
 #    brief: Accept a string instance
 

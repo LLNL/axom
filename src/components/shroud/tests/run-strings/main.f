@@ -32,6 +32,9 @@ contains
     call get_name(rv_char)
     call assert_true( rv_char == "dog")
 
+    call accept_string_const_reference("cat")
+!    call assert_true( rv_char == "dog")
+
   end subroutine test_functions
 
 end program tester

@@ -28,7 +28,7 @@ return rv.c_str();
 }
 
 // void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
-// function_index=1
+// function_index=2
 /**
  * \brief return a string as argument
  *
@@ -46,6 +46,34 @@ if (rv.empty()) {
 asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
 return;
 // splicer end function.get_name_bufferify
+}
+
+// void acceptStringConstReference(const std::string & arg1+intent(in))
+// function_index=1
+/**
+ * \brief Accept a const string reference
+ *
+ */
+void STR_accept_string_const_reference(const char * arg1)
+{
+// splicer begin function.accept_string_const_reference
+acceptStringConstReference(arg1);
+return;
+// splicer end function.accept_string_const_reference
+}
+
+// void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
+// function_index=4
+/**
+ * \brief Accept a const string reference
+ *
+ */
+void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
+{
+// splicer begin function.accept_string_const_reference_bufferify
+acceptStringConstReference(std::string(arg1, Larg1));
+return;
+// splicer end function.accept_string_const_reference_bufferify
 }
 
 // splicer begin additional_functions
