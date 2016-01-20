@@ -25,7 +25,7 @@ double Function2(double arg1, int arg2);
 bool Function3(bool arg);
 
 const std::string& Function4a(const std::string& arg1, const std::string& arg2);
-const std::string& Function4b(const std::string& arg1, const std::string& arg2);
+const std::string Function4b(const std::string& arg1, const std::string& arg2);
 
 double Function5(double arg1 = 3.1415, bool arg2 = true);
 

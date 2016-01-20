@@ -366,7 +366,7 @@ set in the global **options** and it will apply to all functions::
       options:
         F_string_result_as_arg: output
 
-Only the generated wrapper is different::
+The generated Fortran wrapper::
 
     subroutine function4b(arg1, arg2, output)
         use iso_c_binding
@@ -379,12 +379,24 @@ Only the generated wrapper is different::
             arg1,  &
             len_trim(arg1),  &
             arg2,  &
-            len_trim(arg2))
-        call FccCopyPtr(output, len(output), rv)
+            len_trim(arg2),
+            output,  &
+            len(output))
     end subroutine function4b
 
-``FccCopyPtr`` is a library routine to copy the ``type(C_PTR)`` into
-the character variable.
+The generated C wrapper::
+
+    void TUT_function4b_bufferify(const char * arg1, int Larg1,
+                                  const char * arg2, int Larg2,
+                                  char * output, int Loutput) {
+        const std::string rv = Function4b(std::string(arg1, Larg1),
+                                          std::string(arg2, Larg2));
+        asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
+        return;
+    }
+
+
+ ``FccCopy`` will copy the result into ``output`` and blank fill.
 
 The different styles are use as::
 
