@@ -234,7 +234,7 @@ class Schema(object):
             string = util.Typedef('string',
                 c_type   = 'char',    # XXX - char *
                 cpp_type = 'std::string',
-                cpp_header = 'string',
+                cpp_header = '<string>',
                 cpp_to_c = '{var}.c_str()',  # . or ->
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',

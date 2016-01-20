@@ -11,9 +11,9 @@
 //
 // wrapSLIC.cpp
 #include "wrapSLIC.h"
+#include <string>
 #include "shroudrt.hpp"
 #include "slic/slic.hpp"
-#include "string"
 
 extern "C" {
 namespace asctoolkit {

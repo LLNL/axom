@@ -11,8 +11,8 @@
 //
 // wrapSidre.cpp
 #include "wrapSidre.h"
+#include <string>
 #include "sidre/SidreTypes.hpp"
-#include "string"
 
 extern "C" {
 namespace asctoolkit

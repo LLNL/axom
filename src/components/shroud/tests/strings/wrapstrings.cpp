@@ -2,8 +2,8 @@
 // This is generated code, do not edit
 // wrapstrings.cpp
 #include "wrapstrings.h"
+#include <string>
 #include "shroudrt.hpp"
-#include "string"
 #include "strings.hpp"
 
 extern "C" {

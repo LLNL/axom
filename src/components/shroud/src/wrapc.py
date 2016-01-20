@@ -132,9 +132,7 @@ class Wrapc(util.WrapperMixin):
 #            output.append('// header_typedef_include')
             output.append('')
             headers = self.header_typedef_include.keys()
-            headers.sort()
-            for header in headers:
-                output.append('#include "%s"' % header)
+            self.write_headers(headers, output)
 
         output.extend([
                 '',
@@ -179,9 +177,7 @@ class Wrapc(util.WrapperMixin):
         # headers required by implementation
         if self.header_impl_include:
             headers = self.header_impl_include.keys()
-            headers.sort()
-            for header in headers:
-                output.append('#include "%s"' % header)
+            self.write_headers(headers, output)
 
         output.append('\nextern "C" {')
         self.namespace(node, 'begin', output)
@@ -196,6 +192,14 @@ class Wrapc(util.WrapperMixin):
         self.config.cfiles.append(fname)
         self.write_output_file(fname, self.config.binary_dir, output)
 
+    def write_headers(self, headers, output):
+        headers.sort()
+        for header in headers:
+            if header[0] == '<':
+                output.append('#include %s' % header)
+            else:
+                output.append('#include "%s"' % header)
+        
     def wrap_class(self, node):
         self.log.write("class {1[name]}\n".format(self, node))
         name = node['name']

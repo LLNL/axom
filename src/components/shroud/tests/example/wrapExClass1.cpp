@@ -5,9 +5,9 @@
 //
 // wrapExClass1.cpp
 #include "wrapExClass1.h"
+#include <string>
 #include "ExClass1.hpp"
 #include "shroudrt.hpp"
-#include "string"
 
 extern "C" {
 namespace example {
