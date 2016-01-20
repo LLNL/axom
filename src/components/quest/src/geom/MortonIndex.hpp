@@ -8,21 +8,18 @@
 #ifdef USE_CXX11
     #include <type_traits>
 #else
+    #include <boost/static_assert.hpp>
     #include <boost/type_traits.hpp>
-    # ifndef BOOST_NO_SFINAE
-    #  include <boost/utility/enable_if.hpp>
-    # endif
 #endif
 
 #include <limits>           // for numeric_limits
 
 /**
  * \file
- * \brief Some helper functions for efficient bitwise operations.
+ * \brief Classes and functions to convert between points on an integer grid and their unidimensional MortonIndex.
  *
- * Currently has some function to convert Points to/from Morton indices,
- * and a hash functor that uses these on Point types.
- *
+ * Also has some utility functions for 'mortonizing' and 'demortonizing' points and a PointHash functor class
+ * that can be used as a std::hash for unordered_maps
  */
 
 namespace {
@@ -68,17 +65,11 @@ namespace quest
          * \return An expanded MortonIndex
          * In dimension D, it adds (D-1) zeros between each bit,
          * so, e.g. in 2D, 6 == 0b0110 becomes 0b*0*1*1*0 == 0b00010100 == 20
-         * \pre Number of bits must fit into a MortonIndex's representation
          * \todo We might be able to reduce the number of iterations MAX_ITER
          *       based on the number of bits in CoordType.
          */
         static MortonIndex expandBits(MortonIndex x)
         {
-            SLIC_ASSERT_MSG( maxSetBit(x) <= Derived::MAX_BITS
-                             , "Mortonizer: Morton indexing in " << Derived::NDIM << "D"
-                             <<" currently only supports "<< Derived::MAX_BITS << " bits per coordinate. "
-                             << "Attempted to index an integer (" << x <<") with " <<  maxSetBit(x) << " bits.");
-
             for(int i=Derived::MAX_ITER; i >= 0; --i)
             {
                 x = (x | (x << Derived::S[i])) & Derived::B[i];
@@ -157,17 +148,37 @@ namespace quest
     {
         typedef MortonBase<CoordType, Mortonizer<CoordType, 2> > Base;
 
-
         // Magic numbers in 3D
         static const MortonIndex B[];
         static const int S[];
 
-        enum { NDIM = 2
-            ,  COORD_BITS = std::numeric_limits<CoordType>::digits
-            ,  MORTON_BITS = std::numeric_limits<MortonIndex>::digits
-            ,  MB_PER_DIM = MORTON_BITS / NDIM
-            ,  MAX_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS
-            ,  MAX_ITER = 5
+        enum {
+            /** The dimension of the Mortonizer */
+            NDIM = 2,
+
+            /** The number of bits in a CoordType  */
+            COORD_BITS = std::numeric_limits<CoordType>::digits,
+
+            /** The number of bits in a MortonIndex  */
+            MORTON_BITS = std::numeric_limits<MortonIndex>::digits,
+
+            /** The number of representable morton bits per dimension */
+            MB_PER_DIM = MORTON_BITS / NDIM,
+
+            /** The maximum number of unique bits from each coordinate of type CoordType
+             *  that can be represented in a MortonIndex.
+             *  \note If we are use Mortonizer as a (one-way) hash function, it is ok to use more bits.
+             *  But, if we would like to be able to reverse the MortonIndex, then we cannot safely use
+             *  more than MAX_UNIQUE_BITS per coordinate.
+             */
+            MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
+
+            /** The number of iterations required for converting between CoordTypes and MortonIndexes
+             *  using the bit interleaving algorithm in MortonBase.
+             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
+             *  to use fewer iterations.  This is something that might be worth looking into.
+             */
+            MAX_ITER = 5
         };
 
         /**
@@ -224,6 +235,12 @@ namespace quest
             demortonize(morton, pt[0],pt[1]);
             return pt;
         }
+
+        /**
+         * \brief returns the maximum number of bits per
+         */
+        static int uniqueCoordBits() { return MAX_UNIQUE_BITS; }
+
     };
 
     /**
@@ -242,12 +259,33 @@ namespace quest
         static const MortonIndex B[];
         static const int S[];
 
-        enum { NDIM = 3
-            ,  COORD_BITS = std::numeric_limits<CoordType>::digits
-            ,  MORTON_BITS = std::numeric_limits<MortonIndex>::digits
-            ,  MB_PER_DIM = MORTON_BITS / NDIM
-            ,  MAX_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS
-            ,  MAX_ITER = 5
+        enum {
+            /** The dimension of the Mortonizer */
+            NDIM = 3,
+
+            /** The number of bits in a CoordType  */
+            COORD_BITS = std::numeric_limits<CoordType>::digits,
+
+            /** The number of bits in a MortonIndex  */
+            MORTON_BITS = std::numeric_limits<MortonIndex>::digits,
+
+            /** The number of representable morton bits per dimension */
+            MB_PER_DIM = MORTON_BITS / NDIM,
+
+            /** The maximum number of unique bits from each coordinate of type CoordType
+             *  that can be represented in a MortonIndex.
+             *  \note If we are use Mortonizer as a (one-way) hash function, it is ok to use more bits.
+             *  But, if we would like to be able to reverse the MortonIndex, then we cannot safely use
+             *  more than MAX_UNIQUE_BITS per coordinate.
+             */
+            MAX_UNIQUE_BITS = (MB_PER_DIM < COORD_BITS) ? MB_PER_DIM : COORD_BITS,
+
+            /** The number of iterations required for converting between CoordTypes and MortonIndexes
+             *  using the bit interleaving algorithm in MortonBase.
+             *  \note Depending on the bitwidths of CoordType and MortonIndex, we might be able
+             *  to use fewer iterations.  This is something that might be worth looking into.
+             */
+            MAX_ITER = 5
         };
 
         /**
@@ -306,6 +344,11 @@ namespace quest
             demortonize(morton, pt[0],pt[1],pt[2]);
             return pt;
         }
+
+        /**
+         * \brief returns the maximum number of bits per
+         */
+        static int uniqueCoordBits() { return MAX_UNIQUE_BITS; }
 
     };
 

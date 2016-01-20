@@ -132,7 +132,7 @@ void testMortonizer2D()
     static const int DIM = 2;
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = quest::Mortonizer<CoordType,DIM>::MAX_BITS;
+    int maxBits = quest::Mortonizer<CoordType,DIM>::uniqueCoordBits();
     std::cout<<"\tMax bits is: " << maxBits << std::endl;
 
 
@@ -192,7 +192,7 @@ void testMortonizer3D()
     static const int DIM = 3;
     typedef Point<CoordType, DIM> GridPoint;
 
-    int maxBits = quest::Mortonizer<CoordType,DIM>::MAX_BITS;
+    int maxBits = quest::Mortonizer<CoordType,DIM>::uniqueCoordBits();
     std::cout<<"\tMax bits is: " << maxBits << std::endl;
 
 

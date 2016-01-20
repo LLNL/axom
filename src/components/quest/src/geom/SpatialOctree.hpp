@@ -128,7 +128,7 @@ public:
      * \brief Utility function to find the quantized level lev grid cell of Point pt
      * \param [in] pt The point at which we are querying.
      * \param [in] level The level or resolution.
-     * \pre \f$ 0 \le lev < MAX_LEV == 32 \f$
+     * \pre \f$ 0 \le lev < octree.maxLeafLevel() \f$
      * \return The grid point of the block covering this point at this level
      * \todo KW: Should this function be protected? Is it generally useful?
      */

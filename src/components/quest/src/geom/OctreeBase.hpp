@@ -6,14 +6,13 @@
 #include "quest/MortonIndex.hpp"
 #include "quest/Point.hpp"
 #include "quest/Vector.hpp"
+#include "quest/Mesh.hpp"
 
 #include "slic/slic.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/Map.hpp"
-
-#include "quest/Mesh.hpp"
 
 #if defined(USE_CXX11)
 #include <unordered_map>
@@ -37,15 +36,11 @@ template<int DIM, typename LeafNodeType>
 class OctreeBase
 {
 public:
+  typedef int CoordType;
+  typedef quest::Point<CoordType,DIM> GridPt;
+  typedef quest::Vector<CoordType,DIM> GridVec;
 
-  enum{ MAX_LEV = Mortonizer<int,DIM>::MAX_BITS
-      , NUM_CHILDREN = 1 << DIM
-  };
-
-  typedef quest::Point<int,DIM> GridPt;
-  typedef quest::Vector<int,DIM> GridVec;
-
-  typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, MAX_LEV> MAX_LEVEL_SIZE;
+  typedef asctoolkit::slam::policies::CompileTimeSizeHolder<CoordType, std::numeric_limits<CoordType>::digits> MAX_LEVEL_SIZE;
   typedef asctoolkit::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
 
@@ -70,8 +65,16 @@ public:
    * covering its domain.
    */
   class BlockIndex {
-  public:
+  private:
+
+      enum  {
+          /** The number of children of an octree block (\f$ 2^{DIM} \f$ in dimension DIM ) */
+          NUM_CHILDREN = 1 << DIM
+      };
+
       typedef asctoolkit::slam::policies::CompileTimeSizeHolder<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
+
+  public:
       typedef asctoolkit::slam::OrderedSet<OCTREE_CHILDREN_SIZE> ChildIndexSet;
 
   public:
@@ -172,6 +175,7 @@ public:
         }
 
 
+
         bool operator==(const BlockIndex& other) const {
             return (m_lev == other.m_lev) && (m_pt == other.m_pt);
         }
@@ -205,6 +209,12 @@ public:
      */
       static BlockIndex invalid_index() { return BlockIndex( GridPt(), -1); }
 
+      /**
+       * \brief The number of children that an octree block can have
+       */
+      static int numChildren() { return ChildIndexSet().size(); }
+
+
   private:
       GridPt m_pt;
       int    m_lev;
@@ -223,6 +233,15 @@ public:
       m_leavesLevelMap[rootBlock.level()][rootBlock.pt()] = LeafNodeType();
   }
 
+  /**
+   * \brief The resolution octree level for leaf blocks of the octree
+   */
+  int maxLeafLevel() const { return m_levels.size(); }
+
+  /**
+   * \brief The resolution octree level for internal blocks of the octree
+   */
+int maxInternalLevel() const { return m_levels.size()-1; }
 public:
    // \todo KW Convert these two functions to static class functions.
    //        This will require converting m_levels to a static set
@@ -232,7 +251,7 @@ public:
   /**
    * \brief Utility function to find the number of (possible) grid cells at a given level or resolution
    * \param [in] level The level or resolution.
-   * \pre \f$ 0 \le lev < \f$ OctreeBase::MAX_LEV
+   * \pre \f$ 0 \le lev < \f$ maxLeafLevel()
    * \todo Convert this to a static class function.
    */
   GridPt maxGridCellAtLevel(int level) const
