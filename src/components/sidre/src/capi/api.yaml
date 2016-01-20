@@ -348,6 +348,12 @@ patterns:
         if (! nameIsValid({var})) {{
             return SIDRE_InvalidName;
         }}
+    # return a blank field string if an error occurs
+    C_invalid_name_as_buffer: >
+        if (! nameIsValid({var})) {{
+            std::memset({f_string}, ' ', {f_string_len});
+            return;
+        }}
     PY_invalid_name: >
         if (! nameIsValid({var})) {{
             PyErr_SetString(PyExc_KeyError, "{var}");

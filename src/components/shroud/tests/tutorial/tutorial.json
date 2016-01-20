@@ -340,6 +340,7 @@
         {
             "_PTR_C_CPP_index": 7, 
             "_decl": "const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 32, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
@@ -394,6 +395,7 @@
             "_PTR_C_CPP_index": 7, 
             "_PTR_F_C_index": 32, 
             "_decl": "const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 33, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
@@ -496,6 +498,7 @@
         {
             "_PTR_C_CPP_index": 8, 
             "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 34, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
@@ -559,6 +562,7 @@
             "_PTR_C_CPP_index": 8, 
             "_PTR_F_C_index": 34, 
             "_decl": "void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 35, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
@@ -802,6 +806,7 @@
                 11
             ], 
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 36, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -846,6 +851,7 @@
                 11
             ], 
             "_decl": "void Function6(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 37, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -1329,6 +1335,7 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 38, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -1386,6 +1393,7 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 39, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -1441,6 +1449,7 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), float arg2+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 42, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 
@@ -1493,6 +1502,7 @@
                 16
             ], 
             "_decl": "void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 43, 
             "_generated": "fortran_generic", 
             "_overloaded": true, 

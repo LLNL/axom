@@ -25,6 +25,7 @@
     }, 
     "functions": [
         {
+            "C_error_pattern": "C_invalid_name", 
             "_decl": "const string & getName() const", 
             "_function_index": 0, 
             "_subprogram": "function", 
@@ -56,8 +57,10 @@
             }
         }, 
         {
+            "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 1, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
@@ -101,9 +104,11 @@
             }
         }, 
         {
+            "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
             "_PTR_F_C_index": 1, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 2, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
@@ -183,7 +188,10 @@
         "wrap_fortran": true, 
         "wrap_python": false
     }, 
-    "patterns": [], 
+    "patterns": {
+        "C_invalid_name": "if (! nameIsValid({var})) {{\n    return SIDRE_InvalidName;\n}}\n", 
+        "C_invalid_name_as_buffer": "if (! nameIsValid({var})) {{\n    std::memset({f_string}, ' ', {f_string_len});\n    return;\n}}\n"
+    }, 
     "types": {
         "bool": {
             "PY_PyTypeObject": "PyBool_Type", 

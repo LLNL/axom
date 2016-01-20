@@ -16,6 +16,11 @@ const char * STR_get_name()
 {
 // splicer begin function.get_name
 const std::string & rv = getName();
+// check for error
+if (! nameIsValid(rv)) {
+    return SIDRE_InvalidName;
+}
+
 return rv.c_str();
 // splicer end function.get_name
 }
@@ -30,6 +35,12 @@ void STR_get_name_bufferify(char * output, int Loutput)
 {
 // splicer begin function.get_name_bufferify
 const std::string & rv = getName();
+// check for error
+if (! nameIsValid(rv)) {
+    std::memset(output, ' ', Loutput);
+    return;
+}
+
 asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
 return;
 // splicer end function.get_name_bufferify

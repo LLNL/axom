@@ -10,8 +10,21 @@ options:
 functions:
 
 - decl: const string& getName() const
+  C_error_pattern: C_invalid_name
   doxygen:
     brief: return a string as argument
   options:
     F_string_result_as_arg: output
+
+patterns:
+    C_invalid_name: >
+        if (! nameIsValid({var})) {{
+            return SIDRE_InvalidName;
+        }}
+    # return a blank field string if an error occurs
+    C_invalid_name_as_buffer: >
+        if (! nameIsValid({var})) {{
+            std::memset({f_string}, ' ', {f_string_len});
+            return;
+        }}
 

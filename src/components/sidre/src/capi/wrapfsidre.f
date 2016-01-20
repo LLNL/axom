@@ -435,6 +435,15 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_datagroup_get_name
         
+        subroutine sidre_datagroup_get_name_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_datagroup_get_name_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine sidre_datagroup_get_name_bufferify
+        
         pure function sidre_datagroup_get_parent(self) &
                 result(rv) &
                 bind(C, name="SIDRE_datagroup_get_parent")
@@ -553,6 +562,16 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) rv
         end function sidre_datagroup_get_view_name
+        
+        subroutine sidre_datagroup_get_view_name_bufferify(self, idx, name, Lname) &
+                bind(C, name="SIDRE_datagroup_get_view_name_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine sidre_datagroup_get_view_name_bufferify
         
         pure function sidre_datagroup_get_first_valid_view_index(self) &
                 result(rv) &
@@ -824,6 +843,16 @@ module sidre_mod
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) rv
         end function sidre_datagroup_get_group_name
+        
+        subroutine sidre_datagroup_get_group_name_bufferify(self, idx, name, Lname) &
+                bind(C, name="SIDRE_datagroup_get_group_name_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            integer(C_INT), value, intent(IN) :: idx
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine sidre_datagroup_get_group_name_bufferify
         
         pure function sidre_datagroup_get_first_valid_group_index(self) &
                 result(rv) &
@@ -1215,6 +1244,15 @@ module sidre_mod
             type(C_PTR) rv
         end function sidre_dataview_get_name
         
+        subroutine sidre_dataview_get_name_bufferify(self, name, Lname) &
+                bind(C, name="SIDRE_dataview_get_name_bufferify")
+            use iso_c_binding
+            implicit none
+            type(C_PTR), value, intent(IN) :: self
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine sidre_dataview_get_name_bufferify
+        
         function sidre_dataview_get_buffer(self) &
                 result(rv) &
                 bind(C, name="SIDRE_dataview_get_buffer")
@@ -1496,10 +1534,11 @@ contains
         implicit none
         class(datagroup) :: obj
         character(*), intent(OUT) :: name
-        type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_name
-        rv = sidre_datagroup_get_name(obj%voidptr)
-        call FccCopyPtr(name, len(name), rv)
+        call sidre_datagroup_get_name_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len(name))
         ! splicer end class.DataGroup.method.get_name
     end subroutine datagroup_get_name
     
@@ -1604,12 +1643,12 @@ contains
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
         character(*), intent(OUT) :: name
-        type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_view_name
-        rv = sidre_datagroup_get_view_name(  &
+        call sidre_datagroup_get_view_name_bufferify(  &
             obj%voidptr,  &
-            idx)
-        call FccCopyPtr(name, len(name), rv)
+            idx,  &
+            name,  &
+            len(name))
         ! splicer end class.DataGroup.method.get_view_name
     end subroutine datagroup_get_view_name
     
@@ -1866,12 +1905,12 @@ contains
         class(datagroup) :: obj
         integer(C_INT), value, intent(IN) :: idx
         character(*), intent(OUT) :: name
-        type(C_PTR) :: rv
         ! splicer begin class.DataGroup.method.get_group_name
-        rv = sidre_datagroup_get_group_name(  &
+        call sidre_datagroup_get_group_name_bufferify(  &
             obj%voidptr,  &
-            idx)
-        call FccCopyPtr(name, len(name), rv)
+            idx,  &
+            name,  &
+            len(name))
         ! splicer end class.DataGroup.method.get_group_name
     end subroutine datagroup_get_group_name
     
@@ -2762,10 +2801,11 @@ contains
         implicit none
         class(dataview) :: obj
         character(*), intent(OUT) :: name
-        type(C_PTR) :: rv
         ! splicer begin class.DataView.method.get_name
-        rv = sidre_dataview_get_name(obj%voidptr)
-        call FccCopyPtr(name, len(name), rv)
+        call sidre_dataview_get_name_bufferify(  &
+            obj%voidptr,  &
+            name,  &
+            len(name))
         ! splicer end class.DataView.method.get_name
     end subroutine dataview_get_name
     

@@ -684,6 +684,7 @@ class GenFunctions(object):
         self.append_function_index(C_new)
 
         C_new['_generated'] = 'string_to_buffer_and_len'
+        C_new['_error_pattern_suffix'] = '_as_buffer'
         fmt = C_new['fmt']
         fmt.function_suffix = fmt.function_suffix + '_bufferify'
 

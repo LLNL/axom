@@ -12,7 +12,7 @@ namespace asctoolkit
 namespace shroud
 {
 
-void FccCopy(char *a, int la, const char *s)
+static inline void FccCopy(char *a, int la, const char *s)
 {
    int ls,nm;
    ls = std::strlen(s);

@@ -11,6 +11,7 @@
 //
 // wrapDataGroup.cpp
 #include "wrapDataGroup.h"
+#include "shroudrt.hpp"
 #include "sidre/DataGroup.hpp"
 #include "sidre/SidreTypes.hpp"
 
@@ -28,6 +29,17 @@ const char * SIDRE_datagroup_get_name(const SIDRE_datagroup * self)
   const std::string & rv = selfobj->getName();
   return rv.c_str();
 // splicer end class.DataGroup.method.get_name
+}
+
+void SIDRE_datagroup_get_name_bufferify(SIDRE_datagroup * self, char * name,
+                                        int Lname)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_name_bufferify
+  const std::string & rv = selfobj->getName();
+  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  return;
+// splicer end class.DataGroup.method.get_name_bufferify
 }
 
 const SIDRE_datagroup * SIDRE_datagroup_get_parent(const SIDRE_datagroup * self)
@@ -146,6 +158,7 @@ const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self,
     static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_view_name
   const std::string & rv = selfobj->getViewName(idx);
+// check for error
   if (!nameIsValid(rv))
   {
     return SIDRE_InvalidName;
@@ -153,6 +166,25 @@ const char * SIDRE_datagroup_get_view_name(const SIDRE_datagroup * self,
 
   return rv.c_str();
 // splicer end class.DataGroup.method.get_view_name
+}
+
+void SIDRE_datagroup_get_view_name_bufferify(SIDRE_datagroup * self,
+                                             SIDRE_IndexType idx, char * name,
+                                             int Lname)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_view_name_bufferify
+  const std::string & rv = selfobj->getViewName(idx);
+// check for error
+  if (!nameIsValid(rv))
+  {
+    std::memset(name, ' ', Lname);
+    return;
+  }
+
+  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  return;
+// splicer end class.DataGroup.method.get_view_name_bufferify
 }
 
 SIDRE_IndexType SIDRE_datagroup_get_first_valid_view_index(
@@ -430,6 +462,7 @@ const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self,
     static_cast<const DataGroup *>(static_cast<const void *>(self));
 // splicer begin class.DataGroup.method.get_group_name
   const std::string & rv = selfobj->getGroupName(idx);
+// check for error
   if (!nameIsValid(rv))
   {
     return SIDRE_InvalidName;
@@ -437,6 +470,25 @@ const char * SIDRE_datagroup_get_group_name(const SIDRE_datagroup * self,
 
   return rv.c_str();
 // splicer end class.DataGroup.method.get_group_name
+}
+
+void SIDRE_datagroup_get_group_name_bufferify(SIDRE_datagroup * self,
+                                              SIDRE_IndexType idx, char * name,
+                                              int Lname)
+{
+  DataGroup * selfobj = static_cast<DataGroup *>(static_cast<void *>(self));
+// splicer begin class.DataGroup.method.get_group_name_bufferify
+  const std::string & rv = selfobj->getGroupName(idx);
+// check for error
+  if (!nameIsValid(rv))
+  {
+    std::memset(name, ' ', Lname);
+    return;
+  }
+
+  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  return;
+// splicer end class.DataGroup.method.get_group_name_bufferify
 }
 
 SIDRE_IndexType SIDRE_datagroup_get_first_valid_group_index(

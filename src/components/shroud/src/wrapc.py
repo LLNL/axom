@@ -257,8 +257,8 @@ class Wrapc(util.WrapperMixin):
         # C++ functions which return 'this', are easier to call from Fortran if they are subroutines.
         # There is no way to chain in Fortran:  obj->doA()->doB();
         if node.get('return_this', False):
-            result_type = 'void'
-            subprogram = 'subroutine'
+            CPP_result_type = 'void'
+            CPP_subprogram = 'subroutine'
 
         result_typedef = self.typedef[result_type]
         is_const = result['attrs'].get('const', False)
@@ -377,10 +377,25 @@ class Wrapc(util.WrapperMixin):
                                fmt)
                 C_code.append(line)
 
+                if result_arg:
+                    # may be used in C_error_pattern
+                    fmt.f_string = result_arg['name']
+                    fmt.f_string_len = result_arg['attrs'].get('len', '')
+                    fmt.c_string = wformat(arg_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
                 if 'C_error_pattern' in node:
-                    lfmt = util.Options(fmt)
-                    lfmt.var = fmt.rv
-                    append_format(C_code, self.patterns[node['C_error_pattern']], lfmt)
+                    C_error_pattern = node['C_error_pattern'] + \
+                        node.get('_error_pattern_suffix', '')
+                    if C_error_pattern in self.patterns:
+                        lfmt = util.Options(fmt)
+                        lfmt.var = fmt.rv
+                        C_code.append('// check for error')
+                        append_format(C_code, self.patterns[C_error_pattern], lfmt)
+
+                if result_arg:
+                    c_post_call = self.typedef[ result_arg['type'] ].c_post_call
+                    if c_post_call:
+                        append_format(C_code, c_post_call, fmt)
+                    # XXX release rv is necessary
 
                 if subprogram == 'subroutine':
                     # function result is returned as an argument
@@ -388,15 +403,6 @@ class Wrapc(util.WrapperMixin):
                 else:
                     return_line = 'return ' + wformat(result_typedef.cpp_to_c, fmt) + ';'
 
-            if result_arg:
-                c_post_call = self.typedef[ result_arg['type'] ].c_post_call
-                if c_post_call:
-                    # adjust return value or cleanup
-                    fmt.f_string = result_arg['name']
-                    fmt.f_string_len = result_arg['attrs'].get('len', '')
-                    fmt.c_string = wformat(arg_typedef.cpp_to_c, fmt)  # pick up rv.c_str() from cpp_to_c
-                    append_format(C_code, c_post_call, fmt)
-                # XXX release rv is necessary
 
             if return_line:
                 C_code.append(return_line)

@@ -86,7 +86,7 @@ void AA_exclass2_declare_0(AA_exclass2 * self, int type)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.declare_0
-void * rv = selfobj->declare(getTypeID(type));
+selfobj->declare(getTypeID(type));
 return;
 // splicer end class.ExClass2.method.declare_0
 }
@@ -97,7 +97,7 @@ void AA_exclass2_declare_1(AA_exclass2 * self, int type, ATK_SidreLength len)
 {
 ExClass2 *selfobj = static_cast<ExClass2 *>(static_cast<void *>(self));
 // splicer begin class.ExClass2.method.declare_1
-void * rv = selfobj->declare(getTypeID(type), len);
+selfobj->declare(getTypeID(type), len);
 return;
 // splicer end class.ExClass2.method.declare_1
 }

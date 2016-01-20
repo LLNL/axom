@@ -81,6 +81,7 @@ const char * AA_exclass1_get_name(const AA_exclass1 * self)
 const ExClass1 *selfobj = static_cast<const ExClass1 *>(static_cast<const void *>(self));
 // splicer begin class.ExClass1.method.get_name
 const std::string & rv = selfobj->getName();
+// check for error
 if (! isNameValid(rv)) {
     return NULL;
 }

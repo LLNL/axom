@@ -11,6 +11,7 @@
 //
 // wrapDataView.cpp
 #include "wrapDataView.h"
+#include "shroudrt.hpp"
 #include "sidre/DataView.hpp"
 #include "sidre/SidreTypes.hpp"
 
@@ -189,6 +190,17 @@ const char * SIDRE_dataview_get_name(const SIDRE_dataview * self)
   const std::string & rv = selfobj->getName();
   return rv.c_str();
 // splicer end class.DataView.method.get_name
+}
+
+void SIDRE_dataview_get_name_bufferify(SIDRE_dataview * self, char * name,
+                                       int Lname)
+{
+  DataView * selfobj = static_cast<DataView *>(static_cast<void *>(self));
+// splicer begin class.DataView.method.get_name_bufferify
+  const std::string & rv = selfobj->getName();
+  asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+  return;
+// splicer end class.DataView.method.get_name_bufferify
 }
 
 SIDRE_databuffer * SIDRE_dataview_get_buffer(SIDRE_dataview * self)

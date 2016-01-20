@@ -87,6 +87,7 @@
                 {
                     "_PTR_C_CPP_index": 0, 
                     "_decl": "ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor", 
+                    "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 13, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "function", 
@@ -134,6 +135,7 @@
                     "_PTR_C_CPP_index": 0, 
                     "_PTR_F_C_index": 13, 
                     "_decl": "ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor", 
+                    "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 14, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "function", 
@@ -365,6 +367,7 @@
                 {
                     "_PTR_C_CPP_index": 6, 
                     "_decl": "void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const", 
+                    "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 15, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "subroutine", 
@@ -408,6 +411,7 @@
                     "_PTR_C_CPP_index": 6, 
                     "_PTR_F_C_index": 15, 
                     "_decl": "void getNameArg(string_result_as_arg & name+intent(out)+len(Lname)) const", 
+                    "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 16, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "subroutine", 
@@ -732,6 +736,7 @@
                 {
                     "_PTR_C_CPP_index": 17, 
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor", 
+                    "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 34, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "function", 
@@ -774,6 +779,7 @@
                     "_PTR_C_CPP_index": 17, 
                     "_PTR_F_C_index": 34, 
                     "_decl": "ExClass2 * ExClass2(const string * name+intent(in)+len_trim(Lname))+constructor", 
+                    "_error_pattern_suffix": "_as_buffer", 
                     "_function_index": 35, 
                     "_generated": "string_to_buffer_and_len", 
                     "_subprogram": "function", 
@@ -1686,6 +1692,7 @@
         {
             "_PTR_C_CPP_index": 41, 
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 48, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
@@ -1724,6 +1731,7 @@
             "_PTR_C_CPP_index": 41, 
             "_PTR_F_C_index": 48, 
             "_decl": "bool isNameValid(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 49, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "function", 
@@ -1831,6 +1839,7 @@
                 44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 50, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -1875,6 +1884,7 @@
                 44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname))", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 51, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -1968,6 +1978,7 @@
                 44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 52, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
@@ -2020,6 +2031,7 @@
                 44
             ], 
             "_decl": "void test_names(const std::string & name+intent(in)+len_trim(Lname), int flag+intent(in)+value)", 
+            "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 53, 
             "_generated": "string_to_buffer_and_len", 
             "_overloaded": true, 
