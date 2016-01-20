@@ -10,9 +10,6 @@
 //
 // Support functions for shroud
 //
-// Standard C++ headers
-#include <cstring>
-
 // Other CS Toolkit headers
 #include "common/FC.h"
 
@@ -43,20 +40,6 @@ void FC_GLOBAL(shroud_c_loc,SHROUD_C_LOC)(void * addr, void * * out)
 }
 
 }  // extern "C"
-
-/*--------------------------------------------------------------------------*/
-
-/* copy a C-string into a Fortran character variable
- * blank-fill result
- */
-void FccCopy(char *a, int la, const char *s)
-{
-   int ls,nm;
-   ls = std::strlen(s);
-   nm = ls < la ? ls : la;
-   memcpy(a,s,nm);
-   if(la > nm) { memset(a+nm,' ',la-nm);}
-}
 
 /*--------------------------------------------------------------------------*/
 

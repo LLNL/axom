@@ -2,7 +2,7 @@
 // This is generated code, do not edit
 // wrapTutorial.cpp
 #include "wrapTutorial.h"
-#include "shroud/shroudrt.hpp"
+#include "shroudrt.hpp"
 #include "tutorial.hpp"
 
 extern "C" {

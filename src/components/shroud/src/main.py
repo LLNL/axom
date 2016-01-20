@@ -275,7 +275,7 @@ class Schema(object):
         # result_as_arg
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
-                cpp_header = 'shroud/shroudrt.hpp',
+                cpp_header = 'shroudrt.hpp',
                 c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
 #                f_argsdecl    = [
 #                    'character(*), intent(OUT) :: {result_arg}',

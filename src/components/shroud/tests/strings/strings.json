@@ -390,7 +390,7 @@
             "c_fortran": "character(kind=C_CHAR)", 
             "c_post_call": "asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});", 
             "c_type": "char", 
-            "cpp_header": "shroud/shroudrt.hpp", 
+            "cpp_header": "shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 

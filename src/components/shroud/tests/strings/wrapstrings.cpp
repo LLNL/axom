@@ -2,7 +2,7 @@
 // This is generated code, do not edit
 // wrapstrings.cpp
 #include "wrapstrings.h"
-#include "shroud/shroudrt.hpp"
+#include "shroudrt.hpp"
 
 extern "C" {
 

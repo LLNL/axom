@@ -52,6 +52,7 @@ C function void testoptional(int i+default(1)+intent(in)+value)
 C function void testoptional(int i+default(1)+intent(in)+value, long j+default(2)+intent(in)+value)
 Close wrapUserLibrary.h
 Close wrapUserLibrary.cpp
+Close shroudrt.hpp
 class ExClass1
 C-interface method ExClass1 * new(const string * name+intent(in))+constructor
 C-interface method ExClass1 * new(const string * name+intent(in)+len_trim(Lname))+constructor

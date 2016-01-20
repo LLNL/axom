@@ -178,6 +178,11 @@ class WrapperMixin(object):
 #####
 
     def write_output_file(self, fname, directory, output):
+        """
+        fname  - file name
+        directory - output directory
+        output - list of lines to write
+        """
         fp = open(os.path.join(directory, fname), 'w')
         fp.write('%s %s\n' % (self.comment, fname))
         fp.write(self.comment + ' This is generated code, do not edit\n')
@@ -189,10 +194,14 @@ class WrapperMixin(object):
         print("Wrote", fname)
 
     def write_copyright(self, fp):
+        """
+        Write the copyright from the input YAML file.
+        """
         for line in self.tree.get('copyright', []):
             if line:
                 fp.write(self.comment + ' ' + line + '\n')
             else:
+                # convert None to blank line
                 fp.write(self.comment + '\n')
 
     def write_lines(self, fp, lines):

@@ -39,6 +39,7 @@ C function EnumTypeID enumfunc(EnumTypeID arg+intent(in)+value)
 C function const std::string & LastFunctionCalled()+pure
 Close wrapTutorial.h
 Close wrapTutorial.cpp
+Close shroudrt.hpp
 class Class1
 C-interface, Fortran method Class1 * new()+constructor
 C-interface, Fortran method void delete()+destructor

@@ -6,7 +6,7 @@
 // wrapExClass1.cpp
 #include "wrapExClass1.h"
 #include "ExClass1.hpp"
-#include "shroud/shroudrt.hpp"
+#include "shroudrt.hpp"
 
 extern "C" {
 namespace example {

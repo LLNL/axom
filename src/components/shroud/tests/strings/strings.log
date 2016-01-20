@@ -3,6 +3,7 @@ C function const string & getName() const
 C function void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
 Close wrapstrings.h
 Close wrapstrings.cpp
+Close shroudrt.hpp
 C-interface function const string & getName() const
 C-interface function void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
 Fortran function void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const

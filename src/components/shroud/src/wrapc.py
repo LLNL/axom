@@ -5,6 +5,7 @@ Generate C bindings for C++ classes
 """
 from __future__ import print_function
 
+import whelpers
 import util
 from util import append_format
 import itertools
@@ -89,6 +90,8 @@ class Wrapc(util.WrapperMixin):
 
         if self.tree['functions']:
             self.write_file(self.tree, self.wrap_functions, False)
+
+        self.write_helper_files()
 
     def write_file(self, node, worker, cls):
         """Write a file for the library and its functions or
@@ -418,3 +421,6 @@ class Wrapc(util.WrapperMixin):
                              fmt_func.function_suffix, impl, C_code)
         impl.append('}')
 
+    def write_helper_files(self):
+        output = [ whelpers.FccHeaders ]
+        self.write_output_file('shroudrt.hpp', self.config.binary_dir, output)
