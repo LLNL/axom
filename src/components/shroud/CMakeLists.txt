@@ -46,6 +46,7 @@ endif()
 
 if(ENABLE_FORTRAN AND ENABLE_SHROUD)
     add_subdirectory(tests/run-tutorial)
+    add_subdirectory(tests/run-strings)
 
 #
 # Write the driver script

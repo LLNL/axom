@@ -3,10 +3,12 @@
 // wrapstrings.cpp
 #include "wrapstrings.h"
 #include "shroudrt.hpp"
+#include "string"
+#include "strings.hpp"
 
 extern "C" {
 
-// const string & getName() const
+// const string & getName()+pure
 // function_index=0
 /**
  * \brief return a string as argument
@@ -17,15 +19,15 @@ const char * STR_get_name()
 // splicer begin function.get_name
 const std::string & rv = getName();
 // check for error
-if (! nameIsValid(rv)) {
-    return SIDRE_InvalidName;
+if (rv.empty()) {
+    return NULL;
 }
 
 return rv.c_str();
 // splicer end function.get_name
 }
 
-// void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
+// void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
 // function_index=1
 /**
  * \brief return a string as argument
@@ -36,7 +38,7 @@ void STR_get_name_bufferify(char * output, int Loutput)
 // splicer begin function.get_name_bufferify
 const std::string & rv = getName();
 // check for error
-if (! nameIsValid(rv)) {
+if (rv.empty()) {
     std::memset(output, ' ', Loutput);
     return;
 }

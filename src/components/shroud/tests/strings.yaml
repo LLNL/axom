@@ -5,25 +5,33 @@
 options:
   debug: True
   library: strings
+  cpp_header: strings.hpp
   wrap_python: False
 
 functions:
 
-- decl: const string& getName() const
+- decl: const string& getName()  +pure
   C_error_pattern: C_invalid_name
   doxygen:
     brief: return a string as argument
   options:
     F_string_result_as_arg: output
 
+#- decl: void  acceptName_instance(string arg1)
+#  doxygen:
+#    brief: Accept a string instance
+
+
+
+
 patterns:
     C_invalid_name: >
-        if (! nameIsValid({var})) {{
-            return SIDRE_InvalidName;
+        if ({var}.empty()) {{
+            return NULL;
         }}
     # return a blank field string if an error occurs
     C_invalid_name_as_buffer: >
-        if (! nameIsValid({var})) {{
+        if ({var}.empty()) {{
             std::memset({f_string}, ' ', {f_string_len});
             return;
         }}

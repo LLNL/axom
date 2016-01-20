@@ -7,6 +7,7 @@
 #include "wrapExClass1.h"
 #include "ExClass1.hpp"
 #include "shroudrt.hpp"
+#include "string"
 
 extern "C" {
 namespace example {

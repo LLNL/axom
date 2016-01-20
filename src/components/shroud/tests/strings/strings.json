@@ -26,14 +26,14 @@
     "functions": [
         {
             "C_error_pattern": "C_invalid_name", 
-            "_decl": "const string & getName() const", 
+            "_decl": "const string & getName()+pure", 
             "_function_index": 0, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
-                "const": true
+                "pure": true
             }, 
-            "decl": "const string& getName() const", 
+            "decl": "const string& getName()  +pure", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
@@ -59,7 +59,7 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
-            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const", 
+            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 1, 
             "_generated": "string_to_buffer_and_len", 
@@ -77,9 +77,9 @@
                 }
             ], 
             "attrs": {
-                "const": true
+                "pure": true
             }, 
-            "decl": "const string& getName() const", 
+            "decl": "const string& getName()  +pure", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
@@ -107,7 +107,7 @@
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
             "_PTR_F_C_index": 1, 
-            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const", 
+            "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 2, 
             "_generated": "string_to_buffer_and_len", 
@@ -125,9 +125,9 @@
                 }
             ], 
             "attrs": {
-                "const": true
+                "pure": true
             }, 
-            "decl": "const string& getName() const", 
+            "decl": "const string& getName()  +pure", 
             "doxygen": {
                 "brief": "return a string as argument"
             }, 
@@ -179,7 +179,7 @@
         "PY_name_impl_function_template": "{PY_prefix}{underscore_name}{function_suffix}", 
         "PY_name_impl_method_template": "{PY_prefix}{lower_class}_{underscore_name}{function_suffix}", 
         "PY_type_filename_template": "py{cpp_class}type.cpp", 
-        "cpp_header": "", 
+        "cpp_header": "strings.hpp", 
         "debug": true, 
         "doxygen": true, 
         "library": "strings", 
@@ -189,8 +189,8 @@
         "wrap_python": false
     }, 
     "patterns": {
-        "C_invalid_name": "if (! nameIsValid({var})) {{\n    return SIDRE_InvalidName;\n}}\n", 
-        "C_invalid_name_as_buffer": "if (! nameIsValid({var})) {{\n    std::memset({f_string}, ' ', {f_string_len});\n    return;\n}}\n"
+        "C_invalid_name": "if ({var}.empty()) {{\n    return NULL;\n}}\n", 
+        "C_invalid_name_as_buffer": "if ({var}.empty()) {{\n    std::memset({f_string}, ' ', {f_string_len});\n    return;\n}}\n"
     }, 
     "types": {
         "bool": {
@@ -341,6 +341,7 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
+            "cpp_header": "string", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 
@@ -356,6 +357,7 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_type": "char", 
+            "cpp_header": "string", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 

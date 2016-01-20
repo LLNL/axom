@@ -5,6 +5,7 @@
 //
 // wrapUserLibrary.cpp
 #include "wrapUserLibrary.h"
+#include "string"
 
 extern "C" {
 namespace example {

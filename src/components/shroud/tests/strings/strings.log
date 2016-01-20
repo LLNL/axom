@@ -1,10 +1,10 @@
 Read yaml strings.yaml
-C function const string & getName() const
-C function void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
+C function const string & getName()+pure
+C function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
 Close wrapstrings.h
 Close wrapstrings.cpp
 Close shroudrt.hpp
-C-interface function const string & getName() const
-C-interface function void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
-Fortran function void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
+C-interface function const string & getName()+pure
+C-interface function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
+Fortran function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
 Close wrapfstrings.f

@@ -7,6 +7,7 @@
 #include "wrapExClass2.h"
 #include "ExClass2.hpp"
 #include "sidre/SidreWrapperHelpers.hpp"
+#include "string"
 
 extern "C" {
 namespace example {

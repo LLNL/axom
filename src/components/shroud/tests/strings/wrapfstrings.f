@@ -35,7 +35,7 @@ module strings_mod
 
 contains
     
-    ! void getName(string_result_as_arg & output+intent(out)+len(Loutput)) const
+    ! void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=2
     !>

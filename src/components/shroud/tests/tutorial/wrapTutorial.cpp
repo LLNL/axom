@@ -3,6 +3,7 @@
 // wrapTutorial.cpp
 #include "wrapTutorial.h"
 #include "shroudrt.hpp"
+#include "string"
 #include "tutorial.hpp"
 
 extern "C" {

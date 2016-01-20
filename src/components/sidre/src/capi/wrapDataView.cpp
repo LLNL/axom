@@ -14,6 +14,7 @@
 #include "shroudrt.hpp"
 #include "sidre/DataView.hpp"
 #include "sidre/SidreTypes.hpp"
+#include "string"
 
 extern "C" {
 namespace asctoolkit
