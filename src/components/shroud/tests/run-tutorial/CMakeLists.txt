@@ -18,6 +18,10 @@ add_executable( shroud-run-tutorial
 )
 target_link_libraries(shroud-run-tutorial shroudrt)
 set_target_properties(shroud-run-tutorial PROPERTIES LINKER_LANGUAGE Fortran)
+add_test( NAME shroud-run-tutorial
+          COMMAND shroud-run-tutorial
+          WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
+)
 
 #
 # Make Python module library
