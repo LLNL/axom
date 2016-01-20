@@ -87,6 +87,14 @@ module slic_mod
             integer(C_INT), value, intent(IN) :: Lname
         end subroutine slic_activate_logger_bufferify
         
+        subroutine slic_get_active_logger_name_bufferify(name, Lname) &
+                bind(C, name="SLIC_get_active_logger_name_bufferify")
+            use iso_c_binding
+            implicit none
+            character(kind=C_CHAR), intent(OUT) :: name(*)
+            integer(C_INT), value, intent(IN) :: Lname
+        end subroutine slic_get_active_logger_name_bufferify
+        
         subroutine set_logging_msg_level(level) &
                 bind(C, name="SLIC_set_logging_msg_level")
             use iso_c_binding
@@ -183,6 +191,17 @@ contains
             len_trim(name))
         ! splicer end activate_logger
     end subroutine activate_logger
+    
+    subroutine get_active_logger_name(name)
+        use iso_c_binding
+        implicit none
+        character(*), intent(OUT) :: name
+        ! splicer begin get_active_logger_name
+        call slic_get_active_logger_name_bufferify(  &
+            name,  &
+            len(name))
+        ! splicer end get_active_logger_name
+    end subroutine get_active_logger_name
     
     subroutine log_message(level, message, fileName, line, filter)
         use iso_c_binding

@@ -649,28 +649,43 @@ class GenFunctions(object):
         a buffer and length.
         """
         options = node['options']
+
+        # If a C++ function returns a std::string instance, the default wrapper
+        # will not compile since the wrapper will be declared as char.
+        # It will also want to return the c_str of a stack variable.
+        # Warn and turn off the wrapper.
+        result = node['result']
+        result_type = result['type']
+        try:
+            result_typedef = self.typedef[result_type]
+        except KeyError:
+            # wrapped classes have not been added yet.  Only care about string here.
+            result_typedef = None
+        attrs = result['attrs']
+        is_ptr = (attrs.get('ptr', False) or
+                  attrs.get('reference', False))
+        if result_typedef and result_typedef.base == 'string' and not is_ptr:
+            options.wrap_c = False
+#            options.wrap_fortran = False
+            self.config.log.write("Skipping %s, unable to wrap function returning std::string instance (must return a pointer or reference). \n" % ( result['name']) )
+
         if options.wrap_fortran is False:
             return
         if options.F_string_len_trim is False:
             return
 
+        # Is result or any argument a string?
         has_strings = False
-
-        # is result a string argument?
-        result = node['result']
-        result_type = result['type']
-        result_typedef = self.typedef[result_type]
         result_arg_name = options.get('F_string_result_as_arg', '')
         if result_typedef.base == 'string' and result_arg_name:
             has_strings = True
         else:
-            result_arg_name = ''
-
-        for arg in node['args']:
-            argtype = arg['type']
-            if self.typedef[argtype].base == 'string':
-                has_strings = True
-                break
+            result_arg_name = ''  # only applies to string
+            for arg in node['args']:
+                argtype = arg['type']
+                if self.typedef[argtype].base == 'string':
+                    has_strings = True
+                    break
         if has_strings is False:
             return
 
@@ -706,9 +721,13 @@ class GenFunctions(object):
             result_as_string = copy.deepcopy(result)
             result_as_string['name'] = result_arg_name
             result_as_string['type'] = result_typedef.name + '_result_as_arg'
-            result_as_string['attrs']['const'] = False
-            result_as_string['attrs']['len'] = 'L' + result_arg_name
-            result_as_string['attrs']['intent'] = 'out'
+            attrs = result_as_string['attrs']
+            attrs['const'] = False
+            attrs['len'] = 'L' + result_arg_name
+            attrs['intent'] = 'out'
+            if not is_ptr:
+                attrs['ptr'] = True
+                attrs['reference'] = False
             C_new['args'].append(result_as_string)
 
             # convert to subroutine
@@ -716,9 +735,10 @@ class GenFunctions(object):
             result = copy.deepcopy(result)
             result = C_new['result']
             result['type'] = 'void'
-            result['attrs']['const'] = False
-            result['attrs']['ptr'] = False
-            result['attrs']['reference'] = False
+            attrs = result['attrs']
+            attrs['const'] = False
+            attrs['ptr'] = False
+            attrs['reference'] = False
 
         # Create Fortran function without bufferify function_suffix but
         # with len attributes on string arguments.

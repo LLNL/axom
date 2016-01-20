@@ -122,16 +122,6 @@ module tutorial_mod
             type(C_PTR) rv
         end function tut_function4a_bufferify
         
-        function tut_function4b(arg1, arg2) &
-                result(rv) &
-                bind(C, name="TUT_function4b")
-            use iso_c_binding
-            implicit none
-            character(kind=C_CHAR), intent(IN) :: arg1(*)
-            character(kind=C_CHAR), intent(IN) :: arg2(*)
-            type(C_PTR) rv
-        end function tut_function4b
-        
         subroutine tut_function4b_bufferify(arg1, Larg1, arg2, Larg2, output, Loutput) &
                 bind(C, name="TUT_function4b_bufferify")
             use iso_c_binding
@@ -457,7 +447,7 @@ contains
         ! splicer end function4a
     end function function4a
     
-    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+    ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+len(Loutput)+intent(out))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=35
     subroutine function4b(arg1, arg2, output)

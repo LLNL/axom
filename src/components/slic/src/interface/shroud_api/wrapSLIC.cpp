@@ -11,6 +11,7 @@
 //
 // wrapSLIC.cpp
 #include "wrapSLIC.h"
+#include "shroudrt.hpp"
 #include "slic/slic.hpp"
 
 extern "C" {
@@ -87,6 +88,15 @@ void SLIC_activate_logger_bufferify(const char * name, int Lname)
 activateLogger(std::string(name, Lname));
 return;
 // splicer end function.activate_logger_bufferify
+}
+
+void SLIC_get_active_logger_name_bufferify(char * name, int Lname)
+{
+// splicer begin function.get_active_logger_name_bufferify
+std::string rv = getActiveLoggerName();
+asctoolkit::shroud::FccCopy(name, Lname, rv.c_str());
+return;
+// splicer end function.get_active_logger_name_bufferify
 }
 
 void SLIC_set_logging_msg_level(int level)

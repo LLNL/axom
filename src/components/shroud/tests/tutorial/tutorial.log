@@ -1,4 +1,5 @@
 Read yaml tutorial.yaml
+Skipping Function4b, unable to wrap function returning std::string instance (must return a pointer or reference). 
 Read splicer ftutorialsplicer.f
 class Class1
 C method Class1 * new()+constructor
@@ -12,8 +13,7 @@ C function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension(
 C function bool Function3(bool arg+intent(in)+value)
 C function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
 C function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
-C function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+C function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
 C function double Function5()
 C function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -51,9 +51,8 @@ C-interface, Fortran function bool Function3(bool arg+intent(in)+value)
 C-interface function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
 C-interface function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
 Fortran function const std::string & Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2))+pure
-C-interface function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
-Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+C-interface function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
+Fortran function void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+len(Loutput)+intent(out))
 C-interface, Fortran function double Function5()
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value)
 C-interface, Fortran function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
@@ -93,7 +92,7 @@ Python function double Function2(double arg1+intent(in)+value, int arg2+intent(i
 Python function void Sum(int len+intent(in)+value, int * values+intent(in)+dimension((*)), int * result+intent(out))
 Python function bool Function3(bool arg+intent(in)+value)
 Python function const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
-Python function const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+Python function const std::string Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
 Python function double Function5(double arg1+default(3.1415)+intent(in)+value, bool arg2+default(true)+intent(in)+value)
 Python function void Function6(const std::string & name+intent(in))
 Python function void Function6(int indx+intent(in)+value)

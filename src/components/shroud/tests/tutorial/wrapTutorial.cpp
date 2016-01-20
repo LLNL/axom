@@ -68,22 +68,12 @@ return rv.c_str();
 // splicer end function.function4a_bufferify
 }
 
-// const std::string & Function4b(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
-// function_index=8
-const char * TUT_function4b(const char * arg1, const char * arg2)
-{
-// splicer begin function.function4b
-const std::string & rv = Function4b(arg1, arg2);
-return rv.c_str();
-// splicer end function.function4b
-}
-
-// void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & output+intent(out)+len(Loutput))
+// void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
 // function_index=34
 void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput)
 {
 // splicer begin function.function4b_bufferify
-const std::string & rv = Function4b(std::string(arg1, Larg1), std::string(arg2, Larg2));
+const std::string rv = Function4b(std::string(arg1, Larg1), std::string(arg2, Larg2));
 asctoolkit::shroud::FccCopy(output, Loutput, rv.c_str());
 return;
 // splicer end function.function4b_bufferify
