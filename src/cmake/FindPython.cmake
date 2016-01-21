@@ -101,6 +101,7 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name setup_file)
             ${PYTHON_EXECUTABLE} ${setup_file} -v
             build
             --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+            egg_info --egg-base ${CMAKE_CURRENT_BINARY_DIR}
             install
             --install-purelib=${CMAKE_Python_MODULE_DIRECTORY}
             --install-scripts=${EXECUTABLE_OUTPUT_PATH}
@@ -116,8 +117,9 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name setup_file)
         EXECUTE_PROCESS(
             COMMAND
                 ${PYTHON_EXECUTABLE} ${setup_file} -v
-                build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-                install --prefix=${CMAKE_INSTALL_PREFIX}
+                build    --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+                egg_info --egg-base ${CMAKE_CURRENT_BINARY_DIR}
+                install  --prefix=${CMAKE_INSTALL_PREFIX}
             OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT
             ERROR_VARIABLE PY_DIST_UTILS_INSTALL_ERR
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
