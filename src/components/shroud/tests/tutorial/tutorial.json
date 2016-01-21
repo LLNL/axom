@@ -2240,6 +2240,13 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_tmpdecl": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_tmpdecl_len": [
+                "std::string {cpp_var}({c_var}, {c_var_len});"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
@@ -2256,37 +2263,18 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_tmpdecl": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_tmpdecl_len": [
+                "std::string {cpp_var}({c_var}, {c_var_len});"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)"
-        }, 
-        "string_from_buffer": {
-            "base": "string", 
-            "c_argdecl": [
-                "const char *{var}", 
-                "int len_{var}"
-            ], 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_to_cpp": "std::string({var}, len_{var})", 
-            "c_type": "char", 
-            "cpp_to_c": "{var}.c_str()", 
-            "cpp_type": "std::string", 
-            "f_args": "{var}, len_trim({var})", 
-            "f_c_argdecl": [
-                "type(C_PTR), intent(IN), value :: {var}", 
-                "integer(C_INT), intent(IN), value :: len_{var}"
-            ], 
-            "f_c_args": [
-                "{var}", 
-                "len_{var}"
-            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -2299,6 +2287,13 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_post_call": "asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});", 
+            "c_tmpdecl": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_tmpdecl_len": [
+                "std::string {cpp_var}({c_var}, {c_var_len});"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 

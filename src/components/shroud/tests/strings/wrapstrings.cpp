@@ -28,7 +28,7 @@ return rv.c_str();
 }
 
 // void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
-// function_index=2
+// function_index=3
 /**
  * \brief return a string as argument
  *
@@ -53,27 +53,71 @@ return;
 /**
  * \brief Accept a const string reference
  *
+ * Save contents of arg1.
+ * arg1 is assumed to be intent(IN) since it is const
+ * Will copy in.
  */
 void STR_accept_string_const_reference(const char * arg1)
 {
 // splicer begin function.accept_string_const_reference
-acceptStringConstReference(arg1);
+std::string SH_arg1(arg1);
+acceptStringConstReference(SH_arg1);
 return;
 // splicer end function.accept_string_const_reference
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=4
+// function_index=5
 /**
  * \brief Accept a const string reference
  *
+ * Save contents of arg1.
+ * arg1 is assumed to be intent(IN) since it is const
+ * Will copy in.
  */
 void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1)
 {
 // splicer begin function.accept_string_const_reference_bufferify
-acceptStringConstReference(std::string(arg1, Larg1));
+std::string SH_arg1(arg1, Larg1);
+acceptStringConstReference(SH_arg1);
 return;
 // splicer end function.accept_string_const_reference_bufferify
+}
+
+// void acceptStringReference(std::string & arg1+intent(in))
+// function_index=2
+/**
+ * \brief Accept a string reference
+ *
+ * Append "dog" to the end of arg1.
+ * arg1 is assumed to be intent(INOUT)
+ * Must copy in and copy out.
+ */
+void STR_accept_string_reference(char * arg1)
+{
+// splicer begin function.accept_string_reference
+std::string SH_arg1(arg1);
+acceptStringReference(SH_arg1);
+return;
+// splicer end function.accept_string_reference
+}
+
+// void acceptStringReference(std::string & arg1+len_trim(Larg1)+intent(in))
+// function_index=7
+/**
+ * \brief Accept a string reference
+ *
+ * Append "dog" to the end of arg1.
+ * arg1 is assumed to be intent(INOUT)
+ * Must copy in and copy out.
+ */
+void STR_accept_string_reference_bufferify(char * arg1, int Larg1)
+{
+// splicer begin function.accept_string_reference_bufferify
+std::string SH_arg1(arg1, Larg1);
+acceptStringReference(SH_arg1);
+return;
+// splicer end function.accept_string_reference_bufferify
 }
 
 // splicer begin additional_functions

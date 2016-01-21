@@ -23,7 +23,7 @@ void acceptStringConstReference(const std::string & arg1)
 
 void acceptStringReference(std::string & arg1)
 {
-    global_str = arg1;
+    arg1.append("dog");
 }
 
 void acceptStringPointer(std::string * arg1)

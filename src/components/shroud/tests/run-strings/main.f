@@ -27,6 +27,8 @@ contains
 
   subroutine test_functions
 
+    character(30) str
+
     call set_case_name("test_functions")
 
     call get_name(rv_char)
@@ -34,6 +36,11 @@ contains
 
     call accept_string_const_reference("cat")
 !    call assert_true( rv_char == "dog")
+
+    str = "cat"
+    call accept_string_reference("cat")
+!    call assert_true( str == "catdog")
+
 
   end subroutine test_functions
 

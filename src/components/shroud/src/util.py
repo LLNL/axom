@@ -275,7 +275,9 @@ class Typedef(object):
         c_to_cpp='{var}',     # Expression to convert from C to C++
         c_fortran=None,       # Expression to convert from C to Fortran
         c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
-                              # used with string_from_buffer 
+                              # used with string_from_buffer
+        c_tmpdecl=None,       # Declare temporary variable for argument.
+        c_tmpdecl_len=None,   # Declare temporary variable for argument with length.
         c_pre_call = None,    # Statement to execute before call
         c_post_call = None,   # Statement to execute after call
         c_return_code=None,

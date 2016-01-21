@@ -428,6 +428,15 @@ c_argdecl
     Used with string_from_buffer .
     Defaults to *None*.
 
+c_tmpdecl
+
+    Declare temporary variable for argument.
+    Can be used to convert types.  For example, ``char *`` to ``std::string``.
+
+c_tmpdecl_len
+
+    Declare temporary variable for argument with length.
+
 c_pre_call
 
     Statement to execute before call.

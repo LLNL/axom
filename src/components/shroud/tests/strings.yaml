@@ -20,10 +20,18 @@ functions:
 - decl: void acceptStringConstReference(const std::string & arg1)
   doxygen:
     brief: Accept a const string reference
+    description: |
+       Save contents of arg1.
+       arg1 is assumed to be intent(IN) since it is const
+       Will copy in.
 
-#- decl: void acceptStringReference(std::string & arg1)
-#  doxygen:
-#    brief: Accept a string reference
+- decl: void acceptStringReference(std::string & arg1)
+  doxygen:
+    brief: Accept a string reference
+    description: |
+       Append "dog" to the end of arg1.
+       arg1 is assumed to be intent(INOUT)
+       Must copy in and copy out.
 
 #- decl: void acceptStringPointer(std::string * arg1)
 #  doxygen:

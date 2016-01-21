@@ -61,7 +61,7 @@
             "_PTR_C_CPP_index": 0, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 2, 
+            "_function_index": 3, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -106,10 +106,10 @@
         {
             "C_error_pattern": "C_invalid_name", 
             "_PTR_C_CPP_index": 0, 
-            "_PTR_F_C_index": 2, 
+            "_PTR_F_C_index": 3, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 3, 
+            "_function_index": 4, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -171,7 +171,8 @@
             "attrs": {}, 
             "decl": "void acceptStringConstReference(const std::string & arg1)", 
             "doxygen": {
-                "brief": "Accept a const string reference"
+                "brief": "Accept a const string reference", 
+                "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
             }, 
             "fmt": {
                 "C_name": "STR_accept_string_const_reference", 
@@ -190,48 +191,6 @@
         }, 
         {
             "_PTR_C_CPP_index": 1, 
-            "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
-            "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 4, 
-            "_generated": "string_to_buffer_and_len", 
-            "_subprogram": "subroutine", 
-            "args": [
-                {
-                    "attrs": {
-                        "const": true, 
-                        "intent": "in", 
-                        "len_trim": "Larg1", 
-                        "reference": true, 
-                        "value": false
-                    }, 
-                    "name": "arg1", 
-                    "type": "std::string"
-                }
-            ], 
-            "attrs": {}, 
-            "decl": "void acceptStringConstReference(const std::string & arg1)", 
-            "doxygen": {
-                "brief": "Accept a const string reference"
-            }, 
-            "fmt": {
-                "C_name": "STR_accept_string_const_reference_bufferify", 
-                "F_C_name": "str_accept_string_const_reference_bufferify", 
-                "function_suffix": "_bufferify"
-            }, 
-            "options": {
-                "wrap_c": true, 
-                "wrap_fortran": false, 
-                "wrap_python": false
-            }, 
-            "result": {
-                "attrs": {}, 
-                "name": "acceptStringConstReference", 
-                "type": "void"
-            }
-        }, 
-        {
-            "_PTR_C_CPP_index": 1, 
-            "_PTR_F_C_index": 4, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 5, 
@@ -253,7 +212,51 @@
             "attrs": {}, 
             "decl": "void acceptStringConstReference(const std::string & arg1)", 
             "doxygen": {
-                "brief": "Accept a const string reference"
+                "brief": "Accept a const string reference", 
+                "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
+            }, 
+            "fmt": {
+                "C_name": "STR_accept_string_const_reference_bufferify", 
+                "F_C_name": "str_accept_string_const_reference_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringConstReference", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 1, 
+            "_PTR_F_C_index": 5, 
+            "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 6, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "const": true, 
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringConstReference(const std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a const string reference", 
+                "description": "Save contents of arg1.\narg1 is assumed to be intent(IN) since it is const\nWill copy in.\n"
             }, 
             "fmt": {
                 "F_name_generic": "accept_string_const_reference", 
@@ -269,6 +272,126 @@
             "result": {
                 "attrs": {}, 
                 "name": "acceptStringConstReference", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_decl": "void acceptStringReference(std::string & arg1+intent(in))", 
+            "_function_index": 2, 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringReference(std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a string reference", 
+                "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
+            }, 
+            "fmt": {
+                "C_name": "STR_accept_string_reference", 
+                "F_C_name": "str_accept_string_reference", 
+                "method_name": "acceptStringReference", 
+                "underscore_name": "accept_string_reference"
+            }, 
+            "options": {
+                "wrap_fortran": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringReference", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 2, 
+            "_decl": "void acceptStringReference(std::string & arg1+len_trim(Larg1)+intent(in))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 7, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringReference(std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a string reference", 
+                "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
+            }, 
+            "fmt": {
+                "C_name": "STR_accept_string_reference_bufferify", 
+                "F_C_name": "str_accept_string_reference_bufferify", 
+                "function_suffix": "_bufferify"
+            }, 
+            "options": {
+                "wrap_c": true, 
+                "wrap_fortran": false, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringReference", 
+                "type": "void"
+            }
+        }, 
+        {
+            "_PTR_C_CPP_index": 2, 
+            "_PTR_F_C_index": 7, 
+            "_decl": "void acceptStringReference(std::string & arg1+intent(in)+len_trim(Larg1))", 
+            "_error_pattern_suffix": "_as_buffer", 
+            "_function_index": 8, 
+            "_generated": "string_to_buffer_and_len", 
+            "_subprogram": "subroutine", 
+            "args": [
+                {
+                    "attrs": {
+                        "intent": "in", 
+                        "len_trim": "Larg1", 
+                        "reference": true, 
+                        "value": false
+                    }, 
+                    "name": "arg1", 
+                    "type": "std::string"
+                }
+            ], 
+            "attrs": {}, 
+            "decl": "void acceptStringReference(std::string & arg1)", 
+            "doxygen": {
+                "brief": "Accept a string reference", 
+                "description": "Append \"dog\" to the end of arg1.\narg1 is assumed to be intent(INOUT)\nMust copy in and copy out.\n"
+            }, 
+            "fmt": {
+                "F_name_generic": "accept_string_reference", 
+                "F_name_impl": "accept_string_reference", 
+                "F_name_method": "accept_string_reference", 
+                "function_suffix": ""
+            }, 
+            "options": {
+                "wrap_c": false, 
+                "wrap_fortran": true, 
+                "wrap_python": false
+            }, 
+            "result": {
+                "attrs": {}, 
+                "name": "acceptStringReference", 
                 "type": "void"
             }
         }
@@ -460,6 +583,13 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_tmpdecl": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_tmpdecl_len": [
+                "std::string {cpp_var}({c_var}, {c_var_len});"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
@@ -476,37 +606,18 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_tmpdecl": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_tmpdecl_len": [
+                "std::string {cpp_var}({c_var}, {c_var_len});"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
             "f_args": "trim({var}) // C_NULL_CHAR", 
-            "f_module": {
-                "iso_c_binding": null
-            }, 
-            "f_return_code": "{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))", 
-            "f_type": "character(*)"
-        }, 
-        "string_from_buffer": {
-            "base": "string", 
-            "c_argdecl": [
-                "const char *{var}", 
-                "int len_{var}"
-            ], 
-            "c_fortran": "character(kind=C_CHAR)", 
-            "c_to_cpp": "std::string({var}, len_{var})", 
-            "c_type": "char", 
-            "cpp_to_c": "{var}.c_str()", 
-            "cpp_type": "std::string", 
-            "f_args": "{var}, len_trim({var})", 
-            "f_c_argdecl": [
-                "type(C_PTR), intent(IN), value :: {var}", 
-                "integer(C_INT), intent(IN), value :: len_{var}"
-            ], 
-            "f_c_args": [
-                "{var}", 
-                "len_{var}"
-            ], 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -519,6 +630,13 @@
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
             "c_post_call": "asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});", 
+            "c_tmpdecl": [
+                "std::string {cpp_var}({c_var});"
+            ], 
+            "c_tmpdecl_len": [
+                "std::string {cpp_var}({c_var}, {c_var_len});"
+            ], 
+            "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 

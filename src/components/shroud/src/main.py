@@ -236,6 +236,11 @@ class Schema(object):
                 cpp_type = 'std::string',
                 cpp_header = '<string>',
                 cpp_to_c = '{var}.c_str()',  # . or ->
+
+                c_tmpdecl = ['std::string {cpp_var}({c_var});'],
+                c_tmpdecl_len = ['std::string {cpp_var}({c_var}, {c_var_len});'],
+                c_to_cpp  = '{cpp_var}',                                  
+
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
                 f_args = 'trim({var}) // C_NULL_CHAR',
@@ -244,24 +249,6 @@ class Schema(object):
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 PY_format = 's',
                 PY_ctor = 'PyString_FromString({var})',
-                base = 'string',
-                ),
-            # create std::string from buffer and length
-            string_from_buffer = util.Typedef('string_from_buffer',
-                c_type   = 'char',    # XXX - char *
-                c_argdecl = ['const char *{var}', 'int len_{var}'],
-                c_to_cpp = 'std::string({var}, len_{var})',
-                cpp_type = 'std::string',
-                cpp_to_c = '{var}.c_str()',  # . or ->
-                c_fortran  = 'character(kind=C_CHAR)',
-                f_c_args   = [ '{var}', 'len_{var}'],
-                f_c_argdecl = [ 'type(C_PTR), intent(IN), value :: {var}',
-                                'integer(C_INT), intent(IN), value :: len_{var}' ],
-                f_type     = 'character(*)',
-                f_args = '{var}, len_trim({var})',
-#                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
-                f_module = dict(iso_c_binding=None),
-                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
                 base = 'string',
                 ),
             )
@@ -286,6 +273,12 @@ class Schema(object):
                 ))
         def_types[tmp.name] = tmp
 
+        # string from buffer and length
+#        tmp = def_types['string'].clone_as('string_from_buffer')
+#        tmp.update(dict(
+#                c_tmpdecl = ['std::string {cpp_var}({c_var}, {c_var_len})'],
+#                ))
+#        def_types[tmp.name] = tmp
 
         types_dict = node.get('types', None)
         if types_dict is not None:
@@ -716,6 +709,7 @@ class GenFunctions(object):
             if self.typedef[argtype].base == 'string':
                 # Add len_trim attribute
                 arg['attrs']['len_trim'] = 'L' + arg['name']
+#                arg['type'] = 'string_from_buffer'
 
         if result_arg_name:
             # Add additional argument to hold result

@@ -302,6 +302,7 @@ class Wrapc(util.WrapperMixin):
             fmt.CPP_this_call = ''  # call function syntax
 
         result_arg = None  # indicate which argument contains function result, usually none
+        tmp_decl   = []    # list of temporary variable declarations
 
         for arg, arg_call in zip_longest(node['args'], CPP_node['args']):
             if arg_call is None:
@@ -310,6 +311,9 @@ class Wrapc(util.WrapperMixin):
 
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
+            fmt.c_var = arg['name']      # name in c prototype.
+            fmt.cpp_var = fmt.c_var      # name in c++ call.
+            fmt.c_var_len = 'UUU'
             fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
             if arg_typedef.c_argdecl:
                 for argdecl in arg_typedef.c_argdecl:
@@ -317,14 +321,25 @@ class Wrapc(util.WrapperMixin):
             else:
                 proto_list.append(self._c_decl('c_type', arg))
 
-            # convert C argument to C++
             len_arg = arg['attrs'].get('len', False) or  arg['attrs'].get('len_trim', False)
             if len_arg:
                 fmt.len_arg = len_arg
-                append_format(proto_list, 'int {len_arg}', fmt)
-                if arg_call:
-                    append_format(call_list, 'std::string({var}, {len_arg})', fmt)
-            elif arg_call:
+                fmt.c_var_len = len_arg
+                append_format(proto_list, 'int {c_var_len}', fmt)
+
+            # Add any temporary declarations.  Usually to convert types.
+            # For example, convert char * to std::string
+            if arg_call:
+                if len_arg:
+                    typedef_tmpdecl = arg_typedef.c_tmpdecl_len
+                else:
+                    typedef_tmpdecl = arg_typedef.c_tmpdecl
+                if typedef_tmpdecl:
+                    fmt.cpp_var = 'SH_' + fmt.cpp_var
+                    for tmpdecl in typedef_tmpdecl:
+                        append_format(tmp_decl, tmpdecl, fmt)
+
+                # convert C argument to C++
                 append_format(call_list, arg_typedef.c_to_cpp, fmt)
 
             if arg_typedef.c_header:
@@ -364,6 +379,8 @@ class Wrapc(util.WrapperMixin):
         else:
             # generate the C body
             C_code = []
+            for line in tmp_decl:
+                C_code.append(line)
             return_line = ''
             if is_ctor:
                 line = wformat('{rv_decl} = new {cpp_class}({C_call_list});', fmt)
