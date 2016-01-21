@@ -1007,6 +1007,10 @@ def main():
                         help='directory for output files')
     parser.add_argument('--logdir', default='',
                         help='directory for log files')
+    parser.add_argument('--cfiles', default='',
+                        help='output file with list of C and C++ files created')
+    parser.add_argument('--ffiles', default='',
+                        help='output file with list of Fortran created')
     parser.add_argument('--path', default=[], action='append',
                         help='colon delimited paths to search for splicer files, may be supplied multiple times to create path')
     parser.add_argument('filename', nargs='*',
@@ -1038,6 +1042,8 @@ def main():
     config = Config()
     config.binary_dir = args.outdir
     config.log = log
+    config.cfiles = []  # list of C/C++ files created
+    config.ffiles = []  # list of Fortran files created
 
     # accumulated input
     all = {}
@@ -1101,6 +1107,19 @@ def main():
     fp = open(jsonpath, 'w')
     json.dump(all, fp, cls=util.ExpandedEncoder, sort_keys=True, indent=4)
     fp.close()
+
+    # Write list of output files.  May be useful for build systems
+    if args.cfiles:
+        with open(args.cfiles, 'w') as fp:
+            if config.cfiles:
+                fp.write(' '.join(config.cfiles))
+            fp.write('\n')
+    if args.ffiles:
+        with open(args.ffiles, 'w') as fp:
+            if config.ffiles:
+                fp.write(' '.join(config.ffiles))
+            fp.write('\n')
+
 
     log.close()
 

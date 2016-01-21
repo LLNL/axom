@@ -156,6 +156,7 @@ class Wrapc(util.WrapperMixin):
                 '#endif  // %s' % guard
                 ])
 
+        self.config.cfiles.append(fname)
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def write_impl(self, node, hname, fname, cls=False):
@@ -187,6 +188,7 @@ class Wrapc(util.WrapperMixin):
 
         output.append('}  // extern "C"')
 
+        self.config.cfiles.append(fname)
         self.write_output_file(fname, self.config.binary_dir, output)
 
     def wrap_class(self, node):

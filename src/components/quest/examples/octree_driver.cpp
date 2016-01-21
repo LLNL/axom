@@ -96,6 +96,11 @@ void print_surface_stats( meshtk::Mesh* mesh)
    LogHistogram edgeLenHist;
    LogHistogram areaHist;
 
+   typedef std::map<int,RangeType> LogRangeMap;;
+   LogRangeMap edgeLenRangeMap;
+   LogRangeMap areaRangeMap;
+
+
    for ( int i=0; i < ncells; ++i )
    {
       GridPt cellids;
@@ -114,10 +119,12 @@ void print_surface_stats( meshtk::Mesh* mesh)
           }
           else
           {
-              edgeRange.addPoint( LengthType(len) );
+              LengthType edgeLen(len);
+              edgeRange.addPoint( edgeLen );
               int exp;
               std::frexp (len, &exp);
               edgeLenHist[exp]++;
+              edgeLenRangeMap[exp].addPoint( edgeLen );
           }
       }
 
@@ -129,10 +136,13 @@ void print_surface_stats( meshtk::Mesh* mesh)
           badTriangles.insert(i);
       else
       {
-          areaRange.addPoint ( LengthType( area));
+          LengthType triArea(area);
+          areaRange.addPoint ( triArea );
           int exp;
           std::frexp (area, &exp);
           areaHist[exp]++;
+          areaRangeMap[exp].addPoint( triArea);
+
       }
    }
 
@@ -147,7 +157,9 @@ void print_surface_stats( meshtk::Mesh* mesh)
            ; it != edgeLenHist.end()
            ; ++it)
    {
-       std::cout <<"\n\t exp: " << it->first <<"\t count: " << it->second;
+       std::cout <<"\n\t exp: " << it->first
+                 <<"\t count: " << it->second
+                 << "\tRange: " << edgeLenRangeMap[it->first];
    }
    std::cout<<std::endl;
 
@@ -156,7 +168,9 @@ void print_surface_stats( meshtk::Mesh* mesh)
            ; it != areaHist.end()
            ; ++it)
    {
-       std::cout <<"\n\t exp: " << it->first <<"\t count: " << it->second;
+       std::cout <<"\n\t exp: " << it->first
+                 <<"\t count: " << it->second
+                 << "\tRange: " << areaRangeMap[it->first];
    }
    std::cout<<std::endl;
 
@@ -255,12 +269,12 @@ int main( int argc, char** argv )
   SpacePt queryPt = SpacePt::lerp(meshBB.getMin(), meshBB.getMax(), alpha);
   std::cout<<"\n"<<"Finding associated grid point for query point: " << queryPt << std::endl;
 
-  for(int lev = 0; lev < SpaceOctree3D::MAX_LEV; ++lev)
+  for(int lev = 0; lev < octree.maxLeafLevel(); ++lev)
   {
       GridPt gridPt = octree.findGridCellAtLevel(queryPt, lev);
       std::cout << "  @level " << lev
               <<":\n\t" <<  gridPt
-              <<"\n\t[max gridPt: " << octree. maxGridCellAtLevel(lev)
+              <<"\n\t[max gridPt: " << octree.maxGridCellAtLevel(lev)
               <<"; spacing" << octree.spacingAtLevel(lev)
               <<";\n\t bounding box " << octree.blockBoundingBox(gridPt, lev)
               <<"]\n";
@@ -269,7 +283,7 @@ int main( int argc, char** argv )
 
   std::cout << "Recursively refining around query point: " << queryPt << std::endl;
   refineAndPrint(octree, queryPt, false);
-  for(int i=0; i< 10; ++i)
+  for(int i=0; i< octree.maxInternalLevel(); ++i)
       refineAndPrint(octree, queryPt);
 
 
