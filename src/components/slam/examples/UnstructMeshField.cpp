@@ -29,10 +29,10 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "common/FileUtilities.hpp"
+
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"
-
-#include "slam/FileUtilities.hpp"
 
 #include "slam/Set.hpp"
 #include "slam/RangeSet.hpp"
@@ -41,6 +41,7 @@
 #include "slam/DynamicVariableRelation.hpp"
 
 #include "slam/Map.hpp"
+#include "slam/Utilities.hpp"
 
 
 #ifndef USE_CONSTANT_RELATION
@@ -66,7 +67,9 @@ namespace slamUnstructuredHex {
     DataType                                radius() const { return std::sqrt( m_x * m_x + m_y * m_y + m_z * m_z); }
     Point& operator                         +=(const Point& pt){ m_x += pt.m_x; m_y += pt.m_y; m_z += pt.m_z; return *this; }
     Point& operator                         *=(const DataType& sc){ m_x *= sc; m_y *= sc; m_z *= sc; return *this; }
-    template<typename T>    Point& operator /=(const T& sc){ return operator*=( 1. / sc); }
+
+    template<typename T>
+    Point& operator /=(const T& sc){ return operator*=( 1. / sc); }
 
     DataType m_x, m_y, m_z;
   };
@@ -143,18 +146,18 @@ namespace slamUnstructuredHex {
   {
   public:
     // uses RAII to open/close the file
-    SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName.c_str() )
+    SimpleVTKHeshMeshReader(const std::string & fileName) : vtkMesh( fileName)
     {
-      // check if the file opened, if not try one directory higher
       if(!vtkMesh)
       {
-        std::string pFileName = "../" + fileName;
-        vtkMesh.open( pFileName.c_str() );
+          using namespace asctoolkit::slam::util;
+          std::string ancesFile = findFileInAncestorDirs( fileName);
+          SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( ancesFile));
+
+          SLIC_INFO("Opening file " << ancesFile);
+          vtkMesh.open( ancesFile.c_str() );
       }
 
-      SLIC_ERROR_IF( !vtkMesh
-          , "fstream error -- problem opening file: '"  << fileName << "' (also tried '../" << fileName << "')"
-                                                        << "\nThe current working directory is: '" << asctoolkit::slam::util::getCWD() << "'");
     }
     ~SimpleVTKHeshMeshReader()
     {
@@ -242,7 +245,8 @@ namespace slamUnstructuredHex {
         vtkMesh >> nodeCount;
 
         SLIC_ASSERT_MSG( nodeCount == HexMesh::NODES_PER_ZONE
-            , "Unsupported mesh type with zone = " << *zIt << ", nodeCount = " << nodeCount << " (expected " << HexMesh::NODES_PER_ZONE << ")");
+            , "Unsupported mesh type with zone = " << *zIt << ", nodeCount = " << nodeCount
+            << " (expected " << HexMesh::NODES_PER_ZONE << ")");
 
         for( IndexType n = 0; n < (HexMesh::NODES_PER_ZONE); ++n )
         {
@@ -262,6 +266,8 @@ namespace slamUnstructuredHex {
       SLIC_ASSERT_MSG(  mesh->relationZoneNode.isValid(), "Error creating (static) relation from zones to nodes!");
       SLIC_ASSERT_MSG(  oIt == offsetsVec.end(),          "Error reading nodes of zones!\n" << offsetsVec.end() - oIt );
     }
+
+
   private:
     std::ifstream vtkMesh;
   };
@@ -277,7 +283,7 @@ namespace slamUnstructuredHex {
   void generateNodeZoneRelation(HexMesh* mesh)
   {
     // Now build the (variable) relation from nodes to zones
-    // Strategy: We will first build this as a DynamicVariableRelation, and then linearize it to a StaticVariableRelation
+    // Strategy: We will first build this as a DynamicVariableRelation, and then linearize to a StaticVariableRelation
     // In both cases, we are using the relation's range() function to get a pair of iterators to the inner relation
 
     // --- Step 1: Generate a dynamic variable relation from Nodes to Zones
@@ -468,7 +474,8 @@ int main()
     DataType errVal = computeNodalErrors(&hexMesh);
 
     // Some error checking based on precomputed values
-    SLIC_ASSERT_MSG( asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
+    SLIC_ASSERT_MSG(
+            asctoolkit::utilities::compareReals(errVal, expectedResults[res]), "Error differed from expected value."
         << "\n\texpected: " << expectedResults[res]
         << "\n\tactual: "   << errVal
         << "\n\tdiff: "     << (errVal - expectedResults[res]));

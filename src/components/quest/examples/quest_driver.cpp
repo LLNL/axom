@@ -25,6 +25,8 @@
 // ATK Toolkit includes
 #include "common/ATKMacros.hpp"
 #include "common/CommonTypes.hpp"
+#include "common/FileUtilities.hpp"
+
 #include "quest/BoundingBox.hpp"
 #include "quest/Field.hpp"
 #include "quest/FieldData.hpp"
@@ -37,9 +39,11 @@
 #include "quest/UniformMesh.hpp"
 #include "quest/UnstructuredMesh.hpp"
 #include "quest/Point.hpp"
+
 #include "slic/GenericOutputStream.hpp"
 #include "slic/slic.hpp"
-#include "slam/FileUtilities.hpp"
+
+#include "slam/Utilities.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -287,7 +291,6 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    SLIC_INFO("Overall grid bounds: " << globalGridBounds );
 }
 
-
 //------------------------------------------------------------------------------
 quest::BoundingBox<double,3> getCellBoundingBox( int cellIdx,meshtk::Mesh* surface_mesh )
 {
@@ -419,23 +422,25 @@ int main( int argc, char** argv )
   bool hasInputArgs = argc > 1;
 
   // STEP 1: get file from user or use default
-  std::string inputFile;
+  std::string stlFile;
   if(hasInputArgs)
   {
-      inputFile = std::string( argv[1] );
+      stlFile = std::string( argv[1] );
   }
   else
   {
       const std::string defaultFileName = "plane_simp.stl";
-      const std::string defaultDir = "src/components/quest/data/";
-      inputFile = defaultDir + defaultFileName;
+      const std::string defaultDir = "src/components/quest/data";
+
+      stlFile = asctoolkit::utilities::filesystem::joinPath(defaultDir, defaultFileName);
   }
-  std::string stlFile = asctoolkit::slam::util::findFileRecursive(inputFile);
-  SLIC_DEBUG("STL file is " << stlFile <<" -- input was " << inputFile );
+
+  stlFile = asctoolkit::slam::util::findFileInAncestorDirs(stlFile);
+  SLIC_ASSERT( asctoolkit::utilities::filesystem::pathExists( stlFile));
 
   // STEP 2: read file
   SLIC_INFO( "Reading file: " << stlFile << "...");
-  std::cout.flush();
+
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
@@ -445,7 +450,7 @@ int main( int argc, char** argv )
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
-  SLIC_INFO("Mesh has "
+  SLIC_DEBUG("Mesh has "
           << surface_mesh->getMeshNumberOfNodes() << " nodes and "
           << surface_mesh->getMeshNumberOfCells() << " cells.");
 
