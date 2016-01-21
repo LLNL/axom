@@ -38,8 +38,8 @@ contains
 !    call assert_true( rv_char == "dog")
 
     str = "cat"
-    call accept_string_reference("cat")
-!    call assert_true( str == "catdog")
+    call accept_string_reference(str)
+    call assert_true( str == "catdog")
 
 
   end subroutine test_functions

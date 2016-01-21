@@ -84,7 +84,7 @@ return;
 // splicer end function.accept_string_const_reference_bufferify
 }
 
-// void acceptStringReference(std::string & arg1+intent(in))
+// void acceptStringReference(std::string & arg1+intent(inout))
 // function_index=2
 /**
  * \brief Accept a string reference
@@ -98,11 +98,12 @@ void STR_accept_string_reference(char * arg1)
 // splicer begin function.accept_string_reference
 std::string SH_arg1(arg1);
 acceptStringReference(SH_arg1);
+asctoolkit::shroud::FccCopy(arg1, 0, SH_arg1.c_str());
 return;
 // splicer end function.accept_string_reference
 }
 
-// void acceptStringReference(std::string & arg1+len_trim(Larg1)+intent(in))
+// void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))
 // function_index=7
 /**
  * \brief Accept a string reference
@@ -111,11 +112,12 @@ return;
  * arg1 is assumed to be intent(INOUT)
  * Must copy in and copy out.
  */
-void STR_accept_string_reference_bufferify(char * arg1, int Larg1)
+void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1)
 {
 // splicer begin function.accept_string_reference_bufferify
 std::string SH_arg1(arg1, Larg1);
 acceptStringReference(SH_arg1);
+asctoolkit::shroud::FccCopy(arg1, Narg1, SH_arg1.c_str());
 return;
 // splicer end function.accept_string_reference_bufferify
 }

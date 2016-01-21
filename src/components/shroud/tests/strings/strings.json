@@ -276,13 +276,13 @@
             }
         }, 
         {
-            "_decl": "void acceptStringReference(std::string & arg1+intent(in))", 
+            "_decl": "void acceptStringReference(std::string & arg1+intent(inout))", 
             "_function_index": 2, 
             "_subprogram": "subroutine", 
             "args": [
                 {
                     "attrs": {
-                        "intent": "in", 
+                        "intent": "inout", 
                         "reference": true, 
                         "value": false
                     }, 
@@ -313,7 +313,7 @@
         }, 
         {
             "_PTR_C_CPP_index": 2, 
-            "_decl": "void acceptStringReference(std::string & arg1+len_trim(Larg1)+intent(in))", 
+            "_decl": "void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 7, 
             "_generated": "string_to_buffer_and_len", 
@@ -321,7 +321,8 @@
             "args": [
                 {
                     "attrs": {
-                        "intent": "in", 
+                        "intent": "inout", 
+                        "len": "Narg1", 
                         "len_trim": "Larg1", 
                         "reference": true, 
                         "value": false
@@ -355,7 +356,7 @@
         {
             "_PTR_C_CPP_index": 2, 
             "_PTR_F_C_index": 7, 
-            "_decl": "void acceptStringReference(std::string & arg1+intent(in)+len_trim(Larg1))", 
+            "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))", 
             "_error_pattern_suffix": "_as_buffer", 
             "_function_index": 8, 
             "_generated": "string_to_buffer_and_len", 
@@ -363,7 +364,8 @@
             "args": [
                 {
                     "attrs": {
-                        "intent": "in", 
+                        "intent": "inout", 
+                        "len": "Narg1", 
                         "len_trim": "Larg1", 
                         "reference": true, 
                         "value": false
@@ -583,18 +585,18 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_tmpdecl": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_tmpdecl_len": [
-                "std::string {cpp_var}({c_var}, {c_var_len});"
+            "c_tmpdecl_trim": [
+                "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -606,18 +608,18 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_tmpdecl": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_tmpdecl_len": [
-                "std::string {cpp_var}({c_var}, {c_var_len});"
+            "c_tmpdecl_trim": [
+                "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "<string>", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 
@@ -629,19 +631,18 @@
             "PY_format": "s", 
             "base": "string", 
             "c_fortran": "character(kind=C_CHAR)", 
-            "c_post_call": "asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});", 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
             "c_tmpdecl": [
                 "std::string {cpp_var}({c_var});"
             ], 
-            "c_tmpdecl_len": [
-                "std::string {cpp_var}({c_var}, {c_var_len});"
+            "c_tmpdecl_trim": [
+                "std::string {cpp_var}({c_var}, {c_var_trim});"
             ], 
             "c_to_cpp": "{cpp_var}", 
             "c_type": "char", 
             "cpp_header": "shroudrt.hpp", 
             "cpp_to_c": "{var}.c_str()", 
             "cpp_type": "std::string", 
-            "f_args": "trim({var}) // C_NULL_CHAR", 
             "f_module": {
                 "iso_c_binding": null
             }, 

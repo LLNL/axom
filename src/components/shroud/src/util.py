@@ -277,9 +277,10 @@ class Typedef(object):
         c_argdecl=None,       # List of argument declarations for C wrapper, None=match declaration
                               # used with string_from_buffer
         c_tmpdecl=None,       # Declare temporary variable for argument.
-        c_tmpdecl_len=None,   # Declare temporary variable for argument with length.
+        c_tmpdecl_trim=None,   # Declare temporary variable for argument with length (len_trim).
         c_pre_call = None,    # Statement to execute before call
         c_post_call = None,   # Statement to execute after call
+        c_intent_out = None,  # Code to add after call when intent(OUT) or intent(INOUT).
         c_return_code=None,
 
         f_c_args=None,        # List of argument names to F_C routine

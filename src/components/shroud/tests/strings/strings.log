@@ -3,8 +3,8 @@ C function const string & getName()+pure
 C function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
 C function void acceptStringConstReference(const std::string & arg1+intent(in))
 C function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-C function void acceptStringReference(std::string & arg1+intent(in))
-C function void acceptStringReference(std::string & arg1+len_trim(Larg1)+intent(in))
+C function void acceptStringReference(std::string & arg1+intent(inout))
+C function void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))
 Close wrapstrings.h
 Close wrapstrings.cpp
 Close shroudrt.hpp
@@ -14,7 +14,7 @@ Fortran function void getName(string_result_as_arg & output+intent(out)+len(Lout
 C-interface function void acceptStringConstReference(const std::string & arg1+intent(in))
 C-interface function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
 Fortran function void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-C-interface function void acceptStringReference(std::string & arg1+intent(in))
-C-interface function void acceptStringReference(std::string & arg1+len_trim(Larg1)+intent(in))
-Fortran function void acceptStringReference(std::string & arg1+intent(in)+len_trim(Larg1))
+C-interface function void acceptStringReference(std::string & arg1+intent(inout))
+C-interface function void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))
+Fortran function void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))
 Close wrapfstrings.f

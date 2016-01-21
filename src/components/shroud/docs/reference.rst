@@ -433,9 +433,13 @@ c_tmpdecl
     Declare temporary variable for argument.
     Can be used to convert types.  For example, ``char *`` to ``std::string``.
 
-c_tmpdecl_len
+c_tmpdecl_trim
 
-    Declare temporary variable for argument with length.
+    Declare temporary variable for argument with length (computed using ``len_trim``).
+
+c_intent_out
+
+    Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
 
 c_pre_call
 

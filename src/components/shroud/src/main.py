@@ -238,12 +238,13 @@ class Schema(object):
                 cpp_to_c = '{var}.c_str()',  # . or ->
 
                 c_tmpdecl = ['std::string {cpp_var}({c_var});'],
-                c_tmpdecl_len = ['std::string {cpp_var}({c_var}, {c_var_len});'],
+                c_tmpdecl_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
                 c_to_cpp  = '{cpp_var}',                                  
+                c_intent_out = 'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',
-                f_args = 'trim({var}) // C_NULL_CHAR',
+##                f_args = 'trim({var}) // C_NULL_CHAR',
 #                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
                 f_module = dict(iso_c_binding=None),
                 f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
@@ -264,7 +265,7 @@ class Schema(object):
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
                 cpp_header = 'shroudrt.hpp',
-                c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
+#                c_post_call   = 'asctoolkit::shroud::FccCopy({f_string}, {f_string_len}, {c_string});',
 #                f_argsdecl    = [
 #                    'character(*), intent(OUT) :: {result_arg}',
 #                    'type(C_PTR) :: {F_result}'],
@@ -707,9 +708,13 @@ class GenFunctions(object):
         for arg in C_new['args']:
             argtype = arg['type']
             if self.typedef[argtype].base == 'string':
-                # Add len_trim attribute
-                arg['attrs']['len_trim'] = 'L' + arg['name']
-#                arg['type'] = 'string_from_buffer'
+                # strings passed in need len_trim
+                # strings returned need len
+                intent = arg['attrs']['intent']
+                if intent in ['in', 'inout']:
+                    arg['attrs']['len_trim'] = 'L' + arg['name']
+                if intent in ['out', 'inout']:
+                    arg['attrs']['len'] = 'N' + arg['name']
 
         if result_arg_name:
             # Add additional argument to hold result
@@ -953,9 +958,11 @@ class VerifyAttrs(object):
                     attrs['intent'] = 'in'
                 elif attrs.get('const', False):
                     attrs['intent'] = 'in'
+                elif typedef.base == 'string':
+                    attrs['intent'] = 'inout'
                 else:
-                    attrs['intent'] = 'inout'  # Fortran default
-                    attrs['intent'] = 'in' # must coordinate with VALUE
+                    # void *
+                    attrs['intent'] = 'in' # XXX must coordinate with VALUE
             else:
                 intent = intent.lower()
                 if intent[0] == '(' and intent[-1] == ')':

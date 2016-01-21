@@ -48,15 +48,16 @@ module strings_mod
                 bind(C, name="STR_accept_string_reference")
             use iso_c_binding
             implicit none
-            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            character(kind=C_CHAR), intent(INOUT) :: arg1(*)
         end subroutine str_accept_string_reference
         
-        subroutine str_accept_string_reference_bufferify(arg1, Larg1) &
+        subroutine str_accept_string_reference_bufferify(arg1, Larg1, Narg1) &
                 bind(C, name="STR_accept_string_reference_bufferify")
             use iso_c_binding
             implicit none
-            character(kind=C_CHAR), intent(IN) :: arg1(*)
+            character(kind=C_CHAR), intent(INOUT) :: arg1(*)
             integer(C_INT), value, intent(IN) :: Larg1
+            integer(C_INT), value, intent(IN) :: Narg1
         end subroutine str_accept_string_reference_bufferify
         
         ! splicer begin additional_interfaces
@@ -104,7 +105,7 @@ contains
         ! splicer end accept_string_const_reference
     end subroutine accept_string_const_reference
     
-    ! void acceptStringReference(std::string & arg1+intent(in)+len_trim(Larg1))
+    ! void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))
     ! string_to_buffer_and_len - string_to_buffer_and_len
     ! function_index=8
     !>
@@ -117,11 +118,12 @@ contains
     subroutine accept_string_reference(arg1)
         use iso_c_binding
         implicit none
-        character(*), intent(IN) :: arg1
+        character(*), intent(INOUT) :: arg1
         ! splicer begin accept_string_reference
         call str_accept_string_reference_bufferify(  &
             arg1,  &
-            len_trim(arg1))
+            len_trim(arg1),  &
+            len(arg1))
         ! splicer end accept_string_reference
     end subroutine accept_string_reference
     

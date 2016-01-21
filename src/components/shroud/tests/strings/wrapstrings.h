@@ -28,7 +28,7 @@ void STR_accept_string_const_reference_bufferify(const char * arg1, int Larg1);
 
 void STR_accept_string_reference(char * arg1);
 
-void STR_accept_string_reference_bufferify(char * arg1, int Larg1);
+void STR_accept_string_reference_bufferify(char * arg1, int Larg1, int Narg1);
 
 #ifdef __cplusplus
 }

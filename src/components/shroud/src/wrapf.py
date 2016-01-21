@@ -441,7 +441,11 @@ class Wrapf(util.WrapperMixin):
             else:
                 arg_c_decl.append(self._c_decl(arg))
 
-            len_arg = arg['attrs'].get('len', None) or arg['attrs'].get('len_trim', None)
+            len_trim = arg['attrs'].get('len_trim', None)
+            if len_trim:
+                arg_c_names.append(len_trim)
+                arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_trim)
+            len_arg = arg['attrs'].get('len', None)
             if len_arg:
                 arg_c_names.append(len_arg)
                 arg_c_decl.append('integer(C_INT), value, intent(IN) :: %s' % len_arg)
@@ -591,15 +595,7 @@ class Wrapf(util.WrapperMixin):
             # Attributes   None=skip, True=use default, else use value
             len_trim = c_arg['attrs'].get('len_trim', None)
             len_arg = c_arg['attrs'].get('len', None)
-            if len_trim:
-                need_wrapper = True
-                append_format(arg_c_call, '{var}', fmt)
-                append_format(arg_c_call, 'len_trim({var})', fmt)
-            elif len_arg:
-                need_wrapper = True
-                append_format(arg_c_call, '{var}', fmt)
-                append_format(arg_c_call, 'len({var})', fmt)
-            elif arg_typedef.f_args:
+            if arg_typedef.f_args:
                 need_wrapper = True
                 append_format(arg_c_call, arg_typedef.f_args, fmt)
             elif c_arg['type'] != arg['type']:
@@ -607,6 +603,15 @@ class Wrapf(util.WrapperMixin):
                 append_format(arg_c_call, arg_typedef.f_cast, fmt)
             else:
                 append_format(arg_c_call, '{var}', fmt)
+
+            len_trim = c_arg['attrs'].get('len_trim', None)
+            if len_trim:
+                need_wrapper = True
+                append_format(arg_c_call, 'len_trim({var})', fmt)
+            len_arg = c_arg['attrs'].get('len', None)
+            if len_arg:
+                need_wrapper = True
+                append_format(arg_c_call, 'len({var})', fmt)
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
         fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
