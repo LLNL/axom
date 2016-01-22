@@ -109,7 +109,8 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name setup_file)
 #            bdist_egg
 #              --dist-dir ${CMAKE_CURRENT_BINARY_DIR}/dist
             install
-              --old-and-unmanageable
+              --single-version-externally-managed
+              --record ${CMAKE_CURRENT_BINARY_DIR}/record.txt
               --install-purelib=${CMAKE_Python_MODULE_DIRECTORY}
               --install-scripts=${EXECUTABLE_OUTPUT_PATH}
             COMMAND ${CMAKE_COMMAND} -E touch ${timestamp}
@@ -129,7 +130,8 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name setup_file)
                 egg_info
                   --egg-base ${CMAKE_CURRENT_BINARY_DIR}
                 install
-                   --old-and-unmanageable
+                   --single-version-externally-managed
+                   --record ${CMAKE_CURRENT_BINARY_DIR}/record.txt
                    --prefix=${CMAKE_INSTALL_PREFIX}
 #                  --install-purelib=${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}
 #                  --install-scripts=${CMAKE_INSTALL_PREFIX}/bin
