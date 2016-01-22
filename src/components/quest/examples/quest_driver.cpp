@@ -51,6 +51,8 @@
 using namespace asctoolkit;
 
 typedef meshtk::UnstructuredMesh< meshtk::LINEAR_TRIANGLE > TriangleMesh;
+typedef quest::BoundingBox<double,3>                        GeometricBoundingBox;
+typedef quest::Vector<double,3>                             SpaceVector;
 
 //------------------------------------------------------------------------------
 void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
@@ -186,7 +188,7 @@ void write_vtk( meshtk::Mesh* mesh, const std::string& fileName )
 }
 
 //------------------------------------------------------------------------------
-void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
+GeometricBoundingBox compute_bounds( meshtk::Mesh* mesh)
 {
    SLIC_ASSERT( mesh != ATK_NULLPTR );
 
@@ -204,10 +206,7 @@ void compute_bounds( meshtk::Mesh* mesh, double minPt[3], double maxPt[3] )
 
    SLIC_ASSERT( meshBB.isValid() );
 
-   // copy bounds out to function parameters
-   meshBB.getMin().to_array(minPt);
-   meshBB.getMax().to_array(maxPt);
-
+   return meshBB;
 }
 
 //------------------------------------------------------------------------------
@@ -285,7 +284,7 @@ void flag_boundary( meshtk::Mesh* surface_mesh, meshtk::UniformMesh* umesh )
    } // END for all surface elements
 
 
-   std::cout<<"Overall grid bounds: " << globalGridBounds << std::endl;
+   SLIC_INFO("Overall grid bounds: " << globalGridBounds );
 }
 
 
@@ -405,7 +404,17 @@ int main( int argc, char** argv )
   // STEP 0: Initialize SLIC Environment
   slic::initialize();
   slic::setLoggingMsgLevel( asctoolkit::slic::message::Debug );
-  slic::addStreamToAllMsgLevels( new slic::GenericOutputStream(&std::cout) );
+
+  // Create a more verbose message for this application (only level and message)
+  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
+  slic::GenericOutputStream* defaultStream = new slic::GenericOutputStream(&std::cout);
+  slic::GenericOutputStream* compactStream = new slic::GenericOutputStream(&std::cout, slicFormatStr);
+
+  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Fatal) ;
+  slic::addStreamToMsgLevel(defaultStream, asctoolkit::slic::message::Error);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Warning);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Info);
+  slic::addStreamToMsgLevel(compactStream, asctoolkit::slic::message::Debug);
 
   bool hasInputArgs = argc > 1;
 
@@ -422,25 +431,23 @@ int main( int argc, char** argv )
       inputFile = defaultDir + defaultFileName;
   }
   std::string stlFile = asctoolkit::slam::util::findFileRecursive(inputFile);
-
+  SLIC_DEBUG("STL file is " << stlFile <<" -- input was " << inputFile );
 
   // STEP 2: read file
-  std::cout << "Reading file: " << stlFile << "...";
+  SLIC_INFO( "Reading file: " << stlFile << "...");
   std::cout.flush();
   quest::STLReader* reader = new quest::STLReader();
   reader->setFileName( stlFile );
   reader->read();
-  std::cout << "[DONE]\n";
-  std::cout.flush();
+  SLIC_INFO("done");
 
   // STEP 3: get surface mesh
   meshtk::Mesh* surface_mesh = new TriangleMesh( 3 );
   reader-> getMesh( static_cast<TriangleMesh*>( surface_mesh ) );
   // dump mesh info
-  std::cout<<"Mesh has "
+  SLIC_INFO("Mesh has "
           << surface_mesh->getMeshNumberOfNodes() << " nodes and "
-          << surface_mesh->getMeshNumberOfCells() << " cells."
-          << std::endl;
+          << surface_mesh->getMeshNumberOfCells() << " cells.");
 
   // STEP 4: Delete the reader
   delete reader;
@@ -450,11 +457,10 @@ int main( int argc, char** argv )
   write_vtk( surface_mesh, "surface_mesh.vtk" );
 
   // STEP 6: compute bounds
-  double min[3];
-  double max[3];
-  compute_bounds( surface_mesh, min, max );
-  std::cout << "min: " << min[0] << ", " << min[1] << ", " << min[2] << "\n";
-  std::cout << "max: " << max[0] << ", " << max[1] << ", " << max[2] << "\n";
+  GeometricBoundingBox meshBB = compute_bounds( surface_mesh);
+  SLIC_INFO("Mesh bounding box: " << meshBB );
+
+
 
   // STEP 7: get dimensions from user
   int nx, ny, nz;
@@ -468,12 +474,12 @@ int main( int argc, char** argv )
       nx = ny = nz = 32;
   }
 
-  double h[3];
-  h[0] = (max[0]-min[0]) / (nx);
-  h[1] = (max[1]-min[1]) / (ny);
-  h[2] = (max[2]-min[2]) / (nz);
-  std::cout << "h: " << h[0] << " " << h[1] << " " << h[2] << std::endl;
-  std::cout.flush();
+  SpaceVector h;
+  const SpaceVector& bbDiff = meshBB.range();
+  h[0] = bbDiff[0] / nx;
+  h[1] = bbDiff[1] / ny;
+  h[2] = bbDiff[2] / nz;
+  SLIC_INFO("grid cell size: " << h);
 
   int node_ext[6];
   node_ext[0] = 0;
@@ -484,7 +490,7 @@ int main( int argc, char** argv )
   node_ext[5] = nz;
 
   // STEP 8: Construct uniform mesh
-  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3,min,h,node_ext);
+  meshtk::UniformMesh* umesh = new meshtk::UniformMesh(3, meshBB.getMin().data(),h.data(),node_ext);
 
   // STEP 9: Flag boundary cells on uniform mesh
   flag_boundary( surface_mesh, umesh );
