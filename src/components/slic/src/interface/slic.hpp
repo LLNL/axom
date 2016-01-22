@@ -262,6 +262,68 @@ do {                                                                          \
 
 #endif /* END ifdef ATK_DEBUG */
 
+
+
+/*!
+ ******************************************************************************
+ * \def SLIC_INFO( msg )
+ * \brief Logs an Info message.
+ * \param [in] msg user-supplied message
+ * \note The SLIC_INFO macro is always active.
+ *
+ * Usage:
+ * \code
+ *   SLIC_INFO( "informative text goes here" );
+ * \endcode
+ *
+ ******************************************************************************
+ */
+#define SLIC_INFO( msg )                                                      \
+do {                                                                          \
+    std::ostringstream oss;                                                   \
+    oss << msg;                                                               \
+    asctoolkit::slic::logMessage(asctoolkit::slic::message::Info              \
+                               , oss.str()                                    \
+                               ,__FILE__                                      \
+                               , __LINE__ );                                  \
+} while ( 0 )
+
+
+#ifdef ATK_DEBUG
+
+/*!
+ ******************************************************************************
+ * \def SLIC_DEBUG( msg )
+ * \brief Logs a Debug message.
+ * \param [in] msg user-supplied message
+ * \note The SLIC_Debug macro is active in debug mode.
+ *
+ * Usage:
+ * \code
+ *   SLIC_DEBUG( "debug message goes here" );
+ * \endcode
+ *
+ ******************************************************************************
+ */
+#define SLIC_DEBUG( msg )                                                     \
+do {                                                                          \
+    std::ostringstream oss;                                                   \
+    oss << msg;                                                               \
+    asctoolkit::slic::logMessage(asctoolkit::slic::message::Debug             \
+                               , oss.str()                                    \
+                               ,__FILE__                                      \
+                               , __LINE__ );                                  \
+} while ( 0 )
+
+#else // turn off debug macros
+
+#define SLIC_DEBUG( ignore_EXP ) ( (void)0 )
+
+#endif
+
+
+
+
 namespace asctoolkit {
 
 
