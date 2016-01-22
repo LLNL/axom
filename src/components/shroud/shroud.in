@@ -1,3 +1,13 @@
 #!/bin/sh -f
-export PYTHONPATH=@CMAKE_Python_MODULE_DIRECTORY@
-@PYTHON_EXECUTABLE@ @EXECUTABLE_OUTPUT_PATH@/shroud-script "$@"
+# This scripts exists to set PYTHONPATH before calling the setuptools
+# created shroud-script
+#
+# DIR - directory where script is installed.
+#  other files are relative to this script
+#    bin/shroud
+#    bin/shroud-script
+#    lib/pythonX.Y/site-packages
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export PYTHONPATH=$DIR/../@CMAKE_Python_SITE_PACKAGES@
+@PYTHON_EXECUTABLE@ $DIR/shroud-script "$@"
