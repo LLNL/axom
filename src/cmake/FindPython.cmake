@@ -96,15 +96,22 @@ find_package_handle_standard_args(Python  DEFAULT_MSG
 FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name setup_file)
     MESSAGE(STATUS "Configuring python distutils setup: ${target_name}")
     set(timestamp ${CMAKE_CURRENT_BINARY_DIR}/${target_name}.time)
+#    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist) # used with bdist_egg
     add_custom_command(OUTPUT  ${timestamp}
         COMMAND PYTHONPATH=${CMAKE_Python_MODULE_DIRECTORY}
             ${PYTHON_EXECUTABLE} ${setup_file} -v
             build
-            --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-            egg_info --egg-base ${CMAKE_CURRENT_BINARY_DIR}
+              --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+            # Create the egg-info directory in the binary directory
+            egg_info
+              --egg-base ${CMAKE_CURRENT_BINARY_DIR}
+#           # Create the egg in the binary directory 
+#            bdist_egg
+#              --dist-dir ${CMAKE_CURRENT_BINARY_DIR}/dist
             install
-            --install-purelib=${CMAKE_Python_MODULE_DIRECTORY}
-            --install-scripts=${EXECUTABLE_OUTPUT_PATH}
+              --old-and-unmanageable
+              --install-purelib=${CMAKE_Python_MODULE_DIRECTORY}
+              --install-scripts=${EXECUTABLE_OUTPUT_PATH}
             COMMAND ${CMAKE_COMMAND} -E touch ${timestamp}
             DEPENDS  ${setup_file} ${ARGN}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -117,9 +124,15 @@ FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name setup_file)
         EXECUTE_PROCESS(
             COMMAND
                 ${PYTHON_EXECUTABLE} ${setup_file} -v
-                build    --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-                egg_info --egg-base ${CMAKE_CURRENT_BINARY_DIR}
-                install  --prefix=${CMAKE_INSTALL_PREFIX}
+                build
+                  --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+                egg_info
+                  --egg-base ${CMAKE_CURRENT_BINARY_DIR}
+                install
+                   --old-and-unmanageable
+                   --prefix=${CMAKE_INSTALL_PREFIX}
+#                  --install-purelib=${CMAKE_INSTALL_PREFIX}/${CMAKE_Python_SITE_PACKAGES}
+#                  --install-scripts=${CMAKE_INSTALL_PREFIX}/bin
             OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT
             ERROR_VARIABLE PY_DIST_UTILS_INSTALL_ERR
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
