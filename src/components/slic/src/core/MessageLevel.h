@@ -94,12 +94,12 @@ namespace inherit {
  *******************************************************************************
  */
 enum flags {
-  nothing =  0,//!< nothing, no bit is set.
-  fatal   =  1,//!< fatal,   2^0, i.e., the zeroth bit is set.
-  error   =  2,//!< error,   2^1, i.e., the 1st bit is set.
-  warning =  4,//!< warning, 2^2, i.e., the 2nd bit is set.
-  info    =  8,//!< info,    2^3, i.e., the 3rd bit is set.
-  debug   = 16 //!< debug,   2^4, i.e., the 4th bit is set.
+  nothing =  0,   //!< nothing, no bit is set.
+  fatal   =  1<<0,//!< fatal,   zeroth bit is set.
+  error   =  1<<1,//!< error,   1st bit is set.
+  warning =  1<<2,//!< warning, 2nd bit is set.
+  info    =  1<<3,//!< info,    3rd bit is set.
+  debug   =  1<<4 //!< debug,   4th bit is set.
 };
 
 /*!
