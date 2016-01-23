@@ -232,15 +232,15 @@ class Schema(object):
                 ),
             # implies null terminated string
             string = util.Typedef('string',
-                c_type   = 'char',    # XXX - char *
                 cpp_type = 'std::string',
                 cpp_header = '<string>',
                 cpp_to_c = '{var}.c_str()',  # . or ->
 
-                c_tmpdecl = ['std::string {cpp_var}({c_var});'],
-                c_tmpdecl_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
-                c_to_cpp  = '{cpp_var}',                                  
+                c_type   = 'char',    # XXX - char *
+                c_intent_in = ['std::string {cpp_var}({c_var});'],
+                c_intent_in_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
                 c_intent_out = 'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+                c_to_cpp  = '{cpp_var}',                                  
 
                 c_fortran  = 'character(kind=C_CHAR)',
                 f_type     = 'character(*)',

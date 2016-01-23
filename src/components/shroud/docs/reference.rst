@@ -428,18 +428,21 @@ c_argdecl
     Used with string_from_buffer .
     Defaults to *None*.
 
-c_tmpdecl
+c_intent_in
 
-    Declare temporary variable for argument.
-    Can be used to convert types.  For example, ``char *`` to ``std::string``.
+    Code to add for argument with intent(IN).
+    Can be used to convert types or copy-in semantics.
+    For example, ``char *`` to ``std::string``.
 
-c_tmpdecl_trim
+c_intent_in_trim
 
-    Declare temporary variable for argument with length (computed using ``len_trim``).
+    Code to add for argument with intent(IN) and len_trim attribute 
+    For example, ''char *, int`` into ``std::string``
 
 c_intent_out
 
     Code to add after call when ``intent(OUT)`` or ``intent(INOUT)``.
+    Used to implement copy-out semantics.
 
 c_pre_call
 
