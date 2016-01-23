@@ -19,11 +19,8 @@ if(PYTHON_EXECUTABLE)
     )
     if(HAVE_PYTHON_MODULES EQUAL 0)
         message(STATUS "Able to run shroud")
-        set(ENABLE_SHROUD TRUE CACHE BOOLEAN "" FORCE )
-    
     else()
-        message(STATUS "Unable to run shroud: ${MISSING_MODULES}")
-        set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
+        message(FATAL_ERROR "Unable to run shroud: ${MISSING_MODULES}")
     endif()
 
 ####
@@ -32,11 +29,10 @@ if(PYTHON_EXECUTABLE)
      src/main.py      src/splicer.py     src/wrapc.py  src/wrapp.py
    )
 else()
-    message(STATUS "Unable to run shroud: Python not found")
-    set(ENABLE_SHROUD FALSE CACHE BOOLEAN "" FORCE )
+    message(FATAL_ERROR "Unable to run shroud: Python not found")
 endif()
 
-if(ENABLE_FORTRAN AND ENABLE_SHROUD)
+if(ENABLE_FORTRAN)
     add_subdirectory(tests/run-tutorial)
 
 # Create setup.py in binary directory
