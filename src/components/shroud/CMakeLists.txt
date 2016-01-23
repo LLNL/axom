@@ -27,7 +27,7 @@ if(PYTHON_EXECUTABLE)
     endif()
 
 ####
-   PYTHON_ADD_DISTUTILS_SETUP(shroud_python setup.py
+   PYTHON_ADD_DISTUTILS_SETUP(shroud_python
      src/__init__.py  src/parse_decl.py  src/util.py   src/wrapf.py
      src/main.py      src/splicer.py     src/wrapc.py  src/wrapp.py
    )
@@ -39,6 +39,11 @@ endif()
 if(ENABLE_FORTRAN AND ENABLE_SHROUD)
     add_subdirectory(tests/run-tutorial)
 
+# Create setup.py in binary directory
+    configure_file(
+         ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
+         ${CMAKE_CURRENT_BINARY_DIR}/setup.py
+    )
 #
 # Write the driver script
 # configure into CMakeFiles directory, because it must be in a different directory
