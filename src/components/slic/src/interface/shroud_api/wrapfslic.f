@@ -188,7 +188,7 @@ contains
         ! splicer begin activate_logger
         call slic_activate_logger_bufferify(  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end activate_logger
     end subroutine activate_logger
     
@@ -199,7 +199,7 @@ contains
         ! splicer begin get_active_logger_name
         call slic_get_active_logger_name_bufferify(  &
             name,  &
-            len(name))
+            len(name, kind=C_INT))
         ! splicer end get_active_logger_name
     end subroutine get_active_logger_name
     
@@ -217,9 +217,9 @@ contains
         call slic_log_message_bufferify(  &
             level,  &
             message,  &
-            len_trim(message),  &
+            len_trim(message, kind=C_INT),  &
             fileName,  &
-            len_trim(fileName),  &
+            len_trim(fileName, kind=C_INT),  &
             line,  &
             tmp_filter)
         ! splicer end log_message

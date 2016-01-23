@@ -80,7 +80,7 @@ contains
         ! splicer begin get_name
         call str_get_name_bufferify(  &
             output,  &
-            len(output))
+            len(output, kind=C_INT))
         ! splicer end get_name
     end subroutine get_name
     
@@ -101,7 +101,7 @@ contains
         ! splicer begin accept_string_const_reference
         call str_accept_string_const_reference_bufferify(  &
             arg1,  &
-            len_trim(arg1))
+            len_trim(arg1, kind=C_INT))
         ! splicer end accept_string_const_reference
     end subroutine accept_string_const_reference
     
@@ -122,8 +122,8 @@ contains
         ! splicer begin accept_string_reference
         call str_accept_string_reference_bufferify(  &
             arg1,  &
-            len_trim(arg1),  &
-            len(arg1))
+            len_trim(arg1, kind=C_INT),  &
+            len(arg1, kind=C_INT))
         ! splicer end accept_string_reference
     end subroutine accept_string_reference
     

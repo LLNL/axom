@@ -153,7 +153,7 @@ contains
         ! splicer begin test_names
         call aa_test_names_bufferify(  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end test_names
     end subroutine test_names
     
@@ -168,7 +168,7 @@ contains
         ! splicer begin test_names_flag
         call aa_test_names_flag_bufferify(  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             flag)
         ! splicer end test_names_flag
     end subroutine test_names_flag

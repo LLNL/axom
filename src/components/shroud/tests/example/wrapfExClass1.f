@@ -221,7 +221,7 @@ contains
         ! splicer begin class.ExClass1.method.new
         rv%voidptr = aa_exclass1_new_bufferify(  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.ExClass1.method.new
     end function exclass1_new
     
@@ -307,7 +307,7 @@ contains
         call aa_exclass1_get_name_arg_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len(name))
+            len(name, kind=C_INT))
         ! splicer end class.ExClass1.method.get_name_arg
     end subroutine exclass1_get_name_arg
     

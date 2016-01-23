@@ -607,11 +607,11 @@ class Wrapf(util.WrapperMixin):
             len_trim = c_arg['attrs'].get('len_trim', None)
             if len_trim:
                 need_wrapper = True
-                append_format(arg_c_call, 'len_trim({var})', fmt)
+                append_format(arg_c_call, 'len_trim({var}, kind=C_INT)', fmt)
             len_arg = c_arg['attrs'].get('len', None)
             if len_arg:
                 need_wrapper = True
-                append_format(arg_c_call, 'len({var})', fmt)
+                append_format(arg_c_call, 'len({var}, kind=C_INT)', fmt)
 
         fmt.F_arg_c_call = ', '.join(arg_c_call)
         fmt.F_arg_c_call_tab = '\t' + '\t'.join(arg_c_call) # use tabs to insert continuations
@@ -627,11 +627,10 @@ class Wrapf(util.WrapperMixin):
                 # special case returning a string
                 rvlen = result['attrs'].get('len', None)
                 if rvlen is None:
-                    rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call}))', fmt)
+                    rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call_tab}))', fmt)
                 fmt.rvlen = wformat(rvlen, fmt)
-                arg_f_decl.append(
-                    wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}',
-                            fmt))
+                line1 = wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}', fmt)
+                self.append_method_arguments(arg_f_decl, line1)
             else:
                 arg_f_decl.append(self._f_decl(result, name=fmt.F_result))
 

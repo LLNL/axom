@@ -224,7 +224,7 @@ contains
         ! splicer begin class.ExClass2.method.ex_class2
         rv%voidptr = aa_exclass2_ex_class2_bufferify(  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.ExClass2.method.ex_class2
     end function exclass2_ex_class2
     

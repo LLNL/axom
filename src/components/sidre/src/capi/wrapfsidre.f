@@ -1538,7 +1538,7 @@ contains
         call sidre_datagroup_get_name_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len(name))
+            len(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_name
     end subroutine datagroup_get_name
     
@@ -1592,7 +1592,7 @@ contains
         rv = sidre_datagroup_has_view_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.has_view
     end function datagroup_has_view
     
@@ -1606,7 +1606,7 @@ contains
         rv%voidptr = sidre_datagroup_get_view_from_name_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_view_from_name
     end function datagroup_get_view_from_name
     
@@ -1633,7 +1633,7 @@ contains
         rv = sidre_datagroup_get_view_index_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_view_index
     end function datagroup_get_view_index
     
@@ -1648,7 +1648,7 @@ contains
             obj%voidptr,  &
             idx,  &
             name,  &
-            len(name))
+            len(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_view_name
     end subroutine datagroup_get_view_name
     
@@ -1687,7 +1687,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_and_allocate_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataGroup.method.create_view_and_allocate_int
@@ -1705,7 +1705,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_and_allocate_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataGroup.method.create_view_and_allocate_long
@@ -1721,7 +1721,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_empty_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.create_view_empty
     end function datagroup_create_view_empty
     
@@ -1737,7 +1737,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_from_type_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataGroup.method.create_view_from_type_int
@@ -1755,7 +1755,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_from_type_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             type,  &
             int(num_elems, C_LONG))
         ! splicer end class.DataGroup.method.create_view_from_type_long
@@ -1772,7 +1772,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_into_buffer_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             buff%voidptr)
         ! splicer end class.DataGroup.method.create_view_into_buffer
     end function datagroup_create_view_into_buffer
@@ -1788,7 +1788,7 @@ contains
         rv%voidptr = sidre_datagroup_create_view_external_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             external_ptr)
         ! splicer end class.DataGroup.method.create_view_external
     end function datagroup_create_view_external
@@ -1802,7 +1802,7 @@ contains
         call sidre_datagroup_destroy_view_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.destroy_view
     end subroutine datagroup_destroy_view
     
@@ -1815,7 +1815,7 @@ contains
         call sidre_datagroup_destroy_view_and_data_name_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.destroy_view_and_data_name
     end subroutine datagroup_destroy_view_and_data_name
     
@@ -1867,7 +1867,7 @@ contains
         rv = sidre_datagroup_has_group_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.has_group
     end function datagroup_has_group
     
@@ -1881,7 +1881,7 @@ contains
         rv%voidptr = sidre_datagroup_get_group_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_group
     end function datagroup_get_group
     
@@ -1895,7 +1895,7 @@ contains
         rv = sidre_datagroup_get_group_index_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_group_index
     end function datagroup_get_group_index
     
@@ -1910,7 +1910,7 @@ contains
             obj%voidptr,  &
             idx,  &
             name,  &
-            len(name))
+            len(name, kind=C_INT))
         ! splicer end class.DataGroup.method.get_group_name
     end subroutine datagroup_get_group_name
     
@@ -1947,7 +1947,7 @@ contains
         rv%voidptr = sidre_datagroup_create_group_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.create_group
     end function datagroup_create_group
     
@@ -1960,7 +1960,7 @@ contains
         call sidre_datagroup_destroy_group_name_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end class.DataGroup.method.destroy_group_name
     end subroutine datagroup_destroy_group_name
     
@@ -2008,9 +2008,9 @@ contains
         call sidre_datagroup_save_bufferify(  &
             obj%voidptr,  &
             obase,  &
-            len_trim(obase),  &
+            len_trim(obase, kind=C_INT),  &
             protocol,  &
-            len_trim(protocol))
+            len_trim(protocol, kind=C_INT))
         ! splicer end class.DataGroup.method.save
     end subroutine datagroup_save
     
@@ -2024,9 +2024,9 @@ contains
         call sidre_datagroup_load_bufferify(  &
             obj%voidptr,  &
             obase,  &
-            len_trim(obase),  &
+            len_trim(obase, kind=C_INT),  &
             protocol,  &
-            len_trim(protocol))
+            len_trim(protocol, kind=C_INT))
         ! splicer end class.DataGroup.method.load
     end subroutine datagroup_load
     
@@ -2805,7 +2805,7 @@ contains
         call sidre_dataview_get_name_bufferify(  &
             obj%voidptr,  &
             name,  &
-            len(name))
+            len(name, kind=C_INT))
         ! splicer end class.DataView.method.get_name
     end subroutine dataview_get_name
     

@@ -437,13 +437,17 @@ contains
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr(tut_function4a_bufferify(arg1, len_trim(arg1), arg2, len_trim(arg2)))) :: rv
+        character(kind=C_CHAR, len=strlen_ptr(tut_function4a_bufferify(  &
+            arg1,  &
+            len_trim(arg1, kind=C_INT),  &
+            arg2,  &
+            len_trim(arg2, kind=C_INT)))) :: rv
         ! splicer begin function4a
         rv = fstr(tut_function4a_bufferify(  &
             arg1,  &
-            len_trim(arg1),  &
+            len_trim(arg1, kind=C_INT),  &
             arg2,  &
-            len_trim(arg2)))
+            len_trim(arg2, kind=C_INT)))
         ! splicer end function4a
     end function function4a
     
@@ -459,11 +463,11 @@ contains
         ! splicer begin function4b
         call tut_function4b_bufferify(  &
             arg1,  &
-            len_trim(arg1),  &
+            len_trim(arg1, kind=C_INT),  &
             arg2,  &
-            len_trim(arg2),  &
+            len_trim(arg2, kind=C_INT),  &
             output,  &
-            len(output))
+            len(output, kind=C_INT))
         ! splicer end function4b
     end subroutine function4b
     
@@ -519,7 +523,7 @@ contains
         ! splicer begin function6_from_name
         call tut_function6_from_name_bufferify(  &
             name,  &
-            len_trim(name))
+            len_trim(name, kind=C_INT))
         ! splicer end function6_from_name
     end subroutine function6_from_name
     
@@ -627,7 +631,7 @@ contains
         ! splicer begin function10_1_float
         call tut_function10_1_bufferify(  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             real(arg2, C_DOUBLE))
         ! splicer end function10_1_float
     end subroutine function10_1_float
@@ -643,7 +647,7 @@ contains
         ! splicer begin function10_1_double
         call tut_function10_1_bufferify(  &
             name,  &
-            len_trim(name),  &
+            len_trim(name, kind=C_INT),  &
             arg2)
         ! splicer end function10_1_double
     end subroutine function10_1_double
