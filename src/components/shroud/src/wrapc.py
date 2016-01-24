@@ -8,10 +8,8 @@ from __future__ import print_function
 import whelpers
 import util
 from util import append_format
-import itertools
 
 wformat = util.wformat
-zip_longest = itertools.izip_longest
 
 class Wrapc(util.WrapperMixin):
     """Generate C bindings for C++ classes
@@ -305,9 +303,8 @@ class Wrapc(util.WrapperMixin):
         tmp_decl   = []    # list of temporary variable declarations
         post_call  = []
 
-        for arg, arg_call in zip_longest(node['args'], CPP_node['args']):
+        for arg in node['args']:
             c_attrs = arg['attrs']
-#            cpp_attrs = arg_call['attrs']
             arg_typedef = self.typedef[arg['type']]
             fmt.var = arg['name']
             fmt.c_var = arg['name']      # name in c prototype.
@@ -315,11 +312,12 @@ class Wrapc(util.WrapperMixin):
             fmt.c_var_num = '0'  # XXXX
             fmt.ptr = ' *' if arg['attrs'].get('ptr', False) else ''
 
-            if arg_call is None:
-                # more arguments to wrapper than C++ function, assume result
+            if c_attrs.get('_is_result', False):
+                arg_call = False
                 result_arg = arg
                 fmt.cpp_var = 'rv'           # name of result variable
             else:
+                arg_call = arg
                 fmt.cpp_var = fmt.c_var      # name in c++ call.
 
             if arg_typedef.c_argdecl:

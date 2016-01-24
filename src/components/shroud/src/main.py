@@ -664,11 +664,11 @@ class GenFunctions(object):
 
         # Is result or any argument a string?
         has_strings = False
-        result_arg_name = options.get('F_string_result_as_arg', '')
-        if result_typedef.base == 'string' and result_arg_name:
+        result_as_arg = options.get('F_string_result_as_arg', '')
+        if result_typedef.base == 'string' and result_as_arg:
             has_strings = True
         else:
-            result_arg_name = ''  # only applies to string
+            result_as_arg = ''  # only applies to string functions
             for arg in node['args']:
                 argtype = arg['type']
                 if self.typedef[argtype].base == 'string':
@@ -709,15 +709,16 @@ class GenFunctions(object):
                 if intent in ['out', 'inout']:
                     arg['attrs']['len'] = 'N' + arg['name']
 
-        if result_arg_name:
+        if result_as_arg:
             # Add additional argument to hold result
             result_as_string = copy.deepcopy(result)
-            result_as_string['name'] = result_arg_name
+            result_as_string['name'] = result_as_arg
             result_as_string['type'] = result_typedef.name + '_result_as_arg'
             attrs = result_as_string['attrs']
             attrs['const'] = False
-            attrs['len'] = 'L' + result_arg_name
+            attrs['len'] = 'L' + result_as_arg
             attrs['intent'] = 'out'
+            attrs['_is_result'] = True
             if not is_ptr:
                 attrs['ptr'] = True
                 attrs['reference'] = False

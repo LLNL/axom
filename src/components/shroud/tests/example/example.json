@@ -374,6 +374,7 @@
                     "args": [
                         {
                             "attrs": {
+                                "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
                                 "len": "Lname", 
@@ -418,6 +419,7 @@
                     "args": [
                         {
                             "attrs": {
+                                "_is_result": true, 
                                 "const": false, 
                                 "intent": "out", 
                                 "len": "Lname", 
