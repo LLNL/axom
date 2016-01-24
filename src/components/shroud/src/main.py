@@ -663,18 +663,19 @@ class GenFunctions(object):
             return
 
         # Is result or any argument a string?
-        has_strings = False
-        result_as_arg = options.get('F_string_result_as_arg', '')
-        if result_typedef.base == 'string' and result_as_arg:
-            has_strings = True
-        else:
-            result_as_arg = ''  # only applies to string functions
+        has_string_arg = False
+        has_string_result = False
+        result_as_arg = ''  # only applies to string functions
+        if result_typedef.base == 'string':
+            result_as_arg = options.get('F_string_result_as_arg', '')
+            has_string_result = True
+        if True:  # else
             for arg in node['args']:
                 argtype = arg['type']
                 if self.typedef[argtype].base == 'string':
-                    has_strings = True
+                    has_string_arg = True
                     break
-        if has_strings is False:
+        if not ((has_string_result and result_as_arg) or has_string_arg):
             return
 
         options = node['options']
