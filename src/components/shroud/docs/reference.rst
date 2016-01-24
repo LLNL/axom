@@ -123,6 +123,7 @@ F_string_len_trim
   creating a ``NULL`` terminated string using ``trim``.  This avoids
   copying the string in the Fortran wrapper.
   Defaults to *true*.
+
 .. bufferify
 
 F_force_wrapper
@@ -437,7 +438,7 @@ c_intent_in
 c_intent_in_trim
 
     Code to add for argument with intent(IN) and len_trim attribute 
-    For example, ''char *, int`` into ``std::string``
+    For example, ``char *, int`` into ``std::string``
 
 c_intent_out
 

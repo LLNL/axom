@@ -3,6 +3,7 @@
 //
 
 #include "strings.hpp"
+#include <cstring>
 
 static std::string last_function_called;
 
@@ -11,6 +12,13 @@ static const char * static_char = "bird";
 static std::string static_str = std::string("dog");
 static std::string global_str;
 
+void passCharPtr(char * dest, const char *src)
+{
+    // throw away result
+    std::strcpy(dest, src);
+}
+
+//----------------------------------------
 
 const char * getChar1()
 {
