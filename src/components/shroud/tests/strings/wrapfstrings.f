@@ -21,7 +21,7 @@ module strings_mod
             type(C_PTR) rv
         end function str_get_name1
         
-        pure function str_get_name2() &
+        function str_get_name2() &
                 result(rv) &
                 bind(C, name="STR_get_name2")
             use iso_c_binding
@@ -97,7 +97,7 @@ contains
         ! splicer end get_name1
     end function get_name1
     
-    ! const string & getName2()+pure
+    ! const string & getName2()
     ! function_index=1
     !>
     !! \brief return string with fixed size (len=30)
@@ -106,7 +106,7 @@ contains
     function get_name2() result(rv)
         use iso_c_binding
         implicit none
-        character(kind=C_CHAR, len=strlen_ptr(str_get_name2())) :: rv
+        character(kind=C_CHAR, len=30) :: rv
         ! splicer begin get_name2
         rv = fstr(str_get_name2())
         ! splicer end get_name2

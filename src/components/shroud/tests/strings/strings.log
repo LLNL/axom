@@ -1,6 +1,6 @@
 Read yaml strings.yaml
 C function const string & getName1()+pure
-C function const string & getName2()+pure
+C function const string & getName2()
 C function const string & getName()+pure
 C function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
 C function void acceptStringConstReference(const std::string & arg1+intent(in))
@@ -11,7 +11,7 @@ Close wrapstrings.h
 Close wrapstrings.cpp
 Close shroudrt.hpp
 C-interface, Fortran function const string & getName1()+pure
-C-interface, Fortran function const string & getName2()+pure
+C-interface, Fortran function const string & getName2()
 C-interface function const string & getName()+pure
 C-interface function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
 Fortran function void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure

@@ -27,7 +27,7 @@ return rv.c_str();
 // splicer end function.get_name1
 }
 
-// const string & getName2()+pure
+// const string & getName2()
 // function_index=1
 /**
  * \brief return string with fixed size (len=30)

@@ -564,7 +564,7 @@ class Wrapf(util.WrapperMixin):
             f_arg = True   # assume C and Fortran arguments match
             c_attrs = c_arg['attrs']
             if c_attrs.get('_is_result', False):
-                result_as_arg = options.F_string_result_as_arg
+                result_as_arg = options.get('F_string_result_as_arg', '')
                 if not result_as_arg:
                     # passing Fortran function result variable down to C
                     f_arg = False

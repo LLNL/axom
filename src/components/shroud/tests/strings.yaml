@@ -15,8 +15,8 @@ functions:
   doxygen:
     brief: return a string as character(*)
 
-#- decl: const string& getName2+len=30()
-- decl: const string& getName2()  +pure
+- decl: const string& getName2+len=30()
+#- decl: const string& getName2()  +pure
   C_error_pattern: C_invalid_name
   doxygen:
     brief: return string with fixed size (len=30)

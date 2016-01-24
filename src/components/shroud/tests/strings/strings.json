@@ -58,14 +58,12 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_decl": "const string & getName2()+pure", 
+            "_decl": "const string & getName2()", 
             "_function_index": 1, 
             "_subprogram": "function", 
             "args": [], 
-            "attrs": {
-                "pure": true
-            }, 
-            "decl": "const string& getName2()  +pure", 
+            "attrs": {}, 
+            "decl": "const string& getName2+len=30()", 
             "doxygen": {
                 "brief": "return string with fixed size (len=30)"
             }, 
@@ -82,6 +80,7 @@
             "result": {
                 "attrs": {
                     "const": true, 
+                    "len": 30, 
                     "reference": true
                 }, 
                 "name": "getName2", 
