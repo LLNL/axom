@@ -8,6 +8,8 @@
 #include <string>
 
 const std::string& getName();
+const std::string& getName1();
+const std::string& getName2();
 
 void acceptName_instance(std::string arg1);
 

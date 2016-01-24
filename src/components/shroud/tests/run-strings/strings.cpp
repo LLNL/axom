@@ -16,6 +16,16 @@ const std::string& getName()
     return static_str;
 }
 
+const std::string& getName1()
+{
+    return static_str;
+}
+
+const std::string& getName2()
+{
+    return static_str;
+}
+
 void acceptStringConstReference(const std::string & arg1)
 {
     global_str = arg1;

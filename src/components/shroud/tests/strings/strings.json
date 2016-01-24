@@ -26,8 +26,72 @@
     "functions": [
         {
             "C_error_pattern": "C_invalid_name", 
-            "_decl": "const string & getName()+pure", 
+            "_decl": "const string & getName1()+pure", 
             "_function_index": 0, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const string& getName1()  +pure", 
+            "doxygen": {
+                "brief": "return a string as character(*)"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_name1", 
+                "F_C_name": "str_get_name1", 
+                "F_name_generic": "get_name1", 
+                "F_name_impl": "get_name1", 
+                "F_name_method": "get_name1", 
+                "method_name": "getName1", 
+                "underscore_name": "get_name1"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "getName1", 
+                "type": "string"
+            }
+        }, 
+        {
+            "C_error_pattern": "C_invalid_name", 
+            "_decl": "const string & getName2()+pure", 
+            "_function_index": 1, 
+            "_subprogram": "function", 
+            "args": [], 
+            "attrs": {
+                "pure": true
+            }, 
+            "decl": "const string& getName2()  +pure", 
+            "doxygen": {
+                "brief": "return string with fixed size (len=30)"
+            }, 
+            "fmt": {
+                "C_name": "STR_get_name2", 
+                "F_C_name": "str_get_name2", 
+                "F_name_generic": "get_name2", 
+                "F_name_impl": "get_name2", 
+                "F_name_method": "get_name2", 
+                "method_name": "getName2", 
+                "underscore_name": "get_name2"
+            }, 
+            "options": {}, 
+            "result": {
+                "attrs": {
+                    "const": true, 
+                    "reference": true
+                }, 
+                "name": "getName2", 
+                "type": "string"
+            }
+        }, 
+        {
+            "C_error_pattern": "C_invalid_name", 
+            "_decl": "const string & getName()+pure", 
+            "_function_index": 2, 
             "_subprogram": "function", 
             "args": [], 
             "attrs": {
@@ -58,10 +122,10 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_PTR_C_CPP_index": 0, 
+            "_PTR_C_CPP_index": 2, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 3, 
+            "_function_index": 5, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -105,11 +169,11 @@
         }, 
         {
             "C_error_pattern": "C_invalid_name", 
-            "_PTR_C_CPP_index": 0, 
-            "_PTR_F_C_index": 3, 
+            "_PTR_C_CPP_index": 2, 
+            "_PTR_F_C_index": 5, 
             "_decl": "void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 4, 
+            "_function_index": 6, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -154,7 +218,7 @@
         }, 
         {
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in))", 
-            "_function_index": 1, 
+            "_function_index": 3, 
             "_subprogram": "subroutine", 
             "args": [
                 {
@@ -190,10 +254,10 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 1, 
+            "_PTR_C_CPP_index": 3, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 5, 
+            "_function_index": 7, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -232,11 +296,11 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 1, 
-            "_PTR_F_C_index": 5, 
+            "_PTR_C_CPP_index": 3, 
+            "_PTR_F_C_index": 7, 
             "_decl": "void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 6, 
+            "_function_index": 8, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -277,7 +341,7 @@
         }, 
         {
             "_decl": "void acceptStringReference(std::string & arg1+intent(inout))", 
-            "_function_index": 2, 
+            "_function_index": 4, 
             "_subprogram": "subroutine", 
             "args": [
                 {
@@ -312,10 +376,10 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 2, 
+            "_PTR_C_CPP_index": 4, 
             "_decl": "void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 7, 
+            "_function_index": 9, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [
@@ -354,11 +418,11 @@
             }
         }, 
         {
-            "_PTR_C_CPP_index": 2, 
-            "_PTR_F_C_index": 7, 
+            "_PTR_C_CPP_index": 4, 
+            "_PTR_F_C_index": 9, 
             "_decl": "void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))", 
             "_error_pattern_suffix": "_as_buffer", 
-            "_function_index": 8, 
+            "_function_index": 10, 
             "_generated": "string_to_buffer_and_len", 
             "_subprogram": "subroutine", 
             "args": [

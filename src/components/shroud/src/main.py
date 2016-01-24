@@ -274,13 +274,6 @@ class Schema(object):
                 ))
         def_types[tmp.name] = tmp
 
-        # string from buffer and length
-#        tmp = def_types['string'].clone_as('string_from_buffer')
-#        tmp.update(dict(
-#                c_tmpdecl = ['std::string {cpp_var}({c_var}, {c_var_len})'],
-#                ))
-#        def_types[tmp.name] = tmp
-
         types_dict = node.get('types', None)
         if types_dict is not None:
             if not isinstance(types_dict, dict):

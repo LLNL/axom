@@ -18,6 +18,10 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
+const char * STR_get_name1();
+
+const char * STR_get_name2();
+
 const char * STR_get_name();
 
 void STR_get_name_bufferify(char * output, int Loutput);

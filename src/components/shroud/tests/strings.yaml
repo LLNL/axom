@@ -10,6 +10,19 @@ options:
 
 functions:
 
+- decl: const string& getName1()  +pure
+  C_error_pattern: C_invalid_name
+  doxygen:
+    brief: return a string as character(*)
+
+#- decl: const string& getName2+len=30()
+- decl: const string& getName2()  +pure
+  C_error_pattern: C_invalid_name
+  doxygen:
+    brief: return string with fixed size (len=30)
+#  options:
+#    F_string_result_as_arg: output
+
 - decl: const string& getName()  +pure
   C_error_pattern: C_invalid_name
   doxygen:

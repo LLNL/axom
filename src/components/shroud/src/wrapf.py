@@ -628,6 +628,8 @@ class Wrapf(util.WrapperMixin):
                 rvlen = result['attrs'].get('len', None)
                 if rvlen is None:
                     rvlen = wformat('strlen_ptr({F_C_name}({F_arg_c_call_tab}))', fmt)
+                else:
+                    rvlen = str(rvlen)  # convert integers
                 fmt.rvlen = wformat(rvlen, fmt)
                 line1 = wformat('character(kind=C_CHAR, len={rvlen}) :: {F_result}', fmt)
                 self.append_method_arguments(arg_f_decl, line1)

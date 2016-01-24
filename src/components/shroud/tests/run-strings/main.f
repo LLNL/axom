@@ -34,6 +34,9 @@ contains
     call get_name(rv_char)
     call assert_true( rv_char == "dog")
 
+    str = get_name1()
+    call assert_true( str == "dog")
+
     call accept_string_const_reference("cat")
 !    call assert_true( rv_char == "dog")
 

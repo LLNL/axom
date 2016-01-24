@@ -8,8 +8,46 @@
 
 extern "C" {
 
-// const string & getName()+pure
+// const string & getName1()+pure
 // function_index=0
+/**
+ * \brief return a string as character(*)
+ *
+ */
+const char * STR_get_name1()
+{
+// splicer begin function.get_name1
+const std::string & rv = getName1();
+// check for error
+if (rv.empty()) {
+    return NULL;
+}
+
+return rv.c_str();
+// splicer end function.get_name1
+}
+
+// const string & getName2()+pure
+// function_index=1
+/**
+ * \brief return string with fixed size (len=30)
+ *
+ */
+const char * STR_get_name2()
+{
+// splicer begin function.get_name2
+const std::string & rv = getName2();
+// check for error
+if (rv.empty()) {
+    return NULL;
+}
+
+return rv.c_str();
+// splicer end function.get_name2
+}
+
+// const string & getName()+pure
+// function_index=2
 /**
  * \brief return a string as argument
  *
@@ -28,7 +66,7 @@ return rv.c_str();
 }
 
 // void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
-// function_index=3
+// function_index=5
 /**
  * \brief return a string as argument
  *
@@ -49,7 +87,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in))
-// function_index=1
+// function_index=3
 /**
  * \brief Accept a const string reference
  *
@@ -67,7 +105,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=5
+// function_index=7
 /**
  * \brief Accept a const string reference
  *
@@ -85,7 +123,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout))
-// function_index=2
+// function_index=4
 /**
  * \brief Accept a string reference
  *
@@ -104,7 +142,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+len(Narg1)+len_trim(Larg1)+intent(inout))
-// function_index=7
+// function_index=9
 /**
  * \brief Accept a string reference
  *

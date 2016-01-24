@@ -13,6 +13,22 @@ module strings_mod
     
     interface
         
+        pure function str_get_name1() &
+                result(rv) &
+                bind(C, name="STR_get_name1")
+            use iso_c_binding
+            implicit none
+            type(C_PTR) rv
+        end function str_get_name1
+        
+        pure function str_get_name2() &
+                result(rv) &
+                bind(C, name="STR_get_name2")
+            use iso_c_binding
+            implicit none
+            type(C_PTR) rv
+        end function str_get_name2
+        
         pure function str_get_name() &
                 result(rv) &
                 bind(C, name="STR_get_name")
@@ -66,9 +82,39 @@ module strings_mod
 
 contains
     
+    ! const string & getName1()+pure
+    ! function_index=0
+    !>
+    !! \brief return a string as character(*)
+    !!
+    !<
+    function get_name1() result(rv)
+        use iso_c_binding
+        implicit none
+        character(kind=C_CHAR, len=strlen_ptr(str_get_name1())) :: rv
+        ! splicer begin get_name1
+        rv = fstr(str_get_name1())
+        ! splicer end get_name1
+    end function get_name1
+    
+    ! const string & getName2()+pure
+    ! function_index=1
+    !>
+    !! \brief return string with fixed size (len=30)
+    !!
+    !<
+    function get_name2() result(rv)
+        use iso_c_binding
+        implicit none
+        character(kind=C_CHAR, len=strlen_ptr(str_get_name2())) :: rv
+        ! splicer begin get_name2
+        rv = fstr(str_get_name2())
+        ! splicer end get_name2
+    end function get_name2
+    
     ! void getName(string_result_as_arg & output+intent(out)+len(Loutput))+pure
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=4
+    ! function_index=6
     !>
     !! \brief return a string as argument
     !!
@@ -86,7 +132,7 @@ contains
     
     ! void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=6
+    ! function_index=8
     !>
     !! \brief Accept a const string reference
     !!
@@ -107,7 +153,7 @@ contains
     
     ! void acceptStringReference(std::string & arg1+intent(inout)+len_trim(Larg1)+len(Narg1))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=8
+    ! function_index=10
     !>
     !! \brief Accept a string reference
     !!
