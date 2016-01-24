@@ -28,9 +28,10 @@ functions:
 - decl: void Sum(int len, int *values+dimension+intent(in),
                  int *result+intent(out))
 - decl: bool Function3(bool arg)
-- decl: const std::string& Function4a(
+- decl: const std::string& Function4a+len(30)(
     const std::string& arg1,
-    const std::string& arg2 ) +pure
+    const std::string& arg2 )
+# +pure
 #  result:
 #    attrs:
 #      pure: true

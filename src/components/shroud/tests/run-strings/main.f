@@ -30,18 +30,30 @@ contains
 
     call set_case_name("test_functions")
 
+    ! character(*) function
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    str = get_name1()
+    str = get_char1()
+    call assert_true( str == "bird")
+
+!--------------------------------------------------
+
+    ! character(*) function
+    str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    str = get_string1()
     call assert_true( str == "dog")
 
+    ! character(30) function
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    str = get_name2()
+    str = get_string2()
     call assert_true( str == "dog")
 
+    ! string_result_as_arg
     str = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    call get_name(str)
+    call get_string3(str)
     call assert_true( str == "dog")
  
+!--------------------------------------------------
+
     call accept_string_const_reference("cat")
 !    call assert_true( rv_char == "dog")
 

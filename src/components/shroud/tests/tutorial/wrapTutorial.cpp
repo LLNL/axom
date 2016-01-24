@@ -49,7 +49,7 @@ return rv;
 // splicer end function.function3
 }
 
-// const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
+// const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
 // function_index=7
 const char * TUT_function4a(const char * arg1, const char * arg2)
 {
@@ -61,7 +61,7 @@ return rv.c_str();
 // splicer end function.function4a
 }
 
-// void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// void Function4a(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
 // function_index=32
 void TUT_function4a_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * SH_F_rv, int LSH_F_rv)
 {
@@ -75,7 +75,7 @@ return;
 }
 
 // void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
-// function_index=34
+// function_index=33
 void TUT_function4b_bufferify(const char * arg1, int Larg1, const char * arg2, int Larg2, char * output, int Loutput)
 {
 // splicer begin function.function4b_bufferify
@@ -129,7 +129,7 @@ return;
 }
 
 // void Function6(const std::string & name+intent(in)+len_trim(Lname))
-// function_index=36
+// function_index=35
 void TUT_function6_from_name_bufferify(const char * name, int Lname)
 {
 // splicer begin function.function6_from_name_bufferify
@@ -221,7 +221,7 @@ return;
 }
 
 // void Function10(const std::string & name+intent(in)+len_trim(Lname), double arg2+intent(in)+value)
-// function_index=37
+// function_index=36
 void TUT_function10_1_bufferify(const char * name, int Lname, double arg2)
 {
 // splicer begin function.function10_1_bufferify
@@ -322,7 +322,7 @@ return rv.c_str();
 }
 
 // void LastFunctionCalled(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=38
+// function_index=37
 void TUT_last_function_called_bufferify(char * SH_F_rv, int LSH_F_rv)
 {
 // splicer begin function.last_function_called_bufferify

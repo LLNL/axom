@@ -2261,6 +2261,32 @@
             "f_type": "logical", 
             "f_use_tmp": true
         }, 
+        "char": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
+        "char_result_as_arg": {
+            "PY_ctor": "PyString_FromString({var})", 
+            "PY_format": "s", 
+            "base": "string", 
+            "c_fortran": "character(kind=C_CHAR)", 
+            "c_intent_out": "asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});", 
+            "c_type": "char", 
+            "cpp_type": "char", 
+            "f_module": {
+                "iso_c_binding": null
+            }, 
+            "f_type": "character(*)"
+        }, 
         "double": {
             "PY_format": "d", 
             "c_fortran": "real(C_DOUBLE)", 

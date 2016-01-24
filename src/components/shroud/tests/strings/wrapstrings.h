@@ -18,6 +18,10 @@ extern "C" {
 // splicer begin C_definition
 // splicer end C_definition
 
+const char * STR_get_char1();
+
+void STR_get_char1_bufferify(char * SH_F_rv, int LSH_F_rv);
+
 const char * STR_get_string1();
 
 void STR_get_string1_bufferify(char * SH_F_rv, int LSH_F_rv);

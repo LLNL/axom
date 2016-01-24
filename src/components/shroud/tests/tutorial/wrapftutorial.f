@@ -100,7 +100,7 @@ module tutorial_mod
             logical(C_BOOL) :: rv
         end function tut_function3
         
-        pure function tut_function4a(arg1, arg2) &
+        function tut_function4a(arg1, arg2) &
                 result(rv) &
                 bind(C, name="TUT_function4a")
             use iso_c_binding
@@ -437,26 +437,29 @@ contains
         ! splicer end function3
     end function function3
     
-    ! const string_result_fstr & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))+pure
-    ! function_index=33
+    ! const std::string & Function4a(const std::string & arg1+intent(in), const std::string & arg2+intent(in))
+    ! string_to_buffer_and_len
+    ! function_index=7
     function function4a(arg1, arg2) result(rv)
         use iso_c_binding
         implicit none
         character(*), intent(IN) :: arg1
         character(*), intent(IN) :: arg2
-        character(kind=C_CHAR, len=strlen_ptr(tut_function4a(  &
-            arg1,  &
-            arg2))) :: rv
+        character(kind=C_CHAR, len=(30)) :: rv
         ! splicer begin function4a
-        rv = fstr(tut_function4a(  &
+        call tut_function4a_bufferify(  &
             arg1,  &
-            arg2))
+            len_trim(arg1, kind=C_INT),  &
+            arg2,  &
+            len_trim(arg2, kind=C_INT),  &
+            rv,  &
+            len(rv, kind=C_INT))
         ! splicer end function4a
     end function function4a
     
     ! void Function4b(const std::string & arg1+intent(in)+len_trim(Larg1), const std::string & arg2+intent(in)+len_trim(Larg2), string_result_as_arg * output+intent(out)+len(Loutput))
     ! string_to_buffer_and_len - string_to_buffer_and_len
-    ! function_index=35
+    ! function_index=34
     subroutine function4b(arg1, arg2, output)
         use iso_c_binding
         implicit none
@@ -591,7 +594,7 @@ contains
     
     ! void Function9(float arg+intent(in)+value)
     ! fortran_generic
-    ! function_index=40
+    ! function_index=39
     subroutine function9_float(arg)
         use iso_c_binding
         implicit none
@@ -603,7 +606,7 @@ contains
     
     ! void Function9(double arg+intent(in)+value)
     ! fortran_generic
-    ! function_index=41
+    ! function_index=40
     subroutine function9_double(arg)
         use iso_c_binding
         implicit none
@@ -625,7 +628,7 @@ contains
     
     ! void Function10(const std::string & name+intent(in), float arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
-    ! function_index=42
+    ! function_index=41
     subroutine function10_1_float(name, arg2)
         use iso_c_binding
         implicit none
@@ -641,7 +644,7 @@ contains
     
     ! void Function10(const std::string & name+intent(in), double arg2+intent(in)+value)
     ! fortran_generic - string_to_buffer_and_len
-    ! function_index=43
+    ! function_index=42
     subroutine function10_1_double(name, arg2)
         use iso_c_binding
         implicit none
@@ -755,7 +758,7 @@ contains
     end function overload1_5
     
     ! const string_result_fstr & LastFunctionCalled()+pure
-    ! function_index=39
+    ! function_index=38
     function last_function_called() result(rv)
         use iso_c_binding
         implicit none

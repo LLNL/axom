@@ -231,6 +231,29 @@ class Schema(object):
                 PY_post_parse = '{var} = PyObject_IsTrue({var_obj});',
                 ),
             # implies null terminated string
+            char = util.Typedef('char',
+                cpp_type = 'char',
+#                cpp_header = '<string>',
+#                cpp_to_c = '{var}.c_str()',  # . or ->
+
+                c_type   = 'char',    # XXX - char *
+#                c_intent_in = ['std::string {cpp_var}({c_var});'],
+#                c_intent_in_trim = ['std::string {cpp_var}({c_var}, {c_var_trim});'],
+                c_intent_out = 'asctoolkit::shroud::FccCopy({c_var}, {c_var_len}, {cpp_val});',
+#                c_to_cpp  = '{cpp_var}',                                  
+
+                c_fortran  = 'character(kind=C_CHAR)',
+                f_type     = 'character(*)',
+##                f_args = 'trim({var}) // C_NULL_CHAR',
+#                f_module = dict(iso_c_binding = [ 'C_NULL_CHAR' ]),
+                f_module = dict(iso_c_binding=None),
+#                f_return_code = '{F_result} = fstr({F_C_name}({F_arg_c_call_tab}))',
+                PY_format = 's',
+                PY_ctor = 'PyString_FromString({var})',
+                base = 'string',
+                ),
+
+            # C++ std::string
             string = util.Typedef('string',
                 cpp_type = 'std::string',
                 cpp_header = '<string>',
@@ -262,6 +285,9 @@ class Schema(object):
         def_types['real(C_DOUBLE)']  = def_types['double']
 
         # result_as_arg
+        tmp = def_types['char'].clone_as('char_result_as_arg')
+        def_types[tmp.name] = tmp
+
         tmp = def_types['string'].clone_as('string_result_as_arg')
         tmp.update(dict(
                 cpp_header = 'shroudrt.hpp',

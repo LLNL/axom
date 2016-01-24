@@ -7,24 +7,34 @@
 static std::string last_function_called;
 
 // These variables exist to avoid warning errors
+static const char * static_char = "bird";
 static std::string static_str = std::string("dog");
 static std::string global_str;
 
 
-const std::string& getName()
+const char * getChar1()
+{
+    return static_char;
+}
+
+//----------------------------------------
+
+const std::string& getString1()
 {
     return static_str;
 }
 
-const std::string& getName1()
+const std::string& getString2()
 {
     return static_str;
 }
 
-const std::string& getName2()
+const std::string& getString3()
 {
     return static_str;
 }
+
+//----------------------------------------
 
 void acceptStringConstReference(const std::string & arg1)
 {

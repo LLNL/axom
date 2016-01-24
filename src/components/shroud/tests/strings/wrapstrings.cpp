@@ -8,8 +8,37 @@
 
 extern "C" {
 
-// const string & getString1()+pure
+// const char * getChar1()+pure
 // function_index=0
+/**
+ * \brief return a string as character(*)
+ *
+ */
+const char * STR_get_char1()
+{
+// splicer begin function.get_char1
+const char * rv = getChar1();
+return rv;
+// splicer end function.get_char1
+}
+
+// void getChar1(char_result_as_arg * SH_F_rv+intent(out)+len(LSH_F_rv))+pure
+// function_index=6
+/**
+ * \brief return a string as character(*)
+ *
+ */
+void STR_get_char1_bufferify(char * SH_F_rv, int LSH_F_rv)
+{
+// splicer begin function.get_char1_bufferify
+const char * rv = getChar1();
+asctoolkit::shroud::FccCopy(SH_F_rv, LSH_F_rv, rv);
+return;
+// splicer end function.get_char1_bufferify
+}
+
+// const string & getString1()+pure
+// function_index=1
 /**
  * \brief return a string as character(*)
  *
@@ -23,7 +52,7 @@ return rv.c_str();
 }
 
 // void getString1(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))+pure
-// function_index=5
+// function_index=8
 /**
  * \brief return a string as character(*)
  *
@@ -38,7 +67,7 @@ return;
 }
 
 // const string & getString2()
-// function_index=1
+// function_index=2
 /**
  * \brief return string with fixed size (len=30)
  *
@@ -57,7 +86,7 @@ return rv.c_str();
 }
 
 // void getString2(string_result_as_arg & SH_F_rv+intent(out)+len(LSH_F_rv))
-// function_index=7
+// function_index=10
 /**
  * \brief return string with fixed size (len=30)
  *
@@ -78,7 +107,7 @@ return;
 }
 
 // const string & getString3()
-// function_index=2
+// function_index=3
 /**
  * \brief return a string as argument
  *
@@ -97,7 +126,7 @@ return rv.c_str();
 }
 
 // void getString3(string_result_as_arg & output+intent(out)+len(Loutput))
-// function_index=8
+// function_index=11
 /**
  * \brief return a string as argument
  *
@@ -118,7 +147,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in))
-// function_index=3
+// function_index=4
 /**
  * \brief Accept a const string reference
  *
@@ -136,7 +165,7 @@ return;
 }
 
 // void acceptStringConstReference(const std::string & arg1+intent(in)+len_trim(Larg1))
-// function_index=10
+// function_index=13
 /**
  * \brief Accept a const string reference
  *
@@ -154,7 +183,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout))
-// function_index=4
+// function_index=5
 /**
  * \brief Accept a string reference
  *
@@ -173,7 +202,7 @@ return;
 }
 
 // void acceptStringReference(std::string & arg1+intent(inout)+len(Narg1)+len_trim(Larg1))
-// function_index=11
+// function_index=14
 /**
  * \brief Accept a string reference
  *
